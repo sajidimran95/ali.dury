@@ -1,52 +1,61 @@
-@extends('layouts.auth2')
+@extends('layouts.auth-shell')
+
 @section('title', __('lang_v1.register'))
 
-@section('content')
+@section('auth-wide')
+@endsection
 
-    <div class="col-md-8 col-xs-12 col-md-offset-2 tw-mt-6">
-        <div
-            class=" tw-p-2 sm:tw-p-3 tw-mb-4 tw-transition-all tw-duration-200  tw-bg-white tw-shadow-sm tw-rounded-xl tw-ring-1 tw-ring-gray-200">
-            <div class="tw-flex tw-flex-col tw-gap-4 tw-dw-rounded-box tw-dw-p-6 tw-dw-max-w-md">
-                <div class="tw-flex tw-flex-col rounded-2xl tw-dw-p-6 tw-dw-max-w-md text-center">
-                    {{-- <svg xmlns="http://www.w3.org/2000/svg" class="tw-ml-4 tw-mt-4 icon icon-tabler icon-tabler-circle-key-filled" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#2c3e50" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                        <path d="M12 2c5.523 0 10 4.477 10 10a10 10 0 0 1 -20 0c0 -5.523 4.477 -10 10 -10zm2 5a3 3 0 0 0 -2.98 2.65l-.015 .174l-.005 .176l.005 .176c.019 .319 .087 .624 .197 .908l.09 .209l-3.5 3.5l-.082 .094a1 1 0 0 0 0 1.226l.083 .094l1.5 1.5l.094 .083a1 1 0 0 0 1.226 0l.094 -.083l.083 -.094a1 1 0 0 0 0 -1.226l-.083 -.094l-.792 -.793l.585 -.585l.793 .792l.094 .083a1 1 0 0 0 1.403 -1.403l-.083 -.094l-.792 -.793l.792 -.792a3 3 0 1 0 1.293 -5.708zm0 2a1 1 0 1 1 0 2a1 1 0 0 1 0 -2z" stroke-width="0" fill="currentColor" />
-                    </svg> --}}
-                    {{-- <svg xmlns="http://www.w3.org/2000/svg" class="tw-mr-3 tw-mt-1 icon icon-tabler icon-tabler-lock-up" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#2c3e50" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                        <path d="M12.5 21h-5.5a2 2 0 0 1 -2 -2v-6a2 2 0 0 1 2 -2h10a2 2 0 0 1 1.739 1.01" />
-                        <path d="M11 16a1 1 0 1 0 2 0a1 1 0 0 0 -2 0" />
-                        <path d="M8 11v-4a4 4 0 1 1 8 0v4" />
-                        <path d="M19 22v-6" />
-                        <path d="M22 19l-3 -3l-3 3" />
-                    </svg>
-                    <h1 class="tw-dw-text-3xl tw-dw-font-bold"> {{ config('app.name', 'ultimatePOS') }} - @lang('business.register_and_get_started_in_minutes')</h1> --}}
-                    <h1 class="tw-text-lg md:tw-text-xl tw-font-semibold tw-text-[#1e1e1e]">
-                            {{ config('app.name', 'ultimatePOS') }}
-                      </h1>
-                      <h2 class="tw-text-sm tw-font-medium tw-text-gray-500">
-                            @lang('business.register_and_get_started_in_minutes')
-                      </h2>
-                </div>
-            {!! Form::open([
-                'url' => route('business.postRegister'),
-                'method' => 'post',
-                'id' => 'business_register_form',
-                'files' => true,
-            ]) !!}
-            @include('business.partials.register_form', ['is_register' => true])
-            {!! Form::hidden('package_id', $package_id) !!}
-            {!! Form::close() !!}
-            </div>
-        </div>
+@section('auth-brand')
+    @include('layouts.partials.auth-brand', [
+        'brand_subtitle' => __('business.register_and_get_started_in_minutes'),
+        'brand_items' => [
+            [
+                'icon' => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>',
+                'text' => __('business.business'),
+            ],
+            [
+                'icon' => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>',
+                'text' => __('business.register'),
+            ],
+        ],
+    ])
+@endsection
+
+@section('auth-title')
+    {{ config('app.name', 'Japs POS') }}
+@endsection
+
+@section('auth-subtitle')
+    @lang('business.register_and_get_started_in_minutes')
+@endsection
+
+@section('auth-content')
+    <div class="japs-auth-register-form">
+        {!! Form::open([
+            'url' => route('business.postRegister'),
+            'method' => 'post',
+            'id' => 'business_register_form',
+            'files' => true,
+        ]) !!}
+        @include('business.partials.register_form', ['is_register' => true])
+        {!! Form::hidden('package_id', $package_id) !!}
+        {!! Form::close() !!}
     </div>
-@stop
+@endsection
+
+@section('auth-footer')
+    <p class="tw-text-center tw-text-sm tw-text-slate-500 tw-mb-0">
+        @lang('business.already_registered')
+        <a href="{{ route('login') }}" class="tw-font-semibold tw-text-sky-700 hover:tw-underline">@lang('business.sign_in')</a>
+    </p>
+@endsection
+
 @section('javascript')
     <script type="text/javascript">
         $(document).ready(function() {
             $('.change_lang').click(function() {
                 window.location = "{{ route('business.getRegister') }}?lang=" + $(this).attr('value');
             });
-        })
+        });
     </script>
 @endsection

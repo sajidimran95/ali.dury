@@ -3,8 +3,8 @@
 
 @section('content')
 
-    <div class="tw-pb-6 theme-header-bg xl:tw-pb-0 ">
-        <div class="tw-px-5 tw-pt-3">
+    <div class="tw-pb-6 theme-header-bg japs-dashboard-hero xl:tw-pb-0">
+        <div class="tw-px-5 tw-pt-4 tw-pb-2">
             {{-- <div class="sm:tw-flex sm:tw-items-center sm:tw-justify-between sm:tw-gap-12">
                 <h1 class="tw-text-2xl tw-font-medium tw-tracking-tight tw-text-white">
                     {{ __('home.welcome_message', ['name' => Session::get('user.first_name')]) }}
@@ -12,10 +12,12 @@
             </div> --}}
                     <div class="sm:tw-flex sm:tw-items-center sm:tw-justify-between sm:tw-gap-12">
                         <div class="tw-mt-2 sm:tw-w-1/2 md:tw-w-1/2">
-                            <h1
-                                class="tw-text-2xl md:tw-text-4xl tw-tracking-tight tw-text-primary-800 tw-font-semibold text-white tw-mb-10 md:tw-mb-0">
+                            <h1 class="japs-dashboard-welcome tw-text-2xl md:tw-text-4xl tw-tracking-tight tw-font-semibold tw-mb-0">
                                 {{ __('home.welcome_message', ['name' => Session::get('user.first_name')]) }}
                             </h1>
+                            <p class="japs-dashboard-welcome-sub tw-hidden sm:tw-block">
+                                {{ Session::get('business.name') }} · {{ @format_date(\Carbon::now()) }}
+                            </p>
                         </div>
     
                         @if (auth()->user()->can('dashboard.data'))
@@ -33,7 +35,7 @@
                                 <div class="tw-mt-2 sm:tw-w-1/3 md:tw-w-1/4 tw-text-right">
                                     @if ($is_admin)
                                         <button type="button" id="dashboard_date_filter"
-                                            class="tw-inline-flex tw-items-center tw-justify-center tw-w-full tw-gap-1 tw-px-3 tw-py-2 tw-text-sm tw-font-medium tw-text-gray-900 tw-transition-all tw-duration-200 tw-bg-white tw-rounded-lg sm:tw-w-auto hover:tw-bg-primary-50">
+                                            class="japs-dashboard-filter-btn tw-inline-flex tw-items-center tw-justify-center tw-w-full tw-gap-1 tw-px-3 tw-py-2 tw-text-sm tw-font-medium tw-text-gray-900 tw-transition-all tw-duration-200 tw-rounded-lg sm:tw-w-auto hover:tw-bg-primary-50">
                                             <svg aria-hidden="true" class="tw-size-5" xmlns="http://www.w3.org/2000/svg"
                                                 viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none"
                                                 stroke-linecap="round" stroke-linejoin="round">
@@ -68,10 +70,9 @@
                     </div>
                     @if (auth()->user()->can('dashboard.data'))
                         @if ($is_admin)
-                            <div class="tw-grid tw-grid-cols-1 tw-gap-4 tw-mt-6 sm:tw-grid-cols-2 xl:tw-grid-cols-4 sm:tw-gap-5">
-                            
+                            <div class="japs-dashboard-stats tw-grid tw-grid-cols-1 tw-gap-4 tw-mt-6 sm:tw-grid-cols-2 xl:tw-grid-cols-4 sm:tw-gap-5">
                                 <div
-                                    class="tw-transition-all tw-duration-200 tw-bg-white tw-shadow-sm hover:tw-shadow-md tw-rounded-xl  tw-ring-1 tw-ring-gray-200">
+                                    class="tw-transition-all tw-duration-200 tw-bg-white tw-shadow-sm hover:tw-shadow-md tw-rounded-xl tw-ring-1 tw-ring-gray-200">
                                     <div class="tw-p-4 sm:tw-p-5">
                                         <div class="tw-flex tw-items-center tw-gap-4">
                                             <div
@@ -218,9 +219,9 @@
                     </div>
                     <div class="tw-px-5 tw-isolate">
                         <div
-                            class="tw-grid tw-grid-cols-1 tw-gap-4 tw-mt-4 sm:tw-mt-6 sm:tw-grid-cols-2 xl:tw-grid-cols-4 sm:tw-gap-5">
+                            class="japs-dashboard-stats tw-grid tw-grid-cols-1 tw-gap-4 tw-mt-4 sm:tw-mt-6 sm:tw-grid-cols-2 xl:tw-grid-cols-4 sm:tw-gap-5">
                             <div
-                                class="tw-transition-all tw-duration-200 tw-bg-white tw-shadow-sm tw-rounded-xl hover:tw-shadow-md hover:tw--translate-y-0.5 tw-ring-1 tw-ring-gray-200">
+                                class="tw-transition-all tw-duration-200 tw-bg-white tw-shadow-sm tw-rounded-xl hover:tw-shadow-md tw-ring-1 tw-ring-gray-200">
                                 <div class="tw-p-4 sm:tw-p-5">
                                     <div class="tw-flex tw-items-center tw-gap-4">
                                         <div
@@ -366,7 +367,7 @@
         @endif
     </div>
     @if (auth()->user()->can('dashboard.data'))
-        <div class="tw-px-5 tw-py-6">
+        <div class="japs-dashboard-content tw-px-5 tw-py-6">
             <div class="tw-grid tw-grid-cols-1 tw-gap-4 sm:tw-gap-5 lg:tw-grid-cols-2">
                 @if (auth()->user()->can('sell.view') || auth()->user()->can('direct_sell.view'))
                     @if (!empty($all_locations))
@@ -1021,6 +1022,7 @@
 </div>
 
 @section('css')
+    <link href="{{ asset('css/japs-ui.css') }}" rel="stylesheet">
     <style>
         .select2-container {
             width: 100% !important;

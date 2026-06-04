@@ -12,7 +12,13 @@
         
         html {
             height: 100%;
-            background: linear-gradient(to right, #6366f1, #3b82f6);
+            background: #f1f5f9;
+        }
+
+        @media (min-width: 992px) {
+            html {
+                background: #0f172a;
+            }
         }
        
         
@@ -126,3 +132,11 @@
     </style>
 
 <link href="{{ asset('css/tailwind/app.css') }}" rel="stylesheet">
+<link href="{{ asset('css/japs-ui.css') }}" rel="stylesheet">
+<style>
+    :root {
+        --theme-700: #0369a1;
+        --theme-800: #075985;
+        --theme-900: #0c4a6e;
+    }
+</style>
