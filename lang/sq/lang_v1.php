@@ -1423,4 +1423,7 @@ return [
     'view_all_purchase' => 'Shiko të gjitha blerjet',
     'hms_booking' => 'Rezervim HMS',
     'gym_subscription' => 'Abonim në palestër',
+    'costs_and_deductions' => 'Kostot dhe zbritjet',
+    'revenue_and_income' => 'Të ardhurat dhe fitimi',
+    'total_sell_return_discount' => 'Zbritja totale e kthimit të shitjes',
 ];

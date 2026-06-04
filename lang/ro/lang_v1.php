@@ -1474,4 +1474,7 @@ return [
     'view_all_purchase' => 'Vizualizează toate achizițiile',
     'hms_booking' => 'Rezervare HMS',
     'gym_subscription' => 'Abonament la sală',
+    'costs_and_deductions' => 'Costuri și deduceri',
+    'revenue_and_income' => 'Venituri și încasări',
+    'total_sell_return_discount' => 'Discount total retur vânzare',
 ];

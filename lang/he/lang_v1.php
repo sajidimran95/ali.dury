@@ -1576,6 +1576,9 @@ return [
   'show_previous_balance_due' => 'הצג יתרת חוב קודמת',
   'hms_booking' => 'הזמנת HMS',
   'gym_subscription' => 'מנוי למכון כושר',
+  'costs_and_deductions' => 'עלויות וניכויים',
+  'revenue_and_income' => 'הכנסות והכנסה',
+  'total_sell_return_discount' => 'סה"כ הנחת החזרת מכירה',
 
   ];
 

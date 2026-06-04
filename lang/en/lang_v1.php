@@ -1601,5 +1601,8 @@ return [
     'show_previous_balance_due' => 'Show previous balance due',
     'hms_booking' => 'HMS Booking',
     'gym_subscription' => 'Gym Subscription',
+    'costs_and_deductions' => 'Costs and Deductions',
+    'revenue_and_income' => 'Revenue and Income',
+    'total_sell_return_discount' => 'Total sell return discount',
 
 ];

@@ -1434,4 +1434,7 @@ return [
     'view_all_purchase' => 'Bekijk alle aankopen',
     'hms_booking' => 'HMS-boeking',
     'gym_subscription' => 'Sportschoolabonnement',
+    'costs_and_deductions' => 'Kosten en aftrekposten',
+    'revenue_and_income' => 'Omzet en inkomsten',
+    'total_sell_return_discount' => 'Totale verkoopretourkorting',
 ];

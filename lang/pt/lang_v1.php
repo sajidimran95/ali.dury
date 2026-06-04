@@ -1464,4 +1464,7 @@ return [
     'view_all_purchase' => 'Ver todas as compras',
     'hms_booking' => 'Reserva HMS',
     'gym_subscription' => 'Assinatura de academia',
+    'costs_and_deductions' => 'Custos e deduções',
+    'revenue_and_income' => 'Receita e rendimentos',
+    'total_sell_return_discount' => 'Desconto total de devolução de venda',
 ];

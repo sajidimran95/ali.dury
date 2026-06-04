@@ -1438,4 +1438,7 @@ return [
     'view_all_purchase' => 'Alle Einkäufe anzeigen',
     'hms_booking' => 'HMS-Buchung',
     'gym_subscription' => 'Fitnessstudio-Abonnement',
+    'costs_and_deductions' => 'Kosten und Abzüge',
+    'revenue_and_income' => 'Umsatz und Einnahmen',
+    'total_sell_return_discount' => 'Gesamtrabatt Verkaufsrückgabe',
 ];

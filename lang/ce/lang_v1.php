@@ -1481,4 +1481,7 @@ return [
     'view_all_purchase' => '查看所有购买',
     'hms_booking' => 'HMS 预订',
     'gym_subscription' => '健身房订阅',
+    'costs_and_deductions' => '成本与扣减',
+    'revenue_and_income' => '收入与收益',
+    'total_sell_return_discount' => '销售退货折扣合计',
 ];

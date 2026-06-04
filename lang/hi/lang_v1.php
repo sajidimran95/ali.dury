@@ -1435,4 +1435,7 @@ return [
     'view_all_purchase' => 'सभी खरीदारी देखें',
     'hms_booking' => 'HMS बुकिंग',
     'gym_subscription' => 'जिम सदस्यता',
+    'costs_and_deductions' => 'लागत और कटौती',
+    'revenue_and_income' => 'राजस्व और आय',
+    'total_sell_return_discount' => 'कुल बिक्री वापसी छूट',
 ];

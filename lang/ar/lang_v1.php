@@ -1587,5 +1587,8 @@ return [
     'previous_balance_due' => 'رصيد سابق مستحق السداد',
     'previous_balance_due_help' => 'إظهار رصيد العميل السابق (لا يشمل مستحقات الفاتورة الحالية).',
     'show_previous_balance_due' => 'إظهار الرصيد السابق المستحق',
+    'costs_and_deductions' => 'التكاليف والخصومات',
+    'revenue_and_income' => 'الإيرادات والدخل',
+    'total_sell_return_discount' => 'إجمالي خصم مرتجع المبيعات',
 
 ];

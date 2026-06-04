@@ -1446,4 +1446,7 @@ return [
     'view_all_purchase' => 'د ټولو پیرود لیدل',
     'hms_booking' => 'د HMS بکینګ',
     'gym_subscription' => 'د جم ګډون',
+    'costs_and_deductions' => 'لګښتونه او تخفیفونه',
+    'revenue_and_income' => 'عاید او عایدات',
+    'total_sell_return_discount' => 'د پلور بیرته ستنیدو ټوله تخفیف',
 ];

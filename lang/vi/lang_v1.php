@@ -1449,4 +1449,7 @@ return [
     'view_all_purchase' => 'Xem tất cả mua hàng',
     'hms_booking' => 'Đặt chỗ HMS',
     'gym_subscription' => 'Đăng ký phòng gym',
+    'costs_and_deductions' => 'Chi phí và khấu trừ',
+    'revenue_and_income' => 'Doanh thu và thu nhập',
+    'total_sell_return_discount' => 'Tổng chiết khấu trả hàng bán',
 ];

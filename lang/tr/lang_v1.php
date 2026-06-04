@@ -1440,4 +1440,7 @@ return [
     'view_all_purchase' => 'Tüm satın alımları görüntüle',
     'hms_booking' => 'HMS Rezervasyonu',
     'gym_subscription' => 'Spor Salonu Aboneliği',
+    'costs_and_deductions' => 'Maliyetler ve kesintiler',
+    'revenue_and_income' => 'Gelir ve kazanç',
+    'total_sell_return_discount' => 'Toplam satış iade indirimi',
 ];

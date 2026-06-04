@@ -1507,4 +1507,7 @@ return [
     'view_all_purchase' => 'ເບິ່ງການຊື້ທັງໝົດ',
     'hms_booking' => 'ການຈອງ HMS',
     'gym_subscription' => 'ການສະໝັກສະມາຊິກຍິມ',
+    'costs_and_deductions' => 'ຄ່າໃຊ້ຈ່າຍ ແລະ ການຫັກລົບ',
+    'revenue_and_income' => 'ລາຍຮັບ ແລະ ລາຍໄດ້',
+    'total_sell_return_discount' => 'ສ່ວນຫຼຸດການສົ່ງຄືນການຂາຍທັງໝົດ',
 ];

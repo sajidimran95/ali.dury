@@ -1439,4 +1439,7 @@ return [
     'view_all_purchase' => 'Voir tous les achats',
     'hms_booking' => 'Réservation HMS',
     'gym_subscription' => 'Abonnement à la salle de sport',
+    'costs_and_deductions' => 'Coûts et déductions',
+    'revenue_and_income' => 'Revenus et recettes',
+    'total_sell_return_discount' => 'Remise totale sur retour de vente',
 ];
