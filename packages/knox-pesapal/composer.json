@@ -1,0 +1,34 @@
+{
+    "name": "knox/pesapal",
+    "version": "2.2.1",
+    "description": "A laravel package that integrates into the pesapal api",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Timothy Radier",
+            "email": "timothyradier@gmail.com",
+            "role": "Developer"
+        }
+    ],
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "require": {
+        "php": "^8.3",
+        "illuminate/support": "^11.0|^12.0|^13.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Knox\\Pesapal\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Knox\\Pesapal\\PesapalServiceProvider"
+            ],
+            "aliases": {
+                "Pesapal": "Knox\\Pesapal\\Facades\\Pesapal"
+            }
+        }
+    }
+}
