@@ -3305,7 +3305,7 @@ class TransactionUtil extends Util
             //If product expiry is enabled then check for on expiry conditions
             if ($stop_selling_expired && empty($purchase_line_id)) {
                 $stop_before = request()->session()->get('business')['stop_selling_before'];
-                $expiry_date = \Carbon::today()->addDays($stop_before)->toDateString();
+                $expiry_date = \Carbon::today()->addDays(carbon_numeric($stop_before))->toDateString();
                 $query->where(function ($q) use ($expiry_date) {
                     $q->whereNull('PL.exp_date')
                         ->orWhereRaw('PL.exp_date > ?', [$expiry_date]);
@@ -3835,7 +3835,7 @@ class TransactionUtil extends Util
         }
 
         $date = \Carbon::parse($transaction->transaction_date)
-                    ->addDays($edit_duration);
+                    ->addDays(carbon_numeric($edit_duration));
 
         $today = today();
 
@@ -4846,9 +4846,9 @@ class TransactionUtil extends Util
         if (! empty($business->rp_expiry_period)) {
             $expiry_date = \Carbon::parse($date);
             if ($business->rp_expiry_type == 'month') {
-                $expiry_date = $expiry_date->addMonths($business->rp_expiry_period);
+                $expiry_date = $expiry_date->addMonths(carbon_numeric($business->rp_expiry_period));
             } elseif ($business->rp_expiry_type == 'year') {
-                $expiry_date = $expiry_date->addYears($business->rp_expiry_period);
+                $expiry_date = $expiry_date->addYears(carbon_numeric($business->rp_expiry_period));
             }
 
             if ($expiry_date->format('Y-m-d') >= \Carbon::now()->format('Y-m-d')) {

@@ -38,6 +38,14 @@ function isAppInstalled()
 }
 
 /**
+ * Cast DB/session values for Carbon add/sub unit methods (Carbon 3 requires int|float).
+ */
+function carbon_numeric($value): float
+{
+    return (float) ($value ?? 0);
+}
+
+/**
  * Checks if pusher has credential or not
  *
  * and return boolean

@@ -649,7 +649,7 @@
                                     <div class="tw--mx-4 tw--my-2 tw-overflow-x-auto sm:tw--mx-5">
                                         <div class="tw-inline-block tw-min-w-full tw-py-2 tw-align-middle sm:tw-px-5">
                                             <input type="hidden" id="stock_expiry_alert_days"
-                                                value="{{ \Carbon::now()->addDays((int) session('business.stock_expiry_alert_days', 30))->format('Y-m-d') }}">
+                                                value="{{ \Carbon::now()->addDays(carbon_numeric(session('business.stock_expiry_alert_days', 30)))->format('Y-m-d') }}">
                                             <table class="table table-bordered table-striped" id="stock_expiry_alert_table">
                                                 <thead>
                                                     <tr>

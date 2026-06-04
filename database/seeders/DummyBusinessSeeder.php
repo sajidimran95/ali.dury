@@ -1370,7 +1370,7 @@ class DummyBusinessSeeder extends Seeder
         ];
         DB::table('packages')->insert($packages);
 
-        $subscription_start = \Carbon::today()->subDay(2)->toDateString();
+        $subscription_start = \Carbon::today()->subDays(2)->toDateString();
         $subscription_trial = \Carbon::today()->addDays(8)->toDateString();
         $subscription_end = \Carbon::today()->addDays(28)->toDateString();
 

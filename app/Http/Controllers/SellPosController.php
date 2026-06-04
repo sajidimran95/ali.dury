@@ -530,7 +530,7 @@ class SellPosController extends Controller
 
                                     $total_minutes = $product->preparation_time_in_minutes * $this->transactionUtil->num_uf($product_line['quantity']);
 
-                                    $service_staff->available_at = $base_time->addMinutes($total_minutes);
+                                    $service_staff->available_at = $base_time->addMinutes(carbon_numeric($total_minutes));
                                     $service_staff->save();
                                 }
                             }
@@ -1366,7 +1366,7 @@ class SellPosController extends Controller
 
                                 $total_minutes = $product->preparation_time_in_minutes * $quantity;
 
-                                $service_staff->available_at = $base_time->addMinutes($total_minutes);
+                                $service_staff->available_at = $base_time->addMinutes(carbon_numeric($total_minutes));
                                 $service_staff->save();
                             }
                         }
@@ -2226,16 +2226,16 @@ class SellPosController extends Controller
                         $last_generated = \Carbon::parse($last_generated_string);
 
                         if ($row->recur_interval_type == 'days') {
-                            $upcoming_invoice = $last_generated->addDays($row->recur_interval);
+                            $upcoming_invoice = $last_generated->addDays(carbon_numeric($row->recur_interval));
                         } elseif ($row->recur_interval_type == 'months') {
                             if (!empty($row->subscription_repeat_on)) {
                                 $last_generated_string = $last_generated->format('Y-m');
                                 $last_generated = \Carbon::parse($last_generated_string . '-' . $row->subscription_repeat_on);
                             }
 
-                            $upcoming_invoice = $last_generated->addMonths($row->recur_interval);
+                            $upcoming_invoice = $last_generated->addMonths(carbon_numeric($row->recur_interval));
                         } elseif ($row->recur_interval_type == 'years') {
-                            $upcoming_invoice = $last_generated->addYears($row->recur_interval);
+                            $upcoming_invoice = $last_generated->addYears(carbon_numeric($row->recur_interval));
                         }
                     }
 
@@ -2900,7 +2900,7 @@ class SellPosController extends Controller
         } else {
             //add diff to available_at
             $mins = \Carbon::now()->diffInMinutes(\Carbon::parse($service_staff->paused_at));
-            $service_staff->available_at = \Carbon::parse($service_staff->available_at)->addMinutes($mins);
+            $service_staff->available_at = \Carbon::parse($service_staff->available_at)->addMinutes(carbon_numeric($mins));
             $service_staff->paused_at = null;
         }
 

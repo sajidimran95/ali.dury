@@ -106,7 +106,7 @@ class StockTransferController extends Controller
                     $html .= ' <a href="#" class="print-invoice tw-dw-btn tw-dw-btn-xs tw-dw-btn-outline  tw-dw-btn-info" data-href="'.action([\App\Http\Controllers\StockTransferController::class, 'printInvoice'], [$row->id]).'"><i class="fa fa-print" aria-hidden="true"></i> '.__('messages.print').'</a>';
 
                     $date = \Carbon::parse($row->transaction_date)
-                        ->addDays($edit_days);
+                        ->addDays(carbon_numeric($edit_days));
                     $today = today();
 
                     if ($date->gte($today) && auth()->user()->can('stock_transfer.delete')) {
