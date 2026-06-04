@@ -10,6 +10,7 @@ use App\TaxRate;
 use App\Unit;
 use App\User;
 use App\Utils\BusinessUtil;
+use App\Utils\DatabaseResetUtil;
 use App\Utils\ModuleUtil;
 use App\Utils\RestaurantUtil;
 use Carbon\Carbon;
@@ -655,5 +656,45 @@ class BusinessController extends Controller
         }
 
         return $output;
+    }
+
+    /**
+     * Wipe operational data and restore default POS setup while keeping business #1, location #1, and admin credentials.
+     */
+    public function resetDatabaseToFreshPos(Request $request)
+    {
+        if (! auth()->user()->can('business_settings.access')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        if (! auth()->user()->hasRole('Admin#'.auth()->user()->business_id)) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $notAllowed = $this->businessUtil->notAllowedInDemo();
+        if (! empty($notAllowed)) {
+            return $notAllowed;
+        }
+
+        $request->validate([
+            'confirm_phrase' => ['required', 'in:RESET'],
+        ]);
+
+        try {
+            $resetUtil = new DatabaseResetUtil();
+            $resetUtil->resetToFreshPos();
+
+            return [
+                'success' => 1,
+                'msg' => __('lang_v1.database_reset_success'),
+            ];
+        } catch (\Exception $e) {
+            \Log::emergency('File:'.$e->getFile().'Line:'.$e->getLine().'Message:'.$e->getMessage());
+
+            return [
+                'success' => 0,
+                'msg' => $e->getMessage(),
+            ];
+        }
     }
 }

@@ -1604,5 +1604,15 @@ return [
     'costs_and_deductions' => 'Costs and Deductions',
     'revenue_and_income' => 'Revenue and Income',
     'total_sell_return_discount' => 'Total sell return discount',
+    'fresh_pos_reset' => 'Reset to fresh POS',
+    'fresh_pos_reset_help' => 'This permanently deletes all sales, purchases, products, contacts, stock, and other operational data. This cannot be undone.',
+    'fresh_pos_reset_keeps_location' => 'Keeps business location #1 (name, address, and settings).',
+    'fresh_pos_reset_keeps_admin' => 'Keeps the business owner account and password (login unchanged).',
+    'fresh_pos_reset_deletes_data' => 'Removes all other users, locations, and transactional history.',
+    'reset_database_fresh_pos' => 'Reset database to fresh POS',
+    'fresh_pos_reset_confirm' => 'All operational data will be erased. Make a backup first.',
+    'fresh_pos_reset_type_reset' => 'Type <strong>RESET</strong> below to confirm:',
+    'fresh_pos_reset_phrase_invalid' => 'Confirmation text must be exactly RESET.',
+    'database_reset_success' => 'Database reset complete. Your POS is ready as a fresh installation.',
 
 ];

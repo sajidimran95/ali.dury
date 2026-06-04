@@ -28,4 +28,29 @@
             </div>
         </div>
     </div>
+
+    <div class="row" style="margin-top: 20px;">
+        <div class="col-sm-12">
+            <div class="box box-danger">
+                <div class="box-header with-border">
+                    <h3 class="box-title">@lang('lang_v1.fresh_pos_reset')</h3>
+                </div>
+                <div class="box-body">
+                    <p class="text-danger">@lang('lang_v1.fresh_pos_reset_help')</p>
+                    <ul class="text-muted">
+                        <li>@lang('lang_v1.fresh_pos_reset_keeps_location')</li>
+                        <li>@lang('lang_v1.fresh_pos_reset_keeps_admin')</li>
+                        <li>@lang('lang_v1.fresh_pos_reset_deletes_data')</li>
+                    </ul>
+                    <div class="form-group" style="max-width: 320px;">
+                        <label for="fresh_pos_reset_phrase">@lang('lang_v1.fresh_pos_reset_type_reset')</label>
+                        <input type="text" id="fresh_pos_reset_phrase" class="form-control" placeholder="RESET" autocomplete="off">
+                    </div>
+                    <button type="button" class="btn btn-danger" id="btn_reset_database_fresh_pos">
+                        <i class="fa fa-refresh"></i> @lang('lang_v1.reset_database_fresh_pos')
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

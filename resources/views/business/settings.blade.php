@@ -237,6 +237,60 @@
             browseLabel: LANG.file_browse_label,
             removeLabel: LANG.remove,
         });
+
+        $('#btn_reset_database_fresh_pos').click(function() {
+            var phrase = $('#fresh_pos_reset_phrase').val();
+            if (phrase !== 'RESET') {
+                swal('@lang('lang_v1.fresh_pos_reset_phrase_invalid')', '', 'error');
+                return;
+            }
+
+            swal({
+                title: LANG.sure,
+                text: '@lang('lang_v1.fresh_pos_reset_confirm')',
+                icon: 'warning',
+                buttons: true,
+                dangerMode: true,
+            }).then(function(confirmed) {
+                if (!confirmed) {
+                    return;
+                }
+
+                $.ajax({
+                    method: 'POST',
+                    url: '{{ route('business.resetDatabase') }}',
+                    dataType: 'json',
+                    data: {
+                        confirm_phrase: phrase,
+                        _token: '{{ csrf_token() }}',
+                    },
+                    beforeSend: function() {
+                        $('#btn_reset_database_fresh_pos').prop('disabled', true);
+                    },
+                    success: function(result) {
+                        if (result.success == 1) {
+                            swal({
+                                title: result.msg,
+                                icon: 'success',
+                            }).then(function() {
+                                window.location.href = '{{ action([\App\Http\Controllers\HomeController::class, 'index']) }}';
+                            });
+                        } else {
+                            swal(result.msg, '', 'error');
+                        }
+                    },
+                    error: function(xhr) {
+                        var msg = xhr.responseJSON && xhr.responseJSON.message
+                            ? xhr.responseJSON.message
+                            : '@lang('messages.something_went_wrong')';
+                        swal(msg, '', 'error');
+                    },
+                    complete: function() {
+                        $('#btn_reset_database_fresh_pos').prop('disabled', false);
+                    },
+                });
+            });
+        });
     });
 </script>
 @endsection
