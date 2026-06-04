@@ -1,8 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Install;
-
-use App\Http\Controllers\Controller;
+namespace App\Http\Controllers;
 use App\Utils\ModuleUtil;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -11,7 +9,7 @@ use ZipArchive;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Str;
 
-class ModulesController extends Controller
+class ManageModulesController extends Controller
 {
     protected $moduleUtil;
 
@@ -79,7 +77,7 @@ class ModulesController extends Controller
         $is_demo = (config('app.env') == 'demo');
         $mods = $this->__available_modules();
         
-        return view('install.modules.index')
+        return view('manage_modules.index')
             ->with(compact('modules', 'is_demo', 'mods'));
 
         //Option to uninstall

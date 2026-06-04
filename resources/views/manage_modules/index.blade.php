@@ -18,7 +18,7 @@
         @lang('lang_v1.upload_module')
     </button>
 
-    <a class="tw-dw-btn tw-dw-btn-primary tw-text-white tw-dw-btn-sm pull-right tw-mt-4" href="{{action([\App\Http\Controllers\Install\ModulesController::class, 'regenerate'])}}">
+    <a class="tw-dw-btn tw-dw-btn-primary tw-text-white tw-dw-btn-sm pull-right tw-mt-4" href="{{action([\App\Http\Controllers\ManageModulesController::class, 'regenerate'])}}">
         <i class="fas fa-tools"></i>
         Regenerate @show_tooltip("<br/>1. Regenerate/publish modules css/js to fix not found issue. <br/> 2. Publish api module oauth files")
     </a>
@@ -29,7 +29,7 @@
 <div class="row">
     <div class="col-md-12 form_col" style="display: none;">
         @component('components.widget')
-            {!! Form::open(['url' => action([\App\Http\Controllers\Install\ModulesController::class, 'uploadModule']), 'id' => 'upload_module_form','files' => true, 'style' => 'display:none']) !!}
+            {!! Form::open(['url' => action([\App\Http\Controllers\ManageModulesController::class, 'uploadModule']), 'id' => 'upload_module_form','files' => true, 'style' => 'display:none']) !!}
                 <div class="row">
                     <div class="col-md-5">
                         <div class="form-group">
@@ -97,7 +97,7 @@
                             {{-- Commented Activate/Deactivate
                             @if($module['active'] == 1)
                                 <form 
-                                    action="{{action([\App\Http\Controllers\Install\ModulesController::class, 'update'], ['module_name' => $module['name']])}}" 
+                                    action="{{action([\App\Http\Controllers\ManageModulesController::class, 'update'], ['module_name' => $module['name']])}}" 
                                     style="display: inline;" 
                                     method="post">
                                     @method('PUT')
@@ -106,7 +106,7 @@
                                     <button class="btn btn-warning btn-xs">Deactivate</button>
                                 </form>
                             @else
-                                <form action="{{action([\App\Http\Controllers\Install\ModulesController::class, 'update'], ['module_name' => $module['name']])}}" 
+                                <form action="{{action([\App\Http\Controllers\ManageModulesController::class, 'update'], ['module_name' => $module['name']])}}" 
                                     style="display: inline;" 
                                     method="post"
                                 >
@@ -120,7 +120,7 @@
                         @endif
 
                         <form 
-                            action="{{action([\App\Http\Controllers\Install\ModulesController::class, 'destroy'], ['module_name' => $module['name']])}}"
+                            action="{{action([\App\Http\Controllers\ManageModulesController::class, 'destroy'], ['module_name' => $module['name']])}}"
                                 style="display: inline;" 
                                 method="post"
                                 onsubmit="return confirm('Do you really want to delete the module? Module code will be deleted but the data will not be deleted')"

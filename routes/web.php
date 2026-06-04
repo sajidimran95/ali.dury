@@ -24,7 +24,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ImportOpeningStockController;
 use App\Http\Controllers\ImportProductsController;
 use App\Http\Controllers\ImportSalesController;
-use App\Http\Controllers\Install;
+use App\Http\Controllers\ManageModulesController;
 use App\Http\Controllers\InvoiceLayoutController;
 use App\Http\Controllers\InvoiceSchemeController;
 use App\Http\Controllers\LabelsController;
@@ -71,8 +71,6 @@ use Illuminate\Support\Facades\Route;
 | contains the "web" middleware group. Now create something great!
 |
 */
-
-include_once 'install_r.php';
 
 Route::middleware(['setData'])->group(function () {
     Route::get('/', function () {
@@ -466,11 +464,11 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::put('sells/update-shipping/{id}', [SellController::class, 'updateShipping']);
     Route::get('shipments', [SellController::class, 'shipments']);
 
-    Route::post('upload-module', [Install\ModulesController::class, 'uploadModule']);
-    Route::delete('manage-modules/destroy/{module_name}', [Install\ModulesController::class, 'destroy']);
-    Route::resource('manage-modules', Install\ModulesController::class)
+    Route::post('upload-module', [ManageModulesController::class, 'uploadModule']);
+    Route::delete('manage-modules/destroy/{module_name}', [ManageModulesController::class, 'destroy']);
+    Route::resource('manage-modules', ManageModulesController::class)
         ->only(['index', 'update']);
-    Route::get('regenerate', [Install\ModulesController::class, 'regenerate']);
+    Route::get('regenerate', [ManageModulesController::class, 'regenerate']);
 
     Route::resource('warranties', WarrantyController::class);
 

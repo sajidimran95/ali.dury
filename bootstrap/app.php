@@ -48,9 +48,6 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->preventRequestForgery(except: [
-            '/install/details',
-            '/install/post-details',
-            '/install/install-alternate',
             '/api/ecom/customers',
             '/api/ecom/orders',
             '/webhook/*',
