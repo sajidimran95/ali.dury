@@ -7,7 +7,7 @@
     <div class="tw-px-3 tw-pt-3 tw-pb-2 tw-shrink-0">
         <div class="tw-flex tw-items-center tw-gap-2 tw-px-3 tw-py-1.5 tw-rounded-md tw-bg-white tw-border tw-border-[#e4e7ed]">
             <svg class="tw-size-4 tw-shrink-0 tw-text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-            <input type="text" id="sidebar-search" placeholder="Search menu..."
+            <input type="text" id="sidebar-search" placeholder="Search menu ( / )"
                 class="tw-grow tw-min-w-0 tw-bg-transparent tw-outline-none tw-border-none tw-text-sm tw-font-normal tw-text-gray-600 placeholder:tw-text-gray-400"
                 autocomplete="off" />
             <button id="sidebar-search-clear" type="button" aria-label="Clear search"

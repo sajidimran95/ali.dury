@@ -809,28 +809,59 @@ $(function () {
         q = q.trim().toLowerCase();
         var anyVisible = false;
 
-        $('#side-bar').children().each(function () {
-            if (!q) {
-                $(this).show();
+        $('#side-bar').children('.zoho-sidebar-item, a').each(function () {
+            var $item = $(this);
+            var $link = $item.is('a') ? $item : $item.children('a').first();
+            var $childLinks = $item.find('.chiled a');
+            var parentText = $link.text().toLowerCase();
+            var parentMatch = !q || parentText.indexOf(q) !== -1;
+            var anyChildMatch = false;
+
+            $childLinks.each(function () {
+                var $child = $(this);
+                var childMatch = !q || $child.text().toLowerCase().indexOf(q) !== -1;
+                var hideChild = q && !parentMatch && !childMatch;
+                $child.toggleClass('sidebar-menu-hidden', hideChild);
+                if (childMatch) {
+                    anyChildMatch = true;
+                }
+            });
+
+            var showItem = !q || parentMatch || anyChildMatch;
+            $item.toggleClass('sidebar-menu-hidden', !showItem);
+            if (showItem) {
                 anyVisible = true;
-            } else {
-                var match = $(this).text().toLowerCase().indexOf(q) !== -1;
-                $(this).toggle(match);
-                if (match) anyVisible = true;
+            }
+
+            if (!q && $item.hasClass('zoho-sidebar-item')) {
+                $item.removeClass('zoho-sidebar-flyout-open');
             }
         });
 
+        $('body').toggleClass('zoho-sidebar-search-active', !!q);
         $('#sidebar-no-results').toggleClass('tw-hidden', anyVisible || !q);
         $('#sidebar-search-clear').toggleClass('tw-hidden', !q);
     }
 
+    function syncMenuSearch(value) {
+        $('#sidebar-search').val(value);
+        filterSidebar(value);
+    }
+
     $('#sidebar-search').on('input', function () {
-        filterSidebar($(this).val());
+        syncMenuSearch($(this).val());
     });
 
     $('#sidebar-search-clear').on('click', function () {
-        $('#sidebar-search').val('').focus();
-        filterSidebar('');
+        syncMenuSearch('');
+        $('#sidebar-search').focus();
+    });
+
+    $(document).on('keydown', function (e) {
+        if (e.key === '/' && !/input|textarea|select/i.test(document.activeElement.tagName)) {
+            e.preventDefault();
+            $('#sidebar-search').focus();
+        }
     });
 
     // --- Sidebar dropdown toggle ---
@@ -908,6 +939,9 @@ $(function () {
     $(document).on('click', '.overlay', function () {
         $('.overlay').fadeOut('slow');
         $('.side-bar').removeClass('small-view-side-active');
+        if (window.ZohoSidebar && window.ZohoSidebar.closeMobileSidebar) {
+            window.ZohoSidebar.closeMobileSidebar();
+        }
     });
 
     // --- Sidebar responsive resize ---

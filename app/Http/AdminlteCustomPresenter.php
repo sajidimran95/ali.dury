@@ -27,9 +27,12 @@ class AdminlteCustomPresenter extends Presenter
      */
     public function getMenuWithoutDropdownWrapper($item)
     {
-        return '<a href="' . $item->getUrl() . '" title="' . e($item->title) . '" class="tw-flex tw-items-center tw-gap-2.5 tw-px-3 tw-py-1.5 tw-text-sm tw-font-normal tw-text-gray-600 tw-transition-all tw-duration-200 tw-rounded-lg tw-whitespace-nowrap theme-sidebar-hover' . $this->getActiveState($item) . '" ' . $item->getAttributes() . '>' .
-        $this->formatIcon($item->icon) . ' <span class="sidebar-menu-label tw-truncate">' . $item->title . '</span>' .
-            '</a>' . PHP_EOL;
+        $link = '<a href="' . $item->getUrl() . '" title="' . e($item->title) . '" class="tw-flex tw-w-full tw-items-center tw-gap-2.5 tw-px-3 tw-py-1.5 tw-text-sm tw-font-normal tw-text-gray-600 tw-transition-all tw-duration-200 tw-rounded-lg tw-whitespace-nowrap theme-sidebar-hover' . $this->getActiveState($item) . '" ' . $item->getAttributes() . '>' .
+        $this->formatIcon($item->icon) . ' <span class="sidebar-menu-label tw-truncate tw-flex-1 tw-min-w-0">' . $item->title . '</span>' .
+        '<span class="sidebar-menu-chevron sidebar-menu-chevron--spacer" aria-hidden="true"></span>' .
+            '</a>';
+
+        return '<div class="zoho-sidebar-item zoho-sidebar-item--leaf">' . $link . PHP_EOL . '</div>' . PHP_EOL;
     }
 
     /**
@@ -74,8 +77,8 @@ class AdminlteCustomPresenter extends Presenter
      */
     public function getMenuWithDropDownWrapper($item)
     {
-        $dropdownToggle = '<a href="#" title="' . e($item->title) . '" class="drop_down tw-flex tw-items-center tw-gap-2.5 tw-px-3 tw-py-1.5 tw-text-sm tw-font-normal tw-text-gray-600 tw-transition-all tw-duration-200 tw-rounded-lg tw-whitespace-nowrap theme-sidebar-hover' . $this->getActiveStateOnChild($item) . '" ' . $item->getAttributes() . '>' .
-        $this->formatIcon($item->icon) . ' <span class="sidebar-menu-label tw-truncate">' . $item->title . '</span>' .
+        $dropdownToggle = '<a href="#" title="' . e($item->title) . '" class="drop_down tw-flex tw-w-full tw-items-center tw-gap-2.5 tw-px-3 tw-py-1.5 tw-text-sm tw-font-normal tw-text-gray-600 tw-transition-all tw-duration-200 tw-rounded-lg tw-whitespace-nowrap theme-sidebar-hover' . $this->getActiveStateOnChild($item) . '" ' . $item->getAttributes() . '>' .
+        $this->formatIcon($item->icon) . ' <span class="sidebar-menu-label tw-truncate tw-flex-1 tw-min-w-0">' . $item->title . '</span>' .
         '<svg aria-hidden="true" class="sidebar-menu-chevron svg tw-ml-auto tw-text-gray-500 tw-size-4 tw-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">' . $this->getArray($item) .
             '</svg>' .
             '</a>';

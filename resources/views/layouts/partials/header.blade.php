@@ -2,31 +2,13 @@
 <!-- Zoho-style top bar -->
 <div class="zoho-topbar no-print">
     <div class="zoho-topbar__inner">
-        {{-- Brand + mobile menu --}}
+        {{-- Sidebar collapse --}}
         <div class="tw-flex tw-items-center tw-gap-2 tw-shrink-0">
             <button type="button"
-                class="zoho-topbar__btn zoho-topbar__btn--icon small-view-button lg:tw-hidden"
-                aria-label="Menu">
-                <svg class="tw-size-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none"><path d="M4 6l16 0"/><path d="M4 12l16 0"/><path d="M4 18l16 0"/></svg>
-            </button>
-            <button type="button"
-                class="zoho-topbar__btn zoho-topbar__btn--icon side-bar-collapse tw-hidden lg:tw-inline-flex"
+                class="zoho-topbar__btn zoho-topbar__btn--icon side-bar-collapse"
                 aria-label="Collapse sidebar">
                 <svg class="tw-size-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none"><path d="M4 4m0 2a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2z"/><path d="M15 4v16"/><path d="M10 10l-2 2l2 2"/></svg>
             </button>
-            <a href="{{ route('home') }}" class="zoho-topbar__brand">
-                <span class="zoho-topbar__brand-icon">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-                </span>
-                <span class="tw-hidden sm:tw-inline">{{ config('app.name', 'JAPS POS') }}</span>
-            </a>
-        </div>
-
-        {{-- Center search --}}
-        <div class="zoho-topbar__search">
-            <svg class="zoho-topbar__search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-            <input type="text" id="global-header-search" placeholder="Search in menu ( / )" autocomplete="off"
-                onfocus="document.getElementById('sidebar-search') && document.getElementById('sidebar-search').focus()">
         </div>
 
         {{-- Right actions --}}
@@ -149,21 +131,3 @@
         </div>
     </div>
 </div>
-
-<script>
-(function() {
-    var globalSearch = document.getElementById('global-header-search');
-    var sidebarSearch = document.getElementById('sidebar-search');
-    if (!globalSearch || !sidebarSearch) return;
-    globalSearch.addEventListener('input', function() {
-        sidebarSearch.value = globalSearch.value;
-        sidebarSearch.dispatchEvent(new Event('input', { bubbles: true }));
-    });
-    document.addEventListener('keydown', function(e) {
-        if (e.key === '/' && !/input|textarea|select/i.test(document.activeElement.tagName)) {
-            e.preventDefault();
-            globalSearch.focus();
-        }
-    });
-})();
-</script>
