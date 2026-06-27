@@ -33,39 +33,7 @@
                 @includeIf('essentials::layouts.partials.header_part')
             @endif
 
-            {{-- Quick create --}}
-            <details class="tw-relative tw-inline-block">
-                <summary class="zoho-topbar__btn zoho-topbar__btn--primary tw-cursor-pointer" title="Quick create">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-                </summary>
-                <ul class="tw-absolute tw-right-0 tw-z-50 tw-mt-1 tw-w-48 tw-bg-white tw-rounded-lg tw-shadow-lg tw-ring-1 tw-ring-gray-200 tw-py-1">
-                    <li>
-                        <a href="{{ route('calendar') }}"
-                            class="tw-flex tw-items-center tw-gap-2 tw-px-3 tw-py-2 tw-text-sm tw-text-gray-700 hover:tw-bg-gray-50">
-                            <svg class="tw-w-4 tw-h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M16 3v4M8 3v4M4 11h16"/></svg>
-                            @lang('lang_v1.calendar')
-                        </a>
-                    </li>
-                    @if (Module::has('Essentials'))
-                        <li>
-                            <a href="#" data-href="{{ action([\Modules\Essentials\Http\Controllers\ToDoController::class, 'create']) }}"
-                                data-container="#task_modal"
-                                class="btn-modal tw-flex tw-items-center tw-gap-2 tw-px-3 tw-py-2 tw-text-sm tw-text-gray-700 hover:tw-bg-gray-50">
-                                <svg class="tw-w-4 tw-h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h18v18H3z"/><path d="m9 12 2 2 4-4"/></svg>
-                                @lang('essentials::lang.add_to_do')
-                            </a>
-                        </li>
-                    @endif
-                    @if (auth()->user()->hasRole('Admin#' . auth()->user()->business_id))
-                        <li>
-                            <a href="#" id="start_tour"
-                                class="tw-flex tw-items-center tw-gap-2 tw-px-3 tw-py-2 tw-text-sm tw-text-gray-700 hover:tw-bg-gray-50">
-                                @lang('lang_v1.application_tour')
-                            </a>
-                        </li>
-                    @endif
-                </ul>
-            </details>
+            @include('layouts.partials.quick_create')
 
             <button id="btnCalculator" title="@lang('lang_v1.calculator')"
                 data-content='@include('layouts.partials.calculator')' type="button"

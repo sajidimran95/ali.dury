@@ -631,4 +631,111 @@ class HomeController extends Controller
 
         return ['address' => $response];
     }
+
+    /**
+     * Sales order summary chart data for dashboard (quantity or value by date).
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function getSalesOrderSummary(Request $request)
+    {
+        if (! auth()->user()->can('so.view_all') && ! auth()->user()->can('so.view_own')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $business_id = $request->session()->get('user.business_id');
+        $period = $request->input('period', 'this_month');
+        $metric = $request->input('metric', 'quantity');
+        $location_id = $request->input('location_id');
+
+        [$start, $end] = $this->__salesOrderSummaryDateRange($period);
+
+        $query = Transaction::where('transactions.business_id', $business_id)
+            ->where('transactions.type', 'sales_order')
+            ->whereDate('transactions.transaction_date', '>=', $start->format('Y-m-d'))
+            ->whereDate('transactions.transaction_date', '<=', $end->format('Y-m-d'));
+
+        if (! empty($location_id)) {
+            $query->where('transactions.location_id', $location_id);
+        }
+
+        if (! auth()->user()->can('so.view_all') && auth()->user()->can('so.view_own')) {
+            $query->where('transactions.created_by', auth()->user()->id);
+        }
+
+        if ($metric === 'value') {
+            $daily = (clone $query)
+                ->selectRaw('DATE(transactions.transaction_date) as order_date, SUM(transactions.final_total) as total')
+                ->groupBy('order_date')
+                ->pluck('total', 'order_date');
+        } else {
+            $daily = (clone $query)
+                ->join('transaction_sell_lines as tsl', 'tsl.transaction_id', '=', 'transactions.id')
+                ->selectRaw('DATE(transactions.transaction_date) as order_date, SUM(tsl.quantity) as total')
+                ->groupBy('order_date')
+                ->pluck('total', 'order_date');
+        }
+
+        $labels = [];
+        $values = [];
+        $cursor = $start->copy();
+
+        while ($cursor->lte($end)) {
+            $date_key = $cursor->format('Y-m-d');
+            $labels[] = $cursor->format('d M');
+            $values[] = (float) ($daily[$date_key] ?? 0);
+            $cursor->addDay();
+        }
+
+        $has_data = array_sum($values) > 0;
+        $label_step = in_array($period, ['this_month', 'last_month', 'last_30_days', 'this_year'], true) ? 2 : 1;
+
+        $currency = Currency::where('id', $request->session()->get('business.currency_id'))->first();
+
+        return response()->json([
+            'labels' => $labels,
+            'values' => $values,
+            'has_data' => $has_data,
+            'label_step' => $label_step,
+            'metric' => $metric,
+            'currency_symbol' => $currency->symbol ?? '',
+            'empty_message' => __('lang_v1.no_sales_orders_in_period'),
+        ]);
+    }
+
+    /**
+     * Resolve date range for sales order summary chart.
+     *
+     * @return array
+     */
+    private function __salesOrderSummaryDateRange($period)
+    {
+        $now = \Carbon::now();
+
+        switch ($period) {
+            case 'last_month':
+                $start = $now->copy()->subMonth()->startOfMonth();
+                $end = $now->copy()->subMonth()->endOfMonth();
+                break;
+            case 'this_week':
+                $start = $now->copy()->startOfWeek();
+                $end = $now->copy()->endOfDay();
+                break;
+            case 'last_30_days':
+                $start = $now->copy()->subDays(29)->startOfDay();
+                $end = $now->copy()->endOfDay();
+                break;
+            case 'this_year':
+                $start = $now->copy()->startOfYear();
+                $end = $now->copy()->endOfDay();
+                break;
+            case 'this_month':
+            default:
+                $start = $now->copy()->startOfMonth();
+                $end = $now->copy()->endOfMonth();
+                break;
+        }
+
+        return [$start, $end];
+    }
 }

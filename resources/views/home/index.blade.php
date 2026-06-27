@@ -180,51 +180,87 @@
                             </div>
                         </div>
                     @endif
+                @endif
 
-                    {{-- @if (!empty($widgets['after_sales_last_30_days']))
+                @if (auth()->user()->can('so.view_all') || auth()->user()->can('so.view_own'))
+                    <div class="tw-transition-all lg:tw-col-span-2 tw-duration-200 tw-bg-white tw-shadow-sm tw-rounded-xl tw-ring-1 tw-ring-gray-200 zoho-so-summary-card">
+                        <div class="tw-p-4 sm:tw-p-5">
+                            <div class="zoho-so-summary-card__header">
+                                <h3 class="zoho-so-summary-card__title">{{ __('lang_v1.sales_order_summary') }}</h3>
+                                <div class="zoho-so-summary-card__header-actions">
+                                    @if (count($all_locations) > 1)
+                                        {!! Form::select('so_summary_location', $all_locations, null, [
+                                            'class' => 'form-control select2 zoho-so-summary-card__select',
+                                            'placeholder' => __('lang_v1.all'),
+                                            'id' => 'so_summary_location',
+                                        ]) !!}
+                                    @endif
+                                    <select id="so_summary_period" class="form-control zoho-so-summary-card__select">
+                                        <option value="this_month">{{ __('home.this_month') }}</option>
+                                        <option value="last_month">{{ __('lang_v1.last_month') }}</option>
+                                        <option value="this_week">{{ __('home.this_week') }}</option>
+                                        <option value="last_30_days">{{ __('lang_v1.last_30_days') }}</option>
+                                        <option value="this_year">{{ __('lang_v1.this_year') }}</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="zoho-so-summary-card__toggles">
+                                <button type="button" class="zoho-so-summary-toggle zoho-so-summary-toggle--active" data-metric="quantity">
+                                    {{ __('lang_v1.by_quantity') }}
+                                </button>
+                                <button type="button" class="zoho-so-summary-toggle" data-metric="value">
+                                    {{ __('lang_v1.by_value') }}
+                                </button>
+                            </div>
+                            <div class="zoho-so-summary-chart-wrap">
+                                <div id="so_summary_chart" class="zoho-so-summary-chart"></div>
+                                <p id="so_summary_empty" class="zoho-so-summary-empty" style="display: none;">
+                                    {{ __('lang_v1.no_sales_orders_in_period') }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
+                @if ((auth()->user()->can('sell.view') || auth()->user()->can('direct_sell.view')) && !empty($all_locations))
+                    <div
+                        class="tw-transition-all lg:tw-col-span-2 xl:tw-col-span-2 tw-duration-200 tw-bg-white tw-shadow-sm tw-rounded-xl tw-ring-1 hover:tw-shadow-md hover:tw--translate-y-0.5 tw-ring-gray-200">
+                        <div class="tw-p-4 sm:tw-p-5">
+                            <div class="tw-flex tw-items-center tw-gap-2.5">
+                                <div
+                                    class="tw-border-2 tw-flex tw-items-center tw-justify-center tw-rounded-full tw-w-10 tw-h-10">
+                                    <svg aria-hidden="true" class="tw-size-5 tw-text-sky-500 tw-shrink-0"
+                                        xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="2"
+                                        stroke="currentColor" fill="none" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                                        <path d="M6 19m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path>
+                                        <path d="M17 19m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path>
+                                        <path d="M17 17h-11v-14h-2"></path>
+                                        <path d="M6 5l14 1l-1 7h-13"></path>
+                                    </svg>
+                                </div>
+                                <h3 class="tw-font-bold tw-text-base lg:tw-text-xl">
+                                    {{ __('home.sells_current_fy') }}
+                                </h3>
+                            </div>
+                            <div class="tw-mt-5">
+                                <div
+                                    class="tw-grid tw-w-full tw-h-100 tw-border tw-border-gray-200 tw-border-dashed tw-rounded-xl tw-bg-gray-50 ">
+                                    <p class="tw-text-sm tw-italic tw-font-normal tw-text-gray-400">
+                                        {!! $sells_chart_2->container() !!}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
+                {{-- @if (!empty($widgets['after_sales_last_30_days']))
                         @foreach ($widgets['after_sales_last_30_days'] as $widget)
                             {!! $widget !!}
                         @endforeach
                     @endif --}}
-                    @if (!empty($all_locations))
-                        <div
-                            class="tw-transition-all lg:tw-col-span-2 xl:tw-col-span-2 tw-duration-200 tw-bg-white tw-shadow-sm tw-rounded-xl tw-ring-1 hover:tw-shadow-md hover:tw--translate-y-0.5 tw-ring-gray-200">
-                            <div class="tw-p-4 sm:tw-p-5">
-                                <div class="tw-flex tw-items-center tw-gap-2.5">
-                                    <div
-                                        class="tw-border-2 tw-flex tw-items-center tw-justify-center tw-rounded-full tw-w-10 tw-h-10">
-                                        <svg aria-hidden="true" class="tw-size-5 tw-text-sky-500 tw-shrink-0"
-                                            xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="2"
-                                            stroke="currentColor" fill="none" stroke-linecap="round"
-                                            stroke-linejoin="round">
-                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                                            <path d="M6 19m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path>
-                                            <path d="M17 19m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path>
-                                            <path d="M17 17h-11v-14h-2"></path>
-                                            <path d="M6 5l14 1l-1 7h-13"></path>
-                                        </svg>
-                                    </div>
-                                    <h3 class="tw-font-bold tw-text-base lg:tw-text-xl">
-                                        {{ __('home.sells_current_fy') }}
-                                    </h3>
-                                </div>
-                                <div class="tw-mt-5">
-                                    <div
-                                        class="tw-grid tw-w-full tw-h-100 tw-border tw-border-gray-200 tw-border-dashed tw-rounded-xl tw-bg-gray-50 ">
-                                        <p class="tw-text-sm tw-italic tw-font-normal tw-text-gray-400">
-                                            {!! $sells_chart_2->container() !!}
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    @endif
-                @endif
-                {{-- @if (!empty($widgets['after_sales_current_fy']))
-                    @foreach ($widgets['after_sales_current_fy'] as $widget)
-                        {!! $widget !!}
-                    @endforeach
-                @endif --}}
                 @if (auth()->user()->can('sell.view') || auth()->user()->can('direct_sell.view'))
                     <div
                         class="tw-transition-all lg:tw-col-span-1 tw-duration-200 tw-bg-white tw-shadow-sm tw-rounded-xl tw-ring-1 hover:tw-shadow-md hover:tw--translate-y-0.5 tw-ring-gray-200">
@@ -814,6 +850,137 @@
     @if (!empty($all_locations))
         {!! $sells_chart_1->script() !!}
         {!! $sells_chart_2->script() !!}
+    @endif
+    @if (auth()->user()->can('so.view_all') || auth()->user()->can('so.view_own'))
+    <script type="text/javascript">
+        (function() {
+            var soSummaryChart = null;
+            var soSummaryMetric = 'quantity';
+
+            function loadSoSummaryChart() {
+                if (!$('#so_summary_chart').length) {
+                    return;
+                }
+
+                $.get('{{ action([\App\Http\Controllers\HomeController::class, 'getSalesOrderSummary']) }}', {
+                    period: $('#so_summary_period').val(),
+                    metric: soSummaryMetric,
+                    location_id: $('#so_summary_location').length ? $('#so_summary_location').val() : ''
+                }, function(data) {
+                    renderSoSummaryChart(data);
+                });
+            }
+
+            function renderSoSummaryChart(data) {
+                if (typeof Highcharts === 'undefined') {
+                    return;
+                }
+
+                if (soSummaryChart) {
+                    soSummaryChart.destroy();
+                    soSummaryChart = null;
+                }
+
+                var isValue = data.metric === 'value';
+                var maxVal = Math.max.apply(null, data.values.concat([0]));
+                var yMax = maxVal > 0 ? null : (isValue ? 5000 : 5);
+
+                $('#so_summary_empty').toggle(!data.has_data);
+                $('#so_summary_chart').show();
+
+                soSummaryChart = Highcharts.chart('so_summary_chart', {
+                    chart: {
+                        type: 'areaspline',
+                        height: 300,
+                        backgroundColor: 'transparent',
+                        spacing: [8, 8, 8, 0]
+                    },
+                    title: { text: null },
+                    credits: { enabled: false },
+                    legend: { enabled: false },
+                    xAxis: {
+                        categories: data.labels,
+                        tickInterval: data.label_step,
+                        lineColor: '#e4e7ed',
+                        tickColor: '#e4e7ed',
+                        labels: { style: { color: '#6c757d', fontSize: '11px' } }
+                    },
+                    yAxis: {
+                        title: { text: null },
+                        max: yMax,
+                        gridLineColor: '#ebeff3',
+                        gridLineDashStyle: 'Dot',
+                        labels: {
+                            style: { color: '#6c757d', fontSize: '11px' },
+                            formatter: function() {
+                                var v = this.value;
+                                if (v >= 1000) {
+                                    return (v / 1000) + ' K';
+                                }
+                                return v;
+                            }
+                        },
+                        min: 0
+                    },
+                    tooltip: {
+                        shared: false,
+                        formatter: function() {
+                            if (isValue) {
+                                return '<b>' + this.x + '</b><br/>' + data.currency_symbol + ' ' + Highcharts.numberFormat(this.y, 2);
+                            }
+                            return '<b>' + this.x + '</b><br/>' + Highcharts.numberFormat(this.y, 2);
+                        }
+                    },
+                    plotOptions: {
+                        areaspline: {
+                            fillColor: {
+                                linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+                                stops: [
+                                    [0, 'rgba(64, 141, 251, 0.22)'],
+                                    [1, 'rgba(64, 141, 251, 0.02)']
+                                ]
+                            },
+                            marker: {
+                                enabled: data.has_data,
+                                radius: 3,
+                                fillColor: '#408dfb',
+                                lineWidth: 0,
+                                states: { hover: { enabled: true, radius: 4 } }
+                            },
+                            lineWidth: 2,
+                            color: '#408dfb',
+                            enableMouseTracking: data.has_data
+                        },
+                        series: {
+                            animation: { duration: 400 }
+                        }
+                    },
+                    series: [{
+                        name: isValue ? '{{ __('lang_v1.by_value') }}' : '{{ __('lang_v1.by_quantity') }}',
+                        data: data.has_data ? data.values : data.values.map(function() { return null; }),
+                        showInLegend: false
+                    }]
+                });
+            }
+
+            $(document).ready(function() {
+                if (!$('#so_summary_chart').length) {
+                    return;
+                }
+
+                loadSoSummaryChart();
+
+                $(document).on('click', '.zoho-so-summary-toggle', function() {
+                    $('.zoho-so-summary-toggle').removeClass('zoho-so-summary-toggle--active');
+                    $(this).addClass('zoho-so-summary-toggle--active');
+                    soSummaryMetric = $(this).data('metric');
+                    loadSoSummaryChart();
+                });
+
+                $('#so_summary_period, #so_summary_location').on('change', loadSoSummaryChart);
+            });
+        })();
+    </script>
     @endif
     <script type="text/javascript">
         $(document).ready(function() {

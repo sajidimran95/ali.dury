@@ -344,7 +344,7 @@
         <div class="col-sm-4">
             <div class="form-group">
                 {!! Form::label('type', __('product.product_type') . ':*') !!} @show_tooltip(__('tooltip.product_type'))
-                {!! Form::select('type', $product_types, !empty($duplicate_product->type) ? $duplicate_product->type : null, ['class' => 'form-control select2',
+                {!! Form::select('type', $product_types, !empty($duplicate_product->type) ? $duplicate_product->type : request('type'), ['class' => 'form-control select2',
                 'required', 'data-action' => !empty($duplicate_product) ? 'duplicate' : 'add', 'data-product_id' => !empty($duplicate_product) ? $duplicate_product->id : '0']); !!}
             </div>
         </div>

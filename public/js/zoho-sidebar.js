@@ -130,4 +130,63 @@
     } else {
         initSidebarCollapse();
     }
+
+    function initQuickCreate() {
+        var root = document.getElementById('zoho_quick_create');
+        var btn = document.getElementById('zoho_quick_create_btn');
+        var panel = document.getElementById('zoho_quick_create_panel');
+
+        if (!root || !btn || !panel) {
+            return;
+        }
+
+        function closePanel() {
+            panel.hidden = true;
+            btn.setAttribute('aria-expanded', 'false');
+            root.classList.remove('is-open');
+        }
+
+        function openPanel() {
+            panel.hidden = false;
+            btn.setAttribute('aria-expanded', 'true');
+            root.classList.add('is-open');
+        }
+
+        function togglePanel(event) {
+            event.preventDefault();
+            event.stopPropagation();
+
+            if (panel.hidden) {
+                openPanel();
+            } else {
+                closePanel();
+            }
+        }
+
+        btn.addEventListener('click', togglePanel);
+
+        panel.querySelectorAll('.zoho-quick-create__link').forEach(function (link) {
+            link.addEventListener('click', function () {
+                closePanel();
+            });
+        });
+
+        document.addEventListener('click', function (event) {
+            if (!root.contains(event.target)) {
+                closePanel();
+            }
+        });
+
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape') {
+                closePanel();
+            }
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initQuickCreate);
+    } else {
+        initQuickCreate();
+    }
 })(window, document);
