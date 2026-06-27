@@ -530,7 +530,6 @@ $(document).on('click', '.toggle-font-size', function (event) {
     update_font_size();
 });
 $(document).on('click', '.sidebar-toggle', function () {
-    var sidebar_collapse = localStorage.getItem('upos_sidebar_collapse');
     if ($('body').hasClass('sidebar-collapse')) {
         localStorage.setItem('upos_sidebar_collapse', 'false');
     } else {
@@ -803,6 +802,8 @@ function escapeHtml(str) {
 
 // Sidebar interactions (search, dropdowns, mobile toggle, collapse)
 $(function () {
+    $('.side-bar').removeAttr('style');
+
     // --- Sidebar menu search filter ---
     function filterSidebar(q) {
         q = q.trim().toLowerCase();
@@ -833,12 +834,48 @@ $(function () {
     });
 
     // --- Sidebar dropdown toggle ---
+    function isZohoSidebarCollapsed() {
+        if (window.ZohoSidebar) {
+            return window.ZohoSidebar.isCollapsed();
+        }
+
+        return $('.side-bar').hasClass('zoho-sidebar-collapsed') || $('body').hasClass('sidebar-collapse');
+    }
+
+    function setSidebarCollapsed(collapsed) {
+        if (window.ZohoSidebar) {
+            window.ZohoSidebar.setCollapsed(collapsed);
+            return;
+        }
+
+        $('body').toggleClass('sidebar-collapse zoho-sidebar-collapsed', collapsed);
+        $('.side-bar').toggleClass('zoho-sidebar-collapsed', collapsed);
+        localStorage.setItem('upos_sidebar_collapse', collapsed ? 'true' : 'false');
+        $('.zoho-sidebar-item').removeClass('zoho-sidebar-flyout-open');
+        if (!collapsed) {
+            $('#side-bar .chiled').each(function () {
+                var $chiled = $(this);
+                if ($chiled.closest('.zoho-sidebar-item').find('> .drop_down').hasClass('theme-sidebar-active')) {
+                    $chiled.show();
+                }
+            });
+        }
+    }
+
     $(document).on('click', '.drop_down', function (event) {
+        if (isZohoSidebarCollapsed()) {
+            event.preventDefault();
+            var $item = $(this).closest('.zoho-sidebar-item');
+            $('.zoho-sidebar-item').not($item).removeClass('zoho-sidebar-flyout-open');
+            $item.toggleClass('zoho-sidebar-flyout-open');
+            return;
+        }
+
         event.preventDefault();
         var $chiled = $(this).next('.chiled');
         $('.chiled').not($chiled).slideUp();
         $chiled.slideToggle(function () {
-            $('.svg').each(function () {
+            $('.sidebar-menu-chevron').each(function () {
                 var $currentSvgElement = $(this);
                 if ($currentSvgElement.closest('.drop_down').next('.chiled').is(':visible')) {
                     $currentSvgElement.html(
@@ -851,6 +888,15 @@ $(function () {
                 }
             });
         });
+    });
+
+    $(document).on('click', function (event) {
+        if (!isZohoSidebarCollapsed()) {
+            return;
+        }
+        if (!$(event.target).closest('.zoho-sidebar-item').length) {
+            $('.zoho-sidebar-item').removeClass('zoho-sidebar-flyout-open');
+        }
     });
 
     // --- Sidebar mobile open / overlay close ---
@@ -875,8 +921,13 @@ $(function () {
         }
     });
 
-    // --- Sidebar collapse toggle ---
-    $(document).on('click', '.side-bar-collapse', function () {
-        $('.side-bar').toggle('slow');
+    // Collapse handled by zoho-sidebar.js (capture phase). Keep fallback only.
+    $(document).on('click', '.side-bar-collapse', function (event) {
+        if (window.ZohoSidebar) {
+            return;
+        }
+
+        event.preventDefault();
+        setSidebarCollapsed(!isZohoSidebarCollapsed());
     });
 });

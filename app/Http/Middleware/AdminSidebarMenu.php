@@ -10,6 +10,119 @@ use Modules\CustomDashboard\Entities\CustomDashboard;
 class AdminSidebarMenu
 {
     /**
+     * Zoho-style Sales submenu: customers first, then sales transactions.
+     */
+    protected function addSalesCustomerMenuItems($sub): void
+    {
+        if (auth()->user()->can('customer.view') || auth()->user()->can('customer.view_own')) {
+            $sub->url(
+                action([\App\Http\Controllers\ContactController::class, 'index'], ['type' => 'customer']),
+                __('report.customer'),
+                ['icon' => '', 'active' => request()->segment(1) == 'contacts' && request()->input('type') == 'customer']
+            );
+            $sub->url(
+                action([\App\Http\Controllers\CustomerGroupController::class, 'index']),
+                __('lang_v1.customer_groups'),
+                ['icon' => '', 'active' => request()->segment(1) == 'customer-group']
+            );
+        }
+        if (auth()->user()->can('customer.create')) {
+            $sub->url(
+                action([\App\Http\Controllers\ContactController::class, 'getImportContacts']),
+                __('lang_v1.import_contacts'),
+                ['icon' => '', 'active' => request()->segment(1) == 'contacts' && request()->segment(2) == 'import']
+            );
+        }
+        if (! empty(env('GOOGLE_MAP_API_KEY')) && (auth()->user()->can('customer.view') || auth()->user()->can('customer.view_own'))) {
+            $sub->url(
+                action([\App\Http\Controllers\ContactController::class, 'contactMap']),
+                __('lang_v1.map'),
+                ['icon' => 'fa fas fa-map-marker-alt', 'active' => request()->segment(1) == 'contacts' && request()->segment(2) == 'map']
+            );
+        }
+    }
+
+    /**
+     * Zoho-style Purchases submenu: vendors/suppliers first, then purchase transactions.
+     */
+    protected function addPurchaseSupplierMenuItems($sub): void
+    {
+        if (auth()->user()->can('supplier.view') || auth()->user()->can('supplier.view_own')) {
+            $sub->url(
+                action([\App\Http\Controllers\ContactController::class, 'index'], ['type' => 'supplier']),
+                __('lang_v1.menu_vendors'),
+                ['icon' => '', 'active' => request()->segment(1) == 'contacts' && request()->input('type') == 'supplier']
+            );
+        }
+        if (auth()->user()->can('supplier.create')) {
+            $sub->url(
+                action([\App\Http\Controllers\ContactController::class, 'getImportContacts']),
+                __('lang_v1.import_contacts'),
+                ['icon' => '', 'active' => request()->segment(1) == 'contacts' && request()->segment(2) == 'import']
+            );
+        }
+    }
+
+    /**
+     * Zoho-style Inventory submenu: stock movements and adjustments.
+     */
+    protected function addInventoryMenuItems($sub, array $enabled_modules): void
+    {
+        if (in_array('stock_transfers', $enabled_modules) && (auth()->user()->can('stock_transfer.view') || auth()->user()->can('stock_transfer.create') || auth()->user()->can('stock_transfer.view_own'))) {
+            if (auth()->user()->can('stock_transfer.view') || auth()->user()->can('stock_transfer.view_own')) {
+                $sub->url(
+                    action([\App\Http\Controllers\StockTransferController::class, 'index']),
+                    __('lang_v1.list_stock_transfers'),
+                    ['icon' => '', 'active' => request()->segment(1) == 'stock-transfers' && request()->segment(2) == null]
+                );
+            }
+            if (auth()->user()->can('stock_transfer.create')) {
+                $sub->url(
+                    action([\App\Http\Controllers\StockTransferController::class, 'create']),
+                    __('lang_v1.add_stock_transfer'),
+                    ['icon' => '', 'active' => request()->segment(1) == 'stock-transfers' && request()->segment(2) == 'create']
+                );
+            }
+        }
+
+        if (in_array('stock_adjustment', $enabled_modules) && (auth()->user()->can('stock_adjustment.view') || auth()->user()->can('stock_adjustment.create') || auth()->user()->can('view_own_stock_adjustment'))) {
+            if (auth()->user()->can('stock_adjustment.view') || auth()->user()->can('view_own_stock_adjustment')) {
+                $sub->url(
+                    action([\App\Http\Controllers\StockAdjustmentController::class, 'index']),
+                    __('stock_adjustment.list'),
+                    ['icon' => '', 'active' => request()->segment(1) == 'stock-adjustments' && request()->segment(2) == null]
+                );
+            }
+            if (auth()->user()->can('stock_adjustment.create')) {
+                $sub->url(
+                    action([\App\Http\Controllers\StockAdjustmentController::class, 'create']),
+                    __('stock_adjustment.add'),
+                    ['icon' => '', 'active' => request()->segment(1) == 'stock-adjustments' && request()->segment(2) == 'create']
+                );
+            }
+        }
+
+        if (auth()->user()->can('product.opening_stock')) {
+            $sub->url(
+                action([\App\Http\Controllers\ImportOpeningStockController::class, 'index']),
+                __('lang_v1.import_opening_stock'),
+                ['icon' => '', 'active' => request()->segment(1) == 'import-opening-stock']
+            );
+        }
+    }
+
+    protected function hasInventoryMenu(array $enabled_modules): bool
+    {
+        $has_stock = in_array('stock_transfers', $enabled_modules)
+            && (auth()->user()->can('stock_transfer.view') || auth()->user()->can('stock_transfer.create') || auth()->user()->can('stock_transfer.view_own'));
+        $has_adjust = in_array('stock_adjustment', $enabled_modules)
+            && (auth()->user()->can('stock_adjustment.view') || auth()->user()->can('stock_adjustment.create') || auth()->user()->can('view_own_stock_adjustment'));
+        $has_opening = auth()->user()->can('product.opening_stock');
+
+        return $has_stock || $has_adjust || $has_opening;
+    }
+
+    /**
      * Handle an incoming request.
      *
      * @param  \Illuminate\Http\Request  $request
@@ -47,104 +160,13 @@ class AdminSidebarMenu
             <path d="M10 12h4v4h-4z" />
           </svg>', 'active' => request()->segment(1) == 'home'])->order(5);
 
-            //User management dropdown
-            if (auth()->user()->can('user.view') || auth()->user()->can('user.create') || auth()->user()->can('roles.view')) {
-                $menu->dropdown(
-                    __('user.user_management'),
-                    function ($sub) {
-                        if (auth()->user()->can('user.view')) {
-                            $sub->url(
-                                action([\App\Http\Controllers\ManageUserController::class, 'index']),
-                                __('user.users'),
-                                ['icon' => '', 'active' => request()->segment(1) == 'users']
-                            );
-                        }
-                        if (auth()->user()->can('roles.view')) {
-                            $sub->url(
-                                action([\App\Http\Controllers\RoleController::class, 'index']),
-                                __('user.roles'),
-                                ['icon' => '', 'active' => request()->segment(1) == 'roles']
-                            );
-                        }
-                        if (auth()->user()->can('user.create')) {
-                            $sub->url(
-                                action([\App\Http\Controllers\SalesCommissionAgentController::class, 'index']),
-                                __('lang_v1.sales_commission_agents'),
-                                ['icon' => '', 'active' => request()->segment(1) == 'sales-commission-agents']
-                            );
-                        }
-                    },
-                    ['icon' => '<svg aria-hidden="true" class="tw-size-5 tw-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                    <path d="M9 7m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"></path>
-                    <path d="M3 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2"></path>
-                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                    <path d="M21 21v-2a4 4 0 0 0 -3 -3.85"></path>
-                  </svg>', ]
-                )->order(10);
-            }
-
-            //Contacts dropdown
-            if (auth()->user()->can('supplier.view') || auth()->user()->can('customer.view') || auth()->user()->can('supplier.view_own') || auth()->user()->can('customer.view_own')) {
-                $menu->dropdown(
-                    __('contact.contacts'),
-                    function ($sub) {
-                        if (auth()->user()->can('supplier.view') || auth()->user()->can('supplier.view_own')) {
-                            $sub->url(
-                                action([\App\Http\Controllers\ContactController::class, 'index'], ['type' => 'supplier']),
-                                __('report.supplier'),
-                                ['icon' => '', 'active' => request()->input('type') == 'supplier']
-                            );
-                        }
-                        if (auth()->user()->can('customer.view') || auth()->user()->can('customer.view_own')) {
-                            $sub->url(
-                                action([\App\Http\Controllers\ContactController::class, 'index'], ['type' => 'customer']),
-                                __('report.customer'),
-                                ['icon' => '', 'active' => request()->input('type') == 'customer']
-                            );
-                            $sub->url(
-                                action([\App\Http\Controllers\CustomerGroupController::class, 'index']),
-                                __('lang_v1.customer_groups'),
-                                ['icon' => '', 'active' => request()->segment(1) == 'customer-group']
-                            );
-                        }
-                        if (auth()->user()->can('supplier.create') || auth()->user()->can('customer.create')) {
-                            $sub->url(
-                                action([\App\Http\Controllers\ContactController::class, 'getImportContacts']),
-                                __('lang_v1.import_contacts'),
-                                ['icon' => '', 'active' => request()->segment(1) == 'contacts' && request()->segment(2) == 'import']
-                            );
-                        }
-
-                        if (!empty(env('GOOGLE_MAP_API_KEY'))) {
-                            $sub->url(
-                                action([\App\Http\Controllers\ContactController::class, 'contactMap']),
-                                __('lang_v1.map'),
-                                ['icon' => 'fa fas fa-map-marker-alt', 'active' => request()->segment(1) == 'contacts' && request()->segment(2) == 'map']
-                            );
-                        }
-                    },
-                    ['icon' => '<svg aria-hidden="true" class="tw-size-5 tw-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                    <path d="M20 6v12a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2z"></path>
-                    <path d="M10 16h6"></path>
-                    <path d="M13 11m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path>
-                    <path d="M4 8h3"></path>
-                    <path d="M4 12h3"></path>
-                    <path d="M4 16h3"></path>
-                  </svg>', 'id' => 'tour_step4']
-                )->order(15);
-            }
-
-            //Products dropdown
+            // Items (Zoho-style — products, categories, price lists)
             if (auth()->user()->can('product.view') || auth()->user()->can('product.create') ||
                 auth()->user()->can('brand.view') || auth()->user()->can('unit.view') ||
                 auth()->user()->can('category.view') || auth()->user()->can('brand.create') ||
                 auth()->user()->can('unit.create') || auth()->user()->can('category.create')) {
                 $menu->dropdown(
-                    __('sale.products'),
+                    __('lang_v1.menu_items'),
                     function ($sub) {
                         if (auth()->user()->can('product.view')) {
                             $sub->url(
@@ -187,13 +209,6 @@ class AdminSidebarMenu
                                 ['icon' => '', 'active' => request()->segment(1) == 'import-products']
                             );
                         }
-                        if (auth()->user()->can('product.opening_stock')) {
-                            $sub->url(
-                                action([\App\Http\Controllers\ImportOpeningStockController::class, 'index']),
-                                __('lang_v1.import_opening_stock'),
-                                ['icon' => '', 'active' => request()->segment(1) == 'import-opening-stock']
-                            );
-                        }
                         if (auth()->user()->can('product.create')) {
                             $sub->url(
                                 action([\App\Http\Controllers\SellingPriceGroupController::class, 'index']),
@@ -231,72 +246,46 @@ class AdminSidebarMenu
                     },
                     ['icon' => '<svg aria-hidden="true" class="tw-size-5 tw-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                     <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                     <path d="M12 3l8 4.5v9l-8 4.5l-8 -4.5v-9l8 -4.5"></path>
                     <path d="M12 12l8 -4.5"></path>
-                    <path d="M8.2 9.8l7.6 -4.6"></path>
                     <path d="M12 12v9"></path>
                     <path d="M12 12l-8 -4.5"></path>
                   </svg>', 'id' => 'tour_step5']
                 )->order(20);
             }
 
-            //Purchase dropdown
-            if (in_array('purchases', $enabled_modules) && (auth()->user()->can('purchase.view') || auth()->user()->can('purchase.create') || auth()->user()->can('purchase.update'))) {
+            // Inventory (Zoho-style — transfers, adjustments, opening stock)
+            if ($this->hasInventoryMenu($enabled_modules)) {
                 $menu->dropdown(
-                    __('purchase.purchases'),
-                    function ($sub) use ($common_settings) {
-                        if (!empty($common_settings['enable_purchase_requisition']) && (auth()->user()->can('purchase_requisition.view_all') || auth()->user()->can('purchase_requisition.view_own'))) {
-                            $sub->url(
-                                action([\App\Http\Controllers\PurchaseRequisitionController::class, 'index']),
-                                __('lang_v1.purchase_requisition'),
-                                ['icon' => '', 'active' => request()->segment(1) == 'purchase-requisition']
-                            );
-                        }
-
-                        if (!empty($common_settings['enable_purchase_order']) && (auth()->user()->can('purchase_order.view_all') || auth()->user()->can('purchase_order.view_own'))) {
-                            $sub->url(
-                                action([\App\Http\Controllers\PurchaseOrderController::class, 'index']),
-                                __('lang_v1.purchase_order'),
-                                ['icon' => '', 'active' => request()->segment(1) == 'purchase-order']
-                            );
-                        }
-                        if (auth()->user()->can('purchase.view') || auth()->user()->can('view_own_purchase')) {
-                            $sub->url(
-                                action([\App\Http\Controllers\PurchaseController::class, 'index']),
-                                __('purchase.list_purchase'),
-                                ['icon' => '', 'active' => request()->segment(1) == 'purchases' && request()->segment(2) == null]
-                            );
-                        }
-                        if (auth()->user()->can('purchase.create')) {
-                            $sub->url(
-                                action([\App\Http\Controllers\PurchaseController::class, 'create']),
-                                __('purchase.add_purchase'),
-                                ['icon' => '', 'active' => request()->segment(1) == 'purchases' && request()->segment(2) == 'create']
-                            );
-                        }
-                        if (auth()->user()->can('purchase.update')) {
-                            $sub->url(
-                                action([\App\Http\Controllers\PurchaseReturnController::class, 'index']),
-                                __('lang_v1.list_purchase_return'),
-                                ['icon' => '', 'active' => request()->segment(1) == 'purchase-return']
-                            );
-                        }
+                    __('lang_v1.menu_inventory'),
+                    function ($sub) use ($enabled_modules) {
+                        $this->addInventoryMenuItems($sub, $enabled_modules);
                     },
                     ['icon' => '<svg aria-hidden="true" class="tw-size-5 tw-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                     <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                    <path d="M12 3v12"></path>
-                    <path d="M16 11l-4 4l-4 -4"></path>
-                    <path d="M3 12a9 9 0 0 0 18 0"></path>
-                  </svg>', 'id' => 'tour_step6']
+                    <path d="M12 6m-8 0a8 3 0 1 0 16 0a8 3 0 1 0 -16 0"></path>
+                    <path d="M4 6v6a8 3 0 0 0 16 0v-6"></path>
+                    <path d="M4 12v6a8 3 0 0 0 16 0v-6"></path>
+                  </svg>']
                 )->order(25);
             }
-            //Sell dropdown
-            if ($is_admin || auth()->user()->hasAnyPermission(['sell.view', 'sell.create', 'direct_sell.access', 'view_own_sell_only', 'view_commission_agent_sell', 'access_shipping', 'access_own_shipping', 'access_commission_agent_shipping', 'access_sell_return', 'direct_sell.view', 'direct_sell.update', 'access_own_sell_return'])) {
+
+            // Sales (Zoho-style — customers first, then invoices / POS)
+            if ($is_admin || auth()->user()->hasAnyPermission(['sell.view', 'sell.create', 'direct_sell.access', 'view_own_sell_only', 'view_commission_agent_sell', 'access_shipping', 'access_own_shipping', 'access_commission_agent_shipping', 'access_sell_return', 'direct_sell.view', 'direct_sell.update', 'access_own_sell_return'])
+                || auth()->user()->can('customer.view') || auth()->user()->can('customer.view_own')) {
                 $menu->dropdown(
-                    __('sale.sale'),
+                    __('lang_v1.menu_sales'),
                     function ($sub) use ($enabled_modules, $is_admin, $pos_settings) {
+                        $this->addSalesCustomerMenuItems($sub);
+
+                        if (auth()->user()->can('user.create')) {
+                            $sub->url(
+                                action([\App\Http\Controllers\SalesCommissionAgentController::class, 'index']),
+                                __('lang_v1.sales_commission_agents'),
+                                ['icon' => '', 'active' => request()->segment(1) == 'sales-commission-agents']
+                            );
+                        }
+
                         if (!empty($pos_settings['enable_sales_order']) && ($is_admin || auth()->user()->hasAnyPermission(['so.view_own', 'so.view_all', 'so.create']))) {
                             $sub->url(
                                 action([\App\Http\Controllers\SalesOrderController::class, 'index']),
@@ -415,65 +404,58 @@ class AdminSidebarMenu
                 )->order(30);
             }
 
-            //Stock transfer dropdown
-            if (in_array('stock_transfers', $enabled_modules) && (auth()->user()->can('stock_transfer.view') || auth()->user()->can('stock_transfer.create') || auth()->user()->can('stock_transfer.view_own'))) {
+            // Purchases (Zoho-style — vendors first, then bills / POs)
+            if (in_array('purchases', $enabled_modules) && (auth()->user()->can('purchase.view') || auth()->user()->can('purchase.create') || auth()->user()->can('purchase.update')
+                || auth()->user()->can('supplier.view') || auth()->user()->can('supplier.view_own'))) {
                 $menu->dropdown(
-                    __('lang_v1.stock_transfers'),
-                    function ($sub) {
-                        if (auth()->user()->can('stock_transfer.view') || auth()->user()->can('stock_transfer.view_own')) {
-                            $sub->url(
-                                action([\App\Http\Controllers\StockTransferController::class, 'index']),
-                                __('lang_v1.list_stock_transfers'),
-                                ['icon' => '', 'active' => request()->segment(1) == 'stock-transfers' && request()->segment(2) == null]
-                            );
-                        }
-                        if (auth()->user()->can('stock_transfer.create')) {
-                            $sub->url(
-                                action([\App\Http\Controllers\StockTransferController::class, 'create']),
-                                __('lang_v1.add_stock_transfer'),
-                                ['icon' => '', 'active' => request()->segment(1) == 'stock-transfers' && request()->segment(2) == 'create']
-                            );
-                        }
-                    },
-                    ['icon' => '<svg aria-hidden="true" class="tw-size-5 tw-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                    <path d="M7 17m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path>
-                    <path d="M17 17m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path>
-                    <path d="M5 17h-2v-4m-1 -8h11v12m-4 0h6m4 0h2v-6h-8m0 -5h5l3 5"></path>
-                    <path d="M3 9l4 0"></path>
-                  </svg>']
-                )->order(35);
-            }
+                    __('lang_v1.menu_purchases'),
+                    function ($sub) use ($common_settings) {
+                        $this->addPurchaseSupplierMenuItems($sub);
 
-            //stock adjustment dropdown
-            if (in_array('stock_adjustment', $enabled_modules) && (auth()->user()->can('stock_adjustment.view') || auth()->user()->can('stock_adjustment.create') || auth()->user()->can('view_own_stock_adjustment'))) {
-                $menu->dropdown(
-                    __('stock_adjustment.stock_adjustment'),
-                    function ($sub) {
-                        if (auth()->user()->can('stock_adjustment.view')  || auth()->user()->can('view_own_stock_adjustment')) {
+                        if (!empty($common_settings['enable_purchase_requisition']) && (auth()->user()->can('purchase_requisition.view_all') || auth()->user()->can('purchase_requisition.view_own'))) {
                             $sub->url(
-                                action([\App\Http\Controllers\StockAdjustmentController::class, 'index']),
-                                __('stock_adjustment.list'),
-                                ['icon' => '', 'active' => request()->segment(1) == 'stock-adjustments' && request()->segment(2) == null]
+                                action([\App\Http\Controllers\PurchaseRequisitionController::class, 'index']),
+                                __('lang_v1.purchase_requisition'),
+                                ['icon' => '', 'active' => request()->segment(1) == 'purchase-requisition']
                             );
                         }
-                        if (auth()->user()->can('stock_adjustment.create')) {
+
+                        if (!empty($common_settings['enable_purchase_order']) && (auth()->user()->can('purchase_order.view_all') || auth()->user()->can('purchase_order.view_own'))) {
                             $sub->url(
-                                action([\App\Http\Controllers\StockAdjustmentController::class, 'create']),
-                                __('stock_adjustment.add'),
-                                ['icon' => '', 'active' => request()->segment(1) == 'stock-adjustments' && request()->segment(2) == 'create']
+                                action([\App\Http\Controllers\PurchaseOrderController::class, 'index']),
+                                __('lang_v1.purchase_order'),
+                                ['icon' => '', 'active' => request()->segment(1) == 'purchase-order']
+                            );
+                        }
+                        if (auth()->user()->can('purchase.view') || auth()->user()->can('view_own_purchase')) {
+                            $sub->url(
+                                action([\App\Http\Controllers\PurchaseController::class, 'index']),
+                                __('purchase.list_purchase'),
+                                ['icon' => '', 'active' => request()->segment(1) == 'purchases' && request()->segment(2) == null]
+                            );
+                        }
+                        if (auth()->user()->can('purchase.create')) {
+                            $sub->url(
+                                action([\App\Http\Controllers\PurchaseController::class, 'create']),
+                                __('purchase.add_purchase'),
+                                ['icon' => '', 'active' => request()->segment(1) == 'purchases' && request()->segment(2) == 'create']
+                            );
+                        }
+                        if (auth()->user()->can('purchase.update')) {
+                            $sub->url(
+                                action([\App\Http\Controllers\PurchaseReturnController::class, 'index']),
+                                __('lang_v1.list_purchase_return'),
+                                ['icon' => '', 'active' => request()->segment(1) == 'purchase-return']
                             );
                         }
                     },
                     ['icon' => '<svg aria-hidden="true" class="tw-size-5 tw-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                     <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                    <path d="M12 6m-8 0a8 3 0 1 0 16 0a8 3 0 1 0 -16 0"></path>
-                    <path d="M4 6v6a8 3 0 0 0 16 0v-6"></path>
-                    <path d="M4 12v6a8 3 0 0 0 16 0v-6"></path>
-                  </svg>']
-                )->order(40);
+                    <path d="M12 3v12"></path>
+                    <path d="M16 11l-4 4l-4 -4"></path>
+                    <path d="M3 12a9 9 0 0 0 18 0"></path>
+                  </svg>', 'id' => 'tour_step6']
+                )->order(35);
             }
 
             //Expense dropdown
@@ -805,10 +787,26 @@ class AdminSidebarMenu
                 auth()->user()->can('invoice_settings.access') ||
                 auth()->user()->can('tax_rate.view') ||
                 auth()->user()->can('tax_rate.create') ||
-                auth()->user()->can('access_package_subscriptions')) {
+                auth()->user()->can('access_package_subscriptions') ||
+                auth()->user()->can('user.view') ||
+                auth()->user()->can('roles.view')) {
                 $menu->dropdown(
                     __('business.settings'),
                     function ($sub) use ($enabled_modules) {
+                        if (auth()->user()->can('user.view')) {
+                            $sub->url(
+                                action([\App\Http\Controllers\ManageUserController::class, 'index']),
+                                __('user.users'),
+                                ['icon' => '', 'active' => request()->segment(1) == 'users']
+                            );
+                        }
+                        if (auth()->user()->can('roles.view')) {
+                            $sub->url(
+                                action([\App\Http\Controllers\RoleController::class, 'index']),
+                                __('user.roles'),
+                                ['icon' => '', 'active' => request()->segment(1) == 'roles']
+                            );
+                        }
                         if (auth()->user()->can('business_settings.access')) {
                             $sub->url(
                                 action([\App\Http\Controllers\BusinessController::class, 'getBusinessSettings']),

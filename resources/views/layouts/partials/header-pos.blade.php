@@ -23,7 +23,7 @@
 @endif
 <input type="hidden" name="transaction_sub_type" id="transaction_sub_type" value="{{ $transaction_sub_type }}">
 @inject('request', 'Illuminate\Http\Request')
-<div class="col-md-12 no-print pos-header">
+<div class="col-md-12 no-print pos-header zoho-topbar">
     <input type="hidden" id="pos_redirect_url" value="{{ $pos_redirect_url }}">
     <div
         class="tw-flex tw-flex-col md:tw-flex-row tw-items-center tw-justify-between tw-shadow-[rgba(17,_17,_26,_0.1)_0px_0px_16px] tw-bg-white tw-rounded-xl tw-mx-0 tw-mt-1 tw-mb-0 md:tw-mb-0" style="padding: 4px 12px !important; min-height: 0;">

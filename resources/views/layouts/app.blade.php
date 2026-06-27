@@ -38,17 +38,14 @@
 
 </head>
 <body
-    class="tw-font-sans tw-antialiased tw-text-gray-900 tw-bg-gray-100 @if ($pos_layout) hold-transition lockscreen @else hold-transition skin-@if (!empty(session('business.theme_color'))){{ session('business.theme_color') }}@else{{ 'blue-light' }} @endif sidebar-mini @endif" >
+    class="tw-font-sans tw-antialiased tw-text-gray-900 zoho-theme @if ($pos_layout) hold-transition lockscreen @else hold-transition skin-@if (!empty(session('business.theme_color'))){{ session('business.theme_color') }}@else{{ 'blue-light' }} @endif sidebar-mini @endif" >
     <div class="tw-flex thetop">
         <script type="text/javascript">
             if (localStorage.getItem("upos_sidebar_collapse") == 'true') {
                 var body = document.getElementsByTagName("body")[0];
-                body.className += " sidebar-collapse";
+                body.className += " sidebar-collapse zoho-sidebar-collapsed";
             }
         </script>
-        @if (!$pos_layout && $request->segment(1) != 'customer-display')
-            @include('layouts.partials.sidebar')
-        @endif
 
         @if (in_array($_SERVER['REMOTE_ADDR'], $whitelist))
             <input type="hidden" id="__is_localhost" value="true">
@@ -73,12 +70,19 @@
             <input type="hidden" id="status_span" data-status="{{ session('status.success') }}"
                 data-msg="{{ session('status.msg') }}">
         @endif
-        <main class="tw-flex tw-flex-col tw-flex-1 tw-h-full tw-min-w-0 tw-bg-gray-100">
-            @if($request->segment(1) != 'customer-display' && !$pos_layout)
-                @include('layouts.partials.header')
-            @elseif($request->segment(1) != 'customer-display')
-                @include('layouts.partials.header-pos')
-            @endif
+
+        @if($request->segment(1) != 'customer-display' && !$pos_layout)
+            @include('layouts.partials.header')
+        @elseif($request->segment(1) != 'customer-display')
+            @include('layouts.partials.header-pos')
+        @endif
+
+        <div class="zoho-app-body">
+        @if (!$pos_layout && $request->segment(1) != 'customer-display')
+            @include('layouts.partials.sidebar')
+        @endif
+
+        <main class="zoho-main-column tw-flex tw-flex-col tw-flex-1 tw-h-full tw-min-w-0">
             <!-- empty div for vuejs -->
             <div id="app">
                 @yield('vue')
@@ -104,6 +108,7 @@
             <section class="invoice print_section" id="receipt_section">
             </section>
         </main>
+        </div>{{-- /.zoho-app-body --}}
 
         @include('home.todays_profit_modal')
         <!-- /.content-wrapper -->
@@ -163,9 +168,9 @@
         flex-direction: column;
         z-index: 1000;
         position: fixed;
-        top: 0;
+        top: 48px;
         left: 0;
-        height: 100vh;
+        height: calc(100vh - 48px);
     }
     .overlay {
         width: 100vw;

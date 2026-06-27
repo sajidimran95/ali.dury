@@ -1,6 +1,6 @@
 @extends('layouts.auth-shell')
 
-@section('title', config('app.name', 'Japs POS'))
+@section('title', config('app.name', 'JAPS POS'))
 
 @section('auth-brand')
     @include('layouts.partials.auth-brand', [
@@ -9,7 +9,7 @@
 @endsection
 
 @section('auth-title')
-    {{ config('app.name', 'Japs POS') }}
+    {{ config('app.name', 'JAPS POS') }}
 @endsection
 
 @section('auth-subtitle')

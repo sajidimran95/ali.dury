@@ -22,9 +22,11 @@
 @endphp
 <style>
     :root {
-        --theme-700: {{ $tc['700'] }};
-        --theme-800: {{ $tc['800'] }};
-        --theme-900: {{ $tc['900'] }};
+        --theme-700: #408dfb;
+        --theme-800: #2b7de9;
+        --theme-900: #1a2332;
+        --zoho-blue: #408dfb;
+        --zoho-topbar: #1a2332;
     }
     .theme-header-bg {
         background-image: linear-gradient(to right, var(--theme-800), var(--theme-900));
@@ -85,6 +87,7 @@
 
 <!-- app css -->
 <link rel="stylesheet" href="{{ asset('css/app.css?v='.$asset_v) }}">
+<link rel="stylesheet" href="{{ asset('css/zoho-theme.css?v='.$asset_v) }}">
 
 @if(isset($pos_layout) && $pos_layout)
 	<style type="text/css">
