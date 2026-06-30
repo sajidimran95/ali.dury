@@ -11,7 +11,7 @@
 	@if(session('business.enable_rp') == 1)
         <input type="hidden" id="reward_point_enabled">
     @endif
-    @php
+	@php
 		$is_discount_enabled = $pos_settings['disable_discount'] != 1 ? true : false;
 		$is_rp_enabled = session('business.enable_rp') == 1 ? true : false;
 	@endphp
@@ -19,37 +19,35 @@
 	{{ method_field('PUT') }}
 	<div class="row" style="margin:0;">
 		<div class="col-md-12" style="padding:0;">
-			<div class="row tw-flex lg:tw-flex-row md:tw-flex-col sm:tw-flex-col tw-flex-col tw-items-stretch" style="gap: 4px; margin: 0; padding: 0;">
-				@if(empty($pos_settings['hide_product_suggestion'])  && !isMobile() && empty($only_payment))
+			<div class="row tw-flex lg:tw-flex-row md:tw-flex-col sm:tw-flex-col tw-flex-col tw-items-stretch pos-checkout-row" style="gap: 4px; margin: 0; padding: 0;">
+				@if (empty($pos_settings['hide_product_suggestion']))
 					<div class="tw-w-full lg:tw-w-[40%] tw-order-2 lg:tw-order-1" style="padding:0;" id="pos_sidebar_wrap">
 						@include('sale_pos.partials.pos_sidebar')
 					</div>
 				@endif
-				<div class="tw-w-full @if(empty($pos_settings['hide_product_suggestion'])) lg:tw-w-[60%] tw-order-1 lg:tw-order-2 @else lg:tw-w-[100%] @endif" style="padding:0;">
-					<div class="tw-shadow-[rgba(17,_17,_26,_0.1)_0px_0px_16px] tw-rounded-2xl tw-bg-white" style="padding:0;overflow:hidden;height:100%;">
+				<div class="tw-w-full @if(empty($pos_settings['hide_product_suggestion'])) lg:tw-w-[60%] tw-order-1 lg:tw-order-2 @else lg:tw-w-[100%] @endif" style="padding:0;" id="pos_checkout_wrap">
+					<div class="tw-shadow-[rgba(17,_17,_26,_0.1)_0px_0px_16px] tw-rounded-2xl tw-bg-white tw-relative" style="padding:0;overflow:hidden;height:100%;">
 						<div class="box-body pb-0">
 							{!! Form::hidden('location_id', $transaction->location_id, ['id' => 'location_id', 'data-receipt_printer_type' => !empty($location_printer_type) ? $location_printer_type : 'browser', 'data-default_payment_accounts' => $transaction->location->default_payment_accounts]); !!}
-							<!-- sub_type -->
 							{!! Form::hidden('sub_type', isset($sub_type) ? $sub_type : null) !!}
 							<input type="hidden" id="item_addition_method" value="{{$business_details->item_addition_method}}">
-								@include('sale_pos.partials.pos_form_edit')
+							@include('sale_pos.partials.pos_form_edit')
 
-								@include('sale_pos.partials.pos_form_totals', ['edit' => true])
+							@include('sale_pos.partials.pos_form_totals', ['edit' => true])
 
-								@include('sale_pos.partials.payment_modal')
+							@include('sale_pos.partials.payment_modal')
 
-								@if(empty($pos_settings['disable_suspend']))
-									@include('sale_pos.partials.suspend_note_modal')
-								@endif
+							@if(empty($pos_settings['disable_suspend']))
+								@include('sale_pos.partials.suspend_note_modal')
+							@endif
 
-								@if(empty($pos_settings['disable_recurring_invoice']))
-									@include('sale_pos.partials.recurring_invoice_modal')
-								@endif
-							</div>
-							@if(!empty($only_payment))
-								<div class="overlay"></div>
+							@if(empty($pos_settings['disable_recurring_invoice']))
+								@include('sale_pos.partials.recurring_invoice_modal')
 							@endif
 						</div>
+						@if(!empty($only_payment))
+							<div class="overlay"></div>
+						@endif
 					</div>
 				</div>
 			</div>

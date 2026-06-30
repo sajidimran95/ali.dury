@@ -37,14 +37,28 @@ $(document).ready(function() {
     $(document).on('click', '.btn-modal', function(e) {
         e.preventDefault();
         var container = $(this).data('container');
+        var $container = $(container).first();
+
+        if (!$container.length) {
+            return;
+        }
+
+        if ($container.hasClass('show') || $container.data('loading')) {
+            return;
+        }
+
+        $container.data('loading', true);
 
         $.ajax({
             url: $(this).data('href'),
             dataType: 'html',
             success: function(result) {
-                $(container)
+                $container
                     .html(result)
                     .modal('show');
+            },
+            complete: function() {
+                $container.data('loading', false);
             },
         });
     });
@@ -1938,6 +1952,9 @@ $(document).ready(function() {
                             if (typeof get_recent_transactions !== 'undefined') {
                                 get_recent_transactions('final', $('div#tab_final'));
                                 get_recent_transactions('draft', $('div#tab_draft'));
+                            }
+                            if (typeof loadPosDraftsPanel === 'function') {
+                                loadPosDraftsPanel();
                             }
                             if (is_suspended) {
                                 $('.view_modal').modal('hide');

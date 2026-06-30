@@ -141,6 +141,8 @@
             @endif
 
             {{-- ===== Cash Register ===== --}}
+            @include('sale_pos.partials.pos_drafts_panel')
+
             @can('view_cash_register')
                 <button type="button" id="register_details" title="{{ __('cash_register.register_details') }}"
                     class="tw-shadow-[rgba(17,_17,_26,_0.1)_0px_0px_16px] tw-bg-white hover:tw-bg-white/60 tw-cursor-pointer tw-border-2 tw-flex tw-items-center tw-justify-center tw-rounded-md md:tw-w-10 tw-w-auto tw-h-10 tw-text-gray-600 active:tw-scale-95 tw-transition-transform btn-modal pull-right"

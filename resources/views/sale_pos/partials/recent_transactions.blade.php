@@ -30,7 +30,7 @@
 				</td>
 				<td class="col-md-6 tw-flex tw-flex-col md:tw-flex-row tw-space-x-0 md:tw-space-x-2 tw-space-y-1 md:tw-space-y-0">
 					@if(auth()->user()->can('sell.update') || auth()->user()->can('direct_sell.update'))
-					<a href="{{action([\App\Http\Controllers\SellPosController::class, 'edit'], [$transaction->id]).$subtype}}" class="tw-dw-btn tw-dw-btn-outline tw-dw-btn-info">
+					<a href="{{ route('pos.edit', ['po' => $transaction->id]) . $subtype }}" class="tw-dw-btn tw-dw-btn-outline tw-dw-btn-info">
 	    				<i class="fas fa-pen text-muted" aria-hidden="true" title="{{__('lang_v1.click_to_edit')}}"></i>
                         @lang('messages.edit')
 	    			</a>

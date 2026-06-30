@@ -55,6 +55,7 @@
 		</div>
 	</div>
 </div>
+
 <div class="row">
 	@if(!empty($pos_settings['show_invoice_layout']))
 	<div class="col-md-4">

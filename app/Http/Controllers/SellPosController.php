@@ -855,6 +855,15 @@ class SellPosController extends Controller
             ->with(['price_group', 'types_of_service'])
             ->findorfail($id);
 
+        if (request()->segment(2) == 'payment' && auth()->user()->can('sell.update')) {
+            $edit_url = route('pos.edit', ['po' => $id]);
+            if (request()->filled('sub_type')) {
+                $edit_url .= '?sub_type=' . urlencode(request()->get('sub_type'));
+            }
+
+            return redirect()->to($edit_url);
+        }
+
         // If ZATCA module is installed and this transaction is successfully synced, prevent edit
         $moduleUtil = new ModuleUtil();
         if ($moduleUtil->isModuleInstalled('ZatcaIntegrationKsa')) {
@@ -1110,7 +1119,9 @@ class SellPosController extends Controller
 
         //Added check because $users is of no use if enable_contact_assign if false
         $users = config('constants.enable_contact_assign') ? User::forDropdown($business_id, false, false, false, true) : [];
-        $only_payment = request()->segment(2) == 'payment';
+        $only_payment = request()->segment(2) == 'payment'
+            && $transaction->status === 'final'
+            && (int) $transaction->is_suspend !== 1;
 
         return view('sale_pos.edit')
             ->with(compact('business_details', 'taxes', 'payment_types', 'walk_in_customer',
@@ -1716,6 +1727,8 @@ class SellPosController extends Controller
         } elseif ($transaction_status == 'draft') {
             $query->where('transactions.status', 'draft')
                 ->whereNull('sub_status');
+        } elseif ($transaction_status == 'suspended') {
+            $query->where('transactions.is_suspend', 1);
         } else {
             $query->where('transactions.status', $transaction_status);
         }
@@ -1727,8 +1740,19 @@ class SellPosController extends Controller
             $query->where('transactions.sub_type', null);
         }
 
+        $location_id = $request->get('location_id');
+        if (! empty($location_id)) {
+            $query->where('transactions.location_id', $location_id);
+        }
+
         // Retrieve the limit for displaying recent transactions from the configuration
-        $limit = config('constants.pos_recent_transactions_display_limit', 10);
+        $limit = (int) $request->get('limit', config('constants.pos_recent_transactions_display_limit', 10));
+        if ($limit < 1) {
+            $limit = 10;
+        }
+        if ($limit > 50) {
+            $limit = 50;
+        }
         
         $transactions = $query->orderBy('transactions.created_at', 'desc')
             ->groupBy('transactions.id')
@@ -1737,8 +1761,12 @@ class SellPosController extends Controller
             ->limit($limit)
             ->get();
 
-        return view('sale_pos.partials.recent_transactions')
-            ->with(compact('transactions', 'transaction_sub_type'));
+        $view = $request->get('layout') === 'panel'
+            ? 'sale_pos.partials.pos_drafts_list'
+            : 'sale_pos.partials.recent_transactions';
+
+        return view($view)
+            ->with(compact('transactions', 'transaction_sub_type', 'transaction_status'));
     }
 
     /**
@@ -2163,7 +2191,7 @@ class SellPosController extends Controller
                             $html .= '<a href="' . action([\App\Http\Controllers\SellPosController::class, 'toggleRecurringInvoices'], [$row->id]) . '" class="toggle_recurring_invoice btn btn-xs ' . $link_class . '"><i class="fa fa-power-off"></i> ' . $link_text . '</a>';
 
                             if ($row->is_direct_sale == 0) {
-                                $html .= '<a target="_blank" class="tw-dw-btn tw-dw-btn-xs tw-dw-btn-outline tw-dw-btn-primary" href="' . action([\App\Http\Controllers\SellPosController::class, 'edit'], [$row->id]) . '"><i class="glyphicon glyphicon-edit"></i> ' . __('messages.edit') . '</a>';
+                                $html .= '<a target="_blank" class="tw-dw-btn tw-dw-btn-xs tw-dw-btn-outline tw-dw-btn-primary" href="' . route('pos.edit', ['po' => $row->id]) . '"><i class="glyphicon glyphicon-edit"></i> ' . __('messages.edit') . '</a>';
                             } else {
                                 $html .= '<a target="_blank" class="tw-dw-btn tw-dw-btn-xs tw-dw-btn-outline tw-dw-btn-primary" href="' . action([\App\Http\Controllers\SellController::class, 'edit'], [$row->id]) . '"><i class="glyphicon glyphicon-edit"></i> ' . __('messages.edit') . '</a>';
                             }

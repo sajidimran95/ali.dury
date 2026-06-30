@@ -264,7 +264,7 @@ class SellController extends Controller
                         if (! $only_shipments) {
                             if ($row->is_direct_sale == 0) {
                                 if (auth()->user()->can('sell.update')) {
-                                    $html .= '<li><a target="_blank" href="'.action([\App\Http\Controllers\SellPosController::class, 'edit'], [$row->id]).'"><i class="fas fa-edit"></i> '.__('messages.edit').'</a></li>';
+                                    $html .= '<li><a target="_blank" href="'.route('pos.edit', ['po' => $row->id]).'"><i class="fas fa-edit"></i> '.__('messages.edit').'</a></li>';
                                 }
                             } elseif ($row->type == 'sales_order') {
                                 if (auth()->user()->can('so.update')) {
@@ -1298,7 +1298,7 @@ class SellController extends Controller
                                         </li>';
                             } else {
                                 $html .= '<li>
-                                            <a target="_blank" href="'.action([\App\Http\Controllers\SellPosController::class, 'edit'], [$row->id]).'">
+                                            <a target="_blank" href="'.route('pos.edit', ['po' => $row->id]).'">
                                                 <i class="fas fa-edit"></i>'.__('messages.edit').'
                                             </a>
                                         </li>';
@@ -1470,7 +1470,7 @@ class SellController extends Controller
             if ($duplicate_transaction->is_direct_sale == 1) {
                 return redirect()->action([\App\Http\Controllers\SellController::class, 'edit'], [$duplicate_transaction->id])->with(['status', $output]);
             } else {
-                return redirect()->action([\App\Http\Controllers\SellPosController::class, 'edit'], [$duplicate_transaction->id])->with(['status', $output]);
+                return redirect()->route('pos.edit', ['po' => $duplicate_transaction->id])->with(['status', $output]);
             }
         } else {
             abort(404, 'Not Found.');

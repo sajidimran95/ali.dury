@@ -124,7 +124,7 @@
                     <div class="box-tools">
                         <a class="tw-dw-btn tw-bg-gradient-to-r tw-from-indigo-600 tw-to-blue-500 tw-font-bold tw-text-white tw-border-none tw-rounded-full btn-modal"
                                 data-href="{{ action([\App\Http\Controllers\ContactController::class, 'create'], ['type' => $type]) }}"
-                                data-container=".contact_modal">
+                                data-container="#global_contact_modal">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                                 class="icon icon-tabler icons-tabler-outline icon-tabler-plus">
@@ -251,8 +251,6 @@
             @endif
         @endcomponent
 
-        <div class="modal fade contact_modal" tabindex="-1" role="dialog" aria-labelledby="gridSystemModalLabel">
-        </div>
         <div class="modal fade pay_contact_due_modal" tabindex="-1" role="dialog" aria-labelledby="gridSystemModalLabel">
         </div>
 
@@ -354,7 +352,7 @@
         </script>
         <script src="https://maps.googleapis.com/maps/api/js?key={{ $api_key }}&libraries=places" async defer></script>
         <script type="text/javascript">
-            $(document).on('shown.bs.modal', '.contact_modal', function(e) {
+            $(document).on('shown.bs.modal', '#global_contact_modal', function(e) {
                 initAutocomplete();
             });
         </script>

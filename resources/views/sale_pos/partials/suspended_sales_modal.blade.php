@@ -38,7 +38,7 @@
 					              @endif
 					            </div>
 								@if(auth()->user()->can('sell.update') || auth()->user()->can('direct_sell.update'))
-									<a href="{{action([\App\Http\Controllers\SellPosController::class, 'edit'], ['po' => $sale->id]).$subtype}}" class="small-box-footer bg-blue p-10">
+									<a href="{{ route('pos.edit', ['po' => $sale->id]) . $subtype }}" class="small-box-footer bg-blue p-10">
 									@lang('sale.edit_sale') <i class="fa fa-arrow-circle-right"></i>
 									</a>
 								@endif

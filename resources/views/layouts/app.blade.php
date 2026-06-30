@@ -137,7 +137,7 @@
         {{-- Module JS --}}
         @include('layouts.module-assets')
         <div class="modal fade view_modal" tabindex="-1" role="dialog" aria-labelledby="gridSystemModalLabel"></div>
-        <div class="modal fade contact_modal" tabindex="-1" role="dialog" aria-labelledby="gridSystemModalLabel"></div>
+        <div class="modal fade contact_modal" id="global_contact_modal" tabindex="-1" role="dialog" aria-labelledby="gridSystemModalLabel"></div>
 
         @if (!empty($__additional_views) && is_array($__additional_views))
             @foreach ($__additional_views as $additional_view)

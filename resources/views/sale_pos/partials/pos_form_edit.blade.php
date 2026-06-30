@@ -1,9 +1,11 @@
+<div class="tw-flex tw-items-center tw-justify-between tw-gap-2 tw-mb-2 tw-px-1">
+	<p class="tw-m-0 tw-text-xs tw-font-semibold tw-text-slate-500">
+		@lang('sale.invoice_no'): <span class="tw-text-slate-800">{{ $transaction->invoice_no }}</span>
+	</p>
+</div>
 <div class="row">
-	<div class="col-md-12">
-		<p><strong>@lang('sale.invoice_no'):</strong> {{$transaction->invoice_no}}</p>
-	</div>
 	<div class="col-md-4">
-		<div class="form-group" style="width: 100% !important">
+		<div class="form-group">
 			<div class="input-group">
 				<span class="input-group-addon">
 					<i class="fa fa-user"></i>
@@ -14,10 +16,19 @@
 				value="{{ $transaction->contact->name }}" >
 				<input type="hidden" id="default_customer_balance" 
 				value="{{$transaction->contact->balance}}" >
+				<input type="hidden" id="default_customer_address" 
+				value="{{ $transaction->contact->shipping_address ?? '' }}" >
+				@if(!empty($transaction->contact->price_calculation_type) && $transaction->contact->price_calculation_type == 'selling_price_group')
+					<input type="hidden" id="default_selling_price_group" 
+				value="{{ $transaction->contact->selling_price_group_id ?? '' }}" >
+				@endif
 				{!! Form::select('contact_id', 
-					[], null, ['class' => 'form-control mousetrap', 'id' => 'customer_id', 'placeholder' => 'Enter Customer name / phone', 'required', 'style' => 'width: 100%;']); !!}
+					[], null, ['class' => 'form-control mousetrap', 'id' => 'customer_id', 'placeholder' => 'Enter Customer name / phone', 'required']); !!}
 				<span class="input-group-btn">
 					<button type="button" class="btn btn-default bg-white btn-flat add_new_customer" data-name=""  @if(!auth()->user()->can('customer.create')) disabled @endif><i class="fa fa-plus-circle text-primary fa-lg"></i></button>
+					@can('sell.payments')
+					<button type="button" id="pos-receive-customer-payment" class="btn btn-default bg-white btn-flat" title="@lang('lang_v1.receive_payment')"><i class="fas fa-hand-holding-usd text-primary fa-lg"></i></button>
+					@endcan
 				</span>
 			</div>
 			<small class="text-danger @if(empty($customer_due)) hide @endif contact_due_text"><strong>@lang('account.customer_due'):</strong> <span>{{$customer_due ?? ''}}</span></small>
@@ -175,8 +186,8 @@
         @endif
     @endforeach
 @endif
-<div class="row">
-	<div class="col-sm-12 pos_product_div">
+<div class="row" style="margin:0;">
+	<div class="col-sm-12 pos_product_div" style="padding:4px 0 0 0;">
 		<input type="hidden" name="sell_price_tax" id="sell_price_tax" value="{{$business_details->sell_price_tax}}">
 
 		<!-- Keeps count of product rows -->
@@ -188,32 +199,31 @@
 				$hide_tax = 'hide';
 			}
 		@endphp
-		<table class="table table-condensed table-responsive" id="pos_table">
+		<table class="table table-condensed table-responsive tw-border-0 tw-table-fixed" id="pos_table">
 			<thead>
 				<tr>
-					<th class="tex-center tw-text-sm md:!tw-text-base tw-font-bold @if(!empty($pos_settings['inline_service_staff'])) col-md-3 @else col-md-4 @endif">
+					<th class="text-center pos-th-product tw-sticky tw-top-0 tw-z-10 !tw-bg-[#f8fafc] !tw-text-[#94a3b8] !tw-border-b !tw-border-[#e2e8f0] !tw-border-t-0 !tw-border-l-0 !tw-border-r-0 !tw-px-2 !tw-py-1 !tw-text-[11px] tw-font-bold tw-uppercase tw-tracking-[0.4px] !tw-leading-[1.2] tw-whitespace-nowrap tw-overflow-hidden !tw-align-middle tw-w-[30%]">
 						@lang('sale.product') @show_tooltip(__('lang_v1.tooltip_sell_product_column'))
 					</th>
-					<th class="text-center tw-text-sm md:!tw-text-base tw-font-bold col-md-3">
+					<th class="text-center pos-th-qty tw-sticky tw-top-0 tw-z-10 !tw-bg-[#f8fafc] !tw-text-[#94a3b8] !tw-border-b !tw-border-[#e2e8f0] !tw-border-t-0 !tw-border-l-0 !tw-border-r-0 !tw-px-2 !tw-py-1 !tw-text-[11px] tw-font-bold tw-uppercase tw-tracking-[0.4px] !tw-leading-[1.2] tw-whitespace-nowrap tw-overflow-hidden !tw-align-middle tw-w-[19%]">
 						@lang('sale.qty')
 					</th>
 					@if(!empty($pos_settings['inline_service_staff']))
-						<th class="text-center tw-text-sm md:!tw-text-base tw-font-bold col-md-2">
+						<th class="text-center pos-th-staff tw-sticky tw-top-0 tw-z-10 !tw-bg-[#f8fafc] !tw-text-[#94a3b8] !tw-border-b !tw-border-[#e2e8f0] !tw-border-t-0 !tw-border-l-0 !tw-border-r-0 !tw-px-2 !tw-py-1 !tw-text-[11px] tw-font-bold tw-uppercase tw-tracking-[0.4px] !tw-leading-[1.2] tw-whitespace-nowrap tw-overflow-hidden !tw-align-middle">
 							@lang('restaurant.service_staff')
 						</th>
 					@endif
-					<th class="text-center tw-text-sm md:!tw-text-base tw-font-bold col-md-2 {{$hide_tax}}">
+					<th class="text-center pos-th-price tw-sticky tw-top-0 tw-z-10 !tw-bg-[#f8fafc] !tw-text-[#94a3b8] !tw-border-b !tw-border-[#e2e8f0] !tw-border-t-0 !tw-border-l-0 !tw-border-r-0 !tw-px-2 !tw-py-1 !tw-text-[11px] tw-font-bold tw-uppercase tw-tracking-[0.4px] !tw-leading-[1.2] tw-whitespace-nowrap tw-overflow-hidden !tw-align-middle tw-w-auto tw-min-w-[13%] {{$hide_tax}}">
 						@lang('sale.price_inc_tax')
 					</th>
-					<th class="text-center tw-text-sm md:!tw-text-base tw-font-bold col-md-2">
+					<th class="text-center pos-th-subtotal tw-sticky tw-top-0 tw-z-10 !tw-bg-[#f8fafc] !tw-text-[#94a3b8] !tw-border-b !tw-border-[#e2e8f0] !tw-border-t-0 !tw-border-l-0 !tw-border-r-0 !tw-px-2 !tw-py-1 !tw-text-[11px] tw-font-bold tw-uppercase tw-tracking-[0.4px] !tw-leading-[1.2] tw-whitespace-nowrap tw-overflow-hidden !tw-align-middle tw-w-auto tw-min-w-[14%]">
 						@lang('sale.subtotal')
 					</th>
-					<th class="text-center"><i class="fas fa-times tw-text-base" aria-hidden="true"></i></th>
+					<th class="pos-th-action tw-sticky tw-top-0 tw-z-10 !tw-bg-[#f8fafc] !tw-border-b !tw-border-[#e2e8f0] !tw-border-t-0 !tw-border-l-0 !tw-border-r-0 !tw-py-1 !tw-pr-2 !tw-pl-0 !tw-text-[11px] tw-font-bold tw-uppercase tw-tracking-[0.4px] !tw-leading-[1.2] tw-whitespace-nowrap tw-overflow-hidden !tw-align-middle tw-w-[52px] !tw-text-center"></th>
 				</tr>
 			</thead>
 			<tbody>
 				@foreach($sell_details as $sell_line)
-
 				@include('sale_pos.product_row', 
 					['product' => $sell_line, 
 					'row_count' => $loop->index, 
@@ -221,8 +231,27 @@
 					'sub_units' => !empty($sell_line->unit_details) ? $sell_line->unit_details : [],
 					'action' => 'edit'
 				])
-			@endforeach
+				@endforeach
+				@if(count($sell_details) === 0)
+				<tr class="pos-empty-state-row">
+					<td colspan="100" class="!tw-border-0 !tw-p-0">
+						<div class="tw-flex tw-flex-col tw-items-center tw-justify-center tw-text-center tw-py-10 md:tw-py-14 tw-px-6 tw-gap-3">
+							<div class="tw-w-16 tw-h-16 tw-rounded-full tw-bg-slate-100 tw-flex tw-items-center tw-justify-center tw-text-slate-400">
+								<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 19m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"/><path d="M17 19m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"/><path d="M17 17h-11v-14h-2"/><path d="M6 5l14 1l-1 7h-13"/></svg>
+							</div>
+							<div class="tw-text-[15px] tw-font-semibold tw-text-slate-600">Your cart is empty</div>
+							<div class="tw-text-[13px] tw-text-slate-400 tw-leading-relaxed tw-max-w-sm">Scan a barcode, tap a product tile, or type to search.</div>
+						</div>
+					</td>
+				</tr>
+				@endif
 			</tbody>
 		</table>
+		<style>
+			#pos_table:not(.pos-has-rows) thead { display: none !important; }
+			#pos_table.pos-has-rows .pos-empty-state-row { display: none !important; }
+			#add_pos_sell_form:not(.pos-has-rows) .pos_form_totals,
+			#edit_pos_sell_form:not(.pos-has-rows) .pos_form_totals { display: none !important; }
+		</style>
 	</div>
 </div>

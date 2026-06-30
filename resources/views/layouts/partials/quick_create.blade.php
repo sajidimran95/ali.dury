@@ -130,7 +130,7 @@
                                     <a href="#"
                                         class="zoho-quick-create__link btn-modal"
                                         data-href="{{ action([\App\Http\Controllers\ContactController::class, 'create'], ['type' => 'customer']) }}"
-                                        data-container=".contact_modal">
+                                        data-container="#global_contact_modal">
                                         <span class="zoho-quick-create__plus" aria-hidden="true">+</span>
                                         @lang('report.customer')
                                     </a>
@@ -201,7 +201,7 @@
                                     <a href="#"
                                         class="zoho-quick-create__link btn-modal"
                                         data-href="{{ action([\App\Http\Controllers\ContactController::class, 'create'], ['type' => 'supplier']) }}"
-                                        data-container=".contact_modal">
+                                        data-container="#global_contact_modal">
                                         <span class="zoho-quick-create__plus" aria-hidden="true">+</span>
                                         @lang('lang_v1.menu_vendors')
                                     </a>

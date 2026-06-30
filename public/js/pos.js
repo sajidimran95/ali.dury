@@ -644,6 +644,9 @@ $(document).ready(function() {
                 if (result.success == 1) {
                     reset_pos_form();
                     toastr.success(result.msg);
+                    if (typeof loadPosDraftsPanel === 'function') {
+                        loadPosDraftsPanel();
+                    }
                 } else {
                     toastr.error(result.msg);
                 }
@@ -1901,6 +1904,108 @@ function get_recent_transactions(status, element_obj) {
         },
     });
 }
+
+function loadPosDraftsPanel(status) {
+    var $list = $('#pos_drafts_list');
+    if (!$list.length) {
+        return;
+    }
+
+    status = status || $list.data('status') || 'draft';
+    $list.data('status', status);
+
+    var transaction_sub_type = $('#transaction_sub_type').val();
+    var location_id = $('#location_id').val();
+
+    $.ajax({
+        method: 'GET',
+        url: '/sells/pos/get-recent-transactions',
+        data: {
+            status: status,
+            transaction_sub_type: transaction_sub_type,
+            location_id: location_id,
+            layout: 'panel',
+            limit: 20,
+        },
+        dataType: 'html',
+        success: function(result) {
+            $list.html(result);
+            __currency_convert_recursively($list);
+
+            var count = $list.find('.pos-draft-card').length;
+            var $badge = $('#pos_drafts_count');
+            $badge.text(count).toggleClass('tw-hidden', count === 0);
+            $('#pos_drafts_header_toggle').toggleClass('pos-drafts-header-btn--has-items', count > 0);
+        },
+    });
+}
+
+function openPosDraftsDropdown() {
+    var $panel = $('#pos_drafts_panel');
+    if (!$panel.length) {
+        return;
+    }
+
+    loadPosDraftsPanel('draft');
+    $panel.addClass('pos-drafts-dropdown--open').attr('aria-hidden', 'false');
+}
+
+function closePosDraftsDropdown() {
+    $('#pos_drafts_panel').removeClass('pos-drafts-dropdown--open').attr('aria-hidden', 'true');
+}
+
+$(document).ready(function() {
+    if ($('#pos_drafts_panel').length) {
+        loadPosDraftsPanel('draft');
+    }
+
+    $('#pos_drafts_header_toggle').on('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var $panel = $('#pos_drafts_panel');
+        if ($panel.hasClass('pos-drafts-dropdown--open')) {
+            closePosDraftsDropdown();
+        } else {
+            openPosDraftsDropdown();
+        }
+    });
+
+    $('#pos_drafts_close').on('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        closePosDraftsDropdown();
+    });
+
+    $(document).on('click', function(e) {
+        if (!$(e.target).closest('#pos_drafts_dropdown_wrap').length) {
+            closePosDraftsDropdown();
+        }
+    });
+
+    $(document).on('click', '.pos-drafts-panel__tab', function(e) {
+        e.preventDefault();
+        var status = $(this).data('status');
+        $('.pos-drafts-panel__tab').removeClass('pos-drafts-panel__tab--active');
+        $(this).addClass('pos-drafts-panel__tab--active');
+        loadPosDraftsPanel(status);
+    });
+
+    $('#pos_drafts_refresh').on('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        loadPosDraftsPanel();
+    });
+
+    $(document).on('click', '.pos-draft-card__btn--resume', function() {
+        closePosDraftsDropdown();
+    });
+
+    $('#select_location_id, #location_id').on('change', function() {
+        if ($('#pos_drafts_panel').length) {
+            loadPosDraftsPanel();
+        }
+    });
+});
 
 //variation_id is null when weighing_scale_barcode is used.
 
