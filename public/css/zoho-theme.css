@@ -375,15 +375,87 @@ body.zoho-theme #side-bar .chiled {
     background: #eef0f4;
 }
 
-body.zoho-theme #side-bar .chiled a {
+body.zoho-theme #side-bar .zoho-sidebar-child-row {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    margin: 0 8px 2px 0;
+    border-radius: 6px;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+body.zoho-theme #side-bar .zoho-sidebar-child-link {
+    flex: 1;
+    min-width: 0;
+    padding: 6px 8px 6px 16px !important;
+    font-size: 12.5px !important;
+    color: #5a6577 !important;
+    text-decoration: none !important;
+}
+
+body.zoho-theme #side-bar .zoho-sidebar-child-add {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 26px;
+    height: 26px;
+    margin-right: 6px;
+    border-radius: 4px;
+    color: #5a6577 !important;
+    text-decoration: none !important;
+    font-size: 18px;
+    font-weight: 400;
+    line-height: 1;
+    opacity: 0;
+    transition: opacity 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+
+body.zoho-theme #side-bar .zoho-sidebar-child-row--has-add:hover .zoho-sidebar-child-add,
+body.zoho-theme #side-bar .zoho-sidebar-child-row--has-add:focus-within .zoho-sidebar-child-add,
+body.zoho-theme #side-bar .zoho-sidebar-child-row--active .zoho-sidebar-child-add {
+    opacity: 1;
+}
+
+body.zoho-theme #side-bar .zoho-sidebar-child-row:hover,
+body.zoho-theme #side-bar .zoho-sidebar-child-row:focus-within,
+body.zoho-theme #side-bar .zoho-sidebar-child-row--active {
+    background: var(--zoho-blue) !important;
+}
+
+body.zoho-theme #side-bar .zoho-sidebar-child-row:hover .zoho-sidebar-child-link,
+body.zoho-theme #side-bar .zoho-sidebar-child-row:hover .zoho-sidebar-child-add,
+body.zoho-theme #side-bar .zoho-sidebar-child-row:focus-within .zoho-sidebar-child-link,
+body.zoho-theme #side-bar .zoho-sidebar-child-row:focus-within .zoho-sidebar-child-add,
+body.zoho-theme #side-bar .zoho-sidebar-child-row--active .zoho-sidebar-child-link,
+body.zoho-theme #side-bar .zoho-sidebar-child-row--active .zoho-sidebar-child-add {
+    color: #fff !important;
+}
+
+body.zoho-theme #side-bar .zoho-sidebar-child-row:hover .zoho-sidebar-child-add:hover,
+body.zoho-theme #side-bar .zoho-sidebar-child-row:focus-within .zoho-sidebar-child-add:hover {
+    background: rgba(255, 255, 255, 0.18) !important;
+}
+
+body.zoho-theme #side-bar .chiled a:not(.zoho-sidebar-child-link):not(.zoho-sidebar-child-add) {
     padding: 6px 16px !important;
     font-size: 12.5px !important;
     color: #5a6577 !important;
 }
 
+body.zoho-theme #side-bar .zoho-sidebar-child-row--active {
+    background: var(--zoho-blue) !important;
+}
+
 body.zoho-theme #side-bar .theme-sidebar-child-active {
     color: var(--zoho-blue) !important;
     font-weight: 600 !important;
+}
+
+body.zoho-theme #side-bar .zoho-sidebar-child-row--active .theme-sidebar-child-active,
+body.zoho-theme #side-bar .zoho-sidebar-child-row:hover .theme-sidebar-child-active,
+body.zoho-theme #side-bar .zoho-sidebar-child-row:focus-within .theme-sidebar-child-active {
+    color: #fff !important;
 }
 
 body.zoho-theme #side-bar a svg,
@@ -396,6 +468,7 @@ body.zoho-theme #side-bar .sidebar-menu-hidden {
     display: none !important;
 }
 
+body.zoho-theme.zoho-sidebar-search-active .side-bar.zoho-sidebar-collapsed #side-bar .chiled .zoho-sidebar-child-row.sidebar-menu-hidden,
 body.zoho-theme.zoho-sidebar-search-active .side-bar.zoho-sidebar-collapsed #side-bar .chiled a.sidebar-menu-hidden {
     display: none !important;
 }
@@ -507,14 +580,38 @@ body.zoho-theme.sidebar-collapse #side-bar .zoho-sidebar-flyout__body {
     background: #fff;
 }
 
-body.zoho-theme .side-bar.zoho-sidebar-collapsed #side-bar .chiled a,
-body.zoho-theme.sidebar-collapse #side-bar .chiled a {
+body.zoho-theme .side-bar.zoho-sidebar-collapsed #side-bar .chiled .zoho-sidebar-child-row,
+body.zoho-theme.sidebar-collapse #side-bar .chiled .zoho-sidebar-child-row {
+    margin: 0 8px;
+}
+
+body.zoho-theme .side-bar.zoho-sidebar-collapsed #side-bar .chiled .zoho-sidebar-child-link,
+body.zoho-theme.sidebar-collapse #side-bar .chiled .zoho-sidebar-child-link {
+    padding: 8px 10px 8px 16px !important;
+    border-radius: 6px 0 0 6px !important;
+}
+
+body.zoho-theme .side-bar.zoho-sidebar-collapsed #side-bar .chiled .zoho-sidebar-child-add,
+body.zoho-theme.sidebar-collapse #side-bar .chiled .zoho-sidebar-child-add {
+    margin-right: 8px;
+    border-radius: 0 6px 6px 0;
+}
+
+body.zoho-theme .side-bar.zoho-sidebar-collapsed #side-bar .chiled a:not(.zoho-sidebar-child-link):not(.zoho-sidebar-child-add),
+body.zoho-theme.sidebar-collapse #side-bar .chiled a:not(.zoho-sidebar-child-link):not(.zoho-sidebar-child-add) {
     padding: 8px 16px !important;
     border-radius: 0 !important;
 }
 
-body.zoho-theme .side-bar.zoho-sidebar-collapsed #side-bar .chiled a:hover,
-body.zoho-theme.sidebar-collapse #side-bar .chiled a:hover {
+body.zoho-theme .side-bar.zoho-sidebar-collapsed #side-bar .chiled .zoho-sidebar-child-row:hover,
+body.zoho-theme.sidebar-collapse #side-bar .chiled .zoho-sidebar-child-row:hover,
+body.zoho-theme .side-bar.zoho-sidebar-collapsed #side-bar .chiled .zoho-sidebar-child-row--active,
+body.zoho-theme.sidebar-collapse #side-bar .chiled .zoho-sidebar-child-row--active {
+    background: var(--zoho-blue) !important;
+}
+
+body.zoho-theme .side-bar.zoho-sidebar-collapsed #side-bar .chiled a:not(.zoho-sidebar-child-link):not(.zoho-sidebar-child-add):hover,
+body.zoho-theme.sidebar-collapse #side-bar .chiled a:not(.zoho-sidebar-child-link):not(.zoho-sidebar-child-add):hover {
     background: var(--zoho-blue-light) !important;
     color: var(--zoho-blue) !important;
 }

@@ -2,6 +2,8 @@
 
 namespace App\Http;
 
+use Collective\Html\HtmlFacade as HTML;
+use Illuminate\Support\Arr;
 use Nwidart\Menus\Presenters\Presenter;
 
 class AdminlteCustomPresenter extends Presenter
@@ -134,12 +136,7 @@ class AdminlteCustomPresenter extends Presenter
             <div class="zoho-sidebar-flyout__body tw-space-y-1">';
 
             foreach ($item->getChilds() as $child) {
-
-                $isActive = $child->isActive() ? 'theme-sidebar-child-active' : '';
-
-                $children .= '<a href="' . $child->getUrl() . '" title="" class="tw-flex tw-text-sm tw-font-normal tw-text-gray-600 tw-truncate tw-transition-all tw-duration-200 tw-py-1 theme-sidebar-child-hover tw-whitespace-nowrap ' . $isActive . '" ' . $child->getAttributes() . '>' .
-                '<span>' . $child->title . '</span>' .
-                    '</a>' . PHP_EOL;
+                $children .= $this->renderChildMenuRow($child) . PHP_EOL;
             }
 
             $children .= '</div></div>';
@@ -173,6 +170,67 @@ class AdminlteCustomPresenter extends Presenter
             return '<path stroke="none" d="M0 0h24v24H0z" fill="none"/>
             <path d="M15 6l-6 6l6 6" />';
         }
+    }
+
+    /**
+     * Render a submenu row (list link + optional Zoho-style quick-add button).
+     *
+     * @param  \Nwidart\Menus\MenuItem  $child
+     * @return string
+     */
+    protected function renderChildMenuRow($child)
+    {
+        $isActive = $child->isActive() ? 'theme-sidebar-child-active' : '';
+        $quickAdd = $this->renderQuickAddButton($child);
+
+        return '<div class="zoho-sidebar-child-row' . ($isActive ? ' zoho-sidebar-child-row--active' : '') . ($quickAdd ? ' zoho-sidebar-child-row--has-add' : '') . '">' .
+            '<a href="' . $child->getUrl() . '" title="' . e($child->title) . '" class="zoho-sidebar-child-link tw-flex tw-flex-1 tw-min-w-0 tw-text-sm tw-font-normal tw-text-gray-600 tw-truncate tw-transition-all tw-duration-200 tw-py-1 theme-sidebar-child-hover tw-whitespace-nowrap ' . $isActive . '" ' . $this->getChildLinkAttributes($child) . '>' .
+            '<span>' . $child->title . '</span>' .
+            '</a>' .
+            $quickAdd .
+            '</div>';
+    }
+
+    /**
+     * @param  \Nwidart\Menus\MenuItem  $child
+     * @return string
+     */
+    protected function renderQuickAddButton($child)
+    {
+        $attributes = $child->attributes ?? [];
+        $addUrl = Arr::get($attributes, 'add_url');
+        $addModal = Arr::get($attributes, 'add_modal');
+        $addLabel = Arr::get($attributes, 'add_label', __('messages.add'));
+
+        if (empty($addUrl) && empty($addModal)) {
+            return '';
+        }
+
+        $title = ' title="' . e($addLabel) . '" aria-label="' . e($addLabel) . '"';
+
+        if (! empty($addModal)) {
+            $href = Arr::get($addModal, 'href', '#');
+            $container = Arr::get($addModal, 'container', '#global_contact_modal');
+
+            return '<a href="#" class="zoho-sidebar-child-add btn-modal"' . $title .
+                ' data-href="' . e($href) . '" data-container="' . e($container) . '">' .
+                '<span aria-hidden="true">+</span></a>';
+        }
+
+        return '<a href="' . e($addUrl) . '" class="zoho-sidebar-child-add"' . $title . '>' .
+            '<span aria-hidden="true">+</span></a>';
+    }
+
+    /**
+     * @param  \Nwidart\Menus\MenuItem  $child
+     * @return string
+     */
+    protected function getChildLinkAttributes($child)
+    {
+        $attributes = $child->attributes ?? [];
+        Arr::forget($attributes, ['active', 'icon', 'add_url', 'add_modal', 'add_label']);
+
+        return HTML::attributes($attributes);
     }
 }
 

@@ -812,16 +812,24 @@ $(function () {
         $('#side-bar').children('.zoho-sidebar-item, a').each(function () {
             var $item = $(this);
             var $link = $item.is('a') ? $item : $item.children('a').first();
-            var $childLinks = $item.find('.chiled a');
+            var $childLinks = $item.find('.chiled .zoho-sidebar-child-link, .chiled > a');
             var parentText = $link.text().toLowerCase();
             var parentMatch = !q || parentText.indexOf(q) !== -1;
             var anyChildMatch = false;
 
             $childLinks.each(function () {
                 var $child = $(this);
+                if ($child.hasClass('zoho-sidebar-child-add')) {
+                    return;
+                }
+                var $row = $child.closest('.zoho-sidebar-child-row');
                 var childMatch = !q || $child.text().toLowerCase().indexOf(q) !== -1;
                 var hideChild = q && !parentMatch && !childMatch;
-                $child.toggleClass('sidebar-menu-hidden', hideChild);
+                if ($row.length) {
+                    $row.toggleClass('sidebar-menu-hidden', hideChild);
+                } else {
+                    $child.toggleClass('sidebar-menu-hidden', hideChild);
+                }
                 if (childMatch) {
                     anyChildMatch = true;
                 }
@@ -892,6 +900,10 @@ $(function () {
             });
         }
     }
+
+    $(document).on('click', '.zoho-sidebar-child-add', function (event) {
+        event.stopPropagation();
+    });
 
     $(document).on('click', '.drop_down', function (event) {
         if (isZohoSidebarCollapsed()) {

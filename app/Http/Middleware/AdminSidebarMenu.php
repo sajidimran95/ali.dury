@@ -15,15 +15,37 @@ class AdminSidebarMenu
     protected function addSalesCustomerMenuItems($sub): void
     {
         if (auth()->user()->can('customer.view') || auth()->user()->can('customer.view_own')) {
+            $customerAttrs = [
+                'icon' => '',
+                'active' => request()->segment(1) == 'contacts' && request()->input('type') == 'customer',
+            ];
+            if (auth()->user()->can('customer.create')) {
+                $customerAttrs['add_modal'] = [
+                    'href' => action([\App\Http\Controllers\ContactController::class, 'create'], ['type' => 'customer']),
+                    'container' => '#global_contact_modal',
+                ];
+                $customerAttrs['add_label'] = __('contact.add_contact');
+            }
             $sub->url(
                 action([\App\Http\Controllers\ContactController::class, 'index'], ['type' => 'customer']),
                 __('report.customer'),
-                ['icon' => '', 'active' => request()->segment(1) == 'contacts' && request()->input('type') == 'customer']
+                $customerAttrs
             );
+            $cgAttrs = [
+                'icon' => '',
+                'active' => request()->segment(1) == 'customer-group',
+            ];
+            if (auth()->user()->can('customer.create')) {
+                $cgAttrs = $this->withQuickAddModal(
+                    $cgAttrs,
+                    action([\App\Http\Controllers\CustomerGroupController::class, 'create']),
+                    __('lang_v1.add_customer_group')
+                );
+            }
             $sub->url(
                 action([\App\Http\Controllers\CustomerGroupController::class, 'index']),
                 __('lang_v1.customer_groups'),
-                ['icon' => '', 'active' => request()->segment(1) == 'customer-group']
+                $cgAttrs
             );
         }
         if (auth()->user()->can('customer.create')) {
@@ -48,10 +70,21 @@ class AdminSidebarMenu
     protected function addPurchaseSupplierMenuItems($sub): void
     {
         if (auth()->user()->can('supplier.view') || auth()->user()->can('supplier.view_own')) {
+            $supplierAttrs = [
+                'icon' => '',
+                'active' => request()->segment(1) == 'contacts' && request()->input('type') == 'supplier',
+            ];
+            if (auth()->user()->can('supplier.create')) {
+                $supplierAttrs['add_modal'] = [
+                    'href' => action([\App\Http\Controllers\ContactController::class, 'create'], ['type' => 'supplier']),
+                    'container' => '#global_contact_modal',
+                ];
+                $supplierAttrs['add_label'] = __('contact.add_contact');
+            }
             $sub->url(
                 action([\App\Http\Controllers\ContactController::class, 'index'], ['type' => 'supplier']),
                 __('lang_v1.menu_vendors'),
-                ['icon' => '', 'active' => request()->segment(1) == 'contacts' && request()->input('type') == 'supplier']
+                $supplierAttrs
             );
         }
         if (auth()->user()->can('supplier.create')) {
@@ -70,34 +103,38 @@ class AdminSidebarMenu
     {
         if (in_array('stock_transfers', $enabled_modules) && (auth()->user()->can('stock_transfer.view') || auth()->user()->can('stock_transfer.create') || auth()->user()->can('stock_transfer.view_own'))) {
             if (auth()->user()->can('stock_transfer.view') || auth()->user()->can('stock_transfer.view_own')) {
+                $transferAttrs = [
+                    'icon' => '',
+                    'active' => request()->segment(1) == 'stock-transfers' && request()->segment(2) == null,
+                ];
+                if (auth()->user()->can('stock_transfer.create')) {
+                    $transferAttrs['add_url'] = action([\App\Http\Controllers\StockTransferController::class, 'create']);
+                    $transferAttrs['add_label'] = __('lang_v1.add_stock_transfer');
+                    $transferAttrs['active'] = request()->segment(1) == 'stock-transfers' && in_array(request()->segment(2), [null, 'create'], true);
+                }
                 $sub->url(
                     action([\App\Http\Controllers\StockTransferController::class, 'index']),
                     __('lang_v1.list_stock_transfers'),
-                    ['icon' => '', 'active' => request()->segment(1) == 'stock-transfers' && request()->segment(2) == null]
-                );
-            }
-            if (auth()->user()->can('stock_transfer.create')) {
-                $sub->url(
-                    action([\App\Http\Controllers\StockTransferController::class, 'create']),
-                    __('lang_v1.add_stock_transfer'),
-                    ['icon' => '', 'active' => request()->segment(1) == 'stock-transfers' && request()->segment(2) == 'create']
+                    $transferAttrs
                 );
             }
         }
 
         if (in_array('stock_adjustment', $enabled_modules) && (auth()->user()->can('stock_adjustment.view') || auth()->user()->can('stock_adjustment.create') || auth()->user()->can('view_own_stock_adjustment'))) {
             if (auth()->user()->can('stock_adjustment.view') || auth()->user()->can('view_own_stock_adjustment')) {
+                $adjustAttrs = [
+                    'icon' => '',
+                    'active' => request()->segment(1) == 'stock-adjustments' && request()->segment(2) == null,
+                ];
+                if (auth()->user()->can('stock_adjustment.create')) {
+                    $adjustAttrs['add_url'] = action([\App\Http\Controllers\StockAdjustmentController::class, 'create']);
+                    $adjustAttrs['add_label'] = __('stock_adjustment.add');
+                    $adjustAttrs['active'] = request()->segment(1) == 'stock-adjustments' && in_array(request()->segment(2), [null, 'create'], true);
+                }
                 $sub->url(
                     action([\App\Http\Controllers\StockAdjustmentController::class, 'index']),
                     __('stock_adjustment.list'),
-                    ['icon' => '', 'active' => request()->segment(1) == 'stock-adjustments' && request()->segment(2) == null]
-                );
-            }
-            if (auth()->user()->can('stock_adjustment.create')) {
-                $sub->url(
-                    action([\App\Http\Controllers\StockAdjustmentController::class, 'create']),
-                    __('stock_adjustment.add'),
-                    ['icon' => '', 'active' => request()->segment(1) == 'stock-adjustments' && request()->segment(2) == 'create']
+                    $adjustAttrs
                 );
             }
         }
@@ -120,6 +157,35 @@ class AdminSidebarMenu
         $has_opening = auth()->user()->can('product.opening_stock');
 
         return $has_stock || $has_adjust || $has_opening;
+    }
+
+    /**
+     * Zoho-style sidebar + button — opens create form in global modal.
+     */
+    protected function withQuickAddModal(array $attrs, ?string $href, ?string $label = null, string $container = '.view_modal'): array
+    {
+        if (! empty($href)) {
+            $attrs['add_modal'] = [
+                'href' => $href,
+                'container' => $container,
+            ];
+            $attrs['add_label'] = $label ?? __('messages.add');
+        }
+
+        return $attrs;
+    }
+
+    /**
+     * Zoho-style sidebar + button — navigates to create page.
+     */
+    protected function withQuickAddUrl(array $attrs, ?string $url, ?string $label = null): array
+    {
+        if (! empty($url)) {
+            $attrs['add_url'] = $url;
+            $attrs['add_label'] = $label ?? __('messages.add');
+        }
+
+        return $attrs;
     }
 
     /**
@@ -169,18 +235,19 @@ class AdminSidebarMenu
                     __('lang_v1.menu_items'),
                     function ($sub) {
                         if (auth()->user()->can('product.view')) {
+                            $productAttrs = [
+                                'icon' => '',
+                                'active' => request()->segment(1) == 'products' && request()->segment(2) == '',
+                            ];
+                            if (auth()->user()->can('product.create')) {
+                                $productAttrs['add_url'] = action([\App\Http\Controllers\ProductController::class, 'create']);
+                                $productAttrs['add_label'] = __('product.add_product');
+                                $productAttrs['active'] = request()->segment(1) == 'products' && in_array(request()->segment(2), ['', 'create'], true);
+                            }
                             $sub->url(
                                 action([\App\Http\Controllers\ProductController::class, 'index']),
                                 __('lang_v1.list_products'),
-                                ['icon' => '', 'active' => request()->segment(1) == 'products' && request()->segment(2) == '']
-                            );
-                        }
-
-                        if (auth()->user()->can('product.create')) {
-                            $sub->url(
-                                action([\App\Http\Controllers\ProductController::class, 'create']),
-                                __('product.add_product'),
-                                ['icon' => '', 'active' => request()->segment(1) == 'products' && request()->segment(2) == 'create']
+                                $productAttrs
                             );
                         }
                         if (auth()->user()->can('product.create')) {
@@ -198,10 +265,19 @@ class AdminSidebarMenu
                             );
                         }
                         if (auth()->user()->can('product.create')) {
+                            $variationAttrs = [
+                                'icon' => '',
+                                'active' => request()->segment(1) == 'variation-templates',
+                            ];
+                            $variationAttrs = $this->withQuickAddModal(
+                                $variationAttrs,
+                                action([\App\Http\Controllers\VariationTemplateController::class, 'create']),
+                                __('product.add_variation')
+                            );
                             $sub->url(
                                 action([\App\Http\Controllers\VariationTemplateController::class, 'index']),
                                 __('product.variations'),
-                                ['icon' => '', 'active' => request()->segment(1) == 'variation-templates']
+                                $variationAttrs
                             );
                             $sub->url(
                                 action([\App\Http\Controllers\ImportProductsController::class, 'index']),
@@ -210,38 +286,91 @@ class AdminSidebarMenu
                             );
                         }
                         if (auth()->user()->can('product.create')) {
+                            $spgAttrs = [
+                                'icon' => '',
+                                'active' => request()->segment(1) == 'selling-price-group',
+                            ];
+                            $spgAttrs = $this->withQuickAddModal(
+                                $spgAttrs,
+                                action([\App\Http\Controllers\SellingPriceGroupController::class, 'create']),
+                                __('lang_v1.add_selling_price_group')
+                            );
                             $sub->url(
                                 action([\App\Http\Controllers\SellingPriceGroupController::class, 'index']),
                                 __('lang_v1.selling_price_group'),
-                                ['icon' => '', 'active' => request()->segment(1) == 'selling-price-group']
+                                $spgAttrs
                             );
                         }
                         if (auth()->user()->can('unit.view') || auth()->user()->can('unit.create')) {
+                            $unitAttrs = [
+                                'icon' => '',
+                                'active' => request()->segment(1) == 'units',
+                            ];
+                            if (auth()->user()->can('unit.create')) {
+                                $unitAttrs = $this->withQuickAddModal(
+                                    $unitAttrs,
+                                    action([\App\Http\Controllers\UnitController::class, 'create']),
+                                    __('unit.add_unit')
+                                );
+                            }
                             $sub->url(
                                 action([\App\Http\Controllers\UnitController::class, 'index']),
                                 __('unit.units'),
-                                ['icon' => '', 'active' => request()->segment(1) == 'units']
+                                $unitAttrs
                             );
                         }
                         if (auth()->user()->can('category.view') || auth()->user()->can('category.create')) {
+                            $categoryAttrs = [
+                                'icon' => '',
+                                'active' => request()->segment(1) == 'taxonomies' && request()->get('type') == 'product',
+                            ];
+                            if (auth()->user()->can('category.create')) {
+                                $categoryAttrs = $this->withQuickAddModal(
+                                    $categoryAttrs,
+                                    action([\App\Http\Controllers\TaxonomyController::class, 'create']) . '?type=product',
+                                    __('category.add_category')
+                                );
+                            }
                             $sub->url(
                                 action([\App\Http\Controllers\TaxonomyController::class, 'index']) . '?type=product',
                                 __('category.categories'),
-                                ['icon' => '', 'active' => request()->segment(1) == 'taxonomies' && request()->get('type') == 'product']
+                                $categoryAttrs
                             );
                         }
                         if (auth()->user()->can('brand.view') || auth()->user()->can('brand.create')) {
+                            $brandAttrs = [
+                                'icon' => '',
+                                'active' => request()->segment(1) == 'brands',
+                            ];
+                            if (auth()->user()->can('brand.create')) {
+                                $brandAttrs = $this->withQuickAddModal(
+                                    $brandAttrs,
+                                    action([\App\Http\Controllers\BrandController::class, 'create']),
+                                    __('brand.add_brand')
+                                );
+                            }
                             $sub->url(
                                 action([\App\Http\Controllers\BrandController::class, 'index']),
                                 __('brand.brands'),
-                                ['icon' => '', 'active' => request()->segment(1) == 'brands']
+                                $brandAttrs
                             );
                         }
 
+                        $warrantyAttrs = [
+                            'icon' => '',
+                            'active' => request()->segment(1) == 'warranties',
+                        ];
+                        if (auth()->user()->can('product.create')) {
+                            $warrantyAttrs = $this->withQuickAddModal(
+                                $warrantyAttrs,
+                                action([\App\Http\Controllers\WarrantyController::class, 'create']),
+                                __('lang_v1.add_warranty')
+                            );
+                        }
                         $sub->url(
                             action([\App\Http\Controllers\WarrantyController::class, 'index']),
                             __('lang_v1.warranties'),
-                            ['icon' => '', 'active' => request()->segment(1) == 'warranties']
+                            $warrantyAttrs
                         );
                     },
                     ['icon' => '<svg aria-hidden="true" class="tw-size-5 tw-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
@@ -279,79 +408,115 @@ class AdminSidebarMenu
                         $this->addSalesCustomerMenuItems($sub);
 
                         if (auth()->user()->can('user.create')) {
+                            $agentAttrs = [
+                                'icon' => '',
+                                'active' => request()->segment(1) == 'sales-commission-agents',
+                            ];
+                            $agentAttrs = $this->withQuickAddModal(
+                                $agentAttrs,
+                                action([\App\Http\Controllers\SalesCommissionAgentController::class, 'create']),
+                                __('lang_v1.add_sales_commission_agent')
+                            );
                             $sub->url(
                                 action([\App\Http\Controllers\SalesCommissionAgentController::class, 'index']),
                                 __('lang_v1.sales_commission_agents'),
-                                ['icon' => '', 'active' => request()->segment(1) == 'sales-commission-agents']
+                                $agentAttrs
                             );
                         }
 
                         if (!empty($pos_settings['enable_sales_order']) && ($is_admin || auth()->user()->hasAnyPermission(['so.view_own', 'so.view_all', 'so.create']))) {
+                            $soAttrs = [
+                                'icon' => '',
+                                'active' => request()->segment(1) == 'sales-order',
+                            ];
+                            if (auth()->user()->can('so.create')) {
+                                $soAttrs['add_url'] = action([\App\Http\Controllers\SellController::class, 'create'], ['sale_type' => 'sales_order']);
+                                $soAttrs['add_label'] = __('lang_v1.add_sales_order');
+                            }
                             $sub->url(
                                 action([\App\Http\Controllers\SalesOrderController::class, 'index']),
                                 __('lang_v1.sales_order'),
-                                ['icon' => '', 'active' => request()->segment(1) == 'sales-order']
+                                $soAttrs
                             );
                         }
 
                         if ($is_admin || auth()->user()->hasAnyPermission(['sell.view', 'sell.create', 'direct_sell.access', 'direct_sell.view', 'view_own_sell_only', 'view_commission_agent_sell', 'access_shipping', 'access_own_shipping', 'access_commission_agent_shipping'])) {
+                            $salesAttrs = [
+                                'icon' => '',
+                                'active' => request()->segment(1) == 'sells' && request()->segment(2) == null,
+                            ];
+                            if (in_array('add_sale', $enabled_modules) && auth()->user()->can('direct_sell.access')) {
+                                $salesAttrs['add_url'] = action([\App\Http\Controllers\SellController::class, 'create']);
+                                $salesAttrs['add_label'] = __('sale.add_sale');
+                                $salesAttrs['active'] = request()->segment(1) == 'sells' && in_array(request()->segment(2), [null, 'create'], true) && empty(request()->get('status'));
+                            }
                             $sub->url(
                                 action([\App\Http\Controllers\SellController::class, 'index']),
                                 __('lang_v1.all_sales'),
-                                ['icon' => '', 'active' => request()->segment(1) == 'sells' && request()->segment(2) == null]
-                            );
-                        }
-                        if (in_array('add_sale', $enabled_modules) && auth()->user()->can('direct_sell.access')) {
-                            $sub->url(
-                                action([\App\Http\Controllers\SellController::class, 'create']),
-                                __('sale.add_sale'),
-                                ['icon' => '', 'active' => request()->segment(1) == 'sells' && request()->segment(2) == 'create' && empty(request()->get('status'))]
+                                $salesAttrs
                             );
                         }
                         if (auth()->user()->can('sell.create')) {
                             if (in_array('pos_sale', $enabled_modules)) {
                                 if (auth()->user()->can('sell.view')) {
+                                    $posAttrs = [
+                                        'icon' => '',
+                                        'active' => request()->segment(1) == 'pos' && request()->segment(2) == null,
+                                    ];
+                                    $posAttrs['add_url'] = action([\App\Http\Controllers\SellPosController::class, 'create']);
+                                    $posAttrs['add_label'] = __('sale.pos_sale');
+                                    $posAttrs['active'] = request()->segment(1) == 'pos' && in_array(request()->segment(2), [null, 'create'], true);
                                     $sub->url(
                                         action([\App\Http\Controllers\SellPosController::class, 'index']),
                                         __('sale.list_pos'),
-                                        ['icon' => '', 'active' => request()->segment(1) == 'pos' && request()->segment(2) == null]
+                                        $posAttrs
                                     );
                                 }
-
-                                $sub->url(
-                                    action([\App\Http\Controllers\SellPosController::class, 'create']),
-                                    __('sale.pos_sale'),
-                                    ['icon' => '', 'active' => request()->segment(1) == 'pos' && request()->segment(2) == 'create']
-                                );
                             }
                         }
 
-                        if (in_array('add_sale', $enabled_modules) && auth()->user()->can('direct_sell.access')) {
-                            $sub->url(
-                                action([\App\Http\Controllers\SellController::class, 'create'], ['status' => 'draft']),
-                                __('lang_v1.add_draft'),
-                                ['icon' => '', 'active' => request()->get('status') == 'draft']
-                            );
-                        }
                         if (in_array('add_sale', $enabled_modules) && ($is_admin || auth()->user()->hasAnyPermission(['draft.view_all', 'draft.view_own']))) {
+                            $draftAttrs = [
+                                'icon' => '',
+                                'active' => request()->segment(1) == 'sells' && request()->segment(2) == 'drafts',
+                            ];
+                            if (auth()->user()->can('direct_sell.access')) {
+                                $draftAttrs = $this->withQuickAddUrl(
+                                    $draftAttrs,
+                                    action([\App\Http\Controllers\SellController::class, 'create'], ['status' => 'draft']),
+                                    __('lang_v1.add_draft')
+                                );
+                                $draftAttrs['active'] = request()->segment(1) == 'sells' && (
+                                    request()->segment(2) == 'drafts' ||
+                                    (request()->segment(2) == 'create' && request()->get('status') == 'draft')
+                                );
+                            }
                             $sub->url(
                                 action([\App\Http\Controllers\SellController::class, 'getDrafts']),
                                 __('lang_v1.list_drafts'),
-                                ['icon' => '', 'active' => request()->segment(1) == 'sells' && request()->segment(2) == 'drafts']
-                            );
-                        }
-                        if (in_array('add_sale', $enabled_modules) && auth()->user()->can('direct_sell.access')) {
-                            $sub->url(
-                                action([\App\Http\Controllers\SellController::class, 'create'], ['status' => 'quotation']),
-                                __('lang_v1.add_quotation'),
-                                ['icon' => '', 'active' => request()->get('status') == 'quotation']
+                                $draftAttrs
                             );
                         }
                         if (in_array('add_sale', $enabled_modules) && ($is_admin || auth()->user()->hasAnyPermission(['quotation.view_all', 'quotation.view_own']))) {
+                            $quoteAttrs = [
+                                'icon' => '',
+                                'active' => request()->segment(1) == 'sells' && request()->segment(2) == 'quotations',
+                            ];
+                            if (auth()->user()->can('direct_sell.access')) {
+                                $quoteAttrs = $this->withQuickAddUrl(
+                                    $quoteAttrs,
+                                    action([\App\Http\Controllers\SellController::class, 'create'], ['status' => 'quotation']),
+                                    __('lang_v1.add_quotation')
+                                );
+                                $quoteAttrs['active'] = request()->segment(1) == 'sells' && (
+                                    request()->segment(2) == 'quotations' ||
+                                    (request()->segment(2) == 'create' && request()->get('status') == 'quotation')
+                                );
+                            }
                             $sub->url(
                                 action([\App\Http\Controllers\SellController::class, 'getQuotations']),
                                 __('lang_v1.list_quotations'),
-                                ['icon' => '', 'active' => request()->segment(1) == 'sells' && request()->segment(2) == 'quotations']
+                                $quoteAttrs
                             );
                         }
 
@@ -372,10 +537,19 @@ class AdminSidebarMenu
                         }
 
                         if (auth()->user()->can('discount.access')) {
+                            $discountAttrs = [
+                                'icon' => '',
+                                'active' => request()->segment(1) == 'discount',
+                            ];
+                            $discountAttrs = $this->withQuickAddModal(
+                                $discountAttrs,
+                                action([\App\Http\Controllers\DiscountController::class, 'create']),
+                                __('lang_v1.add_discount')
+                            );
                             $sub->url(
                                 action([\App\Http\Controllers\DiscountController::class, 'index']),
                                 __('lang_v1.discounts'),
-                                ['icon' => '', 'active' => request()->segment(1) == 'discount']
+                                $discountAttrs
                             );
                         }
                         if (in_array('subscription', $enabled_modules) && auth()->user()->can('direct_sell.access')) {
@@ -413,39 +587,66 @@ class AdminSidebarMenu
                         $this->addPurchaseSupplierMenuItems($sub);
 
                         if (!empty($common_settings['enable_purchase_requisition']) && (auth()->user()->can('purchase_requisition.view_all') || auth()->user()->can('purchase_requisition.view_own'))) {
+                            $prAttrs = [
+                                'icon' => '',
+                                'active' => request()->segment(1) == 'purchase-requisition',
+                            ];
+                            if (auth()->user()->can('purchase_requisition.create')) {
+                                $prAttrs['add_url'] = action([\App\Http\Controllers\PurchaseRequisitionController::class, 'create']);
+                                $prAttrs['add_label'] = __('lang_v1.add_purchase_requisition');
+                            }
                             $sub->url(
                                 action([\App\Http\Controllers\PurchaseRequisitionController::class, 'index']),
                                 __('lang_v1.purchase_requisition'),
-                                ['icon' => '', 'active' => request()->segment(1) == 'purchase-requisition']
+                                $prAttrs
                             );
                         }
 
                         if (!empty($common_settings['enable_purchase_order']) && (auth()->user()->can('purchase_order.view_all') || auth()->user()->can('purchase_order.view_own'))) {
+                            $poAttrs = [
+                                'icon' => '',
+                                'active' => request()->segment(1) == 'purchase-order',
+                            ];
+                            if (auth()->user()->can('purchase_order.create')) {
+                                $poAttrs['add_url'] = action([\App\Http\Controllers\PurchaseOrderController::class, 'create']);
+                                $poAttrs['add_label'] = __('lang_v1.add_purchase_order');
+                            }
                             $sub->url(
                                 action([\App\Http\Controllers\PurchaseOrderController::class, 'index']),
                                 __('lang_v1.purchase_order'),
-                                ['icon' => '', 'active' => request()->segment(1) == 'purchase-order']
+                                $poAttrs
                             );
                         }
                         if (auth()->user()->can('purchase.view') || auth()->user()->can('view_own_purchase')) {
+                            $purchaseAttrs = [
+                                'icon' => '',
+                                'active' => request()->segment(1) == 'purchases' && request()->segment(2) == null,
+                            ];
+                            if (auth()->user()->can('purchase.create')) {
+                                $purchaseAttrs['add_url'] = action([\App\Http\Controllers\PurchaseController::class, 'create']);
+                                $purchaseAttrs['add_label'] = __('purchase.add_purchase');
+                                $purchaseAttrs['active'] = request()->segment(1) == 'purchases' && in_array(request()->segment(2), [null, 'create'], true);
+                            }
                             $sub->url(
                                 action([\App\Http\Controllers\PurchaseController::class, 'index']),
                                 __('purchase.list_purchase'),
-                                ['icon' => '', 'active' => request()->segment(1) == 'purchases' && request()->segment(2) == null]
-                            );
-                        }
-                        if (auth()->user()->can('purchase.create')) {
-                            $sub->url(
-                                action([\App\Http\Controllers\PurchaseController::class, 'create']),
-                                __('purchase.add_purchase'),
-                                ['icon' => '', 'active' => request()->segment(1) == 'purchases' && request()->segment(2) == 'create']
+                                $purchaseAttrs
                             );
                         }
                         if (auth()->user()->can('purchase.update')) {
+                            $prReturnAttrs = [
+                                'icon' => '',
+                                'active' => request()->segment(1) == 'purchase-return',
+                            ];
+                            $prReturnAttrs = $this->withQuickAddUrl(
+                                $prReturnAttrs,
+                                action([\App\Http\Controllers\CombinedPurchaseReturnController::class, 'create']),
+                                __('lang_v1.add_purchase_return')
+                            );
                             $sub->url(
                                 action([\App\Http\Controllers\PurchaseReturnController::class, 'index']),
                                 __('lang_v1.list_purchase_return'),
-                                ['icon' => '', 'active' => request()->segment(1) == 'purchase-return']
+                                $prReturnAttrs
                             );
                         }
                     },
@@ -463,25 +664,40 @@ class AdminSidebarMenu
                 $menu->dropdown(
                     __('expense.expenses'),
                     function ($sub) {
+                        $expenseAttrs = [
+                            'icon' => '',
+                            'active' => (request()->segment(1) == 'expenses' || request()->segment(1) == 'import-expense') && request()->segment(2) == null,
+                        ];
+                        if (auth()->user()->can('expense.add')) {
+                            $expenseAttrs = $this->withQuickAddUrl(
+                                $expenseAttrs,
+                                action([\App\Http\Controllers\ExpenseController::class, 'create']),
+                                __('expense.add_expense')
+                            );
+                            $expenseAttrs['active'] = request()->segment(1) == 'expenses' && in_array(request()->segment(2), [null, 'create'], true);
+                        }
                         $sub->url(
                             action([\App\Http\Controllers\ExpenseController::class, 'index']),
                             __('lang_v1.list_expenses'),
-                            ['icon' => '', 'active' => request()->segment(1) == 'expenses' || request()->segment(1) == 'import-expense' && request()->segment(2) == null]
+                            $expenseAttrs
                         );
 
-                        if (auth()->user()->can('expense.add')) {
-                            $sub->url(
-                                action([\App\Http\Controllers\ExpenseController::class, 'create']),
-                                __('expense.add_expense'),
-                                ['icon' => '', 'active' => request()->segment(1) == 'expenses' && request()->segment(2) == 'create']
-                            );
-                        }
-
                         if (auth()->user()->can('expense.add') || auth()->user()->can('expense.edit')) {
+                            $expCatAttrs = [
+                                'icon' => '',
+                                'active' => request()->segment(1) == 'expense-categories',
+                            ];
+                            if (auth()->user()->can('expense.add')) {
+                                $expCatAttrs = $this->withQuickAddModal(
+                                    $expCatAttrs,
+                                    action([\App\Http\Controllers\ExpenseCategoryController::class, 'create']),
+                                    __('expense.add_expense_category')
+                                );
+                            }
                             $sub->url(
                                 action([\App\Http\Controllers\ExpenseCategoryController::class, 'index']),
                                 __('expense.expense_categories'),
-                                ['icon' => '', 'active' => request()->segment(1) == 'expense-categories']
+                                $expCatAttrs
                             );
                         }
                     },
@@ -499,10 +715,21 @@ class AdminSidebarMenu
                 $menu->dropdown(
                     __('lang_v1.payment_accounts'),
                     function ($sub) {
+                        $accountAttrs = [
+                            'icon' => '',
+                            'active' => request()->segment(1) == 'account' && request()->segment(2) == 'account',
+                        ];
+                        if (auth()->user()->can('account.access')) {
+                            $accountAttrs = $this->withQuickAddModal(
+                                $accountAttrs,
+                                action([\App\Http\Controllers\AccountController::class, 'create']),
+                                __('account.add_account')
+                            );
+                        }
                         $sub->url(
                             action([\App\Http\Controllers\AccountController::class, 'index']),
                             __('account.list_accounts'),
-                            ['icon' => '', 'active' => request()->segment(1) == 'account' && request()->segment(2) == 'account']
+                            $accountAttrs
                         );
                         $sub->url(
                             action([\App\Http\Controllers\AccountReportsController::class, 'balanceSheet']),
@@ -794,17 +1021,41 @@ class AdminSidebarMenu
                     __('business.settings'),
                     function ($sub) use ($enabled_modules) {
                         if (auth()->user()->can('user.view')) {
+                            $userAttrs = [
+                                'icon' => '',
+                                'active' => request()->segment(1) == 'users',
+                            ];
+                            if (auth()->user()->can('user.create')) {
+                                $userAttrs = $this->withQuickAddUrl(
+                                    $userAttrs,
+                                    action([\App\Http\Controllers\ManageUserController::class, 'create']),
+                                    __('user.add_user')
+                                );
+                                $userAttrs['active'] = request()->segment(1) == 'users' && in_array(request()->segment(2), [null, 'create'], true);
+                            }
                             $sub->url(
                                 action([\App\Http\Controllers\ManageUserController::class, 'index']),
                                 __('user.users'),
-                                ['icon' => '', 'active' => request()->segment(1) == 'users']
+                                $userAttrs
                             );
                         }
                         if (auth()->user()->can('roles.view')) {
+                            $roleAttrs = [
+                                'icon' => '',
+                                'active' => request()->segment(1) == 'roles',
+                            ];
+                            if (auth()->user()->can('roles.create')) {
+                                $roleAttrs = $this->withQuickAddUrl(
+                                    $roleAttrs,
+                                    action([\App\Http\Controllers\RoleController::class, 'create']),
+                                    __('user.add_role')
+                                );
+                                $roleAttrs['active'] = request()->segment(1) == 'roles' && in_array(request()->segment(2), [null, 'create'], true);
+                            }
                             $sub->url(
                                 action([\App\Http\Controllers\RoleController::class, 'index']),
                                 __('user.roles'),
-                                ['icon' => '', 'active' => request()->segment(1) == 'roles']
+                                $roleAttrs
                             );
                         }
                         if (auth()->user()->can('business_settings.access')) {
@@ -813,63 +1064,141 @@ class AdminSidebarMenu
                                 __('business.business_settings'),
                                 ['icon' => '', 'active' => request()->segment(1) == 'business', 'id' => 'tour_step2']
                             );
+                            $locationAttrs = [
+                                'icon' => '',
+                                'active' => request()->segment(1) == 'business-location',
+                            ];
+                            $locationAttrs = $this->withQuickAddModal(
+                                $locationAttrs,
+                                action([\App\Http\Controllers\BusinessLocationController::class, 'create']),
+                                __('business.add_business_location')
+                            );
                             $sub->url(
                                 action([\App\Http\Controllers\BusinessLocationController::class, 'index']),
                                 __('business.business_locations'),
-                                ['icon' => '', 'active' => request()->segment(1) == 'business-location']
+                                $locationAttrs
                             );
                         }
                         if (auth()->user()->can('invoice_settings.access')) {
+                            $invoiceAttrs = [
+                                'icon' => '',
+                                'active' => in_array(request()->segment(1), ['invoice-schemes', 'invoice-layouts']),
+                            ];
+                            $invoiceAttrs = $this->withQuickAddModal(
+                                $invoiceAttrs,
+                                action([\App\Http\Controllers\InvoiceSchemeController::class, 'create']),
+                                __('invoice.add_invoice')
+                            );
                             $sub->url(
                                 action([\App\Http\Controllers\InvoiceSchemeController::class, 'index']),
                                 __('invoice.invoice_settings'),
-                                ['icon' => '', 'active' => in_array(request()->segment(1), ['invoice-schemes', 'invoice-layouts'])]
+                                $invoiceAttrs
                             );
                         }
                         if (auth()->user()->can('barcode_settings.access')) {
+                            $barcodeAttrs = [
+                                'icon' => '',
+                                'active' => request()->segment(1) == 'barcodes',
+                            ];
+                            $barcodeAttrs = $this->withQuickAddUrl(
+                                $barcodeAttrs,
+                                action([\App\Http\Controllers\BarcodeController::class, 'create']),
+                                __('barcode.add_barcode_setting')
+                            );
+                            $barcodeAttrs['active'] = request()->segment(1) == 'barcodes' && in_array(request()->segment(2), [null, 'create'], true);
                             $sub->url(
                                 action([\App\Http\Controllers\BarcodeController::class, 'index']),
                                 __('barcode.barcode_settings'),
-                                ['icon' => '', 'active' => request()->segment(1) == 'barcodes']
+                                $barcodeAttrs
                             );
                         }
                         if (auth()->user()->can('access_printers')) {
+                            $printerAttrs = [
+                                'icon' => '',
+                                'active' => request()->segment(1) == 'printers',
+                            ];
+                            $printerAttrs = $this->withQuickAddUrl(
+                                $printerAttrs,
+                                action([\App\Http\Controllers\PrinterController::class, 'create']),
+                                __('printer.add_printer')
+                            );
+                            $printerAttrs['active'] = request()->segment(1) == 'printers' && in_array(request()->segment(2), [null, 'create'], true);
                             $sub->url(
                                 action([\App\Http\Controllers\PrinterController::class, 'index']),
                                 __('printer.receipt_printers'),
-                                ['icon' => '', 'active' => request()->segment(1) == 'printers']
+                                $printerAttrs
                             );
                         }
 
                         if (auth()->user()->can('tax_rate.view') || auth()->user()->can('tax_rate.create')) {
+                            $taxAttrs = [
+                                'icon' => '',
+                                'active' => request()->segment(1) == 'tax-rates',
+                            ];
+                            if (auth()->user()->can('tax_rate.create')) {
+                                $taxAttrs = $this->withQuickAddModal(
+                                    $taxAttrs,
+                                    action([\App\Http\Controllers\TaxRateController::class, 'create']),
+                                    __('tax_rate.add_tax_rate')
+                                );
+                            }
                             $sub->url(
                                 action([\App\Http\Controllers\TaxRateController::class, 'index']),
                                 __('tax_rate.tax_rates'),
-                                ['icon' => '', 'active' => request()->segment(1) == 'tax-rates']
+                                $taxAttrs
                             );
                         }
 
                         if (in_array('tables', $enabled_modules) && auth()->user()->can('access_tables')) {
+                            $tableAttrs = [
+                                'icon' => '',
+                                'active' => request()->segment(1) == 'modules' && request()->segment(2) == 'tables',
+                            ];
+                            $tableAttrs = $this->withQuickAddModal(
+                                $tableAttrs,
+                                action([\App\Http\Controllers\Restaurant\TableController::class, 'create']),
+                                __('restaurant.add_table')
+                            );
                             $sub->url(
                                 action([\App\Http\Controllers\Restaurant\TableController::class, 'index']),
                                 __('restaurant.tables'),
-                                ['icon' => '', 'active' => request()->segment(1) == 'modules' && request()->segment(2) == 'tables']
+                                $tableAttrs
                             );
                         }
 
                         if (in_array('modifiers', $enabled_modules) && (auth()->user()->can('product.view') || auth()->user()->can('product.create'))) {
+                            $modifierAttrs = [
+                                'icon' => '',
+                                'active' => request()->segment(1) == 'modules' && request()->segment(2) == 'modifiers',
+                            ];
+                            if (auth()->user()->can('product.create')) {
+                                $modifierAttrs = $this->withQuickAddModal(
+                                    $modifierAttrs,
+                                    action([\App\Http\Controllers\Restaurant\ModifierSetsController::class, 'create']),
+                                    __('restaurant.add_modifier')
+                                );
+                            }
                             $sub->url(
                                 action([\App\Http\Controllers\Restaurant\ModifierSetsController::class, 'index']),
                                 __('restaurant.modifiers'),
-                                ['icon' => '', 'active' => request()->segment(1) == 'modules' && request()->segment(2) == 'modifiers']
+                                $modifierAttrs
                             );
                         }
 
                         if (in_array('types_of_service', $enabled_modules) && auth()->user()->can('access_types_of_service')) {
+                            $tosAttrs = [
+                                'icon' => '',
+                                'active' => request()->segment(1) == 'types-of-service',
+                            ];
+                            $tosAttrs = $this->withQuickAddModal(
+                                $tosAttrs,
+                                action([\App\Http\Controllers\TypesOfServiceController::class, 'create']),
+                                __('lang_v1.add_type_of_service')
+                            );
                             $sub->url(
                                 action([\App\Http\Controllers\TypesOfServiceController::class, 'index']),
                                 __('lang_v1.types_of_service'),
-                                ['icon' => '', 'active' => request()->segment(1) == 'types-of-service']
+                                $tosAttrs
                             );
                         }
                     },
