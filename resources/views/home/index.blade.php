@@ -406,7 +406,7 @@
                 @endcan
                 @can('stock_report.view')
                     <div
-                        class="tw-transition-all lg:tw-col-span-2 tw-duration-200 tw-bg-white tw-shadow-sm tw-rounded-xl tw-ring-1 hover:tw-shadow-md hover:tw--translate-y-0.5 tw-ring-gray-200">
+                        class="tw-transition-all {{ session('business.enable_product_expiry') == 1 ? 'lg:tw-col-span-1' : 'lg:tw-col-span-2' }} tw-duration-200 tw-bg-white tw-shadow-sm tw-rounded-xl tw-ring-1 hover:tw-shadow-md hover:tw--translate-y-0.5 tw-ring-gray-200">
                         <div class="tw-p-4 sm:tw-p-5">
                             <div class="tw-flex tw-items-center tw-gap-2.5">
                                 <div
@@ -1425,6 +1425,7 @@
                 $.ajax({
                     url: '{{ action([\App\Http\Controllers\HomeController::class, 'getDashboardSidePanel']) }}',
                     method: 'GET',
+                    cache: false,
                     data: { location_id: locationId },
                     dataType: 'json',
                     success: function (resp) {

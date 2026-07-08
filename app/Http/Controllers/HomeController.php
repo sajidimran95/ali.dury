@@ -585,6 +585,42 @@ class HomeController extends Controller
             ];
         }
 
+        if (session('business.enable_product_expiry') == 1 && auth()->user()->can('stock_report.view')) {
+            $exp_date_filter = \Carbon::now()
+                ->addDays(carbon_numeric(session('business.stock_expiry_alert_days', 30)))
+                ->format('Y-m-d');
+
+            $expiry_query = \App\PurchaseLine::leftjoin('transactions as t', 'purchase_lines.transaction_id', '=', 't.id')
+                ->leftjoin('products as p', 'purchase_lines.product_id', '=', 'p.id')
+                ->where('t.business_id', $business_id)
+                ->where('p.enable_stock', 1)
+                ->whereNotNull('purchase_lines.exp_date')
+                ->whereDate('purchase_lines.exp_date', '<=', $exp_date_filter);
+
+            if ($permitted_locations != 'all') {
+                $expiry_query->whereIn('t.location_id', $permitted_locations);
+            }
+            if (! empty($location_id)) {
+                $expiry_query->where('t.location_id', $location_id);
+            }
+
+            $expiry_count = $expiry_query->select(
+                DB::raw('SUM(COALESCE(quantity, 0) - COALESCE(quantity_sold, 0) - COALESCE(quantity_adjusted, 0) - COALESCE(quantity_returned, 0)) as stock_left')
+            )
+                ->having('stock_left', '>', 0)
+                ->groupBy('purchase_lines.variation_id')
+                ->groupBy('purchase_lines.exp_date')
+                ->groupBy('purchase_lines.lot_number')
+                ->get()
+                ->count();
+
+            $inventory_items[] = [
+                'label' => __('home.stock_expiry_alert'),
+                'count' => $expiry_count,
+                'url' => action([\App\Http\Controllers\ReportController::class, 'getStockExpiryReport']),
+            ];
+        }
+
         if (in_array('stock_transfers', $enabled_modules) && (auth()->user()->can('stock_transfer.view') || auth()->user()->can('stock_transfer.view_own'))) {
             $transfer_progress = Transaction::where('transactions.business_id', $business_id)
                 ->where('transactions.type', 'sell_transfer')
