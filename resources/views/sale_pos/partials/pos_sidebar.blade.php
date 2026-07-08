@@ -3,7 +3,7 @@
     @if (!empty($categories))
         <div class="tw-flex-1 tw-min-w-[140px]" id="product_category_div">
             <div class="tw-dw-drawer tw-dw-drawer-end">
-                <input id="my-drawer-4{{ $drawer_id_suffix ?? '' }}" type="checkbox" class="tw-dw-drawer-toggle">
+                <input id="my-drawer-4{{ $drawer_id_suffix ?? '' }}" type="checkbox" class="tw-dw-drawer-toggle" style="display:none !important;">
                 <div class="tw-dw-drawer-content">
                     <!-- Page content here -->
                     <label for="my-drawer-4{{ $drawer_id_suffix ?? '' }}"
@@ -92,7 +92,7 @@
     @if (!empty($brands))
         <div class="tw-flex-1 tw-min-w-[140px]" id="product_brand_div">
             <div class="tw-dw-drawer tw-dw-drawer-end">
-                <input id="my-drawer-brand{{ $drawer_id_suffix ?? '' }}" type="checkbox" class="tw-dw-drawer-toggle">
+                <input id="my-drawer-brand{{ $drawer_id_suffix ?? '' }}" type="checkbox" class="tw-dw-drawer-toggle" style="display:none !important;">
                 <div class="tw-dw-drawer-content">
                     <!-- Page content here -->
                     <label for="my-drawer-brand{{ $drawer_id_suffix ?? '' }}"
