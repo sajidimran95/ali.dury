@@ -1795,3 +1795,265 @@ body.zoho-theme .notifications-menu .label-warning {
     pointer-events: none;
     z-index: 2;
 }
+
+/* ── Dashboard right side panel (Pending Actions / Recent Activities) ── */
+body.zoho-theme .zoho-dashboard__layout {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    padding-right: 24px;
+}
+
+body.zoho-theme .zoho-dashboard__main {
+    flex: 1;
+    min-width: 0;
+}
+
+body.zoho-theme .zoho-dashboard__aside {
+    flex: 0 0 340px;
+    width: 340px;
+    position: sticky;
+    top: 16px;
+    margin-top: 20px;
+}
+
+@media (max-width: 1199px) {
+    body.zoho-theme .zoho-dashboard__layout {
+        flex-direction: column;
+        padding-right: 0;
+    }
+
+    body.zoho-theme .zoho-dashboard__aside {
+        flex-basis: auto;
+        width: 100%;
+        position: static;
+        margin-top: 0;
+        padding: 0 24px 24px;
+    }
+}
+
+body.zoho-theme .zoho-side-panel {
+    background: #fff;
+    border: 1px solid var(--zoho-table-border);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+body.zoho-theme .zoho-side-panel__tabs {
+    display: flex;
+    padding: 12px 12px 0;
+    gap: 6px;
+    border-bottom: 1px solid var(--zoho-table-border);
+    background: #fafbfc;
+}
+
+body.zoho-theme .zoho-side-panel__tab {
+    appearance: none;
+    border: 1px solid transparent;
+    border-bottom: none;
+    background: transparent;
+    color: var(--zoho-text-muted);
+    font-size: 13.5px;
+    font-weight: 600;
+    padding: 9px 14px;
+    border-radius: 8px 8px 0 0;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+
+body.zoho-theme .zoho-side-panel__tab:hover {
+    color: var(--zoho-text);
+}
+
+body.zoho-theme .zoho-side-panel__tab--active {
+    background: #fff;
+    color: var(--zoho-blue);
+    border-color: var(--zoho-table-border);
+    margin-bottom: -1px;
+}
+
+body.zoho-theme .zoho-side-panel__pane {
+    display: none;
+    padding: 6px 4px 10px;
+    max-height: 620px;
+    overflow-y: auto;
+}
+
+body.zoho-theme .zoho-side-panel__pane--active {
+    display: block;
+}
+
+body.zoho-theme .zoho-side-panel__group {
+    padding: 8px 0;
+}
+
+body.zoho-theme .zoho-side-panel__group + .zoho-side-panel__group {
+    border-top: 1px solid var(--zoho-table-border);
+}
+
+body.zoho-theme .zoho-side-panel__group-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+}
+
+body.zoho-theme .zoho-side-panel__group-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    color: #f59e0b;
+}
+
+body.zoho-theme .zoho-side-panel__group-icon svg {
+    width: 18px;
+    height: 18px;
+}
+
+body.zoho-theme .zoho-side-panel__group-icon--sale {
+    color: var(--zoho-blue);
+}
+
+body.zoho-theme .zoho-side-panel__group-icon--inventory {
+    color: #f97316;
+}
+
+body.zoho-theme .zoho-side-panel__group-title {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--zoho-text);
+}
+
+body.zoho-theme .zoho-side-panel__row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 16px;
+    color: var(--zoho-text);
+    text-decoration: none;
+    transition: background 0.15s;
+}
+
+body.zoho-theme .zoho-side-panel__row:hover {
+    background: var(--zoho-row-hover);
+}
+
+body.zoho-theme .zoho-side-panel__row-caret {
+    width: 15px;
+    height: 15px;
+    color: #b6bdc7;
+    flex-shrink: 0;
+}
+
+body.zoho-theme .zoho-side-panel__row-label {
+    flex: 1;
+    min-width: 0;
+    font-size: 13.5px;
+    color: #4b5563;
+}
+
+body.zoho-theme .zoho-side-panel__row:hover .zoho-side-panel__row-label {
+    color: var(--zoho-blue);
+}
+
+body.zoho-theme .zoho-side-panel__row-count {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--zoho-text-muted);
+}
+
+body.zoho-theme .zoho-side-panel__row-count--active {
+    color: var(--zoho-text);
+}
+
+body.zoho-theme .zoho-side-panel__activity {
+    display: flex;
+    gap: 10px;
+    padding: 11px 16px;
+}
+
+body.zoho-theme .zoho-side-panel__activity + .zoho-side-panel__activity {
+    border-top: 1px solid #f1f3f5;
+}
+
+body.zoho-theme .zoho-side-panel__activity-dot {
+    flex-shrink: 0;
+    width: 9px;
+    height: 9px;
+    margin-top: 5px;
+    border-radius: 50%;
+    background: var(--zoho-blue);
+}
+
+body.zoho-theme .zoho-side-panel__activity-dot--green { background: #22a06b; }
+body.zoho-theme .zoho-side-panel__activity-dot--amber { background: #f59e0b; }
+body.zoho-theme .zoho-side-panel__activity-dot--red { background: #e5484d; }
+body.zoho-theme .zoho-side-panel__activity-dot--blue { background: var(--zoho-blue); }
+
+body.zoho-theme .zoho-side-panel__activity-body {
+    min-width: 0;
+    flex: 1;
+}
+
+body.zoho-theme .zoho-side-panel__activity-text {
+    margin: 0;
+    font-size: 13px;
+    color: var(--zoho-text);
+    line-height: 1.35;
+}
+
+body.zoho-theme .zoho-side-panel__activity-subject {
+    color: var(--zoho-blue);
+}
+
+body.zoho-theme .zoho-side-panel__activity-meta {
+    margin: 2px 0 0;
+    font-size: 11.5px;
+    color: var(--zoho-text-muted);
+}
+
+body.zoho-theme .zoho-side-panel__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 40px 20px;
+    color: var(--zoho-text-muted);
+    text-align: center;
+}
+
+body.zoho-theme .zoho-side-panel__empty svg {
+    width: 34px;
+    height: 34px;
+    opacity: 0.5;
+}
+
+body.zoho-theme .zoho-side-panel__empty p {
+    margin: 0;
+    font-size: 13px;
+}
+
+body.zoho-theme .zoho-side-panel__loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 0;
+}
+
+body.zoho-theme .zoho-side-panel__spinner {
+    width: 26px;
+    height: 26px;
+    border: 3px solid var(--zoho-table-border);
+    border-top-color: var(--zoho-blue);
+    border-radius: 50%;
+    animation: zoho-side-panel-spin 0.7s linear infinite;
+}
+
+@keyframes zoho-side-panel-spin {
+    to { transform: rotate(360deg); }
+}

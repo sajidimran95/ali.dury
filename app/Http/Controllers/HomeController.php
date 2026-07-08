@@ -463,6 +463,171 @@ class HomeController extends Controller
         }
     }
 
+    /**
+     * Zoho-style dashboard right panel: pending actions + recent activities.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function getDashboardSidePanel()
+    {
+        if (! request()->ajax()) {
+            abort(404);
+        }
+
+        $business_id = request()->session()->get('user.business_id');
+        $location_id = request()->input('location_id');
+        $permitted_locations = auth()->user()->permitted_locations();
+        $enabled_modules = ! empty(session('business.enabled_modules')) ? session('business.enabled_modules') : [];
+
+        $apply_location = function ($query) use ($permitted_locations, $location_id) {
+            if ($permitted_locations != 'all') {
+                $query->whereIn('transactions.location_id', $permitted_locations);
+            }
+            if (! empty($location_id)) {
+                $query->where('transactions.location_id', $location_id);
+            }
+
+            return $query;
+        };
+
+        $groups = [];
+
+        // ── PURCHASES ──
+        if (auth()->user()->can('purchase.view') || auth()->user()->can('view_own_purchase')) {
+            $items = [];
+
+            if (request()->session()->get('business.enable_purchase_status') == 1) {
+                $to_receive = $apply_location(
+                    Transaction::where('transactions.business_id', $business_id)
+                        ->where('transactions.type', 'purchase')
+                        ->whereIn('transactions.status', ['ordered', 'pending'])
+                )->count();
+
+                $items[] = [
+                    'label' => __('lang_v1.to_be_received'),
+                    'count' => $to_receive,
+                    'url' => action([\App\Http\Controllers\PurchaseController::class, 'index']),
+                ];
+            }
+
+            $purchase_due = $apply_location(
+                Transaction::where('transactions.business_id', $business_id)
+                    ->where('transactions.type', 'purchase')
+                    ->whereIn('transactions.payment_status', ['due', 'partial'])
+            )->count();
+
+            $items[] = [
+                'label' => __('home.purchase_due'),
+                'count' => $purchase_due,
+                'url' => action([\App\Http\Controllers\PurchaseController::class, 'index']),
+            ];
+
+            if (! empty($items)) {
+                $groups[] = [
+                    'title' => __('lang_v1.menu_purchases'),
+                    'icon' => 'purchase',
+                    'items' => $items,
+                ];
+            }
+        }
+
+        // ── SALES ──
+        if (auth()->user()->can('sell.view') || auth()->user()->can('direct_sell.view') || auth()->user()->can('view_own_sell_only')) {
+            $items = [];
+
+            $invoice_due = $apply_location(
+                Transaction::where('transactions.business_id', $business_id)
+                    ->where('transactions.type', 'sell')
+                    ->where('transactions.status', 'final')
+                    ->whereIn('transactions.payment_status', ['due', 'partial'])
+            )->count();
+
+            $items[] = [
+                'label' => __('home.invoice_due'),
+                'count' => $invoice_due,
+                'url' => action([\App\Http\Controllers\SellController::class, 'index']),
+            ];
+
+            $to_ship = $apply_location(
+                Transaction::where('transactions.business_id', $business_id)
+                    ->where('transactions.type', 'sell')
+                    ->where('transactions.status', 'final')
+                    ->whereNotNull('transactions.shipping_status')
+                    ->whereNotIn('transactions.shipping_status', ['delivered', 'cancelled'])
+            )->count();
+
+            $items[] = [
+                'label' => __('lang_v1.to_be_shipped'),
+                'count' => $to_ship,
+                'url' => action([\App\Http\Controllers\SellController::class, 'shipments']),
+            ];
+
+            $groups[] = [
+                'title' => __('lang_v1.menu_sales'),
+                'icon' => 'sale',
+                'items' => $items,
+            ];
+        }
+
+        // ── INVENTORY ──
+        $inventory_items = [];
+
+        if (auth()->user()->can('product.view') || auth()->user()->can('product.view_own')) {
+            // getProductAlert() groups rows + reads location_id from the request itself.
+            $alert_count = $this->productUtil->getProductAlert($business_id, $permitted_locations)
+                ->get()
+                ->count();
+
+            $inventory_items[] = [
+                'label' => __('lang_v1.below_alert_quantity'),
+                'count' => $alert_count,
+                'url' => action([\App\Http\Controllers\ReportController::class, 'getStockReport']),
+            ];
+        }
+
+        if (in_array('stock_transfers', $enabled_modules) && (auth()->user()->can('stock_transfer.view') || auth()->user()->can('stock_transfer.view_own'))) {
+            $transfer_progress = Transaction::where('transactions.business_id', $business_id)
+                ->where('transactions.type', 'sell_transfer')
+                ->whereIn('transactions.status', ['pending', 'in_transit']);
+
+            if ($permitted_locations != 'all') {
+                $transfer_progress->whereIn('transactions.location_id', $permitted_locations);
+            }
+            if (! empty($location_id)) {
+                $transfer_progress->where('transactions.location_id', $location_id);
+            }
+
+            $inventory_items[] = [
+                'label' => __('lang_v1.transfer_in_progress'),
+                'count' => $transfer_progress->count(),
+                'url' => action([\App\Http\Controllers\StockTransferController::class, 'index']),
+            ];
+        }
+
+        if (! empty($inventory_items)) {
+            $groups[] = [
+                'title' => __('lang_v1.menu_inventory'),
+                'icon' => 'inventory',
+                'items' => $inventory_items,
+            ];
+        }
+
+        // ── Recent activities ──
+        $activities = \Spatie\Activitylog\Models\Activity::with(['causer', 'subject'])
+            ->where('business_id', $business_id)
+            ->latest()
+            ->limit(15)
+            ->get();
+
+        $pending_html = view('home.partials.pending_actions', compact('groups'))->render();
+        $activities_html = view('home.partials.recent_activities', compact('activities'))->render();
+
+        return response()->json([
+            'pending_html' => $pending_html,
+            'activities_html' => $activities_html,
+        ]);
+    }
+
     public function loadMoreNotifications()
     {
         $notifications = auth()->user()->notifications()->orderBy('created_at', 'DESC')->paginate(10);

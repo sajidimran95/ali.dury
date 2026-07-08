@@ -3,6 +3,11 @@
 
 @section('content')
 
+    @if (auth()->user()->can('dashboard.data'))
+        <div class="zoho-dashboard__layout">
+            <div class="zoho-dashboard__main">
+    @endif
+
     <div class="zoho-dashboard">
         <div class="zoho-dashboard__header japs-dashboard-hero">
             <div class="zoho-dashboard__header-inner">
@@ -143,6 +148,30 @@
         </div>
     </div>
     @if (auth()->user()->can('dashboard.data'))
+            </div>{{-- /.zoho-dashboard__main --}}
+
+            <aside class="zoho-dashboard__aside" id="dashboard_side_panel">
+                <div class="zoho-side-panel">
+                    <div class="zoho-side-panel__tabs">
+                        <button type="button" class="zoho-side-panel__tab zoho-side-panel__tab--active"
+                            data-panel="pending">@lang('lang_v1.pending_actions')</button>
+                        <button type="button" class="zoho-side-panel__tab" data-panel="activities">@lang('lang_v1.recent_activities')</button>
+                    </div>
+
+                    <div class="zoho-side-panel__pane zoho-side-panel__pane--active" data-pane="pending">
+                        <div class="zoho-side-panel__loading">
+                            <span class="zoho-side-panel__spinner"></span>
+                        </div>
+                    </div>
+                    <div class="zoho-side-panel__pane" data-pane="activities">
+                        <div class="zoho-side-panel__loading">
+                            <span class="zoho-side-panel__spinner"></span>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </div>{{-- /.zoho-dashboard__layout --}}
+
         <div class="japs-dashboard-content zoho-dashboard__body">
             <div class="tw-grid tw-grid-cols-1 tw-gap-4 sm:tw-gap-5 lg:tw-grid-cols-2">
                 @if (auth()->user()->can('sell.view') || auth()->user()->can('direct_sell.view'))
@@ -821,7 +850,7 @@
                     @endforeach
                 @endif --}}
             </div>
-        </div>
+        </div>{{-- /.zoho-dashboard__body --}}
     @endif
 
 @endsection
@@ -1376,5 +1405,51 @@
             });
         });
     </script>
-    
+
+    @if (auth()->user()->can('dashboard.data'))
+    <script type="text/javascript">
+        $(function () {
+            var $panel = $('#dashboard_side_panel');
+            if (!$panel.length) {
+                return;
+            }
+
+            var spinner = '<div class="zoho-side-panel__loading"><span class="zoho-side-panel__spinner"></span></div>';
+
+            function loadSidePanel() {
+                var locationId = $('#dashboard_location').length ? $('#dashboard_location').val() : '';
+
+                $panel.find('.zoho-side-panel__pane[data-pane="pending"]').html(spinner);
+                $panel.find('.zoho-side-panel__pane[data-pane="activities"]').html(spinner);
+
+                $.ajax({
+                    url: '{{ action([\App\Http\Controllers\HomeController::class, 'getDashboardSidePanel']) }}',
+                    method: 'GET',
+                    data: { location_id: locationId },
+                    dataType: 'json',
+                    success: function (resp) {
+                        $panel.find('.zoho-side-panel__pane[data-pane="pending"]').html(resp.pending_html);
+                        $panel.find('.zoho-side-panel__pane[data-pane="activities"]').html(resp.activities_html);
+                    },
+                    error: function () {
+                        $panel.find('.zoho-side-panel__pane').html('<div class="zoho-side-panel__empty"><p>{{ __('messages.something_went_wrong') }}</p></div>');
+                    }
+                });
+            }
+
+            $panel.on('click', '.zoho-side-panel__tab', function () {
+                var target = $(this).data('panel');
+                $panel.find('.zoho-side-panel__tab').removeClass('zoho-side-panel__tab--active');
+                $(this).addClass('zoho-side-panel__tab--active');
+                $panel.find('.zoho-side-panel__pane').removeClass('zoho-side-panel__pane--active');
+                $panel.find('.zoho-side-panel__pane[data-pane="' + target + '"]').addClass('zoho-side-panel__pane--active');
+            });
+
+            $('#dashboard_location').on('change', loadSidePanel);
+
+            loadSidePanel();
+        });
+    </script>
+    @endif
+
 @endsection
