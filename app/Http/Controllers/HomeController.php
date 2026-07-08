@@ -616,7 +616,7 @@ class HomeController extends Controller
         $activities = \Spatie\Activitylog\Models\Activity::with(['causer', 'subject'])
             ->where('business_id', $business_id)
             ->latest()
-            ->limit(15)
+            ->limit(8)
             ->get();
 
         $pending_html = view('home.partials.pending_actions', compact('groups'))->render();
