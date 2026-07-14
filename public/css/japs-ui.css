@@ -122,10 +122,22 @@
     }
 }
 
+.japs-auth-topbar .japs-auth-logo {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.35rem 0.6rem;
+    border-radius: 0.75rem;
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.18);
+}
+
 .japs-auth-topbar .japs-auth-logo img {
-    height: 2.5rem;
+    height: 2.75rem;
     width: auto;
-    filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.15));
+    max-width: 11rem;
+    object-fit: contain;
+    display: block;
 }
 
 .japs-auth-card {
@@ -142,21 +154,28 @@
 }
 
 .japs-auth-card-logo {
-    width: 3.5rem;
-    height: 3.5rem;
+    width: auto;
+    max-width: 14rem;
+    height: auto;
+    min-height: 3.5rem;
     margin: 0 auto 1.25rem;
-    border-radius: 1rem;
-    background: linear-gradient(135deg, var(--theme-800, #0040c1), var(--theme-700, #004eeb));
+    border-radius: 0.85rem;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 8px 24px -4px color-mix(in srgb, var(--theme-800, #0040c1) 40%, transparent);
+    padding: 0.65rem 0.9rem;
+    box-shadow: 0 8px 24px -6px rgba(15, 23, 42, 0.12);
 }
 
 .japs-auth-card-logo img {
-    max-height: 2rem;
-    max-width: 2rem;
+    max-height: 3.25rem;
+    max-width: 100%;
+    width: auto;
+    height: auto;
     object-fit: contain;
+    display: block;
 }
 
 .japs-auth-card h1 {
