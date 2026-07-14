@@ -721,7 +721,7 @@ class Util
 
             // Laravel inbuilt server-side file type validation
             if ($file_type == 'image') {
-                if (!$file->isValid() || !Str::startsWith($file->getMimeType(), 'image/')) {
+                if (!$file->isValid() || !Str::startsWith((string) $file->getMimeType(), 'image/')) {
                     throw new \Exception('Invalid image file');
                 }
             }
@@ -736,11 +736,35 @@ class Util
             if ($file->getSize() <= config('constants.document_size_limit')) {
                 // Sanitize file name: slugify original name (without extension), prepend time, append extension
                 $original_name = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
-                $extension = $file->getClientOriginalExtension();
+                $extension = $file->getClientOriginalExtension() ?: $file->guessExtension() ?: 'bin';
                 $sanitized_name = Str::slug($original_name);
-                $new_file_name = time() . '_' . $sanitized_name . ($extension ? '.' . $extension : '');
+                if ($sanitized_name === '') {
+                    $sanitized_name = Str::random(8);
+                }
+                $new_file_name = time() . '_' . $sanitized_name . '.' . ltrim($extension, '.');
 
-                if ($file->storeAs($dir_name, $new_file_name)) {
+                // PHP 8.4 throws ValueError "Path must not be empty" when storeAs()/fopen
+                // receives an empty realpath (common with Windows temp uploads). Move the
+                // file directly into public/uploads/{dir} instead — same root as the local disk.
+                $source_path = $file->getPathname();
+                if (empty($source_path) || ! is_file($source_path)) {
+                    $source_path = $file->getRealPath() ?: '';
+                }
+                if ($source_path === '' || ! is_file($source_path)) {
+                    throw new \Exception('Uploaded file path is empty or missing');
+                }
+
+                $subdir = trim((string) $dir_name, '/\\');
+                if ($subdir === '') {
+                    throw new \Exception('Upload directory path must not be empty');
+                }
+
+                $destination_dir = public_path('uploads/' . $subdir);
+                if (! is_dir($destination_dir)) {
+                    mkdir($destination_dir, 0755, true);
+                }
+
+                if ($file->move($destination_dir, $new_file_name)) {
                     $uploaded_file_name = $new_file_name;
                 }
             }
