@@ -1647,6 +1647,7 @@ return [
     'fresh_pos_reset_help' => 'This permanently deletes all sales, purchases, products, contacts, stock, and other operational data. This cannot be undone.',
     'fresh_pos_reset_keeps_location' => 'Keeps business location #1 (name, address, and settings).',
     'fresh_pos_reset_keeps_admin' => 'Keeps the business owner account and password (login unchanged).',
+    'fresh_pos_reset_keeps_msa' => 'Restores MSA Tobacco categories and custom field labels after reset.',
     'fresh_pos_reset_deletes_data' => 'Removes all other users, locations, and transactional history.',
     'reset_database_fresh_pos' => 'Reset database to fresh POS',
     'fresh_pos_reset_confirm' => 'All operational data will be erased. Make a backup first.',

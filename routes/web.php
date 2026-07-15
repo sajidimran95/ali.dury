@@ -276,8 +276,10 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::get('/reports/customer-supplier', [ReportController::class, 'getCustomerSuppliers']);
     Route::get('/reports/stock-report', [ReportController::class, 'getStockReport']);
     Route::get('/reports/stock-details', [ReportController::class, 'getStockDetails']);
-    Route::get('/reports/tax-report', [ReportController::class, 'getTaxReport']);
-    Route::get('/reports/tax-details', [ReportController::class, 'getTaxDetails']);
+        Route::get('/reports/tax-report', [ReportController::class, 'getTaxReport']);
+        Route::get('/reports/msa-report', [ReportController::class, 'getMsaReport']);
+        Route::post('/reports/msa-report/export', [ReportController::class, 'exportMsaReport']);
+        Route::get('/reports/tax-details', [ReportController::class, 'getTaxDetails']);
     Route::get('/reports/trending-products', [ReportController::class, 'getTrendingProducts']);
     Route::get('/reports/expense-report', [ReportController::class, 'getExpenseReport']);
     Route::get('/reports/stock-adjustment-report', [ReportController::class, 'getStockAdjustmentReport']);

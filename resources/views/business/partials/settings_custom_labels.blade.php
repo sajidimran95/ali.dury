@@ -141,9 +141,9 @@
                     ['class' => 'form-control', 'id' => 'product_custom_field_label_' . $i]); !!}
 
 
-                    <div class="input-group-addon">
+                    <div class="input-group-addon custom-label-type-addon">
                         
-                        <select class="custom_labels_products" name="custom_labels[product_cf_details][{{$i}}][type]">
+                        <select class="form-control custom_labels_products" name="custom_labels[product_cf_details][{{$i}}][type]">
                             <option value="">@lang('lang_v1.field_type')</option>
                             <option value="text" 
                                 @if (!empty($custom_labels['product_cf_details'][$i]['type']) && $custom_labels['product_cf_details'][$i]['type'] == 'text') selected @endif>
@@ -162,7 +162,7 @@
                 </div>
 
                 <div class="form-group custom_label_product_dropdown @if (empty($custom_labels['product_cf_details'][$i]['type']) || $custom_labels['product_cf_details'][$i]['type'] != 'dropdown') hide @endif">
-                    <textarea name="custom_labels[product_cf_details][{{$i}}][dropdown_options]" cols="36" rows="2" placeholder="@lang('lang_v1.enter_dropdown_values')">@if(!empty($custom_labels['product_cf_details'][$i]['dropdown_options'])){{$custom_labels['product_cf_details'][$i]['dropdown_options']}}@endif</textarea>
+                    <textarea class="form-control" name="custom_labels[product_cf_details][{{$i}}][dropdown_options]" cols="36" rows="4" placeholder="@lang('lang_v1.enter_dropdown_values')">@if(!empty($custom_labels['product_cf_details'][$i]['dropdown_options'])){{$custom_labels['product_cf_details'][$i]['dropdown_options']}}@endif</textarea>
                 </div>
 
             </div>

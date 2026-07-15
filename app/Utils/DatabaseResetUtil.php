@@ -6,6 +6,7 @@ use App\Business;
 use App\BusinessLocation;
 use App\InvoiceLayout;
 use App\InvoiceScheme;
+use App\Services\Msa\MsaSetupService;
 use App\User;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
@@ -92,12 +93,28 @@ class DatabaseResetUtil
                 $business = Business::find(self::PRESERVED_BUSINESS_ID);
                 $moduleUtil->getModuleData('after_business_created', ['business' => $business]);
             }
+
+            // Recreate MSA Tobacco categories + labels (categories table is truncated above).
+            $this->restoreMsaTobaccoSetup(self::PRESERVED_BUSINESS_ID);
         } finally {
             DB::statement('SET FOREIGN_KEY_CHECKS=1');
         }
 
         Artisan::call('cache:clear');
         Artisan::call('view:clear');
+    }
+
+    /**
+     * Ensure Tobacco parent/child categories and MSA custom labels survive a fresh POS reset.
+     */
+    protected function restoreMsaTobaccoSetup(int $businessId): void
+    {
+        $business = Business::find($businessId);
+        if (empty($business)) {
+            return;
+        }
+
+        app(MsaSetupService::class)->setupForBusiness($business);
     }
 
     protected function getApplicationTables(): array

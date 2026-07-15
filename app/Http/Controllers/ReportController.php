@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Brands;
+use App\Business;
 use App\BusinessLocation;
 use App\CashRegister;
 use App\Category;
@@ -4096,5 +4097,104 @@ class ReportController extends Controller
         $suppliers = Contact::suppliersDropdown($business_id);
 
         return view('report.gst_purchase_report')->with(compact('suppliers', 'taxes'));
+    }
+
+    /**
+     * MSA MULTICAT Tobacco (TOB) weekly export screen.
+     */
+    public function getMsaReport(Request $request)
+    {
+        if (! auth()->user()->can('tax_report.view')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $business_id = $request->session()->get('user.business_id');
+        $business = Business::find($business_id);
+        $business_locations = BusinessLocation::forDropdown($business_id, false);
+        $categories = Category::forDropdown($business_id, 'product');
+        $common_settings = $business->common_settings ?? [];
+
+        // Default week ending = most recent Saturday
+        $week_ending = \Carbon::now()->previous(\Carbon::SATURDAY)->format('m/d/Y');
+        if (\Carbon::now()->isSaturday()) {
+            $week_ending = \Carbon::now()->format('m/d/Y');
+        }
+
+        $default_category_id = $common_settings['msa_tobacco_category_id'] ?? null;
+
+        return view('report.msa_report')->with(compact(
+            'business_locations',
+            'categories',
+            'common_settings',
+            'week_ending',
+            'business',
+            'default_category_id'
+        ));
+    }
+
+    /**
+     * Download MSA MULTICAT fixed-width .txt matching requirements/msa report samples.
+     */
+    public function exportMsaReport(Request $request)
+    {
+        if (! auth()->user()->can('tax_report.view')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $business_id = $request->session()->get('user.business_id');
+        $business = Business::findOrFail($business_id);
+
+        $request->validate([
+            'location_id' => 'required|integer',
+            'week_ending' => 'required',
+            'distributor_id' => 'required|string|max:20',
+        ]);
+
+        $location = BusinessLocation::where('business_id', $business_id)
+            ->findOrFail($request->input('location_id'));
+
+        $weekEndingInput = $request->input('week_ending');
+        try {
+            $weekEnding = $this->transactionUtil->uf_date($weekEndingInput);
+        } catch (\Throwable $e) {
+            $weekEnding = \Carbon::parse($weekEndingInput)->format('Y-m-d');
+        }
+
+        // Snap to Saturday week-ending if needed
+        $weekEndCarbon = \Carbon::parse($weekEnding)->startOfDay();
+        if (! $weekEndCarbon->isSaturday()) {
+            $weekEndCarbon = $weekEndCarbon->next(\Carbon::SATURDAY);
+        }
+
+        // Persist distributor settings for next export
+        $common = $business->common_settings ?? [];
+        $common['msa_distributor_id'] = preg_replace('/\D+/', '', (string) $request->input('distributor_id'));
+        $common['msa_contact_last'] = $request->input('contact_last');
+        $common['msa_contact_first'] = $request->input('contact_first');
+        $common['msa_contact_phone'] = $request->input('contact_phone');
+        $common['msa_contact_email'] = $request->input('contact_email');
+        $common['msa_state_tax'] = strtoupper(substr((string) $request->input('state_tax', $location->state), 0, 2));
+        $business->common_settings = $common;
+        $business->save();
+
+        $exporter = new \App\Services\Msa\MsaTobReportExporter($business, $location, [
+            'week_ending' => $weekEndCarbon->toDateString(),
+            'distributor_id' => $common['msa_distributor_id'],
+            'contact_last' => $common['msa_contact_last'],
+            'contact_first' => $common['msa_contact_first'],
+            'contact_phone' => $common['msa_contact_phone'],
+            'contact_email' => $common['msa_contact_email'],
+            'state_tax' => $common['msa_state_tax'],
+            'category_id' => $request->input('category_id') ?: null,
+            'is_test' => $request->boolean('is_test'),
+        ]);
+
+        $content = $exporter->export();
+        $filename = $exporter->suggestedFilename();
+
+        return response($content, 200, [
+            'Content-Type' => 'text/plain; charset=US-ASCII',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
+        ]);
     }
 }

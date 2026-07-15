@@ -2057,3 +2057,48 @@ body.zoho-theme .zoho-side-panel__spinner {
 @keyframes zoho-side-panel-spin {
     to { transform: rotate(360deg); }
 }
+
+/* Business settings — product custom field type select + dropdown values */
+body.zoho-theme .custom_label_product_div .custom-label-type-addon,
+body.zoho-theme .custom_label_product_div .input-group-addon {
+    background: #fff !important;
+    border: 1px solid var(--zoho-table-border) !important;
+    color: var(--zoho-text) !important;
+    padding: 0 !important;
+}
+
+body.zoho-theme .custom_label_product_div select.custom_labels_products,
+body.zoho-theme .custom_label_product_div select.form-control {
+    background: #fff !important;
+    color: #212529 !important;
+    border: 1px solid var(--zoho-table-border) !important;
+    border-radius: 0 4px 4px 0 !important;
+    height: 34px !important;
+    min-width: 120px;
+    box-shadow: none !important;
+    -webkit-appearance: auto;
+    appearance: auto;
+}
+
+body.zoho-theme .custom_label_product_div select.custom_labels_products option,
+body.zoho-theme .custom_label_product_div select.form-control option {
+    background: #fff !important;
+    color: #212529 !important;
+}
+
+body.zoho-theme .custom_label_product_dropdown textarea,
+body.zoho-theme .custom_label_product_dropdown textarea.form-control {
+    background: #fff !important;
+    color: #212529 !important;
+    border: 1px solid var(--zoho-table-border) !important;
+    border-radius: 6px !important;
+    width: 100% !important;
+    min-height: 72px;
+    resize: vertical;
+    box-shadow: none !important;
+}
+
+body.zoho-theme .custom_label_product_dropdown textarea::placeholder {
+    color: #94a3b8 !important;
+}
+

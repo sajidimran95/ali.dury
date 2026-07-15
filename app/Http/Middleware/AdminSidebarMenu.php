@@ -806,6 +806,11 @@ class AdminSidebarMenu
                                 __('report.tax_report'),
                                 ['icon' => '', 'active' => request()->segment(2) == 'tax-report']
                             );
+                            $sub->url(
+                                action([\App\Http\Controllers\ReportController::class, 'getMsaReport']),
+                                __('report.msa_tobacco_report'),
+                                ['icon' => '', 'active' => request()->segment(2) == 'msa-report']
+                            );
                         }
                         if (auth()->user()->can('contacts_report.view')) {
                             $sub->url(
