@@ -385,10 +385,7 @@ class MsaTobReportExporter
         $state = strtoupper(substr($contact->state ?? $this->stateTax, 0, 2));
         $zip = $this->zipPlus4($contact->zip_code ?? '');
         $phone = $this->digits($contact->mobile ?? $contact->landline ?? '', 10);
-        $cot = strtoupper(trim((string) ($contact->custom_field1 ?? 'RETAIL')));
-        if ($cot === '') {
-            $cot = 'RETAIL';
-        }
+        $cot = $this->resolveClassOfTrade($contact);
         $cashCarry = strtoupper(substr((string) ($contact->custom_field3 ?? 'N'), 0, 1));
         if (! in_array($cashCarry, ['Y', 'N'], true)) {
             $cashCarry = 'N';
@@ -397,6 +394,48 @@ class MsaTobReportExporter
         return compact(
             'custNo', 'shipNo', 'ext', 'name', 'storeNo', 'address', 'city', 'state', 'zip', 'phone', 'cot', 'cashCarry'
         );
+    }
+
+    /**
+     * Normalize MSA Class of Trade (RETAIL / DISTRIBUTOR / OTHER).
+     */
+    protected function resolveClassOfTrade(Contact $contact): string
+    {
+        $cot = strtoupper(trim((string) ($contact->custom_field1 ?? '')));
+
+        $aliases = [
+            'WHOLESALE' => 'DISTRIBUTOR',
+            'WHOLESALER' => 'DISTRIBUTOR',
+            'DISTRIBUTOR' => 'DISTRIBUTOR',
+            'RETAIL' => 'RETAIL',
+            'RETAILER' => 'RETAIL',
+            'OTHER' => 'OTHER',
+        ];
+
+        if ($cot !== '' && isset($aliases[$cot])) {
+            return $aliases[$cot];
+        }
+
+        if ($cot !== '') {
+            return $cot;
+        }
+
+        $groupName = '';
+        if (! empty($contact->customer_group_id)) {
+            $groupName = strtoupper(trim((string) (
+                \App\CustomerGroup::where('id', $contact->customer_group_id)->value('name') ?? ''
+            )));
+        }
+
+        if (in_array($groupName, ['WHOLESALE', 'WHOLESALER', 'DISTRIBUTOR'], true)) {
+            return 'DISTRIBUTOR';
+        }
+
+        if (in_array($groupName, ['RETAIL', 'RETAILER'], true)) {
+            return 'RETAIL';
+        }
+
+        return 'RETAIL';
     }
 
     protected function formatSid(array $sid): string

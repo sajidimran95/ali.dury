@@ -98,5 +98,5 @@ return [
     'msa_format_note_1' => 'File layout matches requirements/msa report samples: HID → BID → SID/PUR → TOT.',
     'msa_format_note_2' => 'Filename pattern: {Location}_TOB_{DistributorID}_{WeekEndingYYYYMMDD}.txt',
     'msa_format_note_3' => 'Product custom field 1 = items per selling unit (default 200). Custom field 2 = MSA category (default 003231 cigarettes). Custom field 3/4 = promo code / promo description.',
-    'msa_format_note_4' => 'Customer custom field 1 = class of trade (RETAIL/DISTRIBUTOR/OTHER). Custom field 3 = cash & carry (Y/N).',
+    'msa_format_note_4' => 'Customer custom field 1 = class of trade (RETAIL/DISTRIBUTOR/OTHER). Custom field 3 = cash & carry (Y/N). Assign Retailer or Wholesale customer group for POS pricing.',
 ];

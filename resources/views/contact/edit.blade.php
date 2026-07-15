@@ -67,11 +67,19 @@
         <div class="col-md-4 customer_fields">
           <div class="form-group">
               {!! Form::label('customer_group_id', __('lang_v1.customer_group') . ':') !!}
+              @php
+                $msa_common = session('business.common_settings') ?? [];
+              @endphp
               <div class="input-group">
                   <span class="input-group-addon">
                       <i class="fa fa-users"></i>
                   </span>
-                  {!! Form::select('customer_group_id', $customer_groups, $contact->customer_group_id, ['class' => 'form-control']); !!}
+                  {!! Form::select('customer_group_id', $customer_groups, $contact->customer_group_id, [
+                      'class' => 'form-control',
+                      'id' => 'customer_group_id',
+                      'data-msa-retail-group' => $msa_common['msa_retail_customer_group_id'] ?? '',
+                      'data-msa-wholesale-group' => $msa_common['msa_wholesale_customer_group_id'] ?? '',
+                  ]); !!}
               </div>
           </div>
         </div>
@@ -398,6 +406,7 @@
       </div>
       @php
         $custom_labels = json_decode(session('business.custom_labels'), true);
+        $contact_cf_details = !empty($custom_labels['contact_cf_details']) ? $custom_labels['contact_cf_details'] : [];
         $contact_custom_field1 = !empty($custom_labels['contact']['custom_field_1']) ? $custom_labels['contact']['custom_field_1'] : __('lang_v1.contact_custom_field1');
         $contact_custom_field2 = !empty($custom_labels['contact']['custom_field_2']) ? $custom_labels['contact']['custom_field_2'] : __('lang_v1.contact_custom_field2');
         $contact_custom_field3 = !empty($custom_labels['contact']['custom_field_3']) ? $custom_labels['contact']['custom_field_3'] : __('lang_v1.contact_custom_field3');
@@ -408,26 +417,53 @@
         $contact_custom_field8 = !empty($custom_labels['contact']['custom_field_8']) ? $custom_labels['contact']['custom_field_8'] : __('lang_v1.custom_field', ['number' => 8]);
         $contact_custom_field9 = !empty($custom_labels['contact']['custom_field_9']) ? $custom_labels['contact']['custom_field_9'] : __('lang_v1.custom_field', ['number' => 9]);
         $contact_custom_field10 = !empty($custom_labels['contact']['custom_field_10']) ? $custom_labels['contact']['custom_field_10'] : __('lang_v1.custom_field', ['number' => 10]);
+
+        $cf1_type = !empty($contact_cf_details[1]['type']) ? $contact_cf_details[1]['type'] : 'text';
+        $cf1_dropdown = !empty($contact_cf_details[1]['dropdown_options']) ? preg_split("/\r\n|\n|\r/", $contact_cf_details[1]['dropdown_options']) : [];
+        $cf3_type = !empty($contact_cf_details[3]['type']) ? $contact_cf_details[3]['type'] : 'text';
+        $cf3_dropdown = !empty($contact_cf_details[3]['dropdown_options']) ? preg_split("/\r\n|\n|\r/", $contact_cf_details[3]['dropdown_options']) : [];
       @endphp
       <div class="col-md-3">
         <div class="form-group">
             {!! Form::label('custom_field1', $contact_custom_field1 . ':') !!}
-            {!! Form::text('custom_field1', $contact->custom_field1, ['class' => 'form-control', 
-                'placeholder' => $contact_custom_field1]); !!}
+            @if($cf1_type === 'dropdown')
+                <select name="custom_field1" id="custom_field1" class="form-control">
+                    <option value="">{{ $contact_custom_field1 }}</option>
+                    @foreach($cf1_dropdown as $option)
+                        @if(trim($option) !== '')
+                            <option value="{{ trim($option) }}" @if($contact->custom_field1 == trim($option)) selected @endif>{{ trim($option) }}</option>
+                        @endif
+                    @endforeach
+                </select>
+            @else
+                {!! Form::text('custom_field1', $contact->custom_field1, ['class' => 'form-control', 'id' => 'custom_field1',
+                    'placeholder' => $contact_custom_field1]); !!}
+            @endif
         </div>
       </div>
       <div class="col-md-3">
         <div class="form-group">
             {!! Form::label('custom_field2', $contact_custom_field2 . ':') !!}
-            {!! Form::text('custom_field2', $contact->custom_field2, ['class' => 'form-control', 
+            {!! Form::text('custom_field2', $contact->custom_field2, ['class' => 'form-control',
                 'placeholder' => $contact_custom_field2]); !!}
         </div>
       </div>
       <div class="col-md-3">
         <div class="form-group">
             {!! Form::label('custom_field3', $contact_custom_field3 . ':') !!}
-            {!! Form::text('custom_field3', $contact->custom_field3, ['class' => 'form-control', 
-                'placeholder' => $contact_custom_field3]); !!}
+            @if($cf3_type === 'dropdown')
+                <select name="custom_field3" id="custom_field3" class="form-control">
+                    <option value="">{{ $contact_custom_field3 }}</option>
+                    @foreach($cf3_dropdown as $option)
+                        @if(trim($option) !== '')
+                            <option value="{{ trim($option) }}" @if($contact->custom_field3 == trim($option)) selected @endif>{{ trim($option) }}</option>
+                        @endif
+                    @endforeach
+                </select>
+            @else
+                {!! Form::text('custom_field3', $contact->custom_field3, ['class' => 'form-control', 'id' => 'custom_field3',
+                    'placeholder' => $contact_custom_field3]); !!}
+            @endif
         </div>
       </div>
       <div class="col-md-3">
@@ -595,3 +631,25 @@
 
   </div><!-- /.modal-content -->
 </div><!-- /.modal-dialog -->
+<script type="text/javascript">
+(function ($) {
+    var $group = $('#customer_group_id');
+    var $cot = $('#custom_field1');
+    if (!$group.length || !$cot.length) {
+        return;
+    }
+    $group.off('change.msaCot').on('change.msaCot', function () {
+        if ($.trim($cot.val() || '') !== '') {
+            return;
+        }
+        var id = String($(this).val() || '');
+        var retail = String($(this).data('msa-retail-group') || '');
+        var wholesale = String($(this).data('msa-wholesale-group') || '');
+        if (id && retail && id === retail) {
+            $cot.val('RETAIL');
+        } else if (id && wholesale && id === wholesale) {
+            $cot.val('DISTRIBUTOR');
+        }
+    });
+})(jQuery);
+</script>

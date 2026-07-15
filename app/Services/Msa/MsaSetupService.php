@@ -4,20 +4,30 @@ namespace App\Services\Msa;
 
 use App\Business;
 use App\Category;
+use App\Contact;
+use App\CustomerGroup;
+use App\Product;
+use App\SellingPriceGroup;
 use App\User;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class MsaSetupService
 {
     /**
-     * Create/restore Tobacco MSA categories, custom field labels, and common settings.
+     * Create/restore Tobacco MSA categories, labels, retail/wholesale groups, and defaults.
      *
      * @return int Tobacco parent category id
      */
     public function setupForBusiness(Business $business): int
     {
         $parentId = $this->ensureCategories((int) $business->id);
+        $priceGroups = $this->ensurePriceGroups((int) $business->id);
+        $customerGroups = $this->ensureCustomerGroups((int) $business->id, $priceGroups);
         $this->ensureCustomLabels($business);
-        $this->ensureCommonSettings($business, $parentId);
+        $this->ensureCommonSettings($business, $parentId, $priceGroups, $customerGroups);
+        $this->ensureWalkInCustomer((int) $business->id, $customerGroups['retailer']);
+        $this->ensureTobaccoProductDefaults((int) $business->id, $parentId);
 
         return $parentId;
     }
@@ -87,6 +97,112 @@ class MsaSetupService
         return (int) $parent->id;
     }
 
+    /**
+     * @return array{retail: SellingPriceGroup, wholesale: SellingPriceGroup}
+     */
+    public function ensurePriceGroups(int $businessId): array
+    {
+        $retail = $this->firstOrCreatePriceGroup($businessId, 'Retail');
+        $wholesale = $this->firstOrCreatePriceGroup($businessId, 'Wholesale');
+
+        return [
+            'retail' => $retail,
+            'wholesale' => $wholesale,
+        ];
+    }
+
+    protected function firstOrCreatePriceGroup(int $businessId, string $name): SellingPriceGroup
+    {
+        $group = SellingPriceGroup::withTrashed()
+            ->where('business_id', $businessId)
+            ->where('name', $name)
+            ->first();
+
+        if ($group && $group->trashed()) {
+            $group->restore();
+        }
+
+        if (! $group) {
+            $group = SellingPriceGroup::create([
+                'name' => $name,
+                'description' => $name.' selling prices for tobacco / MSA',
+                'business_id' => $businessId,
+                'is_active' => 1,
+            ]);
+        } else {
+            $group->is_active = 1;
+            $group->save();
+        }
+
+        $permission = Permission::firstOrCreate([
+            'name' => 'selling_price_group.'.$group->id,
+            'guard_name' => 'web',
+        ]);
+
+        $adminRole = Role::where('name', 'Admin#'.$businessId)->where('guard_name', 'web')->first();
+        if ($adminRole && ! $adminRole->hasPermissionTo($permission)) {
+            $adminRole->givePermissionTo($permission);
+        }
+
+        return $group;
+    }
+
+    /**
+     * @param  array{retail: SellingPriceGroup, wholesale: SellingPriceGroup}  $priceGroups
+     * @return array{retailer: CustomerGroup, wholesale: CustomerGroup}
+     */
+    public function ensureCustomerGroups(int $businessId, array $priceGroups): array
+    {
+        $createdBy = User::where('business_id', $businessId)->value('id') ?: 1;
+
+        $retailer = $this->firstOrCreateCustomerGroup(
+            $businessId,
+            'Retailer',
+            (int) $priceGroups['retail']->id,
+            $createdBy
+        );
+
+        $wholesale = $this->firstOrCreateCustomerGroup(
+            $businessId,
+            'Wholesale',
+            (int) $priceGroups['wholesale']->id,
+            $createdBy
+        );
+
+        return [
+            'retailer' => $retailer,
+            'wholesale' => $wholesale,
+        ];
+    }
+
+    protected function firstOrCreateCustomerGroup(
+        int $businessId,
+        string $name,
+        int $sellingPriceGroupId,
+        int $createdBy
+    ): CustomerGroup {
+        $group = CustomerGroup::where('business_id', $businessId)
+            ->where('name', $name)
+            ->first();
+
+        if (! $group) {
+            $group = CustomerGroup::create([
+                'name' => $name,
+                'business_id' => $businessId,
+                'amount' => 0,
+                'price_calculation_type' => 'selling_price_group',
+                'selling_price_group_id' => $sellingPriceGroupId,
+                'created_by' => $createdBy,
+            ]);
+        } else {
+            $group->price_calculation_type = 'selling_price_group';
+            $group->selling_price_group_id = $sellingPriceGroupId;
+            $group->save();
+        }
+
+        return $group;
+    }
+
     public function ensureCustomLabels(Business $business): void
     {
         $labels = $business->custom_labels;
@@ -100,6 +216,7 @@ class MsaSetupService
         $labels['product'] = $labels['product'] ?? [];
         $labels['contact'] = $labels['contact'] ?? [];
         $labels['product_cf_details'] = $labels['product_cf_details'] ?? [];
+        $labels['contact_cf_details'] = $labels['contact_cf_details'] ?? [];
 
         $productLabels = [
             1 => 'MSA Items Per Selling Unit',
@@ -133,22 +250,50 @@ class MsaSetupService
         if (empty($labels['contact']['custom_field_1'])) {
             $labels['contact']['custom_field_1'] = 'MSA Class Of Trade';
         }
+        if (empty($labels['contact']['custom_field_2'])) {
+            $labels['contact']['custom_field_2'] = 'MSA Store #';
+        }
         if (empty($labels['contact']['custom_field_3'])) {
             $labels['contact']['custom_field_3'] = 'MSA Cash And Carry (Y/N)';
         }
+
+        $labels['contact_cf_details'][1] = [
+            'type' => 'dropdown',
+            'dropdown_options' => "RETAIL\nDISTRIBUTOR\nOTHER",
+        ];
+        $labels['contact_cf_details'][2] = [
+            'type' => 'text',
+            'dropdown_options' => null,
+        ];
+        $labels['contact_cf_details'][3] = [
+            'type' => 'dropdown',
+            'dropdown_options' => "Y\nN",
+        ];
 
         $business->custom_labels = $labels;
         $business->save();
     }
 
-    public function ensureCommonSettings(Business $business, int $tobaccoCategoryId): void
-    {
+    /**
+     * @param  array{retail: SellingPriceGroup, wholesale: SellingPriceGroup}  $priceGroups
+     * @param  array{retailer: CustomerGroup, wholesale: CustomerGroup}  $customerGroups
+     */
+    public function ensureCommonSettings(
+        Business $business,
+        int $tobaccoCategoryId,
+        array $priceGroups,
+        array $customerGroups
+    ): void {
         $common = $business->common_settings ?? [];
         if (! is_array($common)) {
             $common = [];
         }
 
         $common['msa_tobacco_category_id'] = $tobaccoCategoryId;
+        $common['msa_retail_price_group_id'] = (int) $priceGroups['retail']->id;
+        $common['msa_wholesale_price_group_id'] = (int) $priceGroups['wholesale']->id;
+        $common['msa_retail_customer_group_id'] = (int) $customerGroups['retailer']->id;
+        $common['msa_wholesale_customer_group_id'] = (int) $customerGroups['wholesale']->id;
 
         if (empty($common['msa_state_tax'])) {
             $common['msa_state_tax'] = 'TN';
@@ -169,5 +314,76 @@ class MsaSetupService
 
         $business->common_settings = $common;
         $business->save();
+    }
+
+    public function ensureWalkInCustomer(int $businessId, CustomerGroup $retailerGroup): void
+    {
+        $walkIn = Contact::where('business_id', $businessId)
+            ->where('is_default', 1)
+            ->whereIn('type', ['customer', 'both'])
+            ->first();
+
+        if (! $walkIn) {
+            return;
+        }
+
+        $walkIn->customer_group_id = $retailerGroup->id;
+        if (empty($walkIn->custom_field1)) {
+            $walkIn->custom_field1 = 'RETAIL';
+        }
+        if (empty($walkIn->custom_field3)) {
+            $walkIn->custom_field3 = 'Y';
+        }
+        $walkIn->save();
+    }
+
+    /**
+     * Fill blank MSA fields on tobacco products (e.g. Lux → Cigarettes / 200 / 003231).
+     */
+    public function ensureTobaccoProductDefaults(int $businessId, int $tobaccoCategoryId): void
+    {
+        $cigaretteId = Category::where('business_id', $businessId)
+            ->where('parent_id', $tobaccoCategoryId)
+            ->where('name', 'Cigarettes')
+            ->value('id');
+
+        if (! $cigaretteId) {
+            return;
+        }
+
+        $subIds = Category::where('business_id', $businessId)
+            ->where('parent_id', $tobaccoCategoryId)
+            ->pluck('id')
+            ->push($tobaccoCategoryId);
+
+        $products = Product::where('business_id', $businessId)
+            ->where(function ($q) use ($subIds) {
+                $q->whereIn('category_id', $subIds)
+                    ->orWhereIn('sub_category_id', $subIds);
+            })
+            ->get();
+
+        foreach ($products as $product) {
+            $dirty = false;
+
+            if (empty($product->sub_category_id) && (int) $product->category_id === $tobaccoCategoryId) {
+                $product->sub_category_id = $cigaretteId;
+                $dirty = true;
+            }
+
+            if ($product->product_custom_field1 === null || $product->product_custom_field1 === '') {
+                $product->product_custom_field1 = '200';
+                $dirty = true;
+            }
+
+            if ($product->product_custom_field2 === null || $product->product_custom_field2 === '') {
+                $product->product_custom_field2 = '003231';
+                $dirty = true;
+            }
+
+            if ($dirty) {
+                $product->save();
+            }
+        }
     }
 }
