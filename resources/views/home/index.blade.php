@@ -930,17 +930,17 @@
                     xAxis: {
                         categories: data.labels,
                         tickInterval: data.label_step,
-                        lineColor: '#e4e7ed',
-                        tickColor: '#e4e7ed',
-                        labels: { style: { color: '#6c757d', fontSize: '11px' } }
+                        lineColor: '#dfe7f1',
+                        tickColor: '#dfe7f1',
+                        labels: { style: { color: '#64748b', fontSize: '11px', fontWeight: '500' } }
                     },
                     yAxis: {
                         title: { text: null },
                         max: yMax,
-                        gridLineColor: '#ebeff3',
-                        gridLineDashStyle: 'Dot',
+                        gridLineColor: '#e8edf4',
+                        gridLineDashStyle: 'Dash',
                         labels: {
-                            style: { color: '#6c757d', fontSize: '11px' },
+                            style: { color: '#64748b', fontSize: '11px', fontWeight: '500' },
                             formatter: function() {
                                 var v = this.value;
                                 if (v >= 1000) {
@@ -953,11 +953,15 @@
                     },
                     tooltip: {
                         shared: false,
+                        backgroundColor: '#0f172a',
+                        borderColor: '#0f172a',
+                        borderRadius: 10,
+                        style: { color: '#f8fafc', fontSize: '12px' },
                         formatter: function() {
                             if (isValue) {
-                                return '<b>' + this.x + '</b><br/>' + data.currency_symbol + ' ' + Highcharts.numberFormat(this.y, 2);
+                                return '<span style="color:#f8fafc"><b>' + this.x + '</b><br/>' + data.currency_symbol + ' ' + Highcharts.numberFormat(this.y, 2) + '</span>';
                             }
-                            return '<b>' + this.x + '</b><br/>' + Highcharts.numberFormat(this.y, 2);
+                            return '<span style="color:#f8fafc"><b>' + this.x + '</b><br/>' + Highcharts.numberFormat(this.y, 2) + '</span>';
                         }
                     },
                     plotOptions: {
@@ -965,19 +969,20 @@
                             fillColor: {
                                 linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
                                 stops: [
-                                    [0, 'rgba(64, 141, 251, 0.22)'],
-                                    [1, 'rgba(64, 141, 251, 0.02)']
+                                    [0, 'rgba(79, 70, 229, 0.26)'],
+                                    [1, 'rgba(79, 70, 229, 0.02)']
                                 ]
                             },
                             marker: {
                                 enabled: data.has_data,
                                 radius: 3,
-                                fillColor: '#408dfb',
-                                lineWidth: 0,
+                                fillColor: '#ffffff',
+                                lineColor: '#4f46e5',
+                                lineWidth: 2,
                                 states: { hover: { enabled: true, radius: 4 } }
                             },
-                            lineWidth: 2,
-                            color: '#408dfb',
+                            lineWidth: 3,
+                            color: '#4f46e5',
                             enableMouseTracking: data.has_data
                         },
                         series: {

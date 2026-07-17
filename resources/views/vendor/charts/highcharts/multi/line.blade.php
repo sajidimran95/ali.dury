@@ -1,6 +1,6 @@
 <script type="text/javascript">
     $(function () {
-        var {{ $model->id }} = new Highcharts.Chart({
+        var baseConfig_{{ $model->id }} = {
             chart: {
                 renderTo: "{{ $model->id }}",
                 @include('charts::_partials.dimension.js2')
@@ -8,7 +8,7 @@
             @if($model->title)
                 title: {
                     text:  "{!! $model->title !!}",
-                    x: -20 //center
+                    x: -20
                 },
             @endif
             @if(!$model->credits)
@@ -21,12 +21,12 @@
                 @foreach($model->labels as $label)
                     "{!! $label !!}",
                 @endforeach
-            ]
+                ]
             },
             yAxis: {
                 title: {
                     text: "{!! $model->y_axis_title === null ? $model->element_label : $model->y_axis_title !!}"
-                },
+                }
             },
             legend: {
                 @if(!$model->legend)
@@ -52,7 +52,12 @@
                     },
                 @endfor
             ]
-        })
+        };
+
+        var customOptions_{{ $model->id }} = {!! json_encode($model->options ?? new \stdClass()) !!};
+        var {{ $model->id }} = new Highcharts.Chart(
+            Highcharts.merge(true, baseConfig_{{ $model->id }}, customOptions_{{ $model->id }})
+        );
     });
 </script>
 

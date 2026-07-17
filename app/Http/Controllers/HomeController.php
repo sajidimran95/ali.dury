@@ -125,12 +125,13 @@ class HomeController extends Controller
         }
 
         $sells_chart_1 = new CommonChart;
+        $sells_chart_1_options = $this->__chartOptions(__(
+            'home.total_sells',
+            ['currency' => $currency->code]
+        ));
 
         $sells_chart_1->labels($labels)
-                        ->options($this->__chartOptions(__(
-                            'home.total_sells',
-                            ['currency' => $currency->code]
-                            )));
+                        ->options($sells_chart_1_options);
 
         if (! empty($location_sells)) {
             foreach ($location_sells as $location_sell) {
@@ -182,11 +183,12 @@ class HomeController extends Controller
         }
 
         $sells_chart_2 = new CommonChart;
+        $sells_chart_2_options = $this->__chartOptions(__(
+            'home.total_sells',
+            ['currency' => $currency->code]
+        ));
         $sells_chart_2->labels($labels)
-                    ->options($this->__chartOptions(__(
-                        'home.total_sells',
-                        ['currency' => $currency->code]
-                            )));
+                    ->options($sells_chart_2_options);
         if (! empty($fy_sells_by_location_data)) {
             foreach ($fy_sells_by_location_data as $location_sell) {
                 $sells_chart_2->dataset($location_sell['loc_label'], 'line', $location_sell['values']);
@@ -707,17 +709,104 @@ class HomeController extends Controller
     private function __chartOptions($title)
     {
         return [
+            'chart' => [
+                'backgroundColor' => 'transparent',
+                'spacingTop' => 20,
+                'spacingRight' => 20,
+                'spacingBottom' => 14,
+                'spacingLeft' => 10,
+                'style' => [
+                    'fontFamily' => 'Inter, "Segoe UI Variable", "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+                ],
+            ],
+            'colors' => [
+                '#4f46e5',
+                '#0891b2',
+                '#16a34a',
+                '#d97706',
+                '#db2777',
+                '#7c3aed',
+            ],
+            'title' => [
+                'text' => null,
+            ],
+            'credits' => [
+                'enabled' => false,
+            ],
+            'xAxis' => [
+                'lineColor' => '#dfe7f1',
+                'tickColor' => '#dfe7f1',
+                'labels' => [
+                    'style' => [
+                        'color' => '#64748b',
+                        'fontSize' => '11px',
+                        'fontWeight' => '500',
+                    ],
+                ],
+            ],
             'yAxis' => [
                 'title' => [
                     'text' => $title,
+                    'style' => [
+                        'color' => '#475569',
+                        'fontSize' => '12px',
+                        'fontWeight' => '600',
+                    ],
+                ],
+                'gridLineColor' => '#e8edf4',
+                'gridLineDashStyle' => 'Dash',
+                'labels' => [
+                    'style' => [
+                        'color' => '#64748b',
+                        'fontSize' => '11px',
+                        'fontWeight' => '500',
+                    ],
                 ],
             ],
             'legend' => [
                 'align' => 'right',
                 'verticalAlign' => 'top',
-                'floating' => true,
-                'layout' => 'vertical',
-                'padding' => 20,
+                'floating' => false,
+                'layout' => 'horizontal',
+                'padding' => 8,
+                'itemStyle' => [
+                    'color' => '#334155',
+                    'fontSize' => '12px',
+                    'fontWeight' => '600',
+                ],
+                'itemHoverStyle' => [
+                    'color' => '#4f46e5',
+                ],
+            ],
+            'tooltip' => [
+                'backgroundColor' => '#0f172a',
+                'borderColor' => '#0f172a',
+                'borderRadius' => 10,
+                'shadow' => true,
+                'style' => [
+                    'color' => '#f8fafc',
+                    'fontSize' => '12px',
+                ],
+            ],
+            'plotOptions' => [
+                'series' => [
+                    'lineWidth' => 3,
+                    'marker' => [
+                        'enabled' => false,
+                        'radius' => 4,
+                        'states' => [
+                            'hover' => [
+                                'enabled' => true,
+                                'radius' => 5,
+                            ],
+                        ],
+                    ],
+                    'states' => [
+                        'hover' => [
+                            'lineWidthPlus' => 1,
+                        ],
+                    ],
+                ],
             ],
         ];
     }
