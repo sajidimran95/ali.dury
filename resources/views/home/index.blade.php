@@ -969,20 +969,20 @@
                             fillColor: {
                                 linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
                                 stops: [
-                                    [0, 'rgba(79, 70, 229, 0.26)'],
-                                    [1, 'rgba(79, 70, 229, 0.02)']
+                                    [0, 'rgba(79, 143, 206, 0.24)'],
+                                    [1, 'rgba(79, 143, 206, 0.02)']
                                 ]
                             },
                             marker: {
                                 enabled: data.has_data,
                                 radius: 3,
                                 fillColor: '#ffffff',
-                                lineColor: '#4f46e5',
+                                lineColor: '#4f8fce',
                                 lineWidth: 2,
                                 states: { hover: { enabled: true, radius: 4 } }
                             },
                             lineWidth: 3,
-                            color: '#4f46e5',
+                            color: '#4f8fce',
                             enableMouseTracking: data.has_data
                         },
                         series: {

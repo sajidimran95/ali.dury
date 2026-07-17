@@ -150,6 +150,8 @@
 	  transform: rotate(315deg);
 	}
 </style>
+{{-- Premium SaaS theme — final visual layer --}}
+<link rel="stylesheet" href="{{ asset('css/premium-theme.css?v='.$asset_v) }}">
 @if(!empty($__system_settings['additional_css']))
     {!! $__system_settings['additional_css'] !!}
 @endif

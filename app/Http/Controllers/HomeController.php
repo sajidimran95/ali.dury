@@ -720,12 +720,12 @@ class HomeController extends Controller
                 ],
             ],
             'colors' => [
-                '#4f46e5',
-                '#0891b2',
-                '#16a34a',
-                '#d97706',
-                '#db2777',
-                '#7c3aed',
+                '#4f8fce',
+                '#4db39e',
+                '#d5aa35',
+                '#d9597b',
+                '#7c72c9',
+                '#4b9ab3',
             ],
             'title' => [
                 'text' => null,
@@ -775,7 +775,7 @@ class HomeController extends Controller
                     'fontWeight' => '600',
                 ],
                 'itemHoverStyle' => [
-                    'color' => '#4f46e5',
+                    'color' => '#386fa8',
                 ],
             ],
             'tooltip' => [

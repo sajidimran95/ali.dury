@@ -16,7 +16,7 @@
         position: absolute;
         left: 0; top: 0; bottom: 0;
         width: 3px;
-        background: var(--theme-700, #004EEB);
+        background: var(--theme-700, #4f8fce);
         transform: scaleX(0);
         transform-origin: left;
         transition: transform .25s cubic-bezier(.4,0,.2,1);
@@ -57,7 +57,7 @@ function pfToggle(id) {
         <span class="tw-flex tw-items-center tw-gap-2.5">
             {{-- Icon badge --}}
             <span class="tw-flex tw-items-center tw-justify-center tw-w-7 tw-h-7 tw-rounded-lg tw-shrink-0 tw-text-xs tw-transition-colors tw-duration-200"
-                  style="background: color-mix(in srgb, var(--theme-700, #004EEB) 10%, transparent); color: var(--theme-700, #004EEB);">
+                  style="background: color-mix(in srgb, var(--theme-700, #4f8fce) 10%, transparent); color: var(--theme-700, #4f8fce);">
                 @if (!empty($icon))
                     {!! $icon !!}
                 @else
@@ -76,7 +76,7 @@ function pfToggle(id) {
 
         {{-- Chevron --}}
         <svg class="pf-chevron tw-w-4 tw-h-4 tw-shrink-0 tw-transition-all tw-duration-300 {{ $isOpen ? 'tw-rotate-180' : '' }}"
-             style="color: var(--theme-700, #004EEB);"
+             style="color: var(--theme-700, #4f8fce);"
              xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
              fill="none" stroke="currentColor" stroke-width="2.5"
              stroke-linecap="round" stroke-linejoin="round">

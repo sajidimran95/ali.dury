@@ -29,7 +29,7 @@ class AdminlteCustomPresenter extends Presenter
      */
     public function getMenuWithoutDropdownWrapper($item)
     {
-        $link = '<a href="' . $item->getUrl() . '" title="' . e($item->title) . '" class="tw-flex tw-w-full tw-items-center tw-gap-2.5 tw-px-3 tw-py-1.5 tw-text-sm tw-font-normal tw-text-gray-600 tw-transition-all tw-duration-200 tw-rounded-lg tw-whitespace-nowrap theme-sidebar-hover' . $this->getActiveState($item) . '" ' . $item->getAttributes() . '>' .
+        $link = '<a href="' . $item->getUrl() . '" title="' . e($item->title) . '" class="tw-flex tw-w-full tw-items-center tw-gap-2.5 tw-px-3 tw-py-1.5 tw-text-sm tw-font-normal tw-transition-all tw-duration-200 tw-rounded-lg tw-whitespace-nowrap theme-sidebar-hover' . $this->getActiveState($item) . '" ' . $item->getAttributes() . '>' .
         $this->formatIcon($item->icon) . ' <span class="sidebar-menu-label tw-truncate tw-flex-1 tw-min-w-0">' . $item->title . '</span>' .
         '<span class="sidebar-menu-chevron sidebar-menu-chevron--spacer" aria-hidden="true"></span>' .
             '</a>';
@@ -71,7 +71,7 @@ class AdminlteCustomPresenter extends Presenter
      */
     public function getHeaderWrapper($item)
     {
-        return '<div class="tw-px-3 tw-pt-4 tw-pb-1 tw-text-xs tw-font-semibold tw-uppercase tw-tracking-wider tw-text-gray-400">' . $item->title . '</div>';
+        return '<div class="tw-px-3 tw-pt-4 tw-pb-1 tw-text-xs tw-font-semibold tw-uppercase tw-tracking-wider">' . e($item->title) . '</div>';
     }
 
     /**
@@ -79,9 +79,9 @@ class AdminlteCustomPresenter extends Presenter
      */
     public function getMenuWithDropDownWrapper($item)
     {
-        $dropdownToggle = '<a href="#" title="' . e($item->title) . '" class="drop_down tw-flex tw-w-full tw-items-center tw-gap-2.5 tw-px-3 tw-py-1.5 tw-text-sm tw-font-normal tw-text-gray-600 tw-transition-all tw-duration-200 tw-rounded-lg tw-whitespace-nowrap theme-sidebar-hover' . $this->getActiveStateOnChild($item) . '" ' . $item->getAttributes() . '>' .
+        $dropdownToggle = '<a href="#" title="' . e($item->title) . '" class="drop_down tw-flex tw-w-full tw-items-center tw-gap-2.5 tw-px-3 tw-py-1.5 tw-text-sm tw-font-normal tw-transition-all tw-duration-200 tw-rounded-lg tw-whitespace-nowrap theme-sidebar-hover' . $this->getActiveStateOnChild($item) . '" ' . $item->getAttributes() . '>' .
         $this->formatIcon($item->icon) . ' <span class="sidebar-menu-label tw-truncate tw-flex-1 tw-min-w-0">' . $item->title . '</span>' .
-        '<svg aria-hidden="true" class="sidebar-menu-chevron svg tw-ml-auto tw-text-gray-500 tw-size-4 tw-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">' . $this->getArray($item) .
+        '<svg aria-hidden="true" class="sidebar-menu-chevron svg tw-ml-auto tw-size-4 tw-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">' . $this->getArray($item) .
             '</svg>' .
             '</a>';
 
@@ -153,13 +153,16 @@ class AdminlteCustomPresenter extends Presenter
      */
     protected function formatIcon($icon)
     {
+        $icon = (string) $icon;
+
         // Check if the icon string contains "<svg", indicating it's an SVG icon
         if (strpos($icon, '<svg') !== false) {
-            return $icon; // Return the SVG icon directly
-        } else {
-            // Assume it's a FontAwesome icon and return it wrapped in an <i> tag
-            return '<i class="' . $icon . ' tw-size-5 tw-shrink-0"></i>';
+            return '<span class="zoho-sidebar-menu-icon" aria-hidden="true">' . $icon . '</span>';
         }
+
+        // Assume it's a FontAwesome icon and normalize it inside the same icon frame.
+        return '<span class="zoho-sidebar-menu-icon" aria-hidden="true"><i class="' .
+            e($icon) . '"></i></span>';
     }
 
     public function getArray($item)

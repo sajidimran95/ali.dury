@@ -30,11 +30,8 @@
     <title>@yield('title') - {{ Session::get('business.name') }}</title>
 
     @include('layouts.partials.css')
-    
 
     @include('layouts.partials.extracss')
-
-    @yield('css')
 
 </head>
 <body
@@ -167,21 +164,22 @@
     .small-view-side-active {
         display: flex !important;
         flex-direction: column;
-        z-index: 1000;
+        z-index: 1080;
         position: fixed;
-        top: 48px;
+        top: 0;
         left: 0;
-        height: calc(100vh - 48px);
+        height: 100vh;
     }
     .overlay {
         width: 100vw;
         height: 100vh;
-        background: rgba(0, 0, 0, 0.8);
+        background: rgba(15, 20, 37, 0.48);
         position: fixed;
         top: 0;
         left: 0;
         display: none;
-        z-index: 20;
+        z-index: 1070;
+        backdrop-filter: blur(2px);
     }
 
     .tw-dw-btn.tw-dw-btn-xs.tw-dw-btn-outline {
@@ -192,10 +190,6 @@
     #scrollable-container{
         position:relative;
     }
-    
-
-
-
 </style>
 
 </html>

@@ -133,10 +133,11 @@
 
 <link href="{{ asset('css/tailwind/app.css') }}" rel="stylesheet">
 <link href="{{ asset('css/japs-ui.css') }}" rel="stylesheet">
+<link href="{{ asset('css/premium-theme.css?v=' . ($asset_v ?? time())) }}" rel="stylesheet">
 <style>
     :root {
-        --theme-700: #0369a1;
-        --theme-800: #075985;
-        --theme-900: #0c4a6e;
+        --theme-700: #4f8fce;
+        --theme-800: #386fa8;
+        --theme-900: #151b2b;
     }
 </style>

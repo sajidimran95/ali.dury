@@ -1,14 +1,20 @@
 @inject('request', 'Illuminate\Http\Request')
-<!-- Zoho-style top bar -->
+<!-- Premium top bar -->
 <div class="zoho-topbar no-print">
     <div class="zoho-topbar__inner">
-        {{-- Sidebar collapse --}}
+        {{-- Sidebar collapse / mobile drawer --}}
         <div class="tw-flex tw-items-center tw-gap-2 tw-shrink-0">
             <button type="button"
                 class="zoho-topbar__btn zoho-topbar__btn--icon side-bar-collapse"
-                aria-label="Collapse sidebar">
+                aria-label="Toggle navigation">
                 <svg class="tw-size-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none"><path d="M4 4m0 2a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2z"/><path d="M15 4v16"/><path d="M10 10l-2 2l2 2"/></svg>
             </button>
+            <a href="{{ action([\App\Http\Controllers\HomeController::class, 'index']) }}" class="zoho-topbar__brand tw-hidden sm:tw-inline-flex">
+                <span class="zoho-topbar__brand-icon">
+                    <svg class="tw-size-3.5" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z"/><path d="M12 12l8-4.5M12 12v9M12 12L4 7.5"/></svg>
+                </span>
+                <span class="tw-truncate" style="max-width:140px">{{ Session::get('business.name') }}</span>
+            </a>
         </div>
 
         {{-- Right actions --}}
@@ -25,7 +31,7 @@
                 </a>
             @endif
 
-            <span class="zoho-topbar__org" title="{{ Session::get('business.name') }}">
+            <span class="zoho-topbar__org tw-hidden md:tw-inline-flex" title="{{ Session::get('business.name') }}">
                 {{ Session::get('business.name') }}
             </span>
 
@@ -45,7 +51,7 @@
             @if (in_array('pos_sale', $enabled_modules))
                 @can('sell.create')
                     <a href="{{ action([\App\Http\Controllers\SellPosController::class, 'create']) }}"
-                        class="zoho-topbar__btn zoho-topbar__btn--ghost tw-hidden sm:tw-inline-flex">
+                        class="zoho-topbar__btn zoho-topbar__btn--primary tw-hidden sm:tw-inline-flex">
                         <svg class="tw-size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg>
                         @lang('sale.pos_sale')
                     </a>
@@ -74,23 +80,25 @@
             </a>
 
             <details class="tw-relative tw-inline-block">
-                <summary class="zoho-topbar__btn zoho-topbar__btn--icon tw-cursor-pointer">
-                    <svg class="tw-size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M6 20v-1a6 6 0 0 1 12 0v1"/></svg>
+                <summary class="zoho-topbar__btn zoho-topbar__btn--icon tw-cursor-pointer" aria-label="@lang('lang_v1.profile')">
+                    <span class="tw-inline-flex tw-items-center tw-justify-center tw-w-7 tw-h-7 tw-rounded-full" style="background:rgba(79,143,206,.22);color:#dce8f8;font-size:11px;font-weight:700;">
+                        {{ strtoupper(substr(Auth::User()->first_name ?? 'U', 0, 1)) }}
+                    </span>
                 </summary>
-                <ul class="tw-absolute tw-right-0 tw-z-50 tw-mt-1 tw-w-52 tw-bg-white tw-rounded-lg tw-shadow-lg tw-ring-1 tw-ring-gray-200 tw-py-1">
-                    <li class="tw-px-4 tw-py-2 tw-border-b tw-border-gray-100">
+                <ul class="tw-absolute tw-right-0 tw-z-50 tw-mt-2 tw-w-56 tw-bg-white tw-rounded-xl tw-shadow-lg tw-ring-1 tw-ring-gray-200 tw-py-1">
+                    <li class="tw-px-4 tw-py-3 tw-border-b tw-border-gray-100">
                         <p class="tw-text-xs tw-text-gray-500">@lang('lang_v1.signed_in_as')</p>
-                        <p class="tw-text-sm tw-font-medium tw-text-gray-900 tw-truncate">{{ Auth::User()->first_name }} {{ Auth::User()->last_name }}</p>
+                        <p class="tw-text-sm tw-font-semibold tw-text-gray-900 tw-truncate">{{ Auth::User()->first_name }} {{ Auth::User()->last_name }}</p>
                     </li>
                     <li>
                         <a href="{{ action([\App\Http\Controllers\UserController::class, 'getProfile']) }}"
-                            class="tw-flex tw-items-center tw-gap-2 tw-px-3 tw-py-2 tw-text-sm tw-text-gray-700 hover:tw-bg-gray-50">
+                            class="tw-flex tw-items-center tw-gap-2 tw-px-3 tw-py-2.5 tw-text-sm tw-text-gray-700 hover:tw-bg-gray-50">
                             @lang('lang_v1.profile')
                         </a>
                     </li>
                     <li>
                         <a href="{{ action([\App\Http\Controllers\Auth\LoginController::class, 'logout']) }}"
-                            class="tw-flex tw-items-center tw-gap-2 tw-px-3 tw-py-2 tw-text-sm tw-text-gray-700 hover:tw-bg-gray-50">
+                            class="tw-flex tw-items-center tw-gap-2 tw-px-3 tw-py-2.5 tw-text-sm tw-text-gray-700 hover:tw-bg-gray-50">
                             @lang('lang_v1.sign_out')
                         </a>
                     </li>

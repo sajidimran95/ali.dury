@@ -958,9 +958,12 @@ $(function () {
 
     // --- Sidebar responsive resize ---
     $(window).on('resize', function () {
-        if ($(window).width() >= 992) {
+        if ($(window).width() >= 1024) {
             $('.overlay').fadeOut('slow');
             $('.side-bar').removeClass('small-view-side-active');
+            if (window.ZohoSidebar && window.ZohoSidebar.closeMobileSidebar) {
+                window.ZohoSidebar.closeMobileSidebar();
+            }
         }
         if ($('.side-bar').hasClass('small-view-side-active')) {
             $('.overlay').fadeIn('slow');
