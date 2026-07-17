@@ -1067,8 +1067,12 @@ class ProductUtil extends Util
             ];
         }
 
-        if(isset($price_group->price_type) && $price_group->price_type == 'percentage'){
-            //calculate the price
+        if (isset($price_group->price_type) && $price_group->price_type === 'percentage_adjustment') {
+            $variation = Variation::find($variation_id);
+            $adjustment = $this->calc_percentage($variation->sell_price_inc_tax, $price_group->price_inc_tax);
+            $price_inc_tax = $variation->sell_price_inc_tax + $adjustment;
+        } elseif (isset($price_group->price_type) && $price_group->price_type === 'percentage') {
+            // Keep legacy percentage records as a percentage of the base price.
             $variation = Variation::find($variation_id);
             $price_inc_tax = $this->calc_percentage($variation->sell_price_inc_tax, $price_group->price_inc_tax);
         } else {
@@ -1732,7 +1736,13 @@ class ProductUtil extends Util
             );
 
         if (! empty($price_group_id)) {
-            $query->addSelect(DB::raw('IF (VGP.price_type = "fixed", VGP.price_inc_tax, VGP.price_inc_tax * variations.sell_price_inc_tax / 100) as variation_group_price'));
+            $query->addSelect(DB::raw(
+                'CASE
+                    WHEN VGP.price_type = "fixed" THEN VGP.price_inc_tax
+                    WHEN VGP.price_type = "percentage_adjustment" THEN variations.sell_price_inc_tax + (VGP.price_inc_tax * variations.sell_price_inc_tax / 100)
+                    ELSE VGP.price_inc_tax * variations.sell_price_inc_tax / 100
+                END as variation_group_price'
+            ));
         }
 
         if (in_array('lot', $search_fields)) {

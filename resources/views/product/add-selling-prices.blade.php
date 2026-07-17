@@ -55,10 +55,14 @@
                                                         $name = 'group_prices[' . $price_group->id . '][' . $variation->id . '][price_type]';
                                                     @endphp
 
-                                                    <select name={{$name}} class="form-control">
+                                                    <select name="{{$name}}" class="form-control">
                                                         <option value="fixed" @if($price_type == 'fixed') selected @endif>@lang('lang_v1.fixed')</option>
-                                                        <option value="percentage" @if($price_type == 'percentage') selected @endif>@lang('lang_v1.percentage')</option>
+                                                        <option value="percentage_adjustment" @if($price_type == 'percentage_adjustment') selected @endif>@lang('lang_v1.percentage_adjustment')</option>
+                                                        @if($price_type == 'percentage')
+                                                            <option value="percentage" selected>@lang('lang_v1.legacy_percentage_of_price')</option>
+                                                        @endif
                                                     </select>
+                                                    <small class="help-block tw-text-left">@lang('lang_v1.percentage_adjustment_help')</small>
 												</td>
 											@endforeach
 										</tr>

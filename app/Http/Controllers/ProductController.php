@@ -1799,7 +1799,7 @@ class ProductController extends Controller
      */
     public function addSellingPrices($id)
     {
-        if (! auth()->user()->can('product.create')) {
+        if (! auth()->user()->can('product.create') && ! auth()->user()->can('product.update')) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -1829,7 +1829,7 @@ class ProductController extends Controller
      */
     public function saveSellingPrices(Request $request)
     {
-        if (! auth()->user()->can('product.create')) {
+        if (! auth()->user()->can('product.create') && ! auth()->user()->can('product.update')) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -1854,8 +1854,29 @@ class ProductController extends Controller
                             ]);
                         }
 
-                        $variation_group_price->price_inc_tax = $this->productUtil->num_uf($value[$variation->id]['price']);
-                        $variation_group_price->price_type = $value[$variation->id]['price_type'];
+                        $price = $this->productUtil->num_uf($value[$variation->id]['price']);
+                        $price_type = $value[$variation->id]['price_type'];
+                        $allowed_price_types = ['fixed', 'percentage_adjustment'];
+
+                        // Existing legacy percentage records can be saved unchanged.
+                        if ($variation_group_price->price_type === 'percentage') {
+                            $allowed_price_types[] = 'percentage';
+                        }
+
+                        if (! in_array($price_type, $allowed_price_types, true)) {
+                            throw new \InvalidArgumentException(__('lang_v1.price_group_invalid_price_type_exception', [
+                                'type' => $price_type,
+                                'row' => 1,
+                            ]));
+                        }
+
+                        if (($price_type === 'fixed' && $price < 0) ||
+                            ($price_type === 'percentage_adjustment' && $price < -100)) {
+                            throw new \InvalidArgumentException(__('lang_v1.invalid_group_price_adjustment'));
+                        }
+
+                        $variation_group_price->price_inc_tax = $price;
+                        $variation_group_price->price_type = $price_type;
                         $variation_group_prices[] = $variation_group_price;
                     }
                 }

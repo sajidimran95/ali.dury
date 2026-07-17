@@ -263,7 +263,16 @@ class SellingPriceGroupController extends Controller
                     return $item->price_group_id == $price_group_id;
                 });
 
-                $temp[$price_group->name] = $variation_pg->isNotEmpty() ? $variation_pg->first()->price_inc_tax : '';
+                $group_price = $variation_pg->first();
+                $temp[$price_group->name] = ! empty($group_price) ? $group_price->price_inc_tax : '';
+                $price_type_labels = [
+                    'fixed' => 'Fixed',
+                    'percentage_adjustment' => 'Percentage Adjustment',
+                    'percentage' => 'Legacy Percentage',
+                ];
+                $temp[$price_group->name.' Price Type'] = ! empty($group_price)
+                    ? ($price_type_labels[$group_price->price_type] ?? 'Fixed')
+                    : 'Fixed';
             }
             $export_data[] = $temp;
         }
@@ -311,11 +320,44 @@ class SellingPriceGroupController extends Controller
                 $business_id = $request->session()->get('user.business_id');
                 $price_groups = SellingPriceGroup::where('business_id', $business_id)->active()->get();
 
-                //Get price group names from headers
+                // Map each price group to its value and optional price-type columns.
+                // Older exports only have the value column and remain supported.
                 $imported_pgs = [];
-                foreach ($headers as $key => $value) {
-                    if (! empty($value) && $key > 2) {
-                        $imported_pgs[$key] = $value;
+                $recognized_columns = [];
+                foreach ($price_groups as $price_group) {
+                    $price_column = null;
+                    $type_column = null;
+
+                    foreach ($headers as $key => $header) {
+                        if ($key <= 2 || empty($header)) {
+                            continue;
+                        }
+
+                        $normalized_header = strtolower(trim($header));
+                        if ($normalized_header === strtolower($price_group->name)) {
+                            $price_column = $key;
+                            $recognized_columns[] = $key;
+                        } elseif ($normalized_header === strtolower($price_group->name.' Price Type')) {
+                            $type_column = $key;
+                            $recognized_columns[] = $key;
+                        }
+                    }
+
+                    if (! is_null($price_column)) {
+                        $imported_pgs[] = [
+                            'group' => $price_group,
+                            'price_column' => $price_column,
+                            'type_column' => $type_column,
+                        ];
+                    }
+                }
+
+                foreach ($headers as $key => $header) {
+                    if ($key > 2 && ! empty($header) && ! in_array($key, $recognized_columns, true)) {
+                        throw new \Exception(__('lang_v1.price_group_not_found_exception', [
+                            'pg' => $header,
+                            'row' => 1,
+                        ]));
                     }
                 }
 
@@ -348,34 +390,59 @@ class SellingPriceGroupController extends Controller
                     }
 
                     //update selling price
-                    foreach ($imported_pgs as $k => $v) {
-                        $price_group = $price_groups->filter(function ($item) use ($v) {
-                            return strtolower($item->name) == strtolower($v);
-                        });
+                    foreach ($imported_pgs as $imported_pg) {
+                        $price = $value[$imported_pg['price_column']] ?? null;
 
-                        if ($price_group->isNotEmpty()) {
-                            //Check if price is numeric
-                            if (! is_null($value[$k]) && ! is_numeric($value[$k])) {
-                                $row = $key + 1;
-                                $error_msg = __('lang_v1.price_group_non_numeric_exception', ['row' => $row]);
-
-                                throw new \Exception($error_msg);
-                            }
-
-                            if (! is_null($value[$k])) {
-                                VariationGroupPrice::updateOrCreate(
-                                    ['variation_id' => $variation->id,
-                                        'price_group_id' => $price_group->first()->id,
-                                    ],
-                                    ['price_inc_tax' => $value[$k],
-                                    ]
-                                );
-                            }
-                        } else {
+                        if (! is_null($price) && $price !== '' && ! is_numeric($price)) {
                             $row = $key + 1;
-                            $error_msg = __('lang_v1.price_group_not_found_exception', ['pg' => $v, 'row' => $row]);
+                            $error_msg = __('lang_v1.price_group_non_numeric_exception', ['row' => $row]);
 
                             throw new \Exception($error_msg);
+                        }
+
+                        if (! is_null($price) && $price !== '') {
+                            $price_type = 'fixed';
+                            if (! is_null($imported_pg['type_column'])) {
+                                $raw_price_type = strtolower(trim($value[$imported_pg['type_column']] ?? 'fixed'));
+                                $price_type_aliases = [
+                                    'fixed' => 'fixed',
+                                    'percentage' => 'percentage',
+                                    'percent' => 'percentage',
+                                    '%' => 'percentage',
+                                    'legacy percentage' => 'percentage',
+                                    'percentage adjustment' => 'percentage_adjustment',
+                                    'percent adjustment' => 'percentage_adjustment',
+                                    '% adjustment' => 'percentage_adjustment',
+                                    'adjustment' => 'percentage_adjustment',
+                                    '+/- %' => 'percentage_adjustment',
+                                ];
+
+                                if (! isset($price_type_aliases[$raw_price_type])) {
+                                    $row = $key + 1;
+                                    throw new \Exception(__('lang_v1.price_group_invalid_price_type_exception', [
+                                        'type' => $value[$imported_pg['type_column']] ?? '',
+                                        'row' => $row,
+                                    ]));
+                                }
+
+                                $price_type = $price_type_aliases[$raw_price_type];
+                            }
+
+                            if (($price_type === 'fixed' && $price < 0) ||
+                                ($price_type === 'percentage_adjustment' && $price < -100)) {
+                                throw new \Exception(__('lang_v1.invalid_group_price_adjustment'));
+                            }
+
+                            VariationGroupPrice::updateOrCreate(
+                                [
+                                    'variation_id' => $variation->id,
+                                    'price_group_id' => $imported_pg['group']->id,
+                                ],
+                                [
+                                    'price_inc_tax' => $price,
+                                    'price_type' => $price_type,
+                                ]
+                            );
                         }
                     }
                 }

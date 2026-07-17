@@ -18,13 +18,19 @@ class VariationGroupPrice extends Model
      */
     public function getCalculatedPriceAttribute()
     {
-        if(isset($this->price_type) && $this->price_type == 'percentage'){
-            //calculate the price
+        if (! isset($this->price_type) || $this->price_type === 'fixed') {
+            $price = $this->price_inc_tax;
+        } else {
             $variation = Variation::find($this->variation_id);
             $utils = new \App\Utils\Util();
-            $price = $utils->calc_percentage($variation->sell_price_inc_tax, $this->price_inc_tax);
-        } else {
-            $price = $this->price_inc_tax;
+
+            if ($this->price_type === 'percentage_adjustment') {
+                $adjustment = $utils->calc_percentage($variation->sell_price_inc_tax, $this->price_inc_tax);
+                $price = $variation->sell_price_inc_tax + $adjustment;
+            } else {
+                // Keep legacy "percentage" records as a percentage of the base price.
+                $price = $utils->calc_percentage($variation->sell_price_inc_tax, $this->price_inc_tax);
+            }
         }
 
         return $price;
