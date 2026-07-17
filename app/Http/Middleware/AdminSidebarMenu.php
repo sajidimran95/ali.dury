@@ -242,7 +242,7 @@ class AdminSidebarMenu
                             if (auth()->user()->can('product.create')) {
                                 $productAttrs['add_url'] = action([\App\Http\Controllers\ProductController::class, 'create']);
                                 $productAttrs['add_label'] = __('product.add_product');
-                                $productAttrs['active'] = request()->segment(1) == 'products' && in_array(request()->segment(2), ['', 'create'], true);
+                                $productAttrs['active'] = request()->segment(1) == 'products' && in_array(request()->segment(2), [null, 'create'], true);
                             }
                             $sub->url(
                                 action([\App\Http\Controllers\ProductController::class, 'index']),
