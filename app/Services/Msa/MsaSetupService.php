@@ -25,9 +25,10 @@ class MsaSetupService
     /**
      * Create/restore Tobacco MSA categories, labels, retail/wholesale groups, and defaults.
      *
+     * @param  bool  $withDemoData  When true, also seed sample products, stock, customers, and sales.
      * @return int Tobacco parent category id
      */
-    public function setupForBusiness(Business $business): int
+    public function setupForBusiness(Business $business, bool $withDemoData = true): int
     {
         $parentId = $this->ensureCategories((int) $business->id);
         $priceGroups = $this->ensurePriceGroups((int) $business->id);
@@ -36,8 +37,11 @@ class MsaSetupService
         $this->ensureCustomLabels($business);
         $this->ensureCommonSettings($business, $parentId, $priceGroups, $customerGroups);
         $this->ensureWalkInCustomer((int) $business->id, $customerGroups['retailer']);
-        $this->ensureTobaccoProductDefaults((int) $business->id, $parentId, $taxRates['default_id'] ?? null);
-        $this->ensureDemoSalesData($business, $parentId, $priceGroups, $customerGroups, $taxRates['default_id'] ?? null);
+
+        if ($withDemoData) {
+            $this->ensureTobaccoProductDefaults((int) $business->id, $parentId, $taxRates['default_id'] ?? null);
+            $this->ensureDemoSalesData($business, $parentId, $priceGroups, $customerGroups, $taxRates['default_id'] ?? null);
+        }
 
         return $parentId;
     }

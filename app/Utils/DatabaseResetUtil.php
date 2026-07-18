@@ -94,8 +94,11 @@ class DatabaseResetUtil
                 $moduleUtil->getModuleData('after_business_created', ['business' => $business]);
             }
 
-            // Recreate MSA Tobacco categories + labels (categories table is truncated above).
+            // Recreate MSA Tobacco structure only (no demo products / stock / sales).
             $this->restoreMsaTobaccoSetup(self::PRESERVED_BUSINESS_ID);
+
+            // Safety: wipe any operational leftovers that setup hooks may have re-seeded.
+            $this->ensureOperationalDataCleared();
         } finally {
             DB::statement('SET FOREIGN_KEY_CHECKS=1');
         }
@@ -105,7 +108,8 @@ class DatabaseResetUtil
     }
 
     /**
-     * Ensure Tobacco parent/child categories and MSA custom labels survive a fresh POS reset.
+     * Restore MSA Tobacco categories, price/customer groups, tax rates, and labels only.
+     * Does not recreate demo products, opening stock, or sample transactions.
      */
     protected function restoreMsaTobaccoSetup(int $businessId): void
     {
@@ -114,7 +118,46 @@ class DatabaseResetUtil
             return;
         }
 
-        app(MsaSetupService::class)->setupForBusiness($business);
+        app(MsaSetupService::class)->setupForBusiness($business, false);
+    }
+
+    /**
+     * Guarantee a blank POS: no products, stock, or transaction history after reset.
+     */
+    protected function ensureOperationalDataCleared(): void
+    {
+        $tables = [
+            'transaction_sell_lines_purchase_lines',
+            'transaction_sell_lines',
+            'purchase_lines',
+            'stock_adjustment_lines',
+            'transaction_payments',
+            'cash_register_transactions',
+            'account_transactions',
+            'transactions',
+            'cash_registers',
+            'variation_location_details',
+            'variation_group_prices',
+            'discount_variations',
+            'product_variations',
+            'variations',
+            'product_locations',
+            'product_racks',
+            'res_product_modifier_sets',
+            'products',
+            'stock_adjustments',
+        ];
+
+        foreach ($tables as $table) {
+            if (Schema::hasTable($table)) {
+                DB::table($table)->truncate();
+            }
+        }
+
+        // Keep only business location #1.
+        if (Schema::hasTable('business_locations')) {
+            DB::table('business_locations')->where('id', '!=', self::PRESERVED_LOCATION_ID)->delete();
+        }
     }
 
     protected function getApplicationTables(): array
