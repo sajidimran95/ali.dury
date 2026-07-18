@@ -366,7 +366,7 @@ $(document).ready(function () {
         //Uncomment below line to enable save state of datatable.
         //stateSave: true,
         fixedHeader: true,
-        dom: '<"row margin-bottom-20 text-center"<"col-sm-1"l><"col-sm-8"B><"col-sm-3"f> r>tip',
+        dom: '<"row margin-bottom-20 text-center"<"col-sm-2 text-left"l><"col-sm-7"B><"col-sm-3 text-right"f> r>tip',
         buttons: buttons,
         aLengthMenu: [
             [25, 50, 100, 200, 500, 1000, -1],

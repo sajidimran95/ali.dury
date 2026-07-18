@@ -322,25 +322,26 @@
                         data: 'sku',
                         name: 'products.sku'
                     },
+                    // MSA custom fields (1-4) are hidden in the list; shown in the view modal instead.
                     {
                         data: 'product_custom_field1',
                         name: 'products.product_custom_field1',
-                        visible: $('#cf_1').text().length > 0
+                        visible: false
                     },
                     {
                         data: 'product_custom_field2',
                         name: 'products.product_custom_field2',
-                        visible: $('#cf_2').text().length > 0
+                        visible: false
                     },
                     {
                         data: 'product_custom_field3',
                         name: 'products.product_custom_field3',
-                        visible: $('#cf_3').text().length > 0
+                        visible: false
                     },
                     {
                         data: 'product_custom_field4',
                         name: 'products.product_custom_field4',
-                        visible: $('#cf_4').text().length > 0
+                        visible: false
                     },
                     {
                         data: 'product_custom_field5',
