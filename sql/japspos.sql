@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Jul 17, 2026 at 05:56 PM
+-- Generation Time: Jul 17, 2026 at 06:54 PM
 -- Server version: 8.4.3
 -- PHP Version: 8.4.2
 
@@ -162,7 +162,8 @@ INSERT INTO `activity_log` (`id`, `log_name`, `description`, `subject_id`, `subj
 (52, 'default', 'logout', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-07-17 06:48:42', '2026-07-17 06:48:42'),
 (53, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-07-17 06:49:08', '2026-07-17 06:49:08'),
 (54, 'default', 'logout', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-07-17 07:02:49', '2026-07-17 07:02:49'),
-(55, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-07-17 07:03:19', '2026-07-17 07:03:19');
+(55, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-07-17 07:03:19', '2026-07-17 07:03:19'),
+(56, 'default', 'added', 2, 'App\\User', NULL, 1, 1, 'App\\User', '{\"name\":\" admin \"}', NULL, '2026-07-17 08:18:02', '2026-07-17 08:18:02');
 
 -- --------------------------------------------------------
 
@@ -784,7 +785,7 @@ CREATE TABLE `customer_groups` (
 
 INSERT INTO `customer_groups` (`id`, `business_id`, `name`, `amount`, `price_calculation_type`, `selling_price_group_id`, `created_by`, `created_at`, `updated_at`) VALUES
 (1, 1, 'Retailer', 0.00, 'selling_price_group', 1, 1, '2026-07-15 16:01:55', '2026-07-15 16:01:55'),
-(2, 1, 'Wholesale', 0.00, 'selling_price_group', 2, 1, '2026-07-15 16:01:55', '2026-07-15 16:01:55');
+(2, 1, 'Wholesale', -5.00, 'selling_price_group', 2, 1, '2026-07-15 16:01:55', '2026-07-17 07:59:13');
 
 -- --------------------------------------------------------
 
@@ -1375,6 +1376,13 @@ CREATE TABLE `model_has_permissions` (
   `model_id` bigint UNSIGNED NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Dumping data for table `model_has_permissions`
+--
+
+INSERT INTO `model_has_permissions` (`permission_id`, `model_type`, `model_id`) VALUES
+(80, 'App\\User', 2);
+
 -- --------------------------------------------------------
 
 --
@@ -1392,7 +1400,8 @@ CREATE TABLE `model_has_roles` (
 --
 
 INSERT INTO `model_has_roles` (`role_id`, `model_type`, `model_id`) VALUES
-(1, 'App\\User', 1);
+(1, 'App\\User', 1),
+(1, 'App\\User', 2);
 
 -- --------------------------------------------------------
 
@@ -1736,7 +1745,7 @@ INSERT INTO `products` (`id`, `name`, `business_id`, `type`, `unit_id`, `seconda
 (4, 'Swisher Sweets Cigarillos', 1, 'single', 1, NULL, NULL, NULL, 1, 4, 5, 'inclusive', 1, 10.0000, 'TOB-CGR-SWS', 'C128', NULL, NULL, 0, NULL, '20', '003251', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, NULL, NULL, 0, 0, '2026-07-15 16:15:25', '2026-07-15 16:15:25'),
 (5, 'Cheyenne Little Filtered Cigars', 1, 'single', 1, NULL, NULL, NULL, 1, 5, 5, 'inclusive', 1, 10.0000, 'TOB-LFC-CHE', 'C128', NULL, NULL, 0, NULL, '20', '003252', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, NULL, NULL, 0, 0, '2026-07-15 16:15:25', '2026-07-15 16:15:25'),
 (6, 'Juul Menthol Pods', 1, 'single', 1, NULL, NULL, NULL, 1, 6, 5, 'inclusive', 1, 10.0000, 'TOB-ECG-JUL', 'C128', NULL, NULL, 0, NULL, '4', '003292', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, NULL, NULL, 0, 0, '2026-07-15 16:15:25', '2026-07-15 16:15:25'),
-(7, 'Bugler RYO Tobacco', 1, 'single', 1, NULL, NULL, NULL, 1, 7, 5, 'inclusive', 1, 10.0000, 'TOB-RYO-BUG', 'C128', NULL, NULL, 0, NULL, '6', '003221', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, NULL, NULL, 0, 0, '2026-07-15 16:15:25', '2026-07-15 16:15:25'),
+(7, 'Bugler RYO Tobacco', 1, 'single', 1, NULL, NULL, NULL, 1, 7, 5, 'inclusive', 1, 10.0000, 'TOB-RYO-BUG', 'C128', NULL, NULL, 0, NULL, '200\r\n5\r\n10\r\n20\r\n25\r\n40\r\n60\r\n100\r\n250', '003231\r\n003211\r\n003251\r\n003252\r\n003292\r\n003221\r\n003241\r\n003213\r\n003212\r\n003214\r\n003215\r\n003227', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', NULL, NULL, 1, NULL, NULL, 0, 0, '2026-07-15 16:15:25', '2026-07-17 08:12:54'),
 (8, 'Captain Black Pipe Tobacco', 1, 'single', 1, NULL, NULL, NULL, 1, 8, 5, 'inclusive', 1, 10.0000, 'TOB-PIP-CBK', 'C128', NULL, NULL, 0, NULL, '1', '003241', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, NULL, NULL, 0, 0, '2026-07-15 16:15:25', '2026-07-15 16:15:25');
 
 -- --------------------------------------------------------
@@ -2483,7 +2492,8 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `user_type`, `surname`, `first_name`, `last_name`, `username`, `email`, `password`, `language`, `contact_no`, `address`, `remember_token`, `business_id`, `available_at`, `paused_at`, `max_sales_discount_percent`, `allow_login`, `status`, `is_enable_service_staff_pin`, `service_staff_pin`, `crm_contact_id`, `is_cmmsn_agnt`, `cmmsn_percent`, `selected_contacts`, `dob`, `gender`, `marital_status`, `blood_group`, `contact_number`, `alt_number`, `family_number`, `fb_link`, `twitter_link`, `social_media_1`, `social_media_2`, `permanent_address`, `current_address`, `guardian_name`, `custom_field_1`, `custom_field_2`, `custom_field_3`, `custom_field_4`, `bank_details`, `id_proof_name`, `id_proof_number`, `deleted_at`, `created_at`, `updated_at`) VALUES
-(1, 'user', NULL, 'Japs', 'POS', 'japspos', 'mkhsojib@gmail.com', '$2y$10$LH3D2XH/82k.Av8HfGb3GOfKM3F7Qi7I86iZLyxhJFtjajS8pKHpK', 'en', NULL, NULL, NULL, 1, NULL, NULL, NULL, 1, 'active', 0, NULL, NULL, 0, 0.00, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-04 16:29:53', '2026-06-04 16:29:53');
+(1, 'user', NULL, 'Japs', 'POS', 'japspos', 'mkhsojib@gmail.com', '$2y$10$LH3D2XH/82k.Av8HfGb3GOfKM3F7Qi7I86iZLyxhJFtjajS8pKHpK', 'en', NULL, NULL, NULL, 1, NULL, NULL, NULL, 1, 'active', 0, NULL, NULL, 0, 0.00, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-04 16:29:53', '2026-06-04 16:29:53'),
+(2, 'user', NULL, 'admin', NULL, 'admin', 'admin@pos.com', '$2y$10$ATcJDoXZwa1OEcuFj8wWaO6uSvyoDs/eD2F0W4iWF02/Ja2zWXr.W', 'en', NULL, NULL, NULL, 1, NULL, NULL, NULL, 1, 'active', 0, NULL, NULL, 0, 0.00, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '{\"account_holder_name\":null,\"account_number\":null,\"bank_name\":null,\"bank_code\":null,\"branch\":null,\"tax_payer_id\":null}', NULL, NULL, NULL, '2026-07-17 08:18:02', '2026-07-17 08:18:02');
 
 -- --------------------------------------------------------
 
@@ -2532,7 +2542,7 @@ INSERT INTO `variations` (`id`, `name`, `product_id`, `sub_sku`, `product_variat
 (4, 'DUMMY', 4, 'TOB-CGR-SWS', 4, NULL, 18.0000, 19.7550, 31.6122, 23.6902, 26.0000, '2026-07-15 16:15:25', '2026-07-15 16:15:25', NULL, '[]'),
 (5, 'DUMMY', 5, 'TOB-LFC-CHE', 5, NULL, 14.0000, 15.3650, 30.1657, 18.2232, 20.0000, '2026-07-15 16:15:25', '2026-07-15 16:15:25', NULL, '[]'),
 (6, 'DUMMY', 6, 'TOB-ECG-JUL', 6, NULL, 12.0000, 13.1700, 36.6742, 16.4009, 18.0000, '2026-07-15 16:15:25', '2026-07-15 16:15:25', NULL, '[]'),
-(7, 'DUMMY', 7, 'TOB-RYO-BUG', 7, NULL, 8.0000, 8.7800, 36.6737, 10.9339, 12.0000, '2026-07-15 16:15:25', '2026-07-15 16:15:25', NULL, '[]'),
+(7, 'DUMMY', 7, 'TOB-RYO-BUG', 7, NULL, 8.0000, 8.7800, 36.6700, 10.9300, 12.0000, '2026-07-15 16:15:25', '2026-07-17 08:12:54', NULL, '[]'),
 (8, 'DUMMY', 8, 'TOB-PIP-CBK', 8, NULL, 7.0000, 7.6825, 43.1829, 10.0228, 11.0000, '2026-07-15 16:15:25', '2026-07-15 16:15:25', NULL, '[]');
 
 -- --------------------------------------------------------
@@ -3276,7 +3286,7 @@ ALTER TABLE `account_types`
 -- AUTO_INCREMENT for table `activity_log`
 --
 ALTER TABLE `activity_log`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=56;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=57;
 
 --
 -- AUTO_INCREMENT for table `barcodes`
@@ -3534,7 +3544,7 @@ ALTER TABLE `units`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `user_contact_access`
