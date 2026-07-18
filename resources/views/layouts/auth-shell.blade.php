@@ -16,7 +16,7 @@
             <div class="japs-auth-card @hasSection('auth-wide') japs-auth-card--wide @endif">
                 @hasSection('auth-title')
                     <div class="japs-auth-card-logo">
-                        <img src="{{ asset('img/logo-small.png') }}" alt="{{ config('app.name', 'JAPS POS') }}" />
+                        <img src="{{ getAuthLogoUrl() }}" alt="{{ config('app.name', 'JAPS POS') }}" />
                     </div>
                     <h1>@yield('auth-title')</h1>
                     @hasSection('auth-subtitle')

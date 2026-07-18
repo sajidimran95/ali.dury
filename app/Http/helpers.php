@@ -101,3 +101,42 @@ if (! function_exists('str_ordinal')) {
         return number_format($number).$suffix;
     }
 }
+
+/**
+ * Login / auth page logo.
+ * Uses the business logo from System Settings when uploaded;
+ * otherwise keeps the default app logo.
+ */
+if (! function_exists('getAuthLogoUrl')) {
+    function getAuthLogoUrl(): string
+    {
+        $default = asset('img/logo-small.png');
+
+        try {
+            if (! isAppInstalled() || ! \Illuminate\Support\Facades\Schema::hasTable('business')) {
+                return $default;
+            }
+
+            $logo = null;
+
+            if (session()->has('user.business_id')) {
+                $logo = \App\Business::where('id', session('user.business_id'))->value('logo');
+            }
+
+            if (empty($logo)) {
+                $logo = \App\Business::whereNotNull('logo')
+                    ->where('logo', '!=', '')
+                    ->orderBy('id')
+                    ->value('logo');
+            }
+
+            if (! empty($logo) && file_exists(public_path('uploads/business_logos/'.$logo))) {
+                return asset('uploads/business_logos/'.$logo);
+            }
+        } catch (\Throwable $e) {
+            // Fall back to default if DB is unavailable during install/migration.
+        }
+
+        return $default;
+    }
+}

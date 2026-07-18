@@ -4,7 +4,7 @@
 @endphp
 <div class="japs-auth-topbar">
     <a href="{{ $home_url ?? url('/') }}" class="japs-auth-logo">
-        <img src="{{ asset('img/logo-small.png') }}" alt="{{ config('app.name') }}" />
+        <img src="{{ getAuthLogoUrl() }}" alt="{{ config('app.name') }}" />
     </a>
     <div class="tw-flex tw-items-center tw-gap-4">
         @if ($show_sign_in)
