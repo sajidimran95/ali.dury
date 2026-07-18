@@ -810,9 +810,24 @@ body.zoho-theme table.table tbody td {
     vertical-align: middle !important;
 }
 
-body.zoho-theme table.dataTable tbody tr:hover,
-body.zoho-theme table.table tbody tr:hover {
+body.zoho-theme table.dataTable tbody tr:hover:not([class*="bg-"]),
+body.zoho-theme table.table tbody tr:hover:not([class*="bg-"]) {
     background: var(--zoho-row-hover) !important;
+}
+
+/* Keep colored header rows (e.g. product view modal titles) stable on hover */
+body.zoho-theme table.table tbody tr.bg-green:hover,
+body.zoho-theme .modal table tbody tr.bg-green:hover {
+    background-color: #00a65a !important;
+    color: #fff !important;
+}
+
+body.zoho-theme table.table tbody tr.bg-green:hover > th,
+body.zoho-theme table.table tbody tr.bg-green:hover > td,
+body.zoho-theme .modal table tbody tr.bg-green:hover > th,
+body.zoho-theme .modal table tbody tr.bg-green:hover > td {
+    color: #fff !important;
+    background-color: transparent !important;
 }
 
 body.zoho-theme table.dataTable tbody td a:not(.tw-dw-btn):not(.btn),

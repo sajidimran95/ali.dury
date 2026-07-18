@@ -826,6 +826,25 @@ body.zoho-theme .modal-title {
     letter-spacing: -0.02em;
 }
 
+body.zoho-theme .modal-title:hover,
+body.zoho-theme .modal-title:focus,
+body.zoho-theme .modal-header:hover .modal-title {
+    color: var(--p-ink) !important;
+}
+
+/* Product view modal: keep green price-header titles readable on hover */
+body.zoho-theme .modal table tbody tr.bg-green:hover,
+body.zoho-theme .modal table tr.bg-green:hover {
+    background-color: #00a65a !important;
+    color: #fff !important;
+}
+
+body.zoho-theme .modal table tbody tr.bg-green:hover > th,
+body.zoho-theme .modal table tr.bg-green:hover > th {
+    color: #fff !important;
+    background-color: transparent !important;
+}
+
 body.zoho-theme .modal-body {
     padding: 18px 20px !important;
     color: var(--p-copy);
@@ -877,8 +896,8 @@ body.zoho-theme .table-striped > tbody > tr:nth-of-type(odd) {
     background: #fcfdff !important;
 }
 
-body.zoho-theme .table-hover > tbody > tr:hover,
-body.zoho-theme table.dataTable tbody tr:hover {
+body.zoho-theme .table-hover > tbody > tr:hover:not([class*="bg-"]),
+body.zoho-theme table.dataTable tbody tr:hover:not([class*="bg-"]) {
     background: #f5f8fc !important;
 }
 
