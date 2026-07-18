@@ -2849,14 +2849,34 @@ function calculateExpensePaymentDue() {
     $('#expense_payment_due').text(__currency_trans_from_en(payment_due, true, false));
 }
 
-$(document).on('shown.bs.dropdown', '.btn-group', function(){
-    if ($(this).closest('tbody').find('tr').length < 4) {
-        $('.dataTables_scrollBody').addClass('of-visible');
+$(document).on('show.bs.dropdown', '.dataTables_wrapper .btn-group', function () {
+    var $btnGroup = $(this);
+    var $scrollBody = $btnGroup.closest('.dataTables_scrollBody');
+
+    if (!$scrollBody.length) {
+        return;
+    }
+
+    // Let the menu escape the scroll container (needed when few rows / last rows)
+    $scrollBody.addClass('of-visible');
+
+    var btnRect = this.getBoundingClientRect();
+    var bodyRect = $scrollBody[0].getBoundingClientRect();
+    var spaceBelow = bodyRect.bottom - btnRect.bottom;
+    var spaceAbove = btnRect.top - bodyRect.top;
+    var menuHeight = 280;
+
+    // Only flip upward in taller tables when the button is near the bottom
+    if (bodyRect.height > menuHeight * 1.5 && spaceBelow < menuHeight && spaceAbove > spaceBelow) {
+        $btnGroup.addClass('dropup');
+    } else {
+        $btnGroup.removeClass('dropup');
     }
 });
-$(document).on('hidden.bs.dropdown', '.btn-group', function(){
-    $('.dataTables_scrollBody').removeClass('of-visible');
-})
+$(document).on('hidden.bs.dropdown', '.dataTables_wrapper .btn-group', function () {
+    $(this).removeClass('dropup');
+    $(this).closest('.dataTables_scrollBody').removeClass('of-visible');
+});
 
 function get_expense_sub_categories() {
     var cat = $('#expense_category_id').val();

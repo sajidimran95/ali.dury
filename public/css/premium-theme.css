@@ -763,6 +763,12 @@ body.zoho-theme .nav-tabs-custom {
     overflow: hidden;
 }
 
+/* Allow action menus to escape the card while open */
+body.zoho-theme .nav-tabs-custom:has(.btn-group.open),
+body.zoho-theme .nav-tabs-custom:has(.dataTables_scrollBody.of-visible) {
+    overflow: visible;
+}
+
 body.zoho-theme .nav-tabs-custom > .nav-tabs {
     background: #fafbfd;
     border-bottom: 1px solid var(--p-line);
@@ -879,7 +885,8 @@ body.zoho-theme table.dataTable tbody tr:hover {
 body.zoho-theme .table-bordered {
     border: 1px solid var(--p-line) !important;
     border-radius: 12px;
-    overflow: hidden;
+    /* Keep overflow visible so Actions dropdowns are not clipped */
+    overflow: visible;
 }
 
 body.zoho-theme .dataTables_wrapper .dataTables_filter input,

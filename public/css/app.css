@@ -26,6 +26,25 @@
     overflow: visible !important;
 }
 
+/* Ensure DataTables action menus float above rows/footer */
+.dataTables_wrapper .dataTables_scrollBody.of-visible,
+.dataTables_wrapper .dataTables_scrollBody.of-visible table,
+.dataTables_wrapper .dataTables_scrollBody.of-visible tbody,
+.dataTables_wrapper .dataTables_scrollBody.of-visible tr,
+.dataTables_wrapper .dataTables_scrollBody.of-visible td {
+    overflow: visible !important;
+}
+
+.dataTables_wrapper .btn-group.open,
+.dataTables_wrapper .btn-group.dropup.open {
+    position: relative;
+    z-index: 1050;
+}
+
+.dataTables_wrapper .btn-group .dropdown-menu {
+    z-index: 1051;
+}
+
 #online_indicator {
   font-size: 8px;
   vertical-align: middle;
