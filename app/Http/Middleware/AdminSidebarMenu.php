@@ -767,7 +767,8 @@ class AdminSidebarMenu
             if (auth()->user()->can('purchase_n_sell_report.view') || auth()->user()->can('contacts_report.view')
                 || auth()->user()->can('stock_report.view') || auth()->user()->can('tax_report.view')
                 || auth()->user()->can('trending_product_report.view') || auth()->user()->can('sales_representative.view') || auth()->user()->can('register_report.view')
-                || auth()->user()->can('expense_report.view')) {
+                || auth()->user()->can('expense_report.view')
+                || auth()->user()->can('attendance.view') || auth()->user()->can('attendance.view_all')) {
                 $menu->dropdown(
                     __('report.reports'),
                     function ($sub) use ($enabled_modules, $is_admin) {
@@ -905,6 +906,13 @@ class AdminSidebarMenu
                                 action([\App\Http\Controllers\ReportController::class, 'getRegisterReport']),
                                 __('report.register_report'),
                                 ['icon' => '', 'active' => request()->segment(2) == 'register-report']
+                            );
+                        }
+                        if (auth()->user()->can('attendance.view') || auth()->user()->can('attendance.view_all')) {
+                            $sub->url(
+                                action([\App\Http\Controllers\AttendanceController::class, 'report']),
+                                __('attendance.attendance_report'),
+                                ['icon' => '', 'active' => request()->segment(1) == 'attendance']
                             );
                         }
                         if (auth()->user()->can('sales_representative.view')) {

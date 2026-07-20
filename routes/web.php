@@ -59,6 +59,7 @@ use App\Http\Controllers\UnitController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VariationTemplateController;
 use App\Http\Controllers\WarrantyController;
+use App\Http\Controllers\AttendanceController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -118,6 +119,14 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::get('/home/dashboard-side-panel', [HomeController::class, 'getDashboardSidePanel']);
     Route::post('/attach-medias-to-model', [HomeController::class, 'attachMediasToGivenModel'])->name('attach.medias.to.model');
     Route::get('/calendar', [HomeController::class, 'getCalendar'])->name('calendar');
+
+    // Employee attendance (clock in / out / break)
+    Route::get('/attendance/status', [AttendanceController::class, 'status']);
+    Route::post('/attendance/clock-in', [AttendanceController::class, 'clockIn']);
+    Route::post('/attendance/start-break', [AttendanceController::class, 'startBreak']);
+    Route::post('/attendance/end-break', [AttendanceController::class, 'endBreak']);
+    Route::post('/attendance/clock-out', [AttendanceController::class, 'clockOut']);
+    Route::get('/attendance/report', [AttendanceController::class, 'report']);
 
     Route::post('/test-email', [BusinessController::class, 'testEmailConfiguration']);
     Route::post('/test-sms', [BusinessController::class, 'testSmsConfiguration']);

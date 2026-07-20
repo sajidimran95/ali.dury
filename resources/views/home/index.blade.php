@@ -49,6 +49,8 @@
                     <span class="zoho-dashboard__tab zoho-dashboard__tab--active">{{ __('home.home') }}</span>
                 </div>
 
+                @include('home.partials.attendance_clock')
+
                 @if (auth()->user()->can('dashboard.data') && $is_admin)
                     <div class="japs-dashboard-stats zoho-dashboard__stats tw-grid tw-grid-cols-2 tw-gap-3 sm:tw-gap-4">
                         <div class="zoho-stat-card">
@@ -1457,5 +1459,141 @@
         });
     </script>
     @endif
+
+    @can('attendance.clock')
+    <script type="text/javascript">
+        $(function () {
+            var attState = 'clocked_out';
+            var clockInAt = null;
+            var breakStartAt = null;
+            var baseWorked = 0;
+            var baseBreak = 0;
+
+            function pad(n) { return n < 10 ? '0' + n : '' + n; }
+            function formatSecs(total) {
+                total = Math.max(0, Math.floor(total || 0));
+                var h = Math.floor(total / 3600);
+                var m = Math.floor((total % 3600) / 60);
+                var s = total % 60;
+                return pad(h) + ':' + pad(m) + ':' + pad(s);
+            }
+
+            function applyStatus(st) {
+                if (!st) return;
+                attState = st.state || 'clocked_out';
+                clockInAt = st.clock_in_at ? new Date(st.clock_in_at) : null;
+                breakStartAt = st.break_start_at ? new Date(st.break_start_at) : null;
+                baseWorked = st.worked_seconds || 0;
+                baseBreak = st.break_seconds || 0;
+
+                var $widget = $('#att_clock_widget');
+                $widget.removeClass('is-working is-break is-out');
+                $('#att_btn_clock_in, #att_btn_start_break, #att_btn_end_break, #att_btn_clock_out').addClass('hide');
+
+                if (attState === 'clocked_in') {
+                    $widget.addClass('is-working');
+                    $('#att_state_label').text("{{ __('attendance.working') }}");
+                    $('#att_btn_start_break, #att_btn_clock_out').removeClass('hide');
+                    if (clockInAt) {
+                        $('#att_meta_label').text("{{ __('attendance.clocked_in_at') }}: " + clockInAt.toLocaleTimeString());
+                    }
+                } else if (attState === 'on_break') {
+                    $widget.addClass('is-break');
+                    $('#att_state_label').text("{{ __('attendance.on_break') }}");
+                    $('#att_btn_end_break, #att_btn_clock_out').removeClass('hide');
+                    $('#att_meta_label').text("{{ __('attendance.on_break') }}");
+                } else {
+                    $widget.addClass('is-out');
+                    $('#att_state_label').text("{{ __('attendance.not_clocked_in') }}");
+                    $('#att_btn_clock_in').removeClass('hide');
+                    $('#att_meta_label').text('');
+                }
+
+                updateTimers();
+            }
+
+            function updateTimers() {
+                var now = Date.now();
+                var worked = baseWorked;
+                var brk = baseBreak;
+                var loadedAt = window.__attLoadedAt || now;
+
+                if (attState === 'clocked_in') {
+                    worked = baseWorked + Math.floor((now - loadedAt) / 1000);
+                } else if (attState === 'on_break') {
+                    brk = baseBreak + Math.floor((now - loadedAt) / 1000);
+                }
+
+                $('#att_worked_timer').text(formatSecs(worked));
+                $('#att_break_timer').text(formatSecs(brk));
+            }
+
+            function loadStatus() {
+                $.ajax({
+                    url: '{{ action([\App\Http\Controllers\AttendanceController::class, "status"]) }}',
+                    method: 'GET',
+                    dataType: 'json',
+                    success: function (resp) {
+                        window.__attLoadedAt = Date.now();
+                        applyStatus(resp);
+                    }
+                });
+            }
+
+            function postAction(url) {
+                $.ajax({
+                    method: 'POST',
+                    url: url,
+                    data: { _token: '{{ csrf_token() }}' },
+                    dataType: 'json',
+                    success: function (result) {
+                        if (typeof toastr !== 'undefined') {
+                            if (result.success) {
+                                toastr.success(result.msg);
+                            } else {
+                                toastr.error(result.msg);
+                            }
+                        }
+                        window.__attLoadedAt = Date.now();
+                        applyStatus(result.status);
+                    },
+                    error: function () {
+                        if (typeof toastr !== 'undefined') {
+                            toastr.error("{{ __('messages.something_went_wrong') }}");
+                        }
+                    }
+                });
+            }
+
+            $('#att_btn_clock_in').on('click', function () {
+                postAction('{{ action([\App\Http\Controllers\AttendanceController::class, "clockIn"]) }}');
+            });
+            $('#att_btn_start_break').on('click', function () {
+                postAction('{{ action([\App\Http\Controllers\AttendanceController::class, "startBreak"]) }}');
+            });
+            $('#att_btn_end_break').on('click', function () {
+                postAction('{{ action([\App\Http\Controllers\AttendanceController::class, "endBreak"]) }}');
+            });
+            $('#att_btn_clock_out').on('click', function () {
+                if (typeof swal === 'undefined') {
+                    postAction('{{ action([\App\Http\Controllers\AttendanceController::class, "clockOut"]) }}');
+                    return;
+                }
+                swal({
+                    title: LANG.sure,
+                    icon: 'warning',
+                    buttons: true,
+                }).then(function (confirmed) {
+                    if (confirmed) {
+                        postAction('{{ action([\App\Http\Controllers\AttendanceController::class, "clockOut"]) }}');
+                    }
+                });
+            });
+
+            loadStatus();
+            setInterval(updateTimers, 1000);
+        });
+    </script>
+    @endcan
 
 @endsection

@@ -1270,6 +1270,46 @@
       </div>
       </div>
         <hr>
+
+        <div class="row check_group">
+        <div class="col-md-1">
+          <h4>@lang('attendance.permissions')</h4>
+        </div>
+        <div class="col-md-2">
+          <div class="checkbox">
+              <label>
+                <input type="checkbox" class="check_all input-icheck" > {{ __( 'role.select_all' ) }}
+              </label>
+            </div>
+        </div>
+        <div class="col-md-9">
+          <div class="col-md-12">
+            <div class="checkbox">
+              <label>
+                {!! Form::checkbox('permissions[]', 'attendance.clock', false, ['class' => 'input-icheck']); !!}
+                @lang('attendance.permission_clock')
+              </label>
+            </div>
+          </div>
+          <div class="col-md-12">
+            <div class="checkbox">
+              <label>
+                {!! Form::checkbox('permissions[]', 'attendance.view', false, ['class' => 'input-icheck']); !!}
+                @lang('attendance.permission_view')
+              </label>
+            </div>
+          </div>
+          <div class="col-md-12">
+            <div class="checkbox">
+              <label>
+                {!! Form::checkbox('permissions[]', 'attendance.view_all', false, ['class' => 'input-icheck']); !!}
+                @lang('attendance.permission_view_all')
+              </label>
+            </div>
+          </div>
+        </div>
+        </div>
+        <hr>
         
         <div class="row check_group">
         <div class="col-md-1">

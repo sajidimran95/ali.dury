@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Jul 20, 2026 at 04:44 PM
+-- Generation Time: Jul 20, 2026 at 05:14 PM
 -- Server version: 8.4.3
 -- PHP Version: 8.4.2
 
@@ -787,6 +787,54 @@ CREATE TABLE `document_and_notes` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `employee_attendances`
+--
+
+CREATE TABLE `employee_attendances` (
+  `id` int UNSIGNED NOT NULL,
+  `business_id` int UNSIGNED NOT NULL,
+  `user_id` int UNSIGNED NOT NULL,
+  `clock_in_at` datetime NOT NULL,
+  `clock_out_at` datetime DEFAULT NULL,
+  `status` enum('clocked_in','on_break','clocked_out') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'clocked_in',
+  `notes` text COLLATE utf8mb4_unicode_ci,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `employee_attendances`
+--
+
+INSERT INTO `employee_attendances` (`id`, `business_id`, `user_id`, `clock_in_at`, `clock_out_at`, `status`, `notes`, `created_at`, `updated_at`) VALUES
+(1, 1, 1, '2026-07-20 13:01:00', '2026-07-20 13:01:14', 'clocked_out', NULL, '2026-07-20 07:01:00', '2026-07-20 07:01:14');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `employee_attendance_breaks`
+--
+
+CREATE TABLE `employee_attendance_breaks` (
+  `id` int UNSIGNED NOT NULL,
+  `attendance_id` int UNSIGNED NOT NULL,
+  `break_start_at` datetime NOT NULL,
+  `break_end_at` datetime DEFAULT NULL,
+  `reason` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `employee_attendance_breaks`
+--
+
+INSERT INTO `employee_attendance_breaks` (`id`, `attendance_id`, `break_start_at`, `break_end_at`, `reason`, `created_at`, `updated_at`) VALUES
+(1, 1, '2026-07-20 13:01:06', '2026-07-20 13:01:09', NULL, '2026-07-20 07:01:06', '2026-07-20 07:01:09');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `expense_categories`
 --
 
@@ -1287,7 +1335,9 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (298, '2025_03_07_114637_add_more_addresh_column_in_contact', 1),
 (299, '2025_09_19_120000_add_previous_balance_due_fields_to_invoice_layouts_table', 1),
 (300, '2026_04_03_000001_add_transaction_payment_id_to_cash_register_transactions', 1),
-(301, '2026_04_14_000001_add_tunisian_dinar_currency', 1);
+(301, '2026_04_14_000001_add_tunisian_dinar_currency', 1),
+(302, '2026_07_20_000001_create_employee_attendances_tables', 2),
+(303, '2026_07_20_000002_add_attendance_permissions', 2);
 
 -- --------------------------------------------------------
 
@@ -1569,7 +1619,10 @@ INSERT INTO `permissions` (`id`, `name`, `guard_name`, `created_at`, `updated_at
 (81, 'dashboard.data', 'web', '2026-06-04 15:45:24', NULL),
 (82, 'location.1', 'web', '2026-06-04 16:29:55', '2026-06-04 16:29:55'),
 (83, 'selling_price_group.1', 'web', '2026-07-15 16:01:55', '2026-07-15 16:01:55'),
-(84, 'selling_price_group.2', 'web', '2026-07-15 16:01:55', '2026-07-15 16:01:55');
+(84, 'selling_price_group.2', 'web', '2026-07-15 16:01:55', '2026-07-15 16:01:55'),
+(85, 'attendance.clock', 'web', '2026-07-20 16:30:24', '2026-07-20 16:30:24'),
+(86, 'attendance.view', 'web', '2026-07-20 16:30:24', '2026-07-20 16:30:24'),
+(87, 'attendance.view_all', 'web', '2026-07-20 16:30:24', '2026-07-20 16:30:24');
 
 -- --------------------------------------------------------
 
@@ -1879,13 +1932,18 @@ CREATE TABLE `role_has_permissions` (
 INSERT INTO `role_has_permissions` (`permission_id`, `role_id`) VALUES
 (83, 1),
 (84, 1),
+(85, 1),
+(86, 1),
+(87, 1),
 (25, 2),
 (26, 2),
 (48, 2),
 (49, 2),
 (50, 2),
 (51, 2),
-(80, 2);
+(80, 2),
+(85, 2),
+(86, 2);
 
 -- --------------------------------------------------------
 
@@ -2708,6 +2766,22 @@ ALTER TABLE `document_and_notes`
   ADD KEY `document_and_notes_created_by_index` (`created_by`);
 
 --
+-- Indexes for table `employee_attendances`
+--
+ALTER TABLE `employee_attendances`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `employee_attendances_business_id_user_id_index` (`business_id`,`user_id`),
+  ADD KEY `employee_attendances_business_id_clock_in_at_index` (`business_id`,`clock_in_at`),
+  ADD KEY `employee_attendances_user_id_status_index` (`user_id`,`status`);
+
+--
+-- Indexes for table `employee_attendance_breaks`
+--
+ALTER TABLE `employee_attendance_breaks`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `employee_attendance_breaks_attendance_id_index` (`attendance_id`);
+
+--
 -- Indexes for table `expense_categories`
 --
 ALTER TABLE `expense_categories`
@@ -3231,6 +3305,18 @@ ALTER TABLE `document_and_notes`
   MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT for table `employee_attendances`
+--
+ALTER TABLE `employee_attendances`
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT for table `employee_attendance_breaks`
+--
+ALTER TABLE `employee_attendance_breaks`
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
 -- AUTO_INCREMENT for table `expense_categories`
 --
 ALTER TABLE `expense_categories`
@@ -3258,7 +3344,7 @@ ALTER TABLE `media`
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=302;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=304;
 
 --
 -- AUTO_INCREMENT for table `notification_templates`
@@ -3282,7 +3368,7 @@ ALTER TABLE `oauth_personal_access_clients`
 -- AUTO_INCREMENT for table `permissions`
 --
 ALTER TABLE `permissions`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=85;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=88;
 
 --
 -- AUTO_INCREMENT for table `printers`
