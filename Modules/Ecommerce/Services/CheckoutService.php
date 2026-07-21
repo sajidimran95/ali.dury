@@ -35,6 +35,7 @@ class CheckoutService
         }
 
         $cart = $this->cartService->getOrCreateCart($business_id);
+        $cart->load(['items.product', 'items.variation']);
         if ($cart->items->isEmpty()) {
             throw new \RuntimeException(__('ecommerce::lang.cart_empty'));
         }

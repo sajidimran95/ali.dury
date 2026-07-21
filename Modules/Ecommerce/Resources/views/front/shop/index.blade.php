@@ -40,7 +40,9 @@
     <div class="lg:col-span-3">
         <h1 class="text-2xl font-semibold mb-6">Shop</h1>
         @include('ecommerce::front.partials.product_grid', ['products' => $products])
-        <div class="mt-8">{{ $products->links() }}</div>
+        <div class="mt-8">
+            {{ $products->links('ecommerce::front.partials.pagination') }}
+        </div>
     </div>
 </div>
 @endsection

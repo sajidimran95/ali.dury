@@ -7,6 +7,12 @@
     </h1>
 </section>
 <section class="content">
+@if($products->isEmpty())
+<div class="alert alert-info">
+    No online products yet. Edit a product and set <strong>Sales Channel</strong> to
+    <em>POS + Ecommerce</em> or <em>Ecommerce Only</em>.
+</div>
+@endif
 <div class="box box-solid">
     <div class="box-body table-responsive">
         <table class="table table-bordered">

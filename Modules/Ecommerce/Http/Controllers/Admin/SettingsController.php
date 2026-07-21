@@ -41,6 +41,21 @@ class SettingsController extends Controller
         $settings->contact_phone = $request->input('contact_phone');
         $settings->save();
 
+        // Ensure a usable flat shipping rule exists when store is enabled
+        if ($settings->is_enabled) {
+            $has_shipping = \Modules\Ecommerce\Entities\EcomShippingRule::where('business_id', $business_id)->exists();
+            if (! $has_shipping) {
+                \Modules\Ecommerce\Entities\EcomShippingRule::create([
+                    'business_id' => $business_id,
+                    'name' => 'Standard Shipping',
+                    'type' => 'flat',
+                    'amount' => 5.99,
+                    'is_active' => 1,
+                    'sort_order' => 1,
+                ]);
+            }
+        }
+
         return redirect()->back()->with('status', [
             'success' => 1,
             'msg' => __('ecommerce::lang.settings_updated'),
