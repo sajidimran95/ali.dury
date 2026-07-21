@@ -74,9 +74,43 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::middleware(['setData'])->group(function () {
-    Route::get('/', function () {
+    Route::get('/', function (\Illuminate\Http\Request $request) {
+        try {
+            if (class_exists(\Modules\Ecommerce\Entities\EcommerceSetting::class)
+                && \Illuminate\Support\Facades\Schema::hasTable('ecommerce_settings')) {
+                $business_id = \Modules\Ecommerce\Entities\EcommerceSetting::where('is_enabled', 1)->value('business_id');
+                if (! $business_id) {
+                    $business_id = \App\Business::query()->value('id');
+                }
+
+                if ($business_id) {
+                    $settings = \Modules\Ecommerce\Entities\EcommerceSetting::forBusiness((int) $business_id);
+                    if ($settings && $settings->is_enabled) {
+                        // Public homepage = ecommerce storefront (POS staff login remains at /login)
+                        $request->attributes->set('ecommerce_business_id', (int) $business_id);
+                        $request->attributes->set('ecommerce_settings', $settings);
+                        view()->share('ecom_settings', $settings);
+                        view()->share('ecom_business_id', (int) $business_id);
+                        view()->share('cart_totals', [
+                            'count' => 0,
+                            'subtotal' => 0,
+                            'total' => 0,
+                            'shipping' => 0,
+                            'tax' => 0,
+                            'discount' => 0,
+                        ]);
+
+                        return app(\Modules\Ecommerce\Http\Controllers\Front\HomeController::class)
+                            ->index(app(\Modules\Ecommerce\Services\CartService::class));
+                    }
+                }
+            }
+        } catch (\Throwable $e) {
+            // Module/DB not ready — fall back to POS welcome
+        }
+
         return view('welcome');
-    });
+    })->name('home.public');
 
     Auth::routes();
 

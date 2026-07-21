@@ -1,0 +1,11 @@
+{
+    "name": "Ecommerce",
+    "alias": "ecommerce",
+    "description": "Ecommerce storefront addon for japspos POS",
+    "keywords": ["ecommerce", "shop", "storefront"],
+    "priority": 0,
+    "providers": [
+        "Modules\\Ecommerce\\Providers\\EcommerceServiceProvider"
+    ],
+    "files": []
+}

@@ -22,7 +22,37 @@ class Product extends Model
      */
     protected $casts = [
         'sub_unit_ids' => 'array',
+        'ecom_gallery' => 'array',
+        'ecom_is_featured' => 'boolean',
+        'ecom_is_new_arrival' => 'boolean',
     ];
+
+    public function scopeForEcommerce($query)
+    {
+        return $query->whereIn('products.sales_channel', ['pos_ecommerce', 'ecommerce_only']);
+    }
+
+    public function scopeForPos($query)
+    {
+        return $query->where(function ($q) {
+            $q->whereNull('products.sales_channel')
+                ->orWhereIn('products.sales_channel', ['pos_only', 'pos_ecommerce']);
+        });
+    }
+
+    public function getEcomPriceAttribute()
+    {
+        if (! is_null($this->ecom_discount_price) && $this->ecom_discount_price > 0) {
+            return (float) $this->ecom_discount_price;
+        }
+        if (! is_null($this->ecom_online_price) && $this->ecom_online_price > 0) {
+            return (float) $this->ecom_online_price;
+        }
+
+        $variation = $this->variations->first();
+
+        return $variation ? (float) $variation->sell_price_inc_tax : 0;
+    }
 
     /**
      * Get the products image.

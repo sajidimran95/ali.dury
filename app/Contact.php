@@ -28,6 +28,11 @@ class Contact extends Authenticatable
         'shipping_custom_field_details' => 'array',
     ];
 
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
+
     /**
      * Get the business that owns the user.
      */

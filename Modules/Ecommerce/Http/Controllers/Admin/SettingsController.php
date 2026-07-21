@@ -1,0 +1,49 @@
+<?php
+
+namespace Modules\Ecommerce\Http\Controllers\Admin;
+
+use App\BusinessLocation;
+use App\Http\Controllers\Controller;
+use App\Product;
+use Illuminate\Http\Request;
+use Modules\Ecommerce\Entities\EcommerceSetting;
+
+class SettingsController extends Controller
+{
+    public function index()
+    {
+        $business_id = request()->session()->get('user.business_id');
+        $settings = EcommerceSetting::forBusiness($business_id);
+        $locations = BusinessLocation::forDropdown($business_id);
+
+        return view('ecommerce::admin.settings.index', compact('settings', 'locations'));
+    }
+
+    public function update(Request $request)
+    {
+        $business_id = $request->session()->get('user.business_id');
+        $settings = EcommerceSetting::forBusiness($business_id);
+
+        $settings->is_enabled = $request->boolean('is_enabled');
+        $settings->store_name = $request->input('store_name');
+        $settings->location_id = $request->input('location_id') ?: null;
+        $settings->enable_cod = $request->boolean('enable_cod');
+        $settings->enable_stripe = $request->boolean('enable_stripe');
+        $settings->enable_paypal = $request->boolean('enable_paypal');
+        $settings->stripe_key = $request->input('stripe_key');
+        $settings->stripe_secret = $request->input('stripe_secret');
+        $settings->paypal_client_id = $request->input('paypal_client_id');
+        $settings->paypal_secret = $request->input('paypal_secret');
+        $settings->default_country = $request->input('default_country', 'United States');
+        $settings->seo_title = $request->input('seo_title');
+        $settings->seo_description = $request->input('seo_description');
+        $settings->contact_email = $request->input('contact_email');
+        $settings->contact_phone = $request->input('contact_phone');
+        $settings->save();
+
+        return redirect()->back()->with('status', [
+            'success' => 1,
+            'msg' => __('ecommerce::lang.settings_updated'),
+        ]);
+    }
+}

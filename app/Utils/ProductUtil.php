@@ -1644,7 +1644,8 @@ class ProductUtil extends Util
         }
 
         $query->where('products.business_id', $business_id)
-                ->where('products.type', '!=', 'modifier');
+                ->where('products.type', '!=', 'modifier')
+                ->forPos();
 
         if (! empty($product_types)) {
             $query->whereIn('products.type', $product_types);
