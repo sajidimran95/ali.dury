@@ -213,6 +213,7 @@
         </div>
         @endif
 
+        @if(!empty($common_settings['enable_imei_sr_no']))
         <div class="col-sm-4">
             <div class="form-group">
                 <br>
@@ -221,7 +222,9 @@
                 </label> @show_tooltip(__('lang_v1.tooltip_sr_no'))
             </div>
         </div>
+        @endif
 
+        @if(!empty($common_settings['enable_not_for_selling']))
         <div class="col-sm-4">
             <div class="form-group">
                 <br>
@@ -230,6 +233,7 @@
                 </label> @show_tooltip(__('lang_v1.tooltip_not_for_selling'))
             </div>
         </div>
+        @endif
 
         <div class="clearfix"></div>
 
@@ -262,12 +266,14 @@
         @endforeach
         @endif
 
+        @if(!empty($common_settings['enable_weight']))
         <div class="col-sm-4">
             <div class="form-group">
                 {!! Form::label('weight', __('lang_v1.weight') . ':') !!}
                 {!! Form::text('weight', !empty($duplicate_product->weight) ? $duplicate_product->weight : null, ['class' => 'form-control', 'placeholder' => __('lang_v1.weight')]); !!}
             </div>
         </div>
+        @endif
         @php
         $custom_labels = json_decode(session('business.custom_labels'), true);
         $product_custom_fields = !empty($custom_labels['product']) ? $custom_labels['product'] : [];
@@ -309,12 +315,14 @@
             @endif
         @endforeach
 
+        @if(!empty($common_settings['enable_preparation_time']))
         <div class="col-sm-3">
             <div class="form-group">
                 {!! Form::label('preparation_time_in_minutes', __('lang_v1.preparation_time_in_minutes') . ':') !!}
                 {!! Form::number('preparation_time_in_minutes', !empty($duplicate_product->preparation_time_in_minutes) ? $duplicate_product->preparation_time_in_minutes : null, ['class' => 'form-control', 'placeholder' => __('lang_v1.preparation_time_in_minutes')]); !!}
             </div>
         </div>
+        @endif
         <!--custom fields-->
         <div class="clearfix"></div>
         @include('layouts.partials.module_form_part')

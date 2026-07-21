@@ -128,12 +128,14 @@
               {!! Form::select('product_locations[]', $business_locations, $default_location, ['class' => 'form-control select2', 'multiple', 'id' => 'product_locations']); !!}
           </div>
         </div>
+        @if(!empty($common_settings['enable_weight']))
         <div class="col-sm-4">
           <div class="form-group">
             {!! Form::label('weight',  __('lang_v1.weight') . ':') !!}
             {!! Form::text('weight', null, ['class' => 'form-control', 'placeholder' => __('lang_v1.weight')]); !!}
           </div>
         </div>
+        @endif
         <div class="clearfix"></div>
         <div class="col-sm-8">
           <div class="form-group">
@@ -155,6 +157,7 @@
               ['class' => 'form-control select2', 'required']); !!}
           </div>
         </div>
+        @if(!empty($common_settings['enable_imei_sr_no']))
         <div class="col-sm-4">
           <div class="checkbox">
           <br>
@@ -163,6 +166,7 @@
             </label>@show_tooltip(__('lang_v1.tooltip_sr_no'))
           </div>
         </div>
+        @endif
         <div class="clearfix"></div>
         @php
         $custom_labels = json_decode(session('business.custom_labels'), true);
@@ -171,6 +175,7 @@
         $product_custom_field3 = !empty($custom_labels['product']['custom_field_3']) ? $custom_labels['product']['custom_field_3'] : __('lang_v1.product_custom_field3');
         $product_custom_field4 = !empty($custom_labels['product']['custom_field_4']) ? $custom_labels['product']['custom_field_4'] : __('lang_v1.product_custom_field4');
       @endphp
+        @if(!empty($common_settings['enable_not_for_selling']))
         <div class="col-sm-4">
           <div class="form-group">
             <br>
@@ -179,6 +184,7 @@
             </label> @show_tooltip(__('lang_v1.tooltip_not_for_selling'))
           </div>
         </div>
+        @endif
         <div class="clearfix"></div>
         <div class="col-sm-3">
           <div class="form-group">

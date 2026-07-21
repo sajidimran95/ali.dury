@@ -687,6 +687,16 @@ class ProductController extends Controller
                                 ->with(['product_variations'])
                                 ->first();
 
+            $common_settings = session()->get('business.common_settings') ?? [];
+
+            // Keep existing values when optional fields are hidden by settings
+            if (empty($common_settings['enable_weight'])) {
+                $product_details['weight'] = $product->weight;
+            }
+            if (empty($common_settings['enable_preparation_time'])) {
+                $product_details['preparation_time_in_minutes'] = $product->preparation_time_in_minutes;
+            }
+
             $module_form_fields = $this->moduleUtil->getModuleFormField('product_form_fields');
             if (! empty($module_form_fields)) {
                 foreach ($module_form_fields as $column) {
@@ -737,7 +747,9 @@ class ProductController extends Controller
                 $product->enable_stock = 0;
             }
 
-            $product->not_for_selling = (! empty($request->input('not_for_selling')) && $request->input('not_for_selling') == 1) ? 1 : 0;
+            if (! empty($common_settings['enable_not_for_selling'])) {
+                $product->not_for_selling = (! empty($request->input('not_for_selling')) && $request->input('not_for_selling') == 1) ? 1 : 0;
+            }
 
             if (! empty($request->input('sub_category_id'))) {
                 $product->sub_category_id = $request->input('sub_category_id');
@@ -756,10 +768,12 @@ class ProductController extends Controller
                 }
             }
 
-            if (! empty($request->input('enable_sr_no')) && $request->input('enable_sr_no') == 1) {
-                $product->enable_sr_no = 1;
-            } else {
-                $product->enable_sr_no = 0;
+            if (! empty($common_settings['enable_imei_sr_no'])) {
+                if (! empty($request->input('enable_sr_no')) && $request->input('enable_sr_no') == 1) {
+                    $product->enable_sr_no = 1;
+                } else {
+                    $product->enable_sr_no = 0;
+                }
             }
 
             //upload document

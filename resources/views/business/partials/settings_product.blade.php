@@ -183,5 +183,60 @@
             </div>
         </div>
 
+        <div class="clearfix"></div>
+        <div class="col-md-12">
+            <h4 class="tw-mt-2 tw-mb-1">@lang('lang_v1.optional_product_fields')</h4>
+            <p class="help-block tw-mt-0">@lang('lang_v1.optional_product_fields_help')</p>
+        </div>
+
+        <div class="col-sm-4">
+            <div class="form-group">
+                <div class="checkbox">
+                  <label>
+                    {!! Form::checkbox('common_settings[enable_imei_sr_no]', 1,
+                        !empty($common_settings['enable_imei_sr_no']) ? true : false,
+                    [ 'class' => 'input-icheck']); !!} {{ __( 'lang_v1.enable_imei_sr_no_setting' ) }}
+                  </label>
+                  @show_tooltip(__('lang_v1.enable_imei_sr_no_setting_tooltip'))
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-4">
+            <div class="form-group">
+                <div class="checkbox">
+                  <label>
+                    {!! Form::checkbox('common_settings[enable_not_for_selling]', 1,
+                        !empty($common_settings['enable_not_for_selling']) ? true : false,
+                    [ 'class' => 'input-icheck']); !!} {{ __( 'lang_v1.enable_not_for_selling_setting' ) }}
+                  </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-4">
+            <div class="form-group">
+                <div class="checkbox">
+                  <label>
+                    {!! Form::checkbox('common_settings[enable_weight]', 1,
+                        !empty($common_settings['enable_weight']) ? true : false,
+                    [ 'class' => 'input-icheck']); !!} {{ __( 'lang_v1.enable_weight_setting' ) }}
+                  </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-4">
+            <div class="form-group">
+                <div class="checkbox">
+                  <label>
+                    {!! Form::checkbox('common_settings[enable_preparation_time]', 1,
+                        !empty($common_settings['enable_preparation_time']) ? true : false,
+                    [ 'class' => 'input-icheck']); !!} {{ __( 'lang_v1.enable_preparation_time_setting' ) }}
+                  </label>
+                </div>
+            </div>
+        </div>
+
     </div>
 </div>
