@@ -39,7 +39,13 @@ class ShopController extends Controller
         };
 
         $products = $query->paginate(16)->withQueryString();
-        $categories = Category::where('business_id', $business_id)->where('category_type', 'product')->whereNull('parent_id')->get();
+        $categories = Category::where('business_id', $business_id)
+            ->where('category_type', 'product')
+            ->where(function ($q) {
+                $q->whereNull('parent_id')->orWhere('parent_id', 0);
+            })
+            ->orderBy('name')
+            ->get();
         $brands = Brands::where('business_id', $business_id)->get();
         $cart = $cartService->getOrCreateCart($business_id);
         $cart_totals = $cartService->totals($cart);

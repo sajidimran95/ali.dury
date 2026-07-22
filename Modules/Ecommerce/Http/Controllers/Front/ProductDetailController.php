@@ -38,7 +38,7 @@ class ProductDetailController extends Controller
             ->forEcommerce()
             ->where('id', '!=', $product->id)
             ->where('category_id', $product->category_id)
-            ->with('variations')
+            ->with(['variations', 'category'])
             ->limit(4)
             ->get();
 
@@ -53,8 +53,10 @@ class ProductDetailController extends Controller
         $recently_viewed = Product::whereIn('id', session('ecom_recently_viewed', []))
             ->where('id', '!=', $product->id)
             ->forEcommerce()
-            ->with('variations')
+            ->with(['variations', 'category'])
             ->get();
+
+        $product->loadMissing('category');
 
         return view('ecommerce::front.product.show', compact('product', 'variation', 'stock', 'related', 'reviews', 'cart_totals', 'recently_viewed'));
     }

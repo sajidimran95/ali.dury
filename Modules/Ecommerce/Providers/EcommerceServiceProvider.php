@@ -28,7 +28,7 @@ class EcommerceServiceProvider extends ServiceProvider
 
     protected function registerViewComposers(): void
     {
-        view()->composer('ecommerce::front.layouts.store', function ($view) {
+        view()->composer('ecommerce::front.*', function ($view) {
             try {
                 $business_id = request()->attributes->get('ecommerce_business_id')
                     ?? view()->shared('ecom_business_id');
@@ -40,6 +40,16 @@ class EcommerceServiceProvider extends ServiceProvider
                 $cartService = app(\Modules\Ecommerce\Services\CartService::class);
                 $cart = $cartService->getOrCreateCart((int) $business_id);
                 $view->with('cart_totals', $cartService->totals($cart));
+
+                $nav_categories = \App\Category::where('business_id', $business_id)
+                    ->where('category_type', 'product')
+                    ->where(function ($q) {
+                        $q->whereNull('parent_id')->orWhere('parent_id', 0);
+                    })
+                    ->orderBy('name')
+                    ->limit(10)
+                    ->get();
+                $view->with('nav_categories', $nav_categories);
             } catch (\Throwable $e) {
                 // keep existing shared defaults
             }

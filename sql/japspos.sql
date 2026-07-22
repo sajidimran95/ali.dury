@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Jul 21, 2026 at 03:53 PM
+-- Generation Time: Jul 22, 2026 at 06:33 PM
 -- Server version: 8.4.3
 -- PHP Version: 8.4.2
 
@@ -114,7 +114,12 @@ INSERT INTO `activity_log` (`id`, `log_name`, `description`, `subject_id`, `subj
 (4, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-07-20 05:58:21', '2026-07-20 05:58:21'),
 (5, 'default', 'logout', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-07-20 06:42:58', '2026-07-20 06:42:58'),
 (6, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-07-20 06:43:24', '2026-07-20 06:43:24'),
-(7, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-07-21 05:42:40', '2026-07-21 05:42:40');
+(7, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-07-21 05:42:40', '2026-07-21 05:42:40'),
+(8, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-07-21 10:56:33', '2026-07-21 10:56:33'),
+(9, 'default', 'logout', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-07-21 11:00:28', '2026-07-21 11:00:28'),
+(10, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-07-22 07:33:50', '2026-07-22 07:33:50'),
+(11, 'default', 'logout', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-07-22 07:41:54', '2026-07-22 07:41:54'),
+(12, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-07-22 07:42:10', '2026-07-22 07:42:10');
 
 -- --------------------------------------------------------
 
@@ -433,7 +438,11 @@ INSERT INTO `categories` (`id`, `name`, `business_id`, `short_code`, `parent_id`
 (5, 'Little Filtered Cigars', 1, 'LFC', 1, 1, 'product', 'MSA category code 003252', NULL, NULL, '2026-07-18 18:56:54', '2026-07-18 18:56:54'),
 (6, 'E-Cigarettes', 1, 'ECG', 1, 1, 'product', 'MSA category code 003292', NULL, NULL, '2026-07-18 18:56:54', '2026-07-18 18:56:54'),
 (7, 'RYO Tobacco', 1, 'RYO', 1, 1, 'product', 'MSA category code 003221', NULL, NULL, '2026-07-18 18:56:54', '2026-07-18 18:56:54'),
-(8, 'Pipe Tobacco', 1, 'PIP', 1, 1, 'product', 'MSA category code 003241', NULL, NULL, '2026-07-18 18:56:54', '2026-07-18 18:56:54');
+(8, 'Pipe Tobacco', 1, 'PIP', 1, 1, 'product', 'MSA category code 003241', NULL, NULL, '2026-07-18 18:56:54', '2026-07-18 18:56:54'),
+(9, 'Snacks', 1, 'snacks', 0, 1, 'product', NULL, NULL, NULL, '2026-07-22 17:13:01', '2026-07-22 17:13:01'),
+(10, 'Beverages', 1, 'beverages', 0, 1, 'product', NULL, NULL, NULL, '2026-07-22 17:13:01', '2026-07-22 17:13:01'),
+(11, 'Personal Care', 1, 'personal-care', 0, 1, 'product', NULL, NULL, NULL, '2026-07-22 17:13:01', '2026-07-22 17:13:01'),
+(12, 'Household', 1, 'household', 0, 1, 'product', NULL, NULL, NULL, '2026-07-22 17:13:01', '2026-07-22 17:13:01');
 
 -- --------------------------------------------------------
 
@@ -469,6 +478,10 @@ CREATE TABLE `contacts` (
   `middle_name` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `last_name` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `email` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `password` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `ecom_first_name` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `ecom_last_name` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `email_verified_at` timestamp NULL DEFAULT NULL,
   `contact_id` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `contact_status` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'active',
   `tax_number` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
@@ -514,19 +527,21 @@ CREATE TABLE `contacts` (
   `custom_field10` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `deleted_at` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
-  `updated_at` timestamp NULL DEFAULT NULL
+  `updated_at` timestamp NULL DEFAULT NULL,
+  `remember_token` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `contacts`
 --
 
-INSERT INTO `contacts` (`id`, `business_id`, `type`, `contact_type`, `land_mark`, `street_name`, `building_number`, `additional_number`, `supplier_business_name`, `name`, `prefix`, `first_name`, `middle_name`, `last_name`, `email`, `contact_id`, `contact_status`, `tax_number`, `city`, `state`, `country`, `address_line_1`, `address_line_2`, `zip_code`, `dob`, `mobile`, `landline`, `alternate_number`, `pay_term_number`, `pay_term_type`, `credit_limit`, `created_by`, `balance`, `total_rp`, `total_rp_used`, `total_rp_expired`, `is_default`, `shipping_address`, `shipping_custom_field_details`, `is_export`, `export_custom_field_1`, `export_custom_field_2`, `export_custom_field_3`, `export_custom_field_4`, `export_custom_field_5`, `export_custom_field_6`, `position`, `customer_group_id`, `custom_field1`, `custom_field2`, `custom_field3`, `custom_field4`, `custom_field5`, `custom_field6`, `custom_field7`, `custom_field8`, `custom_field9`, `custom_field10`, `deleted_at`, `created_at`, `updated_at`) VALUES
-(1, 1, 'customer', NULL, NULL, NULL, NULL, NULL, NULL, 'Walk-In Customer', NULL, NULL, NULL, NULL, NULL, 'CO0001', 'active', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '', NULL, NULL, NULL, NULL, 0.0000, 1, 0.0000, 0, 0, 0, 1, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 'RETAIL', NULL, 'Y', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-18 18:56:53', '2026-07-18 18:56:54'),
-(2, 1, 'customer', 'business', NULL, NULL, NULL, NULL, 'Nashville Corner Mart', 'Nashville Corner Mart', NULL, NULL, NULL, NULL, NULL, 'CO0002', 'active', NULL, 'Nashville', 'TN', 'USA', '501 Broadway', NULL, '37203', NULL, '6151110001', NULL, NULL, NULL, NULL, NULL, 1, 0.0000, 0, 0, 0, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 'RETAIL', '1', 'N', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-18 19:00:29', '2026-07-18 19:00:29'),
-(3, 1, 'customer', 'business', NULL, NULL, NULL, NULL, 'East Nashville Tobacco', 'East Nashville Tobacco', NULL, NULL, NULL, NULL, NULL, 'CO0003', 'active', NULL, 'Nashville', 'TN', 'USA', '1220 Gallatin Ave', NULL, '37206', NULL, '6151110002', NULL, NULL, NULL, NULL, NULL, 1, 0.0000, 0, 0, 0, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 'RETAIL', '2', 'N', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-18 19:00:29', '2026-07-18 19:00:29'),
-(4, 1, 'customer', 'business', NULL, NULL, NULL, NULL, 'Midtown Market', 'Midtown Market', NULL, NULL, NULL, NULL, NULL, 'CO0004', 'active', NULL, 'Nashville', 'TN', 'USA', '2100 West End Ave', NULL, '37203', NULL, '6151110003', NULL, NULL, NULL, NULL, NULL, 1, 0.0000, 0, 0, 0, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 'RETAIL', '3', 'N', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-18 19:00:29', '2026-07-18 19:00:29'),
-(5, 1, 'customer', 'business', NULL, NULL, NULL, NULL, 'MR Wholesale Distributor', 'MR Wholesale Distributor', NULL, NULL, NULL, NULL, NULL, 'CO0005', 'active', NULL, 'Nashville', 'TN', 'USA', '300 Industrial Blvd', NULL, '37209', NULL, '6151110007', NULL, NULL, NULL, NULL, NULL, 1, 0.0000, 0, 0, 0, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 2, 'DISTRIBUTOR', '7', 'N', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-18 19:00:29', '2026-07-18 19:00:29');
+INSERT INTO `contacts` (`id`, `business_id`, `type`, `contact_type`, `land_mark`, `street_name`, `building_number`, `additional_number`, `supplier_business_name`, `name`, `prefix`, `first_name`, `middle_name`, `last_name`, `email`, `password`, `ecom_first_name`, `ecom_last_name`, `email_verified_at`, `contact_id`, `contact_status`, `tax_number`, `city`, `state`, `country`, `address_line_1`, `address_line_2`, `zip_code`, `dob`, `mobile`, `landline`, `alternate_number`, `pay_term_number`, `pay_term_type`, `credit_limit`, `created_by`, `balance`, `total_rp`, `total_rp_used`, `total_rp_expired`, `is_default`, `shipping_address`, `shipping_custom_field_details`, `is_export`, `export_custom_field_1`, `export_custom_field_2`, `export_custom_field_3`, `export_custom_field_4`, `export_custom_field_5`, `export_custom_field_6`, `position`, `customer_group_id`, `custom_field1`, `custom_field2`, `custom_field3`, `custom_field4`, `custom_field5`, `custom_field6`, `custom_field7`, `custom_field8`, `custom_field9`, `custom_field10`, `deleted_at`, `created_at`, `updated_at`, `remember_token`) VALUES
+(1, 1, 'customer', NULL, NULL, NULL, NULL, NULL, NULL, 'Walk-In Customer', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'CO0001', 'active', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '', NULL, NULL, NULL, NULL, 0.0000, 1, 0.0000, 0, 0, 0, 1, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 'RETAIL', NULL, 'Y', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-18 18:56:53', '2026-07-18 18:56:54', NULL),
+(2, 1, 'customer', 'business', NULL, NULL, NULL, NULL, 'Nashville Corner Mart', 'Nashville Corner Mart', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'CO0002', 'active', NULL, 'Nashville', 'TN', 'USA', '501 Broadway', NULL, '37203', NULL, '6151110001', NULL, NULL, NULL, NULL, NULL, 1, 0.0000, 0, 0, 0, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 'RETAIL', '1', 'N', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-18 19:00:29', '2026-07-18 19:00:29', NULL),
+(3, 1, 'customer', 'business', NULL, NULL, NULL, NULL, 'East Nashville Tobacco', 'East Nashville Tobacco', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'CO0003', 'active', NULL, 'Nashville', 'TN', 'USA', '1220 Gallatin Ave', NULL, '37206', NULL, '6151110002', NULL, NULL, NULL, NULL, NULL, 1, 0.0000, 0, 0, 0, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 'RETAIL', '2', 'N', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-18 19:00:29', '2026-07-18 19:00:29', NULL),
+(4, 1, 'customer', 'business', NULL, NULL, NULL, NULL, 'Midtown Market', 'Midtown Market', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'CO0004', 'active', NULL, 'Nashville', 'TN', 'USA', '2100 West End Ave', NULL, '37203', NULL, '6151110003', NULL, NULL, NULL, NULL, NULL, 1, 0.0000, 0, 0, 0, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 'RETAIL', '3', 'N', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-18 19:00:29', '2026-07-18 19:00:29', NULL),
+(5, 1, 'customer', 'business', NULL, NULL, NULL, NULL, 'MR Wholesale Distributor', 'MR Wholesale Distributor', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'CO0005', 'active', NULL, 'Nashville', 'TN', 'USA', '300 Industrial Blvd', NULL, '37209', NULL, '6151110007', NULL, NULL, NULL, NULL, NULL, 1, 0.0000, 0, 0, 0, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 2, 'DISTRIBUTOR', '7', 'N', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-18 19:00:29', '2026-07-18 19:00:29', NULL),
+(6, 1, 'customer', NULL, NULL, NULL, NULL, NULL, NULL, 'Nash 333', NULL, NULL, NULL, NULL, 'admin@gmail.com', NULL, 'Nash', '333', NULL, NULL, 'active', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '333', NULL, NULL, NULL, NULL, NULL, 1, 0.0000, 0, 0, 0, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-22 13:10:15', '2026-07-22 13:10:15', NULL);
 
 -- --------------------------------------------------------
 
@@ -795,6 +810,410 @@ CREATE TABLE `document_and_notes` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `ecommerce_settings`
+--
+
+CREATE TABLE `ecommerce_settings` (
+  `id` int UNSIGNED NOT NULL,
+  `business_id` int UNSIGNED NOT NULL,
+  `is_enabled` tinyint(1) NOT NULL DEFAULT '0',
+  `store_name` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `store_logo` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `location_id` int UNSIGNED DEFAULT NULL,
+  `enable_cod` tinyint(1) NOT NULL DEFAULT '1',
+  `enable_stripe` tinyint(1) NOT NULL DEFAULT '0',
+  `enable_paypal` tinyint(1) NOT NULL DEFAULT '0',
+  `stripe_key` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `stripe_secret` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `paypal_client_id` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `paypal_secret` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `default_country` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'United States',
+  `seo_title` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `seo_description` text COLLATE utf8mb4_unicode_ci,
+  `contact_email` text COLLATE utf8mb4_unicode_ci,
+  `contact_phone` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `extra` json DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `ecommerce_settings`
+--
+
+INSERT INTO `ecommerce_settings` (`id`, `business_id`, `is_enabled`, `store_name`, `store_logo`, `location_id`, `enable_cod`, `enable_stripe`, `enable_paypal`, `stripe_key`, `stripe_secret`, `paypal_client_id`, `paypal_secret`, `default_country`, `seo_title`, `seo_description`, `contact_email`, `contact_phone`, `extra`, `created_at`, `updated_at`) VALUES
+(1, 1, 1, 'Japs Store', NULL, 1, 1, 0, 0, NULL, NULL, NULL, NULL, 'United States', 'Japs Store — Modern Everyday Essentials', 'Shop curated snacks, beverages, personal care and home essentials. Live POS inventory, secure checkout, USA shipping.', NULL, NULL, NULL, '2026-07-21 20:26:19', '2026-07-22 17:42:32');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `ecom_api_settings`
+--
+
+CREATE TABLE `ecom_api_settings` (
+  `id` int UNSIGNED NOT NULL,
+  `business_id` int UNSIGNED NOT NULL,
+  `api_token` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `ecom_banners`
+--
+
+CREATE TABLE `ecom_banners` (
+  `id` int UNSIGNED NOT NULL,
+  `business_id` int UNSIGNED NOT NULL,
+  `title` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `subtitle` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `image` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `button_text` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `button_link` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT '1',
+  `sort_order` int NOT NULL DEFAULT '0',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `ecom_banners`
+--
+
+INSERT INTO `ecom_banners` (`id`, `business_id`, `title`, `subtitle`, `image`, `button_text`, `button_link`, `is_active`, `sort_order`, `created_at`, `updated_at`) VALUES
+(3, 1, 'Everyday essentials, elevated', 'Curated pantry, care, and home staples — inventory synced from our store.', 'ecom_banner_hero.jpg', 'Shop the collection', 'http://japspos.test/shop', 1, 1, '2026-07-22 17:43:04', '2026-07-22 17:43:04'),
+(4, 1, 'New season refresh', 'Personal care favorites with clean formulas and soft finishes.', 'ecom_banner_care.jpg', 'Explore care', 'http://japspos.test/shop/c/11', 1, 2, '2026-07-22 17:43:07', '2026-07-22 17:43:07'),
+(5, 1, 'Pantry favorites', 'Snacks and drinks restocked daily from live POS inventory.', 'ecom_banner_pantry.jpg', 'Shop snacks', 'http://japspos.test/shop/c/9', 1, 3, '2026-07-22 17:43:13', '2026-07-22 17:43:13');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `ecom_carts`
+--
+
+CREATE TABLE `ecom_carts` (
+  `id` int UNSIGNED NOT NULL,
+  `business_id` int UNSIGNED NOT NULL,
+  `contact_id` int UNSIGNED DEFAULT NULL,
+  `session_id` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `coupon_code` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `ecom_carts`
+--
+
+INSERT INTO `ecom_carts` (`id`, `business_id`, `contact_id`, `session_id`, `coupon_code`, `created_at`, `updated_at`) VALUES
+(1, 1, NULL, 'vFd5yzZNvvw8hsdCuYdcrLGAvJrI1woBlqhpW2Jd', NULL, '2026-07-21 20:27:35', '2026-07-21 20:27:35'),
+(2, 1, NULL, 'DZyl8FtZMbkSClsCYUxNtKCd39fPekKpAaWEqonE', NULL, '2026-07-21 20:33:26', '2026-07-21 20:33:26'),
+(3, 1, NULL, 'hTh00k3eHMyugSAIL8ScB1ItsNZWaoC34IBAFRNZ', NULL, '2026-07-21 20:33:27', '2026-07-21 20:33:27'),
+(4, 1, NULL, 'S73arjLu5DgEGdCcHgG3LAmr01fiACJrnQus51cn', NULL, '2026-07-22 12:57:43', '2026-07-22 12:57:43'),
+(5, 1, NULL, '0fBd8XbITNilJ2W8IXSpoYPvgXsm5FZaqTviOCPg', NULL, '2026-07-22 17:02:40', '2026-07-22 17:02:40'),
+(6, 1, NULL, 'TrAcrfNwCrR3k1PaiFEGDlOQPjERxwFi3dQNYoDw', NULL, '2026-07-22 17:10:04', '2026-07-22 17:10:04'),
+(7, 1, NULL, 'ZrSTU8t4NO7T0fGzrW3wc9FKRD8jpJmpGg72Q0bc', NULL, '2026-07-22 17:19:23', '2026-07-22 17:19:23'),
+(8, 1, NULL, 'yP9CZrmtB6tkFlc68isHGLhnetwtVKsoOh1HTHpz', NULL, '2026-07-22 17:19:24', '2026-07-22 17:19:24'),
+(9, 1, NULL, '1Vim1Ne0JXK4ZP1cbNf4g9FSpdjbuximp5EacLAh', NULL, '2026-07-22 17:22:00', '2026-07-22 17:22:00'),
+(10, 1, NULL, 'XlTrzoh1FjTFhitUXAol7UrgS9fZJ04X8bETZBI9', NULL, '2026-07-22 17:22:03', '2026-07-22 17:22:03'),
+(11, 1, NULL, 'tyXeeLv1OEmjsKLCSqYvlyzSBvaYfrwYEKBbITMZ', NULL, '2026-07-22 17:22:05', '2026-07-22 17:22:05'),
+(12, 1, NULL, 'oaBRZKsWqhWrNge3gibJg9Il1FMuBFrQ7vzi8ocm', NULL, '2026-07-22 17:22:06', '2026-07-22 17:22:06'),
+(13, 1, NULL, 'iU8tKm6Q31m9FhK5ADHETOx4XlFpIOgnNpCxh9p8', NULL, '2026-07-22 17:22:07', '2026-07-22 17:22:07'),
+(14, 1, NULL, '9caTCZscFoBM2LVFejEdwBdH6IGSlJtqaOXb2zGH', NULL, '2026-07-22 17:22:12', '2026-07-22 17:22:12'),
+(15, 1, NULL, 'GCxRL72628a8F6QjslogmfFD7Rfnq23MglPrp03I', NULL, '2026-07-22 17:22:14', '2026-07-22 17:22:14'),
+(16, 1, NULL, 'O4RbDEh087JV3LEFawlGR8cBGdNT3fcUx4jsv1EW', NULL, '2026-07-22 17:22:25', '2026-07-22 17:22:25'),
+(17, 1, NULL, 'SS9vCg0GezCju5j3wbqcR1UAcDNuijJEXI0V7J7W', NULL, '2026-07-22 17:22:35', '2026-07-22 17:22:35'),
+(18, 1, NULL, '6ZGWpryJAKbP8saMs2NvYWnnJMqk1W9oxPHv60so', NULL, '2026-07-22 17:22:36', '2026-07-22 17:22:36'),
+(19, 1, NULL, '7Y8oXs0B0h0jZtNhDyvTdJIO6FKmJtJr3rHuGv5V', NULL, '2026-07-22 17:22:42', '2026-07-22 17:22:42'),
+(20, 1, NULL, 'eVH5jNJeDl91hliGQ8Q8i92aCifkXWCBIckNHuAq', NULL, '2026-07-22 17:22:45', '2026-07-22 17:22:45'),
+(21, 1, NULL, 'XihpM3DOa3pA0pOiFiVmPJmqR3Q2AEknND2KmhFU', NULL, '2026-07-22 17:22:47', '2026-07-22 17:22:47'),
+(22, 1, NULL, 'gXMYOuB0t0mlBigGbB3h8xJqegkCGKjZ254OyKvS', NULL, '2026-07-22 17:22:49', '2026-07-22 17:22:49'),
+(23, 1, NULL, 'jx8LNvkcRjtqBVWjIXOmZvKogUeHJI0pDr7Cie9G', NULL, '2026-07-22 17:22:55', '2026-07-22 17:22:55'),
+(24, 1, NULL, 'ZE9r8bcfbOdID0l7QbYvRi4qBarPR4kYxPfxTfoC', NULL, '2026-07-22 17:22:59', '2026-07-22 17:22:59'),
+(25, 1, NULL, 'ROnKLo5zZH2IMHGVIZgYikXfrnXSvJLMw9eYZ55N', NULL, '2026-07-22 17:23:37', '2026-07-22 17:23:37'),
+(26, 1, NULL, 'VTODXAbTYqA0Zru95ySBHnDu8htrVEmS9W2GyxNW', NULL, '2026-07-22 17:23:39', '2026-07-22 17:23:39'),
+(27, 1, NULL, '413WH3DzA5FUCLWRGC8KiXg2wu7hO5FFcYYspqN1', NULL, '2026-07-22 17:23:42', '2026-07-22 17:23:42'),
+(28, 1, NULL, 't7917rILjDnAZL7TX7FqHyJwv0pg3T7haOtcIFBW', NULL, '2026-07-22 17:23:44', '2026-07-22 17:23:44'),
+(29, 1, NULL, 'E0V2hNWUi6NHOsny1YyEzS2OJ7QXfMZnxZGhFqRZ', NULL, '2026-07-22 17:23:45', '2026-07-22 17:23:45'),
+(30, 1, NULL, 'w2vVtWHTIWNBul6cQYdtiSQsr0pdZ9UB6ftlXRQn', NULL, '2026-07-22 17:23:47', '2026-07-22 17:23:47'),
+(31, 1, NULL, 'ZRaRp0DosCrv95IteECUfiznyLy0SNs3PU5oJ7Es', NULL, '2026-07-22 17:23:56', '2026-07-22 17:23:56'),
+(32, 1, NULL, 'mots8P20QP1830uZfGxBVNdmaf820ElvrHmoFkNT', NULL, '2026-07-22 17:23:58', '2026-07-22 17:23:58'),
+(33, 1, NULL, 'OpKRLyEDdTqw5rlYzwsQpXrpV3AMkjw8Qvt2XMVx', NULL, '2026-07-22 17:24:04', '2026-07-22 17:24:04'),
+(34, 1, NULL, '6Nutdgy3L2I3DKGwiPIucGQLL1MQ0ckpJsG2Nmxm', NULL, '2026-07-22 17:24:21', '2026-07-22 17:24:21'),
+(35, 1, NULL, 'EWUUJAQjIR77oncWnZrP3NtkPp1rcYEQoBvmeLsn', NULL, '2026-07-22 17:24:23', '2026-07-22 17:24:23'),
+(36, 1, NULL, 'GUfpFfcRtvJ2ACIdaGmhUo62Mi6TCR07yu5cjNfO', NULL, '2026-07-22 17:28:53', '2026-07-22 17:28:53'),
+(37, 1, NULL, 'dGcOnDcdjf2uvxHpujmGTS4RLzcMDoKoELO1qehZ', NULL, '2026-07-22 17:28:54', '2026-07-22 17:28:54'),
+(38, 1, NULL, 'MIppPPqbLyZhL2tAFd4HKsVGPTfszF9Qi2VtiHI7', NULL, '2026-07-22 17:28:54', '2026-07-22 17:28:54'),
+(39, 1, NULL, 'gkd1VZyqxQDjsejrUvUIKaPL0UPuDzXq4iSO1JAN', NULL, '2026-07-22 17:30:02', '2026-07-22 17:30:02'),
+(40, 1, NULL, 'zXj1ww0lK9uUWAHjwtbAb9p6HqUNvKafVBawNc3B', NULL, '2026-07-22 17:30:04', '2026-07-22 17:30:04'),
+(41, 1, NULL, 'NUwVe8AZFDGMzlJr0F75cKXF0vDlamLZlZZGge2f', NULL, '2026-07-22 17:30:06', '2026-07-22 17:30:06'),
+(42, 1, NULL, 'S4ZA7PmMXa8mhP5A9fZBGbhpAfZUULg7v6RW8ySM', NULL, '2026-07-22 17:30:09', '2026-07-22 17:30:09'),
+(43, 1, NULL, 'yS1zWJp1zqkB9BnPqYZHypropPHfEJOwFT1rHL15', NULL, '2026-07-22 17:30:17', '2026-07-22 17:30:17'),
+(44, 1, NULL, '75ntB4LQH91r4XUtgeVkAfkMtnVVOSoluJuIbzhs', NULL, '2026-07-22 17:30:21', '2026-07-22 17:30:21'),
+(45, 1, NULL, 'EDQl07WOVRUgS2w9jMwlwZGm7NqOjKTad2tiSq5M', NULL, '2026-07-22 17:30:23', '2026-07-22 17:30:23'),
+(46, 1, NULL, 'KNH7pr8GnBoayWOYCOPlElam4BTIUbjo3lr98C2X', NULL, '2026-07-22 17:30:28', '2026-07-22 17:30:28'),
+(47, 1, NULL, 'peB8pvKg8FKD5N4XrmWqrqMAICgLocyZj2ME11ny', NULL, '2026-07-22 17:30:29', '2026-07-22 17:30:29'),
+(48, 1, NULL, 'ebXHg2vUO2opQakhkoJgJfuckGKJgIcd66Daf2Gl', NULL, '2026-07-22 17:30:34', '2026-07-22 17:30:34'),
+(49, 1, NULL, 'vgvTxkkp2oVAXhDIksBuTTUaCZdeseSubw1Hkv1f', NULL, '2026-07-22 17:31:25', '2026-07-22 17:31:25'),
+(50, 1, NULL, 'BLioICjRcVyWT4BbprpoBjesn6hxT1MMH3OPW4Xk', NULL, '2026-07-22 17:33:11', '2026-07-22 17:33:11'),
+(51, 1, NULL, 'eeftRwCYEQXoeqkCqurdR8ctmm9KCTrTXrzLVLUu', NULL, '2026-07-22 17:33:41', '2026-07-22 17:33:41'),
+(52, 1, NULL, 'pkMe6Cn7CsMNS0ceBYttNQJiferZiBAetUXEJavc', NULL, '2026-07-22 17:33:45', '2026-07-22 17:33:45'),
+(53, 1, NULL, 'h562LBERzwX5edmKjo5cRJkfFBkN8M31v1HgAoUO', NULL, '2026-07-22 17:34:14', '2026-07-22 17:34:14'),
+(54, 1, NULL, '861DMFIfCHbYGlu8tjlyoKQdzXqhke1fi4UoaEZa', NULL, '2026-07-22 17:36:49', '2026-07-22 17:36:49'),
+(55, 1, NULL, 'WQoRpHRqBONS0ODtxuOLcwh69nDdyM0eqCMmrvBZ', NULL, '2026-07-22 17:37:38', '2026-07-22 17:37:38'),
+(56, 1, NULL, 'iTISncoM2bCil3wCDyjNCmh3WQoC9dUcOKjgVTex', NULL, '2026-07-22 17:43:41', '2026-07-22 17:43:41');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `ecom_cart_items`
+--
+
+CREATE TABLE `ecom_cart_items` (
+  `id` int UNSIGNED NOT NULL,
+  `cart_id` int UNSIGNED NOT NULL,
+  `product_id` int UNSIGNED NOT NULL,
+  `variation_id` int UNSIGNED NOT NULL,
+  `quantity` decimal(22,4) NOT NULL DEFAULT '1.0000',
+  `unit_price` decimal(22,4) NOT NULL DEFAULT '0.0000',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `ecom_cart_items`
+--
+
+INSERT INTO `ecom_cart_items` (`id`, `cart_id`, `product_id`, `variation_id`, `quantity`, `unit_price`, `created_at`, `updated_at`) VALUES
+(1, 1, 7, 7, 1.0000, 12.0000, '2026-07-21 20:29:58', '2026-07-21 20:29:58'),
+(4, 53, 38, 38, 1.0000, 13.6000, '2026-07-22 17:35:13', '2026-07-22 17:35:13'),
+(5, 55, 38, 38, 1.0000, 13.6000, '2026-07-22 17:38:19', '2026-07-22 17:38:19');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `ecom_collections`
+--
+
+CREATE TABLE `ecom_collections` (
+  `id` int UNSIGNED NOT NULL,
+  `business_id` int UNSIGNED NOT NULL,
+  `name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `slug` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` text COLLATE utf8mb4_unicode_ci,
+  `image` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT '1',
+  `sort_order` int NOT NULL DEFAULT '0',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `ecom_collections`
+--
+
+INSERT INTO `ecom_collections` (`id`, `business_id`, `name`, `slug`, `description`, `image`, `is_active`, `sort_order`, `created_at`, `updated_at`) VALUES
+(1, 1, 'Weekly Pantry', 'weekly-pantry', 'Snacks and drinks for the week ahead.', NULL, 1, 1, '2026-07-22 17:43:13', '2026-07-22 17:43:13'),
+(2, 1, 'Self-Care Edit', 'self-care-edit', 'Personal care favorites, restocked.', NULL, 1, 2, '2026-07-22 17:43:13', '2026-07-22 17:43:13'),
+(3, 1, 'Home Comforts', 'home-comforts', 'Towels, candles, and everyday tools.', NULL, 1, 3, '2026-07-22 17:43:13', '2026-07-22 17:43:13');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `ecom_collection_products`
+--
+
+CREATE TABLE `ecom_collection_products` (
+  `id` int UNSIGNED NOT NULL,
+  `collection_id` int UNSIGNED NOT NULL,
+  `product_id` int UNSIGNED NOT NULL,
+  `sort_order` int NOT NULL DEFAULT '0',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `ecom_coupons`
+--
+
+CREATE TABLE `ecom_coupons` (
+  `id` int UNSIGNED NOT NULL,
+  `business_id` int UNSIGNED NOT NULL,
+  `code` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `type` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'fixed',
+  `value` decimal(22,4) NOT NULL DEFAULT '0.0000',
+  `min_order_amount` decimal(22,4) DEFAULT NULL,
+  `usage_limit` int DEFAULT NULL,
+  `used_count` int NOT NULL DEFAULT '0',
+  `starts_at` timestamp NULL DEFAULT NULL,
+  `expires_at` timestamp NULL DEFAULT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT '1',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `ecom_coupon_usages`
+--
+
+CREATE TABLE `ecom_coupon_usages` (
+  `id` int UNSIGNED NOT NULL,
+  `coupon_id` int UNSIGNED NOT NULL,
+  `contact_id` int UNSIGNED DEFAULT NULL,
+  `transaction_id` int UNSIGNED DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `ecom_customer_addresses`
+--
+
+CREATE TABLE `ecom_customer_addresses` (
+  `id` int UNSIGNED NOT NULL,
+  `business_id` int UNSIGNED NOT NULL,
+  `contact_id` int UNSIGNED NOT NULL,
+  `first_name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `last_name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `company` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `address_line_1` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `address_line_2` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `city` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `state` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `zip_code` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `country` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'United States',
+  `phone` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `is_default` tinyint(1) NOT NULL DEFAULT '0',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `ecom_order_meta`
+--
+
+CREATE TABLE `ecom_order_meta` (
+  `id` int UNSIGNED NOT NULL,
+  `business_id` int UNSIGNED NOT NULL,
+  `transaction_id` int UNSIGNED NOT NULL,
+  `tracking_token` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `fulfillment_status` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pending',
+  `timeline` json DEFAULT NULL,
+  `shipping_address` json DEFAULT NULL,
+  `billing_address` json DEFAULT NULL,
+  `coupon_id` int UNSIGNED DEFAULT NULL,
+  `payment_method` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `customer_email` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `customer_phone` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `ecom_order_meta`
+--
+
+INSERT INTO `ecom_order_meta` (`id`, `business_id`, `transaction_id`, `tracking_token`, `fulfillment_status`, `timeline`, `shipping_address`, `billing_address`, `coupon_id`, `payment_method`, `customer_email`, `customer_phone`, `created_at`, `updated_at`) VALUES
+(1, 1, 9, '5SXIcacoqkyiF00X7iwAxamfqMgAO6OdNtYrBpvI', 'confirmed', '[{\"at\": \"2026-07-22 19:10:15\", \"label\": \"Order Received\", \"status\": \"pending\"}, {\"at\": \"2026-07-22 13:34:04\", \"note\": null, \"label\": \"Confirmed\", \"status\": \"confirmed\"}]', '{\"city\": \"33\", \"state\": \"KS\", \"country\": \"United States\", \"zip_code\": \"333\", \"last_name\": \"333\", \"first_name\": \"Nash\", \"address_line_1\": \"33\", \"address_line_2\": \"333\"}', '{\"city\": \"33\", \"state\": \"KS\", \"country\": \"United States\", \"zip_code\": \"333\", \"last_name\": \"333\", \"first_name\": \"Nash\", \"address_line_1\": \"33\", \"address_line_2\": \"333\"}', NULL, 'cod', 'admin@gmail.com', '333', '2026-07-22 13:10:15', '2026-07-22 07:34:04'),
+(2, 1, 10, 'vpbEu1BelcEE1iFvw1lUcTduMW8x3C9By4pU6DPp', 'pending', '[{\"at\": \"2026-07-22 23:34:04\", \"label\": \"Order Received\", \"status\": \"pending\"}]', '{\"city\": \"33\", \"state\": \"KS\", \"country\": \"United States\", \"zip_code\": \"333\", \"last_name\": \"333\", \"first_name\": \"Nash\", \"address_line_1\": \"33\", \"address_line_2\": \"333\"}', '{\"city\": \"33\", \"state\": \"KS\", \"country\": \"United States\", \"zip_code\": \"333\", \"last_name\": \"333\", \"first_name\": \"Nash\", \"address_line_1\": \"33\", \"address_line_2\": \"333\"}', NULL, 'cod', 'admin@gmail.com', '333', '2026-07-22 17:34:04', '2026-07-22 17:34:04');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `ecom_reviews`
+--
+
+CREATE TABLE `ecom_reviews` (
+  `id` int UNSIGNED NOT NULL,
+  `business_id` int UNSIGNED NOT NULL,
+  `product_id` int UNSIGNED NOT NULL,
+  `contact_id` int UNSIGNED DEFAULT NULL,
+  `author_name` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `rating` tinyint UNSIGNED NOT NULL DEFAULT '5',
+  `review` text COLLATE utf8mb4_unicode_ci,
+  `images` json DEFAULT NULL,
+  `status` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pending',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `ecom_shipping_rules`
+--
+
+CREATE TABLE `ecom_shipping_rules` (
+  `id` int UNSIGNED NOT NULL,
+  `business_id` int UNSIGNED NOT NULL,
+  `name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `type` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'flat',
+  `amount` decimal(22,4) NOT NULL DEFAULT '0.0000',
+  `min_order_amount` decimal(22,4) DEFAULT NULL,
+  `max_weight` decimal(22,4) DEFAULT NULL,
+  `states` json DEFAULT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT '1',
+  `sort_order` int NOT NULL DEFAULT '0',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `ecom_shipping_rules`
+--
+
+INSERT INTO `ecom_shipping_rules` (`id`, `business_id`, `name`, `type`, `amount`, `min_order_amount`, `max_weight`, `states`, `is_active`, `sort_order`, `created_at`, `updated_at`) VALUES
+(1, 1, 'Standard Shipping', 'flat', 5.9900, NULL, NULL, NULL, 1, 1, '2026-07-22 07:42:32', '2026-07-22 07:42:32');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `ecom_tax_rules`
+--
+
+CREATE TABLE `ecom_tax_rules` (
+  `id` int UNSIGNED NOT NULL,
+  `business_id` int UNSIGNED NOT NULL,
+  `name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `level` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'state',
+  `state` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `county` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `city` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `rate` decimal(8,4) NOT NULL DEFAULT '0.0000',
+  `is_active` tinyint(1) NOT NULL DEFAULT '1',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `ecom_wishlists`
+--
+
+CREATE TABLE `ecom_wishlists` (
+  `id` int UNSIGNED NOT NULL,
+  `business_id` int UNSIGNED NOT NULL,
+  `contact_id` int UNSIGNED NOT NULL,
+  `product_id` int UNSIGNED NOT NULL,
+  `variation_id` int UNSIGNED DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `employee_attendances`
 --
 
@@ -1005,7 +1424,7 @@ CREATE TABLE `invoice_schemes` (
 --
 
 INSERT INTO `invoice_schemes` (`id`, `business_id`, `name`, `scheme_type`, `number_type`, `prefix`, `start_number`, `invoice_count`, `total_digits`, `is_default`, `created_at`, `updated_at`) VALUES
-(1, 1, 'Default', 'blank', 'sequential', '', 1, 0, 4, 1, '2026-07-18 18:56:53', '2026-07-18 18:56:53');
+(1, 1, 'Default', 'blank', 'sequential', '', 1, 2, 4, 1, '2026-07-18 18:56:53', '2026-07-22 17:34:04');
 
 -- --------------------------------------------------------
 
@@ -1345,7 +1764,8 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (300, '2026_04_03_000001_add_transaction_payment_id_to_cash_register_transactions', 1),
 (301, '2026_04_14_000001_add_tunisian_dinar_currency', 1),
 (302, '2026_07_20_000001_create_employee_attendances_tables', 2),
-(303, '2026_07_20_000002_add_attendance_permissions', 2);
+(303, '2026_07_20_000002_add_attendance_permissions', 2),
+(304, '2026_07_22_000001_create_ecommerce_tables', 3);
 
 -- --------------------------------------------------------
 
@@ -1520,6 +1940,18 @@ CREATE TABLE `oauth_refresh_tokens` (
 --
 
 CREATE TABLE `password_resets` (
+  `email` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `token` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `password_resets_contacts`
+--
+
+CREATE TABLE `password_resets_contacts` (
   `email` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
   `token` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL
@@ -1707,23 +2139,53 @@ CREATE TABLE `products` (
   `warranty_id` int DEFAULT NULL,
   `is_inactive` tinyint(1) NOT NULL DEFAULT '0',
   `not_for_selling` tinyint(1) NOT NULL DEFAULT '0',
+  `sales_channel` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pos_only',
+  `ecom_slug` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
-  `updated_at` timestamp NULL DEFAULT NULL
+  `updated_at` timestamp NULL DEFAULT NULL,
+  `ecom_short_description` text COLLATE utf8mb4_unicode_ci,
+  `ecom_long_description` longtext COLLATE utf8mb4_unicode_ci,
+  `ecom_seo_title` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `ecom_seo_description` text COLLATE utf8mb4_unicode_ci,
+  `ecom_is_featured` tinyint(1) NOT NULL DEFAULT '0',
+  `ecom_is_new_arrival` tinyint(1) NOT NULL DEFAULT '0',
+  `ecom_online_price` decimal(22,4) DEFAULT NULL,
+  `ecom_discount_price` decimal(22,4) DEFAULT NULL,
+  `ecom_gallery` json DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `products`
 --
 
-INSERT INTO `products` (`id`, `name`, `business_id`, `type`, `unit_id`, `secondary_unit_id`, `sub_unit_ids`, `brand_id`, `category_id`, `sub_category_id`, `tax`, `tax_type`, `enable_stock`, `alert_quantity`, `sku`, `barcode_type`, `expiry_period`, `expiry_period_type`, `enable_sr_no`, `weight`, `product_custom_field1`, `product_custom_field2`, `product_custom_field3`, `product_custom_field4`, `product_custom_field5`, `product_custom_field6`, `product_custom_field7`, `product_custom_field8`, `product_custom_field9`, `product_custom_field10`, `product_custom_field11`, `product_custom_field12`, `product_custom_field13`, `product_custom_field14`, `product_custom_field15`, `product_custom_field16`, `product_custom_field17`, `product_custom_field18`, `product_custom_field19`, `product_custom_field20`, `image`, `product_description`, `created_by`, `preparation_time_in_minutes`, `warranty_id`, `is_inactive`, `not_for_selling`, `created_at`, `updated_at`) VALUES
-(1, 'Lux Cigarettes Carton', 1, 'single', 1, NULL, NULL, NULL, 1, 2, 5, 'inclusive', 1, 10.0000, 'TOB-CIG-LUX', 'C128', NULL, NULL, 0, NULL, '200', '003231', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, NULL, NULL, 0, 0, '2026-07-18 19:00:29', '2026-07-18 19:00:29'),
-(2, 'Marlboro Red Carton', 1, 'single', 1, NULL, NULL, NULL, 1, 2, 5, 'inclusive', 1, 10.0000, 'TOB-CIG-MRB', 'C128', NULL, NULL, 0, NULL, '200', '003231', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, NULL, NULL, 0, 0, '2026-07-18 19:00:29', '2026-07-18 19:00:29'),
-(3, 'Copenhagen Long Cut', 1, 'single', 1, NULL, NULL, NULL, 1, 3, 5, 'inclusive', 1, 10.0000, 'TOB-MST-COP', 'C128', NULL, NULL, 0, NULL, '5', '003211', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, NULL, NULL, 0, 0, '2026-07-18 19:00:29', '2026-07-18 19:00:29'),
-(4, 'Swisher Sweets Cigarillos', 1, 'single', 1, NULL, NULL, NULL, 1, 4, 5, 'inclusive', 1, 10.0000, 'TOB-CGR-SWS', 'C128', NULL, NULL, 0, NULL, '20', '003251', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, NULL, NULL, 0, 0, '2026-07-18 19:00:29', '2026-07-18 19:00:29'),
-(5, 'Cheyenne Little Filtered Cigars', 1, 'single', 1, NULL, NULL, NULL, 1, 5, 5, 'inclusive', 1, 10.0000, 'TOB-LFC-CHE', 'C128', NULL, NULL, 0, NULL, '20', '003252', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, NULL, NULL, 0, 0, '2026-07-18 19:00:29', '2026-07-18 19:00:29'),
-(6, 'Juul Menthol Pods', 1, 'single', 1, NULL, NULL, NULL, 1, 6, 5, 'inclusive', 1, 10.0000, 'TOB-ECG-JUL', 'C128', NULL, NULL, 0, NULL, '4', '003292', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, NULL, NULL, 0, 0, '2026-07-18 19:00:29', '2026-07-18 19:00:29'),
-(7, 'Bugler RYO Tobacco', 1, 'single', 1, NULL, NULL, NULL, 1, 7, 5, 'inclusive', 1, 10.0000, 'TOB-RYO-BUG', 'C128', NULL, NULL, 0, NULL, '6', '003221', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, NULL, NULL, 0, 0, '2026-07-18 19:00:29', '2026-07-18 19:00:29'),
-(8, 'Captain Black Pipe Tobacco', 1, 'single', 1, NULL, NULL, NULL, 1, 8, 5, 'inclusive', 1, 10.0000, 'TOB-PIP-CBK', 'C128', NULL, NULL, 0, NULL, '1', '003241', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, NULL, NULL, 0, 0, '2026-07-18 19:00:29', '2026-07-18 19:00:29');
+INSERT INTO `products` (`id`, `name`, `business_id`, `type`, `unit_id`, `secondary_unit_id`, `sub_unit_ids`, `brand_id`, `category_id`, `sub_category_id`, `tax`, `tax_type`, `enable_stock`, `alert_quantity`, `sku`, `barcode_type`, `expiry_period`, `expiry_period_type`, `enable_sr_no`, `weight`, `product_custom_field1`, `product_custom_field2`, `product_custom_field3`, `product_custom_field4`, `product_custom_field5`, `product_custom_field6`, `product_custom_field7`, `product_custom_field8`, `product_custom_field9`, `product_custom_field10`, `product_custom_field11`, `product_custom_field12`, `product_custom_field13`, `product_custom_field14`, `product_custom_field15`, `product_custom_field16`, `product_custom_field17`, `product_custom_field18`, `product_custom_field19`, `product_custom_field20`, `image`, `product_description`, `created_by`, `preparation_time_in_minutes`, `warranty_id`, `is_inactive`, `not_for_selling`, `sales_channel`, `ecom_slug`, `created_at`, `updated_at`, `ecom_short_description`, `ecom_long_description`, `ecom_seo_title`, `ecom_seo_description`, `ecom_is_featured`, `ecom_is_new_arrival`, `ecom_online_price`, `ecom_discount_price`, `ecom_gallery`) VALUES
+(1, 'Lux Cigarettes Carton', 1, 'single', 1, NULL, NULL, NULL, 1, 2, 5, 'inclusive', 1, 10.0000, 'TOB-CIG-LUX', 'C128', NULL, NULL, 0, NULL, '200', '003231', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, NULL, NULL, 0, 0, 'pos_only', NULL, '2026-07-18 19:00:29', '2026-07-18 19:00:29', NULL, NULL, NULL, NULL, 0, 0, NULL, NULL, NULL),
+(2, 'Marlboro Red Carton', 1, 'single', 1, NULL, NULL, NULL, 1, 2, 5, 'inclusive', 1, 10.0000, 'TOB-CIG-MRB', 'C128', NULL, NULL, 0, NULL, '200', '003231', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, NULL, NULL, 0, 0, 'pos_only', NULL, '2026-07-18 19:00:29', '2026-07-18 19:00:29', NULL, NULL, NULL, NULL, 0, 0, NULL, NULL, NULL),
+(3, 'Copenhagen Long Cut', 1, 'single', 1, NULL, NULL, NULL, 1, 3, 5, 'inclusive', 1, 10.0000, 'TOB-MST-COP', 'C128', NULL, NULL, 0, NULL, '5', '003211', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, NULL, NULL, 0, 0, 'pos_only', NULL, '2026-07-18 19:00:29', '2026-07-18 19:00:29', NULL, NULL, NULL, NULL, 0, 0, NULL, NULL, NULL),
+(4, 'Swisher Sweets Cigarillos', 1, 'single', 1, NULL, NULL, NULL, 1, 4, 5, 'inclusive', 1, 10.0000, 'TOB-CGR-SWS', 'C128', NULL, NULL, 0, NULL, '20', '003251', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, NULL, NULL, 0, 0, 'pos_only', NULL, '2026-07-18 19:00:29', '2026-07-18 19:00:29', NULL, NULL, NULL, NULL, 0, 0, NULL, NULL, NULL),
+(5, 'Cheyenne Little Filtered Cigars', 1, 'single', 1, NULL, NULL, NULL, 1, 5, 5, 'inclusive', 1, 10.0000, 'TOB-LFC-CHE', 'C128', NULL, NULL, 0, NULL, '20', '003252', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, NULL, NULL, 0, 0, 'pos_only', NULL, '2026-07-18 19:00:29', '2026-07-18 19:00:29', NULL, NULL, NULL, NULL, 0, 0, NULL, NULL, NULL),
+(6, 'Juul Menthol Pods', 1, 'single', 1, NULL, NULL, NULL, 1, 6, 5, 'inclusive', 1, 10.0000, 'TOB-ECG-JUL', 'C128', NULL, NULL, 0, NULL, '4', '003292', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, NULL, NULL, 0, 0, 'pos_only', NULL, '2026-07-18 19:00:29', '2026-07-18 19:00:29', NULL, NULL, NULL, NULL, 0, 0, NULL, NULL, NULL),
+(7, 'Bugler RYO Tobacco', 1, 'single', 1, NULL, NULL, NULL, 1, 7, 5, 'inclusive', 1, 10.0000, 'TOB-RYO-BUG', 'C128', NULL, NULL, 0, NULL, '200', '003221', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', 'ecom_fix_7.jpg', NULL, 1, NULL, NULL, 0, 0, 'pos_ecommerce', NULL, '2026-07-18 19:00:29', '2026-07-22 17:57:30', 'test', NULL, NULL, NULL, 1, 1, NULL, NULL, NULL),
+(8, 'Captain Black Pipe Tobacco', 1, 'single', 1, NULL, NULL, NULL, 1, 8, 5, 'inclusive', 1, 10.0000, 'TOB-PIP-CBK', 'C128', NULL, NULL, 0, NULL, '1', '003241', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, NULL, NULL, 0, 0, 'pos_only', NULL, '2026-07-18 19:00:29', '2026-07-18 19:00:29', NULL, NULL, NULL, NULL, 0, 0, NULL, NULL, NULL),
+(39, 'Craft Rolling Tobacco Tin', 1, 'single', 1, NULL, NULL, NULL, 1, NULL, NULL, 'exclusive', 1, NULL, 'ECOM-001', 'C128', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ecom_demo_1.jpg', 'Professional ecommerce demo product', 1, NULL, NULL, 0, 0, 'pos_ecommerce', 'craft-rolling-tobacco-tin-1', '2026-07-22 17:42:40', '2026-07-22 17:42:40', 'Premium Craft Rolling Tobacco Tin selected for everyday quality. Ships fast across the USA.', 'Craft Rolling Tobacco Tin\n\nCrafted for daily use with dependable quality.\n\n• Live stock from our retail POS\n• Secure checkout\n• Fast USA delivery\n• Easy returns within 14 days', 'Craft Rolling Tobacco Tin | Japs Store', 'Buy Craft Rolling Tobacco Tin online at Japs Store.', 1, 1, 12.0000, NULL, '[\"ecom_demo_1_g.jpg\"]'),
+(40, 'Premium Blue Blend Pack', 1, 'single', 1, NULL, NULL, NULL, 1, NULL, NULL, 'exclusive', 1, NULL, 'ECOM-002', 'C128', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ecom_demo_2.jpg', 'Professional ecommerce demo product', 1, NULL, NULL, 0, 0, 'pos_ecommerce', 'premium-blue-blend-pack-2', '2026-07-22 17:42:40', '2026-07-22 17:42:40', 'Premium Premium Blue Blend Pack selected for everyday quality. Ships fast across the USA.', 'Premium Blue Blend Pack\n\nCrafted for daily use with dependable quality.\n\n• Live stock from our retail POS\n• Secure checkout\n• Fast USA delivery\n• Easy returns within 14 days', 'Premium Blue Blend Pack | Japs Store', 'Buy Premium Blue Blend Pack online at Japs Store.', 1, 0, 14.5000, NULL, '[\"ecom_demo_2_g.jpg\"]'),
+(41, 'Classic Rolling Papers', 1, 'single', 1, NULL, NULL, NULL, 1, NULL, NULL, 'exclusive', 1, NULL, 'ECOM-003', 'C128', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ecom_demo_3.jpg', 'Professional ecommerce demo product', 1, NULL, NULL, 0, 0, 'pos_ecommerce', 'classic-rolling-papers-3', '2026-07-22 17:42:43', '2026-07-22 17:42:43', 'Premium Classic Rolling Papers selected for everyday quality. Ships fast across the USA.', 'Classic Rolling Papers\n\nCrafted for daily use with dependable quality.\n\n• Live stock from our retail POS\n• Secure checkout\n• Fast USA delivery\n• Easy returns within 14 days', 'Classic Rolling Papers | Japs Store', 'Buy Classic Rolling Papers online at Japs Store.', 1, 0, 3.9900, 3.3900, '[\"ecom_demo_3_g.jpg\"]'),
+(42, 'Artisan Tortilla Chips', 1, 'single', 1, NULL, NULL, NULL, 9, NULL, NULL, 'exclusive', 1, NULL, 'ECOM-004', 'C128', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ecom_demo_4.jpg', 'Professional ecommerce demo product', 1, NULL, NULL, 0, 0, 'pos_ecommerce', 'artisan-tortilla-chips-4', '2026-07-22 17:42:44', '2026-07-22 17:42:44', 'Premium Artisan Tortilla Chips selected for everyday quality. Ships fast across the USA.', 'Artisan Tortilla Chips\n\nCrafted for daily use with dependable quality.\n\n• Live stock from our retail POS\n• Secure checkout\n• Fast USA delivery\n• Easy returns within 14 days', 'Artisan Tortilla Chips | Japs Store', 'Buy Artisan Tortilla Chips online at Japs Store.', 1, 1, 4.9900, NULL, '[\"ecom_demo_4_g.jpg\"]'),
+(43, 'Dark Chocolate Sea Salt', 1, 'single', 1, NULL, NULL, NULL, 9, NULL, NULL, 'exclusive', 1, NULL, 'ECOM-005', 'C128', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ecom_demo_5.jpg', 'Professional ecommerce demo product', 1, NULL, NULL, 0, 0, 'pos_ecommerce', 'dark-chocolate-sea-salt-5', '2026-07-22 17:42:45', '2026-07-22 17:42:45', 'Premium Dark Chocolate Sea Salt selected for everyday quality. Ships fast across the USA.', 'Dark Chocolate Sea Salt\n\nCrafted for daily use with dependable quality.\n\n• Live stock from our retail POS\n• Secure checkout\n• Fast USA delivery\n• Easy returns within 14 days', 'Dark Chocolate Sea Salt | Japs Store', 'Buy Dark Chocolate Sea Salt online at Japs Store.', 1, 1, 5.4900, NULL, '[\"ecom_demo_5_g.jpg\"]'),
+(44, 'Honey Almond Granola', 1, 'single', 1, NULL, NULL, NULL, 9, NULL, NULL, 'exclusive', 1, NULL, 'ECOM-006', 'C128', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ecom_demo_6.jpg', 'Professional ecommerce demo product', 1, NULL, NULL, 0, 0, 'pos_ecommerce', 'honey-almond-granola-6', '2026-07-22 17:42:47', '2026-07-22 17:42:47', 'Premium Honey Almond Granola selected for everyday quality. Ships fast across the USA.', 'Honey Almond Granola\n\nCrafted for daily use with dependable quality.\n\n• Live stock from our retail POS\n• Secure checkout\n• Fast USA delivery\n• Easy returns within 14 days', 'Honey Almond Granola | Japs Store', 'Buy Honey Almond Granola online at Japs Store.', 1, 0, 6.9900, 5.9400, '[\"ecom_demo_6_g.jpg\"]'),
+(45, 'Sea Salt Pretzel Twists', 1, 'single', 1, NULL, NULL, NULL, 9, NULL, NULL, 'exclusive', 1, NULL, 'ECOM-007', 'C128', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ecom_demo_7.jpg', 'Professional ecommerce demo product', 1, NULL, NULL, 0, 0, 'pos_ecommerce', 'sea-salt-pretzel-twists-7', '2026-07-22 17:42:50', '2026-07-22 17:42:50', 'Premium Sea Salt Pretzel Twists selected for everyday quality. Ships fast across the USA.', 'Sea Salt Pretzel Twists\n\nCrafted for daily use with dependable quality.\n\n• Live stock from our retail POS\n• Secure checkout\n• Fast USA delivery\n• Easy returns within 14 days', 'Sea Salt Pretzel Twists | Japs Store', 'Buy Sea Salt Pretzel Twists online at Japs Store.', 1, 0, 3.7900, NULL, '[\"ecom_demo_7_g.jpg\"]'),
+(46, 'Cold Brew Coffee 12oz', 1, 'single', 1, NULL, NULL, NULL, 10, NULL, NULL, 'exclusive', 1, NULL, 'ECOM-008', 'C128', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ecom_demo_8.jpg', 'Professional ecommerce demo product', 1, NULL, NULL, 0, 0, 'pos_ecommerce', 'cold-brew-coffee-12oz-8', '2026-07-22 17:42:51', '2026-07-22 17:42:51', 'Premium Cold Brew Coffee 12oz selected for everyday quality. Ships fast across the USA.', 'Cold Brew Coffee 12oz\n\nCrafted for daily use with dependable quality.\n\n• Live stock from our retail POS\n• Secure checkout\n• Fast USA delivery\n• Easy returns within 14 days', 'Cold Brew Coffee 12oz | Japs Store', 'Buy Cold Brew Coffee 12oz online at Japs Store.', 1, 1, 4.5000, NULL, '[\"ecom_demo_8_g.jpg\"]'),
+(47, 'Sparkling Citrus Water', 1, 'single', 1, NULL, NULL, NULL, 10, NULL, NULL, 'exclusive', 1, NULL, 'ECOM-009', 'C128', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ecom_demo_9.jpg', 'Professional ecommerce demo product', 1, NULL, NULL, 0, 0, 'pos_ecommerce', 'sparkling-citrus-water-9', '2026-07-22 17:42:52', '2026-07-22 17:42:52', 'Premium Sparkling Citrus Water selected for everyday quality. Ships fast across the USA.', 'Sparkling Citrus Water\n\nCrafted for daily use with dependable quality.\n\n• Live stock from our retail POS\n• Secure checkout\n• Fast USA delivery\n• Easy returns within 14 days', 'Sparkling Citrus Water | Japs Store', 'Buy Sparkling Citrus Water online at Japs Store.', 0, 0, 2.9900, 2.5400, '[\"ecom_demo_9_g.jpg\"]'),
+(48, 'Green Tea Matcha Can', 1, 'single', 1, NULL, NULL, NULL, 10, NULL, NULL, 'exclusive', 1, NULL, 'ECOM-010', 'C128', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ecom_demo_10.jpg', 'Professional ecommerce demo product', 1, NULL, NULL, 0, 0, 'pos_ecommerce', 'green-tea-matcha-can-10', '2026-07-22 17:42:52', '2026-07-22 17:42:52', 'Premium Green Tea Matcha Can selected for everyday quality. Ships fast across the USA.', 'Green Tea Matcha Can\n\nCrafted for daily use with dependable quality.\n\n• Live stock from our retail POS\n• Secure checkout\n• Fast USA delivery\n• Easy returns within 14 days', 'Green Tea Matcha Can | Japs Store', 'Buy Green Tea Matcha Can online at Japs Store.', 0, 0, 3.4900, NULL, '[\"ecom_demo_10_g.jpg\"]'),
+(49, 'Still Spring Water 1L', 1, 'single', 1, NULL, NULL, NULL, 10, NULL, NULL, 'exclusive', 1, NULL, 'ECOM-011', 'C128', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ecom_demo_11.jpg', 'Professional ecommerce demo product', 1, NULL, NULL, 0, 0, 'pos_ecommerce', 'still-spring-water-1l-11', '2026-07-22 17:42:53', '2026-07-22 17:42:53', 'Premium Still Spring Water 1L selected for everyday quality. Ships fast across the USA.', 'Still Spring Water 1L\n\nCrafted for daily use with dependable quality.\n\n• Live stock from our retail POS\n• Secure checkout\n• Fast USA delivery\n• Easy returns within 14 days', 'Still Spring Water 1L | Japs Store', 'Buy Still Spring Water 1L online at Japs Store.', 0, 1, 1.9900, NULL, '[\"ecom_demo_11_g.jpg\"]'),
+(50, 'Mint Fresh Toothpaste', 1, 'single', 1, NULL, NULL, NULL, 11, NULL, NULL, 'exclusive', 1, NULL, 'ECOM-012', 'C128', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ecom_demo_12.jpg', 'Professional ecommerce demo product', 1, NULL, NULL, 0, 0, 'pos_ecommerce', 'mint-fresh-toothpaste-12', '2026-07-22 17:42:55', '2026-07-22 17:42:55', 'Premium Mint Fresh Toothpaste selected for everyday quality. Ships fast across the USA.', 'Mint Fresh Toothpaste\n\nCrafted for daily use with dependable quality.\n\n• Live stock from our retail POS\n• Secure checkout\n• Fast USA delivery\n• Easy returns within 14 days', 'Mint Fresh Toothpaste | Japs Store', 'Buy Mint Fresh Toothpaste online at Japs Store.', 0, 0, 5.9900, 5.0900, '[\"ecom_demo_12_g.jpg\"]'),
+(51, 'Aloe Hand Cream', 1, 'single', 1, NULL, NULL, NULL, 11, NULL, NULL, 'exclusive', 1, NULL, 'ECOM-013', 'C128', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ecom_demo_13.jpg', 'Professional ecommerce demo product', 1, NULL, NULL, 0, 0, 'pos_ecommerce', 'aloe-hand-cream-13', '2026-07-22 17:42:55', '2026-07-22 17:42:55', 'Premium Aloe Hand Cream selected for everyday quality. Ships fast across the USA.', 'Aloe Hand Cream\n\nCrafted for daily use with dependable quality.\n\n• Live stock from our retail POS\n• Secure checkout\n• Fast USA delivery\n• Easy returns within 14 days', 'Aloe Hand Cream | Japs Store', 'Buy Aloe Hand Cream online at Japs Store.', 0, 0, 8.9900, NULL, '[\"ecom_demo_13_g.jpg\"]'),
+(52, 'Charcoal Face Wash', 1, 'single', 1, NULL, NULL, NULL, 11, NULL, NULL, 'exclusive', 1, NULL, 'ECOM-014', 'C128', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ecom_demo_14.jpg', 'Professional ecommerce demo product', 1, NULL, NULL, 0, 0, 'pos_ecommerce', 'charcoal-face-wash-14', '2026-07-22 17:42:56', '2026-07-22 17:42:56', 'Premium Charcoal Face Wash selected for everyday quality. Ships fast across the USA.', 'Charcoal Face Wash\n\nCrafted for daily use with dependable quality.\n\n• Live stock from our retail POS\n• Secure checkout\n• Fast USA delivery\n• Easy returns within 14 days', 'Charcoal Face Wash | Japs Store', 'Buy Charcoal Face Wash online at Japs Store.', 0, 1, 9.4900, NULL, '[\"ecom_demo_14_g.jpg\"]'),
+(53, 'Citrus Body Wash', 1, 'single', 1, NULL, NULL, NULL, 11, NULL, NULL, 'exclusive', 1, NULL, 'ECOM-015', 'C128', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ecom_demo_15.jpg', 'Professional ecommerce demo product', 1, NULL, NULL, 0, 0, 'pos_ecommerce', 'citrus-body-wash-15', '2026-07-22 17:42:57', '2026-07-22 17:42:57', 'Premium Citrus Body Wash selected for everyday quality. Ships fast across the USA.', 'Citrus Body Wash\n\nCrafted for daily use with dependable quality.\n\n• Live stock from our retail POS\n• Secure checkout\n• Fast USA delivery\n• Easy returns within 14 days', 'Citrus Body Wash | Japs Store', 'Buy Citrus Body Wash online at Japs Store.', 0, 0, 7.4900, 6.3700, '[\"ecom_demo_15_g.jpg\"]'),
+(54, 'Cotton Kitchen Towels', 1, 'single', 1, NULL, NULL, NULL, 12, NULL, NULL, 'exclusive', 1, NULL, 'ECOM-016', 'C128', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ecom_demo_16.jpg', 'Professional ecommerce demo product', 1, NULL, NULL, 0, 0, 'pos_ecommerce', 'cotton-kitchen-towels-16', '2026-07-22 17:42:59', '2026-07-22 17:42:59', 'Premium Cotton Kitchen Towels selected for everyday quality. Ships fast across the USA.', 'Cotton Kitchen Towels\n\nCrafted for daily use with dependable quality.\n\n• Live stock from our retail POS\n• Secure checkout\n• Fast USA delivery\n• Easy returns within 14 days', 'Cotton Kitchen Towels | Japs Store', 'Buy Cotton Kitchen Towels online at Japs Store.', 0, 0, 11.9900, NULL, '[\"ecom_demo_16_g.jpg\"]'),
+(55, 'Eco Dish Soap', 1, 'single', 1, NULL, NULL, NULL, 12, NULL, NULL, 'exclusive', 1, NULL, 'ECOM-017', 'C128', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ecom_demo_17.jpg', 'Professional ecommerce demo product', 1, NULL, NULL, 0, 0, 'pos_ecommerce', 'eco-dish-soap-17', '2026-07-22 17:43:00', '2026-07-22 17:43:00', 'Premium Eco Dish Soap selected for everyday quality. Ships fast across the USA.', 'Eco Dish Soap\n\nCrafted for daily use with dependable quality.\n\n• Live stock from our retail POS\n• Secure checkout\n• Fast USA delivery\n• Easy returns within 14 days', 'Eco Dish Soap | Japs Store', 'Buy Eco Dish Soap online at Japs Store.', 0, 1, 4.2900, NULL, '[\"ecom_demo_17_g.jpg\"]'),
+(56, 'Soy Candle Cedarwood', 1, 'single', 1, NULL, NULL, NULL, 12, NULL, NULL, 'exclusive', 1, NULL, 'ECOM-018', 'C128', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ecom_demo_18.jpg', 'Professional ecommerce demo product', 1, NULL, NULL, 0, 0, 'pos_ecommerce', 'soy-candle-cedarwood-18', '2026-07-22 17:43:02', '2026-07-22 17:43:02', 'Premium Soy Candle Cedarwood selected for everyday quality. Ships fast across the USA.', 'Soy Candle Cedarwood\n\nCrafted for daily use with dependable quality.\n\n• Live stock from our retail POS\n• Secure checkout\n• Fast USA delivery\n• Easy returns within 14 days', 'Soy Candle Cedarwood | Japs Store', 'Buy Soy Candle Cedarwood online at Japs Store.', 0, 0, 16.0000, 13.6000, '[\"ecom_demo_18_g.jpg\"]'),
+(57, 'Ceramic Mug Set', 1, 'single', 1, NULL, NULL, NULL, 12, NULL, NULL, 'exclusive', 1, NULL, 'ECOM-019', 'C128', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ecom_demo_19.jpg', 'Professional ecommerce demo product', 1, NULL, NULL, 0, 0, 'pos_ecommerce', 'ceramic-mug-set-19', '2026-07-22 17:43:03', '2026-07-22 17:43:03', 'Premium Ceramic Mug Set selected for everyday quality. Ships fast across the USA.', 'Ceramic Mug Set\n\nCrafted for daily use with dependable quality.\n\n• Live stock from our retail POS\n• Secure checkout\n• Fast USA delivery\n• Easy returns within 14 days', 'Ceramic Mug Set | Japs Store', 'Buy Ceramic Mug Set online at Japs Store.', 0, 1, 18.5000, NULL, '[\"ecom_demo_19_g.jpg\"]');
 
 -- --------------------------------------------------------
 
@@ -1748,7 +2210,26 @@ INSERT INTO `product_locations` (`product_id`, `location_id`) VALUES
 (5, 1),
 (6, 1),
 (7, 1),
-(8, 1);
+(8, 1),
+(39, 1),
+(40, 1),
+(41, 1),
+(42, 1),
+(43, 1),
+(44, 1),
+(45, 1),
+(46, 1),
+(47, 1),
+(48, 1),
+(49, 1),
+(50, 1),
+(51, 1),
+(52, 1),
+(53, 1),
+(54, 1),
+(55, 1),
+(56, 1),
+(57, 1);
 
 -- --------------------------------------------------------
 
@@ -1796,7 +2277,26 @@ INSERT INTO `product_variations` (`id`, `variation_template_id`, `name`, `produc
 (5, NULL, 'DUMMY', 5, 1, '2026-07-18 19:00:29', '2026-07-18 19:00:29'),
 (6, NULL, 'DUMMY', 6, 1, '2026-07-18 19:00:29', '2026-07-18 19:00:29'),
 (7, NULL, 'DUMMY', 7, 1, '2026-07-18 19:00:29', '2026-07-18 19:00:29'),
-(8, NULL, 'DUMMY', 8, 1, '2026-07-18 19:00:29', '2026-07-18 19:00:29');
+(8, NULL, 'DUMMY', 8, 1, '2026-07-18 19:00:29', '2026-07-18 19:00:29'),
+(39, NULL, 'DUMMY', 39, 1, '2026-07-22 17:42:40', '2026-07-22 17:42:40'),
+(40, NULL, 'DUMMY', 40, 1, '2026-07-22 17:42:40', '2026-07-22 17:42:40'),
+(41, NULL, 'DUMMY', 41, 1, '2026-07-22 17:42:43', '2026-07-22 17:42:43'),
+(42, NULL, 'DUMMY', 42, 1, '2026-07-22 17:42:44', '2026-07-22 17:42:44'),
+(43, NULL, 'DUMMY', 43, 1, '2026-07-22 17:42:45', '2026-07-22 17:42:45'),
+(44, NULL, 'DUMMY', 44, 1, '2026-07-22 17:42:47', '2026-07-22 17:42:47'),
+(45, NULL, 'DUMMY', 45, 1, '2026-07-22 17:42:50', '2026-07-22 17:42:50'),
+(46, NULL, 'DUMMY', 46, 1, '2026-07-22 17:42:51', '2026-07-22 17:42:51'),
+(47, NULL, 'DUMMY', 47, 1, '2026-07-22 17:42:52', '2026-07-22 17:42:52'),
+(48, NULL, 'DUMMY', 48, 1, '2026-07-22 17:42:52', '2026-07-22 17:42:52'),
+(49, NULL, 'DUMMY', 49, 1, '2026-07-22 17:42:53', '2026-07-22 17:42:53'),
+(50, NULL, 'DUMMY', 50, 1, '2026-07-22 17:42:55', '2026-07-22 17:42:55'),
+(51, NULL, 'DUMMY', 51, 1, '2026-07-22 17:42:55', '2026-07-22 17:42:55'),
+(52, NULL, 'DUMMY', 52, 1, '2026-07-22 17:42:56', '2026-07-22 17:42:56'),
+(53, NULL, 'DUMMY', 53, 1, '2026-07-22 17:42:57', '2026-07-22 17:42:57'),
+(54, NULL, 'DUMMY', 54, 1, '2026-07-22 17:42:59', '2026-07-22 17:42:59'),
+(55, NULL, 'DUMMY', 55, 1, '2026-07-22 17:43:00', '2026-07-22 17:43:00'),
+(56, NULL, 'DUMMY', 56, 1, '2026-07-22 17:43:02', '2026-07-22 17:43:02'),
+(57, NULL, 'DUMMY', 57, 1, '2026-07-22 17:43:03', '2026-07-22 17:43:03');
 
 -- --------------------------------------------------------
 
@@ -2052,7 +2552,8 @@ CREATE TABLE `system` (
 
 INSERT INTO `system` (`id`, `key`, `value`) VALUES
 (1, 'db_version', '7.0'),
-(2, 'default_business_active_status', '1');
+(2, 'default_business_active_status', '1'),
+(3, 'ecommerce_version', '1.0.0');
 
 -- --------------------------------------------------------
 
@@ -2210,7 +2711,9 @@ INSERT INTO `transactions` (`id`, `business_id`, `location_id`, `is_kitchen_orde
 (5, 1, 1, 0, NULL, NULL, NULL, 'opening_stock', NULL, 'received', NULL, 0, 'paid', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-19 01:00:29', 768.2500, NULL, 0.0000, NULL, 0.0000, 0, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, 768.2500, NULL, NULL, NULL, NULL, NULL, 0, 0, 1.000, NULL, NULL, NULL, 5, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-18 19:00:29', '2026-07-18 19:00:29'),
 (6, 1, 1, 0, NULL, NULL, NULL, 'opening_stock', NULL, 'received', NULL, 0, 'paid', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-19 01:00:29', 526.8000, NULL, 0.0000, NULL, 0.0000, 0, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, 526.8000, NULL, NULL, NULL, NULL, NULL, 0, 0, 1.000, NULL, NULL, NULL, 6, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-18 19:00:29', '2026-07-18 19:00:29'),
 (7, 1, 1, 0, NULL, NULL, NULL, 'opening_stock', NULL, 'received', NULL, 0, 'paid', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-19 01:00:29', 351.2000, NULL, 0.0000, NULL, 0.0000, 0, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, 351.2000, NULL, NULL, NULL, NULL, NULL, 0, 0, 1.000, NULL, NULL, NULL, 7, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-18 19:00:29', '2026-07-18 19:00:29'),
-(8, 1, 1, 0, NULL, NULL, NULL, 'opening_stock', NULL, 'received', NULL, 0, 'paid', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-19 01:00:29', 230.4750, NULL, 0.0000, NULL, 0.0000, 0, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, 230.4750, NULL, NULL, NULL, NULL, NULL, 0, 0, 1.000, NULL, NULL, NULL, 8, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-18 19:00:29', '2026-07-18 19:00:29');
+(8, 1, 1, 0, NULL, NULL, NULL, 'opening_stock', NULL, 'received', NULL, 0, 'paid', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-19 01:00:29', 230.4750, NULL, 0.0000, NULL, 0.0000, 0, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, 230.4750, NULL, NULL, NULL, NULL, NULL, 0, 0, 1.000, NULL, NULL, NULL, 8, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-18 19:00:29', '2026-07-18 19:00:29'),
+(9, 1, 1, 0, NULL, NULL, NULL, 'sell', NULL, 'final', NULL, 0, 'due', NULL, 6, NULL, '0001', '', 'ecommerce', NULL, NULL, '2026-07-22 19:10:15', 12.0000, NULL, 0.0000, NULL, 0.0000, 0, 0.0000, '33', '33, 333, 33, KS 333, United States', NULL, 'ordered', 'Nash 333', NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, 'Ecommerce order', NULL, 0, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, 12.0000, NULL, NULL, NULL, NULL, NULL, 0, 0, 1.000, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL, 0, 1.0000, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-22 13:10:15', '2026-07-22 13:10:15'),
+(10, 1, 1, 0, NULL, NULL, NULL, 'sell', NULL, 'final', NULL, 0, 'due', NULL, 6, NULL, '0002', '', 'ecommerce', NULL, NULL, '2026-07-22 23:34:04', 5.9800, NULL, 0.0000, NULL, 0.0000, 0, 0.0000, '33', '33, 333, 33, KS 333, United States', NULL, 'ordered', 'Nash 333', NULL, 5.9900, NULL, NULL, NULL, NULL, NULL, 'Ecommerce order', NULL, 0, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, 11.9700, NULL, NULL, NULL, NULL, NULL, 0, 0, 1.000, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL, 0, 1.0000, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-22 17:34:04', '2026-07-22 17:34:04');
 
 -- --------------------------------------------------------
 
@@ -2285,6 +2788,13 @@ CREATE TABLE `transaction_sell_lines` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `transaction_sell_lines`
+--
+
+INSERT INTO `transaction_sell_lines` (`id`, `transaction_id`, `product_id`, `variation_id`, `quantity`, `secondary_unit_quantity`, `quantity_returned`, `unit_price_before_discount`, `unit_price`, `line_discount_type`, `line_discount_amount`, `unit_price_inc_tax`, `item_tax`, `tax_id`, `discount_id`, `lot_no_line_id`, `sell_line_note`, `so_line_id`, `so_quantity_invoiced`, `res_service_staff_id`, `res_line_order_status`, `parent_sell_line_id`, `children_type`, `sub_unit_id`, `created_at`, `updated_at`) VALUES
+(1, 9, 7, 7, 1.0000, 0.0000, 0.0000, 12.0000, 12.0000, NULL, 0.0000, 12.0000, 0.0000, NULL, NULL, NULL, '', NULL, 0.0000, NULL, NULL, NULL, '', NULL, '2026-07-22 13:10:15', '2026-07-22 13:10:15');
 
 -- --------------------------------------------------------
 
@@ -2460,8 +2970,27 @@ INSERT INTO `variations` (`id`, `name`, `product_id`, `sub_sku`, `product_variat
 (4, 'DUMMY', 4, 'TOB-CGR-SWS', 4, NULL, 18.0000, 19.7550, 31.6122, 23.6902, 26.0000, '2026-07-18 19:00:29', '2026-07-18 19:00:29', NULL, '[]'),
 (5, 'DUMMY', 5, 'TOB-LFC-CHE', 5, NULL, 14.0000, 15.3650, 30.1657, 18.2232, 20.0000, '2026-07-18 19:00:29', '2026-07-18 19:00:29', NULL, '[]'),
 (6, 'DUMMY', 6, 'TOB-ECG-JUL', 6, NULL, 12.0000, 13.1700, 36.6742, 16.4009, 18.0000, '2026-07-18 19:00:29', '2026-07-18 19:00:29', NULL, '[]'),
-(7, 'DUMMY', 7, 'TOB-RYO-BUG', 7, NULL, 8.0000, 8.7800, 36.6737, 10.9339, 12.0000, '2026-07-18 19:00:29', '2026-07-18 19:00:29', NULL, '[]'),
-(8, 'DUMMY', 8, 'TOB-PIP-CBK', 8, NULL, 7.0000, 7.6825, 43.1829, 10.0228, 11.0000, '2026-07-18 19:00:29', '2026-07-18 19:00:29', NULL, '[]');
+(7, 'DUMMY', 7, 'TOB-RYO-BUG', 7, NULL, 8.0000, 8.7800, 36.6700, 10.9300, 12.0000, '2026-07-18 19:00:29', '2026-07-21 10:59:42', NULL, '[]'),
+(8, 'DUMMY', 8, 'TOB-PIP-CBK', 8, NULL, 7.0000, 7.6825, 43.1829, 10.0228, 11.0000, '2026-07-18 19:00:29', '2026-07-18 19:00:29', NULL, '[]'),
+(39, 'DUMMY', 39, 'ECOM-001', 39, NULL, 8.7800, 8.7800, 36.6700, 12.0000, 12.0000, '2026-07-22 17:42:40', '2026-07-22 17:42:40', NULL, NULL),
+(40, 'DUMMY', 40, 'ECOM-002', 40, NULL, 10.2000, 10.2000, 42.1600, 14.5000, 14.5000, '2026-07-22 17:42:40', '2026-07-22 17:42:40', NULL, NULL),
+(41, 'DUMMY', 41, 'ECOM-003', 41, NULL, 1.5000, 1.5000, 166.0000, 3.9900, 3.9900, '2026-07-22 17:42:43', '2026-07-22 17:42:43', NULL, NULL),
+(42, 'DUMMY', 42, 'ECOM-004', 42, NULL, 2.1000, 2.1000, 137.6200, 4.9900, 4.9900, '2026-07-22 17:42:44', '2026-07-22 17:42:44', NULL, NULL),
+(43, 'DUMMY', 43, 'ECOM-005', 43, NULL, 2.4000, 2.4000, 128.7500, 5.4900, 5.4900, '2026-07-22 17:42:45', '2026-07-22 17:42:45', NULL, NULL),
+(44, 'DUMMY', 44, 'ECOM-006', 44, NULL, 3.2000, 3.2000, 118.4400, 6.9900, 6.9900, '2026-07-22 17:42:47', '2026-07-22 17:42:47', NULL, NULL),
+(45, 'DUMMY', 45, 'ECOM-007', 45, NULL, 1.6000, 1.6000, 136.8800, 3.7900, 3.7900, '2026-07-22 17:42:50', '2026-07-22 17:42:50', NULL, NULL),
+(46, 'DUMMY', 46, 'ECOM-008', 46, NULL, 1.8000, 1.8000, 150.0000, 4.5000, 4.5000, '2026-07-22 17:42:51', '2026-07-22 17:42:51', NULL, NULL),
+(47, 'DUMMY', 47, 'ECOM-009', 47, NULL, 1.1000, 1.1000, 171.8200, 2.9900, 2.9900, '2026-07-22 17:42:52', '2026-07-22 17:42:52', NULL, NULL),
+(48, 'DUMMY', 48, 'ECOM-010', 48, NULL, 1.4000, 1.4000, 149.2900, 3.4900, 3.4900, '2026-07-22 17:42:52', '2026-07-22 17:42:52', NULL, NULL),
+(49, 'DUMMY', 49, 'ECOM-011', 49, NULL, 0.7000, 0.7000, 184.2900, 1.9900, 1.9900, '2026-07-22 17:42:53', '2026-07-22 17:42:53', NULL, NULL),
+(50, 'DUMMY', 50, 'ECOM-012', 50, NULL, 2.5000, 2.5000, 139.6000, 5.9900, 5.9900, '2026-07-22 17:42:55', '2026-07-22 17:42:55', NULL, NULL),
+(51, 'DUMMY', 51, 'ECOM-013', 51, NULL, 3.8000, 3.8000, 136.5800, 8.9900, 8.9900, '2026-07-22 17:42:55', '2026-07-22 17:42:55', NULL, NULL),
+(52, 'DUMMY', 52, 'ECOM-014', 52, NULL, 4.2000, 4.2000, 125.9500, 9.4900, 9.4900, '2026-07-22 17:42:56', '2026-07-22 17:42:56', NULL, NULL),
+(53, 'DUMMY', 53, 'ECOM-015', 53, NULL, 3.1000, 3.1000, 141.6100, 7.4900, 7.4900, '2026-07-22 17:42:57', '2026-07-22 17:42:57', NULL, NULL),
+(54, 'DUMMY', 54, 'ECOM-016', 54, NULL, 5.0000, 5.0000, 139.8000, 11.9900, 11.9900, '2026-07-22 17:42:59', '2026-07-22 17:42:59', NULL, NULL),
+(55, 'DUMMY', 55, 'ECOM-017', 55, NULL, 1.9000, 1.9000, 125.7900, 4.2900, 4.2900, '2026-07-22 17:43:00', '2026-07-22 17:43:00', NULL, NULL),
+(56, 'DUMMY', 56, 'ECOM-018', 56, NULL, 7.5000, 7.5000, 113.3300, 16.0000, 16.0000, '2026-07-22 17:43:02', '2026-07-22 17:43:02', NULL, NULL),
+(57, 'DUMMY', 57, 'ECOM-019', 57, NULL, 8.0000, 8.0000, 131.2500, 18.5000, 18.5000, '2026-07-22 17:43:03', '2026-07-22 17:43:03', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -2529,8 +3058,27 @@ INSERT INTO `variation_location_details` (`id`, `product_id`, `product_variation
 (4, 4, 4, 4, 1, 50.0000, '2026-07-18 19:00:29', '2026-07-18 19:00:29'),
 (5, 5, 5, 5, 1, 50.0000, '2026-07-18 19:00:29', '2026-07-18 19:00:29'),
 (6, 6, 6, 6, 1, 40.0000, '2026-07-18 19:00:29', '2026-07-18 19:00:29'),
-(7, 7, 7, 7, 1, 40.0000, '2026-07-18 19:00:29', '2026-07-18 19:00:29'),
-(8, 8, 8, 8, 1, 30.0000, '2026-07-18 19:00:29', '2026-07-18 19:00:29');
+(7, 7, 7, 7, 1, 39.0000, '2026-07-18 19:00:29', '2026-07-22 13:10:15'),
+(8, 8, 8, 8, 1, 30.0000, '2026-07-18 19:00:29', '2026-07-18 19:00:29'),
+(39, 39, 39, 39, 1, 44.0000, '2026-07-22 17:42:40', '2026-07-22 17:42:40'),
+(40, 40, 40, 40, 1, 48.0000, '2026-07-22 17:42:40', '2026-07-22 17:42:40'),
+(41, 41, 41, 41, 1, 52.0000, '2026-07-22 17:42:43', '2026-07-22 17:42:43'),
+(42, 42, 42, 42, 1, 56.0000, '2026-07-22 17:42:44', '2026-07-22 17:42:44'),
+(43, 43, 43, 43, 1, 60.0000, '2026-07-22 17:42:45', '2026-07-22 17:42:45'),
+(44, 44, 44, 44, 1, 64.0000, '2026-07-22 17:42:47', '2026-07-22 17:42:47'),
+(45, 45, 45, 45, 1, 68.0000, '2026-07-22 17:42:50', '2026-07-22 17:42:50'),
+(46, 46, 46, 46, 1, 72.0000, '2026-07-22 17:42:51', '2026-07-22 17:42:51'),
+(47, 47, 47, 47, 1, 76.0000, '2026-07-22 17:42:52', '2026-07-22 17:42:52'),
+(48, 48, 48, 48, 1, 80.0000, '2026-07-22 17:42:52', '2026-07-22 17:42:52'),
+(49, 49, 49, 49, 1, 84.0000, '2026-07-22 17:42:53', '2026-07-22 17:42:53'),
+(50, 50, 50, 50, 1, 88.0000, '2026-07-22 17:42:55', '2026-07-22 17:42:55'),
+(51, 51, 51, 51, 1, 92.0000, '2026-07-22 17:42:55', '2026-07-22 17:42:55'),
+(52, 52, 52, 52, 1, 96.0000, '2026-07-22 17:42:56', '2026-07-22 17:42:56'),
+(53, 53, 53, 53, 1, 100.0000, '2026-07-22 17:42:57', '2026-07-22 17:42:57'),
+(54, 54, 54, 54, 1, 104.0000, '2026-07-22 17:42:59', '2026-07-22 17:42:59'),
+(55, 55, 55, 55, 1, 108.0000, '2026-07-22 17:43:00', '2026-07-22 17:43:00'),
+(56, 56, 56, 56, 1, 112.0000, '2026-07-22 17:43:02', '2026-07-22 17:43:02'),
+(57, 57, 57, 57, 1, 116.0000, '2026-07-22 17:43:03', '2026-07-22 17:43:03');
 
 -- --------------------------------------------------------
 
@@ -2774,6 +3322,105 @@ ALTER TABLE `document_and_notes`
   ADD KEY `document_and_notes_created_by_index` (`created_by`);
 
 --
+-- Indexes for table `ecommerce_settings`
+--
+ALTER TABLE `ecommerce_settings`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `ecommerce_settings_business_id_unique` (`business_id`);
+
+--
+-- Indexes for table `ecom_api_settings`
+--
+ALTER TABLE `ecom_api_settings`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `ecom_banners`
+--
+ALTER TABLE `ecom_banners`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `ecom_carts`
+--
+ALTER TABLE `ecom_carts`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `ecom_carts_session_id_index` (`session_id`);
+
+--
+-- Indexes for table `ecom_cart_items`
+--
+ALTER TABLE `ecom_cart_items`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `ecom_cart_items_cart_id_variation_id_unique` (`cart_id`,`variation_id`);
+
+--
+-- Indexes for table `ecom_collections`
+--
+ALTER TABLE `ecom_collections`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `ecom_collections_business_id_slug_unique` (`business_id`,`slug`);
+
+--
+-- Indexes for table `ecom_collection_products`
+--
+ALTER TABLE `ecom_collection_products`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `ecom_collection_products_collection_id_product_id_unique` (`collection_id`,`product_id`);
+
+--
+-- Indexes for table `ecom_coupons`
+--
+ALTER TABLE `ecom_coupons`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `ecom_coupons_business_id_code_unique` (`business_id`,`code`);
+
+--
+-- Indexes for table `ecom_coupon_usages`
+--
+ALTER TABLE `ecom_coupon_usages`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `ecom_customer_addresses`
+--
+ALTER TABLE `ecom_customer_addresses`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `ecom_order_meta`
+--
+ALTER TABLE `ecom_order_meta`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `ecom_order_meta_transaction_id_unique` (`transaction_id`),
+  ADD UNIQUE KEY `ecom_order_meta_tracking_token_unique` (`tracking_token`);
+
+--
+-- Indexes for table `ecom_reviews`
+--
+ALTER TABLE `ecom_reviews`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `ecom_shipping_rules`
+--
+ALTER TABLE `ecom_shipping_rules`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `ecom_tax_rules`
+--
+ALTER TABLE `ecom_tax_rules`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `ecom_wishlists`
+--
+ALTER TABLE `ecom_wishlists`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `ecom_wishlists_contact_id_product_id_variation_id_unique` (`contact_id`,`product_id`,`variation_id`);
+
+--
 -- Indexes for table `employee_attendances`
 --
 ALTER TABLE `employee_attendances`
@@ -2902,6 +3549,12 @@ ALTER TABLE `password_resets`
   ADD KEY `password_resets_email_index` (`email`);
 
 --
+-- Indexes for table `password_resets_contacts`
+--
+ALTER TABLE `password_resets_contacts`
+  ADD KEY `password_resets_contacts_email_index` (`email`);
+
+--
 -- Indexes for table `permissions`
 --
 ALTER TABLE `permissions`
@@ -2931,7 +3584,9 @@ ALTER TABLE `products`
   ADD KEY `products_type_index` (`type`),
   ADD KEY `products_tax_type_index` (`tax_type`),
   ADD KEY `products_barcode_type_index` (`barcode_type`),
-  ADD KEY `products_secondary_unit_id_index` (`secondary_unit_id`);
+  ADD KEY `products_secondary_unit_id_index` (`secondary_unit_id`),
+  ADD KEY `products_business_id_sales_channel_index` (`business_id`,`sales_channel`),
+  ADD KEY `products_business_id_ecom_slug_index` (`business_id`,`ecom_slug`);
 
 --
 -- Indexes for table `product_locations`
@@ -3220,7 +3875,7 @@ ALTER TABLE `account_types`
 -- AUTO_INCREMENT for table `activity_log`
 --
 ALTER TABLE `activity_log`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT for table `barcodes`
@@ -3274,13 +3929,13 @@ ALTER TABLE `cash_register_transactions`
 -- AUTO_INCREMENT for table `categories`
 --
 ALTER TABLE `categories`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT for table `contacts`
 --
 ALTER TABLE `contacts`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `currencies`
@@ -3310,6 +3965,96 @@ ALTER TABLE `discounts`
 -- AUTO_INCREMENT for table `document_and_notes`
 --
 ALTER TABLE `document_and_notes`
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `ecommerce_settings`
+--
+ALTER TABLE `ecommerce_settings`
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT for table `ecom_api_settings`
+--
+ALTER TABLE `ecom_api_settings`
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `ecom_banners`
+--
+ALTER TABLE `ecom_banners`
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+
+--
+-- AUTO_INCREMENT for table `ecom_carts`
+--
+ALTER TABLE `ecom_carts`
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=57;
+
+--
+-- AUTO_INCREMENT for table `ecom_cart_items`
+--
+ALTER TABLE `ecom_cart_items`
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+
+--
+-- AUTO_INCREMENT for table `ecom_collections`
+--
+ALTER TABLE `ecom_collections`
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT for table `ecom_collection_products`
+--
+ALTER TABLE `ecom_collection_products`
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `ecom_coupons`
+--
+ALTER TABLE `ecom_coupons`
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `ecom_coupon_usages`
+--
+ALTER TABLE `ecom_coupon_usages`
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `ecom_customer_addresses`
+--
+ALTER TABLE `ecom_customer_addresses`
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `ecom_order_meta`
+--
+ALTER TABLE `ecom_order_meta`
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- AUTO_INCREMENT for table `ecom_reviews`
+--
+ALTER TABLE `ecom_reviews`
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `ecom_shipping_rules`
+--
+ALTER TABLE `ecom_shipping_rules`
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT for table `ecom_tax_rules`
+--
+ALTER TABLE `ecom_tax_rules`
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `ecom_wishlists`
+--
+ALTER TABLE `ecom_wishlists`
   MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
@@ -3352,7 +4097,7 @@ ALTER TABLE `media`
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=304;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=305;
 
 --
 -- AUTO_INCREMENT for table `notification_templates`
@@ -3388,7 +4133,7 @@ ALTER TABLE `printers`
 -- AUTO_INCREMENT for table `products`
 --
 ALTER TABLE `products`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=58;
 
 --
 -- AUTO_INCREMENT for table `product_racks`
@@ -3400,7 +4145,7 @@ ALTER TABLE `product_racks`
 -- AUTO_INCREMENT for table `product_variations`
 --
 ALTER TABLE `product_variations`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=58;
 
 --
 -- AUTO_INCREMENT for table `purchase_lines`
@@ -3442,7 +4187,7 @@ ALTER TABLE `stock_adjustment_lines`
 -- AUTO_INCREMENT for table `system`
 --
 ALTER TABLE `system`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `tax_rates`
@@ -3454,7 +4199,7 @@ ALTER TABLE `tax_rates`
 -- AUTO_INCREMENT for table `transactions`
 --
 ALTER TABLE `transactions`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `transaction_payments`
@@ -3466,7 +4211,7 @@ ALTER TABLE `transaction_payments`
 -- AUTO_INCREMENT for table `transaction_sell_lines`
 --
 ALTER TABLE `transaction_sell_lines`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `transaction_sell_lines_purchase_lines`
@@ -3502,7 +4247,7 @@ ALTER TABLE `user_contact_access`
 -- AUTO_INCREMENT for table `variations`
 --
 ALTER TABLE `variations`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=58;
 
 --
 -- AUTO_INCREMENT for table `variation_group_prices`
@@ -3514,7 +4259,7 @@ ALTER TABLE `variation_group_prices`
 -- AUTO_INCREMENT for table `variation_location_details`
 --
 ALTER TABLE `variation_location_details`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=58;
 
 --
 -- AUTO_INCREMENT for table `variation_templates`

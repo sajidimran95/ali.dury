@@ -17,14 +17,14 @@ class HomeController extends Controller
     {
         $business_id = request()->attributes->get('ecommerce_business_id');
         $banners = EcomBanner::where('business_id', $business_id)->where('is_active', 1)->orderBy('sort_order')->get();
-        $featured = Product::where('business_id', $business_id)->active()->forEcommerce()->where('ecom_is_featured', 1)->with('variations')->limit(8)->get();
+        $featured = Product::where('business_id', $business_id)->active()->forEcommerce()->where('ecom_is_featured', 1)->with(['variations', 'category'])->limit(8)->get();
         if ($featured->isEmpty()) {
-            $featured = Product::where('business_id', $business_id)->active()->forEcommerce()->with('variations')->orderByDesc('id')->limit(8)->get();
+            $featured = Product::where('business_id', $business_id)->active()->forEcommerce()->with(['variations', 'category'])->orderByDesc('id')->limit(8)->get();
         }
 
-        $new_arrivals = Product::where('business_id', $business_id)->active()->forEcommerce()->where('ecom_is_new_arrival', 1)->with('variations')->limit(8)->get();
+        $new_arrivals = Product::where('business_id', $business_id)->active()->forEcommerce()->where('ecom_is_new_arrival', 1)->with(['variations', 'category'])->limit(8)->get();
         if ($new_arrivals->isEmpty()) {
-            $new_arrivals = Product::where('business_id', $business_id)->active()->forEcommerce()->with('variations')->orderByDesc('id')->limit(8)->get();
+            $new_arrivals = Product::where('business_id', $business_id)->active()->forEcommerce()->with(['variations', 'category'])->orderByDesc('id')->limit(8)->get();
         }
 
         $best_seller_ids = DB::table('transaction_sell_lines as tsl')
@@ -42,18 +42,31 @@ class HomeController extends Controller
             ->active()
             ->forEcommerce()
             ->whereIn('id', $best_seller_ids)
-            ->with('variations')
+            ->with(['variations', 'category'])
             ->get();
 
         if ($best_sellers->isEmpty()) {
             $best_sellers = $featured;
         }
 
-        $categories = Category::where('business_id', $business_id)->where('category_type', 'product')->whereNull('parent_id')->limit(8)->get();
+        $categories = Category::where('business_id', $business_id)
+            ->where('category_type', 'product')
+            ->where(function ($q) {
+                $q->whereNull('parent_id')->orWhere('parent_id', 0);
+            })
+            ->orderBy('name')
+            ->limit(10)
+            ->get();
         $collections = EcomCollection::where('business_id', $business_id)->where('is_active', 1)->orderBy('sort_order')->limit(4)->get();
         $reviews = EcomReview::where('business_id', $business_id)->where('status', 'approved')->with('product')->latest()->limit(6)->get();
         $cart = $cartService->getOrCreateCart($business_id);
         $cart_totals = $cartService->totals($cart);
+
+        $category_covers = [];
+        $coverFile = storage_path('app/ecom_category_covers.json');
+        if (is_file($coverFile)) {
+            $category_covers = json_decode(file_get_contents($coverFile), true) ?: [];
+        }
 
         return view('ecommerce::front.home.index', compact(
             'banners',
@@ -63,7 +76,8 @@ class HomeController extends Controller
             'categories',
             'collections',
             'reviews',
-            'cart_totals'
+            'cart_totals',
+            'category_covers'
         ));
     }
 }

@@ -38,11 +38,15 @@ class AppServiceProvider extends ServiceProvider
             error_reporting(0);
         }
 
-        //force https
-        $url = parse_url(config('app.url'));
-
-        if ($url['scheme'] == 'https') {
+        // Force HTTPS only when the current request is already HTTPS.
+        // Forcing https while browsing http (common on Laragon) breaks CSRF (419 Page Expired).
+        if (! $this->app->runningInConsole() && request()->isSecure()) {
             \URL::forceScheme('https');
+        } elseif ($this->app->runningInConsole()) {
+            $url = parse_url(config('app.url'));
+            if (($url['scheme'] ?? '') === 'https') {
+                \URL::forceScheme('https');
+            }
         }
 
         if (request()->has('lang')) {

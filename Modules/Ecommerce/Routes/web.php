@@ -66,8 +66,13 @@ Route::prefix(config('ecommerce.route_prefix', 'shop'))
     ->middleware(['ecommerce.enabled'])
     ->name('ecommerce.')
     ->group(function () {
-        Route::get('/', [HomeController::class, 'index'])->name('home');
-        Route::get('/shop', [ShopController::class, 'index'])->name('shop');
+        // Catalog lives at /shop (not /shop/shop)
+        Route::get('/', [ShopController::class, 'index'])->name('shop');
+        Route::get('/shop', function () {
+            return redirect('/shop', 301);
+        });
+
+        Route::get('/home', [HomeController::class, 'index'])->name('home');
         Route::get('/c/{slug}', [ShopController::class, 'category'])->name('category');
         Route::get('/p/{slug}', [ProductDetailController::class, 'show'])->name('product');
         Route::get('/collections/{slug}', [CollectionFrontController::class, 'show'])->name('collection');
