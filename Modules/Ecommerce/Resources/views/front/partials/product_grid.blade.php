@@ -41,14 +41,14 @@
                     @csrf
                     <input type="hidden" name="product_id" value="{{ $product->id }}">
                     <input type="hidden" name="variation_id" value="{{ $variation->id }}">
-                    <div class="flex items-center gap-2">
-                        <div class="inline-flex items-center border border-line rounded-md bg-white shrink-0">
-                            <button type="button" class="pc-qty-minus h-9 w-8 text-ink text-base leading-none hover:bg-mist" aria-label="Decrease">−</button>
+                    <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+                        <div class="inline-flex items-center justify-between sm:justify-start border border-line rounded-md bg-white w-full sm:w-auto shrink-0">
+                            <button type="button" class="pc-qty-minus h-10 w-10 sm:h-9 sm:w-8 text-ink text-lg sm:text-base leading-none hover:bg-mist" aria-label="Decrease">−</button>
                             <input type="number" name="quantity" value="1" min="1" step="1"
-                                   class="pc-qty-input w-8 h-9 border-0 text-center text-sm font-medium tabular-nums outline-none appearance-none [-moz-appearance:textfield]">
-                            <button type="button" class="pc-qty-plus h-9 w-8 text-ink text-base leading-none hover:bg-mist" aria-label="Increase">+</button>
+                                   class="pc-qty-input w-12 sm:w-8 h-10 sm:h-9 border-0 text-center text-sm font-semibold tabular-nums outline-none appearance-none [-moz-appearance:textfield]">
+                            <button type="button" class="pc-qty-plus h-10 w-10 sm:h-9 sm:w-8 text-ink text-lg sm:text-base leading-none hover:bg-mist" aria-label="Increase">+</button>
                         </div>
-                        <button type="submit" class="flex-1 rounded-md bg-ink text-white text-[11px] sm:text-xs font-bold py-2.5 hover:bg-black transition whitespace-nowrap">
+                        <button type="submit" class="w-full sm:flex-1 rounded-md bg-ink text-white text-xs font-bold py-2.5 sm:py-2.5 hover:bg-black transition">
                             Add to Cart
                         </button>
                     </div>
