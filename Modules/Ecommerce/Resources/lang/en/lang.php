@@ -21,6 +21,7 @@ return [
     'enable_ecommerce' => 'Enable Ecommerce',
     'enable_ecommerce_help' => 'When enabled, the online store at /shop becomes active.',
     'store_name' => 'Store Name',
+    'store_logo' => 'Store Logo',
     'default_location' => 'Fulfillment Location (stock)',
     'sales_channel' => 'Product Sales Channel',
     'pos_only' => 'POS Only',

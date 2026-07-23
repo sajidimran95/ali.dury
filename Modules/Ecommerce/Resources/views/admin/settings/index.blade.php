@@ -3,7 +3,7 @@
 @section('content')
 <section class="content-header"><h1>@lang('ecommerce::lang.settings')</h1></section>
 <section class="content">
-{!! Form::open(['url' => route('ecommerce.admin.settings.update'), 'method' => 'post']) !!}
+{!! Form::open(['url' => route('ecommerce.admin.settings.update'), 'method' => 'post', 'files' => true]) !!}
 <div class="box box-primary">
     <div class="box-body">
         <div class="form-group">
@@ -22,10 +22,22 @@
             </div>
             <div class="col-md-4">
                 <div class="form-group">
+                    {!! Form::label('store_logo', __('ecommerce::lang.store_logo')) !!}
+                    {!! Form::file('store_logo', ['class' => 'form-control', 'accept' => 'image/*']) !!}
+                    <p class="help-block">Shown in the storefront header (replaces text brand name).</p>
+                    @if(!empty($settings->store_logo) && file_exists(public_path('uploads/'.$settings->store_logo)))
+                        <img src="{{ asset('uploads/'.$settings->store_logo) }}" alt="Store logo" style="max-height:48px;margin-top:8px;">
+                    @endif
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
                     {!! Form::label('location_id', __('ecommerce::lang.default_location')) !!}
                     {!! Form::select('location_id', $locations, $settings->location_id, ['class' => 'form-control select2', 'placeholder' => __('messages.please_select')]) !!}
                 </div>
             </div>
+        </div>
+        <div class="row">
             <div class="col-md-4">
                 <div class="form-group">
                     {!! Form::label('contact_email', 'Contact Email') !!}

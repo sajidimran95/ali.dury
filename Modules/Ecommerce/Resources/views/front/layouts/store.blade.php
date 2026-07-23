@@ -81,6 +81,29 @@
 @php
     $nav_categories = $nav_categories ?? collect();
     $store = $ecom_settings->store_name ?? 'Japs Wholesale';
+
+    $storeLogoUrl = null;
+    $storeLogoCandidates = [];
+    if (! empty($ecom_settings->store_logo)) {
+        $storeLogoCandidates[] = $ecom_settings->store_logo;
+    }
+    $storeLogoCandidates[] = 'ecommerce/japs-wholesale-logo.svg';
+    try {
+        $bizLogo = \App\Business::where('id', $ecom_business_id ?? null)->value('logo')
+            ?: \App\Business::whereNotNull('logo')->where('logo', '!=', '')->orderBy('id')->value('logo');
+        if (! empty($bizLogo)) {
+            $storeLogoCandidates[] = 'business_logos/'.$bizLogo;
+        }
+    } catch (\Throwable $e) {
+        // ignore
+    }
+    foreach ($storeLogoCandidates as $rel) {
+        $rel = ltrim(str_replace('\\', '/', (string) $rel), '/');
+        if ($rel !== '' && file_exists(public_path('uploads/'.$rel))) {
+            $storeLogoUrl = asset('uploads/'.$rel);
+            break;
+        }
+    }
 @endphp
 
 {{-- Top promo / contact bar --}}
@@ -104,21 +127,27 @@
                 <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h16M3 11h16M3 16h16"/></svg>
             </button>
 
-            <a href="{{ url('/') }}" class="shrink-0 flex items-center gap-2">
-                <span class="h-9 w-9 rounded-full bg-brand text-white flex items-center justify-center font-extrabold text-sm">J</span>
-                <span class="leading-tight hidden sm:block">
-                    <span class="block font-extrabold text-[15px] text-ink">{{ $store }}</span>
-                    <span class="block text-[10px] uppercase tracking-wider text-black/45">Wholesale Distribution</span>
-                </span>
+            <a href="{{ url('/') }}" class="shrink-0 flex items-center" aria-label="{{ $store }}">
+                @if($storeLogoUrl)
+                    <img src="{{ $storeLogoUrl }}" alt="{{ $store }}" class="h-11 sm:h-12 w-auto max-w-[220px] object-contain object-left">
+                @else
+                    <span class="flex items-center gap-2">
+                        <span class="h-9 w-9 rounded-full bg-brand text-white flex items-center justify-center font-extrabold text-sm">J</span>
+                        <span class="leading-tight hidden sm:block">
+                            <span class="block font-extrabold text-[15px] text-ink">{{ $store }}</span>
+                            <span class="block text-[10px] uppercase tracking-wider text-black/45">Wholesale Distribution</span>
+                        </span>
+                    </span>
+                @endif
             </a>
 
-            <nav class="hidden lg:flex items-center gap-5 text-sm font-semibold relative z-[70]">
+            <nav class="hidden lg:flex items-center gap-6 text-[17px] xl:text-[18px] font-bold tracking-tight relative z-[70]">
                 <a href="{{ url('/') }}" class="hover:text-brand">Home</a>
                 <a href="{{ route('ecommerce.shop') }}" class="hover:text-brand">Shop</a>
                 <a href="{{ route('ecommerce.quick_order') }}" class="hover:text-brand">Quick Order</a>
                 <div class="relative group z-[80]">
                     <button type="button" class="hover:text-brand inline-flex items-center gap-1">More
-                        <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="M5 8l5 5 5-5"/></svg>
+                        <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path d="M5 8l5 5 5-5"/></svg>
                     </button>
                     <div class="invisible opacity-0 pointer-events-none group-hover:visible group-hover:opacity-100 group-hover:pointer-events-auto absolute left-0 top-full pt-1 z-[90] transition">
                         <div class="bg-white border border-line rounded-lg shadow-xl py-2 min-w-[180px] text-sm font-medium">
@@ -132,15 +161,15 @@
 
             <form action="{{ route('ecommerce.shop') }}" method="get" class="hidden md:flex flex-1 max-w-xl mx-auto">
                 <div class="flex w-full rounded-full border border-line overflow-hidden bg-mist focus-within:bg-white focus-within:border-brand">
-                    <input type="search" name="q" value="{{ request('q') }}" placeholder="Search products, SKU, brands..."
-                           class="flex-1 bg-transparent border-0 outline-none text-sm px-4 py-2.5">
+                    <input type="search" name="q" value="{{ request('q') }}" placeholder="Search"
+                           class="flex-1 bg-transparent border-0 outline-none text-[13px] px-4 py-2.5">
                     <button class="bg-brand text-white px-4 hover:bg-[#c44d03]" aria-label="Search">
                         <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="5.5"/><path d="M12 12l4 4"/></svg>
                     </button>
                 </div>
             </form>
 
-            <div class="ml-auto flex items-center gap-3 sm:gap-5 text-sm font-semibold shrink-0">
+            <div class="ml-auto flex items-center gap-3 sm:gap-4 text-[15px] font-semibold shrink-0">
                 @auth('customer')
                     <a href="{{ route('ecommerce.wishlist') }}" class="hidden sm:inline-flex items-center gap-1.5 hover:text-brand" title="Wishlist">
                         <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 15s-6-3.8-6-7.2A3.3 3.3 0 019 4.8a3.3 3.3 0 016 3C15 11.2 9 15 9 15z"/></svg>
@@ -153,7 +182,7 @@
                 @else
                     <a href="{{ route('ecommerce.login') }}" class="hidden sm:inline-flex items-center gap-1.5 hover:text-brand" title="Account">
                         <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="6" r="3"/><path d="M3 16c1.5-3 10.5-3 12 0"/></svg>
-                        <span class="hidden md:inline">Login</span>
+                        <span class="hidden md:inline">Login or Sign Up</span>
                     </a>
                 @endauth
                 <a href="{{ route('ecommerce.cart') }}" class="inline-flex items-center gap-2 hover:text-brand">
@@ -161,7 +190,8 @@
                         <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 4h12l-1 9H4L3 4z"/><path d="M7 7V4a2 2 0 014 0v3"/></svg>
                         <span class="absolute -top-2 -right-2 bg-brand text-white text-[10px] rounded-full min-w-[16px] h-[16px] inline-flex items-center justify-center px-1">{{ $cart_totals['count'] ?? 0 }}</span>
                     </span>
-                    <span class="hidden sm:inline tabular-nums">${{ number_format($cart_totals['subtotal'] ?? 0, 2) }}</span>
+                    <span class="hidden sm:inline">View Cart</span>
+                    <span class="hidden sm:inline tabular-nums text-black/55">${{ number_format($cart_totals['subtotal'] ?? 0, 2) }}</span>
                 </a>
             </div>
         </div>
@@ -170,7 +200,7 @@
     {{-- Category mega nav --}}
     <div class="border-t border-line bg-white hidden lg:block relative z-10">
         <div class="max-w-[1400px] mx-auto px-4 cat-nav-wrap" id="catNavWrap">
-            <ul class="flex items-stretch gap-0 text-[13px] font-semibold">
+            <ul class="flex items-stretch gap-0 text-[15px] xl:text-[16px] font-bold">
                 @foreach($nav_categories as $cat)
                     @php
                         $subs = $cat->sub_categories ?? collect();
@@ -178,9 +208,9 @@
                     @endphp
                     <li class="mega">
                         <a href="{{ route('ecommerce.category', $cat->id) }}"
-                           class="cat-link inline-flex items-center gap-1 px-3 py-3.5 whitespace-nowrap {{ (request('category') == $cat->id || (string) request()->route('slug') === (string) $cat->id) ? 'text-brand' : '' }}">
+                           class="cat-link inline-flex items-center gap-1 px-3.5 py-3.5 whitespace-nowrap {{ (request('category') == $cat->id || (string) request()->route('slug') === (string) $cat->id) ? 'text-brand' : '' }}">
                             {{ $cat->name }}
-                            <svg width="10" height="10" viewBox="0 0 20 20" fill="currentColor" class="opacity-50"><path d="M5 8l5 5 5-5"/></svg>
+                            <svg width="11" height="11" viewBox="0 0 20 20" fill="currentColor" class="opacity-50"><path d="M5 8l5 5 5-5"/></svg>
                         </a>
 
                         <div class="mega-panel">
@@ -259,7 +289,13 @@
 <footer class="mt-16 bg-slatebar text-white">
     <div class="max-w-[1400px] mx-auto px-4 py-12 grid md:grid-cols-4 gap-8">
         <div class="md:col-span-2">
-            <div class="font-extrabold text-xl mb-2">{{ $store }}</div>
+            @if($storeLogoUrl)
+                <a href="{{ url('/') }}" class="inline-block mb-3">
+                    <img src="{{ $storeLogoUrl }}" alt="{{ $store }}" class="h-10 w-auto max-w-[200px] object-contain brightness-0 invert">
+                </a>
+            @else
+                <div class="font-extrabold text-xl mb-2">{{ $store }}</div>
+            @endif
             <p class="text-white/65 text-sm max-w-md leading-relaxed">
                 {{ $ecom_settings->seo_description ?? 'Professional wholesale distribution with live inventory, bulk-ready catalog, and secure checkout.' }}
             </p>

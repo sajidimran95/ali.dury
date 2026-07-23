@@ -81,9 +81,6 @@ Route::prefix(config('ecommerce.route_prefix', 'shop'))
         Route::get('/collections/{slug}', [CollectionFrontController::class, 'show'])->name('collection');
         Route::get('/contact', [ContactPageController::class, 'index'])->name('contact');
         Route::post('/contact', [ContactPageController::class, 'send'])->name('contact.send');
-        Route::get('/quick-order', [QuickOrderController::class, 'index'])->name('quick_order');
-        Route::post('/quick-order', [QuickOrderController::class, 'submit'])->name('quick_order.submit');
-
         Route::get('/cart', [CartController::class, 'index'])->name('cart');
         Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
         Route::post('/cart/update', [CartController::class, 'update'])->name('cart.update');
@@ -102,6 +99,8 @@ Route::prefix(config('ecommerce.route_prefix', 'shop'))
         Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
         Route::middleware('auth:customer')->group(function () {
+            Route::get('/quick-order', [QuickOrderController::class, 'index'])->name('quick_order');
+            Route::post('/quick-order', [QuickOrderController::class, 'submit'])->name('quick_order.submit');
             Route::get('/account', [AccountController::class, 'index'])->name('account');
             Route::get('/account/orders', [AccountController::class, 'orders'])->name('account.orders');
             Route::match(['get', 'post'], '/account/licenses', [AccountController::class, 'licenses'])->name('account.licenses');

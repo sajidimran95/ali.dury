@@ -38,7 +38,7 @@ class AuthController extends Controller
 
         Auth::guard('customer')->login($contact, $request->boolean('remember'));
 
-        return redirect()->route('ecommerce.account')->with('success', __('ecommerce::lang.welcome_back'));
+        return redirect()->intended(route('ecommerce.account'))->with('success', __('ecommerce::lang.welcome_back'));
     }
 
     public function showRegister()

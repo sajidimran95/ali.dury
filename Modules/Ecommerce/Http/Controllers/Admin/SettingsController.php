@@ -39,6 +39,21 @@ class SettingsController extends Controller
         $settings->seo_description = $request->input('seo_description');
         $settings->contact_email = $request->input('contact_email');
         $settings->contact_phone = $request->input('contact_phone');
+
+        if ($request->hasFile('store_logo')) {
+            $request->validate([
+                'store_logo' => 'image|mimes:jpg,jpeg,png,webp,svg,gif|max:4096',
+            ]);
+            $dir = public_path('uploads/ecommerce');
+            if (! is_dir($dir)) {
+                mkdir($dir, 0755, true);
+            }
+            $file = $request->file('store_logo');
+            $filename = 'store_logo_'.time().'.'.$file->getClientOriginalExtension();
+            $file->move($dir, $filename);
+            $settings->store_logo = 'ecommerce/'.$filename;
+        }
+
         $settings->save();
 
         // Ensure a usable flat shipping rule exists when store is enabled

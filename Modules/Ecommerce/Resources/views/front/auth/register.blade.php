@@ -11,17 +11,32 @@
         ['key' => 'tobacco', 'title' => 'Tobacco Certificate', 'number_label' => 'Tobacco Certificate Number', 'expiry_label' => 'Tobacco Certificate Expiry', 'placeholder' => ''],
         ['key' => 'id', 'title' => 'ID Certificate', 'number_label' => 'ID Certificate Number', 'expiry_label' => 'ID Certificate Expiry', 'placeholder' => "i.e. Passport, Driver's License"],
     ];
+    $authLogoUrl = null;
+    foreach (array_filter([
+        $ecom_settings->store_logo ?? null,
+        'ecommerce/japs-wholesale-logo.svg',
+    ]) as $rel) {
+        $rel = ltrim(str_replace('\\', '/', (string) $rel), '/');
+        if ($rel !== '' && file_exists(public_path('uploads/'.$rel))) {
+            $authLogoUrl = asset('uploads/'.$rel);
+            break;
+        }
+    }
 @endphp
 <div class="min-h-screen grid lg:grid-cols-[280px_1fr]">
     <aside class="bg-slatebar text-white p-6 lg:p-8 flex flex-col relative overflow-hidden">
         <div class="absolute inset-0 opacity-10 pointer-events-none" style="background-image:radial-gradient(circle at 20% 20%, #e85d04 0, transparent 40%),radial-gradient(circle at 80% 80%, #e85d04 0, transparent 35%);"></div>
         <div class="relative">
             <a href="{{ url('/') }}" class="inline-flex items-center gap-2 mb-10">
-                <span class="h-9 w-9 rounded-full bg-brand text-white flex items-center justify-center font-extrabold text-sm">J</span>
-                <span>
-                    <span class="block font-extrabold">{{ $store }}</span>
-                    <span class="block text-[10px] uppercase tracking-wider text-white/50">Wholesale Distribution</span>
-                </span>
+                @if($authLogoUrl)
+                    <img src="{{ $authLogoUrl }}" alt="{{ $store }}" class="h-10 w-auto max-w-[180px] object-contain brightness-0 invert">
+                @else
+                    <span class="h-9 w-9 rounded-full bg-brand text-white flex items-center justify-center font-extrabold text-sm">J</span>
+                    <span>
+                        <span class="block font-extrabold">{{ $store }}</span>
+                        <span class="block text-[10px] uppercase tracking-wider text-white/50">Wholesale Distribution</span>
+                    </span>
+                @endif
             </a>
 
             <nav class="space-y-0 text-sm relative" id="stepNav">

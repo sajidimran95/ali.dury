@@ -3,14 +3,31 @@
 
 @section('content')
 @php $store = $ecom_settings->store_name ?? 'Japs Wholesale'; @endphp
+@php
+    $authLogoUrl = null;
+    foreach (array_filter([
+        $ecom_settings->store_logo ?? null,
+        'ecommerce/japs-wholesale-logo.svg',
+    ]) as $rel) {
+        $rel = ltrim(str_replace('\\', '/', (string) $rel), '/');
+        if ($rel !== '' && file_exists(public_path('uploads/'.$rel))) {
+            $authLogoUrl = asset('uploads/'.$rel);
+            break;
+        }
+    }
+@endphp
 <div class="min-h-screen grid lg:grid-cols-[280px_1fr]">
     <aside class="bg-slatebar text-white p-6 lg:p-8">
         <a href="{{ url('/') }}" class="inline-flex items-center gap-2 mb-8">
-            <span class="h-9 w-9 rounded-full bg-brand text-white flex items-center justify-center font-extrabold text-sm">J</span>
-            <span>
-                <span class="block font-extrabold">{{ $store }}</span>
-                <span class="block text-[10px] uppercase tracking-wider text-white/50">Wholesale</span>
-            </span>
+            @if($authLogoUrl)
+                <img src="{{ $authLogoUrl }}" alt="{{ $store }}" class="h-10 w-auto max-w-[180px] object-contain brightness-0 invert">
+            @else
+                <span class="h-9 w-9 rounded-full bg-brand text-white flex items-center justify-center font-extrabold text-sm">J</span>
+                <span>
+                    <span class="block font-extrabold">{{ $store }}</span>
+                    <span class="block text-[10px] uppercase tracking-wider text-white/50">Wholesale</span>
+                </span>
+            @endif
         </a>
         <p class="text-sm text-white/65 leading-relaxed">Sign in to your wholesale account to place orders, track shipments, and reorder by SKU.</p>
     </aside>
