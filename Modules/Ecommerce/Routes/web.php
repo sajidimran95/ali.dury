@@ -20,6 +20,7 @@ use Modules\Ecommerce\Http\Controllers\Front\CollectionFrontController;
 use Modules\Ecommerce\Http\Controllers\Front\ContactPageController;
 use Modules\Ecommerce\Http\Controllers\Front\HomeController;
 use Modules\Ecommerce\Http\Controllers\Front\ProductDetailController;
+use Modules\Ecommerce\Http\Controllers\Front\QuickOrderController;
 use Modules\Ecommerce\Http\Controllers\Front\ShopController;
 use Modules\Ecommerce\Http\Controllers\InstallController;
 
@@ -52,6 +53,8 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
         Route::post('reviews/{id}/status', [ReviewController::class, 'updateStatus'])->name('reviews.status');
 
         Route::get('customers', [CustomerController::class, 'index'])->name('customers');
+        Route::get('customers/{id}', [CustomerController::class, 'show'])->name('customers.show');
+        Route::post('customers/{id}/status', [CustomerController::class, 'updateStatus'])->name('customers.status');
         Route::get('reports', [ReportController::class, 'index'])->name('reports');
 
         Route::get('settings', [SettingsController::class, 'index'])->name('settings');
@@ -78,6 +81,8 @@ Route::prefix(config('ecommerce.route_prefix', 'shop'))
         Route::get('/collections/{slug}', [CollectionFrontController::class, 'show'])->name('collection');
         Route::get('/contact', [ContactPageController::class, 'index'])->name('contact');
         Route::post('/contact', [ContactPageController::class, 'send'])->name('contact.send');
+        Route::get('/quick-order', [QuickOrderController::class, 'index'])->name('quick_order');
+        Route::post('/quick-order', [QuickOrderController::class, 'submit'])->name('quick_order.submit');
 
         Route::get('/cart', [CartController::class, 'index'])->name('cart');
         Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
@@ -99,6 +104,7 @@ Route::prefix(config('ecommerce.route_prefix', 'shop'))
         Route::middleware('auth:customer')->group(function () {
             Route::get('/account', [AccountController::class, 'index'])->name('account');
             Route::get('/account/orders', [AccountController::class, 'orders'])->name('account.orders');
+            Route::match(['get', 'post'], '/account/licenses', [AccountController::class, 'licenses'])->name('account.licenses');
             Route::match(['get', 'post'], '/account/profile', [AccountController::class, 'profile'])->name('account.profile');
             Route::match(['get', 'post'], '/account/password', [AccountController::class, 'password'])->name('account.password');
             Route::match(['get', 'post'], '/account/addresses', [AccountController::class, 'addresses'])->name('account.addresses');

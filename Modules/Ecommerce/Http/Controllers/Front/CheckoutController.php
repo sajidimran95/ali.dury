@@ -18,6 +18,17 @@ class CheckoutController extends Controller
 {
     public function index(CartService $cartService, ShippingCalculator $shipping, TaxCalculator $tax, CouponService $coupons)
     {
+        if (! auth('customer')->check()) {
+            return redirect()->route('ecommerce.login')
+                ->with('error', 'Sign in with your wholesale account to checkout.');
+        }
+
+        $customer = auth('customer')->user();
+        if (! \Modules\Ecommerce\Support\WholesaleAccount::isApproved($customer)) {
+            return redirect()->route('ecommerce.account.licenses')
+                ->with('error', 'Your wholesale account is pending approval. Checkout unlocks after an admin reviews your licenses.');
+        }
+
         $business_id = request()->attributes->get('ecommerce_business_id');
         $settings = request()->attributes->get('ecommerce_settings');
         $cart = $cartService->getOrCreateCart($business_id);
@@ -52,6 +63,12 @@ class CheckoutController extends Controller
 
     public function place(Request $request, CheckoutService $checkout)
     {
+        $customer = auth('customer')->user();
+        if ($customer && ! \Modules\Ecommerce\Support\WholesaleAccount::isApproved($customer)) {
+            return redirect()->route('ecommerce.account.licenses')
+                ->with('error', 'Checkout is locked until your wholesale account is approved.');
+        }
+
         $business_id = $request->attributes->get('ecommerce_business_id');
         $data = $request->validate([
             'email' => 'required|email',
@@ -72,23 +89,8 @@ class CheckoutController extends Controller
 
         $contact = auth('customer')->user();
         if (! $contact) {
-            $contact = Contact::where('business_id', $business_id)
-                ->where('email', $data['email'])
-                ->onlyCustomers()
-                ->first();
-            if (! $contact) {
-                $contact = Contact::create([
-                    'business_id' => $business_id,
-                    'type' => 'customer',
-                    'name' => trim($data['shipping']['first_name'].' '.$data['shipping']['last_name']),
-                    'ecom_first_name' => $data['shipping']['first_name'],
-                    'ecom_last_name' => $data['shipping']['last_name'],
-                    'email' => $data['email'],
-                    'mobile' => $data['phone'] ?? null,
-                    'created_by' => 1,
-                    'contact_status' => 'active',
-                ]);
-            }
+            return redirect()->route('ecommerce.login')
+                ->with('error', 'Please sign in with an approved wholesale account to checkout.');
         }
 
         $data['shipping']['country'] = $data['shipping']['country'] ?? 'United States';

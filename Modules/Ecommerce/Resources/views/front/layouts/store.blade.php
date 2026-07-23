@@ -99,7 +99,7 @@
 {{-- Main header --}}
 <header class="bg-white border-b border-line sticky top-0 z-50">
     <div class="max-w-[1400px] mx-auto px-4">
-        <div class="h-[72px] flex items-center gap-4 lg:gap-6">
+        <div class="h-[72px] flex items-center gap-4 lg:gap-6 relative z-[60]">
             <button id="navToggle" class="lg:hidden p-2 -ml-2" aria-label="Menu">
                 <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h16M3 11h16M3 16h16"/></svg>
             </button>
@@ -112,16 +112,16 @@
                 </span>
             </a>
 
-            <nav class="hidden lg:flex items-center gap-5 text-sm font-semibold">
+            <nav class="hidden lg:flex items-center gap-5 text-sm font-semibold relative z-[70]">
                 <a href="{{ url('/') }}" class="hover:text-brand">Home</a>
                 <a href="{{ route('ecommerce.shop') }}" class="hover:text-brand">Shop</a>
-                <a href="{{ route('ecommerce.shop', ['sort' => 'newest']) }}" class="hover:text-brand">Quick Order</a>
-                <div class="relative group">
+                <a href="{{ route('ecommerce.quick_order') }}" class="hover:text-brand">Quick Order</a>
+                <div class="relative group z-[80]">
                     <button type="button" class="hover:text-brand inline-flex items-center gap-1">More
                         <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="M5 8l5 5 5-5"/></svg>
                     </button>
-                    <div class="hidden group-hover:block absolute left-0 top-full pt-2 z-40">
-                        <div class="bg-white border border-line rounded-lg shadow-lg py-2 min-w-[180px] text-sm font-medium">
+                    <div class="invisible opacity-0 pointer-events-none group-hover:visible group-hover:opacity-100 group-hover:pointer-events-auto absolute left-0 top-full pt-1 z-[90] transition">
+                        <div class="bg-white border border-line rounded-lg shadow-xl py-2 min-w-[180px] text-sm font-medium">
                             <a href="{{ route('ecommerce.track') }}" class="block px-4 py-2 hover:bg-mist">Track order</a>
                             <a href="{{ route('ecommerce.contact') }}" class="block px-4 py-2 hover:bg-mist">Contact</a>
                             <a href="{{ route('ecommerce.account') }}" class="block px-4 py-2 hover:bg-mist">My account</a>
@@ -168,7 +168,7 @@
     </div>
 
     {{-- Category mega nav --}}
-    <div class="border-t border-line bg-white hidden lg:block relative z-40">
+    <div class="border-t border-line bg-white hidden lg:block relative z-10">
         <div class="max-w-[1400px] mx-auto px-4 cat-nav-wrap" id="catNavWrap">
             <ul class="flex items-stretch gap-0 text-[13px] font-semibold">
                 @foreach($nav_categories as $cat)
@@ -233,6 +233,7 @@
         </form>
         <a href="{{ url('/') }}" class="block py-2.5 font-semibold">Home</a>
         <a href="{{ route('ecommerce.shop') }}" class="block py-2.5 font-semibold">Shop</a>
+        <a href="{{ route('ecommerce.quick_order') }}" class="block py-2.5 font-semibold">Quick Order</a>
         @foreach($nav_categories as $cat)
             <a href="{{ route('ecommerce.category', $cat->id) }}" class="block py-2 pl-1">{{ $cat->name }}</a>
             @foreach(($cat->sub_categories ?? []) as $sub)

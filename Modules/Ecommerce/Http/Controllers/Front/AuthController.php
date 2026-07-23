@@ -120,6 +120,7 @@ class AuthController extends Controller
             'password' => Hash::make($data['password']),
             'created_by' => 1,
             'contact_status' => 'active',
+            'custom_field6' => \Modules\Ecommerce\Support\WholesaleAccount::PENDING,
         ];
 
         if ($exists) {
@@ -150,7 +151,7 @@ class AuthController extends Controller
 
         Auth::guard('customer')->login($contact);
 
-        return redirect()->route('ecommerce.account')->with('success', __('ecommerce::lang.account_created'));
+        return redirect()->route('ecommerce.account')->with('success', 'Account created. Your wholesale account is pending approval — you can upload/view licenses while we review.');
     }
 
     protected function storeLicenses(Request $request, int $business_id, int $contact_id): void

@@ -7,10 +7,12 @@ use App\Transaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Modules\Ecommerce\Entities\EcomCustomerAddress;
+use Modules\Ecommerce\Entities\EcomCustomerLicense;
 use Modules\Ecommerce\Entities\EcomOrderMeta;
 use Modules\Ecommerce\Entities\EcomReview;
 use Modules\Ecommerce\Entities\EcomWishlist;
 use Modules\Ecommerce\Services\CartService;
+use Modules\Ecommerce\Support\WholesaleAccount;
 
 class AccountController extends Controller
 {
@@ -22,8 +24,65 @@ class AccountController extends Controller
             ->orderByDesc('id')
             ->limit(5)
             ->get();
+        $approval = WholesaleAccount::status($contact);
 
-        return view('ecommerce::front.account.index', compact('contact', 'orders'));
+        return view('ecommerce::front.account.index', compact('contact', 'orders', 'approval'));
+    }
+
+    public function licenses(Request $request)
+    {
+        $contact = auth('customer')->user();
+        $business_id = $request->attributes->get('ecommerce_business_id');
+        $approval = WholesaleAccount::status($contact);
+
+        if ($request->isMethod('post')) {
+            $data = $request->validate([
+                'license_type' => 'required|string|max:50',
+                'label' => 'nullable|string|max:191',
+                'certificate_number' => 'nullable|string|max:191',
+                'expires_at' => 'nullable|date',
+                'file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,webp|max:10240',
+            ]);
+
+            $path = null;
+            $original = null;
+            if ($request->hasFile('file')) {
+                $file = $request->file('file');
+                $publicDir = public_path('uploads/ecom_licenses/'.$contact->id);
+                if (! is_dir($publicDir)) {
+                    mkdir($publicDir, 0755, true);
+                }
+                $original = $file->getClientOriginalName();
+                $filename = uniqid('lic_', true).'.'.$file->getClientOriginalExtension();
+                $file->move($publicDir, $filename);
+                $path = 'ecom_licenses/'.$contact->id.'/'.$filename;
+            }
+
+            if (empty($data['certificate_number']) && empty($data['expires_at']) && empty($path)) {
+                return back()->with('error', 'Provide a certificate number, expiry, or file.');
+            }
+
+            EcomCustomerLicense::create([
+                'business_id' => $business_id,
+                'contact_id' => $contact->id,
+                'license_type' => $data['license_type'],
+                'label' => $data['label'] ?: ucfirst($data['license_type']).' Certificate',
+                'certificate_number' => $data['certificate_number'] ?? null,
+                'expires_at' => $data['expires_at'] ?? null,
+                'file_path' => $path,
+                'original_name' => $original,
+            ]);
+
+            if (WholesaleAccount::status($contact) === WholesaleAccount::REJECTED) {
+                WholesaleAccount::setStatus($contact, WholesaleAccount::PENDING);
+            }
+
+            return back()->with('success', 'License submitted for review.');
+        }
+
+        $licenses = EcomCustomerLicense::where('contact_id', $contact->id)->orderByDesc('id')->get();
+
+        return view('ecommerce::front.account.licenses', compact('contact', 'licenses', 'approval'));
     }
 
     public function orders()
