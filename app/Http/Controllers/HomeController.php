@@ -273,6 +273,24 @@ class HomeController extends Controller
             //NET = TOTAL SALES - INVOICE DUE - EXPENSE
             $output['net'] = $output['total_sell'] - $output['invoice_due'] - $output['total_expense'];
 
+            // Online / ecommerce orders in selected period
+            $onlineOrdersQuery = \App\Transaction::where('business_id', $business_id)
+                ->where('type', 'sell')
+                ->where('source', 'ecommerce')
+                ->whereBetween(\DB::raw('date(transaction_date)'), [$start, $end]);
+
+            if (! empty($location_id)) {
+                $onlineOrdersQuery->where('location_id', $location_id);
+            }
+            if (! empty($created_by)) {
+                $onlineOrdersQuery->where('created_by', $created_by);
+            }
+
+            $output['online_orders'] = (int) (clone $onlineOrdersQuery)->count();
+            $output['online_orders_amount'] = (float) (clone $onlineOrdersQuery)
+                ->where('status', 'final')
+                ->sum('final_total');
+
             return $output;
         }
     }

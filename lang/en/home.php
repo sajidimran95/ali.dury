@@ -16,6 +16,8 @@ return [
     'total_purchase' => 'Total purchase',
     'invoice_due' => 'Invoice due',
     'purchase_due' => 'Purchase due',
+    'online_orders' => 'Online Orders',
+    'online_orders_tooltip' => 'Ecommerce storefront orders in the selected period',
     'today' => 'Today',
     'this_week' => 'This Week',
     'this_month' => 'This Month',

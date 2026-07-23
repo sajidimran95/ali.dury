@@ -42,18 +42,31 @@
                                 <svg aria-hidden="true" class="tw-size-3.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"><path d="M6 9l6 6l6 -6"/></svg>
                             </button>
                         </div>
+                    @elseif(!auth()->user()->can('dashboard.data'))
+                        <div class="zoho-dashboard__toolbar zoho-dashboard__toolbar--attendance">
+                            @include('home.partials.attendance_clock')
+                        </div>
                     @endif
                 </div>
 
-                <div class="zoho-dashboard__tabs">
+                <div class="zoho-dashboard__tabs" aria-hidden="true">
                     <span class="zoho-dashboard__tab zoho-dashboard__tab--active">{{ __('home.home') }}</span>
                 </div>
 
-                @include('home.partials.attendance_clock')
-
                 @if (auth()->user()->can('dashboard.data') && $is_admin)
-                    <div class="japs-dashboard-stats zoho-dashboard__stats tw-grid tw-grid-cols-2 tw-gap-3 sm:tw-gap-4">
-                        <div class="zoho-stat-card">
+                    @php
+                        $card_sells = action([\App\Http\Controllers\SellController::class, 'index']);
+                        $card_sells_due = action([\App\Http\Controllers\SellController::class, 'index'], ['payment_status' => 'due']);
+                        $card_sell_return = action([\App\Http\Controllers\SellReturnController::class, 'index']);
+                        $card_purchases = action([\App\Http\Controllers\PurchaseController::class, 'index']);
+                        $card_purchases_due = action([\App\Http\Controllers\PurchaseController::class, 'index'], ['payment_status' => 'due']);
+                        $card_purchase_return = action([\App\Http\Controllers\PurchaseReturnController::class, 'index']);
+                        $card_expenses = action([\App\Http\Controllers\ExpenseController::class, 'index']);
+                        $card_profit_loss = action([\App\Http\Controllers\ReportController::class, 'getProfitLoss']);
+                        $card_online_orders = route('ecommerce.admin.orders');
+                    @endphp
+                    <div class="japs-dashboard-stats zoho-dashboard__stats tw-grid tw-grid-cols-1 sm:tw-grid-cols-2 xl:tw-grid-cols-3 tw-gap-3 sm:tw-gap-4">
+                        <a href="{{ $card_sells }}" class="zoho-stat-card zoho-stat-card--link" title="{{ __('home.total_sell') }}">
                             <div class="zoho-stat-card__icon zoho-stat-card__icon--sky">
                                 <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"><path d="M6 19m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"/><path d="M17 19m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"/><path d="M17 17h-11v-14h-2"/><path d="M6 5l14 1l-1 7h-13"/></svg>
                             </div>
@@ -61,9 +74,9 @@
                                 <p class="zoho-stat-card__label">{{ __('home.total_sell') }}</p>
                                 <p class="zoho-stat-card__value total_sell"></p>
                             </div>
-                        </div>
+                        </a>
 
-                        <div class="zoho-stat-card">
+                        <a href="{{ $card_profit_loss }}" class="zoho-stat-card zoho-stat-card--link" title="{{ __('lang_v1.net') }}">
                             <div class="zoho-stat-card__icon zoho-stat-card__icon--green">
                                 <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"><path d="M5 21v-16a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v16l-3 -2l-2 2l-2 -2l-2 2l-2 -2l-3 2"/><path d="M14.8 8a2 2 0 0 0 -1.8 -1h-2a2 2 0 1 0 0 4h2a2 2 0 1 1 0 4h-2a2 2 0 0 1 -1.8 -1"/><path d="M12 6v10"/></svg>
                             </div>
@@ -71,9 +84,9 @@
                                 <p class="zoho-stat-card__label">{{ __('lang_v1.net') }} @show_tooltip(__('lang_v1.net_home_tooltip'))</p>
                                 <p class="zoho-stat-card__value net"></p>
                             </div>
-                        </div>
+                        </a>
 
-                        <div class="zoho-stat-card">
+                        <a href="{{ $card_sells_due }}" class="zoho-stat-card zoho-stat-card--link" title="{{ __('home.invoice_due') }}">
                             <div class="zoho-stat-card__icon zoho-stat-card__icon--amber">
                                 <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"/><path d="M9 7l1 0"/><path d="M9 13l6 0"/><path d="M13 17l2 0"/></svg>
                             </div>
@@ -81,9 +94,9 @@
                                 <p class="zoho-stat-card__label">{{ __('home.invoice_due') }}</p>
                                 <p class="zoho-stat-card__value invoice_due"></p>
                             </div>
-                        </div>
+                        </a>
 
-                        <div class="zoho-stat-card">
+                        <a href="{{ $card_sell_return }}" class="zoho-stat-card zoho-stat-card--link" title="{{ __('lang_v1.total_sell_return') }}">
                             <div class="zoho-stat-card__icon zoho-stat-card__icon--red">
                                 <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"><path d="M21 7l-18 0"/><path d="M18 10l3 -3l-3 -3"/><path d="M6 20l-3 -3l3 -3"/><path d="M3 17l18 0"/></svg>
                             </div>
@@ -97,9 +110,9 @@
                                 </p>
                                 <p class="zoho-stat-card__value total_sell_return"></p>
                             </div>
-                        </div>
+                        </a>
 
-                        <div class="zoho-stat-card">
+                        <a href="{{ $card_purchases }}" class="zoho-stat-card zoho-stat-card--link" title="{{ __('home.total_purchase') }}">
                             <div class="zoho-stat-card__icon zoho-stat-card__icon--sky">
                                 <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"><path d="M12 3v12"/><path d="M16 11l-4 4l-4 -4"/><path d="M3 12a9 9 0 0 0 18 0"/></svg>
                             </div>
@@ -107,9 +120,9 @@
                                 <p class="zoho-stat-card__label">{{ __('home.total_purchase') }}</p>
                                 <p class="zoho-stat-card__value total_purchase"></p>
                             </div>
-                        </div>
+                        </a>
 
-                        <div class="zoho-stat-card">
+                        <a href="{{ $card_purchases_due }}" class="zoho-stat-card zoho-stat-card--link" title="{{ __('home.purchase_due') }}">
                             <div class="zoho-stat-card__icon zoho-stat-card__icon--amber">
                                 <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"><path d="M12 9v4"/><path d="M10.363 3.591l-8.106 13.534a1.914 1.914 0 0 0 1.636 2.871h16.214a1.914 1.914 0 0 0 1.636 -2.87l-8.106 -13.536a1.914 1.914 0 0 0 -3.274 0z"/><path d="M12 16h.01"/></svg>
                             </div>
@@ -117,9 +130,9 @@
                                 <p class="zoho-stat-card__label">{{ __('home.purchase_due') }}</p>
                                 <p class="zoho-stat-card__value purchase_due"></p>
                             </div>
-                        </div>
+                        </a>
 
-                        <div class="zoho-stat-card">
+                        <a href="{{ $card_purchase_return }}" class="zoho-stat-card zoho-stat-card--link" title="{{ __('lang_v1.total_purchase_return') }}">
                             <div class="zoho-stat-card__icon zoho-stat-card__icon--red">
                                 <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"><path d="M5 21v-16a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v16l-3 -2l-2 2l-2 -2l-2 2l-2 -2l-3 2"/><path d="M15 14v-2a2 2 0 0 0 -2 -2h-4l2 -2m0 4l-2 -2"/></svg>
                             </div>
@@ -133,9 +146,9 @@
                                 </p>
                                 <p class="zoho-stat-card__value total_purchase_return"></p>
                             </div>
-                        </div>
+                        </a>
 
-                        <div class="zoho-stat-card">
+                        <a href="{{ $card_expenses }}" class="zoho-stat-card zoho-stat-card--link" title="{{ __('lang_v1.expense') }}">
                             <div class="zoho-stat-card__icon zoho-stat-card__icon--rose">
                                 <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"><path d="M5 21v-16a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v16l-3 -2l-2 2l-2 -2l-2 2l-2 -2l-3 2"/><path d="M14.8 8a2 2 0 0 0 -1.8 -1h-2a2 2 0 1 0 0 4h2a2 2 0 1 1 0 4h-2a2 2 0 0 1 -1.8 -1"/><path d="M12 6v10"/></svg>
                             </div>
@@ -143,16 +156,60 @@
                                 <p class="zoho-stat-card__label">{{ __('lang_v1.expense') }}</p>
                                 <p class="zoho-stat-card__value total_expense"></p>
                             </div>
-                        </div>
+                        </a>
+
+                        <a href="{{ $card_online_orders }}" class="zoho-stat-card zoho-stat-card--link" title="{{ __('home.online_orders') }}">
+                            <div class="zoho-stat-card__icon zoho-stat-card__icon--sky">
+                                <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"><path d="M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2z"/><path d="M3 9h18"/><path d="M9 13h6"/></svg>
+                            </div>
+                            <div class="zoho-stat-card__body">
+                                <p class="zoho-stat-card__label">
+                                    {{ __('home.online_orders') }}
+                                    @show_tooltip(__('home.online_orders_tooltip'))
+                                </p>
+                                <p class="zoho-stat-card__value online_orders"></p>
+                            </div>
+                        </a>
                     </div>
                 @endif
             </div>
         </div>
     </div>
+
+                @if ((auth()->user()->can('sell.view') || auth()->user()->can('direct_sell.view')) && !empty($all_locations))
+                    <div class="zoho-dashboard__main-chart tw-bg-white tw-shadow-sm tw-rounded-2xl tw-ring-1 tw-ring-gray-200">
+                        <div class="tw-p-4 sm:tw-p-5">
+                            <div class="tw-flex tw-items-center tw-gap-2.5">
+                                <div class="tw-border tw-flex tw-items-center tw-justify-center tw-rounded-xl tw-w-10 tw-h-10">
+                                    <svg aria-hidden="true" class="tw-size-5 tw-text-sky-500 tw-shrink-0"
+                                        xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="2"
+                                        stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                                        <path d="M6 19m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path>
+                                        <path d="M17 19m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path>
+                                        <path d="M17 17h-11v-14h-2"></path>
+                                        <path d="M6 5l14 1l-1 7h-13"></path>
+                                    </svg>
+                                </div>
+                                <h3 class="tw-font-bold tw-text-base lg:tw-text-lg">
+                                    {{ __('home.sells_last_30_days') }}
+                                </h3>
+                            </div>
+                            <div class="tw-mt-4">
+                                <div class="zoho-dashboard__main-chart-canvas tw-w-full tw-border tw-border-gray-200 tw-border-dashed tw-rounded-xl tw-bg-gray-50">
+                                    {!! $sells_chart_1->container() !!}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endif
     @if (auth()->user()->can('dashboard.data'))
             </div>{{-- /.zoho-dashboard__main --}}
 
             <aside class="zoho-dashboard__aside" id="dashboard_side_panel">
+                <div class="zoho-dashboard__aside-attendance">
+                    @include('home.partials.attendance_clock')
+                </div>
                 <div class="zoho-side-panel">
                     <div class="zoho-side-panel__tabs">
                         <button type="button" class="zoho-side-panel__tab zoho-side-panel__tab--active"
@@ -176,45 +233,8 @@
 
         <div class="japs-dashboard-content zoho-dashboard__body">
             <div class="tw-grid tw-grid-cols-1 tw-gap-4 sm:tw-gap-5 lg:tw-grid-cols-2">
-                @if (auth()->user()->can('sell.view') || auth()->user()->can('direct_sell.view'))
-                    @if (!empty($all_locations))
-                        <div
-                            class="tw-transition-all lg:tw-col-span-2 xl:tw-col-span-2 tw-duration-200 tw-bg-white tw-shadow-sm tw-rounded-xl tw-ring-1 hover:tw-shadow-md hover:tw--translate-y-0.5 tw-ring-gray-200">
-                            <div class="tw-p-4 sm:tw-p-5">
-                                <div class="tw-flex tw-items-center tw-gap-2.5">
-                                    <div
-                                        class="tw-border-2 tw-flex tw-items-center tw-justify-center tw-rounded-full tw-w-10 tw-h-10">
-                                        <svg aria-hidden="true" class="tw-size-5 tw-text-sky-500 tw-shrink-0"
-                                            xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="2"
-                                            stroke="currentColor" fill="none" stroke-linecap="round"
-                                            stroke-linejoin="round">
-                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                                            <path d="M6 19m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path>
-                                            <path d="M17 19m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path>
-                                            <path d="M17 17h-11v-14h-2"></path>
-                                            <path d="M6 5l14 1l-1 7h-13"></path>
-                                        </svg>
-                                    </div>
-
-                                    <h3 class="tw-font-bold tw-text-base lg:tw-text-xl">
-                                        {{ __('home.sells_last_30_days') }}
-                                    </h3>
-                                </div>
-                                <div class="tw-mt-5">
-                                    <div
-                                        class="tw-grid tw-w-full tw-h-100 tw-border tw-border-gray-200 tw-border-dashed tw-rounded-xl tw-bg-gray-50 ">
-                                        <p class="tw-text-sm tw-italic tw-font-normal tw-text-gray-400">
-                                            {!! $sells_chart_1->container() !!}
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    @endif
-                @endif
-
                 @if (auth()->user()->can('so.view_all') || auth()->user()->can('so.view_own'))
-                    <div class="tw-transition-all lg:tw-col-span-2 tw-duration-200 tw-bg-white tw-shadow-sm tw-rounded-xl tw-ring-1 tw-ring-gray-200 zoho-so-summary-card">
+                    <div class="tw-transition-all lg:tw-col-span-2 tw-duration-200 tw-bg-white tw-shadow-sm tw-rounded-2xl tw-ring-1 tw-ring-gray-200 zoho-so-summary-card">
                         <div class="tw-p-4 sm:tw-p-5">
                             <div class="zoho-so-summary-card__header">
                                 <h3 class="zoho-so-summary-card__title">{{ __('lang_v1.sales_order_summary') }}</h3>
@@ -255,11 +275,11 @@
 
                 @if ((auth()->user()->can('sell.view') || auth()->user()->can('direct_sell.view')) && !empty($all_locations))
                     <div
-                        class="tw-transition-all lg:tw-col-span-2 xl:tw-col-span-2 tw-duration-200 tw-bg-white tw-shadow-sm tw-rounded-xl tw-ring-1 hover:tw-shadow-md hover:tw--translate-y-0.5 tw-ring-gray-200">
+                        class="tw-transition-all lg:tw-col-span-2 xl:tw-col-span-2 tw-duration-200 tw-bg-white tw-shadow-sm tw-rounded-2xl tw-ring-1 tw-ring-gray-200">
                         <div class="tw-p-4 sm:tw-p-5">
                             <div class="tw-flex tw-items-center tw-gap-2.5">
                                 <div
-                                    class="tw-border-2 tw-flex tw-items-center tw-justify-center tw-rounded-full tw-w-10 tw-h-10">
+                                    class="tw-border tw-flex tw-items-center tw-justify-center tw-rounded-xl tw-w-10 tw-h-10">
                                     <svg aria-hidden="true" class="tw-size-5 tw-text-sky-500 tw-shrink-0"
                                         xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="2"
                                         stroke="currentColor" fill="none" stroke-linecap="round"
@@ -294,11 +314,11 @@
                     @endif --}}
                 @if (auth()->user()->can('sell.view') || auth()->user()->can('direct_sell.view'))
                     <div
-                        class="tw-transition-all lg:tw-col-span-1 tw-duration-200 tw-bg-white tw-shadow-sm tw-rounded-xl tw-ring-1 hover:tw-shadow-md hover:tw--translate-y-0.5 tw-ring-gray-200">
+                        class="tw-transition-all lg:tw-col-span-1 tw-duration-200 tw-bg-white tw-shadow-sm tw-rounded-2xl tw-ring-1 tw-ring-gray-200">
                         <div class="tw-p-4 sm:tw-p-5">
                             <div class="tw-flex tw-items-center tw-gap-2.5">
                                 <div
-                                    class="tw-border-2 tw-flex tw-items-center tw-justify-center tw-rounded-full tw-w-10 tw-h-10">
+                                    class="tw-border tw-flex tw-items-center tw-justify-center tw-rounded-xl tw-w-10 tw-h-10">
                                     <svg aria-hidden="true" class="tw-text-yellow-500 tw-size-5 tw-shrink-0"
                                         xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="2"
                                         stroke="currentColor" fill="none" stroke-linecap="round"
@@ -351,11 +371,11 @@
                 @endif
                 @can('purchase.view')
                     <div
-                        class="tw-transition-all lg:tw-col-span-1 tw-duration-200 tw-bg-white tw-shadow-sm tw-rounded-xl tw-ring-1 hover:tw-shadow-md hover:tw--translate-y-0.5 tw-ring-gray-200">
+                        class="tw-transition-all lg:tw-col-span-1 tw-duration-200 tw-bg-white tw-shadow-sm tw-rounded-2xl tw-ring-1 tw-ring-gray-200">
                         <div class="tw-p-4 sm:tw-p-5">
                             <div class="tw-flex tw-items-center tw-gap-2.5">
                                 <div
-                                    class="tw-border-2 tw-flex tw-items-center tw-justify-center tw-rounded-full tw-w-10 tw-h-10">
+                                    class="tw-border tw-flex tw-items-center tw-justify-center tw-rounded-xl tw-w-10 tw-h-10">
                                     <svg aria-hidden="true" class="tw-text-yellow-500 tw-size-5 tw-shrink-0"
                                         xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="2"
                                         stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
@@ -408,11 +428,11 @@
                 @endcan
                 @can('stock_report.view')
                     <div
-                        class="tw-transition-all {{ session('business.enable_product_expiry') == 1 ? 'lg:tw-col-span-1' : 'lg:tw-col-span-2' }} tw-duration-200 tw-bg-white tw-shadow-sm tw-rounded-xl tw-ring-1 hover:tw-shadow-md hover:tw--translate-y-0.5 tw-ring-gray-200">
+                        class="tw-transition-all {{ session('business.enable_product_expiry') == 1 ? 'lg:tw-col-span-1' : 'lg:tw-col-span-2' }} tw-duration-200 tw-bg-white tw-shadow-sm tw-rounded-2xl tw-ring-1 tw-ring-gray-200">
                         <div class="tw-p-4 sm:tw-p-5">
                             <div class="tw-flex tw-items-center tw-gap-2.5">
                                 <div
-                                    class="tw-border-2 tw-flex tw-items-center tw-justify-center tw-rounded-full tw-w-10 tw-h-10">
+                                    class="tw-border tw-flex tw-items-center tw-justify-center tw-rounded-xl tw-w-10 tw-h-10">
                                     <svg aria-hidden="true" class="tw-text-yellow-500 tw-size-5 tw-shrink-0"
                                         xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="2"
                                         stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
@@ -460,11 +480,11 @@
                     </div>
                     @if (session('business.enable_product_expiry') == 1)
                         <div
-                            class="tw-transition-all lg:tw-col-span-1 tw-duration-200 tw-bg-white tw-shadow-sm tw-rounded-xl tw-ring-1 hover:tw-shadow-md hover:tw--translate-y-0.5 tw-ring-gray-200">
+                            class="tw-transition-all lg:tw-col-span-1 tw-duration-200 tw-bg-white tw-shadow-sm tw-rounded-2xl tw-ring-1 tw-ring-gray-200">
                             <div class="tw-p-4 sm:tw-p-5">
                                 <div class="tw-flex tw-items-center tw-gap-2.5">
                                     <div
-                                        class="tw-border-2 tw-flex tw-items-center tw-justify-center tw-rounded-full tw-w-10 tw-h-10">
+                                        class="tw-border tw-flex tw-items-center tw-justify-center tw-rounded-xl tw-w-10 tw-h-10">
                                         <svg aria-hidden="true" class="tw-text-yellow-500 tw-size-5 tw-shrink-0"
                                             xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="2"
                                             stroke="currentColor" fill="none" stroke-linecap="round"
@@ -513,11 +533,11 @@
                 @endcan
                 @if (auth()->user()->can('so.view_all') || auth()->user()->can('so.view_own'))
                     <div
-                        class="tw-transition-all lg:tw-col-span-2 tw-duration-200 tw-bg-white tw-shadow-sm tw-rounded-xl tw-ring-1 hover:tw-shadow-md hover:tw--translate-y-0.5 tw-ring-gray-200">
+                        class="tw-transition-all lg:tw-col-span-2 tw-duration-200 tw-bg-white tw-shadow-sm tw-rounded-2xl tw-ring-1 tw-ring-gray-200">
                         <div class="tw-p-4 sm:tw-p-5">
                             <div class="tw-flex tw-items-center tw-gap-2.5">
                                 <div
-                                    class="tw-border-2 tw-flex tw-items-center tw-justify-center tw-rounded-full tw-w-10 tw-h-10">
+                                    class="tw-border tw-flex tw-items-center tw-justify-center tw-rounded-xl tw-w-10 tw-h-10">
                                     <svg aria-hidden="true" class="tw-text-yellow-500 tw-size-5 tw-shrink-0"
                                         xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="2"
                                         stroke="currentColor" fill="none" stroke-linecap="round"
@@ -575,11 +595,11 @@
                     !empty($common_settings['enable_purchase_requisition']) &&
                         (auth()->user()->can('purchase_requisition.view_all') || auth()->user()->can('purchase_requisition.view_own')))
                     <div
-                        class="tw-transition-all lg:tw-col-span-2 tw-duration-200 tw-bg-white tw-shadow-sm tw-rounded-xl tw-ring-1 hover:tw-shadow-md hover:tw--translate-y-0.5 tw-ring-gray-200">
+                        class="tw-transition-all lg:tw-col-span-2 tw-duration-200 tw-bg-white tw-shadow-sm tw-rounded-2xl tw-ring-1 tw-ring-gray-200">
                         <div class="tw-p-4 sm:tw-p-5">
                             <div class="tw-flex tw-items-center tw-gap-2.5">
                                 <div
-                                    class="tw-border-2 tw-flex tw-items-center tw-justify-center tw-rounded-full tw-w-10 tw-h-10">
+                                    class="tw-border tw-flex tw-items-center tw-justify-center tw-rounded-xl tw-w-10 tw-h-10">
                                     <svg aria-hidden="true" class="tw-text-yellow-500 tw-size-5 tw-shrink-0"
                                         xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="2"
                                         stroke="currentColor" fill="none" stroke-linecap="round"
@@ -642,11 +662,11 @@
                         (auth()->user()->can('purchase_order.view_all') || auth()->user()->can('purchase_order.view_own')))
 
                     <div
-                        class="tw-transition-all lg:tw-col-span-2 tw-duration-200 tw-bg-white tw-shadow-sm tw-rounded-xl tw-ring-1 hover:tw-shadow-md hover:tw--translate-y-0.5 tw-ring-gray-200">
+                        class="tw-transition-all lg:tw-col-span-2 tw-duration-200 tw-bg-white tw-shadow-sm tw-rounded-2xl tw-ring-1 tw-ring-gray-200">
                         <div class="tw-p-4 sm:tw-p-5">
                             <div class="tw-flex tw-items-center tw-gap-2.5">
                                 <div
-                                    class="tw-border-2 tw-flex tw-items-center tw-justify-center tw-rounded-full tw-w-10 tw-h-10">
+                                    class="tw-border tw-flex tw-items-center tw-justify-center tw-rounded-xl tw-w-10 tw-h-10">
                                     <svg aria-hidden="true" class="tw-text-yellow-500 tw-size-5 tw-shrink-0"
                                         xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="2"
                                         stroke="currentColor" fill="none" stroke-linecap="round"
@@ -704,11 +724,11 @@
                         auth()->user()->can('access_shipping') ||
                         auth()->user()->can('access_own_shipping'))
                     <div
-                        class="tw-transition-all lg:tw-col-span-2 tw-duration-200 tw-bg-white tw-shadow-sm tw-rounded-xl tw-ring-1 hover:tw-shadow-md hover:tw--translate-y-0.5 tw-ring-gray-200">
+                        class="tw-transition-all lg:tw-col-span-2 tw-duration-200 tw-bg-white tw-shadow-sm tw-rounded-2xl tw-ring-1 tw-ring-gray-200">
                         <div class="tw-p-4 sm:tw-p-5">
                             <div class="tw-flex tw-items-center tw-gap-2.5">
                                 <div
-                                    class="tw-border-2 tw-flex tw-items-center tw-justify-center tw-rounded-full tw-w-10 tw-h-10">
+                                    class="tw-border tw-flex tw-items-center tw-justify-center tw-rounded-xl tw-w-10 tw-h-10">
                                     <svg aria-hidden="true" class="tw-text-yellow-500 tw-size-5 tw-shrink-0"
                                         xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="2"
                                         stroke="currentColor" fill="none" stroke-linecap="round"
@@ -788,11 +808,11 @@
                 @endif
                 @if (auth()->user()->can('account.access') && config('constants.show_payments_recovered_today') == true)
                     <div
-                        class="tw-transition-all lg:tw-col-span-2 tw-duration-200 tw-bg-white tw-shadow-sm tw-rounded-xl tw-ring-1 hover:tw-shadow-md hover:tw--translate-y-0.5 tw-ring-gray-200">
+                        class="tw-transition-all lg:tw-col-span-2 tw-duration-200 tw-bg-white tw-shadow-sm tw-rounded-2xl tw-ring-1 tw-ring-gray-200">
                         <div class="tw-p-4 sm:tw-p-5">
                             <div class="tw-flex tw-items-center tw-gap-2.5">
                                 <div
-                                    class="tw-border-2 tw-flex tw-items-center tw-justify-center tw-rounded-full tw-w-10 tw-h-10">
+                                    class="tw-border tw-flex tw-items-center tw-justify-center tw-rounded-xl tw-w-10 tw-h-10">
                                     <svg aria-hidden="true" class="tw-text-yellow-500 tw-size-5 tw-shrink-0"
                                         xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="2"
                                         stroke="currentColor" fill="none" stroke-linecap="round"

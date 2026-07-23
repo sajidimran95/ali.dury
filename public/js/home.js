@@ -185,6 +185,7 @@ function update_statistics(start, end) {
     $('.total_purchase_return').html(loader);
     $('.total_sell_return').html(loader);
     $('.net').html(loader);
+    $('.online_orders').html(loader);
     $.ajax({
         method: 'get',
         url: '/home/get-totals',
@@ -209,6 +210,8 @@ function update_statistics(start, end) {
             $('.total_pr').html(__currency_trans_from_en(data.total_purchase_return, true));
             $('.total_prp').html(__currency_trans_from_en(data.total_purchase_return_paid, true));
             $('.net').html(__currency_trans_from_en(data.net, true));
+            var onlineOrders = typeof data.online_orders !== 'undefined' ? data.online_orders : 0;
+            $('.online_orders').html(onlineOrders);
 
             // assign tooltip total_sell_return 
             var lang = $('#total_srp').data('value');
