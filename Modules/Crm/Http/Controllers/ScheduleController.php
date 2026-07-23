@@ -22,6 +22,7 @@ class ScheduleController extends Controller
 
         $business_id = request()->session()->get('user.business_id');
         $status = request()->get('status');
+        $contact_id = request()->get('contact_id');
 
         $query = Schedule::where('business_id', $business_id)
             ->with(['contact', 'createdBy'])
@@ -37,7 +38,7 @@ class ScheduleController extends Controller
             ->orderBy('name')
             ->pluck('name', 'id');
 
-        return view('crm::schedules.index', compact('schedules', 'contacts', 'status'));
+        return view('crm::schedules.index', compact('schedules', 'contacts', 'status', 'contact_id'));
     }
 
     public function store(Request $request)

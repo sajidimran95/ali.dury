@@ -161,6 +161,7 @@ class LeadController extends Controller
         }
 
         $business_id = request()->session()->get('user.business_id');
+        $user_id = request()->session()->get('user.id');
         $lead = CrmContact::where('business_id', $business_id)
             ->leadsOnly()
             ->with('leadUsers')
@@ -169,7 +170,87 @@ class LeadController extends Controller
         $sources = CrmContact::getSourcesDropdown($business_id);
         $life_stages = CrmContact::getLifeStagesDropdown($business_id);
 
-        return view('crm::leads.show', compact('lead', 'sources', 'life_stages'));
+        $notes = \App\DocumentAndNote::where('business_id', $business_id)
+            ->where('notable_id', $lead->id)
+            ->where('notable_type', \App\Contact::class)
+            ->where(function ($query) use ($user_id) {
+                $query->where('is_private', 0)
+                    ->orWhere(function ($q) use ($user_id) {
+                        $q->where('is_private', 1)->where('created_by', $user_id);
+                    });
+            })
+            ->with('createdBy')
+            ->latest()
+            ->get();
+
+        $schedules = \Modules\Crm\Entities\Schedule::where('business_id', $business_id)
+            ->where('contact_id', $lead->id)
+            ->with('createdBy')
+            ->latest('start_datetime')
+            ->get();
+
+        $call_logs = \Modules\Crm\Entities\CallLog::where('business_id', $business_id)
+            ->where('contact_id', $lead->id)
+            ->with('createdBy')
+            ->latest('called_on')
+            ->get();
+
+        $timeline = collect();
+
+        $timeline->push([
+            'type' => 'created',
+            'at' => $lead->created_at,
+            'title' => __('crm::lang.lead_created'),
+            'body' => null,
+            'by' => null,
+            'meta' => null,
+        ]);
+
+        foreach ($notes as $note) {
+            $timeline->push([
+                'type' => 'note',
+                'at' => $note->created_at,
+                'title' => $note->heading ?: __('crm::lang.note'),
+                'body' => $note->description,
+                'by' => optional($note->createdBy)->user_full_name,
+                'meta' => null,
+            ]);
+        }
+
+        foreach ($schedules as $schedule) {
+            $timeline->push([
+                'type' => 'follow_up',
+                'at' => $schedule->start_datetime ?: $schedule->created_at,
+                'title' => $schedule->title,
+                'body' => $schedule->description,
+                'by' => optional($schedule->createdBy)->user_full_name,
+                'meta' => $schedule->status,
+            ]);
+        }
+
+        foreach ($call_logs as $log) {
+            $timeline->push([
+                'type' => 'call',
+                'at' => $log->called_on ?: $log->created_at,
+                'title' => $log->subject ?: __('crm::lang.call_log'),
+                'body' => $log->description,
+                'by' => optional($log->createdBy)->user_full_name,
+                'meta' => $log->duration ? $log->duration.' '.__('crm::lang.min') : null,
+            ]);
+        }
+
+        $timeline = $timeline->sortByDesc(function ($item) {
+            return $item['at'] ? $item['at']->timestamp : 0;
+        })->values();
+
+        return view('crm::leads.show', compact(
+            'lead',
+            'sources',
+            'life_stages',
+            'timeline',
+            'schedules',
+            'call_logs'
+        ));
     }
 
     public function edit($id)

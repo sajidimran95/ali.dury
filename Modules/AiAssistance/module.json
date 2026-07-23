@@ -1,0 +1,11 @@
+{
+    "name": "AiAssistance",
+    "alias": "aiassistance",
+    "description": "AI Assistant with business insights and OpenAI chat",
+    "keywords": ["ai", "assistant", "openai", "insights"],
+    "priority": 0,
+    "providers": [
+        "Modules\\AiAssistance\\Providers\\AiAssistanceServiceProvider"
+    ],
+    "files": []
+}

@@ -17,7 +17,7 @@
                             <select name="contact_id" class="form-control select2" required style="width:100%">
                                 <option value="">@lang('messages.please_select')</option>
                                 @foreach($contacts as $id => $name)
-                                    <option value="{{ $id }}">{{ $name }}</option>
+                                    <option value="{{ $id }}" @selected(($contact_id ?? null) == $id)>{{ $name }}</option>
                                 @endforeach
                             </select>
                         </div>

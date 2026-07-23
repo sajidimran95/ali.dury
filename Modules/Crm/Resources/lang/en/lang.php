@@ -77,4 +77,10 @@ return [
     'permission_schedule' => 'Manage follow-ups',
     'permission_call_log' => 'Manage call logs',
     'permission_settings' => 'Manage CRM settings',
+    'activity_timeline' => 'Activity Timeline',
+    'note' => 'Note',
+    'notes' => 'Notes',
+    'lead_created' => 'Lead created',
+    'no_activity' => 'No activity yet',
+    'min' => 'min',
 ];
