@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Jul 22, 2026 at 06:33 PM
+-- Generation Time: Jul 23, 2026 at 03:27 PM
 -- Server version: 8.4.3
 -- PHP Version: 8.4.2
 
@@ -119,7 +119,9 @@ INSERT INTO `activity_log` (`id`, `log_name`, `description`, `subject_id`, `subj
 (9, 'default', 'logout', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-07-21 11:00:28', '2026-07-21 11:00:28'),
 (10, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-07-22 07:33:50', '2026-07-22 07:33:50'),
 (11, 'default', 'logout', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-07-22 07:41:54', '2026-07-22 07:41:54'),
-(12, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-07-22 07:42:10', '2026-07-22 07:42:10');
+(12, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-07-22 07:42:10', '2026-07-22 07:42:10'),
+(13, 'default', 'logout', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-07-22 08:52:13', '2026-07-22 08:52:13'),
+(14, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-07-23 04:40:13', '2026-07-23 04:40:13');
 
 -- --------------------------------------------------------
 
@@ -199,6 +201,27 @@ CREATE TABLE `brands` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `brands`
+--
+
+INSERT INTO `brands` (`id`, `business_id`, `name`, `description`, `created_by`, `deleted_at`, `created_at`, `updated_at`) VALUES
+(1, 1, 'American Club', 'American Club', 1, NULL, '2026-07-23 13:17:16', '2026-07-23 13:17:16'),
+(2, 1, 'Bugler', 'Bugler', 1, NULL, '2026-07-23 13:17:16', '2026-07-23 13:17:16'),
+(3, 1, 'Grabba Leaf', 'Grabba Leaf', 1, NULL, '2026-07-23 13:17:16', '2026-07-23 13:17:16'),
+(4, 1, 'Royal Blunts', 'Royal Blunts', 1, NULL, '2026-07-23 13:17:16', '2026-07-23 13:17:16'),
+(5, 1, 'Phillies', 'Phillies', 1, NULL, '2026-07-23 13:17:16', '2026-07-23 13:17:16'),
+(6, 1, 'Hype', 'Hype', 1, NULL, '2026-07-23 13:17:16', '2026-07-23 13:17:16'),
+(7, 1, 'Jungo Leaf', 'Jungo Leaf', 1, NULL, '2026-07-23 13:17:16', '2026-07-23 13:17:16'),
+(8, 1, 'Throwback', 'Throwback', 1, NULL, '2026-07-23 13:17:16', '2026-07-23 13:17:16'),
+(9, 1, 'Big Dog', 'Big Dog', 1, NULL, '2026-07-23 13:17:16', '2026-07-23 13:17:16'),
+(10, 1, 'Hi-Fi', 'Hi-Fi', 1, NULL, '2026-07-23 13:17:16', '2026-07-23 13:17:16'),
+(11, 1, 'Artisan Snacks', 'Artisan Snacks', 1, NULL, '2026-07-23 13:17:16', '2026-07-23 13:17:16'),
+(12, 1, 'Cocoa House', 'Cocoa House', 1, NULL, '2026-07-23 13:17:16', '2026-07-23 13:17:16'),
+(13, 1, 'Citrus Wave', 'Citrus Wave', 1, NULL, '2026-07-23 13:17:16', '2026-07-23 13:17:16'),
+(14, 1, 'Fresh Care', 'Fresh Care', 1, NULL, '2026-07-23 13:17:16', '2026-07-23 13:17:16'),
+(15, 1, 'Home Basics', 'Home Basics', 1, NULL, '2026-07-23 13:17:16', '2026-07-23 13:17:16');
 
 -- --------------------------------------------------------
 
@@ -442,7 +465,15 @@ INSERT INTO `categories` (`id`, `name`, `business_id`, `short_code`, `parent_id`
 (9, 'Snacks', 1, 'snacks', 0, 1, 'product', NULL, NULL, NULL, '2026-07-22 17:13:01', '2026-07-22 17:13:01'),
 (10, 'Beverages', 1, 'beverages', 0, 1, 'product', NULL, NULL, NULL, '2026-07-22 17:13:01', '2026-07-22 17:13:01'),
 (11, 'Personal Care', 1, 'personal-care', 0, 1, 'product', NULL, NULL, NULL, '2026-07-22 17:13:01', '2026-07-22 17:13:01'),
-(12, 'Household', 1, 'household', 0, 1, 'product', NULL, NULL, NULL, '2026-07-22 17:13:01', '2026-07-22 17:13:01');
+(12, 'Household', 1, 'household', 0, 1, 'product', NULL, NULL, NULL, '2026-07-22 17:13:01', '2026-07-22 17:13:01'),
+(13, 'Chips & Cookies', 1, 'chips-cookies', 9, 1, 'product', NULL, NULL, NULL, '2026-07-23 13:17:16', '2026-07-23 13:17:16'),
+(14, 'Chocolate', 1, 'chocolate', 9, 1, 'product', NULL, NULL, NULL, '2026-07-23 13:17:16', '2026-07-23 13:17:16'),
+(15, 'Gum', 1, 'gum', 9, 1, 'product', NULL, NULL, NULL, '2026-07-23 13:17:16', '2026-07-23 13:17:16'),
+(16, 'Gummies & Chews', 1, 'gummies-chews', 9, 1, 'product', NULL, NULL, NULL, '2026-07-23 13:17:16', '2026-07-23 13:17:16'),
+(17, 'Lollipops', 1, 'lollipops', 9, 1, 'product', NULL, NULL, NULL, '2026-07-23 13:17:16', '2026-07-23 13:17:16'),
+(18, 'Mints', 1, 'mints', 9, 1, 'product', NULL, NULL, NULL, '2026-07-23 13:17:16', '2026-07-23 13:17:16'),
+(19, 'Peg Bag', 1, 'peg-bag', 9, 1, 'product', NULL, NULL, NULL, '2026-07-23 13:17:16', '2026-07-23 13:17:16'),
+(20, '5lb Bag', 1, '5lb-bag', 9, 1, 'product', NULL, NULL, NULL, '2026-07-23 13:17:16', '2026-07-23 13:17:16');
 
 -- --------------------------------------------------------
 
@@ -541,7 +572,9 @@ INSERT INTO `contacts` (`id`, `business_id`, `type`, `contact_type`, `land_mark`
 (3, 1, 'customer', 'business', NULL, NULL, NULL, NULL, 'East Nashville Tobacco', 'East Nashville Tobacco', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'CO0003', 'active', NULL, 'Nashville', 'TN', 'USA', '1220 Gallatin Ave', NULL, '37206', NULL, '6151110002', NULL, NULL, NULL, NULL, NULL, 1, 0.0000, 0, 0, 0, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 'RETAIL', '2', 'N', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-18 19:00:29', '2026-07-18 19:00:29', NULL),
 (4, 1, 'customer', 'business', NULL, NULL, NULL, NULL, 'Midtown Market', 'Midtown Market', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'CO0004', 'active', NULL, 'Nashville', 'TN', 'USA', '2100 West End Ave', NULL, '37203', NULL, '6151110003', NULL, NULL, NULL, NULL, NULL, 1, 0.0000, 0, 0, 0, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 'RETAIL', '3', 'N', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-18 19:00:29', '2026-07-18 19:00:29', NULL),
 (5, 1, 'customer', 'business', NULL, NULL, NULL, NULL, 'MR Wholesale Distributor', 'MR Wholesale Distributor', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'CO0005', 'active', NULL, 'Nashville', 'TN', 'USA', '300 Industrial Blvd', NULL, '37209', NULL, '6151110007', NULL, NULL, NULL, NULL, NULL, 1, 0.0000, 0, 0, 0, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 2, 'DISTRIBUTOR', '7', 'N', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-18 19:00:29', '2026-07-18 19:00:29', NULL),
-(6, 1, 'customer', NULL, NULL, NULL, NULL, NULL, NULL, 'Nash 333', NULL, NULL, NULL, NULL, 'admin@gmail.com', NULL, 'Nash', '333', NULL, NULL, 'active', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '333', NULL, NULL, NULL, NULL, NULL, 1, 0.0000, 0, 0, 0, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-22 13:10:15', '2026-07-22 13:10:15', NULL);
+(6, 1, 'customer', NULL, NULL, NULL, NULL, NULL, NULL, 'Nash 333', NULL, NULL, NULL, NULL, 'admin@gmail.com', NULL, 'Nash', '333', NULL, NULL, 'active', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '333', NULL, NULL, NULL, NULL, NULL, 1, 0.0000, 0, 0, 0, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-22 13:10:15', '2026-07-22 13:10:15', NULL),
+(7, 1, 'customer', NULL, NULL, NULL, NULL, NULL, 'TaShya Mercado', 'Owen Cummings', NULL, NULL, NULL, NULL, 'dojujemyka@mailinator.com', '$2y$10$7FA.UNmoEn4AYWOiDExQFuXoMOVUi6NP3T2un/fgINgN3JCU.CbcW', 'Owen', 'Cummings', NULL, NULL, 'active', '459', '33', 'IN', 'United States', '26 Wood Ave Mansfield, USA', '333', '333', NULL, 'Atque architecto nul', NULL, NULL, NULL, NULL, NULL, 1, 0.0000, 0, 0, 0, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Beatae ab error tota', 'dojujemyka@mailinator.com', '815', 'NE 2026-07-23', 'Officiis ut quae cor', NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-23 13:14:17', '2026-07-23 13:14:17', NULL),
+(8, 1, 'customer', NULL, NULL, NULL, NULL, NULL, 'Demo Wholesale LLC', 'Demo Buyer', NULL, NULL, NULL, NULL, 'demo@japswholesale.test', '$2y$10$2QuNvkrQguCAl0evtRI.DO24k46QOBFDvPDXe40egzjn9/s5NO6BW', 'Demo', 'Buyer', NULL, NULL, 'active', 'TAX-DEMO-001', 'Dallas', 'TX', 'United States', '100 Demo Street', NULL, '75001', NULL, '5551234567', NULL, NULL, NULL, NULL, NULL, 1, 0.0000, 0, 0, 0, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'approved', NULL, NULL, NULL, NULL, NULL, '2026-07-23 13:57:24', '2026-07-23 13:57:24', NULL);
 
 -- --------------------------------------------------------
 
@@ -842,7 +875,7 @@ CREATE TABLE `ecommerce_settings` (
 --
 
 INSERT INTO `ecommerce_settings` (`id`, `business_id`, `is_enabled`, `store_name`, `store_logo`, `location_id`, `enable_cod`, `enable_stripe`, `enable_paypal`, `stripe_key`, `stripe_secret`, `paypal_client_id`, `paypal_secret`, `default_country`, `seo_title`, `seo_description`, `contact_email`, `contact_phone`, `extra`, `created_at`, `updated_at`) VALUES
-(1, 1, 1, 'Japs Store', NULL, 1, 1, 0, 0, NULL, NULL, NULL, NULL, 'United States', 'Japs Store — Modern Everyday Essentials', 'Shop curated snacks, beverages, personal care and home essentials. Live POS inventory, secure checkout, USA shipping.', NULL, NULL, NULL, '2026-07-21 20:26:19', '2026-07-22 17:42:32');
+(1, 1, 1, 'Japs Wholesale', NULL, 1, 1, 0, 0, NULL, NULL, NULL, NULL, 'United States', 'Japs Wholesale Distribution', 'Shop curated snacks, beverages, personal care and home essentials. Live POS inventory, secure checkout, USA shipping.', NULL, NULL, NULL, '2026-07-21 20:26:19', '2026-07-23 05:24:06');
 
 -- --------------------------------------------------------
 
@@ -963,7 +996,21 @@ INSERT INTO `ecom_carts` (`id`, `business_id`, `contact_id`, `session_id`, `coup
 (53, 1, NULL, 'h562LBERzwX5edmKjo5cRJkfFBkN8M31v1HgAoUO', NULL, '2026-07-22 17:34:14', '2026-07-22 17:34:14'),
 (54, 1, NULL, '861DMFIfCHbYGlu8tjlyoKQdzXqhke1fi4UoaEZa', NULL, '2026-07-22 17:36:49', '2026-07-22 17:36:49'),
 (55, 1, NULL, 'WQoRpHRqBONS0ODtxuOLcwh69nDdyM0eqCMmrvBZ', NULL, '2026-07-22 17:37:38', '2026-07-22 17:37:38'),
-(56, 1, NULL, 'iTISncoM2bCil3wCDyjNCmh3WQoC9dUcOKjgVTex', NULL, '2026-07-22 17:43:41', '2026-07-22 17:43:41');
+(56, 1, NULL, 'iTISncoM2bCil3wCDyjNCmh3WQoC9dUcOKjgVTex', NULL, '2026-07-22 17:43:41', '2026-07-22 17:43:41'),
+(57, 1, NULL, 'ElTD1uFCTMYXVOKibVN9nwiQEQJ0qsFtwn6EJGum', NULL, '2026-07-23 13:07:48', '2026-07-23 13:07:48'),
+(58, 1, NULL, 'MxHq1tgYgzgaOsemRkVQQ8JkvEUeOnOWJ7bPEXxd', NULL, '2026-07-23 13:08:16', '2026-07-23 13:08:16'),
+(59, 1, NULL, 'r7eWiV6eGxXZHEUASshDu4OYXJbkZp5nmdXz4weX', NULL, '2026-07-23 13:08:16', '2026-07-23 13:08:16'),
+(60, 1, NULL, 'zavqZxZyB9dU4V64LxHFSRZ0gPJmqT45O9iu6LBQ', NULL, '2026-07-23 13:08:16', '2026-07-23 13:08:16'),
+(61, 1, NULL, 'oa3hMroy2s0hoLVCh4OIvK6zZeeAD3R4Gzxc8fXm', NULL, '2026-07-23 13:08:17', '2026-07-23 13:08:17'),
+(62, 1, NULL, 'Xech59aItFOk8CwonphXZhtJFHcr0yk4gKarGdR1', NULL, '2026-07-23 13:08:17', '2026-07-23 13:08:17'),
+(63, 1, NULL, 'pCm0cIzsPYmBi8NxSgVwcy1ujtkTZLXit4L2r53P', NULL, '2026-07-23 13:08:18', '2026-07-23 13:08:18'),
+(64, 1, 7, 'QdfdEWqHKBIUuocM1QoTjW0Kr0PPwMA8TWMF56Hs', NULL, '2026-07-23 13:14:17', '2026-07-23 13:14:17'),
+(65, 1, NULL, 'xgPiBPMZ5BzmLXVHN45WZlADKZMlf7J0POkx0yje', NULL, '2026-07-23 13:17:34', '2026-07-23 13:17:34'),
+(66, 1, NULL, 'WgesI46HoRZHwVvoWOUnrPwj36u5bJQdNc7fRW47', NULL, '2026-07-23 13:29:31', '2026-07-23 13:29:31'),
+(67, 1, NULL, '1ErwofGD2PKuw0gdGnv8ybIiOvRgfsUZJ5DCtqj8', NULL, '2026-07-23 13:29:32', '2026-07-23 13:29:32'),
+(68, 1, NULL, 'QdfdEWqHKBIUuocM1QoTjW0Kr0PPwMA8TWMF56Hs', NULL, '2026-07-23 13:30:16', '2026-07-23 13:30:16'),
+(69, 1, NULL, 'Cxr8QfFNDoI5Puc5cdZ50xpwsBACd0LPLMgKhfD9', NULL, '2026-07-23 13:53:22', '2026-07-23 13:53:22'),
+(70, 1, NULL, 'o4PtUfr4IUUy2TFqQUhtLEkoJniftU3UUTa33ZeW', NULL, '2026-07-23 14:49:37', '2026-07-23 14:49:37');
 
 -- --------------------------------------------------------
 
@@ -989,7 +1036,10 @@ CREATE TABLE `ecom_cart_items` (
 INSERT INTO `ecom_cart_items` (`id`, `cart_id`, `product_id`, `variation_id`, `quantity`, `unit_price`, `created_at`, `updated_at`) VALUES
 (1, 1, 7, 7, 1.0000, 12.0000, '2026-07-21 20:29:58', '2026-07-21 20:29:58'),
 (4, 53, 38, 38, 1.0000, 13.6000, '2026-07-22 17:35:13', '2026-07-22 17:35:13'),
-(5, 55, 38, 38, 1.0000, 13.6000, '2026-07-22 17:38:19', '2026-07-22 17:38:19');
+(5, 55, 38, 38, 1.0000, 13.6000, '2026-07-22 17:38:19', '2026-07-22 17:38:19'),
+(7, 57, 42, 42, 1.0000, 4.9900, '2026-07-23 13:08:24', '2026-07-23 13:08:24'),
+(9, 64, 40, 40, 11.0000, 14.5000, '2026-07-23 13:21:02', '2026-07-23 13:21:02'),
+(10, 64, 39, 39, 1.0000, 12.0000, '2026-07-23 13:21:12', '2026-07-23 13:21:12');
 
 -- --------------------------------------------------------
 
@@ -1092,6 +1142,34 @@ CREATE TABLE `ecom_customer_addresses` (
   `country` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'United States',
   `phone` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `is_default` tinyint(1) NOT NULL DEFAULT '0',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `ecom_customer_addresses`
+--
+
+INSERT INTO `ecom_customer_addresses` (`id`, `business_id`, `contact_id`, `first_name`, `last_name`, `company`, `address_line_1`, `address_line_2`, `city`, `state`, `zip_code`, `country`, `phone`, `is_default`, `created_at`, `updated_at`) VALUES
+(1, 1, 7, 'Owen', 'Cummings', 'TaShya Mercado', '26 Wood Ave Mansfield, USA', '333', '33', 'IN', '333', 'United States', 'Atque architecto nul', 1, '2026-07-23 13:14:17', '2026-07-23 13:14:17'),
+(2, 1, 8, 'Demo', 'Buyer', 'Demo Wholesale LLC', '100 Demo Street', NULL, 'Dallas', 'TX', '75001', 'United States', '5551234567', 1, '2026-07-23 13:57:24', '2026-07-23 13:57:24');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `ecom_customer_licenses`
+--
+
+CREATE TABLE `ecom_customer_licenses` (
+  `id` int UNSIGNED NOT NULL,
+  `business_id` int UNSIGNED NOT NULL,
+  `contact_id` int UNSIGNED NOT NULL,
+  `license_type` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `label` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `certificate_number` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `expires_at` date DEFAULT NULL,
+  `file_path` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `original_name` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -1765,7 +1843,8 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (301, '2026_04_14_000001_add_tunisian_dinar_currency', 1),
 (302, '2026_07_20_000001_create_employee_attendances_tables', 2),
 (303, '2026_07_20_000002_add_attendance_permissions', 2),
-(304, '2026_07_22_000001_create_ecommerce_tables', 3);
+(304, '2026_07_22_000001_create_ecommerce_tables', 3),
+(305, '2026_07_23_000010_create_ecom_customer_licenses_table', 4);
 
 -- --------------------------------------------------------
 
@@ -2165,27 +2244,27 @@ INSERT INTO `products` (`id`, `name`, `business_id`, `type`, `unit_id`, `seconda
 (4, 'Swisher Sweets Cigarillos', 1, 'single', 1, NULL, NULL, NULL, 1, 4, 5, 'inclusive', 1, 10.0000, 'TOB-CGR-SWS', 'C128', NULL, NULL, 0, NULL, '20', '003251', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, NULL, NULL, 0, 0, 'pos_only', NULL, '2026-07-18 19:00:29', '2026-07-18 19:00:29', NULL, NULL, NULL, NULL, 0, 0, NULL, NULL, NULL),
 (5, 'Cheyenne Little Filtered Cigars', 1, 'single', 1, NULL, NULL, NULL, 1, 5, 5, 'inclusive', 1, 10.0000, 'TOB-LFC-CHE', 'C128', NULL, NULL, 0, NULL, '20', '003252', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, NULL, NULL, 0, 0, 'pos_only', NULL, '2026-07-18 19:00:29', '2026-07-18 19:00:29', NULL, NULL, NULL, NULL, 0, 0, NULL, NULL, NULL),
 (6, 'Juul Menthol Pods', 1, 'single', 1, NULL, NULL, NULL, 1, 6, 5, 'inclusive', 1, 10.0000, 'TOB-ECG-JUL', 'C128', NULL, NULL, 0, NULL, '4', '003292', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, NULL, NULL, 0, 0, 'pos_only', NULL, '2026-07-18 19:00:29', '2026-07-18 19:00:29', NULL, NULL, NULL, NULL, 0, 0, NULL, NULL, NULL),
-(7, 'Bugler RYO Tobacco', 1, 'single', 1, NULL, NULL, NULL, 1, 7, 5, 'inclusive', 1, 10.0000, 'TOB-RYO-BUG', 'C128', NULL, NULL, 0, NULL, '200', '003221', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', 'ecom_fix_7.jpg', NULL, 1, NULL, NULL, 0, 0, 'pos_ecommerce', NULL, '2026-07-18 19:00:29', '2026-07-22 17:57:30', 'test', NULL, NULL, NULL, 1, 1, NULL, NULL, NULL),
+(7, 'Bugler RYO Tobacco', 1, 'single', 1, NULL, NULL, 1, 1, 7, 5, 'inclusive', 1, 10.0000, 'TOB-RYO-BUG', 'C128', NULL, NULL, 0, NULL, '200', '003221', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', 'ecom_fix_7.jpg', NULL, 1, NULL, NULL, 0, 0, 'pos_ecommerce', NULL, '2026-07-18 19:00:29', '2026-07-23 13:17:16', 'test', NULL, NULL, NULL, 1, 1, NULL, NULL, NULL),
 (8, 'Captain Black Pipe Tobacco', 1, 'single', 1, NULL, NULL, NULL, 1, 8, 5, 'inclusive', 1, 10.0000, 'TOB-PIP-CBK', 'C128', NULL, NULL, 0, NULL, '1', '003241', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, NULL, NULL, 0, 0, 'pos_only', NULL, '2026-07-18 19:00:29', '2026-07-18 19:00:29', NULL, NULL, NULL, NULL, 0, 0, NULL, NULL, NULL),
-(39, 'Craft Rolling Tobacco Tin', 1, 'single', 1, NULL, NULL, NULL, 1, NULL, NULL, 'exclusive', 1, NULL, 'ECOM-001', 'C128', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ecom_demo_1.jpg', 'Professional ecommerce demo product', 1, NULL, NULL, 0, 0, 'pos_ecommerce', 'craft-rolling-tobacco-tin-1', '2026-07-22 17:42:40', '2026-07-22 17:42:40', 'Premium Craft Rolling Tobacco Tin selected for everyday quality. Ships fast across the USA.', 'Craft Rolling Tobacco Tin\n\nCrafted for daily use with dependable quality.\n\n• Live stock from our retail POS\n• Secure checkout\n• Fast USA delivery\n• Easy returns within 14 days', 'Craft Rolling Tobacco Tin | Japs Store', 'Buy Craft Rolling Tobacco Tin online at Japs Store.', 1, 1, 12.0000, NULL, '[\"ecom_demo_1_g.jpg\"]'),
-(40, 'Premium Blue Blend Pack', 1, 'single', 1, NULL, NULL, NULL, 1, NULL, NULL, 'exclusive', 1, NULL, 'ECOM-002', 'C128', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ecom_demo_2.jpg', 'Professional ecommerce demo product', 1, NULL, NULL, 0, 0, 'pos_ecommerce', 'premium-blue-blend-pack-2', '2026-07-22 17:42:40', '2026-07-22 17:42:40', 'Premium Premium Blue Blend Pack selected for everyday quality. Ships fast across the USA.', 'Premium Blue Blend Pack\n\nCrafted for daily use with dependable quality.\n\n• Live stock from our retail POS\n• Secure checkout\n• Fast USA delivery\n• Easy returns within 14 days', 'Premium Blue Blend Pack | Japs Store', 'Buy Premium Blue Blend Pack online at Japs Store.', 1, 0, 14.5000, NULL, '[\"ecom_demo_2_g.jpg\"]'),
-(41, 'Classic Rolling Papers', 1, 'single', 1, NULL, NULL, NULL, 1, NULL, NULL, 'exclusive', 1, NULL, 'ECOM-003', 'C128', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ecom_demo_3.jpg', 'Professional ecommerce demo product', 1, NULL, NULL, 0, 0, 'pos_ecommerce', 'classic-rolling-papers-3', '2026-07-22 17:42:43', '2026-07-22 17:42:43', 'Premium Classic Rolling Papers selected for everyday quality. Ships fast across the USA.', 'Classic Rolling Papers\n\nCrafted for daily use with dependable quality.\n\n• Live stock from our retail POS\n• Secure checkout\n• Fast USA delivery\n• Easy returns within 14 days', 'Classic Rolling Papers | Japs Store', 'Buy Classic Rolling Papers online at Japs Store.', 1, 0, 3.9900, 3.3900, '[\"ecom_demo_3_g.jpg\"]'),
-(42, 'Artisan Tortilla Chips', 1, 'single', 1, NULL, NULL, NULL, 9, NULL, NULL, 'exclusive', 1, NULL, 'ECOM-004', 'C128', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ecom_demo_4.jpg', 'Professional ecommerce demo product', 1, NULL, NULL, 0, 0, 'pos_ecommerce', 'artisan-tortilla-chips-4', '2026-07-22 17:42:44', '2026-07-22 17:42:44', 'Premium Artisan Tortilla Chips selected for everyday quality. Ships fast across the USA.', 'Artisan Tortilla Chips\n\nCrafted for daily use with dependable quality.\n\n• Live stock from our retail POS\n• Secure checkout\n• Fast USA delivery\n• Easy returns within 14 days', 'Artisan Tortilla Chips | Japs Store', 'Buy Artisan Tortilla Chips online at Japs Store.', 1, 1, 4.9900, NULL, '[\"ecom_demo_4_g.jpg\"]'),
-(43, 'Dark Chocolate Sea Salt', 1, 'single', 1, NULL, NULL, NULL, 9, NULL, NULL, 'exclusive', 1, NULL, 'ECOM-005', 'C128', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ecom_demo_5.jpg', 'Professional ecommerce demo product', 1, NULL, NULL, 0, 0, 'pos_ecommerce', 'dark-chocolate-sea-salt-5', '2026-07-22 17:42:45', '2026-07-22 17:42:45', 'Premium Dark Chocolate Sea Salt selected for everyday quality. Ships fast across the USA.', 'Dark Chocolate Sea Salt\n\nCrafted for daily use with dependable quality.\n\n• Live stock from our retail POS\n• Secure checkout\n• Fast USA delivery\n• Easy returns within 14 days', 'Dark Chocolate Sea Salt | Japs Store', 'Buy Dark Chocolate Sea Salt online at Japs Store.', 1, 1, 5.4900, NULL, '[\"ecom_demo_5_g.jpg\"]'),
-(44, 'Honey Almond Granola', 1, 'single', 1, NULL, NULL, NULL, 9, NULL, NULL, 'exclusive', 1, NULL, 'ECOM-006', 'C128', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ecom_demo_6.jpg', 'Professional ecommerce demo product', 1, NULL, NULL, 0, 0, 'pos_ecommerce', 'honey-almond-granola-6', '2026-07-22 17:42:47', '2026-07-22 17:42:47', 'Premium Honey Almond Granola selected for everyday quality. Ships fast across the USA.', 'Honey Almond Granola\n\nCrafted for daily use with dependable quality.\n\n• Live stock from our retail POS\n• Secure checkout\n• Fast USA delivery\n• Easy returns within 14 days', 'Honey Almond Granola | Japs Store', 'Buy Honey Almond Granola online at Japs Store.', 1, 0, 6.9900, 5.9400, '[\"ecom_demo_6_g.jpg\"]'),
-(45, 'Sea Salt Pretzel Twists', 1, 'single', 1, NULL, NULL, NULL, 9, NULL, NULL, 'exclusive', 1, NULL, 'ECOM-007', 'C128', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ecom_demo_7.jpg', 'Professional ecommerce demo product', 1, NULL, NULL, 0, 0, 'pos_ecommerce', 'sea-salt-pretzel-twists-7', '2026-07-22 17:42:50', '2026-07-22 17:42:50', 'Premium Sea Salt Pretzel Twists selected for everyday quality. Ships fast across the USA.', 'Sea Salt Pretzel Twists\n\nCrafted for daily use with dependable quality.\n\n• Live stock from our retail POS\n• Secure checkout\n• Fast USA delivery\n• Easy returns within 14 days', 'Sea Salt Pretzel Twists | Japs Store', 'Buy Sea Salt Pretzel Twists online at Japs Store.', 1, 0, 3.7900, NULL, '[\"ecom_demo_7_g.jpg\"]'),
-(46, 'Cold Brew Coffee 12oz', 1, 'single', 1, NULL, NULL, NULL, 10, NULL, NULL, 'exclusive', 1, NULL, 'ECOM-008', 'C128', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ecom_demo_8.jpg', 'Professional ecommerce demo product', 1, NULL, NULL, 0, 0, 'pos_ecommerce', 'cold-brew-coffee-12oz-8', '2026-07-22 17:42:51', '2026-07-22 17:42:51', 'Premium Cold Brew Coffee 12oz selected for everyday quality. Ships fast across the USA.', 'Cold Brew Coffee 12oz\n\nCrafted for daily use with dependable quality.\n\n• Live stock from our retail POS\n• Secure checkout\n• Fast USA delivery\n• Easy returns within 14 days', 'Cold Brew Coffee 12oz | Japs Store', 'Buy Cold Brew Coffee 12oz online at Japs Store.', 1, 1, 4.5000, NULL, '[\"ecom_demo_8_g.jpg\"]'),
-(47, 'Sparkling Citrus Water', 1, 'single', 1, NULL, NULL, NULL, 10, NULL, NULL, 'exclusive', 1, NULL, 'ECOM-009', 'C128', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ecom_demo_9.jpg', 'Professional ecommerce demo product', 1, NULL, NULL, 0, 0, 'pos_ecommerce', 'sparkling-citrus-water-9', '2026-07-22 17:42:52', '2026-07-22 17:42:52', 'Premium Sparkling Citrus Water selected for everyday quality. Ships fast across the USA.', 'Sparkling Citrus Water\n\nCrafted for daily use with dependable quality.\n\n• Live stock from our retail POS\n• Secure checkout\n• Fast USA delivery\n• Easy returns within 14 days', 'Sparkling Citrus Water | Japs Store', 'Buy Sparkling Citrus Water online at Japs Store.', 0, 0, 2.9900, 2.5400, '[\"ecom_demo_9_g.jpg\"]'),
-(48, 'Green Tea Matcha Can', 1, 'single', 1, NULL, NULL, NULL, 10, NULL, NULL, 'exclusive', 1, NULL, 'ECOM-010', 'C128', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ecom_demo_10.jpg', 'Professional ecommerce demo product', 1, NULL, NULL, 0, 0, 'pos_ecommerce', 'green-tea-matcha-can-10', '2026-07-22 17:42:52', '2026-07-22 17:42:52', 'Premium Green Tea Matcha Can selected for everyday quality. Ships fast across the USA.', 'Green Tea Matcha Can\n\nCrafted for daily use with dependable quality.\n\n• Live stock from our retail POS\n• Secure checkout\n• Fast USA delivery\n• Easy returns within 14 days', 'Green Tea Matcha Can | Japs Store', 'Buy Green Tea Matcha Can online at Japs Store.', 0, 0, 3.4900, NULL, '[\"ecom_demo_10_g.jpg\"]'),
-(49, 'Still Spring Water 1L', 1, 'single', 1, NULL, NULL, NULL, 10, NULL, NULL, 'exclusive', 1, NULL, 'ECOM-011', 'C128', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ecom_demo_11.jpg', 'Professional ecommerce demo product', 1, NULL, NULL, 0, 0, 'pos_ecommerce', 'still-spring-water-1l-11', '2026-07-22 17:42:53', '2026-07-22 17:42:53', 'Premium Still Spring Water 1L selected for everyday quality. Ships fast across the USA.', 'Still Spring Water 1L\n\nCrafted for daily use with dependable quality.\n\n• Live stock from our retail POS\n• Secure checkout\n• Fast USA delivery\n• Easy returns within 14 days', 'Still Spring Water 1L | Japs Store', 'Buy Still Spring Water 1L online at Japs Store.', 0, 1, 1.9900, NULL, '[\"ecom_demo_11_g.jpg\"]'),
-(50, 'Mint Fresh Toothpaste', 1, 'single', 1, NULL, NULL, NULL, 11, NULL, NULL, 'exclusive', 1, NULL, 'ECOM-012', 'C128', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ecom_demo_12.jpg', 'Professional ecommerce demo product', 1, NULL, NULL, 0, 0, 'pos_ecommerce', 'mint-fresh-toothpaste-12', '2026-07-22 17:42:55', '2026-07-22 17:42:55', 'Premium Mint Fresh Toothpaste selected for everyday quality. Ships fast across the USA.', 'Mint Fresh Toothpaste\n\nCrafted for daily use with dependable quality.\n\n• Live stock from our retail POS\n• Secure checkout\n• Fast USA delivery\n• Easy returns within 14 days', 'Mint Fresh Toothpaste | Japs Store', 'Buy Mint Fresh Toothpaste online at Japs Store.', 0, 0, 5.9900, 5.0900, '[\"ecom_demo_12_g.jpg\"]'),
-(51, 'Aloe Hand Cream', 1, 'single', 1, NULL, NULL, NULL, 11, NULL, NULL, 'exclusive', 1, NULL, 'ECOM-013', 'C128', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ecom_demo_13.jpg', 'Professional ecommerce demo product', 1, NULL, NULL, 0, 0, 'pos_ecommerce', 'aloe-hand-cream-13', '2026-07-22 17:42:55', '2026-07-22 17:42:55', 'Premium Aloe Hand Cream selected for everyday quality. Ships fast across the USA.', 'Aloe Hand Cream\n\nCrafted for daily use with dependable quality.\n\n• Live stock from our retail POS\n• Secure checkout\n• Fast USA delivery\n• Easy returns within 14 days', 'Aloe Hand Cream | Japs Store', 'Buy Aloe Hand Cream online at Japs Store.', 0, 0, 8.9900, NULL, '[\"ecom_demo_13_g.jpg\"]'),
-(52, 'Charcoal Face Wash', 1, 'single', 1, NULL, NULL, NULL, 11, NULL, NULL, 'exclusive', 1, NULL, 'ECOM-014', 'C128', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ecom_demo_14.jpg', 'Professional ecommerce demo product', 1, NULL, NULL, 0, 0, 'pos_ecommerce', 'charcoal-face-wash-14', '2026-07-22 17:42:56', '2026-07-22 17:42:56', 'Premium Charcoal Face Wash selected for everyday quality. Ships fast across the USA.', 'Charcoal Face Wash\n\nCrafted for daily use with dependable quality.\n\n• Live stock from our retail POS\n• Secure checkout\n• Fast USA delivery\n• Easy returns within 14 days', 'Charcoal Face Wash | Japs Store', 'Buy Charcoal Face Wash online at Japs Store.', 0, 1, 9.4900, NULL, '[\"ecom_demo_14_g.jpg\"]'),
-(53, 'Citrus Body Wash', 1, 'single', 1, NULL, NULL, NULL, 11, NULL, NULL, 'exclusive', 1, NULL, 'ECOM-015', 'C128', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ecom_demo_15.jpg', 'Professional ecommerce demo product', 1, NULL, NULL, 0, 0, 'pos_ecommerce', 'citrus-body-wash-15', '2026-07-22 17:42:57', '2026-07-22 17:42:57', 'Premium Citrus Body Wash selected for everyday quality. Ships fast across the USA.', 'Citrus Body Wash\n\nCrafted for daily use with dependable quality.\n\n• Live stock from our retail POS\n• Secure checkout\n• Fast USA delivery\n• Easy returns within 14 days', 'Citrus Body Wash | Japs Store', 'Buy Citrus Body Wash online at Japs Store.', 0, 0, 7.4900, 6.3700, '[\"ecom_demo_15_g.jpg\"]'),
-(54, 'Cotton Kitchen Towels', 1, 'single', 1, NULL, NULL, NULL, 12, NULL, NULL, 'exclusive', 1, NULL, 'ECOM-016', 'C128', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ecom_demo_16.jpg', 'Professional ecommerce demo product', 1, NULL, NULL, 0, 0, 'pos_ecommerce', 'cotton-kitchen-towels-16', '2026-07-22 17:42:59', '2026-07-22 17:42:59', 'Premium Cotton Kitchen Towels selected for everyday quality. Ships fast across the USA.', 'Cotton Kitchen Towels\n\nCrafted for daily use with dependable quality.\n\n• Live stock from our retail POS\n• Secure checkout\n• Fast USA delivery\n• Easy returns within 14 days', 'Cotton Kitchen Towels | Japs Store', 'Buy Cotton Kitchen Towels online at Japs Store.', 0, 0, 11.9900, NULL, '[\"ecom_demo_16_g.jpg\"]'),
-(55, 'Eco Dish Soap', 1, 'single', 1, NULL, NULL, NULL, 12, NULL, NULL, 'exclusive', 1, NULL, 'ECOM-017', 'C128', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ecom_demo_17.jpg', 'Professional ecommerce demo product', 1, NULL, NULL, 0, 0, 'pos_ecommerce', 'eco-dish-soap-17', '2026-07-22 17:43:00', '2026-07-22 17:43:00', 'Premium Eco Dish Soap selected for everyday quality. Ships fast across the USA.', 'Eco Dish Soap\n\nCrafted for daily use with dependable quality.\n\n• Live stock from our retail POS\n• Secure checkout\n• Fast USA delivery\n• Easy returns within 14 days', 'Eco Dish Soap | Japs Store', 'Buy Eco Dish Soap online at Japs Store.', 0, 1, 4.2900, NULL, '[\"ecom_demo_17_g.jpg\"]'),
-(56, 'Soy Candle Cedarwood', 1, 'single', 1, NULL, NULL, NULL, 12, NULL, NULL, 'exclusive', 1, NULL, 'ECOM-018', 'C128', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ecom_demo_18.jpg', 'Professional ecommerce demo product', 1, NULL, NULL, 0, 0, 'pos_ecommerce', 'soy-candle-cedarwood-18', '2026-07-22 17:43:02', '2026-07-22 17:43:02', 'Premium Soy Candle Cedarwood selected for everyday quality. Ships fast across the USA.', 'Soy Candle Cedarwood\n\nCrafted for daily use with dependable quality.\n\n• Live stock from our retail POS\n• Secure checkout\n• Fast USA delivery\n• Easy returns within 14 days', 'Soy Candle Cedarwood | Japs Store', 'Buy Soy Candle Cedarwood online at Japs Store.', 0, 0, 16.0000, 13.6000, '[\"ecom_demo_18_g.jpg\"]'),
-(57, 'Ceramic Mug Set', 1, 'single', 1, NULL, NULL, NULL, 12, NULL, NULL, 'exclusive', 1, NULL, 'ECOM-019', 'C128', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ecom_demo_19.jpg', 'Professional ecommerce demo product', 1, NULL, NULL, 0, 0, 'pos_ecommerce', 'ceramic-mug-set-19', '2026-07-22 17:43:03', '2026-07-22 17:43:03', 'Premium Ceramic Mug Set selected for everyday quality. Ships fast across the USA.', 'Ceramic Mug Set\n\nCrafted for daily use with dependable quality.\n\n• Live stock from our retail POS\n• Secure checkout\n• Fast USA delivery\n• Easy returns within 14 days', 'Ceramic Mug Set | Japs Store', 'Buy Ceramic Mug Set online at Japs Store.', 0, 1, 18.5000, NULL, '[\"ecom_demo_19_g.jpg\"]');
+(39, 'Craft Rolling Tobacco Tin', 1, 'single', 1, NULL, NULL, 2, 1, NULL, NULL, 'exclusive', 1, NULL, 'ECOM-001', 'C128', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ecom_demo_1.jpg', 'Professional ecommerce demo product', 1, NULL, NULL, 0, 0, 'pos_ecommerce', 'craft-rolling-tobacco-tin-1', '2026-07-22 17:42:40', '2026-07-23 13:17:16', 'Premium Craft Rolling Tobacco Tin selected for everyday quality. Ships fast across the USA.', 'Craft Rolling Tobacco Tin\n\nCrafted for daily use with dependable quality.\n\n• Live stock from our retail POS\n• Secure checkout\n• Fast USA delivery\n• Easy returns within 14 days', 'Craft Rolling Tobacco Tin | Japs Store', 'Buy Craft Rolling Tobacco Tin online at Japs Store.', 1, 1, 12.0000, NULL, '[\"ecom_demo_1_g.jpg\"]'),
+(40, 'Premium Blue Blend Pack', 1, 'single', 1, NULL, NULL, 3, 1, NULL, NULL, 'exclusive', 1, NULL, 'ECOM-002', 'C128', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ecom_demo_2.jpg', 'Professional ecommerce demo product', 1, NULL, NULL, 0, 0, 'pos_ecommerce', 'premium-blue-blend-pack-2', '2026-07-22 17:42:40', '2026-07-23 13:17:16', 'Premium Premium Blue Blend Pack selected for everyday quality. Ships fast across the USA.', 'Premium Blue Blend Pack\n\nCrafted for daily use with dependable quality.\n\n• Live stock from our retail POS\n• Secure checkout\n• Fast USA delivery\n• Easy returns within 14 days', 'Premium Blue Blend Pack | Japs Store', 'Buy Premium Blue Blend Pack online at Japs Store.', 1, 0, 14.5000, NULL, '[\"ecom_demo_2_g.jpg\"]'),
+(41, 'Classic Rolling Papers', 1, 'single', 1, NULL, NULL, 4, 1, NULL, NULL, 'exclusive', 1, NULL, 'ECOM-003', 'C128', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ecom_demo_3.jpg', 'Professional ecommerce demo product', 1, NULL, NULL, 0, 0, 'pos_ecommerce', 'classic-rolling-papers-3', '2026-07-22 17:42:43', '2026-07-23 13:17:16', 'Premium Classic Rolling Papers selected for everyday quality. Ships fast across the USA.', 'Classic Rolling Papers\n\nCrafted for daily use with dependable quality.\n\n• Live stock from our retail POS\n• Secure checkout\n• Fast USA delivery\n• Easy returns within 14 days', 'Classic Rolling Papers | Japs Store', 'Buy Classic Rolling Papers online at Japs Store.', 1, 0, 3.9900, 3.3900, '[\"ecom_demo_3_g.jpg\"]'),
+(42, 'Artisan Tortilla Chips', 1, 'single', 1, NULL, NULL, 5, 9, NULL, NULL, 'exclusive', 1, NULL, 'ECOM-004', 'C128', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ecom_demo_4.jpg', 'Professional ecommerce demo product', 1, NULL, NULL, 0, 0, 'pos_ecommerce', 'artisan-tortilla-chips-4', '2026-07-22 17:42:44', '2026-07-23 13:17:16', 'Premium Artisan Tortilla Chips selected for everyday quality. Ships fast across the USA.', 'Artisan Tortilla Chips\n\nCrafted for daily use with dependable quality.\n\n• Live stock from our retail POS\n• Secure checkout\n• Fast USA delivery\n• Easy returns within 14 days', 'Artisan Tortilla Chips | Japs Store', 'Buy Artisan Tortilla Chips online at Japs Store.', 1, 1, 4.9900, NULL, '[\"ecom_demo_4_g.jpg\"]'),
+(43, 'Dark Chocolate Sea Salt', 1, 'single', 1, NULL, NULL, 6, 9, NULL, NULL, 'exclusive', 1, NULL, 'ECOM-005', 'C128', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ecom_demo_5.jpg', 'Professional ecommerce demo product', 1, NULL, NULL, 0, 0, 'pos_ecommerce', 'dark-chocolate-sea-salt-5', '2026-07-22 17:42:45', '2026-07-23 13:17:16', 'Premium Dark Chocolate Sea Salt selected for everyday quality. Ships fast across the USA.', 'Dark Chocolate Sea Salt\n\nCrafted for daily use with dependable quality.\n\n• Live stock from our retail POS\n• Secure checkout\n• Fast USA delivery\n• Easy returns within 14 days', 'Dark Chocolate Sea Salt | Japs Store', 'Buy Dark Chocolate Sea Salt online at Japs Store.', 1, 1, 5.4900, NULL, '[\"ecom_demo_5_g.jpg\"]'),
+(44, 'Honey Almond Granola', 1, 'single', 1, NULL, NULL, 7, 9, NULL, NULL, 'exclusive', 1, NULL, 'ECOM-006', 'C128', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ecom_demo_6.jpg', 'Professional ecommerce demo product', 1, NULL, NULL, 0, 0, 'pos_ecommerce', 'honey-almond-granola-6', '2026-07-22 17:42:47', '2026-07-23 13:17:16', 'Premium Honey Almond Granola selected for everyday quality. Ships fast across the USA.', 'Honey Almond Granola\n\nCrafted for daily use with dependable quality.\n\n• Live stock from our retail POS\n• Secure checkout\n• Fast USA delivery\n• Easy returns within 14 days', 'Honey Almond Granola | Japs Store', 'Buy Honey Almond Granola online at Japs Store.', 1, 0, 6.9900, 5.9400, '[\"ecom_demo_6_g.jpg\"]'),
+(45, 'Sea Salt Pretzel Twists', 1, 'single', 1, NULL, NULL, 8, 9, NULL, NULL, 'exclusive', 1, NULL, 'ECOM-007', 'C128', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ecom_demo_7.jpg', 'Professional ecommerce demo product', 1, NULL, NULL, 0, 0, 'pos_ecommerce', 'sea-salt-pretzel-twists-7', '2026-07-22 17:42:50', '2026-07-23 13:17:16', 'Premium Sea Salt Pretzel Twists selected for everyday quality. Ships fast across the USA.', 'Sea Salt Pretzel Twists\n\nCrafted for daily use with dependable quality.\n\n• Live stock from our retail POS\n• Secure checkout\n• Fast USA delivery\n• Easy returns within 14 days', 'Sea Salt Pretzel Twists | Japs Store', 'Buy Sea Salt Pretzel Twists online at Japs Store.', 1, 0, 3.7900, NULL, '[\"ecom_demo_7_g.jpg\"]'),
+(46, 'Cold Brew Coffee 12oz', 1, 'single', 1, NULL, NULL, 9, 10, NULL, NULL, 'exclusive', 1, NULL, 'ECOM-008', 'C128', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ecom_demo_8.jpg', 'Professional ecommerce demo product', 1, NULL, NULL, 0, 0, 'pos_ecommerce', 'cold-brew-coffee-12oz-8', '2026-07-22 17:42:51', '2026-07-23 13:17:16', 'Premium Cold Brew Coffee 12oz selected for everyday quality. Ships fast across the USA.', 'Cold Brew Coffee 12oz\n\nCrafted for daily use with dependable quality.\n\n• Live stock from our retail POS\n• Secure checkout\n• Fast USA delivery\n• Easy returns within 14 days', 'Cold Brew Coffee 12oz | Japs Store', 'Buy Cold Brew Coffee 12oz online at Japs Store.', 1, 1, 4.5000, NULL, '[\"ecom_demo_8_g.jpg\"]'),
+(47, 'Sparkling Citrus Water', 1, 'single', 1, NULL, NULL, 10, 10, NULL, NULL, 'exclusive', 1, NULL, 'ECOM-009', 'C128', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ecom_demo_9.jpg', 'Professional ecommerce demo product', 1, NULL, NULL, 0, 0, 'pos_ecommerce', 'sparkling-citrus-water-9', '2026-07-22 17:42:52', '2026-07-23 13:17:16', 'Premium Sparkling Citrus Water selected for everyday quality. Ships fast across the USA.', 'Sparkling Citrus Water\n\nCrafted for daily use with dependable quality.\n\n• Live stock from our retail POS\n• Secure checkout\n• Fast USA delivery\n• Easy returns within 14 days', 'Sparkling Citrus Water | Japs Store', 'Buy Sparkling Citrus Water online at Japs Store.', 0, 0, 2.9900, 2.5400, '[\"ecom_demo_9_g.jpg\"]'),
+(48, 'Green Tea Matcha Can', 1, 'single', 1, NULL, NULL, 11, 10, NULL, NULL, 'exclusive', 1, NULL, 'ECOM-010', 'C128', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ecom_demo_10.jpg', 'Professional ecommerce demo product', 1, NULL, NULL, 0, 0, 'pos_ecommerce', 'green-tea-matcha-can-10', '2026-07-22 17:42:52', '2026-07-23 13:17:16', 'Premium Green Tea Matcha Can selected for everyday quality. Ships fast across the USA.', 'Green Tea Matcha Can\n\nCrafted for daily use with dependable quality.\n\n• Live stock from our retail POS\n• Secure checkout\n• Fast USA delivery\n• Easy returns within 14 days', 'Green Tea Matcha Can | Japs Store', 'Buy Green Tea Matcha Can online at Japs Store.', 0, 0, 3.4900, NULL, '[\"ecom_demo_10_g.jpg\"]'),
+(49, 'Still Spring Water 1L', 1, 'single', 1, NULL, NULL, 12, 10, NULL, NULL, 'exclusive', 1, NULL, 'ECOM-011', 'C128', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ecom_demo_11.jpg', 'Professional ecommerce demo product', 1, NULL, NULL, 0, 0, 'pos_ecommerce', 'still-spring-water-1l-11', '2026-07-22 17:42:53', '2026-07-23 13:17:16', 'Premium Still Spring Water 1L selected for everyday quality. Ships fast across the USA.', 'Still Spring Water 1L\n\nCrafted for daily use with dependable quality.\n\n• Live stock from our retail POS\n• Secure checkout\n• Fast USA delivery\n• Easy returns within 14 days', 'Still Spring Water 1L | Japs Store', 'Buy Still Spring Water 1L online at Japs Store.', 0, 1, 1.9900, NULL, '[\"ecom_demo_11_g.jpg\"]'),
+(50, 'Mint Fresh Toothpaste', 1, 'single', 1, NULL, NULL, 13, 11, NULL, NULL, 'exclusive', 1, NULL, 'ECOM-012', 'C128', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ecom_demo_12.jpg', 'Professional ecommerce demo product', 1, NULL, NULL, 0, 0, 'pos_ecommerce', 'mint-fresh-toothpaste-12', '2026-07-22 17:42:55', '2026-07-23 13:17:16', 'Premium Mint Fresh Toothpaste selected for everyday quality. Ships fast across the USA.', 'Mint Fresh Toothpaste\n\nCrafted for daily use with dependable quality.\n\n• Live stock from our retail POS\n• Secure checkout\n• Fast USA delivery\n• Easy returns within 14 days', 'Mint Fresh Toothpaste | Japs Store', 'Buy Mint Fresh Toothpaste online at Japs Store.', 0, 0, 5.9900, 5.0900, '[\"ecom_demo_12_g.jpg\"]'),
+(51, 'Aloe Hand Cream', 1, 'single', 1, NULL, NULL, 14, 11, NULL, NULL, 'exclusive', 1, NULL, 'ECOM-013', 'C128', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ecom_demo_13.jpg', 'Professional ecommerce demo product', 1, NULL, NULL, 0, 0, 'pos_ecommerce', 'aloe-hand-cream-13', '2026-07-22 17:42:55', '2026-07-23 13:17:16', 'Premium Aloe Hand Cream selected for everyday quality. Ships fast across the USA.', 'Aloe Hand Cream\n\nCrafted for daily use with dependable quality.\n\n• Live stock from our retail POS\n• Secure checkout\n• Fast USA delivery\n• Easy returns within 14 days', 'Aloe Hand Cream | Japs Store', 'Buy Aloe Hand Cream online at Japs Store.', 0, 0, 8.9900, NULL, '[\"ecom_demo_13_g.jpg\"]'),
+(52, 'Charcoal Face Wash', 1, 'single', 1, NULL, NULL, 15, 11, NULL, NULL, 'exclusive', 1, NULL, 'ECOM-014', 'C128', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ecom_demo_14.jpg', 'Professional ecommerce demo product', 1, NULL, NULL, 0, 0, 'pos_ecommerce', 'charcoal-face-wash-14', '2026-07-22 17:42:56', '2026-07-23 13:17:16', 'Premium Charcoal Face Wash selected for everyday quality. Ships fast across the USA.', 'Charcoal Face Wash\n\nCrafted for daily use with dependable quality.\n\n• Live stock from our retail POS\n• Secure checkout\n• Fast USA delivery\n• Easy returns within 14 days', 'Charcoal Face Wash | Japs Store', 'Buy Charcoal Face Wash online at Japs Store.', 0, 1, 9.4900, NULL, '[\"ecom_demo_14_g.jpg\"]'),
+(53, 'Citrus Body Wash', 1, 'single', 1, NULL, NULL, 1, 11, NULL, NULL, 'exclusive', 1, NULL, 'ECOM-015', 'C128', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ecom_demo_15.jpg', 'Professional ecommerce demo product', 1, NULL, NULL, 0, 0, 'pos_ecommerce', 'citrus-body-wash-15', '2026-07-22 17:42:57', '2026-07-23 13:17:16', 'Premium Citrus Body Wash selected for everyday quality. Ships fast across the USA.', 'Citrus Body Wash\n\nCrafted for daily use with dependable quality.\n\n• Live stock from our retail POS\n• Secure checkout\n• Fast USA delivery\n• Easy returns within 14 days', 'Citrus Body Wash | Japs Store', 'Buy Citrus Body Wash online at Japs Store.', 0, 0, 7.4900, 6.3700, '[\"ecom_demo_15_g.jpg\"]'),
+(54, 'Cotton Kitchen Towels', 1, 'single', 1, NULL, NULL, 2, 12, NULL, NULL, 'exclusive', 1, NULL, 'ECOM-016', 'C128', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ecom_demo_16.jpg', 'Professional ecommerce demo product', 1, NULL, NULL, 0, 0, 'pos_ecommerce', 'cotton-kitchen-towels-16', '2026-07-22 17:42:59', '2026-07-23 13:17:16', 'Premium Cotton Kitchen Towels selected for everyday quality. Ships fast across the USA.', 'Cotton Kitchen Towels\n\nCrafted for daily use with dependable quality.\n\n• Live stock from our retail POS\n• Secure checkout\n• Fast USA delivery\n• Easy returns within 14 days', 'Cotton Kitchen Towels | Japs Store', 'Buy Cotton Kitchen Towels online at Japs Store.', 0, 0, 11.9900, NULL, '[\"ecom_demo_16_g.jpg\"]'),
+(55, 'Eco Dish Soap', 1, 'single', 1, NULL, NULL, 3, 12, NULL, NULL, 'exclusive', 1, NULL, 'ECOM-017', 'C128', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ecom_demo_17.jpg', 'Professional ecommerce demo product', 1, NULL, NULL, 0, 0, 'pos_ecommerce', 'eco-dish-soap-17', '2026-07-22 17:43:00', '2026-07-23 13:17:16', 'Premium Eco Dish Soap selected for everyday quality. Ships fast across the USA.', 'Eco Dish Soap\n\nCrafted for daily use with dependable quality.\n\n• Live stock from our retail POS\n• Secure checkout\n• Fast USA delivery\n• Easy returns within 14 days', 'Eco Dish Soap | Japs Store', 'Buy Eco Dish Soap online at Japs Store.', 0, 1, 4.2900, NULL, '[\"ecom_demo_17_g.jpg\"]'),
+(56, 'Soy Candle Cedarwood', 1, 'single', 1, NULL, NULL, 4, 12, NULL, NULL, 'exclusive', 1, NULL, 'ECOM-018', 'C128', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ecom_demo_18.jpg', 'Professional ecommerce demo product', 1, NULL, NULL, 0, 0, 'pos_ecommerce', 'soy-candle-cedarwood-18', '2026-07-22 17:43:02', '2026-07-23 13:17:16', 'Premium Soy Candle Cedarwood selected for everyday quality. Ships fast across the USA.', 'Soy Candle Cedarwood\n\nCrafted for daily use with dependable quality.\n\n• Live stock from our retail POS\n• Secure checkout\n• Fast USA delivery\n• Easy returns within 14 days', 'Soy Candle Cedarwood | Japs Store', 'Buy Soy Candle Cedarwood online at Japs Store.', 0, 0, 16.0000, 13.6000, '[\"ecom_demo_18_g.jpg\"]'),
+(57, 'Ceramic Mug Set', 1, 'single', 1, NULL, NULL, 5, 12, NULL, NULL, 'exclusive', 1, NULL, 'ECOM-019', 'C128', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ecom_demo_19.jpg', 'Professional ecommerce demo product', 1, NULL, NULL, 0, 0, 'pos_ecommerce', 'ceramic-mug-set-19', '2026-07-22 17:43:03', '2026-07-23 13:17:16', 'Premium Ceramic Mug Set selected for everyday quality. Ships fast across the USA.', 'Ceramic Mug Set\n\nCrafted for daily use with dependable quality.\n\n• Live stock from our retail POS\n• Secure checkout\n• Fast USA delivery\n• Easy returns within 14 days', 'Ceramic Mug Set | Japs Store', 'Buy Ceramic Mug Set online at Japs Store.', 0, 1, 18.5000, NULL, '[\"ecom_demo_19_g.jpg\"]');
 
 -- --------------------------------------------------------
 
@@ -3388,6 +3467,13 @@ ALTER TABLE `ecom_customer_addresses`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `ecom_customer_licenses`
+--
+ALTER TABLE `ecom_customer_licenses`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `ecom_customer_licenses_contact_id_index` (`contact_id`);
+
+--
 -- Indexes for table `ecom_order_meta`
 --
 ALTER TABLE `ecom_order_meta`
@@ -3875,7 +3961,7 @@ ALTER TABLE `account_types`
 -- AUTO_INCREMENT for table `activity_log`
 --
 ALTER TABLE `activity_log`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- AUTO_INCREMENT for table `barcodes`
@@ -3893,7 +3979,7 @@ ALTER TABLE `bookings`
 -- AUTO_INCREMENT for table `brands`
 --
 ALTER TABLE `brands`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
 -- AUTO_INCREMENT for table `business`
@@ -3929,13 +4015,13 @@ ALTER TABLE `cash_register_transactions`
 -- AUTO_INCREMENT for table `categories`
 --
 ALTER TABLE `categories`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
 -- AUTO_INCREMENT for table `contacts`
 --
 ALTER TABLE `contacts`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `currencies`
@@ -3989,13 +4075,13 @@ ALTER TABLE `ecom_banners`
 -- AUTO_INCREMENT for table `ecom_carts`
 --
 ALTER TABLE `ecom_carts`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=57;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=71;
 
 --
 -- AUTO_INCREMENT for table `ecom_cart_items`
 --
 ALTER TABLE `ecom_cart_items`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT for table `ecom_collections`
@@ -4025,6 +4111,12 @@ ALTER TABLE `ecom_coupon_usages`
 -- AUTO_INCREMENT for table `ecom_customer_addresses`
 --
 ALTER TABLE `ecom_customer_addresses`
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- AUTO_INCREMENT for table `ecom_customer_licenses`
+--
+ALTER TABLE `ecom_customer_licenses`
   MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
@@ -4097,7 +4189,7 @@ ALTER TABLE `media`
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=305;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=306;
 
 --
 -- AUTO_INCREMENT for table `notification_templates`

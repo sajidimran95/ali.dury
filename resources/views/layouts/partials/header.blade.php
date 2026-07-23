@@ -19,6 +19,34 @@
 
         {{-- Right actions --}}
         <div class="zoho-topbar__actions">
+            @php
+                $show_view_website = false;
+                $view_website_url = url('/');
+                try {
+                    if (Module::has('Ecommerce')
+                        && class_exists(\Modules\Ecommerce\Entities\EcommerceSetting::class)
+                        && ! empty(session('user.business_id'))) {
+                        $ecom_settings = \Modules\Ecommerce\Entities\EcommerceSetting::forBusiness((int) session('user.business_id'));
+                        $show_view_website = $ecom_settings && $ecom_settings->is_enabled;
+                    }
+                } catch (\Throwable $e) {
+                    $show_view_website = false;
+                }
+            @endphp
+            @if($show_view_website)
+                <a href="{{ $view_website_url }}"
+                   target="_blank"
+                   rel="noopener"
+                   class="zoho-topbar__btn zoho-topbar__btn--ghost"
+                   title="@lang('ecommerce::lang.view_website')">
+                    <svg class="tw-size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <circle cx="12" cy="12" r="9"/>
+                        <path d="M3 12h18M12 3c2.5 3 4 6 4 9s-1.5 6-4 9c-2.5-3-4-6-4-9s1.5-6 4-9z"/>
+                    </svg>
+                    <span class="tw-hidden md:tw-inline">@lang('ecommerce::lang.view_website')</span>
+                </a>
+            @endif
+
             @if(Module::has('Superadmin'))
                 @includeIf('superadmin::layouts.partials.active_subscription')
             @endif
