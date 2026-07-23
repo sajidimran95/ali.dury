@@ -2,8 +2,12 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="theme-color" content="#e85d04">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="mobile-web-app-capable" content="yes">
     <title>@yield('title', $ecom_settings->seo_title ?? $ecom_settings->store_name ?? 'Wholesale Store')</title>
     <meta name="description" content="@yield('meta_description', $ecom_settings->seo_description ?? '')">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -74,13 +78,79 @@
         .pc-qty-input { -moz-appearance: textfield; }
         .product-card { transition: box-shadow .2s, transform .2s; }
         .product-card:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(0,0,0,.08); }
+
+        /* App-like mobile shell */
+        .app-bottom-nav {
+            position: fixed; left: 0; right: 0; bottom: 0; z-index: 80;
+            background: rgba(255,255,255,.94);
+            backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+            border-top: 1px solid #e8e8e8;
+            padding-bottom: env(safe-area-inset-bottom, 0);
+        }
+        .app-tab {
+            flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            gap: 2px; min-height: 56px; color: #6b6b6b; font-size: 10px; font-weight: 600;
+            text-decoration: none; background: transparent; border: 0; cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .app-tab.active, .app-tab:active { color: #e85d04; }
+        .app-chip-scroll {
+            display: flex; gap: 8px; overflow-x: auto; -webkit-overflow-scrolling: touch;
+            scrollbar-width: none; padding: 0 16px 10px;
+        }
+        .app-chip-scroll::-webkit-scrollbar { display: none; }
+        .app-chip {
+            flex: 0 0 auto; padding: 8px 14px; border-radius: 999px; background: #f0f0f0;
+            font-size: 13px; font-weight: 600; color: #1a1a1a; white-space: nowrap;
+            border: 1px solid transparent; text-decoration: none;
+        }
+        .app-chip.active { background: #fff4ec; color: #e85d04; border-color: #f4c7a8; }
+        .app-sheet {
+            position: fixed; inset: 0; z-index: 90; display: none;
+        }
+        .app-sheet.is-open { display: block; }
+        .app-sheet__backdrop {
+            position: absolute; inset: 0; background: rgba(0,0,0,.45);
+        }
+        .app-sheet__panel {
+            position: absolute; left: 0; right: 0; bottom: 0;
+            max-height: min(88vh, 720px);
+            background: #fff; border-radius: 18px 18px 0 0;
+            box-shadow: 0 -12px 40px rgba(0,0,0,.18);
+            padding-bottom: calc(12px + env(safe-area-inset-bottom, 0));
+            transform: translateY(100%);
+            transition: transform .28s ease;
+            overflow: auto;
+        }
+        .app-sheet.is-open .app-sheet__panel { transform: translateY(0); }
+        .app-sheet__handle {
+            width: 40px; height: 4px; border-radius: 999px; background: #d4d4d4;
+            margin: 10px auto 6px;
+        }
+        @media (max-width: 1023px) {
+            body.app-mobile { overscroll-behavior-y: none; }
+            body.app-mobile main { padding-bottom: calc(72px + env(safe-area-inset-bottom, 0)); }
+            body.app-mobile .desktop-footer { display: none; }
+            .product-card:hover { transform: none; box-shadow: none; }
+        }
+        @media (min-width: 1024px) {
+            .app-mobile-only { display: none !important; }
+            .app-bottom-nav { display: none !important; }
+            .app-sheet { display: none !important; }
+        }
     </style>
     @stack('head')
 </head>
-<body class="antialiased">
+<body class="antialiased app-mobile">
 @php
     $nav_categories = $nav_categories ?? collect();
     $store = $ecom_settings->store_name ?? 'Japs Wholesale';
+    $routeName = optional(request()->route())->getName();
+    $isHome = request()->is('/') || $routeName === 'ecommerce.home';
+    $isShop = in_array($routeName, ['ecommerce.shop', 'ecommerce.category', 'ecommerce.product', 'ecommerce.collection'], true);
+    $isCart = $routeName === 'ecommerce.cart' || $routeName === 'ecommerce.checkout';
+    $isAccount = str_starts_with((string) $routeName, 'ecommerce.account')
+        || in_array($routeName, ['ecommerce.login', 'ecommerce.register', 'ecommerce.wishlist'], true);
 
     $storeLogoUrl = null;
     $storeLogoCandidates = [];
@@ -106,34 +176,65 @@
     }
 @endphp
 
-{{-- Top promo / contact bar --}}
-<div class="bg-brand text-white text-[11px] sm:text-xs tracking-wide">
+{{-- Desktop promo bars --}}
+<div class="hidden lg:block bg-brand text-white text-[11px] sm:text-xs tracking-wide">
     <div class="max-w-[1400px] mx-auto px-4 py-2 flex flex-wrap items-center justify-between gap-2">
         <p class="font-semibold uppercase">Welcome to {{ $store }}</p>
         <p class="opacity-95">Wholesale distribution · USA · <a href="{{ route('ecommerce.contact') }}" class="underline underline-offset-2">Contact us</a></p>
     </div>
 </div>
-
-{{-- Nicotine / compliance warning --}}
-<div class="bg-[#ececec] text-[#444] text-[11px] sm:text-xs text-center px-4 py-2 border-b border-black/5">
+<div class="hidden lg:block bg-[#ececec] text-[#444] text-[11px] sm:text-xs text-center px-4 py-2 border-b border-black/5">
     <strong>WARNING:</strong> This product contains nicotine. Nicotine is an addictive chemical. Wholesale accounts only — age verification required.
 </div>
 
-{{-- Main header --}}
-<header class="bg-white border-b border-line sticky top-0 z-50">
+{{-- Mobile app header --}}
+<header class="app-mobile-only sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-line pt-[env(safe-area-inset-top,0)]">
+    <div class="px-3 h-14 flex items-center gap-2">
+        <a href="{{ url('/') }}" class="shrink-0 flex items-center" aria-label="{{ $store }}">
+            @if($storeLogoUrl)
+                <img src="{{ $storeLogoUrl }}" alt="{{ $store }}" class="h-9 w-auto max-w-[140px] object-contain object-left">
+            @else
+                <span class="h-9 w-9 rounded-full bg-brand text-white flex items-center justify-center font-extrabold text-sm">J</span>
+            @endif
+        </a>
+        <form action="{{ route('ecommerce.shop') }}" method="get" class="flex-1 min-w-0">
+            <div class="flex items-center rounded-full bg-mist border border-line px-3 h-10">
+                <svg width="16" height="16" class="text-black/40 shrink-0" fill="none" stroke="currentColor" stroke-width="2"><circle cx="7" cy="7" r="5"/><path d="M11 11l3.5 3.5"/></svg>
+                <input type="search" name="q" value="{{ request('q') }}" placeholder="Search SKU, brands..."
+                       class="flex-1 bg-transparent border-0 outline-none text-[13px] px-2 min-w-0">
+            </div>
+        </form>
+        <a href="{{ route('ecommerce.cart') }}" class="relative shrink-0 h-10 w-10 inline-flex items-center justify-center rounded-full bg-mist" aria-label="Cart">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 4h12l-1 9H4L3 4z"/><path d="M7 7V4a2 2 0 014 0v3"/></svg>
+            @if(($cart_totals['count'] ?? 0) > 0)
+                <span class="absolute top-0.5 right-0.5 bg-brand text-white text-[10px] font-bold rounded-full min-w-[16px] h-[16px] inline-flex items-center justify-center px-1">{{ $cart_totals['count'] }}</span>
+            @endif
+        </a>
+    </div>
+    @if($nav_categories->count())
+        <div class="app-chip-scroll">
+            <a href="{{ route('ecommerce.shop') }}" class="app-chip {{ $routeName === 'ecommerce.shop' && ! request('category') ? 'active' : '' }}">All</a>
+            @foreach($nav_categories as $cat)
+                <a href="{{ route('ecommerce.category', $cat->id) }}"
+                   class="app-chip {{ (request('category') == $cat->id || (string) request()->route('slug') === (string) $cat->id) ? 'active' : '' }}">
+                    {{ $cat->name }}
+                </a>
+            @endforeach
+        </div>
+    @endif
+</header>
+
+{{-- Desktop header --}}
+<header class="hidden lg:block bg-white border-b border-line sticky top-0 z-50">
     <div class="max-w-[1400px] mx-auto px-4">
         <div class="h-[72px] flex items-center gap-4 lg:gap-6 relative z-[60]">
-            <button id="navToggle" class="lg:hidden p-2 -ml-2" aria-label="Menu">
-                <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h16M3 11h16M3 16h16"/></svg>
-            </button>
-
             <a href="{{ url('/') }}" class="shrink-0 flex items-center" aria-label="{{ $store }}">
                 @if($storeLogoUrl)
                     <img src="{{ $storeLogoUrl }}" alt="{{ $store }}" class="h-11 sm:h-12 w-auto max-w-[220px] object-contain object-left">
                 @else
                     <span class="flex items-center gap-2">
                         <span class="h-9 w-9 rounded-full bg-brand text-white flex items-center justify-center font-extrabold text-sm">J</span>
-                        <span class="leading-tight hidden sm:block">
+                        <span class="leading-tight">
                             <span class="block font-extrabold text-[15px] text-ink">{{ $store }}</span>
                             <span class="block text-[10px] uppercase tracking-wider text-black/45">Wholesale Distribution</span>
                         </span>
@@ -141,7 +242,7 @@
                 @endif
             </a>
 
-            <nav class="hidden lg:flex items-center gap-6 text-[17px] xl:text-[18px] font-bold tracking-tight relative z-[70]">
+            <nav class="flex items-center gap-6 text-[17px] xl:text-[18px] font-bold tracking-tight relative z-[70]">
                 <a href="{{ url('/') }}" class="hover:text-brand">Home</a>
                 <a href="{{ route('ecommerce.shop') }}" class="hover:text-brand">Shop</a>
                 <a href="{{ route('ecommerce.quick_order') }}" class="hover:text-brand">Quick Order</a>
@@ -159,7 +260,7 @@
                 </div>
             </nav>
 
-            <form action="{{ route('ecommerce.shop') }}" method="get" class="hidden md:flex flex-1 max-w-xl mx-auto">
+            <form action="{{ route('ecommerce.shop') }}" method="get" class="flex flex-1 max-w-xl mx-auto">
                 <div class="flex w-full rounded-full border border-line overflow-hidden bg-mist focus-within:bg-white focus-within:border-brand">
                     <input type="search" name="q" value="{{ request('q') }}" placeholder="Search"
                            class="flex-1 bg-transparent border-0 outline-none text-[13px] px-4 py-2.5">
@@ -171,34 +272,35 @@
 
             <div class="ml-auto flex items-center gap-3 sm:gap-4 text-[15px] font-semibold shrink-0">
                 @auth('customer')
-                    <a href="{{ route('ecommerce.wishlist') }}" class="hidden sm:inline-flex items-center gap-1.5 hover:text-brand" title="Wishlist">
+                    <a href="{{ route('ecommerce.wishlist') }}" class="inline-flex items-center gap-1.5 hover:text-brand" title="Wishlist">
                         <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 15s-6-3.8-6-7.2A3.3 3.3 0 019 4.8a3.3 3.3 0 016 3C15 11.2 9 15 9 15z"/></svg>
-                        <span class="hidden lg:inline">Wishlist</span>
+                        <span class="hidden xl:inline">Wishlist</span>
                     </a>
-                    <a href="{{ route('ecommerce.account') }}" class="hidden sm:inline-flex items-center gap-1.5 hover:text-brand" title="Account">
+                    <a href="{{ route('ecommerce.account') }}" class="inline-flex items-center gap-1.5 hover:text-brand" title="Account">
                         <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="6" r="3"/><path d="M3 16c1.5-3 10.5-3 12 0"/></svg>
-                        <span class="hidden lg:inline">Account</span>
+                        <span class="hidden xl:inline">Account</span>
                     </a>
                 @else
-                    <a href="{{ route('ecommerce.login') }}" class="hidden sm:inline-flex items-center gap-1.5 hover:text-brand" title="Account">
-                        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="6" r="3"/><path d="M3 16c1.5-3 10.5-3 12 0"/></svg>
-                        <span class="hidden md:inline">Login or Sign Up</span>
-                    </a>
+                    <div class="inline-flex items-center gap-1.5">
+                        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" class="opacity-70"><circle cx="9" cy="6" r="3"/><path d="M3 16c1.5-3 10.5-3 12 0"/></svg>
+                        <a href="{{ route('ecommerce.login') }}" class="hover:text-brand">Login</a>
+                        <span class="text-black/35 font-normal">or</span>
+                        <a href="{{ route('ecommerce.register') }}" class="hover:text-brand">Sign Up</a>
+                    </div>
                 @endauth
                 <a href="{{ route('ecommerce.cart') }}" class="inline-flex items-center gap-2 hover:text-brand">
                     <span class="relative">
                         <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 4h12l-1 9H4L3 4z"/><path d="M7 7V4a2 2 0 014 0v3"/></svg>
                         <span class="absolute -top-2 -right-2 bg-brand text-white text-[10px] rounded-full min-w-[16px] h-[16px] inline-flex items-center justify-center px-1">{{ $cart_totals['count'] ?? 0 }}</span>
                     </span>
-                    <span class="hidden sm:inline">View Cart</span>
-                    <span class="hidden sm:inline tabular-nums text-black/55">${{ number_format($cart_totals['subtotal'] ?? 0, 2) }}</span>
+                    <span>View Cart</span>
+                    <span class="tabular-nums text-black/55">${{ number_format($cart_totals['subtotal'] ?? 0, 2) }}</span>
                 </a>
             </div>
         </div>
     </div>
 
-    {{-- Category mega nav --}}
-    <div class="border-t border-line bg-white hidden lg:block relative z-10">
+    <div class="border-t border-line bg-white relative z-10">
         <div class="max-w-[1400px] mx-auto px-4 cat-nav-wrap" id="catNavWrap">
             <ul class="flex items-stretch gap-0 text-[15px] xl:text-[16px] font-bold">
                 @foreach($nav_categories as $cat)
@@ -214,7 +316,6 @@
                         </a>
 
                         <div class="mega-panel">
-                            {{-- Brands (left) --}}
                             <div class="p-5 border-r border-line">
                                 <div class="text-brand text-lg font-extrabold mb-4">Brands</div>
                                 @if($megaBrands->count())
@@ -235,8 +336,6 @@
                                     <p class="text-sm text-black/45">Brands coming soon for this department.</p>
                                 @endif
                             </div>
-
-                            {{-- Subcategories (right) --}}
                             <div class="p-5 bg-[#fcfcfc]">
                                 <div class="text-ink text-base font-extrabold mb-3">{{ $cat->name }}</div>
                                 <div class="space-y-2 text-sm">
@@ -255,23 +354,6 @@
             </ul>
         </div>
     </div>
-
-    {{-- Mobile drawer --}}
-    <div id="mobileNav" class="hidden lg:hidden border-t border-line bg-white px-4 py-4 space-y-1">
-        <form action="{{ route('ecommerce.shop') }}" method="get" class="mb-3">
-            <input type="search" name="q" value="{{ request('q') }}" placeholder="Search products..." class="input-w">
-        </form>
-        <a href="{{ url('/') }}" class="block py-2.5 font-semibold">Home</a>
-        <a href="{{ route('ecommerce.shop') }}" class="block py-2.5 font-semibold">Shop</a>
-        <a href="{{ route('ecommerce.quick_order') }}" class="block py-2.5 font-semibold">Quick Order</a>
-        @foreach($nav_categories as $cat)
-            <a href="{{ route('ecommerce.category', $cat->id) }}" class="block py-2 pl-1">{{ $cat->name }}</a>
-            @foreach(($cat->sub_categories ?? []) as $sub)
-                <a href="{{ route('ecommerce.category', $sub->id) }}" class="block py-1.5 pl-4 text-sm text-black/60">{{ $sub->name }}</a>
-            @endforeach
-        @endforeach
-        <a href="{{ route('ecommerce.login') }}" class="block py-2.5 font-semibold text-brand">Login or Sign Up</a>
-    </div>
 </header>
 
 @if(session('success'))
@@ -286,7 +368,7 @@
 
 <main>@yield('content')</main>
 
-<footer class="mt-16 bg-slatebar text-white">
+<footer class="desktop-footer mt-16 bg-slatebar text-white">
     <div class="max-w-[1400px] mx-auto px-4 py-12 grid md:grid-cols-4 gap-8">
         <div class="md:col-span-2">
             @if($storeLogoUrl)
@@ -338,10 +420,94 @@
     </div>
 </footer>
 
+{{-- Mobile bottom tabs --}}
+<nav class="app-bottom-nav app-mobile-only" aria-label="Primary">
+    <div class="flex items-stretch">
+        <a href="{{ url('/') }}" class="app-tab {{ $isHome ? 'active' : '' }}">
+            <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 10.5L12 3l9 7.5V20a1 1 0 01-1 1h-5v-6H9v6H4a1 1 0 01-1-1v-9.5z"/></svg>
+            Home
+        </a>
+        <a href="{{ route('ecommerce.shop') }}" class="app-tab {{ $isShop ? 'active' : '' }}">
+            <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+            Shop
+        </a>
+        <button type="button" id="openCatSheet" class="app-tab">
+            <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+            Menu
+        </button>
+        <a href="{{ route('ecommerce.cart') }}" class="app-tab {{ $isCart ? 'active' : '' }}">
+            <span class="relative inline-flex">
+                <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 4h12l-1 9H4L3 4z"/><path d="M7 7V4a2 2 0 014 0v3"/></svg>
+                @if(($cart_totals['count'] ?? 0) > 0)
+                    <span class="absolute -top-1 -right-2 bg-brand text-white text-[9px] font-bold rounded-full min-w-[14px] h-[14px] inline-flex items-center justify-center px-0.5">{{ $cart_totals['count'] }}</span>
+                @endif
+            </span>
+            Cart
+        </a>
+        <a href="{{ auth('customer')->check() ? route('ecommerce.account') : route('ecommerce.login') }}"
+           class="app-tab {{ $isAccount ? 'active' : '' }}">
+            <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="8" r="3.5"/><path d="M4 19c1.8-3.5 12.2-3.5 14 0"/></svg>
+            Account
+        </a>
+    </div>
+</nav>
+
+{{-- Mobile menu sheet --}}
+<div id="catSheet" class="app-sheet app-mobile-only" aria-hidden="true">
+    <div class="app-sheet__backdrop" data-close-sheet></div>
+    <div class="app-sheet__panel" role="dialog" aria-label="Menu">
+        <div class="app-sheet__handle"></div>
+        <div class="px-4 pb-2">
+            <div class="flex items-center justify-between mb-3">
+                <h2 class="text-lg font-extrabold">Browse</h2>
+                <button type="button" class="h-9 w-9 rounded-full bg-mist inline-flex items-center justify-center" data-close-sheet aria-label="Close">✕</button>
+            </div>
+            <div class="grid grid-cols-2 gap-2 mb-4">
+                <a href="{{ route('ecommerce.quick_order') }}" class="rounded-xl border border-line bg-mist px-3 py-3 font-semibold text-sm">Quick Order</a>
+                <a href="{{ route('ecommerce.track') }}" class="rounded-xl border border-line bg-mist px-3 py-3 font-semibold text-sm">Track order</a>
+                @auth('customer')
+                    <a href="{{ route('ecommerce.account') }}" class="rounded-xl border border-line bg-mist px-3 py-3 font-semibold text-sm">My account</a>
+                    <a href="{{ route('ecommerce.contact') }}" class="rounded-xl border border-line bg-mist px-3 py-3 font-semibold text-sm">Contact</a>
+                @else
+                    <a href="{{ route('ecommerce.login') }}" class="rounded-xl border border-line bg-mist px-3 py-3 font-semibold text-sm">Login</a>
+                    <a href="{{ route('ecommerce.register') }}" class="rounded-xl border border-line bg-mist px-3 py-3 font-semibold text-sm text-brand">Sign Up</a>
+                @endauth
+            </div>
+            <div class="text-xs font-bold uppercase tracking-wider text-black/40 mb-2">Departments</div>
+            <div class="divide-y divide-line rounded-xl border border-line overflow-hidden bg-white">
+                @foreach($nav_categories as $cat)
+                    <a href="{{ route('ecommerce.category', $cat->id) }}" class="flex items-center justify-between px-4 py-3.5 font-semibold text-[15px] active:bg-mist">
+                        <span>{{ $cat->name }}</span>
+                        <span class="text-black/30">›</span>
+                    </a>
+                @endforeach
+            </div>
+            <p class="text-[11px] text-black/40 text-center mt-4 px-2">
+                WARNING: This product contains nicotine. Nicotine is an addictive chemical.
+            </p>
+        </div>
+    </div>
+</div>
+
 <script>
-document.getElementById('navToggle')?.addEventListener('click', () => {
-    document.getElementById('mobileNav')?.classList.toggle('hidden');
-});
+(function () {
+    const sheet = document.getElementById('catSheet');
+    const openBtn = document.getElementById('openCatSheet');
+    const open = () => {
+        if (!sheet) return;
+        sheet.classList.add('is-open');
+        sheet.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+    };
+    const close = () => {
+        if (!sheet) return;
+        sheet.classList.remove('is-open');
+        sheet.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+    };
+    openBtn?.addEventListener('click', open);
+    sheet?.querySelectorAll('[data-close-sheet]').forEach(el => el.addEventListener('click', close));
+})();
 
 (function () {
     const wrap = document.getElementById('catNavWrap');

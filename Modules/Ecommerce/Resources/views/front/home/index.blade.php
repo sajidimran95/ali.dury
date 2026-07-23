@@ -12,7 +12,7 @@
 @endphp
 
 {{-- Hero banner grid --}}
-<section class="max-w-[1400px] mx-auto px-4 py-5 md:py-6">
+<section class="max-w-[1400px] mx-auto px-3 sm:px-4 py-3 md:py-6">
     <div class="grid lg:grid-cols-12 gap-3 md:gap-4">
         <div class="lg:col-span-3 hidden lg:block">
             @php $leftBanner = $side->get(0); @endphp
@@ -37,22 +37,22 @@
         </div>
 
         <div class="lg:col-span-6">
-            <a href="{{ ($hero->button_link ?? null) ?: route('ecommerce.shop') }}" class="block relative rounded-xl overflow-hidden min-h-[280px] md:min-h-[420px] bg-slatebar text-white group">
+            <a href="{{ ($hero->button_link ?? null) ?: route('ecommerce.shop') }}" class="block relative rounded-2xl lg:rounded-xl overflow-hidden min-h-[220px] sm:min-h-[280px] md:min-h-[420px] bg-slatebar text-white group">
                 @if($hero && $hero->image)
                     <img src="{{ asset('uploads/img/'.$hero->image) }}" alt="" class="absolute inset-0 w-full h-full object-cover transition duration-700 group-hover:scale-[1.03]">
                 @elseif($featured->first())
                     <img src="{{ $featured->first()->image_url }}" alt="" class="absolute inset-0 w-full h-full object-cover">
                 @endif
                 <div class="absolute inset-0 bg-gradient-to-r from-black/75 via-black/40 to-transparent"></div>
-                <div class="relative p-6 md:p-10 max-w-lg h-full flex flex-col justify-end min-h-[280px] md:min-h-[420px]">
+                <div class="relative p-5 sm:p-6 md:p-10 max-w-lg h-full flex flex-col justify-end min-h-[220px] sm:min-h-[280px] md:min-h-[420px]">
                     <p class="text-[11px] uppercase tracking-[0.2em] text-brand font-bold mb-2">Wholesale</p>
-                    <h1 class="text-3xl md:text-5xl font-extrabold leading-tight mb-3">
+                    <h1 class="text-2xl sm:text-3xl md:text-5xl font-extrabold leading-tight mb-2 sm:mb-3">
                         {{ $hero->title ?? 'Big brands. Better wholesale pricing.' }}
                     </h1>
-                    <p class="text-white/80 text-sm md:text-base mb-5">
+                    <p class="text-white/80 text-sm md:text-base mb-4 sm:mb-5 line-clamp-2 sm:line-clamp-none">
                         {{ $hero->subtitle ?? 'Live POS inventory for candy, snacks, tobacco, and more.' }}
                     </p>
-                    <span class="inline-flex self-start btn-brand">{{ $hero->button_text ?? 'Shop now' }}</span>
+                    <span class="inline-flex self-start btn-brand text-sm">{{ $hero->button_text ?? 'Shop now' }}</span>
                 </div>
             </a>
         </div>
