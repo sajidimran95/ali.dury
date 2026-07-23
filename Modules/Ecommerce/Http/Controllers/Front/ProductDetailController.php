@@ -22,7 +22,7 @@ class ProductDetailController extends Controller
             ->where(function ($q) use ($slug) {
                 $q->where('ecom_slug', $slug)->orWhere('id', $slug);
             })
-            ->with(['variations', 'brand', 'category', 'product_variations.variations'])
+            ->with(['variations', 'brand', 'category', 'unit', 'product_variations.variations'])
             ->firstOrFail();
 
         $stock = 0;

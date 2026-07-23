@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="NzzZB1QU4i6RaQl9ZZ5zkdPkTlvExo0RCC8kgfIX">
+    <title>Japs Wholesale Distribution</title>
+    <meta name="description" content="Shop curated snacks, beverages, personal care and home essentials. Live POS inventory, secure checkout, USA shipping.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: '#e85d04',
+                        brandDark: '#d00000',
+                        ink: '#1a1a1a',
+                        slatebar: '#2b2b2b',
+                        mist: '#f5f5f5',
+                        line: '#e5e5e5'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: Inter, system-ui, sans-serif; background: #f7f7f7; color: #1a1a1a; }
+        .mega { position: relative; }
+        .mega > a { position: relative; z-index: 2; }
+        .mega-panel {
+            display: none;
+            position: absolute;
+            left: 0;
+            top: calc(100% - 2px);
+            z-index: 60;
+            min-width: min(720px, 92vw);
+            background: #fff;
+            border: 1px solid #e5e5e5;
+            box-shadow: 0 16px 40px rgba(0,0,0,.12);
+            border-radius: 0 0 12px 12px;
+        }
+        /* Keep hover alive when moving from link into panel */
+        .mega::before {
+            content: "";
+            position: absolute;
+            left: 0; right: 0; top: 100%;
+            height: 14px;
+            z-index: 61;
+        }
+        .mega:hover > .mega-panel,
+        .mega:focus-within > .mega-panel { display: grid; }
+        .cat-link:hover, .mega:hover > .cat-link { color: #e85d04; }
+        .brand-tile {
+            display: flex; align-items: center; justify-content: center;
+            min-height: 64px; border: 1px solid #ececec; border-radius: 8px;
+            background: #fafafa; padding: 8px; text-align: center;
+            transition: border-color .15s, box-shadow .15s;
+        }
+        .brand-tile:hover { border-color: #e85d04; box-shadow: 0 2px 10px rgba(232,93,4,.12); }
+        .input-w {
+            width: 100%; border: 1px solid #d4d4d4; border-radius: 8px; padding: .7rem .9rem; font-size: .875rem;
+            background: #fff; outline: none;
+        }
+        .input-w:focus { border-color: #e85d04; box-shadow: 0 0 0 3px rgba(232,93,4,.15); }
+        .btn-brand {
+            background: #e85d04; color: #fff; font-weight: 600; border-radius: 8px;
+            padding: .7rem 1.25rem; transition: background .15s;
+        }
+        .btn-brand:hover { background: #c44d03; }
+        .product-card { transition: box-shadow .2s, transform .2s; }
+        .product-card:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(0,0,0,.08); }
+    </style>
+    </head>
+<body class="antialiased">
+
+
+<div class="bg-brand text-white text-[11px] sm:text-xs tracking-wide">
+    <div class="max-w-[1400px] mx-auto px-4 py-2 flex flex-wrap items-center justify-between gap-2">
+        <p class="font-semibold uppercase">Welcome to Japs Wholesale</p>
+        <p class="opacity-95">Wholesale distribution · USA · <a href="http://japspos.test/shop/contact" class="underline underline-offset-2">Contact us</a></p>
+    </div>
+</div>
+
+
+<div class="bg-[#ececec] text-[#444] text-[11px] sm:text-xs text-center px-4 py-2 border-b border-black/5">
+    <strong>WARNING:</strong> This product contains nicotine. Nicotine is an addictive chemical. Wholesale accounts only — age verification required.
+</div>
+
+
+<header class="bg-white border-b border-line sticky top-0 z-50">
+    <div class="max-w-[1400px] mx-auto px-4">
+        <div class="h-[72px] flex items-center gap-4 lg:gap-6">
+            <button id="navToggle" class="lg:hidden p-2 -ml-2" aria-label="Menu">
+                <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h16M3 11h16M3 16h16"/></svg>
+            </button>
+
+            <a href="http://japspos.test" class="shrink-0 flex items-center gap-2">
+                <span class="h-9 w-9 rounded-full bg-brand text-white flex items-center justify-center font-extrabold text-sm">J</span>
+                <span class="leading-tight hidden sm:block">
+                    <span class="block font-extrabold text-[15px] text-ink">Japs Wholesale</span>
+                    <span class="block text-[10px] uppercase tracking-wider text-black/45">Wholesale Distribution</span>
+                </span>
+            </a>
+
+            <nav class="hidden lg:flex items-center gap-5 text-sm font-semibold">
+                <a href="http://japspos.test" class="hover:text-brand">Home</a>
+                <a href="http://japspos.test/shop" class="hover:text-brand">Shop</a>
+                <a href="http://japspos.test/shop?sort=newest" class="hover:text-brand">Quick Order</a>
+                <div class="relative group">
+                    <button type="button" class="hover:text-brand inline-flex items-center gap-1">More
+                        <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="M5 8l5 5 5-5"/></svg>
+                    </button>
+                    <div class="hidden group-hover:block absolute left-0 top-full pt-2 z-40">
+                        <div class="bg-white border border-line rounded-lg shadow-lg py-2 min-w-[180px] text-sm font-medium">
+                            <a href="http://japspos.test/shop/track" class="block px-4 py-2 hover:bg-mist">Track order</a>
+                            <a href="http://japspos.test/shop/contact" class="block px-4 py-2 hover:bg-mist">Contact</a>
+                            <a href="http://japspos.test/shop/account" class="block px-4 py-2 hover:bg-mist">My account</a>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            <form action="http://japspos.test/shop" method="get" class="hidden md:flex flex-1 max-w-xl mx-auto">
+                <div class="flex w-full rounded-full border border-line overflow-hidden bg-mist focus-within:bg-white focus-within:border-brand">
+                    <input type="search" name="q" value="" placeholder="Search products, SKU, brands..."
+                           class="flex-1 bg-transparent border-0 outline-none text-sm px-4 py-2.5">
+                    <button class="bg-brand text-white px-4 hover:bg-[#c44d03]" aria-label="Search">
+                        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="5.5"/><path d="M12 12l4 4"/></svg>
+                    </button>
+                </div>
+            </form>
+
+            <div class="ml-auto flex items-center gap-3 sm:gap-4 text-sm font-semibold shrink-0">
+                <a href="http://japspos.test/shop/cart" class="inline-flex items-center gap-1.5 hover:text-brand">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 4h12l-1 9H4L3 4z"/><path d="M7 7V4a2 2 0 014 0v3"/></svg>
+                    <span class="hidden sm:inline">View Cart</span>
+                    <span class="bg-brand text-white text-[10px] rounded-full min-w-[18px] h-[18px] inline-flex items-center justify-center px-1">0</span>
+                </a>
+                                    <a href="http://japspos.test/shop/login" class="hover:text-brand whitespace-nowrap">Login or Sign Up</a>
+                            </div>
+        </div>
+    </div>
+
+    
+    <div class="border-t border-line bg-white hidden lg:block relative z-40">
+        <div class="max-w-[1400px] mx-auto px-4">
+            <ul class="flex items-stretch gap-0 text-[13px] font-semibold">
+                                                        <li class="mega">
+                        <a href="http://japspos.test/shop/c/10"
+                           class="cat-link inline-flex items-center gap-1 px-3 py-3.5 whitespace-nowrap ">
+                            Beverages
+                            <svg width="10" height="10" viewBox="0 0 20 20" fill="currentColor" class="opacity-50"><path d="M5 8l5 5 5-5"/></svg>
+                        </a>
+
+                        <div class="mega-panel grid-cols-[1.4fr_0.9fr] gap-0">
+                            
+                            <div class="p-5 border-r border-line">
+                                <div class="text-brand text-lg font-extrabold mb-4">Brands</div>
+                                                                    <div class="grid grid-cols-3 sm:grid-cols-4 gap-2.5">
+                                                                                    <a href="http://japspos.test/shop?category=10&amp;brand=12"
+                                               class="brand-tile" title="Cocoa House">
+                                                                                                    <img src="http://japspos.test/uploads/img/ecom_demo_11.jpg" alt="Cocoa House"
+                                                         class="max-h-10 max-w-full object-contain">
+                                                                                            </a>
+                                                                                    <a href="http://japspos.test/shop?category=10&amp;brand=11"
+                                               class="brand-tile" title="Artisan Snacks">
+                                                                                                    <img src="http://japspos.test/uploads/img/ecom_demo_10.jpg" alt="Artisan Snacks"
+                                                         class="max-h-10 max-w-full object-contain">
+                                                                                            </a>
+                                                                                    <a href="http://japspos.test/shop?category=10&amp;brand=10"
+                                               class="brand-tile" title="Hi-Fi">
+                                                                                                    <img src="http://japspos.test/uploads/img/ecom_demo_9.jpg" alt="Hi-Fi"
+                                                         class="max-h-10 max-w-full object-contain">
+                                                                                            </a>
+                                                                                    <a href="http://japspos.test/shop?category=10&amp;brand=9"
+                                               class="brand-tile" title="Big Dog">
+                                                                                                    <img src="http://japspos.test/uploads/img/ecom_demo_8.jpg" alt="Big Dog"
+                                                         class="max-h-10 max-w-full object-contain">
+                                                                                            </a>
+                                                                            </div>
+                                                            </div>
+
+                            
+                            <div class="p-5 bg-[#fcfcfc]">
+                                <div class="text-ink text-base font-extrabold mb-3">Beverages</div>
+                                <div class="space-y-2 text-sm">
+                                    <a href="http://japspos.test/shop/c/10" class="block font-semibold hover:text-brand">All Beverages</a>
+                                                                            <a href="http://japspos.test/shop?category=10&amp;sort=newest" class="block text-black/70 hover:text-brand">New arrivals</a>
+                                        <a href="http://japspos.test/shop?category=10&amp;sort=price_asc" class="block text-black/70 hover:text-brand">Best value</a>
+                                                                    </div>
+                            </div>
+                        </div>
+                    </li>
+                                                        <li class="mega">
+                        <a href="http://japspos.test/shop/c/12"
+                           class="cat-link inline-flex items-center gap-1 px-3 py-3.5 whitespace-nowrap ">
+                            Household
+                            <svg width="10" height="10" viewBox="0 0 20 20" fill="currentColor" class="opacity-50"><path d="M5 8l5 5 5-5"/></svg>
+                        </a>
+
+                        <div class="mega-panel grid-cols-[1.4fr_0.9fr] gap-0">
+                            
+                            <div class="p-5 border-r border-line">
+                                <div class="text-brand text-lg font-extrabold mb-4">Brands</div>
+                                                                    <div class="grid grid-cols-3 sm:grid-cols-4 gap-2.5">
+                                                                                    <a href="http://japspos.test/shop?category=12&amp;brand=5"
+                                               class="brand-tile" title="Phillies">
+                                                                                                    <img src="http://japspos.test/uploads/img/ecom_demo_19.jpg" alt="Phillies"
+                                                         class="max-h-10 max-w-full object-contain">
+                                                                                            </a>
+                                                                                    <a href="http://japspos.test/shop?category=12&amp;brand=4"
+                                               class="brand-tile" title="Royal Blunts">
+                                                                                                    <img src="http://japspos.test/uploads/img/ecom_demo_18.jpg" alt="Royal Blunts"
+                                                         class="max-h-10 max-w-full object-contain">
+                                                                                            </a>
+                                                                                    <a href="http://japspos.test/shop?category=12&amp;brand=3"
+                                               class="brand-tile" title="Grabba Leaf">
+                                                                                                    <img src="http://japspos.test/uploads/img/ecom_demo_17.jpg" alt="Grabba Leaf"
+                                                         class="max-h-10 max-w-full object-contain">
+                                                                                            </a>
+                                                                                    <a href="http://japspos.test/shop?category=12&amp;brand=2"
+                                               class="brand-tile" title="Bugler">
+                                                                                                    <img src="http://japspos.test/uploads/img/ecom_demo_16.jpg" alt="Bugler"
+                                                         class="max-h-10 max-w-full object-contain">
+                                                                                            </a>
+                                                                            </div>
+                                                            </div>
+
+                            
+                            <div class="p-5 bg-[#fcfcfc]">
+                                <div class="text-ink text-base font-extrabold mb-3">Household</div>
+                                <div class="space-y-2 text-sm">
+                                    <a href="http://japspos.test/shop/c/12" class="block font-semibold hover:text-brand">All Household</a>
+                                                                            <a href="http://japspos.test/shop?category=12&amp;sort=newest" class="block text-black/70 hover:text-brand">New arrivals</a>
+                                        <a href="http://japspos.test/shop?category=12&amp;sort=price_asc" class="block text-black/70 hover:text-brand">Best value</a>
+                                                                    </div>
+                            </div>
+                        </div>
+                    </li>
+                                                        <li class="mega">
+                        <a href="http://japspos.test/shop/c/11"
+                           class="cat-link inline-flex items-center gap-1 px-3 py-3.5 whitespace-nowrap ">
+                            Personal Care
+                            <svg width="10" height="10" viewBox="0 0 20 20" fill="currentColor" class="opacity-50"><path d="M5 8l5 5 5-5"/></svg>
+                        </a>
+
+                        <div class="mega-panel grid-cols-[1.4fr_0.9fr] gap-0">
+                            
+                            <div class="p-5 border-r border-line">
+                                <div class="text-brand text-lg font-extrabold mb-4">Brands</div>
+                                                                    <div class="grid grid-cols-3 sm:grid-cols-4 gap-2.5">
+                                                                                    <a href="http://japspos.test/shop?category=11&amp;brand=1"
+                                               class="brand-tile" title="American Club">
+                                                                                                    <img src="http://japspos.test/uploads/img/ecom_demo_15.jpg" alt="American Club"
+                                                         class="max-h-10 max-w-full object-contain">
+                                                                                            </a>
+                                                                                    <a href="http://japspos.test/shop?category=11&amp;brand=15"
+                                               class="brand-tile" title="Home Basics">
+                                                                                                    <img src="http://japspos.test/uploads/img/ecom_demo_14.jpg" alt="Home Basics"
+                                                         class="max-h-10 max-w-full object-contain">
+                                                                                            </a>
+                                                                                    <a href="http://japspos.test/shop?category=11&amp;brand=14"
+                                               class="brand-tile" title="Fresh Care">
+                                                                                                    <img src="http://japspos.test/uploads/img/ecom_demo_13.jpg" alt="Fresh Care"
+                                                         class="max-h-10 max-w-full object-contain">
+                                                                                            </a>
+                                                                                    <a href="http://japspos.test/shop?category=11&amp;brand=13"
+                                               class="brand-tile" title="Citrus Wave">
+                                                                                                    <img src="http://japspos.test/uploads/img/ecom_demo_12.jpg" alt="Citrus Wave"
+                                                         class="max-h-10 max-w-full object-contain">
+                                                                                            </a>
+                                                                            </div>
+                                                            </div>
+
+                            
+                            <div class="p-5 bg-[#fcfcfc]">
+                                <div class="text-ink text-base font-extrabold mb-3">Personal Care</div>
+                                <div class="space-y-2 text-sm">
+                                    <a href="http://japspos.test/shop/c/11" class="block font-semibold hover:text-brand">All Personal Care</a>
+                                                                            <a href="http://japspos.test/shop?category=11&amp;sort=newest" class="block text-black/70 hover:text-brand">New arrivals</a>
+                                        <a href="http://japspos.test/shop?category=11&amp;sort=price_asc" class="block text-black/70 hover:text-brand">Best value</a>
+                                                                    </div>
+                            </div>
+                        </div>
+                    </li>
+                                                        <li class="mega">
+                        <a href="http://japspos.test/shop/c/9"
+                           class="cat-link inline-flex items-center gap-1 px-3 py-3.5 whitespace-nowrap ">
+                            Snacks
+                            <svg width="10" height="10" viewBox="0 0 20 20" fill="currentColor" class="opacity-50"><path d="M5 8l5 5 5-5"/></svg>
+                        </a>
+
+                        <div class="mega-panel grid-cols-[1.4fr_0.9fr] gap-0">
+                            
+                            <div class="p-5 border-r border-line">
+                                <div class="text-brand text-lg font-extrabold mb-4">Brands</div>
+                                                                    <div class="grid grid-cols-3 sm:grid-cols-4 gap-2.5">
+                                                                                    <a href="http://japspos.test/shop?category=9&amp;brand=8"
+                                               class="brand-tile" title="Throwback">
+                                                                                                    <img src="http://japspos.test/uploads/img/ecom_demo_7.jpg" alt="Throwback"
+                                                         class="max-h-10 max-w-full object-contain">
+                                                                                            </a>
+                                                                                    <a href="http://japspos.test/shop?category=9&amp;brand=7"
+                                               class="brand-tile" title="Jungo Leaf">
+                                                                                                    <img src="http://japspos.test/uploads/img/ecom_demo_6.jpg" alt="Jungo Leaf"
+                                                         class="max-h-10 max-w-full object-contain">
+                                                                                            </a>
+                                                                                    <a href="http://japspos.test/shop?category=9&amp;brand=6"
+                                               class="brand-tile" title="Hype">
+                                                                                                    <img src="http://japspos.test/uploads/img/ecom_demo_5.jpg" alt="Hype"
+                                                         class="max-h-10 max-w-full object-contain">
+                                                                                            </a>
+                                                                                    <a href="http://japspos.test/shop?category=9&amp;brand=5"
+                                               class="brand-tile" title="Phillies">
+                                                                                                    <img src="http://japspos.test/uploads/img/ecom_demo_4.jpg" alt="Phillies"
+                                                         class="max-h-10 max-w-full object-contain">
+                                                                                            </a>
+                                                                            </div>
+                                                            </div>
+
+                            
+                            <div class="p-5 bg-[#fcfcfc]">
+                                <div class="text-ink text-base font-extrabold mb-3">Snacks</div>
+                                <div class="space-y-2 text-sm">
+                                    <a href="http://japspos.test/shop/c/9" class="block font-semibold hover:text-brand">All Snacks</a>
+                                                                            <a href="http://japspos.test/shop/c/20" class="block text-black/70 hover:text-brand">5lb Bag</a>
+                                                                            <a href="http://japspos.test/shop/c/13" class="block text-black/70 hover:text-brand">Chips &amp; Cookies</a>
+                                                                            <a href="http://japspos.test/shop/c/14" class="block text-black/70 hover:text-brand">Chocolate</a>
+                                                                            <a href="http://japspos.test/shop/c/15" class="block text-black/70 hover:text-brand">Gum</a>
+                                                                            <a href="http://japspos.test/shop/c/16" class="block text-black/70 hover:text-brand">Gummies &amp; Chews</a>
+                                                                            <a href="http://japspos.test/shop/c/17" class="block text-black/70 hover:text-brand">Lollipops</a>
+                                                                            <a href="http://japspos.test/shop/c/18" class="block text-black/70 hover:text-brand">Mints</a>
+                                                                            <a href="http://japspos.test/shop/c/19" class="block text-black/70 hover:text-brand">Peg Bag</a>
+                                                                    </div>
+                            </div>
+                        </div>
+                    </li>
+                                                        <li class="mega">
+                        <a href="http://japspos.test/shop/c/1"
+                           class="cat-link inline-flex items-center gap-1 px-3 py-3.5 whitespace-nowrap ">
+                            Tobacco
+                            <svg width="10" height="10" viewBox="0 0 20 20" fill="currentColor" class="opacity-50"><path d="M5 8l5 5 5-5"/></svg>
+                        </a>
+
+                        <div class="mega-panel grid-cols-[1.4fr_0.9fr] gap-0">
+                            
+                            <div class="p-5 border-r border-line">
+                                <div class="text-brand text-lg font-extrabold mb-4">Brands</div>
+                                                                    <div class="grid grid-cols-3 sm:grid-cols-4 gap-2.5">
+                                                                                    <a href="http://japspos.test/shop?category=1&amp;brand=4"
+                                               class="brand-tile" title="Royal Blunts">
+                                                                                                    <img src="http://japspos.test/uploads/img/ecom_demo_3.jpg" alt="Royal Blunts"
+                                                         class="max-h-10 max-w-full object-contain">
+                                                                                            </a>
+                                                                                    <a href="http://japspos.test/shop?category=1&amp;brand=3"
+                                               class="brand-tile" title="Grabba Leaf">
+                                                                                                    <img src="http://japspos.test/uploads/img/ecom_demo_2.jpg" alt="Grabba Leaf"
+                                                         class="max-h-10 max-w-full object-contain">
+                                                                                            </a>
+                                                                                    <a href="http://japspos.test/shop?category=1&amp;brand=2"
+                                               class="brand-tile" title="Bugler">
+                                                                                                    <img src="http://japspos.test/uploads/img/ecom_demo_1.jpg" alt="Bugler"
+                                                         class="max-h-10 max-w-full object-contain">
+                                                                                            </a>
+                                                                                    <a href="http://japspos.test/shop?category=1&amp;brand=1"
+                                               class="brand-tile" title="American Club">
+                                                                                                    <img src="http://japspos.test/uploads/img/ecom_fix_7.jpg" alt="American Club"
+                                                         class="max-h-10 max-w-full object-contain">
+                                                                                            </a>
+                                                                            </div>
+                                                            </div>
+
+                            
+                            <div class="p-5 bg-[#fcfcfc]">
+                                <div class="text-ink text-base font-extrabold mb-3">Tobacco</div>
+                                <div class="space-y-2 text-sm">
+                                    <a href="http://japspos.test/shop/c/1" class="block font-semibold hover:text-brand">All Tobacco</a>
+                                                                            <a href="http://japspos.test/shop/c/2" class="block text-black/70 hover:text-brand">Cigarettes</a>
+                                                                            <a href="http://japspos.test/shop/c/4" class="block text-black/70 hover:text-brand">Cigars</a>
+                                                                            <a href="http://japspos.test/shop/c/6" class="block text-black/70 hover:text-brand">E-Cigarettes</a>
+                                                                            <a href="http://japspos.test/shop/c/5" class="block text-black/70 hover:text-brand">Little Filtered Cigars</a>
+                                                                            <a href="http://japspos.test/shop/c/3" class="block text-black/70 hover:text-brand">Moist Spit Tobacco</a>
+                                                                            <a href="http://japspos.test/shop/c/8" class="block text-black/70 hover:text-brand">Pipe Tobacco</a>
+                                                                            <a href="http://japspos.test/shop/c/7" class="block text-black/70 hover:text-brand">RYO Tobacco</a>
+                                                                    </div>
+                            </div>
+                        </div>
+                    </li>
+                            </ul>
+        </div>
+    </div>
+
+    
+    <div id="mobileNav" class="hidden lg:hidden border-t border-line bg-white px-4 py-4 space-y-1">
+        <form action="http://japspos.test/shop" method="get" class="mb-3">
+            <input type="search" name="q" value="" placeholder="Search products..." class="input-w">
+        </form>
+        <a href="http://japspos.test" class="block py-2.5 font-semibold">Home</a>
+        <a href="http://japspos.test/shop" class="block py-2.5 font-semibold">Shop</a>
+                    <a href="http://japspos.test/shop/c/10" class="block py-2 pl-1">Beverages</a>
+                                <a href="http://japspos.test/shop/c/12" class="block py-2 pl-1">Household</a>
+                                <a href="http://japspos.test/shop/c/11" class="block py-2 pl-1">Personal Care</a>
+                                <a href="http://japspos.test/shop/c/9" class="block py-2 pl-1">Snacks</a>
+                            <a href="http://japspos.test/shop/c/20" class="block py-1.5 pl-4 text-sm text-black/60">5lb Bag</a>
+                            <a href="http://japspos.test/shop/c/13" class="block py-1.5 pl-4 text-sm text-black/60">Chips &amp; Cookies</a>
+                            <a href="http://japspos.test/shop/c/14" class="block py-1.5 pl-4 text-sm text-black/60">Chocolate</a>
+                            <a href="http://japspos.test/shop/c/15" class="block py-1.5 pl-4 text-sm text-black/60">Gum</a>
+                            <a href="http://japspos.test/shop/c/16" class="block py-1.5 pl-4 text-sm text-black/60">Gummies &amp; Chews</a>
+                            <a href="http://japspos.test/shop/c/17" class="block py-1.5 pl-4 text-sm text-black/60">Lollipops</a>
+                            <a href="http://japspos.test/shop/c/18" class="block py-1.5 pl-4 text-sm text-black/60">Mints</a>
+                            <a href="http://japspos.test/shop/c/19" class="block py-1.5 pl-4 text-sm text-black/60">Peg Bag</a>
+                                <a href="http://japspos.test/shop/c/1" class="block py-2 pl-1">Tobacco</a>
+                            <a href="http://japspos.test/shop/c/2" class="block py-1.5 pl-4 text-sm text-black/60">Cigarettes</a>
+                            <a href="http://japspos.test/shop/c/4" class="block py-1.5 pl-4 text-sm text-black/60">Cigars</a>
+                            <a href="http://japspos.test/shop/c/6" class="block py-1.5 pl-4 text-sm text-black/60">E-Cigarettes</a>
+                            <a href="http://japspos.test/shop/c/5" class="block py-1.5 pl-4 text-sm text-black/60">Little Filtered Cigars</a>
+                            <a href="http://japspos.test/shop/c/3" class="block py-1.5 pl-4 text-sm text-black/60">Moist Spit Tobacco</a>
+                            <a href="http://japspos.test/shop/c/8" class="block py-1.5 pl-4 text-sm text-black/60">Pipe Tobacco</a>
+                            <a href="http://japspos.test/shop/c/7" class="block py-1.5 pl-4 text-sm text-black/60">RYO Tobacco</a>
+                            <a href="http://japspos.test/shop/login" class="block py-2.5 font-semibold text-brand">Login or Sign Up</a>
+    </div>
+</header>
+
+
+<main>
+
+<section class="max-w-[1400px] mx-auto px-4 py-5 md:py-6">
+    <div class="grid lg:grid-cols-12 gap-3 md:gap-4">
+        <div class="lg:col-span-3 hidden lg:block space-y-3">
+                            <a href="http://japspos.test/shop/c/11" class="block relative rounded-xl overflow-hidden aspect-[3/4] bg-ink group">
+                                            <img src="http://japspos.test/uploads/img/ecom_banner_care.jpg" alt="" class="absolute inset-0 w-full h-full object-cover transition group-hover:scale-105">
+                                        <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
+                    <div class="absolute bottom-0 p-4 text-white">
+                        <div class="font-bold text-lg leading-tight">New season refresh</div>
+                        <div class="text-xs text-white/75 mt-1">Explore care</div>
+                    </div>
+                </a>
+                                </div>
+
+        <div class="lg:col-span-6">
+            <a href="http://japspos.test/shop" class="block relative rounded-xl overflow-hidden min-h-[280px] md:min-h-[420px] bg-slatebar text-white group">
+                                    <img src="http://japspos.test/uploads/img/ecom_banner_hero.jpg" alt="" class="absolute inset-0 w-full h-full object-cover transition duration-700 group-hover:scale-[1.03]">
+                                <div class="absolute inset-0 bg-gradient-to-r from-black/75 via-black/40 to-transparent"></div>
+                <div class="relative p-6 md:p-10 max-w-lg h-full flex flex-col justify-end min-h-[280px] md:min-h-[420px]">
+                    <p class="text-[11px] uppercase tracking-[0.2em] text-brand font-bold mb-2">Wholesale</p>
+                    <h1 class="text-3xl md:text-5xl font-extrabold leading-tight mb-3">
+                        Everyday essentials, elevated
+                    </h1>
+                    <p class="text-white/80 text-sm md:text-base mb-5">
+                        Curated pantry, care, and home staples — inventory synced from our store.
+                    </p>
+                    <span class="inline-flex self-start btn-brand">Shop the collection</span>
+                </div>
+            </a>
+        </div>
+
+        <div class="lg:col-span-3 grid grid-cols-2 lg:grid-cols-1 gap-3">
+                            <a href="http://japspos.test/shop/c/11" class="relative rounded-xl overflow-hidden min-h-[130px] md:min-h-[200px] group">
+                                            <img src="http://japspos.test/uploads/img/ecom_banner_care.jpg" alt="" class="absolute inset-0 w-full h-full object-cover transition group-hover:scale-105">
+                                        <div class="absolute inset-0 bg-gradient-to-t from-black/75 to-transparent"></div>
+                    <div class="absolute bottom-0 p-4 text-white">
+                        <div class="font-bold">New season refresh</div>
+                        <div class="text-xs text-white/75 mt-1">Explore care →</div>
+                    </div>
+                </a>
+                            <a href="http://japspos.test/shop/c/9" class="relative rounded-xl overflow-hidden min-h-[130px] md:min-h-[200px] group">
+                                            <img src="http://japspos.test/uploads/img/ecom_banner_pantry.jpg" alt="" class="absolute inset-0 w-full h-full object-cover transition group-hover:scale-105">
+                                        <div class="absolute inset-0 bg-gradient-to-t from-black/75 to-transparent"></div>
+                    <div class="absolute bottom-0 p-4 text-white">
+                        <div class="font-bold">Pantry favorites</div>
+                        <div class="text-xs text-white/75 mt-1">Shop snacks →</div>
+                    </div>
+                </a>
+                    </div>
+    </div>
+</section>
+
+
+<section class="max-w-[1400px] mx-auto px-4 pb-4">
+    <div class="flex gap-2 overflow-x-auto pb-1">
+                    <a href="http://japspos.test/shop/c/10"
+               class="shrink-0 inline-flex items-center gap-2 rounded-full bg-white border border-line px-4 py-2 text-sm font-semibold hover:border-brand hover:text-brand">
+                Beverages
+            </a>
+                    <a href="http://japspos.test/shop/c/12"
+               class="shrink-0 inline-flex items-center gap-2 rounded-full bg-white border border-line px-4 py-2 text-sm font-semibold hover:border-brand hover:text-brand">
+                Household
+            </a>
+                    <a href="http://japspos.test/shop/c/11"
+               class="shrink-0 inline-flex items-center gap-2 rounded-full bg-white border border-line px-4 py-2 text-sm font-semibold hover:border-brand hover:text-brand">
+                Personal Care
+            </a>
+                    <a href="http://japspos.test/shop/c/9"
+               class="shrink-0 inline-flex items-center gap-2 rounded-full bg-white border border-line px-4 py-2 text-sm font-semibold hover:border-brand hover:text-brand">
+                Snacks
+            </a>
+                    <a href="http://japspos.test/shop/c/1"
+               class="shrink-0 inline-flex items-center gap-2 rounded-full bg-white border border-line px-4 py-2 text-sm font-semibold hover:border-brand hover:text-brand">
+                Tobacco
+            </a>
+            </div>
+</section>
+
+
+<section class="max-w-[1400px] mx-auto px-4 py-4">
+    <div class="rounded-xl bg-white border border-line px-4 py-4 grid grid-cols-2 md:grid-cols-4 gap-3 text-center text-sm">
+        <div><div class="font-extrabold text-brand">Exclusive pricing</div><div class="text-xs text-black/50 mt-1">Wholesale accounts</div></div>
+        <div><div class="font-extrabold text-brand">Live inventory</div><div class="text-xs text-black/50 mt-1">Synced with POS</div></div>
+        <div><div class="font-extrabold text-brand">Fast shipping</div><div class="text-xs text-black/50 mt-1">USA delivery</div></div>
+        <div><div class="font-extrabold text-brand">Quick reorder</div><div class="text-xs text-black/50 mt-1">Search by SKU</div></div>
+    </div>
+</section>
+
+<section class="max-w-[1400px] mx-auto px-4 py-8">
+    <div class="flex items-end justify-between mb-5 gap-3">
+        <div>
+            <h2 class="text-2xl md:text-3xl font-extrabold">Featured products</h2>
+            <p class="text-sm text-black/50 mt-1">Top picks ready for wholesale order</p>
+        </div>
+        <a href="http://japspos.test/shop" class="text-sm font-bold text-brand">Shop all</a>
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
+                    <article class="product-card group rounded-xl bg-white border border-line overflow-hidden">
+            <a href="http://japspos.test/shop/p/7" class="block relative aspect-square bg-mist overflow-hidden">
+                <img src="http://japspos.test/uploads/img/ecom_fix_7.jpg" alt="Bugler RYO Tobacco" loading="lazy"
+                     class="w-full h-full object-cover transition duration-500 group-hover:scale-[1.04]"
+                     onerror="this.onerror=null;this.src='http://japspos.test/img/default.png';">
+                                    <span class="absolute top-2 left-2 rounded bg-ink text-white text-[10px] font-bold uppercase px-2 py-1">New</span>
+                            </a>
+            <div class="p-3 md:p-3.5">
+                                    <div class="text-[10px] uppercase tracking-wider text-black/40 font-semibold mb-1">Tobacco</div>
+                                <a href="http://japspos.test/shop/p/7" class="font-semibold text-sm leading-snug line-clamp-2 min-h-[2.5rem] hover:text-brand">
+                    Bugler RYO Tobacco
+                </a>
+                <div class="mt-1 text-[11px] text-black/40">SKU TOB-RYO-BUG</div>
+                <div class="mt-2 flex items-baseline gap-2">
+                    <span class="font-extrabold tabular-nums text-brand">$12.00</span>
+                                    </div>
+                                <form action="/shop/cart/add" method="post" class="mt-3">
+                    <input type="hidden" name="_token" value="NzzZB1QU4i6RaQl9ZZ5zkdPkTlvExo0RCC8kgfIX" autocomplete="off">                    <input type="hidden" name="product_id" value="7">
+                    <input type="hidden" name="variation_id" value="7">
+                    <button class="w-full btn-brand text-xs py-2.5">Add to cart</button>
+                </form>
+                            </div>
+        </article>
+                    <article class="product-card group rounded-xl bg-white border border-line overflow-hidden">
+            <a href="http://japspos.test/shop/p/craft-rolling-tobacco-tin-1" class="block relative aspect-square bg-mist overflow-hidden">
+                <img src="http://japspos.test/uploads/img/ecom_demo_1.jpg" alt="Craft Rolling Tobacco Tin" loading="lazy"
+                     class="w-full h-full object-cover transition duration-500 group-hover:scale-[1.04]"
+                     onerror="this.onerror=null;this.src='http://japspos.test/img/default.png';">
+                                    <span class="absolute top-2 left-2 rounded bg-ink text-white text-[10px] font-bold uppercase px-2 py-1">New</span>
+                            </a>
+            <div class="p-3 md:p-3.5">
+                                    <div class="text-[10px] uppercase tracking-wider text-black/40 font-semibold mb-1">Tobacco</div>
+                                <a href="http://japspos.test/shop/p/craft-rolling-tobacco-tin-1" class="font-semibold text-sm leading-snug line-clamp-2 min-h-[2.5rem] hover:text-brand">
+                    Craft Rolling Tobacco Tin
+                </a>
+                <div class="mt-1 text-[11px] text-black/40">SKU ECOM-001</div>
+                <div class="mt-2 flex items-baseline gap-2">
+                    <span class="font-extrabold tabular-nums text-brand">$12.00</span>
+                                    </div>
+                                <form action="/shop/cart/add" method="post" class="mt-3">
+                    <input type="hidden" name="_token" value="NzzZB1QU4i6RaQl9ZZ5zkdPkTlvExo0RCC8kgfIX" autocomplete="off">                    <input type="hidden" name="product_id" value="39">
+                    <input type="hidden" name="variation_id" value="39">
+                    <button class="w-full btn-brand text-xs py-2.5">Add to cart</button>
+                </form>
+                            </div>
+        </article>
+                    <article class="product-card group rounded-xl bg-white border border-line overflow-hidden">
+            <a href="http://japspos.test/shop/p/premium-blue-blend-pack-2" class="block relative aspect-square bg-mist overflow-hidden">
+                <img src="http://japspos.test/uploads/img/ecom_demo_2.jpg" alt="Premium Blue Blend Pack" loading="lazy"
+                     class="w-full h-full object-cover transition duration-500 group-hover:scale-[1.04]"
+                     onerror="this.onerror=null;this.src='http://japspos.test/img/default.png';">
+                            </a>
+            <div class="p-3 md:p-3.5">
+                                    <div class="text-[10px] uppercase tracking-wider text-black/40 font-semibold mb-1">Tobacco</div>
+                                <a href="http://japspos.test/shop/p/premium-blue-blend-pack-2" class="font-semibold text-sm leading-snug line-clamp-2 min-h-[2.5rem] hover:text-brand">
+                    Premium Blue Blend Pack
+                </a>
+                <div class="mt-1 text-[11px] text-black/40">SKU ECOM-002</div>
+                <div class="mt-2 flex items-baseline gap-2">
+                    <span class="font-extrabold tabular-nums text-brand">$14.50</span>
+                                    </div>
+                                <form action="/shop/cart/add" method="post" class="mt-3">
+                    <input type="hidden" name="_token" value="NzzZB1QU4i6RaQl9ZZ5zkdPkTlvExo0RCC8kgfIX" autocomplete="off">                    <input type="hidden" name="product_id" value="40">
+                    <input type="hidden" name="variation_id" value="40">
+                    <button class="w-full btn-brand text-xs py-2.5">Add to cart</button>
+                </form>
+                            </div>
+        </article>
+                    <article class="product-card group rounded-xl bg-white border border-line overflow-hidden">
+            <a href="http://japspos.test/shop/p/classic-rolling-papers-3" class="block relative aspect-square bg-mist overflow-hidden">
+                <img src="http://japspos.test/uploads/img/ecom_demo_3.jpg" alt="Classic Rolling Papers" loading="lazy"
+                     class="w-full h-full object-cover transition duration-500 group-hover:scale-[1.04]"
+                     onerror="this.onerror=null;this.src='http://japspos.test/img/default.png';">
+                                    <span class="absolute top-2 left-2 rounded bg-brand text-white text-[10px] font-bold uppercase px-2 py-1">Sale</span>
+                            </a>
+            <div class="p-3 md:p-3.5">
+                                    <div class="text-[10px] uppercase tracking-wider text-black/40 font-semibold mb-1">Tobacco</div>
+                                <a href="http://japspos.test/shop/p/classic-rolling-papers-3" class="font-semibold text-sm leading-snug line-clamp-2 min-h-[2.5rem] hover:text-brand">
+                    Classic Rolling Papers
+                </a>
+                <div class="mt-1 text-[11px] text-black/40">SKU ECOM-003</div>
+                <div class="mt-2 flex items-baseline gap-2">
+                    <span class="font-extrabold tabular-nums text-brand">$3.39</span>
+                                            <span class="text-xs text-black/35 line-through tabular-nums">$3.99</span>
+                                    </div>
+                                <form action="/shop/cart/add" method="post" class="mt-3">
+                    <input type="hidden" name="_token" value="NzzZB1QU4i6RaQl9ZZ5zkdPkTlvExo0RCC8kgfIX" autocomplete="off">                    <input type="hidden" name="product_id" value="41">
+                    <input type="hidden" name="variation_id" value="41">
+                    <button class="w-full btn-brand text-xs py-2.5">Add to cart</button>
+                </form>
+                            </div>
+        </article>
+                    <article class="product-card group rounded-xl bg-white border border-line overflow-hidden">
+            <a href="http://japspos.test/shop/p/artisan-tortilla-chips-4" class="block relative aspect-square bg-mist overflow-hidden">
+                <img src="http://japspos.test/uploads/img/ecom_demo_4.jpg" alt="Artisan Tortilla Chips" loading="lazy"
+                     class="w-full h-full object-cover transition duration-500 group-hover:scale-[1.04]"
+                     onerror="this.onerror=null;this.src='http://japspos.test/img/default.png';">
+                                    <span class="absolute top-2 left-2 rounded bg-ink text-white text-[10px] font-bold uppercase px-2 py-1">New</span>
+                            </a>
+            <div class="p-3 md:p-3.5">
+                                    <div class="text-[10px] uppercase tracking-wider text-black/40 font-semibold mb-1">Snacks</div>
+                                <a href="http://japspos.test/shop/p/artisan-tortilla-chips-4" class="font-semibold text-sm leading-snug line-clamp-2 min-h-[2.5rem] hover:text-brand">
+                    Artisan Tortilla Chips
+                </a>
+                <div class="mt-1 text-[11px] text-black/40">SKU ECOM-004</div>
+                <div class="mt-2 flex items-baseline gap-2">
+                    <span class="font-extrabold tabular-nums text-brand">$4.99</span>
+                                    </div>
+                                <form action="/shop/cart/add" method="post" class="mt-3">
+                    <input type="hidden" name="_token" value="NzzZB1QU4i6RaQl9ZZ5zkdPkTlvExo0RCC8kgfIX" autocomplete="off">                    <input type="hidden" name="product_id" value="42">
+                    <input type="hidden" name="variation_id" value="42">
+                    <button class="w-full btn-brand text-xs py-2.5">Add to cart</button>
+                </form>
+                            </div>
+        </article>
+                    <article class="product-card group rounded-xl bg-white border border-line overflow-hidden">
+            <a href="http://japspos.test/shop/p/dark-chocolate-sea-salt-5" class="block relative aspect-square bg-mist overflow-hidden">
+                <img src="http://japspos.test/uploads/img/ecom_demo_5.jpg" alt="Dark Chocolate Sea Salt" loading="lazy"
+                     class="w-full h-full object-cover transition duration-500 group-hover:scale-[1.04]"
+                     onerror="this.onerror=null;this.src='http://japspos.test/img/default.png';">
+                                    <span class="absolute top-2 left-2 rounded bg-ink text-white text-[10px] font-bold uppercase px-2 py-1">New</span>
+                            </a>
+            <div class="p-3 md:p-3.5">
+                                    <div class="text-[10px] uppercase tracking-wider text-black/40 font-semibold mb-1">Snacks</div>
+                                <a href="http://japspos.test/shop/p/dark-chocolate-sea-salt-5" class="font-semibold text-sm leading-snug line-clamp-2 min-h-[2.5rem] hover:text-brand">
+                    Dark Chocolate Sea Salt
+                </a>
+                <div class="mt-1 text-[11px] text-black/40">SKU ECOM-005</div>
+                <div class="mt-2 flex items-baseline gap-2">
+                    <span class="font-extrabold tabular-nums text-brand">$5.49</span>
+                                    </div>
+                                <form action="/shop/cart/add" method="post" class="mt-3">
+                    <input type="hidden" name="_token" value="NzzZB1QU4i6RaQl9ZZ5zkdPkTlvExo0RCC8kgfIX" autocomplete="off">                    <input type="hidden" name="product_id" value="43">
+                    <input type="hidden" name="variation_id" value="43">
+                    <button class="w-full btn-brand text-xs py-2.5">Add to cart</button>
+                </form>
+                            </div>
+        </article>
+                    <article class="product-card group rounded-xl bg-white border border-line overflow-hidden">
+            <a href="http://japspos.test/shop/p/honey-almond-granola-6" class="block relative aspect-square bg-mist overflow-hidden">
+                <img src="http://japspos.test/uploads/img/ecom_demo_6.jpg" alt="Honey Almond Granola" loading="lazy"
+                     class="w-full h-full object-cover transition duration-500 group-hover:scale-[1.04]"
+                     onerror="this.onerror=null;this.src='http://japspos.test/img/default.png';">
+                                    <span class="absolute top-2 left-2 rounded bg-brand text-white text-[10px] font-bold uppercase px-2 py-1">Sale</span>
+                            </a>
+            <div class="p-3 md:p-3.5">
+                                    <div class="text-[10px] uppercase tracking-wider text-black/40 font-semibold mb-1">Snacks</div>
+                                <a href="http://japspos.test/shop/p/honey-almond-granola-6" class="font-semibold text-sm leading-snug line-clamp-2 min-h-[2.5rem] hover:text-brand">
+                    Honey Almond Granola
+                </a>
+                <div class="mt-1 text-[11px] text-black/40">SKU ECOM-006</div>
+                <div class="mt-2 flex items-baseline gap-2">
+                    <span class="font-extrabold tabular-nums text-brand">$5.94</span>
+                                            <span class="text-xs text-black/35 line-through tabular-nums">$6.99</span>
+                                    </div>
+                                <form action="/shop/cart/add" method="post" class="mt-3">
+                    <input type="hidden" name="_token" value="NzzZB1QU4i6RaQl9ZZ5zkdPkTlvExo0RCC8kgfIX" autocomplete="off">                    <input type="hidden" name="product_id" value="44">
+                    <input type="hidden" name="variation_id" value="44">
+                    <button class="w-full btn-brand text-xs py-2.5">Add to cart</button>
+                </form>
+                            </div>
+        </article>
+                    <article class="product-card group rounded-xl bg-white border border-line overflow-hidden">
+            <a href="http://japspos.test/shop/p/sea-salt-pretzel-twists-7" class="block relative aspect-square bg-mist overflow-hidden">
+                <img src="http://japspos.test/uploads/img/ecom_demo_7.jpg" alt="Sea Salt Pretzel Twists" loading="lazy"
+                     class="w-full h-full object-cover transition duration-500 group-hover:scale-[1.04]"
+                     onerror="this.onerror=null;this.src='http://japspos.test/img/default.png';">
+                            </a>
+            <div class="p-3 md:p-3.5">
+                                    <div class="text-[10px] uppercase tracking-wider text-black/40 font-semibold mb-1">Snacks</div>
+                                <a href="http://japspos.test/shop/p/sea-salt-pretzel-twists-7" class="font-semibold text-sm leading-snug line-clamp-2 min-h-[2.5rem] hover:text-brand">
+                    Sea Salt Pretzel Twists
+                </a>
+                <div class="mt-1 text-[11px] text-black/40">SKU ECOM-007</div>
+                <div class="mt-2 flex items-baseline gap-2">
+                    <span class="font-extrabold tabular-nums text-brand">$3.79</span>
+                                    </div>
+                                <form action="/shop/cart/add" method="post" class="mt-3">
+                    <input type="hidden" name="_token" value="NzzZB1QU4i6RaQl9ZZ5zkdPkTlvExo0RCC8kgfIX" autocomplete="off">                    <input type="hidden" name="product_id" value="45">
+                    <input type="hidden" name="variation_id" value="45">
+                    <button class="w-full btn-brand text-xs py-2.5">Add to cart</button>
+                </form>
+                            </div>
+        </article>
+    </div>
+</section>
+
+<section class="bg-white border-y border-line">
+    <div class="max-w-[1400px] mx-auto px-4 py-10">
+        <div class="flex items-end justify-between mb-5 gap-3">
+            <div>
+                <h2 class="text-2xl md:text-3xl font-extrabold">New arrivals</h2>
+                <p class="text-sm text-black/50 mt-1">Just added to the catalog</p>
+            </div>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
+                    <article class="product-card group rounded-xl bg-white border border-line overflow-hidden">
+            <a href="http://japspos.test/shop/p/7" class="block relative aspect-square bg-mist overflow-hidden">
+                <img src="http://japspos.test/uploads/img/ecom_fix_7.jpg" alt="Bugler RYO Tobacco" loading="lazy"
+                     class="w-full h-full object-cover transition duration-500 group-hover:scale-[1.04]"
+                     onerror="this.onerror=null;this.src='http://japspos.test/img/default.png';">
+                                    <span class="absolute top-2 left-2 rounded bg-ink text-white text-[10px] font-bold uppercase px-2 py-1">New</span>
+                            </a>
+            <div class="p-3 md:p-3.5">
+                                    <div class="text-[10px] uppercase tracking-wider text-black/40 font-semibold mb-1">Tobacco</div>
+                                <a href="http://japspos.test/shop/p/7" class="font-semibold text-sm leading-snug line-clamp-2 min-h-[2.5rem] hover:text-brand">
+                    Bugler RYO Tobacco
+                </a>
+                <div class="mt-1 text-[11px] text-black/40">SKU TOB-RYO-BUG</div>
+                <div class="mt-2 flex items-baseline gap-2">
+                    <span class="font-extrabold tabular-nums text-brand">$12.00</span>
+                                    </div>
+                                <form action="/shop/cart/add" method="post" class="mt-3">
+                    <input type="hidden" name="_token" value="NzzZB1QU4i6RaQl9ZZ5zkdPkTlvExo0RCC8kgfIX" autocomplete="off">                    <input type="hidden" name="product_id" value="7">
+                    <input type="hidden" name="variation_id" value="7">
+                    <button class="w-full btn-brand text-xs py-2.5">Add to cart</button>
+                </form>
+                            </div>
+        </article>
+                    <article class="product-card group rounded-xl bg-white border border-line overflow-hidden">
+            <a href="http://japspos.test/shop/p/craft-rolling-tobacco-tin-1" class="block relative aspect-square bg-mist overflow-hidden">
+                <img src="http://japspos.test/uploads/img/ecom_demo_1.jpg" alt="Craft Rolling Tobacco Tin" loading="lazy"
+                     class="w-full h-full object-cover transition duration-500 group-hover:scale-[1.04]"
+                     onerror="this.onerror=null;this.src='http://japspos.test/img/default.png';">
+                                    <span class="absolute top-2 left-2 rounded bg-ink text-white text-[10px] font-bold uppercase px-2 py-1">New</span>
+                            </a>
+            <div class="p-3 md:p-3.5">
+                                    <div class="text-[10px] uppercase tracking-wider text-black/40 font-semibold mb-1">Tobacco</div>
+                                <a href="http://japspos.test/shop/p/craft-rolling-tobacco-tin-1" class="font-semibold text-sm leading-snug line-clamp-2 min-h-[2.5rem] hover:text-brand">
+                    Craft Rolling Tobacco Tin
+                </a>
+                <div class="mt-1 text-[11px] text-black/40">SKU ECOM-001</div>
+                <div class="mt-2 flex items-baseline gap-2">
+                    <span class="font-extrabold tabular-nums text-brand">$12.00</span>
+                                    </div>
+                                <form action="/shop/cart/add" method="post" class="mt-3">
+                    <input type="hidden" name="_token" value="NzzZB1QU4i6RaQl9ZZ5zkdPkTlvExo0RCC8kgfIX" autocomplete="off">                    <input type="hidden" name="product_id" value="39">
+                    <input type="hidden" name="variation_id" value="39">
+                    <button class="w-full btn-brand text-xs py-2.5">Add to cart</button>
+                </form>
+                            </div>
+        </article>
+                    <article class="product-card group rounded-xl bg-white border border-line overflow-hidden">
+            <a href="http://japspos.test/shop/p/artisan-tortilla-chips-4" class="block relative aspect-square bg-mist overflow-hidden">
+                <img src="http://japspos.test/uploads/img/ecom_demo_4.jpg" alt="Artisan Tortilla Chips" loading="lazy"
+                     class="w-full h-full object-cover transition duration-500 group-hover:scale-[1.04]"
+                     onerror="this.onerror=null;this.src='http://japspos.test/img/default.png';">
+                                    <span class="absolute top-2 left-2 rounded bg-ink text-white text-[10px] font-bold uppercase px-2 py-1">New</span>
+                            </a>
+            <div class="p-3 md:p-3.5">
+                                    <div class="text-[10px] uppercase tracking-wider text-black/40 font-semibold mb-1">Snacks</div>
+                                <a href="http://japspos.test/shop/p/artisan-tortilla-chips-4" class="font-semibold text-sm leading-snug line-clamp-2 min-h-[2.5rem] hover:text-brand">
+                    Artisan Tortilla Chips
+                </a>
+                <div class="mt-1 text-[11px] text-black/40">SKU ECOM-004</div>
+                <div class="mt-2 flex items-baseline gap-2">
+                    <span class="font-extrabold tabular-nums text-brand">$4.99</span>
+                                    </div>
+                                <form action="/shop/cart/add" method="post" class="mt-3">
+                    <input type="hidden" name="_token" value="NzzZB1QU4i6RaQl9ZZ5zkdPkTlvExo0RCC8kgfIX" autocomplete="off">                    <input type="hidden" name="product_id" value="42">
+                    <input type="hidden" name="variation_id" value="42">
+                    <button class="w-full btn-brand text-xs py-2.5">Add to cart</button>
+                </form>
+                            </div>
+        </article>
+                    <article class="product-card group rounded-xl bg-white border border-line overflow-hidden">
+            <a href="http://japspos.test/shop/p/dark-chocolate-sea-salt-5" class="block relative aspect-square bg-mist overflow-hidden">
+                <img src="http://japspos.test/uploads/img/ecom_demo_5.jpg" alt="Dark Chocolate Sea Salt" loading="lazy"
+                     class="w-full h-full object-cover transition duration-500 group-hover:scale-[1.04]"
+                     onerror="this.onerror=null;this.src='http://japspos.test/img/default.png';">
+                                    <span class="absolute top-2 left-2 rounded bg-ink text-white text-[10px] font-bold uppercase px-2 py-1">New</span>
+                            </a>
+            <div class="p-3 md:p-3.5">
+                                    <div class="text-[10px] uppercase tracking-wider text-black/40 font-semibold mb-1">Snacks</div>
+                                <a href="http://japspos.test/shop/p/dark-chocolate-sea-salt-5" class="font-semibold text-sm leading-snug line-clamp-2 min-h-[2.5rem] hover:text-brand">
+                    Dark Chocolate Sea Salt
+                </a>
+                <div class="mt-1 text-[11px] text-black/40">SKU ECOM-005</div>
+                <div class="mt-2 flex items-baseline gap-2">
+                    <span class="font-extrabold tabular-nums text-brand">$5.49</span>
+                                    </div>
+                                <form action="/shop/cart/add" method="post" class="mt-3">
+                    <input type="hidden" name="_token" value="NzzZB1QU4i6RaQl9ZZ5zkdPkTlvExo0RCC8kgfIX" autocomplete="off">                    <input type="hidden" name="product_id" value="43">
+                    <input type="hidden" name="variation_id" value="43">
+                    <button class="w-full btn-brand text-xs py-2.5">Add to cart</button>
+                </form>
+                            </div>
+        </article>
+                    <article class="product-card group rounded-xl bg-white border border-line overflow-hidden">
+            <a href="http://japspos.test/shop/p/cold-brew-coffee-12oz-8" class="block relative aspect-square bg-mist overflow-hidden">
+                <img src="http://japspos.test/uploads/img/ecom_demo_8.jpg" alt="Cold Brew Coffee 12oz" loading="lazy"
+                     class="w-full h-full object-cover transition duration-500 group-hover:scale-[1.04]"
+                     onerror="this.onerror=null;this.src='http://japspos.test/img/default.png';">
+                                    <span class="absolute top-2 left-2 rounded bg-ink text-white text-[10px] font-bold uppercase px-2 py-1">New</span>
+                            </a>
+            <div class="p-3 md:p-3.5">
+                                    <div class="text-[10px] uppercase tracking-wider text-black/40 font-semibold mb-1">Beverages</div>
+                                <a href="http://japspos.test/shop/p/cold-brew-coffee-12oz-8" class="font-semibold text-sm leading-snug line-clamp-2 min-h-[2.5rem] hover:text-brand">
+                    Cold Brew Coffee 12oz
+                </a>
+                <div class="mt-1 text-[11px] text-black/40">SKU ECOM-008</div>
+                <div class="mt-2 flex items-baseline gap-2">
+                    <span class="font-extrabold tabular-nums text-brand">$4.50</span>
+                                    </div>
+                                <form action="/shop/cart/add" method="post" class="mt-3">
+                    <input type="hidden" name="_token" value="NzzZB1QU4i6RaQl9ZZ5zkdPkTlvExo0RCC8kgfIX" autocomplete="off">                    <input type="hidden" name="product_id" value="46">
+                    <input type="hidden" name="variation_id" value="46">
+                    <button class="w-full btn-brand text-xs py-2.5">Add to cart</button>
+                </form>
+                            </div>
+        </article>
+                    <article class="product-card group rounded-xl bg-white border border-line overflow-hidden">
+            <a href="http://japspos.test/shop/p/still-spring-water-1l-11" class="block relative aspect-square bg-mist overflow-hidden">
+                <img src="http://japspos.test/uploads/img/ecom_demo_11.jpg" alt="Still Spring Water 1L" loading="lazy"
+                     class="w-full h-full object-cover transition duration-500 group-hover:scale-[1.04]"
+                     onerror="this.onerror=null;this.src='http://japspos.test/img/default.png';">
+                                    <span class="absolute top-2 left-2 rounded bg-ink text-white text-[10px] font-bold uppercase px-2 py-1">New</span>
+                            </a>
+            <div class="p-3 md:p-3.5">
+                                    <div class="text-[10px] uppercase tracking-wider text-black/40 font-semibold mb-1">Beverages</div>
+                                <a href="http://japspos.test/shop/p/still-spring-water-1l-11" class="font-semibold text-sm leading-snug line-clamp-2 min-h-[2.5rem] hover:text-brand">
+                    Still Spring Water 1L
+                </a>
+                <div class="mt-1 text-[11px] text-black/40">SKU ECOM-011</div>
+                <div class="mt-2 flex items-baseline gap-2">
+                    <span class="font-extrabold tabular-nums text-brand">$1.99</span>
+                                    </div>
+                                <form action="/shop/cart/add" method="post" class="mt-3">
+                    <input type="hidden" name="_token" value="NzzZB1QU4i6RaQl9ZZ5zkdPkTlvExo0RCC8kgfIX" autocomplete="off">                    <input type="hidden" name="product_id" value="49">
+                    <input type="hidden" name="variation_id" value="49">
+                    <button class="w-full btn-brand text-xs py-2.5">Add to cart</button>
+                </form>
+                            </div>
+        </article>
+                    <article class="product-card group rounded-xl bg-white border border-line overflow-hidden">
+            <a href="http://japspos.test/shop/p/charcoal-face-wash-14" class="block relative aspect-square bg-mist overflow-hidden">
+                <img src="http://japspos.test/uploads/img/ecom_demo_14.jpg" alt="Charcoal Face Wash" loading="lazy"
+                     class="w-full h-full object-cover transition duration-500 group-hover:scale-[1.04]"
+                     onerror="this.onerror=null;this.src='http://japspos.test/img/default.png';">
+                                    <span class="absolute top-2 left-2 rounded bg-ink text-white text-[10px] font-bold uppercase px-2 py-1">New</span>
+                            </a>
+            <div class="p-3 md:p-3.5">
+                                    <div class="text-[10px] uppercase tracking-wider text-black/40 font-semibold mb-1">Personal Care</div>
+                                <a href="http://japspos.test/shop/p/charcoal-face-wash-14" class="font-semibold text-sm leading-snug line-clamp-2 min-h-[2.5rem] hover:text-brand">
+                    Charcoal Face Wash
+                </a>
+                <div class="mt-1 text-[11px] text-black/40">SKU ECOM-014</div>
+                <div class="mt-2 flex items-baseline gap-2">
+                    <span class="font-extrabold tabular-nums text-brand">$9.49</span>
+                                    </div>
+                                <form action="/shop/cart/add" method="post" class="mt-3">
+                    <input type="hidden" name="_token" value="NzzZB1QU4i6RaQl9ZZ5zkdPkTlvExo0RCC8kgfIX" autocomplete="off">                    <input type="hidden" name="product_id" value="52">
+                    <input type="hidden" name="variation_id" value="52">
+                    <button class="w-full btn-brand text-xs py-2.5">Add to cart</button>
+                </form>
+                            </div>
+        </article>
+                    <article class="product-card group rounded-xl bg-white border border-line overflow-hidden">
+            <a href="http://japspos.test/shop/p/eco-dish-soap-17" class="block relative aspect-square bg-mist overflow-hidden">
+                <img src="http://japspos.test/uploads/img/ecom_demo_17.jpg" alt="Eco Dish Soap" loading="lazy"
+                     class="w-full h-full object-cover transition duration-500 group-hover:scale-[1.04]"
+                     onerror="this.onerror=null;this.src='http://japspos.test/img/default.png';">
+                                    <span class="absolute top-2 left-2 rounded bg-ink text-white text-[10px] font-bold uppercase px-2 py-1">New</span>
+                            </a>
+            <div class="p-3 md:p-3.5">
+                                    <div class="text-[10px] uppercase tracking-wider text-black/40 font-semibold mb-1">Household</div>
+                                <a href="http://japspos.test/shop/p/eco-dish-soap-17" class="font-semibold text-sm leading-snug line-clamp-2 min-h-[2.5rem] hover:text-brand">
+                    Eco Dish Soap
+                </a>
+                <div class="mt-1 text-[11px] text-black/40">SKU ECOM-017</div>
+                <div class="mt-2 flex items-baseline gap-2">
+                    <span class="font-extrabold tabular-nums text-brand">$4.29</span>
+                                    </div>
+                                <form action="/shop/cart/add" method="post" class="mt-3">
+                    <input type="hidden" name="_token" value="NzzZB1QU4i6RaQl9ZZ5zkdPkTlvExo0RCC8kgfIX" autocomplete="off">                    <input type="hidden" name="product_id" value="55">
+                    <input type="hidden" name="variation_id" value="55">
+                    <button class="w-full btn-brand text-xs py-2.5">Add to cart</button>
+                </form>
+                            </div>
+        </article>
+    </div>
+    </div>
+</section>
+
+<section class="max-w-[1400px] mx-auto px-4 py-10">
+    <div class="flex items-end justify-between mb-5 gap-3">
+        <div>
+            <h2 class="text-2xl md:text-3xl font-extrabold">Best sellers</h2>
+            <p class="text-sm text-black/50 mt-1">Moving fast across accounts</p>
+        </div>
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
+                    <article class="product-card group rounded-xl bg-white border border-line overflow-hidden">
+            <a href="http://japspos.test/shop/p/7" class="block relative aspect-square bg-mist overflow-hidden">
+                <img src="http://japspos.test/uploads/img/ecom_fix_7.jpg" alt="Bugler RYO Tobacco" loading="lazy"
+                     class="w-full h-full object-cover transition duration-500 group-hover:scale-[1.04]"
+                     onerror="this.onerror=null;this.src='http://japspos.test/img/default.png';">
+                                    <span class="absolute top-2 left-2 rounded bg-ink text-white text-[10px] font-bold uppercase px-2 py-1">New</span>
+                            </a>
+            <div class="p-3 md:p-3.5">
+                                    <div class="text-[10px] uppercase tracking-wider text-black/40 font-semibold mb-1">Tobacco</div>
+                                <a href="http://japspos.test/shop/p/7" class="font-semibold text-sm leading-snug line-clamp-2 min-h-[2.5rem] hover:text-brand">
+                    Bugler RYO Tobacco
+                </a>
+                <div class="mt-1 text-[11px] text-black/40">SKU TOB-RYO-BUG</div>
+                <div class="mt-2 flex items-baseline gap-2">
+                    <span class="font-extrabold tabular-nums text-brand">$12.00</span>
+                                    </div>
+                                <form action="/shop/cart/add" method="post" class="mt-3">
+                    <input type="hidden" name="_token" value="NzzZB1QU4i6RaQl9ZZ5zkdPkTlvExo0RCC8kgfIX" autocomplete="off">                    <input type="hidden" name="product_id" value="7">
+                    <input type="hidden" name="variation_id" value="7">
+                    <button class="w-full btn-brand text-xs py-2.5">Add to cart</button>
+                </form>
+                            </div>
+        </article>
+    </div>
+</section>
+
+<section class="max-w-[1400px] mx-auto px-4 pb-12">
+    <h2 class="text-2xl md:text-3xl font-extrabold mb-5">Shop by department</h2>
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                                <a href="http://japspos.test/shop/c/10" class="group relative aspect-[4/3] rounded-xl overflow-hidden bg-mist border border-line">
+                                    <img src="http://japspos.test/uploads/img/ecom_cat_beverages.jpg" alt="Beverages" class="absolute inset-0 w-full h-full object-cover transition duration-500 group-hover:scale-105">
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent"></div>
+                <div class="absolute bottom-0 p-3 text-white font-bold">Beverages</div>
+            </a>
+                                <a href="http://japspos.test/shop/c/12" class="group relative aspect-[4/3] rounded-xl overflow-hidden bg-mist border border-line">
+                                    <img src="http://japspos.test/uploads/img/ecom_cat_household.jpg" alt="Household" class="absolute inset-0 w-full h-full object-cover transition duration-500 group-hover:scale-105">
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent"></div>
+                <div class="absolute bottom-0 p-3 text-white font-bold">Household</div>
+            </a>
+                                <a href="http://japspos.test/shop/c/11" class="group relative aspect-[4/3] rounded-xl overflow-hidden bg-mist border border-line">
+                                    <img src="http://japspos.test/uploads/img/ecom_cat_personal-care.jpg" alt="Personal Care" class="absolute inset-0 w-full h-full object-cover transition duration-500 group-hover:scale-105">
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent"></div>
+                <div class="absolute bottom-0 p-3 text-white font-bold">Personal Care</div>
+            </a>
+                                <a href="http://japspos.test/shop/c/9" class="group relative aspect-[4/3] rounded-xl overflow-hidden bg-mist border border-line">
+                                    <img src="http://japspos.test/uploads/img/ecom_cat_snacks.jpg" alt="Snacks" class="absolute inset-0 w-full h-full object-cover transition duration-500 group-hover:scale-105">
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent"></div>
+                <div class="absolute bottom-0 p-3 text-white font-bold">Snacks</div>
+            </a>
+                                <a href="http://japspos.test/shop/c/1" class="group relative aspect-[4/3] rounded-xl overflow-hidden bg-mist border border-line">
+                                    <img src="http://japspos.test/uploads/img/ecom_cat_tobacco.jpg" alt="Tobacco" class="absolute inset-0 w-full h-full object-cover transition duration-500 group-hover:scale-105">
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent"></div>
+                <div class="absolute bottom-0 p-3 text-white font-bold">Tobacco</div>
+            </a>
+            </div>
+</section>
+
+<section class="max-w-[1400px] mx-auto px-4 pb-14">
+    <div class="rounded-2xl bg-slatebar text-white px-6 py-10 md:px-10 grid md:grid-cols-2 gap-6 items-center">
+        <div>
+            <h2 class="text-2xl md:text-3xl font-extrabold mb-2">Open a wholesale account</h2>
+            <p class="text-white/65 text-sm">Business details, shipping, and license info — get approved to order.</p>
+        </div>
+        <div class="flex flex-wrap gap-3 md:justify-end">
+            <a href="http://japspos.test/shop/register" class="btn-brand">Sign up</a>
+            <a href="http://japspos.test/shop/login" class="rounded-lg border border-white/30 px-5 py-2.5 text-sm font-semibold hover:bg-white/10">Login</a>
+        </div>
+    </div>
+</section>
+</main>
+
+<footer class="mt-16 bg-slatebar text-white">
+    <div class="max-w-[1400px] mx-auto px-4 py-12 grid md:grid-cols-4 gap-8">
+        <div class="md:col-span-2">
+            <div class="font-extrabold text-xl mb-2">Japs Wholesale</div>
+            <p class="text-white/65 text-sm max-w-md leading-relaxed">
+                Shop curated snacks, beverages, personal care and home essentials. Live POS inventory, secure checkout, USA shipping.
+            </p>
+        </div>
+        <div>
+            <div class="text-xs font-bold uppercase tracking-wider text-white/45 mb-3">Shop</div>
+            <div class="space-y-2 text-sm text-white/80">
+                <a class="block hover:text-white" href="http://japspos.test/shop">All products</a>
+                                    <a class="block hover:text-white" href="http://japspos.test/shop/c/10">Beverages</a>
+                                    <a class="block hover:text-white" href="http://japspos.test/shop/c/12">Household</a>
+                                    <a class="block hover:text-white" href="http://japspos.test/shop/c/11">Personal Care</a>
+                                    <a class="block hover:text-white" href="http://japspos.test/shop/c/9">Snacks</a>
+                                    <a class="block hover:text-white" href="http://japspos.test/shop/c/1">Tobacco</a>
+                            </div>
+        </div>
+        <div>
+            <div class="text-xs font-bold uppercase tracking-wider text-white/45 mb-3">Account</div>
+            <div class="space-y-2 text-sm text-white/80">
+                <a class="block hover:text-white" href="http://japspos.test/shop/login">Login</a>
+                <a class="block hover:text-white" href="http://japspos.test/shop/register">Wholesale sign up</a>
+                <a class="block hover:text-white" href="http://japspos.test/shop/track">Track order</a>
+                <a class="block hover:text-white" href="http://japspos.test/shop/contact">Contact</a>
+            </div>
+        </div>
+    </div>
+    <div class="border-t border-white/10">
+        <div class="max-w-[1400px] mx-auto px-4 py-4 text-xs text-white/45 flex flex-wrap justify-between gap-2">
+            <span>© 2026 Japs Wholesale. All rights reserved.</span>
+            <span>Wholesale · Age-restricted products</span>
+        </div>
+    </div>
+</footer>
+
+<script>
+document.getElementById('navToggle')?.addEventListener('click', () => {
+    document.getElementById('mobileNav')?.classList.toggle('hidden');
+});
+</script>
+</body>
+</html>

@@ -46,10 +46,61 @@ class EcommerceServiceProvider extends ServiceProvider
                     ->where(function ($q) {
                         $q->whereNull('parent_id')->orWhere('parent_id', 0);
                     })
+                    ->with(['sub_categories' => function ($q) {
+                        $q->orderBy('name');
+                    }])
                     ->orderBy('name')
-                    ->limit(10)
+                    ->limit(12)
                     ->get();
+
+                // Brands + sample product image for mega menu tiles
+                foreach ($nav_categories as $cat) {
+                    $subIds = $cat->sub_categories->pluck('id')->all();
+                    $catIds = array_merge([$cat->id], $subIds);
+
+                    $brandRows = \App\Product::query()
+                        ->where('business_id', $business_id)
+                        ->whereIn('sales_channel', ['pos_ecommerce', 'ecommerce_only'])
+                        ->where(function ($q) use ($catIds) {
+                            $q->whereIn('category_id', $catIds)->orWhereIn('sub_category_id', $catIds);
+                        })
+                        ->whereNotNull('brand_id')
+                        ->select('brand_id', 'image')
+                        ->orderByDesc('id')
+                        ->get()
+                        ->groupBy('brand_id');
+
+                    $megaBrands = collect();
+                    foreach ($brandRows as $brandId => $rows) {
+                        $brand = \App\Brands::find($brandId);
+                        if (! $brand) {
+                            continue;
+                        }
+                        $img = optional($rows->first(fn ($r) => ! empty($r->image)))->image;
+                        $megaBrands->push((object) [
+                            'id' => $brand->id,
+                            'name' => $brand->name,
+                            'image' => $img,
+                        ]);
+                        if ($megaBrands->count() >= 12) {
+                            break;
+                        }
+                    }
+
+                    // Fallback: any brands if category has none yet
+                    if ($megaBrands->isEmpty()) {
+                        $megaBrands = \App\Brands::where('business_id', $business_id)
+                            ->orderBy('name')
+                            ->limit(8)
+                            ->get()
+                            ->map(fn ($b) => (object) ['id' => $b->id, 'name' => $b->name, 'image' => null]);
+                    }
+
+                    $cat->setAttribute('mega_brands', $megaBrands);
+                }
+
                 $view->with('nav_categories', $nav_categories);
+                $view->with('nav_brands', \App\Brands::where('business_id', $business_id)->orderBy('name')->limit(20)->get());
             } catch (\Throwable $e) {
                 // keep existing shared defaults
             }
