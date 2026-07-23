@@ -566,8 +566,18 @@ class ContactController extends Controller
         //Added check because $users is of no use if enable_contact_assign if false
         $users = config('constants.enable_contact_assign') ? User::forDropdown($business_id, false, false, false, true) : [];
 
+        $sources = [];
+        $life_stages = [];
+        if ($this->moduleUtil->isModuleInstalled('Crm')) {
+            $sources = \Modules\Crm\Entities\CrmContact::getSourcesDropdown($business_id);
+            $life_stages = \Modules\Crm\Entities\CrmContact::getLifeStagesDropdown($business_id);
+            if (empty($users)) {
+                $users = User::forDropdown($business_id, false, false, false, true);
+            }
+        }
+
         return view('contact.create')
-            ->with(compact('types', 'customer_groups', 'selected_type', 'module_form_parts', 'users'));
+            ->with(compact('types', 'customer_groups', 'selected_type', 'module_form_parts', 'users', 'sources', 'life_stages'));
     }
 
     /**
@@ -728,6 +738,12 @@ class ContactController extends Controller
                 return $this->moduleUtil->expiredResponse();
             }
 
+            if ($this->moduleUtil->isModuleInstalled('Crm') && $contact && $contact->type === 'lead') {
+                $contact = \Modules\Crm\Entities\CrmContact::where('business_id', $business_id)
+                    ->with('leadUsers')
+                    ->find($id);
+            }
+
             $types = [];
             if (auth()->user()->can('supplier.create')) {
                 $types['supplier'] = __('report.supplier');
@@ -759,8 +775,18 @@ class ContactController extends Controller
             //Added check because $users is of no use if enable_contact_assign if false
             $users = config('constants.enable_contact_assign') ? User::forDropdown($business_id, false, false, false, true) : [];
 
+            $sources = [];
+            $life_stages = [];
+            if ($this->moduleUtil->isModuleInstalled('Crm')) {
+                $sources = \Modules\Crm\Entities\CrmContact::getSourcesDropdown($business_id);
+                $life_stages = \Modules\Crm\Entities\CrmContact::getLifeStagesDropdown($business_id);
+                if (empty($users)) {
+                    $users = User::forDropdown($business_id, false, false, false, true);
+                }
+            }
+
             return view('contact.edit')
-                ->with(compact('contact', 'types', 'customer_groups', 'opening_balance', 'users'));
+                ->with(compact('contact', 'types', 'customer_groups', 'opening_balance', 'users', 'sources', 'life_stages'));
         }
     }
 
@@ -828,6 +854,8 @@ class ContactController extends Controller
                 event(new ContactCreatedOrModified($output['data'], 'updated'));
 
                 $this->contactUtil->activityLog($output['data'], 'edited');
+
+                $this->moduleUtil->getModuleData('after_contact_saved', ['contact' => $output['data'], 'input' => $request->input()]);
             } catch (\Exception $e) {
                 \Log::emergency('File:'.$e->getFile().'Line:'.$e->getLine().'Message:'.$e->getMessage());
 

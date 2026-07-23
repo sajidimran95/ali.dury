@@ -1,26 +1,50 @@
 @extends('layouts.app')
 @section('title', __('ecommerce::lang.orders'))
+
 @section('content')
-<section class="content-header"><h1>@lang('ecommerce::lang.orders')</h1></section>
-<section class="content">
-<div class="box"><div class="box-body table-responsive">
-<table class="table table-bordered">
-<thead><tr><th>Invoice</th><th>Customer</th><th>Total</th><th>Payment</th><th>Fulfillment</th><th>Date</th></tr></thead>
-<tbody>
-@foreach($orders as $order)
-@php $meta = $metas[$order->id] ?? null; @endphp
-<tr>
-<td><a href="{{ route('ecommerce.admin.orders.show', $order->id) }}">{{ $order->invoice_no }}</a></td>
-<td>{{ optional($order->contact)->name }}</td>
-<td>{{ number_format($order->final_total, 2) }}</td>
-<td>{{ $order->payment_status }}</td>
-<td>{{ $meta->fulfillment_status ?? '-' }}</td>
-<td>{{ $order->transaction_date }}</td>
-</tr>
-@endforeach
-</tbody>
-</table>
-{{ $orders->links() }}
-</div></div>
+<section class="content-header">
+    <h1 class="tw-text-xl md:tw-text-3xl tw-font-bold tw-text-black">@lang('ecommerce::lang.orders')</h1>
 </section>
+
+<section class="content">
+    @component('components.widget', ['class' => 'box-primary', 'title' => __('ecommerce::lang.orders')])
+        <table class="table table-bordered table-striped ajax_view" id="ecom_orders_table">
+            <thead>
+                <tr>
+                    <th>@lang('sale.invoice_no')</th>
+                    <th>@lang('sale.customer_name')</th>
+                    <th>@lang('sale.total_amount')</th>
+                    <th>@lang('sale.payment_status')</th>
+                    <th>@lang('ecommerce::lang.fulfillment')</th>
+                    <th>@lang('messages.date')</th>
+                </tr>
+            </thead>
+        </table>
+    @endcomponent
+</section>
+@endsection
+
+@section('javascript')
+<script type="text/javascript">
+    $(document).ready(function () {
+        var ecom_orders_table = $('#ecom_orders_table').DataTable({
+            processing: true,
+            serverSide: true,
+            fixedHeader: false,
+            aaSorting: [[5, 'desc']],
+            ajax: "{{ route('ecommerce.admin.orders') }}",
+            columns: [
+                { data: 'invoice_no', name: 'transactions.invoice_no' },
+                { data: 'customer_name', name: 'contacts.name' },
+                { data: 'final_total', name: 'transactions.final_total' },
+                { data: 'payment_status', name: 'transactions.payment_status' },
+                { data: 'fulfillment_status', name: 'ecom_order_meta.fulfillment_status' },
+                { data: 'transaction_date', name: 'transactions.transaction_date' }
+            ],
+            fnDrawCallback: function () {
+                __currency_convert_recursively($('#ecom_orders_table'));
+            }
+        });
+    });
+</script>
 @endsection

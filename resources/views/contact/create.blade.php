@@ -13,8 +13,8 @@
     } else {
       $url = action([\App\Http\Controllers\ContactController::class, 'store']);
       $type = isset($selected_type) ? $selected_type : '';
-      $sources = [];
-      $life_stages = [];
+      $sources = $sources ?? [];
+      $life_stages = $life_stages ?? [];
     }
   @endphp
     {!! Form::open(['url' => $url, 'method' => 'post', 'id' => $form_id ]) !!}

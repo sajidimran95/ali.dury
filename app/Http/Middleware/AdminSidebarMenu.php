@@ -11,10 +11,14 @@ class AdminSidebarMenu
 {
     /**
      * Zoho-style Sales submenu: customers first, then sales transactions.
+     * When CRM is installed, customers live under the CRM menu instead.
      */
     protected function addSalesCustomerMenuItems($sub): void
     {
-        if (auth()->user()->can('customer.view') || auth()->user()->can('customer.view_own')) {
+        $moduleUtil = new ModuleUtil();
+        $crm_installed = $moduleUtil->isModuleInstalled('Crm');
+
+        if (! $crm_installed && (auth()->user()->can('customer.view') || auth()->user()->can('customer.view_own'))) {
             $customerAttrs = [
                 'icon' => '',
                 'active' => request()->segment(1) == 'contacts' && request()->input('type') == 'customer',
@@ -48,14 +52,14 @@ class AdminSidebarMenu
                 $cgAttrs
             );
         }
-        if (auth()->user()->can('customer.create')) {
+        if (! $crm_installed && auth()->user()->can('customer.create')) {
             $sub->url(
                 action([\App\Http\Controllers\ContactController::class, 'getImportContacts']),
                 __('lang_v1.import_contacts'),
                 ['icon' => '', 'active' => request()->segment(1) == 'contacts' && request()->segment(2) == 'import']
             );
         }
-        if (! empty(env('GOOGLE_MAP_API_KEY')) && (auth()->user()->can('customer.view') || auth()->user()->can('customer.view_own'))) {
+        if (! $crm_installed && ! empty(env('GOOGLE_MAP_API_KEY')) && (auth()->user()->can('customer.view') || auth()->user()->can('customer.view_own'))) {
             $sub->url(
                 action([\App\Http\Controllers\ContactController::class, 'contactMap']),
                 __('lang_v1.map'),
@@ -452,7 +456,7 @@ class AdminSidebarMenu
                             }
                             $sub->url(
                                 action([\App\Http\Controllers\SellController::class, 'index']),
-                                __('lang_v1.all_sales'),
+                                __('lang_v1.invoices'),
                                 $salesAttrs
                             );
                         }

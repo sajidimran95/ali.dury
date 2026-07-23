@@ -10,8 +10,8 @@
         $lead_users = $contact->leadUsers->pluck('id');
     } else {
       $url = action([\App\Http\Controllers\ContactController::class, 'update'], [$contact->id]);
-      $sources = [];
-      $life_stages = [];
+      $sources = $sources ?? [];
+      $life_stages = $life_stages ?? [];
       $lead_users = [];
       $assigned_to_users = $contact->userHavingAccess->pluck('id');
     }

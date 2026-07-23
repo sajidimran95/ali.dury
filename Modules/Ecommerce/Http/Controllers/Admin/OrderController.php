@@ -4,24 +4,68 @@ namespace Modules\Ecommerce\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Transaction;
+use App\Utils\TransactionUtil;
+use App\Utils\Util;
 use Illuminate\Http\Request;
 use Modules\Ecommerce\Entities\EcomOrderMeta;
+use Yajra\DataTables\Facades\DataTables;
 
 class OrderController extends Controller
 {
+    protected $transactionUtil;
+
+    protected $commonUtil;
+
+    public function __construct(TransactionUtil $transactionUtil, Util $commonUtil)
+    {
+        $this->transactionUtil = $transactionUtil;
+        $this->commonUtil = $commonUtil;
+    }
+
     public function index()
     {
         $business_id = request()->session()->get('user.business_id');
-        $orders = Transaction::where('business_id', $business_id)
-            ->where('type', 'sell')
-            ->where('source', 'ecommerce')
-            ->with(['contact'])
-            ->orderByDesc('id')
-            ->paginate(25);
 
-        $metas = EcomOrderMeta::whereIn('transaction_id', $orders->pluck('id'))->get()->keyBy('transaction_id');
+        if (request()->ajax()) {
+            $orders = Transaction::where('transactions.business_id', $business_id)
+                ->where('transactions.type', 'sell')
+                ->where('transactions.source', 'ecommerce')
+                ->leftJoin('contacts', 'transactions.contact_id', '=', 'contacts.id')
+                ->leftJoin('ecom_order_meta', 'transactions.id', '=', 'ecom_order_meta.transaction_id')
+                ->select(
+                    'transactions.id',
+                    'transactions.invoice_no',
+                    'contacts.name as customer_name',
+                    'transactions.final_total',
+                    'transactions.payment_status',
+                    'ecom_order_meta.fulfillment_status',
+                    'transactions.transaction_date'
+                );
 
-        return view('ecommerce::admin.orders.index', compact('orders', 'metas'));
+            return DataTables::of($orders)
+                ->editColumn('invoice_no', function ($row) {
+                    $url = route('ecommerce.admin.orders.show', $row->id);
+
+                    return '<a href="'.$url.'">'.e($row->invoice_no).'</a>';
+                })
+                ->editColumn('customer_name', function ($row) {
+                    return $row->customer_name ?: '-';
+                })
+                ->editColumn('final_total', function ($row) {
+                    return '<span class="display_currency" data-currency_symbol="true" data-orig-value="'.$row->final_total.'">'.$row->final_total.'</span>';
+                })
+                ->editColumn('payment_status', function ($row) {
+                    return ucfirst($row->payment_status ?? '-');
+                })
+                ->editColumn('fulfillment_status', function ($row) {
+                    return $row->fulfillment_status ? ucfirst($row->fulfillment_status) : '-';
+                })
+                ->editColumn('transaction_date', '{{@format_datetime($transaction_date)}}')
+                ->rawColumns(['invoice_no', 'final_total'])
+                ->make(true);
+        }
+
+        return view('ecommerce::admin.orders.index');
     }
 
     public function show($id)
@@ -29,11 +73,63 @@ class OrderController extends Controller
         $business_id = request()->session()->get('user.business_id');
         $order = Transaction::where('business_id', $business_id)
             ->where('source', 'ecommerce')
-            ->with(['contact', 'sell_lines', 'sell_lines.product', 'sell_lines.variations'])
+            ->with([
+                'contact',
+                'payment_lines',
+                'sell_lines',
+                'sell_lines.product',
+                'sell_lines.product.unit',
+                'sell_lines.variations',
+                'sell_lines.variations.product_variation',
+            ])
             ->findOrFail($id);
         $meta = EcomOrderMeta::where('transaction_id', $order->id)->first();
+        $payment_types = $this->commonUtil->payment_types(null, true, $business_id);
+        $shipping_statuses = $this->commonUtil->shipping_statuses();
 
-        return view('ecommerce::admin.orders.show', compact('order', 'meta'));
+        return view('ecommerce::admin.orders.show', compact('order', 'meta', 'payment_types', 'shipping_statuses'));
+    }
+
+    public function downloadPdf($id)
+    {
+        if (! auth()->user()->can('print_invoice')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $business_id = request()->session()->get('user.business_id');
+        $order = Transaction::where('business_id', $business_id)
+            ->where('source', 'ecommerce')
+            ->findOrFail($id);
+
+        $receipt_contents = $this->transactionUtil->getPdfContentsForGivenTransaction($business_id, $order->id);
+        $receipt_details = $receipt_contents['receipt_details'];
+        $location_details = $receipt_contents['location_details'];
+        $is_email_attachment = false;
+
+        $blade_file = ! empty($receipt_details->is_export) ? 'download_export_pdf' : 'download_pdf';
+
+        $body = view('sale_pos.receipts.'.$blade_file)
+            ->with(compact('receipt_details', 'location_details', 'is_email_attachment'))
+            ->render();
+
+        $mpdf = new \Mpdf\Mpdf([
+            'tempDir' => public_path('uploads/temp'),
+            'mode' => 'utf-8',
+            'autoScriptToLang' => true,
+            'autoLangToFont' => true,
+            'autoVietnamese' => true,
+            'autoArabic' => true,
+            'margin_top' => 8,
+            'margin_bottom' => 8,
+            'format' => 'A4',
+        ]);
+
+        $mpdf->useSubstitutions = true;
+        $mpdf->SetWatermarkText($receipt_details->business_name, 0.1);
+        $mpdf->showWatermarkText = true;
+        $mpdf->SetTitle('INVOICE-'.$receipt_details->invoice_no.'.pdf');
+        $mpdf->WriteHTML($body);
+        $mpdf->Output('INVOICE-'.$receipt_details->invoice_no.'.pdf', 'I');
     }
 
     public function updateStatus(Request $request, $id)

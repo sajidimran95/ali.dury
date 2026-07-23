@@ -117,6 +117,15 @@ class Contact extends Authenticatable
     }
 
     /**
+     * CRM lead assignees (pivot crm_lead_users).
+     */
+    public function leadUsers()
+    {
+        return $this->belongsToMany(\App\User::class, 'crm_lead_users', 'contact_id', 'user_id')
+            ->withTimestamps();
+    }
+
+    /**
      * Return list of contact dropdown for a business
      *
      * @param $business_id int

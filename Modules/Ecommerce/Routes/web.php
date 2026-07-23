@@ -35,6 +35,7 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
         Route::get('products', [AdminProductController::class, 'index'])->name('products');
         Route::get('orders', [OrderController::class, 'index'])->name('orders');
         Route::get('orders/{id}', [OrderController::class, 'show'])->name('orders.show');
+        Route::get('orders/{id}/pdf', [OrderController::class, 'downloadPdf'])->name('orders.pdf');
         Route::post('orders/{id}/status', [OrderController::class, 'updateStatus'])->name('orders.status');
 
         Route::get('banners', [BannerController::class, 'index'])->name('banners');
