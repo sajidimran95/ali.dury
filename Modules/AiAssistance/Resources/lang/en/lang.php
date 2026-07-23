@@ -1,8 +1,8 @@
 <?php
 
 return [
-    'ai_assistant' => 'AI Assistant',
-    'ask_ai' => 'Ask AI',
+    'ask_ai' => 'Japs AI',
+    'ai_assistant' => 'Japs AI',
     'ask_about_data' => 'Ask about your data',
     'subtitle' => 'Live insights and a chat that knows — and can act on — your business data.',
     'chat_greeting' => 'Hi! Ask me about your sales, inventory, invoices, or pipeline — I can summarise data, suggest next actions, and (with your approval) take actions like creating customers, leads, or marking invoices paid.',
@@ -37,7 +37,7 @@ return [
     'reorder_desc' => 'Items at or below alert quantity',
     'follow_overdue_desc' => 'Collect outstanding invoice balances.',
     'review_leads_desc' => 'Move qualified leads forward or disqualify stale ones.',
-    'enable_ai' => 'Enable AI Assistant',
+    'enable_ai' => 'Enable Japs AI',
     'openai_api_key' => 'OpenAI API Key',
     'openai_api_key_help' => 'Leave blank to use OPENAI_API_KEY from .env',
     'openai_model' => 'Model',
@@ -48,9 +48,9 @@ return [
     'clear_chat' => 'Clear chat',
     'you' => 'You',
     'assistant' => 'Assistant',
-    'permission_access' => 'Access AI Assistant',
-    'permission_chat' => 'Use AI Chat',
-    'permission_settings' => 'Manage AI settings',
+    'permission_access' => 'Access Japs AI',
+    'permission_chat' => 'Use Japs AI Chat',
+    'permission_settings' => 'Manage Japs AI settings',
     'chat_error' => 'Could not get a response. Check your API key and try again.',
     'empty_message' => 'Please enter a question.',
     'chip_low_stock' => 'Show low stock items',
