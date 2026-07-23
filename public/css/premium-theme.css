@@ -37,7 +37,8 @@ body.zoho-theme,
     --p-shadow: 0 2px 10px rgba(15, 20, 37, 0.045);
     --p-shadow-md: 0 8px 22px rgba(15, 20, 37, 0.07);
     --p-shadow-lg: 0 16px 40px rgba(15, 20, 37, 0.12);
-    --p-font: Inter, "Segoe UI Variable", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --p-font: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --p-font-display: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
     --p-focus: 0 0 0 3px rgba(79, 143, 206, 0.28);
     --zoho-blue: var(--p-blue);
     --zoho-blue-hover: var(--p-blue-dark);
@@ -70,6 +71,10 @@ body.zoho-theme {
     color: var(--p-copy);
     background: var(--p-canvas) !important;
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    letter-spacing: -0.011em;
+    font-feature-settings: "ss01" on, "cv11" on;
 }
 
 body.zoho-theme:not(.lockscreen) {

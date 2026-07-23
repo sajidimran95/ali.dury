@@ -5,7 +5,13 @@
     --ai-border: #e5e7eb;
     --ai-muted: #6b7280;
     --ai-bg: #f8fafc;
-    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    --ai-ink: #111827;
+    font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    letter-spacing: -0.011em;
+    color: #3f4858;
 }
 .ai-panel {
     background: #fff;
@@ -38,16 +44,19 @@
 }
 .ai-panel__title {
     margin: 0;
-    font-size: 20px;
-    font-weight: 700;
-    color: #111827;
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--ai-ink, #111827);
     line-height: 1.2;
+    letter-spacing: -0.03em;
 }
 .ai-panel__sub {
     margin: 4px 0 0;
     color: var(--ai-muted);
     font-size: 13px;
-    line-height: 1.4;
+    font-weight: 500;
+    line-height: 1.45;
+    letter-spacing: -0.01em;
 }
 .ai-panel__actions {
     margin-left: auto;
@@ -129,17 +138,19 @@
     margin-bottom: 8px;
 }
 .ai-card__value {
-    font-size: 16px;
-    font-weight: 700;
-    color: #111827;
+    font-size: 17px;
+    font-weight: 800;
+    color: var(--ai-ink, #111827);
     margin-bottom: 8px;
     line-height: 1.35;
+    letter-spacing: -0.025em;
 }
 .ai-card ul {
     margin: 0;
     padding-left: 18px;
     color: #4b5563;
     font-size: 13px;
+    font-weight: 500;
 }
 .ai-card li { margin-bottom: 4px; }
 
@@ -344,11 +355,15 @@
     border-radius: 999px;
     color: #fff !important;
     text-decoration: none !important;
-    font-weight: 600;
+    font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: -0.02em;
     border: 0;
     background: linear-gradient(135deg, #7c3aed, #2563eb);
     box-shadow: 0 10px 25px rgba(37, 99, 235, 0.35);
     cursor: pointer;
+    -webkit-font-smoothing: antialiased;
 }
 .ai-ask-fab:hover { filter: brightness(1.05); color: #fff !important; }
 @media print {

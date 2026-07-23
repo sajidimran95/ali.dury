@@ -150,6 +150,10 @@
 	  transform: rotate(315deg);
 	}
 </style>
+{{-- Premium typography --}}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 {{-- Premium SaaS theme — final visual layer --}}
 <link rel="stylesheet" href="{{ asset('css/premium-theme.css?v='.$asset_v) }}">
 @if(!empty($__system_settings['additional_css']))
