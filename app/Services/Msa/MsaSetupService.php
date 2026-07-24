@@ -43,6 +43,9 @@ class MsaSetupService
             $this->ensureDemoSalesData($business, $parentId, $priceGroups, $customerGroups, $taxRates['default_id'] ?? null);
         }
 
+        // Always keep Retail/Wholesale price tiers in sync for tobacco products by subcategory.
+        $this->ensurePriceTiersByCategory((int) $business->id, $parentId, $priceGroups);
+
         return $parentId;
     }
 
@@ -444,6 +447,81 @@ class MsaSetupService
             $walkIn->custom_field3 = 'Y';
         }
         $walkIn->save();
+    }
+
+    /**
+     * Apply Retail / Wholesale selling-price-group tiers for tobacco products by subcategory.
+     * Retail = current sell_price_inc_tax; Wholesale = category-specific % of retail.
+     *
+     * @param  array{retail: SellingPriceGroup, wholesale: SellingPriceGroup}  $priceGroups
+     */
+    public function ensurePriceTiersByCategory(int $businessId, int $tobaccoCategoryId, array $priceGroups): void
+    {
+        $subs = Category::where('business_id', $businessId)
+            ->where('parent_id', $tobaccoCategoryId)
+            ->get()
+            ->keyBy(fn ($c) => strtolower($c->name));
+
+        // Wholesale as fraction of retail sell price, by MSA tobacco subcategory.
+        $wholesaleFactors = [
+            'cigarettes' => 0.90,
+            'moist spit tobacco' => 0.87,
+            'cigars' => 0.85,
+            'little filtered cigars' => 0.85,
+            'e-cigarettes' => 0.83,
+            'ryo tobacco' => 0.83,
+            'pipe tobacco' => 0.82,
+        ];
+
+        $subIds = $subs->pluck('id')->push($tobaccoCategoryId);
+
+        $products = Product::with('variations')
+            ->where('business_id', $businessId)
+            ->where(function ($q) use ($subIds) {
+                $q->whereIn('category_id', $subIds)
+                    ->orWhereIn('sub_category_id', $subIds);
+            })
+            ->get();
+
+        foreach ($products as $product) {
+            $subName = '';
+            if (! empty($product->sub_category_id)) {
+                $match = $subs->firstWhere('id', (int) $product->sub_category_id);
+                $subName = strtolower((string) ($match->name ?? ''));
+            }
+
+            $factor = $wholesaleFactors[$subName] ?? 0.85;
+
+            foreach ($product->variations as $variation) {
+                $retail = (float) ($variation->sell_price_inc_tax ?: $variation->default_sell_price ?: 0);
+                if ($retail <= 0) {
+                    continue;
+                }
+                $wholesale = round($retail * $factor, 4);
+
+                VariationGroupPrice::updateOrCreate(
+                    [
+                        'variation_id' => $variation->id,
+                        'price_group_id' => $priceGroups['retail']->id,
+                    ],
+                    [
+                        'price_inc_tax' => $retail,
+                        'price_type' => 'fixed',
+                    ]
+                );
+
+                VariationGroupPrice::updateOrCreate(
+                    [
+                        'variation_id' => $variation->id,
+                        'price_group_id' => $priceGroups['wholesale']->id,
+                    ],
+                    [
+                        'price_inc_tax' => $wholesale,
+                        'price_type' => 'fixed',
+                    ]
+                );
+            }
+        }
     }
 
     /**

@@ -111,13 +111,18 @@ class MsaTobReportExporter
 
         $variationIds = $this->soldVariationIds();
 
+        // Load all on-hand qty for this location (including zero/negative — MSA reports floor at 0).
         $stockRows = VariationLocationDetails::query()
             ->where('location_id', $this->location->id)
-            ->where('qty_available', '>', 0)
             ->pluck('qty_available', 'variation_id');
 
+        $this->options['_stock_rows'] = $stockRows->all();
+        $this->ensureWeekEndInventoryMaps();
+
+        $positiveStockIds = $stockRows->filter(fn ($qty) => (float) $qty > 0)->keys();
+
         $allVariationIds = collect($variationIds)
-            ->merge($stockRows->keys())
+            ->merge($positiveStockIds)
             ->unique()
             ->values();
 
@@ -128,14 +133,22 @@ class MsaTobReportExporter
             return;
         }
 
+        // Include stock-tracked products and any sold tobacco SKUs (even if enable_stock was off in QB).
         $products = Product::query()
             ->where('business_id', $this->business->id)
-            ->where('enable_stock', 1)
             ->when(! empty($categoryIds), function ($q) use ($categoryIds) {
                 $q->where(function ($inner) use ($categoryIds) {
                     $inner->whereIn('category_id', $categoryIds)
                         ->orWhereIn('sub_category_id', $categoryIds);
                 });
+            })
+            ->where(function ($q) use ($allVariationIds) {
+                $q->where('enable_stock', 1);
+                if ($allVariationIds->isNotEmpty()) {
+                    $q->orWhereHas('variations', function ($vq) use ($allVariationIds) {
+                        $vq->whereIn('id', $allVariationIds);
+                    });
+                }
             })
             ->with(['variations' => function ($q) use ($allVariationIds) {
                 if ($allVariationIds->isNotEmpty()) {
@@ -158,7 +171,8 @@ class MsaTobReportExporter
                 $promoCode = trim((string) ($product->product_custom_field3 ?? ''));
                 $promoDesc = trim((string) ($product->product_custom_field4 ?? ''));
                 $isPromo = ($promoCode !== '' || $promoDesc !== '') ? 'Y' : 'N';
-                $inventory = (float) ($stockRows[$variation->id] ?? 0);
+                // MSA inventory (003) = on-hand as of week ending (not "today").
+                $inventory = $this->inventoryAsOfWeekEnd((int) $variation->id);
 
                 $this->bids[$variation->id] = [
                     'variation_id' => $variation->id,
@@ -225,6 +239,7 @@ class MsaTobReportExporter
                     if (! $product || ! $variation) {
                         continue;
                     }
+                    $inventory = $this->inventoryAsOfWeekEnd((int) $variationId);
                     $this->bids[$variationId] = [
                         'variation_id' => $variationId,
                         'upc' => $this->upc($product, $variation),
@@ -235,9 +250,10 @@ class MsaTobReportExporter
                         'promo_indicator' => trim((string) ($product->product_custom_field3 ?? '')) !== '' ? 'Y' : 'N',
                         'msa_category' => $this->msaCategoryCode($product),
                         'promo_code' => trim((string) ($product->product_custom_field3 ?? '')),
-                        'inventory' => 0.0,
+                        'inventory' => $inventory,
                         'wholesaler_returns' => 0.0,
                     ];
+                    $this->sumInventory += $inventory;
                 }
 
                 $qty = (float) $line->quantity;
@@ -262,6 +278,8 @@ class MsaTobReportExporter
                 } else {
                     $this->purs[$contact->id][$key]['qty_shipped'] += $qty;
                     $this->sumQtyShipped += $qty;
+                    $lineDollars = (float) ($line->unit_price_inc_tax ?? $line->unit_price ?? 0) * $qty;
+                    $this->purs[$contact->id][$key]['dollars'] += $lineDollars;
                 }
             }
         }
@@ -270,6 +288,75 @@ class MsaTobReportExporter
         foreach ($this->purs as $contactId => $rows) {
             $this->purs[$contactId] = array_values($rows);
         }
+    }
+
+    /**
+     * Ending inventory for the MSA week:
+     * current on-hand + qty sold after week_ending - qty purchased after week_ending.
+     * Floored at 0 (MSA inventory measure is not negative).
+     */
+    protected function inventoryAsOfWeekEnd(int $variationId): float
+    {
+        $this->ensureWeekEndInventoryMaps();
+
+        $current = (float) ($this->options['_stock_rows'][$variationId] ?? 0);
+        $soldAfter = (float) ($this->options['_sold_after'][$variationId] ?? 0);
+        $returnedAfter = (float) ($this->options['_returned_after'][$variationId] ?? 0);
+        $purchasedAfter = (float) ($this->options['_purchased_after'][$variationId] ?? 0);
+
+        return max(0.0, $current + $soldAfter - $returnedAfter - $purchasedAfter);
+    }
+
+    protected function ensureWeekEndInventoryMaps(): void
+    {
+        if (isset($this->options['_inventory_maps_ready'])) {
+            return;
+        }
+
+        if (! isset($this->options['_stock_rows'])) {
+            $this->options['_stock_rows'] = VariationLocationDetails::query()
+                ->where('location_id', $this->location->id)
+                ->pluck('qty_available', 'variation_id')
+                ->all();
+        }
+
+        $this->options['_sold_after'] = DB::table('transaction_sell_lines as tsl')
+            ->join('transactions as t', 't.id', '=', 'tsl.transaction_id')
+            ->where('t.business_id', $this->business->id)
+            ->where('t.location_id', $this->location->id)
+            ->where('t.type', 'sell')
+            ->where('t.status', 'final')
+            ->whereDate('t.transaction_date', '>', $this->weekEnd->toDateString())
+            ->groupBy('tsl.variation_id')
+            ->selectRaw('tsl.variation_id, SUM(tsl.quantity) as qty')
+            ->pluck('qty', 'variation_id')
+            ->all();
+
+        $this->options['_returned_after'] = DB::table('transaction_sell_lines as tsl')
+            ->join('transactions as t', 't.id', '=', 'tsl.transaction_id')
+            ->where('t.business_id', $this->business->id)
+            ->where('t.location_id', $this->location->id)
+            ->where('t.type', 'sell_return')
+            ->where('t.status', 'final')
+            ->whereDate('t.transaction_date', '>', $this->weekEnd->toDateString())
+            ->groupBy('tsl.variation_id')
+            ->selectRaw('tsl.variation_id, SUM(tsl.quantity) as qty')
+            ->pluck('qty', 'variation_id')
+            ->all();
+
+        $this->options['_purchased_after'] = DB::table('purchase_lines as pl')
+            ->join('transactions as t', 't.id', '=', 'pl.transaction_id')
+            ->where('t.business_id', $this->business->id)
+            ->where('t.location_id', $this->location->id)
+            ->whereIn('t.type', ['purchase', 'opening_stock'])
+            ->where('t.status', 'received')
+            ->whereDate('t.transaction_date', '>', $this->weekEnd->toDateString())
+            ->groupBy('pl.variation_id')
+            ->selectRaw('pl.variation_id, SUM(pl.quantity) as qty')
+            ->pluck('qty', 'variation_id')
+            ->all();
+
+        $this->options['_inventory_maps_ready'] = true;
     }
 
     protected function soldVariationIds(): Collection
