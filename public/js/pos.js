@@ -131,30 +131,25 @@ $(document).ready(function() {
         posCustomerSelect2Opts.minimumInputLength = 0;
         posCustomerSelect2Opts.placeholder = 'Search customers';
         posCustomerSelect2Opts.templateSelection = function (data) {
-            var defId = String($('#default_customer_id').val() || '');
-            if (!data.id || String(data.id) === defId) {
-                return 'Search customers';
+            if (!data.id) {
+                return $('#default_customer_name').val() || 'Walk-In Customer';
             }
-            return data.text || data.name || 'Search customers';
+            return data.text || data.name || ($('#default_customer_name').val() || 'Walk-In Customer');
         };
     }
 
     $('select#customer_id').select2(posCustomerSelect2Opts);
 
-    // Keep placeholder styling when default/walk-in is selected
+    // Keep walk-in / selected customer name visible
     if (isPosSaleTheme) {
         $('select#customer_id').on('change select2:select', function () {
-            var defId = String($('#default_customer_id').val() || '');
-            var val = String($(this).val() || '');
             var $rendered = $(this).next('.select2-container').find('.select2-selection__rendered');
-            if (!val || val === defId) {
-                $rendered
-                    .text('Search customers')
-                    .attr('title', 'Search customers')
-                    .addClass('pos-cust-placeholder-text');
-            } else {
-                $rendered.removeClass('pos-cust-placeholder-text');
-            }
+            var text = $(this).find('option:selected').text() || $('#default_customer_name').val() || 'Walk-In Customer';
+            $rendered
+                .text(text)
+                .attr('title', text)
+                .removeClass('pos-cust-placeholder-text')
+                .css('color', '#f2f2f2');
         });
     }
 
@@ -183,7 +178,11 @@ $(document).ready(function() {
         $picker.addClass('is-open').attr('aria-hidden', 'false');
         $('.pos-customer-bar').addClass('is-picking');
         $('#pos_customer_picker_input').val('').focus();
-        posCustPickerSearch('');
+        // Do not load all customers — wait for search text
+        var $list = $('#pos_customer_picker_list');
+        $list.html('<div class="pos-customer-picker-empty">Type to search customers</div>');
+        $('#pos_customer_picker_add').attr('data-name', '');
+        $('#pos_customer_picker_add .pos-cust-add-label').text('+ Add as a new customer');
     }
 
     function posCustPickerClose() {
@@ -194,15 +193,23 @@ $(document).ready(function() {
     function posCustPickerSearch(term) {
         var $list = $('#pos_customer_picker_list');
         if (!$list.length) return;
-        $list.html('<div class="pos-customer-picker-loading">Searching…</div>');
-        $('#pos_customer_picker_add').attr('data-name', term || '');
+        term = $.trim(term || '');
+        $('#pos_customer_picker_add').attr('data-name', term);
         var label = term ? ("+ Add '" + term + "' as a new customer") : '+ Add as a new customer';
         $('#pos_customer_picker_add .pos-cust-add-label').text(label);
+
+        // Search-wise only — do not list everyone on empty query (previous: 1 letter)
+        if (term.length < 1) {
+            $list.html('<div class="pos-customer-picker-empty">Type to search customers</div>');
+            return;
+        }
+
+        $list.html('<div class="pos-customer-picker-loading">Searching…</div>');
 
         $.ajax({
             url: '/contacts/customers',
             dataType: 'json',
-            data: { q: term || '' },
+            data: { q: term },
             success: function (data) {
                 if (!data || !data.length) {
                     $list.html('<div class="pos-customer-picker-empty">No customers found</div>');
@@ -226,8 +233,7 @@ $(document).ready(function() {
                         'data-balance="' + (row.balance || '') + '">' +
                             '<div class="pos-cust-avatar" style="background:' + color + '">' + initials + '</div>' +
                             '<div class="pos-cust-meta">' +
-                                '<div class="pos-cust-name">' + $('<div>').text(displayName).html() +
-                                ' <span class="pos-cust-tag">All customers</span></div>' +
+                                '<div class="pos-cust-name">' + $('<div>').text(displayName).html() + '</div>' +
                                 (sub ? '<div class="pos-cust-sub">' + $('<div>').text(sub).html() + '</div>' : '') +
                             '</div>' +
                         '</button>';
@@ -240,7 +246,7 @@ $(document).ready(function() {
         });
     }
 
-    // when a real customer is picked, show their name (not "Search customers")
+    // when a real customer is picked, show their name (walk-in keeps its name)
     function posCustPickerSelect($btn) {
         var id = $btn.data('id');
         var text = $btn.attr('data-text') || $btn.data('name') || '';
@@ -250,12 +256,7 @@ $(document).ready(function() {
         }
         $('#customer_id').val(String(id)).trigger('change');
         var $rendered = $('#customer_id').next('.select2-container').find('.select2-selection__rendered');
-        var defId = String($('#default_customer_id').val() || '');
-        if (String(id) === defId) {
-            $rendered.text('Search customers').attr('title', 'Search customers').addClass('pos-cust-placeholder-text');
-        } else {
-            $rendered.text(text).attr('title', text).removeClass('pos-cust-placeholder-text').css('color', '#f2f2f2');
-        }
+        $rendered.text(text).attr('title', text).removeClass('pos-cust-placeholder-text').css('color', '#f2f2f2');
         var payNum = $btn.attr('data-pay_term_number');
         var payType = $btn.attr('data-pay_term_type');
         if (payNum) { $('input#pay_term_number').val(payNum); } else { $('input#pay_term_number').val(''); }
@@ -1334,12 +1335,30 @@ $(document).ready(function() {
             // $('.select2-selection__rendered').css('padding-right', '150px');
     });
 
+    $(document).on('show.bs.modal', '.row_edit_product_price_model', function() {
+        // Nested in cart table clips / covers wrong — move to body (previous system modal behavior)
+        var $modal = $(this);
+        if ($modal.parent()[0] !== document.body) {
+            $modal.appendTo('body');
+        }
+    });
+
     $(document).on('shown.bs.modal', '.row_edit_product_price_model', function() {
-        $('.row_edit_product_price_model')
+        var $modal = $(this);
+        if ($modal.parent()[0] !== document.body) {
+            $modal.appendTo('body');
+        }
+        $modal
             .find('input')
             .filter(':visible:first')
             .focus()
             .select();
+    });
+
+    // After hide, keep modal on body so next open is clean
+    $(document).on('hidden.bs.modal', '.row_edit_product_price_model', function() {
+        $('.modal-backdrop').remove();
+        $('body').removeClass('modal-open').css({ paddingRight: '', overflow: '' });
     });
 
     //Update Order tax
@@ -2440,7 +2459,11 @@ function pos_insert_product_row(result) {
         var new_row = $('table#pos_table tbody')
             .find('tr')
             .last();
-        new_row.find('.row_edit_product_price_model').modal('show');
+        var $editModal = new_row.find('.row_edit_product_price_model');
+        if ($editModal.length && $editModal.parent()[0] !== document.body) {
+            $editModal.appendTo('body');
+        }
+        $editModal.modal('show');
     }
 
     round_row_to_iraqi_dinnar(this_row);
@@ -3167,14 +3190,15 @@ function set_default_customer() {
         .val(default_customer_id)
         .trigger('change');
 
-    // POS theme: show "Search customers" instead of Walk-In name (value stays walk-in)
-    if ($('body').hasClass('pos-sale-theme')) {
+    // POS theme: keep walk-in / default customer name visible (selected)
+    if ($('body').hasClass('pos-sale-theme') && default_customer_name) {
         setTimeout(function () {
             var $rendered = $('#customer_id').next('.select2-container').find('.select2-selection__rendered');
             $rendered
-                .text('Search customers')
-                .attr('title', 'Search customers')
-                .addClass('pos-cust-placeholder-text');
+                .text(default_customer_name)
+                .attr('title', default_customer_name)
+                .removeClass('pos-cust-placeholder-text')
+                .css('color', '#f2f2f2');
         }, 0);
     }
 

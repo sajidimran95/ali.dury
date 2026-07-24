@@ -3393,6 +3393,60 @@ body.lockscreen.pos-sale-theme .ui-menu-item-wrapper.ui-state-active {
   color: #fff !important;
 }
 
+/* Cart line product edit popup — centered dark card (not clipped by cart) */
+body.lockscreen.pos-sale-theme .row_edit_product_price_model.in,
+body.lockscreen.pos-sale-theme .row_edit_product_price_model.show {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  z-index: 10650 !important;
+  padding: 16px !important;
+  background: transparent !important;
+}
+
+body.lockscreen.pos-sale-theme .row_edit_product_price_model .modal-dialog {
+  margin: 0 auto !important;
+  width: min(480px, calc(100vw - 32px)) !important;
+  max-width: 480px !important;
+  position: relative !important;
+  z-index: 10651 !important;
+}
+
+body.lockscreen.pos-sale-theme .row_edit_product_price_model .modal-content {
+  background: #1e1e1e !important;
+  border: 1px solid #333 !important;
+  color: #fff !important;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.75) !important;
+}
+
+body.lockscreen.pos-sale-theme .row_edit_product_price_model .modal-header,
+body.lockscreen.pos-sale-theme .row_edit_product_price_model .modal-footer,
+body.lockscreen.pos-sale-theme .row_edit_product_price_model .modal-body {
+  background: #1e1e1e !important;
+  border-color: #333 !important;
+  color: #fff !important;
+}
+
+body.lockscreen.pos-sale-theme .row_edit_product_price_model .modal-title,
+body.lockscreen.pos-sale-theme .row_edit_product_price_model label,
+body.lockscreen.pos-sale-theme .row_edit_product_price_model .form-group > label {
+  color: #fff !important;
+}
+
+body.lockscreen.pos-sale-theme .row_edit_product_price_model .form-control,
+body.lockscreen.pos-sale-theme .row_edit_product_price_model select.form-control,
+body.lockscreen.pos-sale-theme .row_edit_product_price_model textarea.form-control {
+  background: #222 !important;
+  border: 1px solid #3a3a3a !important;
+  color: #fff !important;
+}
+
+body.lockscreen.pos-sale-theme .row_edit_product_price_model .close {
+  color: #fff !important;
+  opacity: 0.85 !important;
+  text-shadow: none !important;
+}
+
 /* Modals — centered + white text (Retrieve / Park / Payment / generic) */
 body.lockscreen.pos-sale-theme .modal {
   z-index: 10600 !important;
