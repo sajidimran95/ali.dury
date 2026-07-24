@@ -979,11 +979,9 @@ $(document).ready(function() {
 
         var pay_method = $(this).data('pay_method');
 
-        //If pay method is credit sale submit form (previous system behavior)
+        //If pay method is credit sale submit form
         if (pay_method == 'credit_sale') {
-            if ($('#is_credit_sale').length) {
-                $('#is_credit_sale').val(1);
-            }
+            $('#is_credit_sale').val(1);
             pos_form_obj.submit();
             return true;
         } else {

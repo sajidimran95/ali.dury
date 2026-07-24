@@ -130,11 +130,6 @@
 			&& ($pos_settings['disable_pay_checkout'] ?? 0) == 0;
 	@endphp
 
-	@if ($show_credit_pay)
-		{{-- Same previous Credit Sale fields/button (design only moved into cart pay row) --}}
-		<input type="hidden" name="is_credit_sale" value="0" id="is_credit_sale">
-	@endif
-
 	@if ($show_card_pay || $show_credit_pay || $show_multi_pay)
 		<div class="pos-pay-methods no-print">
 			@if ($show_card_pay)
@@ -147,8 +142,8 @@
 				</button>
 			@endif
 			@if ($show_credit_pay)
+				{{-- Mirror previous system button — same express finalize / is_credit_sale behavior --}}
 				<button type="button"
-					id="pos-credit-sale-btn"
 					class="pos-pay-method-btn pos-express-finalize"
 					data-pay_method="credit_sale"
 					title="@lang('lang_v1.tooltip_credit_sale')"
