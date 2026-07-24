@@ -909,7 +909,27 @@ $(document).ready(function() {
         if ($paymentModal.length && $paymentModal.parent()[0] !== document.body) {
             $paymentModal.appendTo('body');
         }
+        // Submit button is outside the form after move — bind it to the POS form
+        var formId = pos_form_obj && pos_form_obj.attr('id');
+        if (formId) {
+            $paymentModal.find('#pos-save').attr('form', formId);
+        }
         $paymentModal.modal('show');
+        return false;
+    });
+
+    // Finalize Payment: always submit POS form (modal may be outside the form)
+    $(document).off('click.posSave', '#pos-save').on('click.posSave', '#pos-save', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        if ($('table#pos_table tbody').find('.product_row').length <= 0) {
+            toastr.warning(LANG.no_products_added);
+            return false;
+        }
+        if (typeof pos_form_obj === 'undefined' || !pos_form_obj.length) {
+            return false;
+        }
+        pos_form_obj.submit();
         return false;
     });
 
