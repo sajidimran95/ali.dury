@@ -1139,7 +1139,7 @@ body.lockscreen.pos-sale-theme .pos-product-search-wrap .input-group {
   background: var(--pos-input);
   border: 1px solid #3a3a3a;
   border-radius: 4px;
-  overflow: hidden;
+  overflow: visible;
   min-height: 42px;
 }
 
@@ -1147,6 +1147,9 @@ body.lockscreen.pos-sale-theme .pos-product-search-wrap .input-group-btn {
   display: flex !important;
   align-items: center !important;
   align-self: stretch;
+  flex: 0 0 auto !important;
+  width: auto !important;
+  white-space: nowrap;
 }
 
 body.lockscreen.pos-sale-theme .pos-product-search-wrap .input-group-btn .btn,
@@ -1161,10 +1164,37 @@ body.lockscreen.pos-sale-theme .pos-product-search-wrap .input-group-addon {
   height: 42px !important;
   min-height: 42px !important;
   line-height: 1 !important;
-  padding: 0 12px !important;
+  padding: 0 10px !important;
   margin: 0 !important;
   float: none !important;
   width: auto !important;
+  flex: 0 0 auto !important;
+}
+
+/* Same quick-add + as previous POS — dark accent style */
+body.lockscreen.pos-sale-theme .pos-product-search-wrap .pos_add_quick_product {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 42px !important;
+  padding: 0 12px !important;
+  color: #3b8ddd !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-product-search-wrap .pos_add_quick_product:hover,
+body.lockscreen.pos-sale-theme .pos-product-search-wrap .pos_add_quick_product:focus {
+  background: rgba(59, 141, 221, 0.12) !important;
+  color: #5aa3e8 !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-product-search-wrap .pos_add_quick_product i,
+body.lockscreen.pos-sale-theme .pos-product-search-wrap .pos_add_quick_product .text-primary,
+body.lockscreen.pos-sale-theme .pos-product-search-wrap .pos_add_quick_product .fa-plus-circle {
+  color: #3b8ddd !important;
+  font-size: 22px !important;
+  line-height: 1 !important;
 }
 
 body.lockscreen.pos-sale-theme .pos-product-search-wrap .input-group-addon i,
@@ -4771,7 +4801,194 @@ body.lockscreen.pos-sale-theme #posShippingModal .modal-header:hover {
   opacity: 1 !important;
 }
 
+/* ── Quick add product + all modals: full dark, all text white ── */
+body.lockscreen.pos-sale-theme .quick_add_product_modal .modal-dialog {
+  margin: 0 auto !important;
+  width: 100%;
+  max-width: 900px;
+}
 
+body.lockscreen.pos-sale-theme .quick_add_product_modal .modal-content,
+body.lockscreen.pos-sale-theme .quick_add_product_modal .modal-header,
+body.lockscreen.pos-sale-theme .quick_add_product_modal .modal-body,
+body.lockscreen.pos-sale-theme .quick_add_product_modal .modal-footer {
+  background: #1a1a1a !important;
+  border-color: #333 !important;
+  color: #ffffff !important;
+}
 
+body.lockscreen.pos-sale-theme .quick_add_product_modal .modal-body {
+  background: #1e1e1e !important;
+  max-height: min(75vh, 720px);
+  overflow-y: auto;
+}
 
+body.lockscreen.pos-sale-theme .quick_add_product_modal .modal-title,
+body.lockscreen.pos-sale-theme .quick_add_product_modal label,
+body.lockscreen.pos-sale-theme .quick_add_product_modal .form-group > label,
+body.lockscreen.pos-sale-theme .quick_add_product_modal strong,
+body.lockscreen.pos-sale-theme .quick_add_product_modal b,
+body.lockscreen.pos-sale-theme .quick_add_product_modal p,
+body.lockscreen.pos-sale-theme .quick_add_product_modal span,
+body.lockscreen.pos-sale-theme .quick_add_product_modal small,
+body.lockscreen.pos-sale-theme .quick_add_product_modal .help-block,
+body.lockscreen.pos-sale-theme .quick_add_product_modal .text-muted,
+body.lockscreen.pos-sale-theme .quick_add_product_modal .text-dark,
+body.lockscreen.pos-sale-theme .quick_add_product_modal .control-label,
+body.lockscreen.pos-sale-theme .quick_add_product_modal h1,
+body.lockscreen.pos-sale-theme .quick_add_product_modal h2,
+body.lockscreen.pos-sale-theme .quick_add_product_modal h3,
+body.lockscreen.pos-sale-theme .quick_add_product_modal h4,
+body.lockscreen.pos-sale-theme .quick_add_product_modal h5,
+body.lockscreen.pos-sale-theme .quick_add_product_modal td,
+body.lockscreen.pos-sale-theme .quick_add_product_modal th,
+body.lockscreen.pos-sale-theme .quick_add_product_modal legend,
+body.lockscreen.pos-sale-theme .quick_add_product_modal .box-title {
+  color: #ffffff !important;
+}
+
+body.lockscreen.pos-sale-theme .quick_add_product_modal .form-control,
+body.lockscreen.pos-sale-theme .quick_add_product_modal select.form-control,
+body.lockscreen.pos-sale-theme .quick_add_product_modal textarea.form-control,
+body.lockscreen.pos-sale-theme .quick_add_product_modal .input-group-addon {
+  background: #2a2a2a !important;
+  border-color: #444 !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
+}
+
+body.lockscreen.pos-sale-theme .quick_add_product_modal .form-control::placeholder {
+  color: #aaaaaa !important;
+}
+
+body.lockscreen.pos-sale-theme .quick_add_product_modal .box,
+body.lockscreen.pos-sale-theme .quick_add_product_modal .box-body,
+body.lockscreen.pos-sale-theme .quick_add_product_modal .box-header,
+body.lockscreen.pos-sale-theme .quick_add_product_modal .nav-tabs,
+body.lockscreen.pos-sale-theme .quick_add_product_modal .tab-content,
+body.lockscreen.pos-sale-theme .quick_add_product_modal .table,
+body.lockscreen.pos-sale-theme .quick_add_product_modal .table > thead > tr > th,
+body.lockscreen.pos-sale-theme .quick_add_product_modal .table > tbody > tr > td,
+body.lockscreen.pos-sale-theme .quick_add_product_modal .bg-white,
+body.lockscreen.pos-sale-theme .quick_add_product_modal .bg-gray,
+body.lockscreen.pos-sale-theme .quick_add_product_modal .bg-lightgray {
+  background: #1e1e1e !important;
+  background-color: #1e1e1e !important;
+  border-color: #333 !important;
+  color: #ffffff !important;
+}
+
+body.lockscreen.pos-sale-theme .quick_add_product_modal .nav-tabs > li > a {
+  background: #252525 !important;
+  border-color: #333 !important;
+  color: #ffffff !important;
+}
+
+body.lockscreen.pos-sale-theme .quick_add_product_modal .nav-tabs > li.active > a,
+body.lockscreen.pos-sale-theme .quick_add_product_modal .nav-tabs > li.active > a:hover,
+body.lockscreen.pos-sale-theme .quick_add_product_modal .nav-tabs > li.active > a:focus {
+  background: #2a2a2a !important;
+  border-color: #444 !important;
+  color: #ffffff !important;
+}
+
+body.lockscreen.pos-sale-theme .quick_add_product_modal .select2-container--default .select2-selection--single,
+body.lockscreen.pos-sale-theme .quick_add_product_modal .select2-container--default .select2-selection--multiple {
+  background: #2a2a2a !important;
+  border-color: #444 !important;
+  color: #ffffff !important;
+  min-height: 34px;
+}
+
+body.lockscreen.pos-sale-theme .quick_add_product_modal .select2-container--default .select2-selection--single .select2-selection__rendered,
+body.lockscreen.pos-sale-theme .quick_add_product_modal .select2-container--default .select2-selection--multiple .select2-selection__rendered {
+  color: #ffffff !important;
+}
+
+body.lockscreen.pos-sale-theme .quick_add_product_modal .select2-container--default .select2-selection--single .select2-selection__placeholder,
+body.lockscreen.pos-sale-theme .quick_add_product_modal .select2-container--default .select2-selection--multiple .select2-selection__placeholder {
+  color: #aaaaaa !important;
+}
+
+body.lockscreen.pos-sale-theme .quick_add_product_modal .select2-container--default .select2-selection--single .select2-selection__arrow b {
+  border-color: #ffffff transparent transparent transparent !important;
+}
+
+body.lockscreen.pos-sale-theme .quick_add_product_modal .btn-default,
+body.lockscreen.pos-sale-theme .quick_add_product_modal .btn-secondary {
+  background: #2a2a2a !important;
+  border-color: #444 !important;
+  color: #ffffff !important;
+}
+
+body.lockscreen.pos-sale-theme .quick_add_product_modal .btn-primary,
+body.lockscreen.pos-sale-theme .quick_add_product_modal .btn-success {
+  color: #ffffff !important;
+}
+
+body.lockscreen.pos-sale-theme .quick_add_product_modal .close {
+  color: #ffffff !important;
+  opacity: 0.85 !important;
+  text-shadow: none !important;
+}
+
+/* Global modal leftovers — force white text / dark panels */
+body.lockscreen.pos-sale-theme .modal .help-block,
+body.lockscreen.pos-sale-theme .modal .text-muted,
+body.lockscreen.pos-sale-theme .modal .text-dark,
+body.lockscreen.pos-sale-theme .modal .text-black,
+body.lockscreen.pos-sale-theme .modal small,
+body.lockscreen.pos-sale-theme .modal .control-label,
+body.lockscreen.pos-sale-theme .modal .box-title,
+body.lockscreen.pos-sale-theme .modal .table,
+body.lockscreen.pos-sale-theme .modal .table td,
+body.lockscreen.pos-sale-theme .modal .table th,
+body.lockscreen.pos-sale-theme .modal .icheck > label,
+body.lockscreen.pos-sale-theme .modal label strong {
+  color: #ffffff !important;
+}
+
+body.lockscreen.pos-sale-theme .modal .bg-white,
+body.lockscreen.pos-sale-theme .modal .bg-gray,
+body.lockscreen.pos-sale-theme .modal .bg-lightgray,
+body.lockscreen.pos-sale-theme .modal .well,
+body.lockscreen.pos-sale-theme .modal .panel,
+body.lockscreen.pos-sale-theme .modal .panel-body,
+body.lockscreen.pos-sale-theme .modal .panel-heading,
+body.lockscreen.pos-sale-theme .modal .box,
+body.lockscreen.pos-sale-theme .modal .box-body,
+body.lockscreen.pos-sale-theme .modal .box-header {
+  background: #1e1e1e !important;
+  background-color: #1e1e1e !important;
+  border-color: #333 !important;
+  color: #ffffff !important;
+}
+
+body.lockscreen.pos-sale-theme .modal .table > thead > tr > th,
+body.lockscreen.pos-sale-theme .modal .table > tbody > tr > td,
+body.lockscreen.pos-sale-theme .modal .table-bordered,
+body.lockscreen.pos-sale-theme .modal .table-striped > tbody > tr:nth-of-type(odd) {
+  background: #1e1e1e !important;
+  border-color: #333 !important;
+  color: #ffffff !important;
+}
+
+body.lockscreen.pos-sale-theme .select2-container--open .select2-dropdown,
+body.lockscreen.pos-sale-theme .select2-container--open .select2-results__option {
+  background: #1e1e1e !important;
+  color: #ffffff !important;
+  border-color: #333 !important;
+}
+
+body.lockscreen.pos-sale-theme .select2-container--open .select2-search--dropdown .select2-search__field {
+  background: #2a2a2a !important;
+  border-color: #444 !important;
+  color: #ffffff !important;
+}
+
+body.lockscreen.pos-sale-theme .select2-container--default .select2-results__option--highlighted[aria-selected],
+body.lockscreen.pos-sale-theme .select2-container--default .select2-results__option[aria-selected="true"] {
+  background: #2f2f2f !important;
+  color: #ffffff !important;
+}
 
