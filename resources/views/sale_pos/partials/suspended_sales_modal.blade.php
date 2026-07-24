@@ -109,14 +109,12 @@
 								<div class="pos-retrieve-customer-sub">{{ $email }}</div>
 							@endif
 						</div>
-						<a href="{{ $edit_url }}" class="pos-retrieve-open" title="Open in cart"
-							onclick="event.stopPropagation();">
+						<a href="{{ $edit_url }}" class="pos-retrieve-open" title="Open in cart">
 							<i class="fas fa-external-link-alt"></i>
 						</a>
 						@if(auth()->user()->can('sell.delete') || auth()->user()->can('direct_sell.delete'))
 							<a href="{{ action([\App\Http\Controllers\SellPosController::class, 'destroy'], ['po' => $sale->id]) }}"
-								class="pos-retrieve-delete delete-sale is_suspended" title="@lang('messages.delete')"
-								onclick="event.stopPropagation();">
+								class="pos-retrieve-delete delete-sale is_suspended" title="@lang('messages.delete')">
 								<i class="fas fa-trash"></i>
 							</a>
 						@endif

@@ -1,11 +1,6 @@
-<div class="tw-flex tw-items-center tw-justify-between tw-gap-2 tw-mb-2 tw-px-1">
-	<p class="tw-m-0 tw-text-xs tw-font-semibold tw-text-slate-500">
-		@lang('sale.invoice_no'): <span class="tw-text-slate-800">{{ $transaction->invoice_no }}</span>
-	</p>
-</div>
-<div class="row">
-	<div class="@if(empty($pos_settings['hide_product_suggestion'])) col-md-12 @else col-md-4 @endif">
-		<div class="form-group">
+<div class="row pos-cart-customer">
+	<div class="col-md-12">
+		<div class="form-group pos-customer-bar">
 			<div class="input-group">
 				<span class="input-group-addon">
 					<i class="fa fa-user"></i>
@@ -23,13 +18,25 @@
 				value="{{ $transaction->contact->selling_price_group_id ?? '' }}" >
 				@endif
 				{!! Form::select('contact_id', 
-					[], null, ['class' => 'form-control mousetrap', 'id' => 'customer_id', 'placeholder' => 'Enter Customer name / phone', 'required']); !!}
+					[], null, ['class' => 'form-control mousetrap', 'id' => 'customer_id', 'placeholder' => 'Add a customer', 'required']); !!}
 				<span class="input-group-btn">
 					<button type="button" class="btn btn-default bg-white btn-flat add_new_customer" data-name=""  @if(!auth()->user()->can('customer.create')) disabled @endif><i class="fa fa-plus-circle text-primary fa-lg"></i></button>
 					@can('sell.payments')
 					<button type="button" id="pos-receive-customer-payment" class="btn btn-default bg-white btn-flat" title="@lang('lang_v1.receive_payment')"><i class="fas fa-hand-holding-usd text-primary fa-lg"></i></button>
 					@endcan
 				</span>
+			</div>
+			<div id="pos_customer_picker" class="pos-customer-picker" aria-hidden="true">
+				<div class="pos-customer-picker-search">
+					<input type="text" id="pos_customer_picker_input" class="pos-customer-picker-input" placeholder="Search customers" autocomplete="off">
+				</div>
+				<div id="pos_customer_picker_list" class="pos-customer-picker-list"></div>
+				<div class="pos-customer-picker-footer">
+					<button type="button" class="btn btn-link add_new_customer pos-cust-add-btn" id="pos_customer_picker_add" data-name="">
+						<i class="fa fa-plus" aria-hidden="true"></i>
+						<span class="pos-cust-add-label">+ Add as a new customer</span>
+					</button>
+				</div>
 			</div>
 			<small class="text-danger @if(empty($customer_due)) hide @endif contact_due_text"><strong>@lang('account.customer_due'):</strong> <span>{{$customer_due ?? ''}}</span></small>
 		</div>
@@ -41,18 +48,14 @@
 				<div class="input-group-btn">
 					<button type="button" class="btn btn-default bg-white btn-flat" data-toggle="modal" data-target="#configure_search_modal" title="{{__('lang_v1.configure_product_search')}}"><i class="fas fa-search-plus"></i></button>
 				</div>
-                {{-- Removed mousetrap class as it was causing issue with barcode scanning --}}
 				{!! Form::text('search_product', null, ['class' => 'form-control', 'id' => 'search_product', 'placeholder' => __('lang_v1.search_product_placeholder'),
 				'autofocus' => true,
 				]); !!}
 				<span class="input-group-btn">
-
-					<!-- Show button for weighing scale modal -->
 					@if(isset($pos_settings['enable_weighing_scale']) && $pos_settings['enable_weighing_scale'] == 1)
 						<button type="button" class="btn btn-default bg-white btn-flat" id="weighing_scale_btn" data-toggle="modal" data-target="#weighing_scale_modal" 
 						title="@lang('lang_v1.weighing_scale')"><i class="fa fa-digital-tachograph text-primary fa-lg"></i></button>
 					@endif
-
 					<button type="button" class="btn btn-default bg-white btn-flat pos_add_quick_product" data-href="{{action([\App\Http\Controllers\ProductController::class, 'quickAdd'])}}" data-container=".quick_add_product_modal"><i class="fa fa-plus-circle text-primary fa-lg"></i></button>
 				</span>
 			</div>
@@ -60,9 +63,9 @@
 	</div>
 	@endif
 </div>
-<div class="row">
+<div class="row pos-cart-meta">
 	@if(!empty($pos_settings['show_invoice_layout']))
-	<div class="col-md-4">
+	<div class="col-md-4 pos-cart-meta-extra">
 		<div class="form-group">
 		{!! Form::select('invoice_layout_id', 
 					$invoice_layouts, $transaction->location->invoice_layout_id, ['class' => 'form-control select2', 'placeholder' => __('lang_v1.select_invoice_layout'), 'id' => 'invoice_layout_id']); !!}
@@ -76,7 +79,7 @@
 		@php
 			$is_commission_agent_required = !empty($pos_settings['is_commission_agent_required']);
 		@endphp
-		<div class="col-sm-4">
+		<div class="col-sm-4 pos-cart-meta-extra">
 			<div class="form-group">
 			{!! Form::select('commission_agent', 
 						$commission_agent, $transaction->commission_agent, ['class' => 'form-control select2', 'placeholder' => __('lang_v1.commission_agent'), 'id' => 'commission_agent', 'required' => $is_commission_agent_required]); !!}
@@ -84,8 +87,9 @@
 		</div>
 		@endif
 	@if(!empty($pos_settings['enable_transaction_date']))
-		<div class="col-md-4 col-sm-6">
+		<div class="col-md-6 col-sm-6 pos-cart-meta-date">
 			<div class="form-group">
+				{!! Form::label('transaction_date', __('sale.sale_date') . ':*', ['class' => 'pos-cart-meta-label']) !!}
 				<div class="input-group">
 					<span class="input-group-addon">
 						<i class="fa fa-calendar"></i>
@@ -96,7 +100,7 @@
 		</div>
 	@endif
 	@if(config('constants.enable_sell_in_diff_currency') == true)
-		<div class="col-md-4 col-sm-6">
+		<div class="col-md-4 col-sm-6 pos-cart-meta-extra">
 			<div class="form-group">
 				<div class="input-group">
 					<span class="input-group-addon">
@@ -107,21 +111,45 @@
 			</div>
 		</div>
 	@endif
-	@if(!empty($transaction->selling_price_group_id))
-		<div class="col-md-4 col-sm-6">
+	@if(!empty($price_groups) && count($price_groups) > 1)
+		<div class="col-md-6 col-sm-6 pos-cart-meta-price">
 			<div class="form-group">
+				{!! Form::label('price_group', __('lang_v1.selling_price_group') . ':', ['class' => 'pos-cart-meta-label']) !!}
+				<div class="input-group">
+					<span class="input-group-addon">
+						<i class="fas fa-money-bill-alt"></i>
+					</span>
+					@php
+						reset($price_groups);
+						$selected_price_group = !empty($transaction->selling_price_group_id) && array_key_exists($transaction->selling_price_group_id, $price_groups)
+							? $transaction->selling_price_group_id
+							: ((!empty($default_price_group_id) && array_key_exists($default_price_group_id, $price_groups)) ? $default_price_group_id : null);
+					@endphp
+					{!! Form::hidden('hidden_price_group', key($price_groups), ['id' => 'hidden_price_group']) !!}
+					{!! Form::select('price_group', $price_groups, $selected_price_group, ['class' => 'form-control select2', 'id' => 'price_group']); !!}
+				</div>
+			</div>
+		</div>
+	@elseif(!empty($transaction->selling_price_group_id))
+		<div class="col-md-6 col-sm-6 pos-cart-meta-price">
+			<div class="form-group">
+				{!! Form::label('price_group_text', __('lang_v1.selling_price_group') . ':', ['class' => 'pos-cart-meta-label']) !!}
 				<div class="input-group">
 					<span class="input-group-addon">
 						<i class="fas fa-money-bill-alt"></i>
 					</span>
 					{!! Form::hidden('price_group', $transaction->selling_price_group_id, ['id' => 'price_group']) !!}
-					{!! Form::text('price_group_text', $transaction->price_group->name, ['class' => 'form-control', 'readonly']); !!}
-					<span class="input-group-addon">
-					@show_tooltip(__('lang_v1.price_group_help_text'))
-				</span> 
+					{!! Form::text('price_group_text', optional($transaction->price_group)->name, ['class' => 'form-control', 'readonly']); !!}
 				</div>
 			</div>
 		</div>
+	@else
+		@if(!empty($price_groups))
+			@php reset($price_groups); @endphp
+			{!! Form::hidden('price_group', key($price_groups), ['id' => 'price_group']) !!}
+		@elseif(!empty($transaction->selling_price_group_id))
+			{!! Form::hidden('price_group', $transaction->selling_price_group_id, ['id' => 'price_group']) !!}
+		@endif
 	@endif
 
 	@if(in_array('types_of_service', $enabled_modules) && !empty($transaction->types_of_service))
@@ -188,7 +216,7 @@
         @endif
     @endforeach
 @endif
-<div class="row" style="margin:0;">
+<div class="row pos-cart-lines" style="margin:0;">
 	<div class="col-sm-12 pos_product_div" style="padding:4px 0 0 0;">
 		<input type="hidden" name="sell_price_tax" id="sell_price_tax" value="{{$business_details->sell_price_tax}}">
 
@@ -258,9 +286,8 @@
 			#edit_pos_sell_form:not(.pos-has-rows) .pos_form_totals .pos_totals_right { display: none !important; }
 			#add_pos_sell_form:not(.pos-has-rows) .pos_form_totals,
 			#edit_pos_sell_form:not(.pos-has-rows) .pos_form_totals {
-				display: block !important;
-				background: transparent !important;
-				border-top: 0 !important;
+				display: flex !important;
+				flex-direction: column !important;
 			}
 		</style>
 	</div>

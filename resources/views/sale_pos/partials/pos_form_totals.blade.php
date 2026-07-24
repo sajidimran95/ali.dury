@@ -5,13 +5,12 @@
 		@if($is_discount_enabled)
 			@if(!(Gate::check('disable_discount') && !auth()->user()->can('superadmin') && !auth()->user()->can('admin')))
 				<button type="button" class="pos-add-link" id="pos-edit-discount" data-toggle="modal" data-target="#posEditDiscountModal">Discount</button>
-				<button type="button" class="pos-add-link" data-toggle="modal" data-target="#posEditDiscountModal">Promo code</button>
 			@endif
 		@endif
 		@if(($pos_settings['disable_order_tax'] ?? 0) == 0)
 			<button type="button" class="pos-add-link" id="pos-edit-tax" data-toggle="modal" data-target="#posEditOrderTaxModal">Tax</button>
 		@endif
-		<button type="button" class="pos-add-link" data-toggle="modal" data-target="#posShippingModal">Note</button>
+		<button type="button" class="pos-add-link" data-toggle="modal" data-target="#posShippingModal">Shipping</button>
 	</div>
 
 	<div class="pos_totals_left">
@@ -119,15 +118,74 @@
 		<input type="hidden" name="final_total" id="final_total_input" value="0.00">
 	</div>
 
-	@if (!Gate::check('disable_pay_checkout') || auth()->user()->can('superadmin') || auth()->user()->can('admin'))
-		@if (($pos_settings['disable_pay_checkout'] ?? 0) == 0)
-			<button type="button"
-				class="pos-pay-cta pos-finalize no-print"
-				title="@lang('lang_v1.tooltip_checkout_multi_pay')">
-				<span class="pos-pay-label">@lang('lang_v1.pay') <span class="pos-pay-items"><span class="total_quantity">0</span> items</span></span>
-				<span class="pos-pay-amount"><span class="pos_pay_cta_total display_currency" data-currency_symbol="true">0</span></span>
-			</button>
-		@endif
+	@php
+		$show_cash_pay = (!Gate::check('disable_express_checkout') || auth()->user()->can('superadmin') || auth()->user()->can('admin'))
+			&& ($pos_settings['disable_express_checkout'] ?? 0) == 0
+			&& array_key_exists('cash', $payment_types ?? []);
+		$show_card_pay = (!Gate::check('disable_card') || auth()->user()->can('superadmin') || auth()->user()->can('admin'))
+			&& array_key_exists('card', $payment_types ?? []);
+		$show_credit_pay = (!Gate::check('disable_credit_sale') || auth()->user()->can('superadmin') || auth()->user()->can('admin'))
+			&& empty($pos_settings['disable_credit_sale_button']);
+		$show_multi_pay = (!Gate::check('disable_pay_checkout') || auth()->user()->can('superadmin') || auth()->user()->can('admin'))
+			&& ($pos_settings['disable_pay_checkout'] ?? 0) == 0;
+	@endphp
+
+	@if ($show_credit_pay)
+		{{-- Same previous Credit Sale fields/button (design only moved into cart pay row) --}}
+		<input type="hidden" name="is_credit_sale" value="0" id="is_credit_sale">
+	@endif
+
+	@if ($show_card_pay || $show_credit_pay || $show_multi_pay)
+		<div class="pos-pay-methods no-print">
+			@if ($show_card_pay)
+				<button type="button"
+					class="pos-pay-method-btn pos-express-finalize"
+					data-pay_method="card"
+					title="@lang('lang_v1.tooltip_express_checkout_card')">
+					<i class="fas fa-credit-card" aria-hidden="true"></i>
+					<span>Card</span>
+				</button>
+			@endif
+			@if ($show_credit_pay)
+				<button type="button"
+					id="pos-credit-sale-btn"
+					class="pos-pay-method-btn pos-express-finalize"
+					data-pay_method="credit_sale"
+					title="@lang('lang_v1.tooltip_credit_sale')"
+					@if (!empty($only_payment)) disabled @endif>
+					<i class="fas fa-check" aria-hidden="true"></i>
+					<span>@lang('lang_v1.credit_sale')</span>
+				</button>
+			@endif
+			@if ($show_multi_pay)
+				<button type="button"
+					class="pos-pay-method-btn pos-finalize"
+					title="@lang('lang_v1.tooltip_checkout_multi_pay')">
+					<i class="fas fa-money-check-alt" aria-hidden="true"></i>
+					<span>Multiple</span>
+				</button>
+			@endif
+		</div>
+	@endif
+
+	@if ($show_cash_pay)
+		<button type="button"
+			class="pos-pay-cta pos-express-finalize no-print"
+			data-pay_method="cash"
+			title="@lang('tooltip.express_checkout')"
+			@if (!empty($only_payment)) disabled @endif>
+			<span class="pos-pay-label">Pay Cash <span class="pos-pay-items"><span class="total_quantity">0</span> items</span></span>
+			<span class="pos-pay-amount"><span class="pos_pay_cta_total display_currency" data-currency_symbol="true">0</span></span>
+		</button>
+	@else
+		{{-- Always show a pay CTA (create + edit / suspend) when cash express is off --}}
+		<button type="button"
+			class="pos-pay-cta pos-finalize no-print"
+			title="@lang('lang_v1.tooltip_checkout_multi_pay')"
+			@if (!empty($only_payment)) disabled @endif>
+			<span class="pos-pay-label">@lang('lang_v1.pay') <span class="pos-pay-items"><span class="total_quantity">0</span> items</span></span>
+			<span class="pos-pay-amount"><span class="pos_pay_cta_total display_currency" data-currency_symbol="true">0</span></span>
+		</button>
 	@endif
 </div>
 

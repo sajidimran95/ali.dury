@@ -1,5 +1,6 @@
 @php
-    $show_drafts_panel = ($request->segment(1) == 'pos' && $request->segment(2) == 'create')
+    $pos_settings = $pos_settings ?? (session('business.pos_settings') ? json_decode(session('business.pos_settings'), true) : []);
+    $show_drafts_panel = (request()->segment(1) == 'pos' && request()->segment(2) == 'create')
         && (empty($pos_settings['disable_draft']) || auth()->user()->can('superadmin') || auth()->user()->can('admin'))
         && (! Gate::check('disable_draft') || auth()->user()->can('superadmin') || auth()->user()->can('admin'));
     $show_suspend_tab = empty($pos_settings['disable_suspend'])

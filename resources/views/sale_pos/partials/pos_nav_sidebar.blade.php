@@ -37,7 +37,7 @@
             <a href="{{ url('/home') }}" class="pos-nav-icon" title="Home"><i class="fas fa-home"></i></a>
             <a href="{{ action([\App\Http\Controllers\SellPosController::class, 'create']) }}" class="pos-nav-icon is-active" title="Sell"><i class="fas fa-shopping-cart"></i></a>
         @endforelse
-        <button type="button" class="pos-nav-icon pos-nav-collapse" id="pos_nav_collapse_btn" title="Collapse">
+        <button type="button" class="pos-nav-icon pos-nav-collapse" id="pos_nav_collapse_btn" title="Collapse menu">
             <i class="fas fa-chevron-left"></i>
         </button>
     </div>
@@ -58,31 +58,42 @@
             <li>
                 <a href="{{ action([\App\Http\Controllers\SellPosController::class, 'create']) }}" class="is-active">
                     <i class="fas fa-shopping-cart"></i>
-                    <span>Sell</span>
+                    <span>Sale</span>
                 </a>
             </li>
             @can('close_cash_register')
                 <li>
-                    <a href="{{ action([\App\Http\Controllers\CashRegisterController::class, 'getCloseRegister']) }}">
+                    <button type="button"
+                        class="btn-modal"
+                        id="pos_nav_close_register"
+                        data-container=".close_register_modal"
+                        data-href="{{ action([\App\Http\Controllers\CashRegisterController::class, 'getCloseRegister']) }}">
                         <i class="fas fa-cash-register"></i>
                         <span>Open / Close</span>
-                    </a>
+                    </button>
                 </li>
             @endcan
             @if (!isset($pos_settings['hide_recent_trans']) || $pos_settings['hide_recent_trans'] == 0)
                 <li>
-                    <a href="{{ action([\App\Http\Controllers\SellPosController::class, 'index']) }}">
+                    <button type="button"
+                        data-toggle="modal"
+                        data-target="#recent_transactions_modal"
+                        id="pos_nav_recent_transactions">
                         <i class="fas fa-history"></i>
-                        <span>Sales history</span>
-                    </a>
+                        <span>History</span>
+                    </button>
                 </li>
             @endif
             @can('view_cash_register')
                 <li>
-                    <a href="{{ action([\App\Http\Controllers\CashRegisterController::class, 'getRegisterDetails']) }}">
+                    <button type="button"
+                        class="btn-modal"
+                        id="pos_nav_register_details"
+                        data-container=".register_details_modal"
+                        data-href="{{ action([\App\Http\Controllers\CashRegisterController::class, 'getRegisterDetails']) }}">
                         <i class="fas fa-wallet"></i>
-                        <span>Cash management</span>
-                    </a>
+                        <span>Cash memo</span>
+                    </button>
                 </li>
                 <li>
                     @can('register_report.view')
@@ -91,11 +102,22 @@
                             <span>Status</span>
                         </a>
                     @else
-                        <a href="{{ action([\App\Http\Controllers\CashRegisterController::class, 'getRegisterDetails']) }}">
+                        <button type="button"
+                            class="btn-modal"
+                            data-container=".register_details_modal"
+                            data-href="{{ action([\App\Http\Controllers\CashRegisterController::class, 'getRegisterDetails']) }}">
                             <i class="fas fa-chart-line"></i>
                             <span>Status</span>
-                        </a>
+                        </button>
                     @endcan
+                </li>
+            @endcan
+            @can('account.access')
+                <li>
+                    <a href="{{ action([\App\Http\Controllers\AccountController::class, 'index']) }}">
+                        <i class="fas fa-university"></i>
+                        <span>Manage account</span>
+                    </a>
                 </li>
             @endcan
             @can('business_settings.access')

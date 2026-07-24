@@ -1958,6 +1958,9 @@ $(document).ready(function() {
                             }
                             if (is_suspended) {
                                 $('.view_modal').modal('hide');
+                                if (typeof window.posReloadRetrievePanel === 'function') {
+                                    window.posReloadRetrievePanel();
+                                }
                             }
                         } else {
                             toastr.error(result.msg);

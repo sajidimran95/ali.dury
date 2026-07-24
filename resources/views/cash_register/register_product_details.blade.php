@@ -53,7 +53,7 @@
       @endphp
 
       <!-- Final details -->
-      <tr class="success">
+      <tr class="pos-cr-hl">
         <th>#</th>
         <th></th>
         <th></th>
@@ -141,7 +141,7 @@
       @endphp
 
       <!-- Final details -->
-      <tr class="success">
+      <tr class="pos-cr-hl">
         <th>#</th>
         <th></th>
         <th>{{$total_quantity}}</th>
@@ -217,7 +217,7 @@
           @endphp
         @endforeach
         <!-- Final details -->
-        <tr class="success">
+        <tr class="pos-cr-hl">
           <th>#</th>
           <th></th>
           <th>

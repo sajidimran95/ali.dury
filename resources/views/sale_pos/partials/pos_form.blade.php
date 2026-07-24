@@ -24,26 +24,12 @@
 					Mark all fulfillment
 				</a>
 			</li>
-			<li>
-				<a href="javascript:void(0);" class="pos-more-item" id="pos_assign_all_sale_items">
-					Assign all sale items
-				</a>
-			</li>
 			<li role="separator" class="divider pos-more-divider"></li>
 			@if (!Gate::check('disable_suspend_sale') || auth()->user()->can('superadmin') || auth()->user()->can('admin'))
 				@if (empty($pos_settings['disable_suspend']))
 					<li>
 						<a href="javascript:void(0);" class="pos-more-item pos-nav-trigger" data-trigger="#pos-suspend-btn">
 							@lang('lang_v1.suspend')
-						</a>
-					</li>
-				@endif
-			@endif
-			@if (!Gate::check('disable_credit_sale') || auth()->user()->can('superadmin') || auth()->user()->can('admin'))
-				@if (empty($pos_settings['disable_credit_sale_button']))
-					<li>
-						<a href="javascript:void(0);" class="pos-more-item pos-nav-trigger" data-trigger="#pos-credit-sale-btn">
-							@lang('lang_v1.credit_sale')
 						</a>
 					</li>
 				@endif
@@ -60,7 +46,7 @@
 </div>
 
 <div class="pos-cart-panel">
-<div class="row">
+<div class="row pos-cart-customer">
 	<div class="col-md-12">
 		<div class="form-group pos-customer-bar">
 			<div class="input-group">
@@ -166,6 +152,7 @@
 					jQuery(panel).html(result);
 					panel.classList.add('is-open');
 					panel.setAttribute('aria-hidden', 'false');
+					positionRetrievePanel();
 					if (link) {
 						link.classList.add('is-active');
 						link.setAttribute('aria-expanded', 'true');
@@ -234,6 +221,11 @@
 			return;
 		}
 
+		// Delete uses app.js $(document).on('click', '.delete-sale') — do not stopPropagation
+		if (e.target.closest('#pos_retrieve_panel a.pos-retrieve-delete, #pos_retrieve_panel a.delete-sale')) {
+			return;
+		}
+
 		// Retrieve sale row → add items into current cart
 		var retrieveOpen = e.target.closest('#pos_retrieve_panel a.pos-retrieve-open');
 		if (retrieveOpen) {
@@ -253,9 +245,45 @@
 
 		var panel = document.getElementById('pos_retrieve_panel');
 		if (panel && panel.classList.contains('is-open') && !e.target.closest('#pos_retrieve_panel') && !e.target.closest('#view_suspended_sales_link')) {
+			// Keep panel open while SweetAlert delete confirm is showing
+			if (e.target.closest('.swal-modal, .swal-overlay')) {
+				return;
+			}
 			closeRetrievePanel();
 		}
 	});
+
+	function positionRetrievePanel() {
+		var panel = document.getElementById('pos_retrieve_panel');
+		var link = document.getElementById('view_suspended_sales_link');
+		if (!panel || !link) return;
+		var rect = link.getBoundingClientRect();
+		var width = Math.min(560, window.innerWidth - 24);
+		var left = Math.min(Math.max(12, rect.right - width), window.innerWidth - width - 12);
+		var top = Math.min(rect.bottom + 6, window.innerHeight - 80);
+		panel.style.top = top + 'px';
+		panel.style.left = left + 'px';
+		panel.style.right = 'auto';
+		panel.style.width = width + 'px';
+		panel.style.maxHeight = Math.min(window.innerHeight - top - 16, 560) + 'px';
+	}
+
+	window.posReloadRetrievePanel = function () {
+		var panel = document.getElementById('pos_retrieve_panel');
+		var mirror = document.getElementById('view_suspended_sales');
+		var href = mirror ? mirror.getAttribute('data-href') : null;
+		if (!panel || !href || typeof jQuery === 'undefined') return;
+		jQuery.ajax({
+			url: href,
+			dataType: 'html',
+			success: function (result) {
+				jQuery(panel).html(result);
+				if (panel.classList.contains('is-open')) {
+					positionRetrievePanel();
+				}
+			}
+		});
+	};
 
 	function closeMoreMenu(el) {
 		if (typeof jQuery !== 'undefined') {
@@ -361,7 +389,7 @@
 })();
 </script>
 
-<div class="row">
+<div class="row pos-cart-meta">
 	@if(!empty($pos_settings['show_invoice_layout']))
 	<div class="col-md-4">
 		<div class="form-group">
@@ -377,7 +405,7 @@
 		@php
 			$is_commission_agent_required = !empty($pos_settings['is_commission_agent_required']);
 		@endphp
-		<div class="col-md-4">
+		<div class="col-md-4 pos-cart-meta-extra">
 			<div class="form-group">
 			{!! Form::select('commission_agent', 
 						$commission_agent, null, ['class' => 'form-control select2', 'placeholder' => __('lang_v1.commission_agent'), 'id' => 'commission_agent', 'required' => $is_commission_agent_required]); !!}
@@ -385,8 +413,9 @@
 		</div>
 	@endif
 	@if(!empty($pos_settings['enable_transaction_date']))
-		<div class="col-md-4 col-sm-6">
+		<div class="col-md-6 col-sm-6 pos-cart-meta-date">
 			<div class="form-group">
+				{!! Form::label('transaction_date', __('sale.sale_date') . ':*', ['class' => 'pos-cart-meta-label']) !!}
 				<div class="input-group">
 					<span class="input-group-addon">
 						<i class="fa fa-calendar"></i>
@@ -397,7 +426,7 @@
 		</div>
 	@endif
 	@if(config('constants.enable_sell_in_diff_currency') == true)
-		<div class="col-md-4 col-sm-6">
+		<div class="col-md-4 col-sm-6 pos-cart-meta-extra">
 			<div class="form-group">
 				<div class="input-group">
 					<span class="input-group-addon">
@@ -409,8 +438,9 @@
 		</div>
 	@endif
 	@if(!empty($price_groups) && count($price_groups) > 1)
-		<div class="col-md-4 col-sm-6">
+		<div class="col-md-6 col-sm-6 pos-cart-meta-price">
 			<div class="form-group">
+				{!! Form::label('price_group', __('lang_v1.selling_price_group') . ':', ['class' => 'pos-cart-meta-label']) !!}
 				<div class="input-group">
 					<span class="input-group-addon">
 						<i class="fas fa-money-bill-alt"></i>
@@ -421,9 +451,6 @@
 					@endphp
 					{!! Form::hidden('hidden_price_group', key($price_groups), ['id' => 'hidden_price_group']) !!}
 					{!! Form::select('price_group', $price_groups, $selected_price_group, ['class' => 'form-control select2', 'id' => 'price_group']); !!}
-					<span class="input-group-addon">
-						@show_tooltip(__('lang_v1.price_group_help_text'))
-					</span> 
 				</div>
 			</div>
 		</div>
@@ -438,7 +465,7 @@
 	@endif
 
 	@if(in_array('types_of_service', $enabled_modules) && !empty($types_of_service))
-		<div class="col-md-4 col-sm-6">
+		<div class="col-md-4 col-sm-6 pos-cart-meta-extra">
 			<div class="form-group">
 				<div class="input-group">
 					<span class="input-group-addon">
@@ -465,7 +492,7 @@
 				$invoice_scheme_id = $default_location->invoice_scheme_id;
 			}
 		@endphp
-		<div class="col-md-4 col-sm-6">
+		<div class="col-md-4 col-sm-6 pos-cart-meta-extra">
 			<div class="form-group">
 				{!! Form::select('invoice_scheme_id', $invoice_schemes, $invoice_scheme_id, 
 					['class' => 'form-control', 'placeholder' => __('lang_v1.select_invoice_scheme'), 
@@ -474,7 +501,7 @@
 		</div>
 	@endif
 	@if(in_array('subscription', $enabled_modules))
-		<div class="col-md-4 col-sm-6">
+		<div class="col-md-4 col-sm-6 pos-cart-meta-extra">
 			<label>
               {!! Form::checkbox('is_recurring', 1, false, ['class' => 'input-icheck', 'id' => 'is_recurring']); !!} @lang('lang_v1.subscribe')?
             </label><button type="button" data-toggle="modal" data-target="#recurringInvoiceModal" class="btn btn-link"><i class="fa fa-external-link-square-alt"></i></button>@show_tooltip(__('lang_v1.recurring_invoice_help'))
@@ -489,7 +516,7 @@
     @endif
 
 	@if(in_array('kitchen' ,$enabled_modules))
-		<div class="col-md-3">
+		<div class="col-md-3 pos-cart-meta-extra">
 			<div class="form-group">
 				<div class="checkbox">
 				<label>

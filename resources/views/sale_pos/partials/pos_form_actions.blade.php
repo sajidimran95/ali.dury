@@ -76,12 +76,14 @@
 
                 @if (!Gate::check('disable_credit_sale') || auth()->user()->can('superadmin') || auth()->user()->can('admin'))
                     @if (empty($pos_settings['disable_credit_sale_button']))
-                        <input type="hidden" name="is_credit_sale" value="0" id="is_credit_sale">
-                        <button type="button" id="pos-credit-sale-btn"
-                            class=" tw-font-bold tw-text-gray-700 tw-cursor-pointer tw-text-xs md:tw-text-sm tw-flex tw-flex-col tw-items-center tw-justify-center tw-gap-1 tw-whitespace-nowrap no-print pos-express-finalize @if ($is_mobile) col-xs-6 @endif"
-                            data-pay_method="credit_sale" title="@lang('lang_v1.tooltip_credit_sale')"
+                        {{-- Button lives in cart pay row (#pos-credit-sale-btn); keep class hook for footer JS if needed --}}
+                        <button type="button"
+                            class="hide pos-express-finalize"
+                            data-pay_method="credit_sale"
+                            tabindex="-1"
+                            aria-hidden="true"
                             @if (!empty($only_payment)) disabled @endif>
-                            <i class="fas fa-check tw-text-[#5E5CA8]" aria-hidden="true"></i> @lang('lang_v1.credit_sale')
+                            @lang('lang_v1.credit_sale')
                         </button>
                     @endif
                 @endif

@@ -1,7 +1,12 @@
 @extends('layouts.app')
 @section('title', __('cash_register.register_details'))
 
+@section('css')
+<link rel="stylesheet" href="{{ asset('css/pos-sale-theme.css?v=' . ($asset_v ?? '') . '&ls=55') }}">
+@endsection
+
 @section('content')
+<script>document.body.classList.add('pos-cr-dark-page');</script>
 <section class="content-header no-print">
     <h1 class="tw-text-xl md:tw-text-3xl tw-font-bold tw-text-black">
         @lang('cash_register.register_details')

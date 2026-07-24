@@ -26,7 +26,7 @@
         <td>(-) @lang('cash_register.cash_expenses'):</td>
         <td><span class="display_currency" data-currency_symbol="true">{{ $register_details->total_cash_expense }}</span></td>
       </tr>
-      <tr class="success" style="font-weight:bold;">
+      <tr class="pos-cr-hl" style="font-weight:bold;">
         <td><b>@lang('cash_register.expected_cash_in_drawer'):</b></td>
         <td>
           <b><span class="display_currency" data-currency_symbol="true">{{ $register_details->cash_in_hand + $register_details->total_cash + $register_details->total_cash_advance_payment - $register_details->total_cash_refund - $register_details->total_cash_expense }}</span></b>
@@ -49,7 +49,7 @@
         <td>(-) @lang('cash_register.total_refund'):</td>
         <td><span class="display_currency" data-currency_symbol="true">{{ $register_details->total_refund }}</span></td>
       </tr>
-      <tr class="success" style="font-weight:bold;">
+      <tr class="pos-cr-hl" style="font-weight:bold;">
         <td><b>@lang('cash_register.net_sales'):</b></td>
         <td>
           <b><span class="display_currency" data-currency_symbol="true">{{ $details['transaction_details']->total_sales - $register_details->total_refund }}</span></b>
@@ -181,18 +181,18 @@
       {{-- Totals row aligned under respective columns --}}
       <tr style="font-weight:bold; border-top:2px solid #333;">
         <td><b>@lang('receipt.total')</b></td>
-        <td class="success" style="border:1px solid #d6e9c6;">
+        <td class="pos-cr-hl" style="border:1px solid #333;">
           <b><span class="display_currency" data-currency_symbol="true">{{ $register_details->total_sale }}</span></b>
         </td>
-        <td class="info" style="border:1px solid #bce8f1;">
+        <td class="pos-cr-hl" style="border:1px solid #333;">
           <b><span class="display_currency" data-currency_symbol="true">{{ $register_details->total_advance_payment }}</span></b>
         </td>
-        <td class="danger" style="border:1px solid #ebccd1;">
+        <td class="pos-cr-hl" style="border:1px solid #333;">
           <b><span class="display_currency" data-currency_symbol="true">{{ $register_details->total_expense }}</span></b>
         </td>
       </tr>
       {{-- Grand Total Collected row --}}
-      <tr class="success" style="font-weight:bold;">
+      <tr class="pos-cr-hl" style="font-weight:bold;">
         <td colspan="2"><b>@lang('cash_register.grand_total_collected'):</b></td>
         <td colspan="2">
           <b><span class="display_currency" data-currency_symbol="true">{{ $register_details->total_sale + $register_details->total_advance_payment }}</span></b>
@@ -206,7 +206,7 @@
     {{-- Refund breakdown --}}
     @if($register_details->total_refund > 0)
     <table class="table table-condensed">
-      <tr class="danger">
+      <tr class="pos-cr-hl">
         <th>@lang('cash_register.total_refund')</th>
         <td>
           <b><span class="display_currency" data-currency_symbol="true">{{ $register_details->total_refund }}</span></b><br>

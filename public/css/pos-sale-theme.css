@@ -69,12 +69,12 @@ body.lockscreen.pos-sale-theme .pos-sale-shell {
   border: 0;
 }
 
-/* Left nav — always flush to screen left */
+/* Left nav — icon rail + register menu (Sell / Open-Close / History / Cash / Status) */
 body.lockscreen.pos-sale-theme .pos-nav-sidebar {
-  flex: 0 0 220px;
-  width: 220px;
-  min-width: 220px;
-  max-width: 220px;
+  flex: 0 0 268px;
+  width: 268px;
+  min-width: 268px;
+  max-width: 268px;
   background: #141414;
   border-right: 1px solid var(--pos-border);
   display: none;
@@ -97,8 +97,23 @@ body.lockscreen.pos-sale-theme .pos-nav-sidebar {
   }
 }
 
+body.lockscreen.pos-sale-theme .pos-nav-panel {
+  display: flex !important;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 14px 0 12px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: #141414;
+}
+
+body.lockscreen.pos-sale-theme .pos-nav-icon-label {
+  display: none !important;
+}
+
 body.lockscreen.pos-sale-theme.pos-nav-collapsed .pos-nav-panel {
-  display: none;
+  display: none !important;
 }
 
 body.lockscreen.pos-sale-theme.pos-nav-collapsed .pos-nav-sidebar {
@@ -227,7 +242,7 @@ body.lockscreen.pos-sale-theme .pos-cart-panel {
   flex-direction: column;
   flex: 1 1 auto;
   min-height: 0;
-  overflow: visible;
+  overflow: hidden;
   position: relative;
 }
 
@@ -327,21 +342,21 @@ body.lockscreen.pos-sale-theme .pos-nav-icons {
 }
 
 body.lockscreen.pos-sale-theme .pos-nav-icon {
-  width: 56px;
-  min-height: 52px;
-  height: auto;
+  width: 48px;
+  min-height: 48px;
+  height: 48px;
   border-radius: 8px;
   display: inline-flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
   justify-content: center;
-  gap: 3px;
+  gap: 0;
   color: #c8c8c8;
   background: transparent;
   border: 0;
   text-decoration: none;
   cursor: pointer;
-  padding: 6px 2px;
+  padding: 0;
   box-sizing: border-box;
 }
 
@@ -350,22 +365,13 @@ body.lockscreen.pos-sale-theme .pos-nav-icon i {
   width: 20px !important;
   height: 20px !important;
   min-width: 20px;
-  font-size: 16px;
+  font-size: 18px;
   flex-shrink: 0;
   stroke: currentColor;
 }
 
 body.lockscreen.pos-sale-theme .pos-nav-icon-label {
-  display: block;
-  font-size: 9px;
-  line-height: 1.15;
-  text-align: center;
-  color: inherit;
-  max-width: 58px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-weight: 500;
+  display: none !important;
 }
 
 body.lockscreen.pos-sale-theme .pos-nav-icon:hover,
@@ -376,6 +382,7 @@ body.lockscreen.pos-sale-theme .pos-nav-icon.is-active {
 }
 
 body.lockscreen.pos-sale-theme .pos-nav-collapse {
+  display: inline-flex !important;
   margin-top: auto;
 }
 
@@ -387,12 +394,15 @@ body.lockscreen.pos-sale-theme.pos-nav-collapsed .pos-nav-sidebar {
 }
 
 body.lockscreen.pos-sale-theme .pos-nav-panel {
-  flex: 1;
-  min-width: 0;
-  display: flex;
+  display: flex !important;
   flex-direction: column;
+  flex: 1 1 auto;
+  min-width: 0;
+  width: auto;
+  padding: 12px 0 10px;
   overflow-y: auto;
-  padding: 16px 0 12px;
+  overflow-x: hidden;
+  background: #141414;
 }
 
 body.lockscreen.pos-sale-theme .pos-nav-register {
@@ -774,8 +784,9 @@ body.lockscreen.pos-sale-theme .pos-header.zoho-topbar {
   width: 100% !important;
   max-width: none !important;
   margin: 0 !important;
-  z-index: 50;
+  z-index: 1050;
   float: none !important;
+  overflow: visible !important;
 }
 
 body.lockscreen.pos-sale-theme .pos-ls-topbar {
@@ -789,6 +800,7 @@ body.lockscreen.pos-sale-theme .pos-ls-topbar {
   min-height: 48px;
   height: 48px;
   box-sizing: border-box;
+  overflow: visible !important;
 }
 
 body.lockscreen.pos-sale-theme .pos-ls-topbar-left,
@@ -802,6 +814,147 @@ body.lockscreen.pos-sale-theme .pos-ls-topbar-right {
 
 body.lockscreen.pos-sale-theme .pos-ls-topbar-right {
   justify-content: flex-end;
+  gap: 6px;
+  flex-wrap: nowrap;
+  overflow: visible !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-tb-btn,
+body.lockscreen.pos-sale-theme .pos-ls-topbar-right .pos-drafts-header-btn {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  width: 36px !important;
+  min-width: 36px !important;
+  height: 36px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border-radius: 8px !important;
+  border: 1px solid #2e2e2e !important;
+  background: #1a1a1a !important;
+  color: #eee !important;
+  box-shadow: none !important;
+  cursor: pointer;
+  flex-shrink: 0;
+  text-decoration: none !important;
+  transition: background .12s, border-color .12s;
+}
+
+body.lockscreen.pos-sale-theme .pos-tb-btn:hover,
+body.lockscreen.pos-sale-theme .pos-ls-topbar-right .pos-drafts-header-btn:hover {
+  background: #252525 !important;
+  border-color: #3b8ddd !important;
+  color: #fff !important;
+  text-decoration: none !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-tb-btn i,
+body.lockscreen.pos-sale-theme .pos-tb-btn svg {
+  font-size: 14px;
+  line-height: 1;
+}
+
+body.lockscreen.pos-sale-theme .pos-tb-btn-wide {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 36px !important;
+  padding: 0 14px !important;
+  border-radius: 8px !important;
+  border: 1px solid #2e2e2e !important;
+  background: #1a1a1a !important;
+  color: #fff !important;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  flex-shrink: 0;
+  cursor: pointer;
+  box-shadow: none !important;
+  text-decoration: none !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-tb-btn-wide:hover {
+  background: #252525 !important;
+  border-color: #3b8ddd !important;
+  color: #fff !important;
+  text-decoration: none !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-tb-btn-wide i {
+  font-size: 14px;
+}
+
+body.lockscreen.pos-sale-theme .pos-tb-divider {
+  display: inline-block;
+  width: 1px;
+  height: 18px;
+  background: #333;
+  flex-shrink: 0;
+  align-self: center;
+  margin: 0 2px;
+}
+
+body.lockscreen.pos-sale-theme .pos-ls-drafts-slot {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1100;
+  overflow: visible !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-drafts-dropdown-wrap {
+  position: relative !important;
+  z-index: 1100 !important;
+  overflow: visible !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-drafts-dropdown,
+body.zoho-theme.lockscreen.pos-sale-theme .pos-drafts-dropdown {
+  z-index: 1200 !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-drafts-dropdown.pos-drafts-dropdown--open,
+body.zoho-theme.lockscreen.pos-sale-theme .pos-drafts-dropdown.pos-drafts-dropdown--open {
+  display: block !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-ls-drafts-slot .pos-drafts-header-btn {
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 8px !important;
+  background: #1a1a1a !important;
+  border: 1px solid #2e2e2e !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-ls-drafts-slot .pos-drafts-header-btn svg {
+  color: #646EE4 !important;
+  stroke: #646EE4 !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-drafts-header-badge:not(.tw-hidden) {
+  position: absolute;
+  top: -6px;
+  right: -8px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: #3b8ddd !important;
+  background-color: #3b8ddd !important;
+  color: #fff !important;
+  -webkit-text-fill-color: #fff !important;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 16px;
+  text-align: center;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #1a1a1a !important;
+  z-index: 2;
+  box-shadow: none !important;
 }
 
 body.lockscreen.pos-sale-theme .pos-ls-topbar-center {
@@ -1177,47 +1330,83 @@ body.lockscreen.pos-sale-theme .product_box {
   box-shadow: none !important;
   height: auto !important;
   min-height: 0 !important;
-  aspect-ratio: 1 / 1.05;
-  padding: 8px 8px 10px !important;
-  display: flex !important;
-  flex-direction: column !important;
-  justify-content: flex-start !important;
-  align-items: center !important;
-  transition: background .15s, border-color .15s;
+  aspect-ratio: 1 / 1;
+  padding: 0 !important;
+  display: block !important;
+  transition: none !important;
   overflow: hidden;
   margin-bottom: 0 !important;
+  transform: none !important;
 }
 
 body.lockscreen.pos-sale-theme .pos-products-placeholder {
   color: var(--pos-muted) !important;
 }
 
-body.lockscreen.pos-sale-theme .product_box:hover {
-  background: #333 !important;
+/* Product tiles — no hover style change */
+body.lockscreen.pos-sale-theme .product_box:hover,
+body.lockscreen.pos-sale-theme .product_box:focus,
+body.lockscreen.pos-sale-theme .product_box:active,
+body.lockscreen.pos-sale-theme #featured_products_box .product_box:hover {
+  background: #2a2a2a !important;
   transform: none !important;
   box-shadow: none !important;
-  border-color: #4a4a4a !important;
+  border-color: #3a3a3a !important;
+  filter: none !important;
+  opacity: 1 !important;
 }
 
+body.lockscreen.pos-sale-theme .product_box:hover .text,
+body.lockscreen.pos-sale-theme .product_box:hover .text_div .text,
+body.lockscreen.pos-sale-theme .product_box:hover .product_price,
+body.lockscreen.pos-sale-theme .product_box:hover .text-muted {
+  color: #ffffff !important;
+  text-decoration: none !important;
+}
+
+/* Full-card image + name/price overlay */
 body.lockscreen.pos-sale-theme .product_box .image-container {
+  position: absolute !important;
+  inset: 0 !important;
   display: block !important;
   width: 100% !important;
-  height: 52% !important;
-  min-height: 56px !important;
-  max-height: 90px !important;
-  margin: 0 0 6px !important;
-  border-radius: 4px;
-  background-color: transparent !important;
-  background-size: contain !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+  background-color: #1a1a1a !important;
+  background-size: cover !important;
   background-repeat: no-repeat !important;
-  background-position: center !important;
-  flex: 0 0 auto;
+  background-position: center center !important;
+  z-index: 0;
 }
 
-/* No product image — name + price only, no placeholder preview */
+body.lockscreen.pos-sale-theme .product_box .text_div {
+  position: absolute !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  z-index: 2;
+  margin: 0 !important;
+  width: 100%;
+  padding: 28px 8px 10px !important;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  min-height: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.88) 0%, rgba(0, 0, 0, 0.55) 55%, rgba(0, 0, 0, 0) 100%) !important;
+  box-sizing: border-box;
+}
+
+/* No product image — name + price centered on dark card */
 body.lockscreen.pos-sale-theme .product_box.product_box--no-image {
+  display: flex !important;
+  flex-direction: column !important;
   justify-content: center !important;
-  padding: 12px 8px 14px !important;
+  align-items: center !important;
+  padding: 12px 8px !important;
 }
 
 body.lockscreen.pos-sale-theme .product_box.product_box--no-image .image-container {
@@ -1225,19 +1414,14 @@ body.lockscreen.pos-sale-theme .product_box.product_box--no-image .image-contain
 }
 
 body.lockscreen.pos-sale-theme .product_box.product_box--no-image .text_div {
+  position: relative !important;
+  left: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  padding: 0 !important;
+  background: transparent !important;
   justify-content: center;
   flex: 0 0 auto;
-}
-
-body.lockscreen.pos-sale-theme .product_box .text_div {
-  margin: 0 !important;
-  width: 100%;
-  flex: 1 1 auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  min-height: 0;
 }
 
 body.lockscreen.pos-sale-theme .product_box .text_div .text,
@@ -1257,30 +1441,32 @@ body.lockscreen.pos-sale-theme .product_box .text_div small.text {
   text-align: center;
   width: 100%;
   word-break: break-word;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
 }
 
 body.lockscreen.pos-sale-theme .product_box .product_price {
   display: block !important;
   color: #ffffff !important;
-  font-size: 13px !important;
+  font-size: 16px !important;
   font-weight: 700 !important;
-  margin-top: 4px !important;
-  line-height: 1.2 !important;
+  margin-top: 5px !important;
+  line-height: 1.3 !important;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  overflow: visible !important;
+  text-overflow: clip;
   max-width: 100%;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
 }
 
 body.lockscreen.pos-sale-theme .product_box .pos-tile-stock {
   position: absolute;
   top: 6px;
   right: 6px;
-  z-index: 2;
+  z-index: 3;
   font-size: 10px;
   color: #ffffff !important;
   font-weight: 600;
-  background: rgba(0, 0, 0, 0.45);
+  background: rgba(0, 0, 0, 0.65);
   padding: 2px 5px;
   border-radius: 3px;
   line-height: 1.2;
@@ -1291,18 +1477,24 @@ body.lockscreen.pos-sale-theme .product_box * {
   color: #ffffff !important;
 }
 
+body.lockscreen.pos-sale-theme .product_box .text-muted,
+body.lockscreen.pos-sale-theme .product_box small.text {
+  color: #ffffff !important;
+}
+
 body.lockscreen.pos-sale-theme .product_box.product_out_of_stock {
   opacity: 0.55 !important;
   background: #1a1a1a !important;
 }
 
 body.lockscreen.pos-sale-theme #featured_products_box .product_box {
-  background: #322b1a !important;
-  border-color: #5a4a20 !important;
+  background: #2a2a2a !important;
+  border-color: #3a3a3a !important;
 }
 
 body.lockscreen.pos-sale-theme #featured_products_box .product_box:hover {
-  background: #3d3420 !important;
+  background: #2a2a2a !important;
+  border-color: #3a3a3a !important;
 }
 
 body.lockscreen.pos-sale-theme #featured_products_box .product_box .text_div .text,
@@ -1424,8 +1616,9 @@ body.lockscreen.pos-sale-theme .pos-cart-panel {
   flex-direction: column !important;
   flex: 1 1 auto !important;
   min-height: 0 !important;
-  height: auto !important;
-  overflow: visible; /* customer dropdown must not clip */
+  height: 100% !important;
+  max-height: 100% !important;
+  overflow: hidden !important; /* pin pay CTA; lines scroll inside */
   padding: 0 !important;
   position: relative;
   z-index: 1;
@@ -1442,33 +1635,55 @@ body.lockscreen.pos-sale-theme #pos_checkout_wrap .box-body > .pos-cart-panel {
 
 body.lockscreen.pos-sale-theme .pos-cart-panel > .row {
   margin: 0 !important;
-  padding: 10px 12px 0;
+  padding: 8px 12px 0 !important;
   flex: 0 0 auto;
+  width: 100% !important;
+  box-sizing: border-box !important;
 }
 
-/* Cart lines scroll; footer (totals/pay) stays pinned */
-body.lockscreen.pos-sale-theme .pos-cart-panel .pos_product_div,
+/* Cart lines scroll; footer (totals/pay) stays pinned — create + edit */
 body.lockscreen.pos-sale-theme .pos-cart-panel > .row.pos-cart-lines,
-body.lockscreen.pos-sale-theme .pos-cart-panel > .row:last-of-type {
+body.lockscreen.pos-sale-theme #edit_pos_sell_form .pos-cart-panel > .row.pos-cart-lines,
+body.lockscreen.pos-sale-theme #add_pos_sell_form .pos-cart-panel > .row.pos-cart-lines {
   flex: 1 1 auto !important;
   min-height: 0 !important;
-  overflow: auto !important;
+  overflow: hidden !important;
   margin: 0 !important;
   padding: 0 4px !important;
   background: #1a1a1a !important;
+  display: flex !important;
+  flex-direction: column !important;
 }
 
-body.lockscreen.pos-sale-theme .pos-cart-panel > .pos_form_totals {
+body.lockscreen.pos-sale-theme .pos-cart-panel .pos_product_div {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow: auto !important;
+  height: 100% !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-cart-panel > .pos_form_totals,
+body.lockscreen.pos-sale-theme #edit_pos_sell_form .pos-cart-panel > .pos_form_totals,
+body.lockscreen.pos-sale-theme #add_pos_sell_form .pos-cart-panel > .pos_form_totals {
   flex: 0 0 auto !important;
   margin-top: auto !important;
   position: relative;
-  z-index: 5;
+  z-index: 25;
   width: 100% !important;
   display: flex !important;
   flex-direction: column !important;
   background: #1a1a1a !important;
   border-top: 1px solid #2a2a2a !important;
   padding: 8px 10px 12px !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-cart-panel > .pos_form_totals .pos-pay-cta,
+body.lockscreen.pos-sale-theme #edit_pos_sell_form .pos-pay-cta {
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
 }
 
 body.lockscreen.pos-sale-theme .pos-cart-actions {
@@ -1497,14 +1712,26 @@ body.lockscreen.pos-sale-theme .pos-customer-bar {
   max-width: 100% !important;
 }
 
-body.lockscreen.pos-sale-theme .pos-cart-panel > .row:first-of-type {
+/* Customer row + date/price row — same left/right align (create + edit) */
+body.lockscreen.pos-sale-theme .pos-cart-panel > .row.pos-cart-customer,
+body.lockscreen.pos-sale-theme .pos-cart-panel > .row:has(.pos-customer-bar),
+body.lockscreen.pos-sale-theme .pos-cart-panel > .row.pos-cart-meta {
   margin: 0 !important;
-  padding: 10px 12px 0 !important;
+  padding-left: 12px !important;
+  padding-right: 12px !important;
   width: 100% !important;
-  display: block !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
 }
 
-body.lockscreen.pos-sale-theme .pos-cart-panel > .row:first-of-type > [class*="col-"] {
+body.lockscreen.pos-sale-theme .pos-cart-panel > .row.pos-cart-customer,
+body.lockscreen.pos-sale-theme .pos-cart-panel > .row:has(.pos-customer-bar) {
+  padding-top: 8px !important;
+  padding-bottom: 0 !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-cart-panel > .row:has(.pos-customer-bar) > [class*="col-"],
+body.lockscreen.pos-sale-theme .pos-cart-panel > .row.pos-cart-customer > [class*="col-"] {
   width: 100% !important;
   max-width: 100% !important;
   float: none !important;
@@ -1564,7 +1791,58 @@ body.lockscreen.pos-sale-theme .pos-customer-bar .input-group-addon i::before {
 }
 
 body.lockscreen.pos-sale-theme .pos-customer-bar .input-group-btn {
-  display: none !important; /* add-customer lives in select2 footer */
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: 0 0 42px !important;
+  width: 42px !important;
+  height: 42px !important;
+  min-height: 42px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  align-self: center !important;
+}
+
+/* Keep add-customer in picker footer; show receive payment only */
+body.lockscreen.pos-sale-theme .pos-customer-bar .input-group-btn .add_new_customer {
+  display: none !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-customer-bar #pos-receive-customer-payment {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 36px !important;
+  height: 36px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 6px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: #3b8ddd !important;
+  cursor: pointer;
+  line-height: 1 !important;
+  vertical-align: middle !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-customer-bar #pos-receive-customer-payment:hover,
+body.lockscreen.pos-sale-theme .pos-customer-bar #pos-receive-customer-payment:focus {
+  background: transparent !important;
+  color: #3b8ddd !important;
+  box-shadow: none !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-customer-bar #pos-receive-customer-payment i,
+body.lockscreen.pos-sale-theme .pos-customer-bar #pos-receive-customer-payment .fa-hand-holding-usd,
+body.lockscreen.pos-sale-theme .pos-customer-bar #pos-receive-customer-payment:hover i {
+  color: #3b8ddd !important;
+  font-size: 16px !important;
+  line-height: 1 !important;
+  margin: 0 !important;
+  vertical-align: middle !important;
 }
 
 body.lockscreen.pos-sale-theme .pos-customer-bar .select2-container,
@@ -1638,8 +1916,15 @@ body.lockscreen.pos-sale-theme .pos-customer-bar {
 body.lockscreen.pos-sale-theme #pos_checkout_wrap,
 body.lockscreen.pos-sale-theme #pos_checkout_wrap > div,
 body.lockscreen.pos-sale-theme #pos_checkout_wrap .box-body,
-body.lockscreen.pos-sale-theme .pos-cart-panel,
-body.lockscreen.pos-sale-theme .pos-checkout-inner,
+body.lockscreen.pos-sale-theme .pos-checkout-inner {
+  /* visible so Retrieve sale panel is not cropped; cart panel stays clipped */
+  overflow: visible !important;
+}
+
+/* Keep customer picker usable above cart lines */
+body.lockscreen.pos-sale-theme .pos-cart-panel > .row.pos-cart-customer,
+body.lockscreen.pos-sale-theme .pos-cart-panel > .row:has(.pos-customer-bar),
+body.lockscreen.pos-sale-theme .pos-customer-bar,
 body.lockscreen.pos-sale-theme .pos-customer-bar .input-group {
   overflow: visible !important;
 }
@@ -1687,22 +1972,24 @@ body.lockscreen.pos-sale-theme .pos-cart-action-btn.is-active {
   padding-bottom: 2px !important;
 }
 
-/* Retrieve sale — Lightspeed-style parked list panel */
+/* Retrieve sale — Lightspeed-style parked list panel (solid dark, not cropped) */
 body.lockscreen.pos-sale-theme .pos-retrieve-panel {
   display: none;
-  position: absolute;
-  top: calc(100% - 2px);
-  right: 0;
+  position: fixed;
+  top: 72px;
+  right: max(12px, calc((100vw - 1280px) / 2 + 12px));
   left: auto;
-  width: 520px;
-  max-width: min(520px, calc(100vw - 80px));
-  max-height: min(70vh, 520px);
+  width: 560px;
+  max-width: min(560px, calc(100vw - 24px));
+  max-height: min(72vh, 560px);
   overflow: hidden;
-  background: #1c1c1c;
+  background: #1c1c1c !important;
+  background-color: #1c1c1c !important;
   border: 1px solid #333;
   border-radius: 6px;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
-  z-index: 1400;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.85);
+  z-index: 2500;
+  opacity: 1 !important;
 }
 
 body.lockscreen.pos-sale-theme .pos-retrieve-panel.is-open {
@@ -1712,8 +1999,24 @@ body.lockscreen.pos-sale-theme .pos-retrieve-panel.is-open {
 body.lockscreen.pos-sale-theme .pos-retrieve-sheet {
   display: flex;
   flex-direction: column;
-  max-height: min(70vh, 520px);
+  max-height: min(72vh, 560px);
   color: #f2f2f2;
+  background: #1c1c1c !important;
+  background-color: #1c1c1c !important;
+  opacity: 1 !important;
+  min-height: 0;
+}
+
+/* Retrieve sheet inside view_modal — solid dark card on solid dark page */
+body.lockscreen.pos-sale-theme .view_modal .pos-retrieve-sheet {
+  width: 100%;
+  max-width: 560px;
+  margin: 0 auto;
+  border: 1px solid #333;
+  border-radius: 8px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.9);
+  background: #1c1c1c !important;
+  overflow: hidden;
 }
 
 body.lockscreen.pos-sale-theme .pos-retrieve-sheet-head {
@@ -1740,7 +2043,8 @@ body.lockscreen.pos-sale-theme .pos-retrieve-col-label--cust {
 body.lockscreen.pos-sale-theme .pos-retrieve-sheet-body {
   overflow-y: auto;
   flex: 1 1 auto;
-  max-height: min(62vh, 460px);
+  max-height: min(64vh, 500px);
+  min-height: 120px;
   scrollbar-width: thin;
   scrollbar-color: #666 #1a1a1a;
 }
@@ -2003,6 +2307,72 @@ body.lockscreen.pos-sale-theme .pos_form_totals .pos-add-row {
   order: 0;
 }
 
+body.lockscreen.pos-sale-theme .pos_form_totals .pos-pay-methods {
+  order: 2;
+  display: flex !important;
+  gap: 8px;
+  width: 100%;
+  margin: 8px 0 0;
+  padding: 0;
+}
+
+body.lockscreen.pos-sale-theme .pos_form_totals .pos-pay-method-btn {
+  flex: 1 1 0;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 8px 10px;
+  border-radius: 4px;
+  border: 1px solid #3a3a3a;
+  background: #2a2a2a !important;
+  color: #f2f2f2 !important;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: background .15s, border-color .15s;
+}
+
+body.lockscreen.pos-sale-theme .pos_form_totals .pos-pay-method-btn i {
+  font-size: 13px;
+  opacity: 0.95;
+}
+
+body.lockscreen.pos-sale-theme .pos_form_totals .pos-pay-method-btn:hover {
+  background: #333 !important;
+  border-color: #4a9aeb;
+  color: #fff !important;
+}
+
+body.lockscreen.pos-sale-theme .pos_form_totals .pos-pay-method-btn[data-pay_method="cash"]:hover {
+  border-color: #28b77b;
+}
+
+body.lockscreen.pos-sale-theme .pos_form_totals .pos-pay-method-btn[data-pay_method="card"]:hover {
+  border-color: #d61b60;
+}
+
+body.lockscreen.pos-sale-theme .pos_form_totals .pos-pay-method-btn[data-pay_method="credit_sale"]:hover {
+  border-color: #5e5ca8;
+}
+
+body.lockscreen.pos-sale-theme .pos_form_totals .pos-pay-methods {
+  flex-wrap: wrap;
+}
+
+body.lockscreen.pos-sale-theme .pos_form_totals .pos-pay-method-btn {
+  flex: 1 1 calc(50% - 8px);
+  min-width: 0;
+}
+
+@media (min-width: 420px) {
+  body.lockscreen.pos-sale-theme .pos_form_totals .pos-pay-method-btn {
+    flex: 1 1 0;
+  }
+}
+
 body.lockscreen.pos-sale-theme .pos_form_totals .pos-pay-cta {
   order: 3;
   margin: 8px 0 0;
@@ -2070,9 +2440,153 @@ body.lockscreen.pos-sale-theme #pos_table > thead > tr > th {
   border-color: #2a2a2a !important;
 }
 
-/* Hide secondary cart meta rows (keep in DOM for features) */
-body.lockscreen.pos-sale-theme .pos-cart-panel > .row:nth-of-type(2) {
+/* Cart meta under customer — date + retail on one equal line, same width as customer */
+body.lockscreen.pos-sale-theme .pos-cart-panel > .row.pos-cart-meta {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  align-items: stretch !important;
+  gap: 8px;
+  margin: 0 !important;
+  padding-top: 8px !important;
+  padding-bottom: 8px !important;
+  border-bottom: 1px solid #2a2a2a;
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-cart-meta > [class*="col-"] {
+  float: none !important;
+  width: auto !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-cart-meta-date,
+body.lockscreen.pos-sale-theme .pos-cart-meta-price {
+  flex: 1 1 0 !important;
+  max-width: none !important;
+  min-width: 0 !important;
+  width: 50% !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* Single meta field — full width like customer row */
+body.lockscreen.pos-sale-theme .pos-cart-panel > .row.pos-cart-meta:not(:has(.pos-cart-meta-price)) .pos-cart-meta-date,
+body.lockscreen.pos-sale-theme .pos-cart-panel > .row.pos-cart-meta:not(:has(.pos-cart-meta-date)) .pos-cart-meta-price {
+  width: 100% !important;
+  flex: 1 1 100% !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-cart-meta-extra,
+body.lockscreen.pos-sale-theme .pos-cart-meta > .col-md-4:not(.pos-cart-meta-date):not(.pos-cart-meta-price) {
   display: none !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-cart-meta-label {
+  display: none !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-cart-meta .form-group {
+  margin: 0 !important;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+body.lockscreen.pos-sale-theme .pos-cart-meta .input-group {
+  background: #222 !important;
+  border: 1px solid #333 !important;
+  border-radius: 4px !important;
+  overflow: hidden;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  width: 100% !important;
+  height: 42px !important;
+  min-height: 42px !important;
+  max-height: 42px !important;
+  box-sizing: border-box !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-cart-meta .input-group-addon {
+  background: transparent !important;
+  border: 0 !important;
+  color: #8a8a8a !important;
+  padding: 0 12px !important;
+  flex: 0 0 42px !important;
+  width: 42px !important;
+  height: 42px !important;
+  line-height: 42px !important;
+  text-align: center;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Hide help tooltip icon so both fields match */
+body.lockscreen.pos-sale-theme .pos-cart-meta .input-group-addon:has(.hover-q),
+body.lockscreen.pos-sale-theme .pos-cart-meta .input-group-addon:has(.fa-info-circle) {
+  display: none !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-cart-meta .form-control,
+body.lockscreen.pos-sale-theme .pos-cart-meta #transaction_date,
+body.lockscreen.pos-sale-theme .pos-cart-meta input[name="price_group_text"] {
+  background: #222 !important;
+  border: 0 !important;
+  color: #fff !important;
+  height: 42px !important;
+  min-height: 42px !important;
+  line-height: 42px !important;
+  padding: 0 8px 0 0 !important;
+  box-shadow: none !important;
+  min-width: 0 !important;
+  flex: 1 1 auto !important;
+  font-size: 13px !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-cart-meta #price_group + .select2-container,
+body.lockscreen.pos-sale-theme .pos-cart-meta .select2-container {
+  width: 100% !important;
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  height: 42px !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-cart-meta .select2-container--default .select2-selection--single {
+  background: #222 !important;
+  border: 0 !important;
+  height: 42px !important;
+  min-height: 42px !important;
+  border-radius: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-cart-meta .select2-container--default .select2-selection--single .select2-selection__rendered {
+  color: #fff !important;
+  line-height: 42px !important;
+  padding-left: 0 !important;
+  padding-right: 24px !important;
+  font-size: 13px !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-cart-meta .select2-container--default .select2-selection--single .select2-selection__arrow {
+  height: 42px !important;
+  top: 0 !important;
+  right: 4px !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-cart-meta .select2-container--default .select2-selection--single .select2-selection__arrow b {
+  border-color: #aaa transparent transparent transparent !important;
+  margin-top: -2px !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-cart-meta .fa-info-circle,
+body.lockscreen.pos-sale-theme .pos-cart-meta .input-group-addon .fa {
+  color: #8a8a8a !important;
 }
 
 body.lockscreen.pos-sale-theme #pos_table.pos-has-rows thead {
@@ -2751,6 +3265,20 @@ body.lockscreen.pos-sale-theme .pos-ls-drafts-slot .pos-drafts-header-btn svg {
   stroke: #cfcfcf !important;
 }
 
+/* Draft count badge — blue pill, white number (not white-on-white) */
+body.lockscreen.pos-sale-theme .pos-ls-drafts-slot .pos-drafts-header-badge,
+body.lockscreen.pos-sale-theme .pos-drafts-header-btn .pos-drafts-header-badge,
+body.lockscreen.pos-sale-theme .pos-drafts-header-btn--has-items .pos-drafts-header-badge,
+body.zoho-theme.lockscreen.pos-sale-theme .pos-drafts-header-badge,
+body.zoho-theme.lockscreen.pos-sale-theme .pos-drafts-header-btn--has-items .pos-drafts-header-badge {
+  background: #3b8ddd !important;
+  background-color: #3b8ddd !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  border: 2px solid #121212 !important;
+  opacity: 1 !important;
+}
+
 body.lockscreen.pos-sale-theme .pos-form-actions .pos-footer-divider {
   background: var(--pos-border) !important;
 }
@@ -2872,6 +3400,13 @@ body.lockscreen.pos-sale-theme .modal {
 
 body.lockscreen.pos-sale-theme .modal-backdrop {
   z-index: 10590 !important;
+  background-color: #000000 !important;
+}
+
+body.lockscreen.pos-sale-theme .modal-backdrop.in,
+body.lockscreen.pos-sale-theme .modal-backdrop.show {
+  opacity: 0.55 !important;
+  background-color: #000000 !important;
 }
 
 body.lockscreen.pos-sale-theme .modal.in,
@@ -2881,6 +3416,84 @@ body.lockscreen.pos-sale-theme .modal.show {
   justify-content: center !important;
   padding: 16px !important;
   pointer-events: auto !important;
+  /* Transparent shell — POS stays visible; backdrop dims behind popup */
+  background: transparent !important;
+  opacity: 1 !important;
+}
+
+/* Suspend / Park — popup only over POS (do not replace screen) */
+body.lockscreen.pos-sale-theme #confirmSuspendModal.in,
+body.lockscreen.pos-sale-theme #confirmSuspendModal.show {
+  background: transparent !important;
+  opacity: 1 !important;
+}
+
+body.lockscreen.pos-sale-theme #confirmSuspendModal .modal-dialog {
+  margin: 0 auto !important;
+  width: 100%;
+  max-width: 480px;
+}
+
+body.lockscreen.pos-sale-theme #confirmSuspendModal .modal-content {
+  background: #1e1e1e !important;
+  color: #ffffff !important;
+  border: 1px solid #3a3a3a !important;
+  border-radius: 8px !important;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.7) !important;
+}
+
+body.lockscreen.pos-sale-theme #confirmSuspendModal .modal-header,
+body.lockscreen.pos-sale-theme #confirmSuspendModal .modal-footer,
+body.lockscreen.pos-sale-theme #confirmSuspendModal .modal-body {
+  background: #1a1a1a !important;
+  border-color: #333 !important;
+  color: #ffffff !important;
+}
+
+body.lockscreen.pos-sale-theme #confirmSuspendModal .modal-body {
+  background: #1e1e1e !important;
+}
+
+body.lockscreen.pos-sale-theme #confirmSuspendModal .modal-title,
+body.lockscreen.pos-sale-theme #confirmSuspendModal label {
+  color: #ffffff !important;
+}
+
+body.lockscreen.pos-sale-theme #confirmSuspendModal textarea.form-control,
+body.lockscreen.pos-sale-theme #confirmSuspendModal textarea#additional_notes {
+  background: #2a2a2a !important;
+  border: 1px solid #444 !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
+}
+
+body.lockscreen.pos-sale-theme #confirmSuspendModal textarea.form-control::placeholder {
+  color: #999 !important;
+}
+
+body.lockscreen.pos-sale-theme #confirmSuspendModal .close {
+  color: #ffffff !important;
+  opacity: 0.85 !important;
+  text-shadow: none !important;
+}
+
+body.lockscreen.pos-sale-theme #confirmSuspendModal #pos-suspend {
+  background: #3b8ddd !important;
+  border-color: #2f7bc4 !important;
+  color: #fff !important;
+}
+
+body.lockscreen.pos-sale-theme #confirmSuspendModal .tw-dw-btn-neutral {
+  background: #333 !important;
+  border-color: #444 !important;
+  color: #fff !important;
+}
+
+/* Other view_modal shells stay transparent too (POS visible) */
+body.lockscreen.pos-sale-theme .view_modal.in,
+body.lockscreen.pos-sale-theme .view_modal.show {
+  background: transparent !important;
+  opacity: 1 !important;
 }
 
 body.lockscreen.pos-sale-theme .modal.in .modal-dialog,
@@ -2895,6 +3508,74 @@ body.lockscreen.pos-sale-theme #modal_payment .modal-dialog {
   position: relative;
   z-index: 10601 !important;
   pointer-events: auto !important;
+}
+
+body.lockscreen.pos-sale-theme #card_details_modal .modal-dialog {
+  margin: 0 auto !important;
+  float: none !important;
+  transform: none !important;
+  max-height: calc(100vh - 40px);
+  position: relative;
+  z-index: 10601 !important;
+  pointer-events: auto !important;
+}
+
+body.lockscreen.pos-sale-theme #card_details_modal .modal-content,
+body.lockscreen.pos-sale-theme #card_details_modal .modal-header,
+body.lockscreen.pos-sale-theme #card_details_modal .modal-body,
+body.lockscreen.pos-sale-theme #card_details_modal .modal-footer {
+  pointer-events: auto !important;
+  position: relative;
+  z-index: 10602 !important;
+}
+
+body.lockscreen.pos-sale-theme #card_details_modal .modal-content {
+  background: #1e1e1e !important;
+  color: #ffffff !important;
+  border: 1px solid #3a3a3a !important;
+  border-radius: 8px !important;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.65) !important;
+}
+
+body.lockscreen.pos-sale-theme #card_details_modal .modal-header,
+body.lockscreen.pos-sale-theme #card_details_modal .modal-footer {
+  border-color: #333 !important;
+  background: #1a1a1a !important;
+}
+
+body.lockscreen.pos-sale-theme #card_details_modal .modal-title,
+body.lockscreen.pos-sale-theme #card_details_modal .modal-body,
+body.lockscreen.pos-sale-theme #card_details_modal .modal-body label,
+body.lockscreen.pos-sale-theme #card_details_modal .modal-body .form-group > label {
+  color: #ffffff !important;
+}
+
+body.lockscreen.pos-sale-theme #card_details_modal .form-control,
+body.lockscreen.pos-sale-theme #card_details_modal select.form-control {
+  background: #2a2a2a !important;
+  border-color: #444 !important;
+  color: #ffffff !important;
+}
+
+body.lockscreen.pos-sale-theme #card_details_modal .select2-container--default .select2-selection--single {
+  background: #2a2a2a !important;
+  border-color: #444 !important;
+}
+
+body.lockscreen.pos-sale-theme #card_details_modal .select2-container--default .select2-selection--single .select2-selection__rendered {
+  color: #ffffff !important;
+}
+
+body.lockscreen.pos-sale-theme #card_details_modal #pos-save-card {
+  background: #3b8ddd !important;
+  border-color: #2f7bc4 !important;
+  color: #fff !important;
+}
+
+body.lockscreen.pos-sale-theme #card_details_modal .close {
+  color: #fff !important;
+  opacity: 0.85;
+  text-shadow: none;
 }
 
 body.lockscreen.pos-sale-theme #confirmSuspendModal .modal-content,
@@ -2973,8 +3654,10 @@ body.lockscreen.pos-sale-theme .view_modal .close:hover {
   color: #ffffff !important;
 }
 
-body.lockscreen.pos-sale-theme .modal-backdrop.in {
-  opacity: 0.65 !important;
+body.lockscreen.pos-sale-theme .modal-backdrop.in,
+body.lockscreen.pos-sale-theme .modal-backdrop.show {
+  opacity: 0.55 !important;
+  background-color: #000000 !important;
 }
 
 /* Payment modal — full dark, no white panels */
@@ -3291,3 +3974,715 @@ body.lockscreen.pos-sale-theme #featured_products_box .tw-text-amber-800 {
 body.lockscreen.pos-sale-theme #featured_products_box a {
   color: #ffd28a !important;
 }
+
+/* Recent Transactions — icon only in top menu */
+body.lockscreen.pos-sale-theme #recent-transactions,
+body.lockscreen.pos-sale-theme .pos-ls-topbar-right #recent-transactions {
+  font-size: 0 !important;
+  color: #eee !important;
+  background: #1a1a1a !important;
+  border: 1px solid #2e2e2e !important;
+  width: 36px !important;
+  min-width: 36px !important;
+  height: 36px !important;
+  padding: 0 !important;
+  gap: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+body.lockscreen.pos-sale-theme #recent-transactions span {
+  display: none !important;
+}
+
+body.lockscreen.pos-sale-theme #recent-transactions i {
+  font-size: 14px !important;
+  color: #eee !important;
+  display: inline-block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+body.lockscreen.pos-sale-theme #recent-transactions:hover,
+body.lockscreen.pos-sale-theme #recent-transactions:focus {
+  background: #252525 !important;
+  border-color: #3b8ddd !important;
+  color: #fff !important;
+}
+
+body.lockscreen.pos-sale-theme #recent_transactions_modal.in,
+body.lockscreen.pos-sale-theme #recent_transactions_modal.show {
+  background: transparent !important;
+}
+
+body.lockscreen.pos-sale-theme #recent_transactions_modal .modal-dialog {
+  margin: 0 auto !important;
+  max-width: 920px;
+  width: 100%;
+}
+
+body.lockscreen.pos-sale-theme #recent_transactions_modal .modal-content {
+  background: #1e1e1e !important;
+  color: #fff !important;
+  border: 1px solid #3a3a3a !important;
+  border-radius: 8px !important;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.85) !important;
+}
+
+body.lockscreen.pos-sale-theme #recent_transactions_modal .modal-header,
+body.lockscreen.pos-sale-theme #recent_transactions_modal .modal-footer,
+body.lockscreen.pos-sale-theme #recent_transactions_modal .modal-body {
+  background: #1a1a1a !important;
+  border-color: #333 !important;
+  color: #fff !important;
+}
+
+body.lockscreen.pos-sale-theme #recent_transactions_modal .modal-body {
+  background: #1e1e1e !important;
+}
+
+body.lockscreen.pos-sale-theme #recent_transactions_modal .modal-title {
+  color: #fff !important;
+}
+
+body.lockscreen.pos-sale-theme #recent_transactions_modal .nav-tabs-custom {
+  background: transparent !important;
+  box-shadow: none !important;
+  margin: 0 !important;
+}
+
+body.lockscreen.pos-sale-theme #recent_transactions_modal .nav-tabs-custom > .nav-tabs {
+  background: #161616 !important;
+  border-bottom: 1px solid #333 !important;
+  margin: 0 !important;
+}
+
+body.lockscreen.pos-sale-theme #recent_transactions_modal .nav-tabs-custom > .nav-tabs > li > a,
+body.lockscreen.pos-sale-theme #recent_transactions_modal .nav-tabs-custom > .nav-tabs > li > a b,
+body.lockscreen.pos-sale-theme #recent_transactions_modal .nav-tabs-custom > .nav-tabs > li > a i {
+  color: #cfcfcf !important;
+  background: transparent !important;
+  border: 0 !important;
+}
+
+body.lockscreen.pos-sale-theme #recent_transactions_modal .nav-tabs-custom > .nav-tabs > li.active > a,
+body.lockscreen.pos-sale-theme #recent_transactions_modal .nav-tabs-custom > .nav-tabs > li.active > a:hover,
+body.lockscreen.pos-sale-theme #recent_transactions_modal .nav-tabs-custom > .nav-tabs > li.active > a b,
+body.lockscreen.pos-sale-theme #recent_transactions_modal .nav-tabs-custom > .nav-tabs > li.active > a i {
+  color: #fff !important;
+  background: #1e1e1e !important;
+  border: 0 !important;
+  border-bottom: 2px solid #3b8ddd !important;
+}
+
+body.lockscreen.pos-sale-theme #recent_transactions_modal .nav-tabs-custom > .tab-content {
+  background: #1e1e1e !important;
+  color: #fff !important;
+  padding: 12px 0 0 !important;
+}
+
+body.lockscreen.pos-sale-theme #recent_transactions_modal .table,
+body.lockscreen.pos-sale-theme #recent_transactions_modal .table td,
+body.lockscreen.pos-sale-theme #recent_transactions_modal .table th,
+body.lockscreen.pos-sale-theme #recent_transactions_modal .tab-pane,
+body.lockscreen.pos-sale-theme #recent_transactions_modal .tab-pane p {
+  color: #fff !important;
+  background: transparent !important;
+  border-color: #333 !important;
+}
+
+body.lockscreen.pos-sale-theme #recent_transactions_modal .table > tbody > tr:hover > td {
+  background: #252525 !important;
+}
+
+body.lockscreen.pos-sale-theme #recent_transactions_modal .tw-dw-btn,
+body.lockscreen.pos-sale-theme #recent_transactions_modal .tw-dw-btn-outline {
+  background: #2a2a2a !important;
+  border-color: #444 !important;
+  color: #fff !important;
+}
+
+body.lockscreen.pos-sale-theme #recent_transactions_modal .tw-dw-btn-info {
+  border-color: #3b8ddd !important;
+}
+
+body.lockscreen.pos-sale-theme #recent_transactions_modal .tw-dw-btn-success {
+  border-color: #2e7d4f !important;
+}
+
+body.lockscreen.pos-sale-theme #recent_transactions_modal .tw-dw-btn-error {
+  border-color: #ef5350 !important;
+}
+
+body.lockscreen.pos-sale-theme #recent_transactions_modal .text-muted,
+body.lockscreen.pos-sale-theme #recent_transactions_modal .text-danger {
+  color: #cfcfcf !important;
+}
+
+body.lockscreen.pos-sale-theme #recent_transactions_modal .close {
+  color: #fff !important;
+  opacity: 0.85 !important;
+  text-shadow: none !important;
+}
+
+/* Close Register + Register Details — full dark, white text only (no white panels) */
+body.lockscreen.pos-sale-theme .close_register_modal.in,
+body.lockscreen.pos-sale-theme .close_register_modal.show,
+body.lockscreen.pos-sale-theme .register_details_modal.in,
+body.lockscreen.pos-sale-theme .register_details_modal.show {
+  background: transparent !important;
+}
+
+body.lockscreen.pos-sale-theme .close_register_modal .modal-dialog,
+body.lockscreen.pos-sale-theme .register_details_modal .modal-dialog {
+  margin: 0 auto !important;
+  max-width: 960px;
+  width: 100%;
+}
+
+body.lockscreen.pos-sale-theme .close_register_modal .modal-content,
+body.lockscreen.pos-sale-theme .register_details_modal .modal-content {
+  background: #1a1a1a !important;
+  color: #ffffff !important;
+  border: 1px solid #333 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.9) !important;
+}
+
+body.lockscreen.pos-sale-theme .close_register_modal .modal-header,
+body.lockscreen.pos-sale-theme .close_register_modal .modal-footer,
+body.lockscreen.pos-sale-theme .close_register_modal .modal-body,
+body.lockscreen.pos-sale-theme .register_details_modal .modal-header,
+body.lockscreen.pos-sale-theme .register_details_modal .modal-footer,
+body.lockscreen.pos-sale-theme .register_details_modal .modal-body {
+  background: #1a1a1a !important;
+  border-color: #333 !important;
+  color: #ffffff !important;
+}
+
+body.lockscreen.pos-sale-theme .close_register_modal .modal-body,
+body.lockscreen.pos-sale-theme .register_details_modal .modal-body {
+  background: #1e1e1e !important;
+}
+
+body.lockscreen.pos-sale-theme .close_register_modal,
+body.lockscreen.pos-sale-theme .close_register_modal *,
+body.lockscreen.pos-sale-theme .register_details_modal,
+body.lockscreen.pos-sale-theme .register_details_modal * {
+  color: #ffffff !important;
+  border-color: #333 !important;
+}
+
+body.lockscreen.pos-sale-theme .close_register_modal .bg-white,
+body.lockscreen.pos-sale-theme .close_register_modal .bg-gray,
+body.lockscreen.pos-sale-theme .close_register_modal .well,
+body.lockscreen.pos-sale-theme .close_register_modal .box,
+body.lockscreen.pos-sale-theme .close_register_modal .box-body,
+body.lockscreen.pos-sale-theme .close_register_modal .panel,
+body.lockscreen.pos-sale-theme .close_register_modal .panel-body,
+body.lockscreen.pos-sale-theme .close_register_modal .table,
+body.lockscreen.pos-sale-theme .close_register_modal .table > thead > tr > th,
+body.lockscreen.pos-sale-theme .close_register_modal .table > tbody > tr > td,
+body.lockscreen.pos-sale-theme .close_register_modal .table > tfoot > tr > th,
+body.lockscreen.pos-sale-theme .close_register_modal .table > tfoot > tr > td,
+body.lockscreen.pos-sale-theme .close_register_modal .table-striped > tbody > tr:nth-of-type(odd),
+body.lockscreen.pos-sale-theme .close_register_modal .table-striped > tbody > tr:nth-of-type(even),
+body.lockscreen.pos-sale-theme .register_details_modal .bg-white,
+body.lockscreen.pos-sale-theme .register_details_modal .bg-gray,
+body.lockscreen.pos-sale-theme .register_details_modal .well,
+body.lockscreen.pos-sale-theme .register_details_modal .box,
+body.lockscreen.pos-sale-theme .register_details_modal .box-body,
+body.lockscreen.pos-sale-theme .register_details_modal .panel,
+body.lockscreen.pos-sale-theme .register_details_modal .panel-body,
+body.lockscreen.pos-sale-theme .register_details_modal .table,
+body.lockscreen.pos-sale-theme .register_details_modal .table > thead > tr > th,
+body.lockscreen.pos-sale-theme .register_details_modal .table > tbody > tr > td,
+body.lockscreen.pos-sale-theme .register_details_modal .table > tfoot > tr > th,
+body.lockscreen.pos-sale-theme .register_details_modal .table > tfoot > tr > td,
+body.lockscreen.pos-sale-theme .register_details_modal .table-striped > tbody > tr:nth-of-type(odd),
+body.lockscreen.pos-sale-theme .register_details_modal .table-striped > tbody > tr:nth-of-type(even) {
+  background: #1e1e1e !important;
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+  border-color: #333 !important;
+}
+
+body.lockscreen.pos-sale-theme .close_register_modal .table > tbody > tr.success > td,
+body.lockscreen.pos-sale-theme .close_register_modal .table > tbody > tr.info > td,
+body.lockscreen.pos-sale-theme .close_register_modal .table > tbody > tr.warning > td,
+body.lockscreen.pos-sale-theme .close_register_modal .table > tbody > tr.danger > td,
+body.lockscreen.pos-sale-theme .close_register_modal .table > tbody > tr > td.success,
+body.lockscreen.pos-sale-theme .close_register_modal .table > tbody > tr > th.success,
+body.lockscreen.pos-sale-theme .close_register_modal .success,
+body.lockscreen.pos-sale-theme .close_register_modal .info,
+body.lockscreen.pos-sale-theme .close_register_modal .warning,
+body.lockscreen.pos-sale-theme .close_register_modal .danger,
+body.lockscreen.pos-sale-theme .close_register_modal .pos-cr-hl,
+body.lockscreen.pos-sale-theme .close_register_modal tr.pos-cr-hl > td,
+body.lockscreen.pos-sale-theme .close_register_modal tr.pos-cr-hl > th,
+body.lockscreen.pos-sale-theme .close_register_modal td.pos-cr-hl,
+body.lockscreen.pos-sale-theme .close_register_modal th.pos-cr-hl,
+body.lockscreen.pos-sale-theme .register_details_modal .table > tbody > tr.success > td,
+body.lockscreen.pos-sale-theme .register_details_modal .table > tbody > tr.info > td,
+body.lockscreen.pos-sale-theme .register_details_modal .table > tbody > tr.warning > td,
+body.lockscreen.pos-sale-theme .register_details_modal .table > tbody > tr.danger > td,
+body.lockscreen.pos-sale-theme .register_details_modal .table > tbody > tr > td.success,
+body.lockscreen.pos-sale-theme .register_details_modal .table > tbody > tr > th.success,
+body.lockscreen.pos-sale-theme .register_details_modal .success,
+body.lockscreen.pos-sale-theme .register_details_modal .info,
+body.lockscreen.pos-sale-theme .register_details_modal .warning,
+body.lockscreen.pos-sale-theme .register_details_modal .danger,
+body.lockscreen.pos-sale-theme .register_details_modal .pos-cr-hl,
+body.lockscreen.pos-sale-theme .register_details_modal tr.pos-cr-hl > td,
+body.lockscreen.pos-sale-theme .register_details_modal tr.pos-cr-hl > th,
+body.lockscreen.pos-sale-theme .register_details_modal td.pos-cr-hl,
+body.lockscreen.pos-sale-theme .register_details_modal th.pos-cr-hl {
+  background: #252525 !important;
+  background-color: #252525 !important;
+  color: #ffffff !important;
+  border-color: #333 !important;
+}
+
+body.lockscreen.pos-sale-theme .close_register_modal hr,
+body.lockscreen.pos-sale-theme .register_details_modal hr {
+  border-color: #333 !important;
+  border-top-color: #333 !important;
+  background: transparent !important;
+}
+
+body.lockscreen.pos-sale-theme .close_register_modal h4,
+body.lockscreen.pos-sale-theme .register_details_modal h4 {
+  border-bottom-color: #444 !important;
+}
+
+body.lockscreen.pos-sale-theme .close_register_modal .form-control,
+body.lockscreen.pos-sale-theme .close_register_modal input,
+body.lockscreen.pos-sale-theme .close_register_modal textarea,
+body.lockscreen.pos-sale-theme .close_register_modal select,
+body.lockscreen.pos-sale-theme .close_register_modal .input-sm,
+body.lockscreen.pos-sale-theme .register_details_modal .form-control,
+body.lockscreen.pos-sale-theme .register_details_modal input,
+body.lockscreen.pos-sale-theme .register_details_modal textarea,
+body.lockscreen.pos-sale-theme .register_details_modal select,
+body.lockscreen.pos-sale-theme .register_details_modal .input-sm {
+  background: #2a2a2a !important;
+  background-color: #2a2a2a !important;
+  border: 1px solid #444 !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
+}
+
+body.lockscreen.pos-sale-theme .close_register_modal .form-control::placeholder,
+body.lockscreen.pos-sale-theme .register_details_modal .form-control::placeholder {
+  color: #999 !important;
+}
+
+body.lockscreen.pos-sale-theme .close_register_modal .text-muted,
+body.lockscreen.pos-sale-theme .register_details_modal .text-muted {
+  color: #cfcfcf !important;
+}
+
+body.lockscreen.pos-sale-theme .close_register_modal .close,
+body.lockscreen.pos-sale-theme .register_details_modal .close {
+  color: #ffffff !important;
+  opacity: 0.85 !important;
+  text-shadow: none !important;
+  background: transparent !important;
+}
+
+body.lockscreen.pos-sale-theme .close_register_modal .tw-dw-btn-primary,
+body.lockscreen.pos-sale-theme .register_details_modal .tw-dw-btn-primary {
+  background: #3b8ddd !important;
+  border-color: #2f7bc4 !important;
+  color: #fff !important;
+}
+
+body.lockscreen.pos-sale-theme .close_register_modal .tw-dw-btn-neutral,
+body.lockscreen.pos-sale-theme .register_details_modal .tw-dw-btn-neutral {
+  background: #333 !important;
+  border-color: #444 !important;
+  color: #fff !important;
+}
+
+/* Full-page Close / Register Details — all dark, no white chrome */
+body.pos-cr-dark-page,
+body.pos-cr-dark-page .wrapper,
+body.pos-cr-dark-page .content-wrapper,
+body.pos-cr-dark-page .content,
+body.pos-cr-dark-page .main-footer,
+body.pos-cr-dark-page .main-header,
+body.pos-cr-dark-page .main-header .navbar,
+body.pos-cr-dark-page .main-header .logo,
+body.pos-cr-dark-page .main-sidebar,
+body.pos-cr-dark-page .left-side,
+body.pos-cr-dark-page .sidebar {
+  background: #0e0e0e !important;
+  background-color: #0e0e0e !important;
+  color: #ffffff !important;
+  border-color: #222 !important;
+}
+
+body.pos-cr-dark-page .content-header h1,
+body.pos-cr-dark-page .content-header h1 small,
+body.pos-cr-dark-page .tw-text-black,
+body.pos-cr-dark-page .tw-text-gray-700,
+body.pos-cr-dark-page .sidebar a,
+body.pos-cr-dark-page .navbar a,
+body.pos-cr-dark-page .treeview-menu > li > a {
+  color: #ffffff !important;
+}
+
+body.pos-cr-dark-page .box,
+body.pos-cr-dark-page .box-primary,
+body.pos-cr-dark-page .box-body,
+body.pos-cr-dark-page .box-footer,
+body.pos-cr-dark-page .box-header,
+body.pos-cr-dark-page .bg-white,
+body.pos-cr-dark-page .well,
+body.pos-cr-dark-page .panel,
+body.pos-cr-dark-page .panel-body {
+  background: #1e1e1e !important;
+  background-color: #1e1e1e !important;
+  border-color: #333 !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
+}
+
+body.pos-cr-dark-page,
+body.pos-cr-dark-page .content * {
+  color: #ffffff !important;
+  border-color: #333 !important;
+}
+
+body.pos-cr-dark-page .table > thead > tr > th,
+body.pos-cr-dark-page .table > tbody > tr > td,
+body.pos-cr-dark-page .table > tfoot > tr > th,
+body.pos-cr-dark-page .table > tfoot > tr > td,
+body.pos-cr-dark-page .table-striped > tbody > tr:nth-of-type(odd),
+body.pos-cr-dark-page .table-striped > tbody > tr:nth-of-type(even) {
+  background: #1e1e1e !important;
+  background-color: #1e1e1e !important;
+  border-color: #333 !important;
+  color: #ffffff !important;
+}
+
+body.pos-cr-dark-page .table > tbody > tr.success > td,
+body.pos-cr-dark-page .table > tbody > tr > td.success,
+body.pos-cr-dark-page .table > tbody > tr > th.success,
+body.pos-cr-dark-page .success,
+body.pos-cr-dark-page .info,
+body.pos-cr-dark-page .warning,
+body.pos-cr-dark-page .danger,
+body.pos-cr-dark-page .pos-cr-hl,
+body.pos-cr-dark-page tr.pos-cr-hl > td,
+body.pos-cr-dark-page tr.pos-cr-hl > th,
+body.pos-cr-dark-page td.pos-cr-hl,
+body.pos-cr-dark-page th.pos-cr-hl {
+  background: #252525 !important;
+  background-color: #252525 !important;
+  color: #ffffff !important;
+  border-color: #333 !important;
+}
+
+body.pos-cr-dark-page hr {
+  border-color: #333 !important;
+  border-top-color: #333 !important;
+}
+
+body.pos-cr-dark-page .form-control,
+body.pos-cr-dark-page input,
+body.pos-cr-dark-page textarea,
+body.pos-cr-dark-page select {
+  background: #2a2a2a !important;
+  background-color: #2a2a2a !important;
+  border: 1px solid #444 !important;
+  color: #ffffff !important;
+}
+
+body.pos-cr-dark-page .tw-dw-btn-primary {
+  background: #3b8ddd !important;
+  border-color: #2f7bc4 !important;
+  color: #fff !important;
+}
+
+body.pos-cr-dark-page .tw-dw-btn-neutral {
+  background: #333 !important;
+  border-color: #444 !important;
+  color: #fff !important;
+}
+
+/* Icon hover help popovers / tooltips — dark (not white) */
+body.lockscreen.pos-sale-theme .popover,
+body.pos-cr-dark-page .popover {
+  background: #1e1e1e !important;
+  background-color: #1e1e1e !important;
+  border: 1px solid #3a3a3a !important;
+  color: #ffffff !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.65) !important;
+}
+
+body.lockscreen.pos-sale-theme .popover-title,
+body.pos-cr-dark-page .popover-title {
+  background: #1a1a1a !important;
+  border-bottom: 1px solid #333 !important;
+  color: #ffffff !important;
+}
+
+body.lockscreen.pos-sale-theme .popover-content,
+body.pos-cr-dark-page .popover-content {
+  background: #1e1e1e !important;
+  color: #ffffff !important;
+}
+
+body.lockscreen.pos-sale-theme .popover.top > .arrow,
+body.lockscreen.pos-sale-theme .popover.top > .arrow:after,
+body.lockscreen.pos-sale-theme .popover.bottom > .arrow,
+body.lockscreen.pos-sale-theme .popover.bottom > .arrow:after,
+body.lockscreen.pos-sale-theme .popover.left > .arrow,
+body.lockscreen.pos-sale-theme .popover.left > .arrow:after,
+body.lockscreen.pos-sale-theme .popover.right > .arrow,
+body.lockscreen.pos-sale-theme .popover.right > .arrow:after,
+body.pos-cr-dark-page .popover > .arrow,
+body.pos-cr-dark-page .popover > .arrow:after {
+  border-top-color: #1e1e1e !important;
+  border-bottom-color: #1e1e1e !important;
+  border-left-color: #1e1e1e !important;
+  border-right-color: #1e1e1e !important;
+}
+
+body.lockscreen.pos-sale-theme .popover.bottom > .arrow {
+  border-bottom-color: #3a3a3a !important;
+}
+body.lockscreen.pos-sale-theme .popover.bottom > .arrow:after {
+  border-bottom-color: #1e1e1e !important;
+}
+body.lockscreen.pos-sale-theme .popover.top > .arrow {
+  border-top-color: #3a3a3a !important;
+}
+body.lockscreen.pos-sale-theme .popover.top > .arrow:after {
+  border-top-color: #1e1e1e !important;
+}
+
+body.lockscreen.pos-sale-theme .tooltip-inner,
+body.pos-cr-dark-page .tooltip-inner {
+  background: #1e1e1e !important;
+  color: #ffffff !important;
+  border: 1px solid #3a3a3a !important;
+}
+
+body.lockscreen.pos-sale-theme .tooltip.top .tooltip-arrow,
+body.lockscreen.pos-sale-theme .tooltip.bottom .tooltip-arrow,
+body.lockscreen.pos-sale-theme .tooltip.left .tooltip-arrow,
+body.lockscreen.pos-sale-theme .tooltip.right .tooltip-arrow {
+  border-top-color: #1e1e1e !important;
+  border-bottom-color: #1e1e1e !important;
+  border-left-color: #1e1e1e !important;
+  border-right-color: #1e1e1e !important;
+}
+
+body.lockscreen.pos-sale-theme .hover-q,
+body.lockscreen.pos-sale-theme .fa-info-circle.text-info,
+body.lockscreen.pos-sale-theme .pos-cart-meta .hover-q {
+  color: #8a8a8a !important;
+}
+
+body.lockscreen.pos-sale-theme .hover-q:hover,
+body.lockscreen.pos-sale-theme .fa-info-circle.text-info:hover {
+  color: #3b8ddd !important;
+}
+
+/* DateTime picker popup — dark */
+body.lockscreen.pos-sale-theme .bootstrap-datetimepicker-widget,
+body.lockscreen.pos-sale-theme .bootstrap-datetimepicker-widget.dropdown-menu,
+body.lockscreen.pos-sale-theme .bootstrap-datetimepicker-widget table,
+body.lockscreen.pos-sale-theme .bootstrap-datetimepicker-widget table td,
+body.lockscreen.pos-sale-theme .bootstrap-datetimepicker-widget table th {
+  background: #1e1e1e !important;
+  color: #ffffff !important;
+  border-color: #333 !important;
+}
+
+body.lockscreen.pos-sale-theme .bootstrap-datetimepicker-widget table td.day:hover,
+body.lockscreen.pos-sale-theme .bootstrap-datetimepicker-widget table td.hour:hover,
+body.lockscreen.pos-sale-theme .bootstrap-datetimepicker-widget table td.minute:hover,
+body.lockscreen.pos-sale-theme .bootstrap-datetimepicker-widget table td span:hover {
+  background: #333 !important;
+  color: #ffffff !important;
+}
+
+body.lockscreen.pos-sale-theme .bootstrap-datetimepicker-widget table td.active,
+body.lockscreen.pos-sale-theme .bootstrap-datetimepicker-widget table td.active:hover,
+body.lockscreen.pos-sale-theme .bootstrap-datetimepicker-widget table td span.active {
+  background: #3b8ddd !important;
+  color: #ffffff !important;
+}
+
+/* Price group Select2 dropdown (appended to body) — force dark */
+body.lockscreen.pos-sale-theme .select2-container--open .select2-dropdown,
+body.lockscreen.pos-sale-theme .select2-dropdown {
+  background: #1e1e1e !important;
+  border: 1px solid #3a3a3a !important;
+  color: #ffffff !important;
+}
+
+body.lockscreen.pos-sale-theme .select2-container--open .select2-results__option,
+body.lockscreen.pos-sale-theme .select2-results__option {
+  background: #1e1e1e !important;
+  color: #ffffff !important;
+}
+
+body.lockscreen.pos-sale-theme .select2-container--open .select2-results__option--highlighted,
+body.lockscreen.pos-sale-theme .select2-results__option--highlighted[aria-selected],
+body.lockscreen.pos-sale-theme .select2-container--default .select2-results__option--highlighted[aria-selected] {
+  background: #2a2a2a !important;
+  color: #ffffff !important;
+}
+
+body.lockscreen.pos-sale-theme .select2-search--dropdown,
+body.lockscreen.pos-sale-theme .select2-search--dropdown .select2-search__field {
+  background: #1a1a1a !important;
+  border-color: #333 !important;
+  color: #ffffff !important;
+}
+
+/* Receive Payment popup — dark layout, white text, no hover flash */
+body.lockscreen.pos-sale-theme #pos_pay_contact_due_modal.in,
+body.lockscreen.pos-sale-theme #pos_pay_contact_due_modal.show {
+  background: transparent !important;
+}
+
+body.lockscreen.pos-sale-theme #pos_pay_contact_due_modal .modal-dialog {
+  margin: 0 auto !important;
+  max-width: 720px;
+  width: 100%;
+}
+
+body.lockscreen.pos-sale-theme #pos_pay_contact_due_modal .modal-content {
+  background: #1e1e1e !important;
+  color: #ffffff !important;
+  border: 1px solid #3a3a3a !important;
+  border-radius: 8px !important;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.85) !important;
+}
+
+body.lockscreen.pos-sale-theme #pos_pay_contact_due_modal .modal-header,
+body.lockscreen.pos-sale-theme #pos_pay_contact_due_modal .modal-footer,
+body.lockscreen.pos-sale-theme #pos_pay_contact_due_modal .modal-body {
+  background: #1a1a1a !important;
+  border-color: #333 !important;
+  color: #ffffff !important;
+}
+
+body.lockscreen.pos-sale-theme #pos_pay_contact_due_modal .modal-body {
+  background: #1e1e1e !important;
+}
+
+body.lockscreen.pos-sale-theme #pos_pay_contact_due_modal,
+body.lockscreen.pos-sale-theme #pos_pay_contact_due_modal * {
+  color: #ffffff !important;
+  border-color: #333 !important;
+}
+
+body.lockscreen.pos-sale-theme #pos_pay_contact_due_modal .well,
+body.lockscreen.pos-sale-theme #pos_pay_contact_due_modal .box,
+body.lockscreen.pos-sale-theme #pos_pay_contact_due_modal .box-body,
+body.lockscreen.pos-sale-theme #pos_pay_contact_due_modal .bg-white,
+body.lockscreen.pos-sale-theme #pos_pay_contact_due_modal .panel,
+body.lockscreen.pos-sale-theme #pos_pay_contact_due_modal .panel-body {
+  background: #252525 !important;
+  background-color: #252525 !important;
+  border-color: #333 !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
+}
+
+body.lockscreen.pos-sale-theme #pos_pay_contact_due_modal .well:hover,
+body.lockscreen.pos-sale-theme #pos_pay_contact_due_modal .box:hover,
+body.lockscreen.pos-sale-theme #pos_pay_contact_due_modal tr:hover,
+body.lockscreen.pos-sale-theme #pos_pay_contact_due_modal tr:hover > td,
+body.lockscreen.pos-sale-theme #pos_pay_contact_due_modal .form-control:hover,
+body.lockscreen.pos-sale-theme #pos_pay_contact_due_modal .btn:hover,
+body.lockscreen.pos-sale-theme #pos_pay_contact_due_modal .tw-dw-btn:hover {
+  background: #252525 !important;
+  background-color: #252525 !important;
+  color: #ffffff !important;
+  filter: none !important;
+  opacity: 1 !important;
+}
+
+body.lockscreen.pos-sale-theme #pos_pay_contact_due_modal .form-control,
+body.lockscreen.pos-sale-theme #pos_pay_contact_due_modal input,
+body.lockscreen.pos-sale-theme #pos_pay_contact_due_modal textarea,
+body.lockscreen.pos-sale-theme #pos_pay_contact_due_modal select,
+body.lockscreen.pos-sale-theme #pos_pay_contact_due_modal .input-group-addon {
+  background: #2a2a2a !important;
+  background-color: #2a2a2a !important;
+  border: 1px solid #444 !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
+}
+
+body.lockscreen.pos-sale-theme #pos_pay_contact_due_modal .form-control::placeholder {
+  color: #999 !important;
+}
+
+body.lockscreen.pos-sale-theme #pos_pay_contact_due_modal label,
+body.lockscreen.pos-sale-theme #pos_pay_contact_due_modal .modal-title,
+body.lockscreen.pos-sale-theme #pos_pay_contact_due_modal strong,
+body.lockscreen.pos-sale-theme #pos_pay_contact_due_modal b,
+body.lockscreen.pos-sale-theme #pos_pay_contact_due_modal p,
+body.lockscreen.pos-sale-theme #pos_pay_contact_due_modal span,
+body.lockscreen.pos-sale-theme #pos_pay_contact_due_modal td,
+body.lockscreen.pos-sale-theme #pos_pay_contact_due_modal th {
+  color: #ffffff !important;
+}
+
+body.lockscreen.pos-sale-theme #pos_pay_contact_due_modal .close {
+  color: #ffffff !important;
+  opacity: 0.85 !important;
+  text-shadow: none !important;
+  background: transparent !important;
+}
+
+body.lockscreen.pos-sale-theme #pos_pay_contact_due_modal .tw-dw-btn-primary,
+body.lockscreen.pos-sale-theme #pos_pay_contact_due_modal button[type="submit"] {
+  background: #3b8ddd !important;
+  border-color: #2f7bc4 !important;
+  color: #ffffff !important;
+}
+
+body.lockscreen.pos-sale-theme #pos_pay_contact_due_modal .tw-dw-btn-neutral,
+body.lockscreen.pos-sale-theme #pos_pay_contact_due_modal [data-dismiss="modal"] {
+  background: #333 !important;
+  border-color: #444 !important;
+  color: #ffffff !important;
+}
+
+body.lockscreen.pos-sale-theme #pos_pay_contact_due_modal .select2-container--default .select2-selection--single {
+  background: #2a2a2a !important;
+  border-color: #444 !important;
+  color: #ffffff !important;
+  height: 34px !important;
+}
+
+body.lockscreen.pos-sale-theme #pos_pay_contact_due_modal .select2-container--default .select2-selection--single .select2-selection__rendered {
+  color: #ffffff !important;
+  line-height: 34px !important;
+}
+
+body.lockscreen.pos-sale-theme #pos_pay_contact_due_modal .select2-container--default .select2-selection--single .select2-selection__arrow {
+  height: 32px !important;
+}
+
+body.lockscreen.pos-sale-theme #pos_pay_contact_due_modal .table > thead > tr > th,
+body.lockscreen.pos-sale-theme #pos_pay_contact_due_modal .table > tbody > tr > td {
+  background: #1e1e1e !important;
+  color: #ffffff !important;
+  border-color: #333 !important;
+}
+
+
+
+
+

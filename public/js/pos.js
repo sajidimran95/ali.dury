@@ -896,8 +896,13 @@ $(document).ready(function() {
         });
     });
 
-    //Finalize invoice, open payment modal
+    //Finalize invoice, open payment modal (Multiple / Pay — not express Cash/Card/Credit)
     $(document).on('click', 'button.pos-finalize, button.pos-pay-cta', function(e) {
+        // Pay Cash / Card / Credit / Suspend use pos-express-finalize — do not open Multiple popup
+        if ($(this).hasClass('pos-express-finalize')) {
+            return;
+        }
+
         e.preventDefault();
         e.stopPropagation();
 
@@ -974,9 +979,11 @@ $(document).ready(function() {
 
         var pay_method = $(this).data('pay_method');
 
-        //If pay method is credit sale submit form
+        //If pay method is credit sale submit form (previous system behavior)
         if (pay_method == 'credit_sale') {
-            $('#is_credit_sale').val(1);
+            if ($('#is_credit_sale').length) {
+                $('#is_credit_sale').val(1);
+            }
             pos_form_obj.submit();
             return true;
         } else {
@@ -1013,18 +1020,46 @@ $(document).ready(function() {
         var payment_method_dropdown = $('#payment_rows_div')
             .find('.payment_types_dropdown')
             .first();
-        
+
+        if (payment_method_dropdown.length) {
             payment_method_dropdown.val(pay_method);
-            payment_method_dropdown.change();
+            try {
+                payment_method_dropdown.trigger('change');
+            } catch (err) {
+                console.warn('payment method change failed', err);
+            }
+        }
+
+        // Previous system: Card opens card details popup, then finalize
         if (pay_method == 'card') {
-            $('div#card_details_modal').modal('show');
+            var $cardModal = $('div#card_details_modal');
+            if ($cardModal.length && $cardModal.parent()[0] !== document.body) {
+                $cardModal.appendTo('body');
+            }
+            $cardModal.modal('show');
         } else {
             pos_form_obj.submit();
         }
     });
 
+    // Keep card details modal on body so dark overlay/layout works (design only)
+    if ($('#card_details_modal').length) {
+        $('#card_details_modal').appendTo('body');
+    }
+
     $('div#card_details_modal').on('shown.bs.modal', function(e) {
-        $('input#card_number').focus();
+        var $modal = $(this);
+        var $cardType = $modal.find('select#card_type');
+        if ($cardType.length && $.fn.select2) {
+            if ($cardType.hasClass('select2-hidden-accessible')) {
+                $cardType.select2('destroy');
+            }
+            $cardType.select2({
+                dropdownParent: $modal,
+                width: '100%',
+            });
+        }
+        $modal.find('input#card_number').focus();
     });
 
     // Keep suspend modal on body so Save/Close clicks work (not clipped by cart panel)
@@ -1038,8 +1073,10 @@ $(document).ready(function() {
             .focus();
     });
 
-    //on save card details
-    $('button#pos-save-card').click(function() {
+    //on save card details (same previous flow)
+    $(document).off('click.posSaveCard', 'button#pos-save-card').on('click.posSaveCard', 'button#pos-save-card', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
         $('input#card_number_0').val($('#card_number').val());
         $('input#card_holder_name_0').val($('#card_holder_name').val());
         $('input#card_transaction_number_0').val($('#card_transaction_number').val());
@@ -1127,7 +1164,8 @@ $(document).ready(function() {
             var cnf = true;
 
             // Suspend / park: skip balance-due confirm
-            if ($('input#is_suspend').val() == '1') {
+            // Credit sale: previous system — due sale, skip paid-amount confirm
+            if ($('input#is_suspend').val() == '1' || $('input#is_credit_sale').val() == '1') {
                 cnf = true;
             } else if ($('input#in_balance_due').val() >= 0.5) {
                 //Ignore if the difference is less than 0.5
@@ -2315,10 +2353,14 @@ $(document).ready(function() {
         loadPosDraftsPanel('draft');
     }
 
-    $('#pos_drafts_header_toggle').on('click', function(e) {
+    $(document).off('click.posDraftsToggle', '#pos_drafts_header_toggle')
+        .on('click.posDraftsToggle', '#pos_drafts_header_toggle', function(e) {
         e.preventDefault();
         e.stopPropagation();
         var $panel = $('#pos_drafts_panel');
+        if (!$panel.length) {
+            return;
+        }
         if ($panel.hasClass('pos-drafts-dropdown--open')) {
             closePosDraftsDropdown();
         } else {
@@ -2326,13 +2368,14 @@ $(document).ready(function() {
         }
     });
 
-    $('#pos_drafts_close').on('click', function(e) {
+    $(document).off('click.posDraftsClose', '#pos_drafts_close')
+        .on('click.posDraftsClose', '#pos_drafts_close', function(e) {
         e.preventDefault();
         e.stopPropagation();
         closePosDraftsDropdown();
     });
 
-    $(document).on('click', function(e) {
+    $(document).off('click.posDraftsOutside').on('click.posDraftsOutside', function(e) {
         if (!$(e.target).closest('#pos_drafts_dropdown_wrap').length) {
             closePosDraftsDropdown();
         }
@@ -2346,7 +2389,8 @@ $(document).ready(function() {
         loadPosDraftsPanel(status);
     });
 
-    $('#pos_drafts_refresh').on('click', function(e) {
+    $(document).off('click.posDraftsRefresh', '#pos_drafts_refresh')
+        .on('click.posDraftsRefresh', '#pos_drafts_refresh', function(e) {
         e.preventDefault();
         e.stopPropagation();
         loadPosDraftsPanel();
@@ -3599,8 +3643,9 @@ $(document).on('change', '.payment_types_dropdown', function(e) {
     var payment_type = $(this).val();
     var payment_row = $(this).closest('.payment_row');
     if (payment_type && payment_type != 'advance') {
-        var default_account = default_accounts && default_accounts[payment_type]['account'] ? 
-            default_accounts[payment_type]['account'] : '';
+        var default_account = (default_accounts && default_accounts[payment_type] && default_accounts[payment_type]['account'])
+            ? default_accounts[payment_type]['account']
+            : '';
         var row_index = payment_row.find('.payment_row_index').val();
 
         var account_dropdown = payment_row.find('select#account_' + row_index);
@@ -3616,19 +3661,27 @@ $(document).on('change', '.payment_types_dropdown', function(e) {
     if (payment_type == 'advance') {
         max_value = $('#advance_balance').val();
         msg = $('#advance_balance').data('error-msg');
-        amount_element.rules('add', {
-            'max-value': max_value,
-            messages: {
-                'max-value': msg,
-            },
-        });
-        if (account_dropdown) {
+        if (amount_element.length && amount_element.rules) {
+            try {
+                amount_element.rules('add', {
+                    'max-value': max_value,
+                    messages: {
+                        'max-value': msg,
+                    },
+                });
+            } catch (err) {}
+        }
+        if (account_dropdown.length) {
             account_dropdown.prop('disabled', true);
             account_dropdown.closest('.form-group').addClass('hide');
         }
     } else {
-        amount_element.rules("remove", "max-value");
-        if (account_dropdown) {
+        if (amount_element.length && amount_element.rules) {
+            try {
+                amount_element.rules("remove", "max-value");
+            } catch (err) {}
+        }
+        if (account_dropdown.length) {
             account_dropdown.prop('disabled', false); 
             account_dropdown.closest('.form-group').removeClass('hide');
         }    
@@ -3982,14 +4035,22 @@ $(document).on('submit', 'form#add_expense_modal_form', function(e) {
 $(document).on('click', '#pos-receive-customer-payment', function() {
     var customer_id = $('select#customer_id').val();
     if (!customer_id) {
+        if (typeof toastr !== 'undefined') {
+            toastr.warning(typeof LANG !== 'undefined' && LANG.please_select_customer
+                ? LANG.please_select_customer
+                : 'Please select a customer');
+        }
         return;
     }
     $.ajax({
         url: '/payments/pay-contact-due/' + customer_id + '?type=sell',
         dataType: 'html',
         success: function(result) {
-            $('#pos_pay_contact_due_modal').html(result);
             var $modal = $('#pos_pay_contact_due_modal');
+            if ($modal.length && $modal.parent()[0] !== document.body) {
+                $modal.appendTo('body');
+            }
+            $modal.html(result);
             var $form = $modal.find('#pay_contact_due_form');
 
             // Inject from_pos flag
@@ -3997,7 +4058,10 @@ $(document).on('click', '#pos-receive-customer-payment', function() {
 
             // Init UI same as app.js
             __currency_convert_recursively($modal);
-            $modal.find('.select2').select2();
+            $modal.find('.select2').select2({
+                dropdownParent: $modal,
+                width: '100%'
+            });
             $modal.find('[name="paid_on"]').datetimepicker({
                 format: moment_date_format + ' ' + moment_time_format,
                 ignoreReadonly: true

@@ -1136,6 +1136,9 @@ class SellPosController extends Controller
         $default_location = $business_location;
         $business_locations = BusinessLocation::forDropdown($business_id, false);
 
+        $price_groups = SellingPriceGroup::forDropdown($business_id);
+        $default_price_group_id = !empty($default_location->selling_price_group_id) && array_key_exists($default_location->selling_price_group_id, $price_groups) ? $default_location->selling_price_group_id : null;
+
         return view('sale_pos.edit')
             ->with(compact('business_details', 'taxes', 'payment_types', 'walk_in_customer',
                 'sell_details', 'transaction', 'payment_lines', 'location_printer_type', 'shortcuts',
@@ -1143,7 +1146,7 @@ class SellPosController extends Controller
                 'brands', 'accounts', 'waiters', 'redeem_details', 'edit_price', 'edit_discount',
                 'shipping_statuses', 'warranties', 'sub_type', 'pos_module_data', 'invoice_schemes',
                 'default_invoice_schemes', 'invoice_layouts', 'featured_products', 'customer_due',
-                'users', 'only_payment', 'default_location', 'business_locations'));
+                'users', 'only_payment', 'default_location', 'business_locations', 'price_groups', 'default_price_group_id'));
     }
 
     /**

@@ -47,9 +47,15 @@
                 @endif
             </div>
             <span class="curr_datetime pos-ls-datetime tw-hidden md:tw-inline">{{ @format_datetime('now') }}</span>
+            <button type="button" class="pos-ls-icon-btn tw-hidden md:tw-inline-flex pos-ls-help-btn"
+                data-toggle="popover" data-placement="bottom" data-trigger="hover" data-html="true"
+                data-content="@include('sale_pos.partials.keyboard_shortcuts_details')"
+                title="Help">
+                <i class="fas fa-keyboard"></i>
+            </button>
         </div>
 
-        <div class="pos-ls-topbar-center">
+        <div class="pos-ls-topbar-center tw-hidden lg:tw-flex">
             <button type="button" class="pos-ls-global-search" id="pos_ls_focus_product_search" title="Search products">
                 <i class="fas fa-search"></i>
                 <span>Search</span>
@@ -57,126 +63,123 @@
             </button>
         </div>
 
-        <div class="pos-ls-topbar-right">
-            @if (empty($pos_settings['hide_product_suggestion']))
-                <button type="button" title="{{ __('lang_v1.view_products') }}"
-                    class="pos-ls-icon-btn tw-block md:tw-hidden btn-modal"
-                    data-toggle="modal" data-target="#mobile_product_suggestion_modal">
-                    <i class="fas fa-shopping-bag"></i>
-                </button>
-            @endif
+        {{-- Previous toolbar buttons — same IDs / workflow, dark layout --}}
+        <div class="pos-ls-topbar-right" id="pos_header_more_options">
+            <a href="{{ $go_back_url }}" title="{{ __('lang_v1.go_back') }}" class="pos-tb-btn">
+                <i class="fas fa-chevron-left" style="color:#009EE4;"></i>
+            </a>
+            <span class="pos-tb-divider"></span>
 
-            <button type="button" class="pos-ls-text-btn tw-hidden md:tw-inline-flex" data-toggle="popover"
-                data-placement="bottom" data-trigger="hover" data-html="true"
-                data-content="@include('sale_pos.partials.keyboard_shortcuts_details')"
-                title="Help">
-                Help
+            <button type="button" class="pos-tb-btn popover-default" id="return_sale"
+                title="@lang('lang_v1.sell_return')" data-toggle="popover" data-trigger="click"
+                data-content='<div class="m-8"><input type="text" class="form-control" placeholder="@lang('sale.invoice_no')" id="send_for_sell_return_invoice_no"></div><div class="w-100 text-center"><button type="button" class="tw-dw-btn tw-dw-btn-error tw-text-white tw-dw-btn-sm" id="send_for_sell_return">@lang('lang_v1.send')</button></div>'
+                data-html="true" data-placement="bottom">
+                <i class="fas fa-undo" style="color:#EF4B53;"></i>
             </button>
 
-            <div class="dropdown pos-ls-tools-dropdown">
-                <button type="button" class="pos-ls-icon-btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Tools">
-                    <i class="fas fa-bell"></i>
-                </button>
-                <ul class="dropdown-menu dropdown-menu-right pos-ls-tools-menu" id="pos_header_more_options">
-                    <li class="pos-ls-tools-mobile-only">
-                        <a href="{{ $go_back_url }}">{{ __('lang_v1.go_back') }}</a>
-                    </li>
-                    <li>
-                        <a href="javascript:void(0);" id="return_sale" class="popover-default"
-                            title="@lang('lang_v1.sell_return')" data-toggle="popover" data-trigger="click"
-                            data-content='<div class="m-8"><input type="text" class="form-control" placeholder="@lang('sale.invoice_no')" id="send_for_sell_return_invoice_no"></div><div class="w-100 text-center"><button type="button" class="tw-dw-btn tw-dw-btn-error tw-text-white tw-dw-btn-sm" id="send_for_sell_return">@lang('lang_v1.send')</button></div>'
-                            data-html="true" data-placement="bottom">@lang('lang_v1.sell_return')</a>
-                    </li>
-                    <li>
-                        <a href="javascript:void(0);" id="view_suspended_sales" class="btn-modal"
-                            data-container=".view_modal" data-href="{{ $view_suspended_sell_url }}">{{ __('lang_v1.view_suspended_sales') }}</a>
-                    </li>
-                    @if (!isset($pos_settings['hide_recent_trans']) || $pos_settings['hide_recent_trans'] == 0)
-                        <li>
-                            <a href="javascript:void(0);" data-toggle="modal" data-target="#recent_transactions_modal" id="recent-transactions">{{ __('lang_v1.recent_transactions') }}</a>
-                        </li>
-                    @endif
+            <button type="button" id="view_suspended_sales" title="{{ __('lang_v1.view_suspended_sales') }}"
+                class="pos-tb-btn btn-modal"
+                data-container=".view_modal" data-href="{{ $view_suspended_sell_url }}">
+                <i class="fas fa-pause" style="color:#A5ADBB;"></i>
+            </button>
 
-                    @can('view_cash_register')
-                        <li>
-                            <a href="javascript:void(0);" id="register_details" class="btn-modal"
-                                data-container=".register_details_modal"
-                                data-href="{{ action([\App\Http\Controllers\CashRegisterController::class, 'getRegisterDetails']) }}">{{ __('cash_register.register_details') }}</a>
-                        </li>
-                    @endcan
-                    @can('close_cash_register')
-                        <li>
-                            <a href="javascript:void(0);" id="close_register" class="btn-modal"
-                                data-container=".close_register_modal"
-                                data-href="{{ action([\App\Http\Controllers\CashRegisterController::class, 'getCloseRegister']) }}">{{ __('cash_register.close_register') }}</a>
-                        </li>
-                    @endcan
-
-                    @if (!empty($pos_settings['inline_service_staff']))
-                        <li>
-                            <a href="javascript:void(0);" id="show_service_staff_availability"
-                                data-container=".view_modal"
-                                data-href="{{ action([\App\Http\Controllers\SellPosController::class, 'showServiceStaffAvailibility']) }}">{{ __('lang_v1.service_staff_availability') }}</a>
-                        </li>
-                    @endif
-
-                    @if (
-                        !empty($pos_settings['inline_service_staff']) ||
-                            (in_array('tables', $enabled_modules) || in_array('service_staff', $enabled_modules)))
-                        <li>
-                            <a href="javascript:void(0);" id="service_staff_replacement" class="popover-default"
-                                data-toggle="popover" data-trigger="click"
-                                data-content='<div class="m-8"><input type="text" class="form-control" placeholder="@lang('sale.invoice_no')" id="send_for_sell_service_staff_invoice_no"></div><div class="w-100 text-center"><button type="button" class="tw-dw-btn tw-dw-btn-xs tw-dw-btn-outline tw-dw-btn-error" id="send_for_sercice_staff_replacement">@lang('lang_v1.send')</button></div>'
-                                data-html="true" data-placement="bottom">{{ __('restaurant.service_staff_replacement') }}</a>
-                        </li>
-                    @endif
-
-                    <li role="separator" class="divider"></li>
-                    <li>
-                        <a href="javascript:void(0);" id="btnCalculator" class="popover-default"
-                            data-toggle="popover" data-trigger="click" data-content='@include('layouts.partials.calculator')' data-html="true"
-                            data-placement="bottom">@lang('lang_v1.calculator')</a>
-                    </li>
-                    <li class="tw-hidden">
-                        <a href="javascript:void(0);" id="full_screen">{{ __('lang_v1.full_screen') }}</a>
-                    </li>
-                    @if (!empty($pos_settings['customer_display_screen']))
-                        <li>
-                            <a href="{{ route('pos_display') }}" id="customer_display_screen"
-                                onclick="window.open(this.href, 'customer_display', 'width='+screen.width+',height='+screen.height+',top=0,left=0'); return false;">{{ __('lang_v1.customer_display_screen') }}</a>
-                        </li>
-                    @endif
-
-                    @if (in_array('pos_sale', $enabled_modules) && !empty($transaction_sub_type))
-                        @can('sell.create')
-                            <li>
-                                <a href="{{ action([\App\Http\Controllers\SellPosController::class, 'create']) }}">@lang('sale.pos_sale')</a>
-                            </li>
-                        @endcan
-                    @endif
-                    @can('expense.add')
-                        <li>
-                            <a href="javascript:void(0);" id="add_expense">@lang('expense.add_expense')</a>
-                        </li>
-                    @endcan
-                </ul>
-            </div>
-
-            {{-- Drafts stay as sibling so existing panel JS keeps working --}}
             <div class="pos-ls-drafts-slot">
                 @include('sale_pos.partials.pos_drafts_panel')
             </div>
 
-            <span class="pos-ls-username">{{ auth()->user()->first_name ?? auth()->user()->username ?? 'POS' }}</span>
+            @if (!isset($pos_settings['hide_recent_trans']) || $pos_settings['hide_recent_trans'] == 0)
+                <button type="button" class="pos-tb-btn"
+                    data-toggle="modal" data-target="#recent_transactions_modal" id="recent-transactions"
+                    title="{{ __('lang_v1.recent_transactions') }}">
+                    <i class="fas fa-history"></i>
+                </button>
+            @endif
 
-            <a href="{{ $go_back_url }}" class="pos-ls-icon-btn tw-hidden md:tw-inline-flex" title="{{ __('lang_v1.go_back') }}">
-                <i class="fas fa-sign-out-alt"></i>
-            </a>
+            <span class="pos-tb-divider"></span>
 
-            <button type="button" class="pos-ls-icon-btn tw-inline-flex md:tw-hidden"
-                onclick="document.getElementById('pos_header_more_options').parentElement.classList.toggle('open')">
-                <i class="fas fa-bars"></i>
+            @can('view_cash_register')
+                <button type="button" id="register_details" title="{{ __('cash_register.register_details') }}"
+                    class="pos-tb-btn btn-modal"
+                    data-container=".register_details_modal"
+                    data-href="{{ action([\App\Http\Controllers\CashRegisterController::class, 'getRegisterDetails']) }}">
+                    <i class="fas fa-briefcase" style="color:#00935F;"></i>
+                </button>
+            @endcan
+
+            @can('close_cash_register')
+                <button type="button" id="close_register" title="{{ __('cash_register.close_register') }}"
+                    class="pos-tb-btn btn-modal"
+                    data-container=".close_register_modal"
+                    data-href="{{ action([\App\Http\Controllers\CashRegisterController::class, 'getCloseRegister']) }}">
+                    <i class="fas fa-times-circle" style="color:#EF4B53;"></i>
+                </button>
+            @endcan
+
+            @if (!empty($pos_settings['inline_service_staff']))
+                <span class="pos-tb-divider"></span>
+                <button type="button" id="show_service_staff_availability"
+                    title="{{ __('lang_v1.service_staff_availability') }}"
+                    class="pos-tb-btn"
+                    data-container=".view_modal"
+                    data-href="{{ action([\App\Http\Controllers\SellPosController::class, 'showServiceStaffAvailibility']) }}">
+                    <i class="fas fa-users" style="color:#646EE4;"></i>
+                </button>
+            @endif
+
+            @if (!empty($pos_settings['inline_service_staff']) || in_array('tables', $enabled_modules) || in_array('service_staff', $enabled_modules))
+                <button type="button" class="pos-tb-btn popover-default" id="service_staff_replacement"
+                    title="{{ __('restaurant.service_staff_replacement') }}"
+                    data-toggle="popover" data-trigger="click"
+                    data-content='<div class="m-8"><input type="text" class="form-control" placeholder="@lang('sale.invoice_no')" id="send_for_sell_service_staff_invoice_no"></div><div class="w-100 text-center"><button type="button" class="tw-dw-btn tw-dw-btn-xs tw-dw-btn-outline tw-dw-btn-error" id="send_for_sercice_staff_replacement">@lang('lang_v1.send')</button></div>'
+                    data-html="true" data-placement="bottom">
+                    <i class="fas fa-user-plus" style="color:#646EE4;"></i>
+                </button>
+            @endif
+
+            <span class="pos-tb-divider"></span>
+
+            <button title="@lang('lang_v1.calculator')" id="btnCalculator" type="button"
+                class="pos-tb-btn popover-default"
+                data-toggle="popover" data-trigger="click"
+                data-content='@include('layouts.partials.calculator')' data-html="true"
+                data-placement="bottom">
+                <i class="fas fa-calculator" style="color:#00935F;"></i>
             </button>
+
+            <button type="button" title="{{ __('lang_v1.full_screen') }}" class="pos-tb-btn" id="full_screen">
+                <i class="fas fa-expand" style="color:#646EE4;"></i>
+            </button>
+
+            @if (!empty($pos_settings['customer_display_screen']))
+                <a href="{{ route('pos_display') }}" id="customer_display_screen"
+                    onclick="window.open(this.href, 'customer_display', 'width='+screen.width+',height='+screen.height+',top=0,left=0'); return false;"
+                    title="{{ __('lang_v1.customer_display_screen') }}" class="pos-tb-btn">
+                    <i class="fas fa-desktop" style="color:#646EE4;"></i>
+                </a>
+            @endif
+
+            @if (Module::has('Repair') && $transaction_sub_type != 'repair')
+                <span class="pos-tb-divider"></span>
+                @include('repair::layouts.partials.pos_header')
+            @endif
+
+            @if (in_array('pos_sale', $enabled_modules) && !empty($transaction_sub_type))
+                @can('sell.create')
+                    <a href="{{ action([\App\Http\Controllers\SellPosController::class, 'create']) }}"
+                        title="@lang('sale.pos_sale')" class="pos-tb-btn-wide">
+                        <i class="fas fa-th" style="color:#00935F;"></i>
+                        <span>@lang('sale.pos_sale')</span>
+                    </a>
+                @endcan
+            @endif
+
+            @can('expense.add')
+                <button type="button" title="{{ __('expense.add_expense') }}"
+                    class="pos-tb-btn-wide" id="add_expense">
+                    <i class="fas fa-minus-circle"></i>
+                    <span>@lang('expense.add_expense')</span>
+                </button>
+            @endcan
         </div>
     </div>
 </div>

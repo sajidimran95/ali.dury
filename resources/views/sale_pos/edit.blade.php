@@ -90,10 +90,13 @@
 
 @include('sale_pos.partials.weighing_scale_modal')
 
+<div class="modal fade" id="pos_pay_contact_due_modal" tabindex="-1" role="dialog">
+</div>
+
 @stop
 
 @section('javascript')
-	<script src="{{ asset('js/pos.js?v=' . $asset_v . '&ls=38') }}"></script>
+	<script src="{{ asset('js/pos.js?v=' . $asset_v . '&ls=64') }}"></script>
 	<script src="{{ asset('js/printer.js?v=' . $asset_v) }}"></script>
 	<script src="{{ asset('js/product.js?v=' . $asset_v) }}"></script>
 	<script src="{{ asset('js/opening_stock.js?v=' . $asset_v) }}"></script>
@@ -114,6 +117,27 @@
 	@endif
 
 	@include('sale_pos.partials.pos_layout_script', ['form_id' => 'edit_pos_sell_form'])
+	<script>
+	(function () {
+		function syncPayCta() {
+			var src = document.getElementById('total_payable');
+			var targets = document.querySelectorAll('.pos_pay_cta_total');
+			if (!src || !targets.length) return;
+			targets.forEach(function (el) {
+				el.textContent = src.textContent;
+			});
+		}
+		$(document).ready(function () {
+			syncPayCta();
+			var src = document.getElementById('total_payable');
+			if (src && window.MutationObserver) {
+				new MutationObserver(syncPayCta).observe(src, { childList: true, characterData: true, subtree: true });
+			}
+			$(document).on('change keyup', '#final_total_input', syncPayCta);
+			setInterval(syncPayCta, 800);
+		});
+	})();
+	</script>
 
 @endsection
 
