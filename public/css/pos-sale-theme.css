@@ -1358,7 +1358,7 @@ body.lockscreen.pos-sale-theme #featured_products_box .product_box:hover {
 
 body.lockscreen.pos-sale-theme .product_box:hover .text,
 body.lockscreen.pos-sale-theme .product_box:hover .text_div .text,
-body.lockscreen.pos-sale-theme .product_box:hover .product_price,
+body.lockscreen.pos-sale-theme .product_box:hover .product_stock,
 body.lockscreen.pos-sale-theme .product_box:hover .text-muted {
   color: #ffffff !important;
   text-decoration: none !important;
@@ -1445,6 +1445,11 @@ body.lockscreen.pos-sale-theme .product_box .text_div small.text {
 }
 
 body.lockscreen.pos-sale-theme .product_box .product_price {
+  display: none !important;
+}
+
+/* Stock in previous price position (under product name) */
+body.lockscreen.pos-sale-theme .product_box .product_stock {
   display: block !important;
   color: #ffffff !important;
   font-size: 16px !important;
@@ -1459,17 +1464,7 @@ body.lockscreen.pos-sale-theme .product_box .product_price {
 }
 
 body.lockscreen.pos-sale-theme .product_box .pos-tile-stock {
-  position: absolute;
-  top: 6px;
-  right: 6px;
-  z-index: 3;
-  font-size: 10px;
-  color: #ffffff !important;
-  font-weight: 600;
-  background: rgba(0, 0, 0, 0.65);
-  padding: 2px 5px;
-  border-radius: 3px;
-  line-height: 1.2;
+  display: none !important;
 }
 
 body.lockscreen.pos-sale-theme .product_box,
@@ -1498,7 +1493,7 @@ body.lockscreen.pos-sale-theme #featured_products_box .product_box:hover {
 }
 
 body.lockscreen.pos-sale-theme #featured_products_box .product_box .text_div .text,
-body.lockscreen.pos-sale-theme #featured_products_box .product_box .pos-tile-stock {
+body.lockscreen.pos-sale-theme #featured_products_box .product_box .product_stock {
   color: #fff !important;
 }
 
