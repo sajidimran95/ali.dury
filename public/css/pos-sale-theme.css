@@ -4736,6 +4736,46 @@ body.lockscreen.pos-sale-theme #pos_pay_contact_due_modal .table > tbody > tr > 
   border-color: #333 !important;
 }
 
+/* Popup titles — no hover style change (Register / Close / Discount / Tax / Shipping) */
+body.zoho-theme.lockscreen.pos-sale-theme .modal-title,
+body.zoho-theme.lockscreen.pos-sale-theme .modal-title:hover,
+body.zoho-theme.lockscreen.pos-sale-theme .modal-title:focus,
+body.zoho-theme.lockscreen.pos-sale-theme .modal-header:hover .modal-title,
+body.zoho-theme.lockscreen.pos-sale-theme .modal-header:hover,
+body.lockscreen.pos-sale-theme .modal-title,
+body.lockscreen.pos-sale-theme .modal-title:hover,
+body.lockscreen.pos-sale-theme .modal-title:focus,
+body.lockscreen.pos-sale-theme .modal-header:hover .modal-title,
+body.lockscreen.pos-sale-theme .modal-header:hover,
+body.lockscreen.pos-sale-theme .close_register_modal .modal-title,
+body.lockscreen.pos-sale-theme .close_register_modal .modal-title:hover,
+body.lockscreen.pos-sale-theme .register_details_modal .modal-title,
+body.lockscreen.pos-sale-theme .register_details_modal .modal-title:hover,
+body.lockscreen.pos-sale-theme #posEditDiscountModal .modal-title,
+body.lockscreen.pos-sale-theme #posEditDiscountModal .modal-title:hover,
+body.lockscreen.pos-sale-theme #posEditOrderTaxModal .modal-title,
+body.lockscreen.pos-sale-theme #posEditOrderTaxModal .modal-title:hover,
+body.lockscreen.pos-sale-theme #posShippingModal .modal-title,
+body.lockscreen.pos-sale-theme #posShippingModal .modal-title:hover {
+  color: #ffffff !important;
+  text-decoration: none !important;
+  background: transparent !important;
+  cursor: default !important;
+  opacity: 1 !important;
+  box-shadow: none !important;
+}
+
+body.lockscreen.pos-sale-theme .modal-header:hover,
+body.lockscreen.pos-sale-theme .close_register_modal .modal-header:hover,
+body.lockscreen.pos-sale-theme .register_details_modal .modal-header:hover,
+body.lockscreen.pos-sale-theme #posEditDiscountModal .modal-header:hover,
+body.lockscreen.pos-sale-theme #posEditOrderTaxModal .modal-header:hover,
+body.lockscreen.pos-sale-theme #posShippingModal .modal-header:hover {
+  background: #1a1a1a !important;
+  filter: none !important;
+  opacity: 1 !important;
+}
+
 
 
 

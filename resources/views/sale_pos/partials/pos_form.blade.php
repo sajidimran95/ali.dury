@@ -19,6 +19,15 @@
 					</a>
 				</li>
 			@endif
+			@if (empty($pos_settings['disable_draft']) || auth()->user()->can('superadmin') || auth()->user()->can('admin'))
+				@if (!Gate::check('disable_draft') || auth()->user()->can('superadmin') || auth()->user()->can('admin'))
+					<li>
+						<a href="javascript:void(0);" class="pos-more-item" id="pos_more_save_draft">
+							@lang('sale.draft')
+						</a>
+					</li>
+				@endif
+			@endif
 			<li>
 				<a href="javascript:void(0);" class="pos-more-item" id="pos_mark_all_fulfillment">
 					Mark all fulfillment
@@ -299,8 +308,26 @@
 		var sel = item.getAttribute('data-trigger');
 		if (!sel) return;
 		var el = document.querySelector(sel);
-		if (el) el.click();
+		if (el) {
+			// jQuery trigger works even when footer control is visually hidden
+			if (typeof jQuery !== 'undefined') {
+				jQuery(el).trigger('click');
+			} else {
+				el.click();
+			}
+		}
 		closeMoreMenu(item);
+	});
+
+	// Save draft — previous system behavior (same as #pos-draft)
+	document.addEventListener('click', function (e) {
+		var btn = e.target.closest('#pos_more_save_draft');
+		if (!btn) return;
+		e.preventDefault();
+		closeMoreMenu(btn);
+		if (typeof jQuery !== 'undefined' && jQuery('#pos-draft').length) {
+			jQuery('#pos-draft').trigger('click');
+		}
 	});
 
 	// Mark all fulfillment → kitchen order / shipping note

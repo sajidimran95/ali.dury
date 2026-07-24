@@ -80,7 +80,7 @@
                         data-target="#recent_transactions_modal"
                         id="pos_nav_recent_transactions">
                         <i class="fas fa-history"></i>
-                        <span>History</span>
+                        <span>Recent History</span>
                     </button>
                 </li>
             @endif
@@ -92,7 +92,7 @@
                         data-container=".register_details_modal"
                         data-href="{{ action([\App\Http\Controllers\CashRegisterController::class, 'getRegisterDetails']) }}">
                         <i class="fas fa-wallet"></i>
-                        <span>Cash memo</span>
+                        <span>Register Details</span>
                     </button>
                 </li>
                 <li>
@@ -110,14 +110,6 @@
                             <span>Status</span>
                         </button>
                     @endcan
-                </li>
-            @endcan
-            @can('account.access')
-                <li>
-                    <a href="{{ action([\App\Http\Controllers\AccountController::class, 'index']) }}">
-                        <i class="fas fa-university"></i>
-                        <span>Manage account</span>
-                    </a>
                 </li>
             @endcan
             @can('business_settings.access')

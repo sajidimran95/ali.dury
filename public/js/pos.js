@@ -825,8 +825,11 @@ $(document).ready(function() {
         return data;
     }
 
-    //Save invoice as draft
-    $('button#pos-draft').click(function() {
+    //Save invoice as draft (previous system behavior)
+    $(document).off('click.posDraftSave', '#pos-draft').on('click.posDraftSave', '#pos-draft', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+
         //Check if product is present or not.
         if ($('table#pos_table tbody').find('.product_row').length <= 0) {
             toastr.warning(LANG.no_products_added);
@@ -838,6 +841,7 @@ $(document).ready(function() {
             return;
         }
 
+        // Always POST as a new draft on create endpoint
         var data = pos_serialize_as_create('draft');
         var url = pos_create_url_for_draft_or_quote();
 
@@ -853,13 +857,19 @@ $(document).ready(function() {
                     reset_pos_form();
                     toastr.success(result.msg);
                     if (typeof loadPosDraftsPanel === 'function') {
-                        loadPosDraftsPanel();
+                        loadPosDraftsPanel('draft');
                     }
                 } else {
                     toastr.error(result.msg);
                 }
             },
+            error: function(xhr) {
+                enable_pos_form_actions();
+                var msg = (xhr.responseJSON && xhr.responseJSON.msg) ? xhr.responseJSON.msg : (LANG.something_went_wrong || 'Something went wrong');
+                toastr.error(msg);
+            }
         });
+        return false;
     });
 
     //Save as Quotation only (no auto invoice print)
