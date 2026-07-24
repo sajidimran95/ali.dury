@@ -807,6 +807,23 @@ $(document).ready(function() {
         });
     });
 
+    // Always create draft/quote on the create endpoint (not update of a retrieved parked sale)
+    function pos_create_url_for_draft_or_quote() {
+        var $addForm = $('#add_pos_sell_form');
+        if ($addForm.length && $addForm.data('original-action')) {
+            return $addForm.data('original-action');
+        }
+        return pos_form_obj.attr('action');
+    }
+
+    function pos_serialize_as_create(status) {
+        var data = pos_form_obj.serialize();
+        // Drop method override so we POST create, not PUT update
+        data = data.replace(/(^|&)_method=[^&]*/g, '').replace(/^&/, '');
+        data = data + '&status=' + status;
+        return data;
+    }
+
     //Save invoice as draft
     $('button#pos-draft').click(function() {
         //Check if product is present or not.
@@ -820,9 +837,8 @@ $(document).ready(function() {
             return;
         }
 
-        var data = pos_form_obj.serialize();
-        data = data + '&status=draft';
-        var url = pos_form_obj.attr('action');
+        var data = pos_serialize_as_create('draft');
+        var url = pos_create_url_for_draft_or_quote();
 
         disable_pos_form_actions();
         $.ajax({
@@ -845,7 +861,7 @@ $(document).ready(function() {
         });
     });
 
-    //Save invoice as Quotation
+    //Save as Quotation only (no auto invoice print)
     $('button#pos-quotation').click(function() {
         //Check if product is present or not.
         if ($('table#pos_table tbody').find('.product_row').length <= 0) {
@@ -858,9 +874,8 @@ $(document).ready(function() {
             return;
         }
 
-        var data = pos_form_obj.serialize();
-        data = data + '&status=quotation';
-        var url = pos_form_obj.attr('action');
+        var data = pos_serialize_as_create('quotation');
+        var url = pos_create_url_for_draft_or_quote();
 
         disable_pos_form_actions();
         $.ajax({
@@ -873,11 +888,7 @@ $(document).ready(function() {
                 if (result.success == 1) {
                     reset_pos_form();
                     toastr.success(result.msg);
-
-                    //Check if enabled or not
-                    if (result.receipt.is_enabled) {
-                        pos_print(result.receipt);
-                    }
+                    // Stay on POS — do not open invoice/receipt print
                 } else {
                     toastr.error(result.msg);
                 }
@@ -1191,6 +1202,14 @@ $(document).ready(function() {
                             $('#modal_payment').modal('hide');
                             $('#confirmSuspendModal').modal('hide');
                             toastr.success(result.msg);
+
+                            // If retrieve rebound create→update, restore create form for next sale
+                            var $addForm = $('#add_pos_sell_form');
+                            if ($addForm.length && $addForm.data('original-action')) {
+                                $addForm.attr('action', $addForm.data('original-action'));
+                                $addForm.find('input[name="_method"]').remove();
+                                $addForm.removeAttr('data-retrieved-id');
+                            }
 
                             reset_pos_form();
 
@@ -2854,6 +2873,143 @@ function isValidPosForm() {
     }
 
     return flag;
+}
+
+function pos_load_retrieved_sale_into_cart(row) {
+    if (!row || typeof jQuery === 'undefined') {
+        return false;
+    }
+
+    var lines = [];
+    try {
+        lines = JSON.parse(row.getAttribute('data-lines') || '[]');
+    } catch (e) {
+        lines = [];
+    }
+
+    if (!lines.length) {
+        if (typeof toastr !== 'undefined') {
+            toastr.error('No items in this parked sale');
+        }
+        return false;
+    }
+
+    if (typeof pos_product_row !== 'function') {
+        var href = row.getAttribute('data-href');
+        if (href) {
+            window.location.href = href;
+        }
+        return false;
+    }
+
+    var doLoad = function () {
+        // Clear current cart lines
+        $('table#pos_table tbody tr.product_row').remove();
+        $('input#product_row_count').val(0);
+        if (typeof pos_sync_empty_state === 'function') {
+            pos_sync_empty_state();
+        }
+
+        // Set customer
+        var cid = row.getAttribute('data-contact-id');
+        var cname = row.getAttribute('data-contact-name') || '';
+        if (cid && $('#customer_id').length) {
+            if ($('#customer_id').find('option[value="' + cid + '"]').length === 0) {
+                $('#customer_id').append(new Option(cname, cid, true, true));
+            }
+            $('#customer_id').val(cid).trigger('change');
+        }
+
+        // Always add as new rows with given qty (not merge-increment)
+        var prevMethod = $('#item_addition_method').val();
+        $('#item_addition_method').val(0);
+
+        for (var i = 0; i < lines.length; i++) {
+            var line = lines[i];
+            if (!line || !line.variation_id) {
+                continue;
+            }
+            var qty = parseFloat(line.quantity);
+            if (!qty || qty <= 0) {
+                qty = 1;
+            }
+            pos_product_row(line.variation_id, null, null, qty);
+        }
+
+        if (typeof prevMethod !== 'undefined' && prevMethod !== null) {
+            $('#item_addition_method').val(prevMethod);
+        }
+
+        // Bind create form to UPDATE this parked sale (Pay finishes same sale)
+        var tid = row.getAttribute('data-transaction-id');
+        var $form = $('#add_pos_sell_form');
+        if ($form.length && tid) {
+            if (!$form.data('original-action')) {
+                $form.data('original-action', $form.attr('action'));
+            }
+            var href = row.getAttribute('data-href') || '';
+            var updateUrl = href.replace(/\/edit(\?.*)?$/, '$1');
+            if (!updateUrl || updateUrl === href) {
+                updateUrl = (window.base_path || '') + '/pos/' + tid;
+            }
+            // Keep query-less update URL
+            updateUrl = updateUrl.split('?')[0];
+            $form.attr('action', updateUrl);
+            if (!$form.find('input[name="_method"]').length) {
+                $form.prepend('<input type="hidden" name="_method" value="PUT">');
+            } else {
+                $form.find('input[name="_method"]').val('PUT');
+            }
+            $form.attr('data-retrieved-id', tid);
+        }
+
+        if ($('input#is_suspend').length) {
+            $('input#is_suspend').val(0);
+        }
+
+        if (typeof pos_total_row === 'function') {
+            pos_total_row();
+        }
+        if (typeof pos_sync_empty_state === 'function') {
+            pos_sync_empty_state();
+        }
+
+        // Close retrieve panel
+        var panel = document.getElementById('pos_retrieve_panel');
+        var link = document.getElementById('view_suspended_sales_link');
+        if (panel) {
+            panel.classList.remove('is-open');
+            panel.setAttribute('aria-hidden', 'true');
+        }
+        if (link) {
+            link.classList.remove('is-active');
+            link.setAttribute('aria-expanded', 'false');
+        }
+
+        if (typeof toastr !== 'undefined') {
+            toastr.success('Parked sale added to cart');
+        }
+    };
+
+    if ($('table#pos_table tbody tr.product_row').length > 0) {
+        if (typeof swal === 'function') {
+            swal({
+                title: LANG.sure || 'Replace current cart?',
+                text: 'Current cart items will be replaced with the parked sale.',
+                icon: 'warning',
+                buttons: true,
+                dangerMode: true,
+            }).then(function (ok) {
+                if (ok) {
+                    doLoad();
+                }
+            });
+            return true;
+        }
+    }
+
+    doLoad();
+    return true;
 }
 
 function reset_pos_form(){

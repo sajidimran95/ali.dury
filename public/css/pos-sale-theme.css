@@ -587,28 +587,70 @@ body.lockscreen.pos-sale-theme .pos-card.cat.is-active {
 }
 
 body.lockscreen.pos-sale-theme .pos-subcat-strip {
-  width: 100%;
+  flex: 0 0 100% !important;
+  width: 100% !important;
+  max-width: 100% !important;
   clear: both;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  padding: 6px 4px 10px;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 8px;
+  padding: 8px 4px 10px !important;
+  margin: 4px 0 6px !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  animation: none;
 }
 
 body.lockscreen.pos-sale-theme .pos-subcat-pill {
-  background: #2a2a2a;
-  border: 1px solid #3a3a3a;
-  color: #eee;
-  border-radius: 999px;
-  padding: 5px 12px;
-  font-size: 12px;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px !important;
+  padding: 5px 14px !important;
+  border-radius: 999px !important;
+  background: #2a2a2a !important;
+  border: 1px solid #3a3a3a !important;
+  color: #eee !important;
+  font-size: 12px !important;
+  font-weight: 600;
   cursor: pointer;
+  white-space: nowrap;
+  box-shadow: none !important;
 }
 
 body.lockscreen.pos-sale-theme .pos-subcat-pill:hover,
 body.lockscreen.pos-sale-theme .pos-subcat-pill--all {
-  border-color: var(--pos-accent);
-  color: #fff;
+  border-color: var(--pos-accent) !important;
+  color: #fff !important;
+  background: #333 !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-subcat-pill:active,
+body.lockscreen.pos-sale-theme .pos-subcat-pill.is-active {
+  background: var(--pos-accent) !important;
+  border-color: var(--pos-accent) !important;
+  color: #fff !important;
+  transform: none;
+}
+
+/* Hide page footer / bottom white line on POS create/edit only */
+body.lockscreen.pos-sale-theme footer,
+body.lockscreen.pos-sale-theme .main-footer,
+body.zoho-theme.lockscreen.pos-sale-theme footer,
+body.zoho-theme.lockscreen.pos-sale-theme .main-footer {
+  display: none !important;
+  border: 0 !important;
+  border-top: 0 !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-sale-shell {
+  min-height: 100vh;
 }
 
 body.lockscreen.pos-sale-theme .pos-filter-tools .tw-dw-btn {
@@ -2554,29 +2596,38 @@ body.lockscreen.pos-sale-theme #pos_table .quantity-up {
   background: #2a2a2a !important;
   border: 1px solid #3a3a3a !important;
   color: #ffffff !important;
-  width: 28px !important;
-  height: 28px !important;
+  width: 20px !important;
+  min-width: 20px !important;
+  max-width: 20px !important;
+  height: 20px !important;
+  min-height: 20px !important;
   padding: 0 !important;
-  line-height: 26px !important;
-  border-radius: 4px !important;
+  margin: 0 !important;
+  line-height: 18px !important;
+  border-radius: 3px !important;
+  font-size: 10px !important;
 }
 
 body.lockscreen.pos-sale-theme #pos_table .quantity-down i,
 body.lockscreen.pos-sale-theme #pos_table .quantity-up i {
   color: #ffffff !important;
+  font-size: 9px !important;
+  line-height: 1 !important;
 }
 
 body.lockscreen.pos-sale-theme #pos_table .pos_quantity {
   background: #222 !important;
   border: 1px solid #3a3a3a !important;
   color: #ffffff !important;
-  width: 42px !important;
-  min-width: 42px !important;
-  height: 28px !important;
-  padding: 0 4px !important;
+  width: 36px !important;
+  min-width: 36px !important;
+  max-width: 40px !important;
+  height: 20px !important;
+  padding: 0 2px !important;
   text-align: center !important;
   font-weight: 700 !important;
-  font-size: 13px !important;
+  font-size: 11px !important;
+  line-height: 18px !important;
 }
 
 body.lockscreen.pos-sale-theme #pos_table .pos_unit_price_inc_tax,
@@ -3199,6 +3250,10 @@ body.zoho-theme.lockscreen.pos-sale-theme .pos-drafts-panel__loading {
 
 body.lockscreen.pos-sale-theme .pos-retrieve-row.is-clickable {
   cursor: pointer;
+}
+
+body.lockscreen.pos-sale-theme .pos-retrieve-row.is-clickable:hover {
+  background: #2a2a2a !important;
 }
 
 body.lockscreen.pos-sale-theme .pos-retrieve-line,

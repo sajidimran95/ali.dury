@@ -1,5 +1,6 @@
 @php
-    $outlet_name = $default_location->name ?? (session('business.name') ?? 'Outlet');
+    $outlet_name = optional($default_location ?? null)->name
+        ?? (session('business.name') ?? 'Outlet');
     $admin_menu = \Menu::instance('admin-sidebar-menu');
     $admin_items = $admin_menu ? $admin_menu->getOrderedItems() : [];
 @endphp
@@ -46,7 +47,7 @@
             <h2 class="pos-nav-register-title">Main Register</h2>
             <div class="pos-nav-register-meta">
                 <span>{{ $outlet_name }}</span>
-                @if (empty($transaction->location_id) && !empty($business_locations) && count($business_locations) > 1)
+                @if (empty(optional($transaction ?? null)->location_id) && !empty($business_locations) && count($business_locations) > 1)
                     <button type="button" class="pos-nav-switch" id="pos_nav_switch_location">
                         Switch <i class="fas fa-chevron-down" style="font-size:9px;"></i>
                     </button>
@@ -62,32 +63,39 @@
             </li>
             @can('close_cash_register')
                 <li>
-                    <button type="button" class="pos-nav-trigger" data-trigger="#close_register">
+                    <a href="{{ action([\App\Http\Controllers\CashRegisterController::class, 'getCloseRegister']) }}">
                         <i class="fas fa-cash-register"></i>
                         <span>Open / Close</span>
-                    </button>
+                    </a>
                 </li>
             @endcan
             @if (!isset($pos_settings['hide_recent_trans']) || $pos_settings['hide_recent_trans'] == 0)
                 <li>
-                    <button type="button" class="pos-nav-trigger" data-trigger="#recent-transactions">
+                    <a href="{{ action([\App\Http\Controllers\SellPosController::class, 'index']) }}">
                         <i class="fas fa-history"></i>
                         <span>Sales history</span>
-                    </button>
+                    </a>
                 </li>
             @endif
             @can('view_cash_register')
                 <li>
-                    <button type="button" class="pos-nav-trigger" data-trigger="#register_details">
+                    <a href="{{ action([\App\Http\Controllers\CashRegisterController::class, 'getRegisterDetails']) }}">
                         <i class="fas fa-wallet"></i>
                         <span>Cash management</span>
-                    </button>
+                    </a>
                 </li>
                 <li>
-                    <button type="button" class="pos-nav-trigger" data-trigger="#register_details">
-                        <i class="fas fa-chart-line"></i>
-                        <span>Status</span>
-                    </button>
+                    @can('register_report.view')
+                        <a href="{{ action([\App\Http\Controllers\ReportController::class, 'getRegisterReport']) }}">
+                            <i class="fas fa-chart-line"></i>
+                            <span>Status</span>
+                        </a>
+                    @else
+                        <a href="{{ action([\App\Http\Controllers\CashRegisterController::class, 'getRegisterDetails']) }}">
+                            <i class="fas fa-chart-line"></i>
+                            <span>Status</span>
+                        </a>
+                    @endcan
                 </li>
             @endcan
             @can('business_settings.access')
@@ -100,10 +108,10 @@
             @endcan
             @if (!Gate::check('disable_quotation') || auth()->user()->can('superadmin') || auth()->user()->can('admin'))
                 <li>
-                    <button type="button" class="pos-nav-trigger" data-trigger="#pos-quotation">
+                    <a href="{{ action([\App\Http\Controllers\SellController::class, 'getQuotations']) }}">
                         <i class="fas fa-quote-right"></i>
                         <span>Quotes</span>
-                    </button>
+                    </a>
                 </li>
             @endif
         </ul>
@@ -111,15 +119,6 @@
 </aside>
 <script>
 (function () {
-    document.addEventListener('click', function (e) {
-        var btn = e.target.closest('.pos-nav-trigger');
-        if (!btn) return;
-        e.preventDefault();
-        var sel = btn.getAttribute('data-trigger');
-        if (!sel) return;
-        var el = document.querySelector(sel);
-        if (el) el.click();
-    });
     var switchBtn = document.getElementById('pos_nav_switch_location');
     if (switchBtn) {
         switchBtn.addEventListener('click', function () {

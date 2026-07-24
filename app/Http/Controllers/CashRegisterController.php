@@ -140,6 +140,10 @@ class CashRegisterController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
+        if ($this->cashRegisterUtil->countOpenedRegister() == 0) {
+            return redirect()->action([\App\Http\Controllers\CashRegisterController::class, 'create']);
+        }
+
         $business_id = request()->session()->get('user.business_id');
 
         $register_details = $this->cashRegisterUtil->getRegisterDetails();
@@ -156,7 +160,9 @@ class CashRegisterController extends Controller
 
         $due_applied_to_register = $this->cashRegisterUtil->getDuePaymentsForCurrentRegisterSales();
 
-        return view('cash_register.register_details')
+        $view = request()->ajax() ? 'cash_register.register_details' : 'cash_register.register_details_page';
+
+        return view($view)
                 ->with(compact('register_details', 'details', 'payment_types', 'close_time', 'due_applied_to_register'));
     }
 
@@ -170,6 +176,10 @@ class CashRegisterController extends Controller
     {
         if (! auth()->user()->can('close_cash_register')) {
             abort(403, 'Unauthorized action.');
+        }
+
+        if (empty($id) && $this->cashRegisterUtil->countOpenedRegister() == 0) {
+            return redirect()->action([\App\Http\Controllers\CashRegisterController::class, 'create']);
         }
 
         $business_id = request()->session()->get('user.business_id');
@@ -189,7 +199,9 @@ class CashRegisterController extends Controller
 
         $due_applied_to_register = $this->cashRegisterUtil->getDuePaymentsForCurrentRegisterSales($id);
 
-        return view('cash_register.close_register_modal')
+        $view = request()->ajax() ? 'cash_register.close_register_modal' : 'cash_register.close_register_page';
+
+        return view($view)
                     ->with(compact('register_details', 'details', 'payment_types', 'pos_settings', 'due_applied_to_register'));
     }
 
@@ -233,6 +245,13 @@ class CashRegisterController extends Controller
             $output = ['success' => 0,
                 'msg' => __('messages.something_went_wrong'),
             ];
+        }
+
+        // After closing from full page, go to open-register screen
+        if (! request()->ajax()) {
+            return redirect()
+                ->action([\App\Http\Controllers\CashRegisterController::class, 'create'])
+                ->with('status', $output);
         }
 
         return redirect()->back()->with('status', $output);

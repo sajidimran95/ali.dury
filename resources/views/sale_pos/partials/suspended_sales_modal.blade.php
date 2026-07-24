@@ -1,7 +1,6 @@
 @php
 	$subtype = !empty($transaction_sub_type) ? '?sub_type=' . $transaction_sub_type : '';
 	$avatar_colors = ['#f0ad4e', '#5bc0de', '#d9534f', '#5cb85c', '#9b59b6', '#e67e22', '#3498db', '#1abc9c'];
-	$can_open = auth()->user()->can('sell.update') || auth()->user()->can('direct_sell.update');
 @endphp
 <div class="pos-retrieve-sheet" role="dialog" aria-label="Retrieve sale">
 	<div class="pos-retrieve-sheet-head">
@@ -16,6 +15,18 @@
 					$preview_lines = $lines->take(2);
 					$extra_count = max(0, $lines->count() - 2);
 					$thumbs = [];
+					$cart_lines = [];
+					foreach ($lines as $line) {
+						if (!empty($line->parent_sell_line_id)) {
+							continue;
+						}
+						if (!empty($line->variation_id)) {
+							$cart_lines[] = [
+								'variation_id' => (int) $line->variation_id,
+								'quantity' => (float) $line->quantity,
+							];
+						}
+					}
 					foreach ($lines->take(4) as $line) {
 						$img = null;
 						if (!empty($line->product) && $line->product->media && $line->product->media->count() > 0) {
@@ -25,7 +36,7 @@
 						}
 						$thumbs[] = $img;
 					}
-					$cust_name = $sale->name ?: ($sale->contact->name ?? 'Walk-In Customer');
+					$cust_name = $sale->name ?: (optional($sale->contact)->name ?? 'Walk-In Customer');
 					$cust_parts = preg_split('/\s+/', trim($cust_name));
 					$initials = '';
 					foreach (array_slice($cust_parts, 0, 2) as $part) {
@@ -45,10 +56,18 @@
 					}
 					$mobile = $sale->mobile ?? optional($sale->contact)->mobile;
 					$email = optional($sale->contact)->email;
-					$edit_url = route('pos.edit', ['po' => $sale->id]) . $subtype;
+					$edit_url = url('/pos/' . $sale->id . '/edit') . $subtype;
+					$contact_id = $sale->contact_id ?? optional($sale->contact)->id;
 				@endphp
-				<div class="pos-retrieve-row @if($can_open) is-clickable @endif"
-					@if($can_open) data-href="{{ $edit_url }}" role="link" tabindex="0" @endif>
+				<div class="pos-retrieve-row is-clickable"
+					role="link"
+					tabindex="0"
+					data-href="{{ $edit_url }}"
+					data-transaction-id="{{ $sale->id }}"
+					data-contact-id="{{ $contact_id }}"
+					data-contact-name="{{ $cust_name }}"
+					data-lines="{{ e(json_encode($cart_lines)) }}"
+					onclick="if (window.posOpenRetrievedSaleRow) { window.posOpenRetrievedSaleRow(event, this); } else if (!event.target.closest('a')) { window.location.href = this.getAttribute('data-href'); }">
 					<div class="pos-retrieve-sale">
 						<div class="pos-retrieve-thumbs">
 							@forelse($thumbs as $idx => $thumb)
@@ -90,11 +109,10 @@
 								<div class="pos-retrieve-customer-sub">{{ $email }}</div>
 							@endif
 						</div>
-						@if($can_open)
-							<a href="{{ $edit_url }}" class="pos-retrieve-open" title="@lang('sale.edit_sale')" onclick="event.stopPropagation();">
-								<i class="fas fa-external-link-alt"></i>
-							</a>
-						@endif
+						<a href="{{ $edit_url }}" class="pos-retrieve-open" title="Open in cart"
+							onclick="event.stopPropagation();">
+							<i class="fas fa-external-link-alt"></i>
+						</a>
 						@if(auth()->user()->can('sell.delete') || auth()->user()->can('direct_sell.delete'))
 							<a href="{{ action([\App\Http\Controllers\SellPosController::class, 'destroy'], ['po' => $sale->id]) }}"
 								class="pos-retrieve-delete delete-sale is_suspended" title="@lang('messages.delete')"
@@ -110,25 +128,3 @@
 		@endforelse
 	</div>
 </div>
-<script>
-(function () {
-	var body = document.querySelector('#pos_retrieve_panel .pos-retrieve-sheet-body');
-	if (!body || body.getAttribute('data-bound') === '1') return;
-	body.setAttribute('data-bound', '1');
-	body.addEventListener('click', function (e) {
-		if (e.target.closest('a')) return;
-		var row = e.target.closest('.pos-retrieve-row.is-clickable');
-		if (!row) return;
-		var href = row.getAttribute('data-href');
-		if (href) window.location.href = href;
-	});
-	body.addEventListener('keydown', function (e) {
-		if (e.key !== 'Enter' && e.key !== ' ') return;
-		var row = e.target.closest('.pos-retrieve-row.is-clickable');
-		if (!row) return;
-		e.preventDefault();
-		var href = row.getAttribute('data-href');
-		if (href) window.location.href = href;
-	});
-})();
-</script>

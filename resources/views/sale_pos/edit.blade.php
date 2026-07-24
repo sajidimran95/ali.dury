@@ -5,6 +5,7 @@
 @section('content')
 <section class="content no-print">
 	<input type="hidden" id="amount_rounding_method" value="{{$pos_settings['amount_rounding_method'] ?? ''}}">
+	<input type="hidden" id="pos_defer_product_list" value="0">
 	@if(!empty($pos_settings['allow_overselling']))
 		<input type="hidden" id="is_overselling_allowed">
 	@endif
@@ -15,25 +16,30 @@
 		$is_discount_enabled = $pos_settings['disable_discount'] != 1 ? true : false;
 		$is_rp_enabled = session('business.enable_rp') == 1 ? true : false;
 	@endphp
-	{!! Form::open(['url' => action([\App\Http\Controllers\SellPosController::class, 'update'], [$transaction->id]), 'method' => 'post', 'id' => 'edit_pos_sell_form' ]) !!}
+	<div class="pos-sale-shell">
+		@include('sale_pos.partials.pos_nav_sidebar')
+		<div class="pos-sale-main">
+	{!! Form::open(['url' => action([\App\Http\Controllers\SellPosController::class, 'update'], [$transaction->id]), 'method' => 'post', 'id' => 'edit_pos_sell_form', 'class' => count($sell_details ?? []) > 0 ? 'pos-has-rows' : '' ]) !!}
 	{{ method_field('PUT') }}
 	<div class="row" style="margin:0;">
 		<div class="col-md-12" style="padding:0;">
-			<div class="row tw-flex lg:tw-flex-row md:tw-flex-col sm:tw-flex-col tw-flex-col tw-items-stretch pos-checkout-row" style="gap: 4px; margin: 0; padding: 0;">
+			<div class="row tw-flex lg:tw-flex-row md:tw-flex-col sm:tw-flex-col tw-flex-col tw-items-stretch pos-checkout-row" style="gap: 0; margin: 0; padding: 0;">
 				@if (empty($pos_settings['hide_product_suggestion']))
-					<div class="tw-w-full lg:tw-w-[40%] tw-order-2 lg:tw-order-1" style="padding:0;" id="pos_sidebar_wrap">
+					<div class="tw-w-full lg:tw-w-[55%] tw-order-2 lg:tw-order-1" style="padding:0;" id="pos_sidebar_wrap">
 						@include('sale_pos.partials.pos_sidebar')
 					</div>
 				@endif
-				<div class="tw-w-full @if(empty($pos_settings['hide_product_suggestion'])) lg:tw-w-[60%] tw-order-1 lg:tw-order-2 @else lg:tw-w-[100%] @endif" style="padding:0;" id="pos_checkout_wrap">
-					<div class="tw-shadow-[rgba(17,_17,_26,_0.1)_0px_0px_16px] tw-rounded-2xl tw-bg-white tw-relative" style="padding:0;overflow:hidden;height:100%;">
+				<div class="tw-w-full @if(empty($pos_settings['hide_product_suggestion'])) lg:tw-w-[45%] tw-order-1 lg:tw-order-2 @else lg:tw-w-[100%] @endif" style="padding:0;" id="pos_checkout_wrap">
+					<div class="pos-checkout-inner" style="padding:0;height:100%;">
 						<div class="box-body pb-0">
 							{!! Form::hidden('location_id', $transaction->location_id, ['id' => 'location_id', 'data-receipt_printer_type' => !empty($location_printer_type) ? $location_printer_type : 'browser', 'data-default_payment_accounts' => $transaction->location->default_payment_accounts]); !!}
 							{!! Form::hidden('sub_type', isset($sub_type) ? $sub_type : null) !!}
 							<input type="hidden" id="item_addition_method" value="{{$business_details->item_addition_method}}">
+							<div class="pos-cart-panel">
 							@include('sale_pos.partials.pos_form_edit')
 
 							@include('sale_pos.partials.pos_form_totals', ['edit' => true])
+							</div>{{-- /.pos-cart-panel --}}
 
 							@include('sale_pos.partials.payment_modal')
 
@@ -55,6 +61,8 @@
 	</div>
 	@include('sale_pos.partials.pos_form_actions', ['edit' => true])
 	{!! Form::close() !!}
+		</div>{{-- /.pos-sale-main --}}
+	</div>{{-- /.pos-sale-shell --}}
 </section>
 
 <!-- This will be printed -->
@@ -85,7 +93,7 @@
 @stop
 
 @section('javascript')
-	<script src="{{ asset('js/pos.js?v=' . $asset_v . '&ls=35') }}"></script>
+	<script src="{{ asset('js/pos.js?v=' . $asset_v . '&ls=38') }}"></script>
 	<script src="{{ asset('js/printer.js?v=' . $asset_v) }}"></script>
 	<script src="{{ asset('js/product.js?v=' . $asset_v) }}"></script>
 	<script src="{{ asset('js/opening_stock.js?v=' . $asset_v) }}"></script>

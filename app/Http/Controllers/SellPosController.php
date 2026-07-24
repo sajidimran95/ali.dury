@@ -641,7 +641,8 @@ class SellPosController extends Controller
 
                         if ($input['is_quotation'] == 1) {
                             $msg = trans('lang_v1.quotation_added');
-                            $print_invoice = true;
+                            // Quotation stays as quote only — do not auto-print as invoice
+                            $print_invoice = false;
                         }
                     } elseif ($input['status'] == 'final') {
                         $print_invoice = true;
@@ -1131,6 +1132,10 @@ class SellPosController extends Controller
             && $transaction->status === 'final'
             && (int) $transaction->is_suspend !== 1;
 
+        // Same outlet object create screen uses (nav / product search)
+        $default_location = $business_location;
+        $business_locations = BusinessLocation::forDropdown($business_id, false);
+
         return view('sale_pos.edit')
             ->with(compact('business_details', 'taxes', 'payment_types', 'walk_in_customer',
                 'sell_details', 'transaction', 'payment_lines', 'location_printer_type', 'shortcuts',
@@ -1138,7 +1143,7 @@ class SellPosController extends Controller
                 'brands', 'accounts', 'waiters', 'redeem_details', 'edit_price', 'edit_discount',
                 'shipping_statuses', 'warranties', 'sub_type', 'pos_module_data', 'invoice_schemes',
                 'default_invoice_schemes', 'invoice_layouts', 'featured_products', 'customer_due',
-                'users', 'only_payment'));
+                'users', 'only_payment', 'default_location', 'business_locations'));
     }
 
     /**
@@ -1496,11 +1501,8 @@ class SellPosController extends Controller
                     $msg = trans('sale.draft_added');
                 } elseif ($input['status'] == 'draft' && $input['is_quotation'] == 1) {
                     $msg = trans('lang_v1.quotation_updated');
-                    if (!$is_direct_sale && $can_print_invoice) {
-                        $receipt = $this->receiptContent($business_id, $input['location_id'], $transaction->id, null, false, true, $invoice_layout_id);
-                    } else {
-                        $receipt = '';
-                    }
+                    // Quotation stays as quote only — do not auto-print as invoice
+                    $receipt = '';
                 } elseif ($input['status'] == 'final') {
                     $msg = trans('sale.pos_sale_updated');
                     if (!$is_direct_sale && $can_print_invoice) {

@@ -6,8 +6,8 @@
         <div class="input-group">
             <span class="input-group-addon"><i class="fas fa-search"></i></span>
             {!! Form::text('search_product', null, ['class' => 'form-control', 'id' => 'search_product', 'placeholder' => 'Start typing or scanning',
-            'disabled' => is_null($default_location)? true : false,
-            'autofocus' => is_null($default_location)? false : true,
+            'disabled' => empty($default_location),
+            'autofocus' => !empty($default_location),
             ]); !!}
             <span class="input-group-btn">
                 <button type="button" class="btn btn-default bg-white btn-flat" data-toggle="modal" data-target="#configure_search_modal" title="{{__('lang_v1.configure_product_search')}}"><i class="fas fa-search-plus"></i></button>

@@ -162,7 +162,8 @@
 			dataType: 'html',
 			success: function (result) {
 				if (panel) {
-					panel.innerHTML = result;
+					// jQuery.html runs scripts; raw innerHTML does not
+					jQuery(panel).html(result);
 					panel.classList.add('is-open');
 					panel.setAttribute('aria-hidden', 'false');
 					if (link) {
@@ -185,6 +186,45 @@
 		});
 	}
 
+	function openRetrievedSale(rowOrHref) {
+		var row = null;
+		var href = null;
+		if (rowOrHref && rowOrHref.nodeType === 1) {
+			row = rowOrHref;
+			href = row.getAttribute('data-href');
+		} else {
+			href = rowOrHref;
+		}
+
+		// Prefer in-cart load on create POS (no edit redirect)
+		if (row && document.getElementById('add_pos_sell_form') && typeof pos_load_retrieved_sale_into_cart === 'function') {
+			pos_load_retrieved_sale_into_cart(row);
+			return;
+		}
+
+		if (!href && row) {
+			href = row.getAttribute('data-href');
+		}
+		if (!href) return;
+		closeRetrievePanel();
+		if (typeof toastr !== 'undefined') {
+			toastr.info('Loading parked sale into cart...');
+		}
+		window.location.href = href;
+	}
+
+	window.posOpenRetrievedSaleRow = function (event, row) {
+		if (!row) return;
+		if (event && event.target && event.target.closest && event.target.closest('a')) {
+			return;
+		}
+		if (event) {
+			event.preventDefault();
+			event.stopPropagation();
+		}
+		openRetrievedSale(row);
+	};
+
 	document.addEventListener('click', function (e) {
 		var link = e.target.closest('#view_suspended_sales_link');
 		if (link) {
@@ -193,6 +233,24 @@
 			openSuspendedSalesModal();
 			return;
 		}
+
+		// Retrieve sale row → add items into current cart
+		var retrieveOpen = e.target.closest('#pos_retrieve_panel a.pos-retrieve-open');
+		if (retrieveOpen) {
+			e.preventDefault();
+			e.stopPropagation();
+			var rowFromOpen = retrieveOpen.closest('.pos-retrieve-row');
+			openRetrievedSale(rowFromOpen || retrieveOpen.getAttribute('href'));
+			return;
+		}
+		var retrieveRow = e.target.closest('#pos_retrieve_panel .pos-retrieve-row.is-clickable');
+		if (retrieveRow && !e.target.closest('a')) {
+			e.preventDefault();
+			e.stopPropagation();
+			openRetrievedSale(retrieveRow);
+			return;
+		}
+
 		var panel = document.getElementById('pos_retrieve_panel');
 		if (panel && panel.classList.contains('is-open') && !e.target.closest('#pos_retrieve_panel') && !e.target.closest('#view_suspended_sales_link')) {
 			closeRetrievePanel();
