@@ -64,7 +64,7 @@
 
                 @if (!Gate::check('disable_suspend_sale') || auth()->user()->can('superadmin') || auth()->user()->can('admin'))
                     @if (empty($pos_settings['disable_suspend']))
-                        <button type="button"
+                        <button type="button" id="pos-suspend-btn"
                             class="tw-font-bold tw-text-gray-700 tw-cursor-pointer tw-text-xs md:tw-text-sm tw-flex tw-flex-col tw-items-center tw-justify-center tw-gap-1 tw-whitespace-nowrap  no-print pos-express-finalize"
                             data-pay_method="suspend" title="@lang('lang_v1.tooltip_suspend')"
                             @if (!empty($only_payment)) disabled @endif>
@@ -77,7 +77,7 @@
                 @if (!Gate::check('disable_credit_sale') || auth()->user()->can('superadmin') || auth()->user()->can('admin'))
                     @if (empty($pos_settings['disable_credit_sale_button']))
                         <input type="hidden" name="is_credit_sale" value="0" id="is_credit_sale">
-                        <button type="button"
+                        <button type="button" id="pos-credit-sale-btn"
                             class=" tw-font-bold tw-text-gray-700 tw-cursor-pointer tw-text-xs md:tw-text-sm tw-flex tw-flex-col tw-items-center tw-justify-center tw-gap-1 tw-whitespace-nowrap no-print pos-express-finalize @if ($is_mobile) col-xs-6 @endif"
                             data-pay_method="credit_sale" title="@lang('lang_v1.tooltip_credit_sale')"
                             @if (!empty($only_payment)) disabled @endif>

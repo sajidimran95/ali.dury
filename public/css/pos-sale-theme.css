@@ -1,0 +1,3238 @@
+/**
+ * POS Sale Theme — Lightspeed-inspired dark UI
+ * Design-only overlay for /pos/create (and edit). Keeps all existing IDs/classes for JS.
+ */
+body.lockscreen.pos-sale-theme {
+  --pos-bg: #0e0e0e;
+  --pos-panel: #1a1a1a;
+  --pos-panel-2: #222222;
+  --pos-border: #2e2e2e;
+  --pos-text: #f2f2f2;
+  --pos-muted: #9a9a9a;
+  --pos-accent: #3b8ddd;
+  --pos-orange: #e64a19;
+  --pos-input: #1c1c1c;
+  --pos-tile: #252525;
+  --pos-tile-hover: #2f2f2f;
+  --pos-danger: #ef5350;
+  background: var(--pos-bg) !important;
+  color: var(--pos-text);
+}
+
+body.lockscreen.pos-sale-theme .wrapper,
+body.lockscreen.pos-sale-theme .content-wrapper,
+body.lockscreen.pos-sale-theme .content,
+body.lockscreen.pos-sale-theme .lockscreen-wrapper {
+  background: var(--pos-bg) !important;
+  color: var(--pos-text);
+}
+
+body.lockscreen.pos-sale-theme .content {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* ── Shell: full width — left nav pinned, only product+cart centered ── */
+body.lockscreen.pos-sale-theme .wrapper,
+body.lockscreen.pos-sale-theme .zoho-app-body,
+body.lockscreen.pos-sale-theme .zoho-main-column,
+body.lockscreen.pos-sale-theme #scrollable-container {
+  margin: 0 !important;
+  max-width: none !important;
+  width: 100% !important;
+}
+
+body.lockscreen.pos-sale-theme #scrollable-container {
+  overflow-x: hidden !important;
+  background: var(--pos-bg) !important;
+}
+
+body.lockscreen.pos-sale-theme .content {
+  padding: 0 !important;
+  margin: 0 !important;
+  background: var(--pos-bg) !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-sale-shell {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: flex-start;
+  min-height: calc(100vh - 48px);
+  max-width: none !important;
+  width: 100% !important;
+  margin: 0 !important;
+  gap: 0;
+  padding: 0;
+  position: relative;
+  background: var(--pos-bg);
+  border: 0;
+}
+
+/* Left nav — always flush to screen left */
+body.lockscreen.pos-sale-theme .pos-nav-sidebar {
+  flex: 0 0 220px;
+  width: 220px;
+  min-width: 220px;
+  max-width: 220px;
+  background: #141414;
+  border-right: 1px solid var(--pos-border);
+  display: none;
+  flex-direction: row;
+  padding: 0;
+  position: sticky;
+  top: 0;
+  left: 0;
+  align-self: flex-start;
+  height: calc(100vh - 48px);
+  overflow: hidden;
+  z-index: 40;
+  order: 0;
+  margin: 0 !important;
+}
+
+@media (min-width: 992px) {
+  body.lockscreen.pos-sale-theme .pos-nav-sidebar {
+    display: flex !important;
+  }
+}
+
+body.lockscreen.pos-sale-theme.pos-nav-collapsed .pos-nav-panel {
+  display: none;
+}
+
+body.lockscreen.pos-sale-theme.pos-nav-collapsed .pos-nav-sidebar {
+  flex-basis: 64px;
+  width: 64px;
+  min-width: 64px;
+  max-width: 64px;
+}
+
+/* Main: remaining space — center only product + cart */
+body.lockscreen.pos-sale-theme .pos-sale-main {
+  flex: 1 1 auto;
+  min-width: 0;
+  width: auto;
+  max-width: none;
+  margin: 0 !important;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  order: 1;
+  background: var(--pos-bg);
+  padding: 12px 28px 64px;
+  box-sizing: border-box;
+}
+
+body.lockscreen.pos-sale-theme .pos-sale-main > form#add_pos_sell_form,
+body.lockscreen.pos-sale-theme .pos-sale-main > form#edit_pos_sell_form {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+body.lockscreen.pos-sale-theme .pos-sale-main > form > .row {
+  width: 100%;
+  margin: 0 !important;
+  flex: 1 1 auto;
+}
+
+body.lockscreen.pos-sale-theme .pos-sale-main > form > .row > .col-md-12 {
+  padding: 0 !important;
+  float: none;
+  width: 100%;
+}
+
+body.lockscreen.pos-sale-theme .pos-checkout-row {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: stretch;
+  justify-content: center;
+  gap: 22px !important;
+  margin: 0 auto !important;
+  width: 100%;
+  max-width: 1280px;
+  flex: 1;
+  min-height: 0;
+  height: calc(100vh - 72px);
+  max-height: calc(100vh - 72px);
+}
+
+/* Product column */
+body.lockscreen.pos-sale-theme #pos_sidebar_wrap {
+  flex: 1 1 auto !important;
+  max-width: 760px !important;
+  width: auto !important;
+  order: 1 !important;
+  padding: 0 !important;
+  min-width: 0;
+  min-height: 0;
+  background: transparent;
+  border-right: 0 !important;
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 72px);
+  max-height: calc(100vh - 72px);
+  overflow: hidden;
+}
+
+/* Cart column — slightly wider than before, not full screen */
+body.lockscreen.pos-sale-theme #pos_checkout_wrap {
+  flex: 0 0 430px !important;
+  max-width: 430px !important;
+  width: 430px !important;
+  order: 2 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: calc(100vh - 72px);
+  max-height: calc(100vh - 72px);
+  position: relative;
+  z-index: 30;
+  overflow: visible !important;
+}
+
+body.lockscreen.pos-sale-theme #pos_checkout_wrap > div {
+  background: transparent !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  border: 0 !important;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: visible;
+}
+
+body.lockscreen.pos-sale-theme #pos_checkout_wrap .box-body {
+  padding: 0 !important;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  background: transparent !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-cart-panel {
+  background: #1a1a1a !important;
+  border: 1px solid #2a2a2a;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: visible;
+  position: relative;
+}
+
+/* Product area: search → categories (top) → products (bottom) */
+body.lockscreen.pos-sale-theme .pos-sidebar-root {
+  background: transparent !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  padding: 4px 2px 8px !important;
+  height: 100%;
+  min-height: 0;
+  display: flex !important;
+  flex-direction: column;
+  overflow: hidden;
+  width: 100%;
+}
+
+body.lockscreen.pos-sale-theme .pos-products-heading,
+body.lockscreen.pos-sale-theme .pos-product-search-wrap,
+body.lockscreen.pos-sale-theme .pos-filter-tools,
+body.lockscreen.pos-sale-theme #product_category_div {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  flex: 0 0 auto;
+}
+
+body.lockscreen.pos-sale-theme .pos-inline-categories {
+  flex: 0 0 auto;
+  order: 0;
+  margin-bottom: 8px;
+  width: 100%;
+}
+
+body.lockscreen.pos-sale-theme .pos-filter-tools {
+  flex: 0 0 auto;
+  order: 1;
+}
+
+body.lockscreen.pos-sale-theme .pos-sidebar-root > .row.pos-products-section {
+  flex: 1 1 auto;
+  min-height: 0;
+  order: 2;
+  display: flex;
+  flex-direction: column;
+  margin: 0 !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-sidebar-root > .row > .col-md-12 {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 0 !important;
+}
+
+body.lockscreen.pos-sale-theme #product_list_body {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow-y: auto !important;
+}
+
+@media (max-width: 1199px) {
+  body.lockscreen.pos-sale-theme .pos-sale-main {
+    padding: 8px 14px 64px;
+  }
+  body.lockscreen.pos-sale-theme .pos-sale-main > form#add_pos_sell_form,
+  body.lockscreen.pos-sale-theme .pos-sale-main > form#edit_pos_sell_form,
+  body.lockscreen.pos-sale-theme .pos-checkout-row {
+    max-width: 100%;
+  }
+  body.lockscreen.pos-sale-theme #pos_sidebar_wrap {
+    max-width: none !important;
+  }
+  body.lockscreen.pos-sale-theme #pos_checkout_wrap {
+    flex: 0 0 400px !important;
+    max-width: 400px !important;
+    width: 400px !important;
+  }
+}
+
+body.lockscreen.pos-sale-theme .pos-nav-icons {
+  flex: 0 0 64px;
+  width: 64px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 10px 0 12px;
+  border-right: 1px solid var(--pos-border);
+  background: #0f0f0f;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: #444 #0f0f0f;
+}
+
+body.lockscreen.pos-sale-theme .pos-nav-icon {
+  width: 56px;
+  min-height: 52px;
+  height: auto;
+  border-radius: 8px;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  color: #c8c8c8;
+  background: transparent;
+  border: 0;
+  text-decoration: none;
+  cursor: pointer;
+  padding: 6px 2px;
+  box-sizing: border-box;
+}
+
+body.lockscreen.pos-sale-theme .pos-nav-icon svg,
+body.lockscreen.pos-sale-theme .pos-nav-icon i {
+  width: 20px !important;
+  height: 20px !important;
+  min-width: 20px;
+  font-size: 16px;
+  flex-shrink: 0;
+  stroke: currentColor;
+}
+
+body.lockscreen.pos-sale-theme .pos-nav-icon-label {
+  display: block;
+  font-size: 9px;
+  line-height: 1.15;
+  text-align: center;
+  color: inherit;
+  max-width: 58px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+body.lockscreen.pos-sale-theme .pos-nav-icon:hover,
+body.lockscreen.pos-sale-theme .pos-nav-icon.is-active {
+  color: #fff;
+  background: rgba(59, 141, 221, 0.18);
+  text-decoration: none;
+}
+
+body.lockscreen.pos-sale-theme .pos-nav-collapse {
+  margin-top: auto;
+}
+
+body.lockscreen.pos-sale-theme.pos-nav-collapsed .pos-nav-sidebar {
+  flex-basis: 64px;
+  width: 64px;
+  min-width: 64px;
+  max-width: 64px;
+}
+
+body.lockscreen.pos-sale-theme .pos-nav-panel {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  padding: 16px 0 12px;
+}
+
+body.lockscreen.pos-sale-theme .pos-nav-register {
+  padding: 0 14px 16px;
+  border-bottom: 1px solid var(--pos-border);
+  margin-bottom: 6px;
+}
+
+body.lockscreen.pos-sale-theme .pos-nav-register-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--pos-text);
+  margin: 0 0 4px;
+  line-height: 1.25;
+}
+
+body.lockscreen.pos-sale-theme .pos-nav-register-meta {
+  font-size: 12px;
+  color: var(--pos-muted);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+body.lockscreen.pos-sale-theme .pos-nav-register-meta .pos-nav-switch {
+  color: var(--pos-accent);
+  cursor: pointer;
+  background: none;
+  border: 0;
+  padding: 0;
+  font-size: 12px;
+}
+
+body.lockscreen.pos-sale-theme .pos-nav-menu {
+  list-style: none;
+  margin: 0;
+  padding: 4px 0;
+  flex: 1;
+}
+
+body.lockscreen.pos-sale-theme .pos-nav-menu li {
+  margin: 0;
+}
+
+body.lockscreen.pos-sale-theme .pos-nav-menu a,
+body.lockscreen.pos-sale-theme .pos-nav-menu button {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 10px;
+  padding: 11px 16px;
+  color: #c8c8c8;
+  font-size: 13.5px;
+  background: transparent;
+  border: 0;
+  border-right: 3px solid transparent;
+  text-align: left;
+  cursor: pointer;
+  text-decoration: none;
+  transition: color .15s, background .15s;
+}
+
+body.lockscreen.pos-sale-theme .pos-nav-menu a:hover,
+body.lockscreen.pos-sale-theme .pos-nav-menu button:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.04);
+  text-decoration: none;
+}
+
+body.lockscreen.pos-sale-theme .pos-nav-menu .is-active,
+body.lockscreen.pos-sale-theme .pos-nav-menu a.is-active,
+body.lockscreen.pos-sale-theme .pos-nav-menu button.is-active {
+  color: #fff;
+  border-right-color: var(--pos-accent);
+  background: rgba(59, 141, 221, 0.08);
+}
+
+body.lockscreen.pos-sale-theme .pos-nav-menu i,
+body.lockscreen.pos-sale-theme .pos-nav-menu svg {
+  width: 18px;
+  opacity: 0.85;
+  flex-shrink: 0;
+}
+
+/* Inline category tiles — MUST be block/100% wide (flex parent was crushing cols into thin strips) */
+body.lockscreen.pos-sale-theme .pos-inline-categories,
+body.lockscreen.pos-sale-theme #product_category_div {
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  flex: 0 0 auto;
+  order: 0;
+  margin: 8px 0 10px !important;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+body.lockscreen.pos-sale-theme .pos-inline-categories .pos-card-grid-categories,
+body.lockscreen.pos-sale-theme #product_category_div .pos-card-grid-categories {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  float: none !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-inline-categories .pos-card-grid-categories > [class*="col-"],
+body.lockscreen.pos-sale-theme #product_category_div .pos-card-grid-categories > [class*="col-"],
+body.lockscreen.pos-sale-theme #product_category_div > .row > [class*="col-"] {
+  float: none !important;
+  flex: 0 0 20% !important;
+  width: 20% !important;
+  max-width: 20% !important;
+  padding: 4px !important;
+  box-sizing: border-box !important;
+}
+
+@media (max-width: 1400px) {
+  body.lockscreen.pos-sale-theme .pos-inline-categories .pos-card-grid-categories > [class*="col-"],
+  body.lockscreen.pos-sale-theme #product_category_div .pos-card-grid-categories > [class*="col-"],
+  body.lockscreen.pos-sale-theme #product_category_div > .row > [class*="col-"] {
+    flex-basis: 25% !important;
+    width: 25% !important;
+    max-width: 25% !important;
+  }
+}
+
+@media (max-width: 1100px) {
+  body.lockscreen.pos-sale-theme .pos-inline-categories .pos-card-grid-categories > [class*="col-"],
+  body.lockscreen.pos-sale-theme #product_category_div .pos-card-grid-categories > [class*="col-"],
+  body.lockscreen.pos-sale-theme #product_category_div > .row > [class*="col-"] {
+    flex-basis: 33.333% !important;
+    width: 33.333% !important;
+    max-width: 33.333% !important;
+  }
+}
+
+@media (max-width: 575px) {
+  body.lockscreen.pos-sale-theme .pos-inline-categories .pos-card-grid-categories > [class*="col-"],
+  body.lockscreen.pos-sale-theme #product_category_div .pos-card-grid-categories > [class*="col-"],
+  body.lockscreen.pos-sale-theme #product_category_div > .row > [class*="col-"] {
+    flex-basis: 50% !important;
+    width: 50% !important;
+    max-width: 50% !important;
+  }
+}
+
+body.lockscreen.pos-sale-theme .pos-cat-tile {
+  min-height: 76px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 10px 8px !important;
+  border-radius: 6px !important;
+  background: var(--pos-tile) !important;
+  border: 0 !important;
+  border-top: 3px solid transparent !important;
+  margin: 0;
+  box-shadow: none !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-cat-tile .pos-card-name {
+  color: #fff !important;
+  font-size: 11px !important;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  margin: 0;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+body.lockscreen.pos-sale-theme .pos-cat-tile--accent {
+  border-top-color: var(--pos-orange) !important;
+  background: var(--pos-orange) !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-cat-tile.is-active,
+body.lockscreen.pos-sale-theme .pos-card.cat.is-active {
+  border-top-color: var(--pos-accent) !important;
+  box-shadow: inset 0 0 0 2px var(--pos-accent);
+  outline: none;
+  filter: brightness(1.12);
+}
+
+body.lockscreen.pos-sale-theme .pos-subcat-strip {
+  width: 100%;
+  clear: both;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 6px 4px 10px;
+}
+
+body.lockscreen.pos-sale-theme .pos-subcat-pill {
+  background: #2a2a2a;
+  border: 1px solid #3a3a3a;
+  color: #eee;
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+body.lockscreen.pos-sale-theme .pos-subcat-pill:hover,
+body.lockscreen.pos-sale-theme .pos-subcat-pill--all {
+  border-color: var(--pos-accent);
+  color: #fff;
+}
+
+body.lockscreen.pos-sale-theme .pos-filter-tools .tw-dw-btn {
+  background: var(--pos-panel-2) !important;
+  border-color: var(--pos-border) !important;
+  color: var(--pos-text) !important;
+  box-shadow: none !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-add-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 12px 6px;
+  border-top: 1px solid var(--pos-border);
+}
+
+body.lockscreen.pos-sale-theme .pos-add-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--pos-muted);
+}
+
+body.lockscreen.pos-sale-theme .pos-add-link {
+  background: none;
+  border: 0;
+  color: var(--pos-accent);
+  font-size: 13px;
+  padding: 0;
+  cursor: pointer;
+}
+
+body.lockscreen.pos-sale-theme .pos-add-link:hover {
+  color: #6bb0f0;
+  text-decoration: underline;
+}
+
+body.lockscreen.pos-sale-theme .pos-subtotal-bar {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px !important;
+  background: transparent !important;
+  border-top: 0 !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-subtotal-bar .pos_totals_right_label {
+  font-size: 13px !important;
+  color: var(--pos-muted) !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-subtotal-bar .pos_totals_right_value {
+  font-size: 15px !important;
+  font-weight: 600;
+}
+
+body.lockscreen.pos-sale-theme .pos-pay-items {
+  font-size: 13px;
+  font-weight: 500;
+  color: #cfcfcf;
+  margin-left: 6px;
+}
+
+body.lockscreen.pos-sale-theme .pos_form_totals {
+  flex-direction: column !important;
+  background: var(--pos-panel) !important;
+  border-top: 0 !important;
+}
+
+body.lockscreen.pos-sale-theme .pos_form_totals .pos-add-row {
+  order: 0;
+}
+
+body.lockscreen.pos-sale-theme .pos_form_totals .pos-subtotal-bar {
+  order: 2;
+}
+
+body.lockscreen.pos-sale-theme .pos_form_totals .pos-pay-cta {
+  order: 3;
+}
+
+body.lockscreen.pos-sale-theme .pos_form_totals .pos_totals_left {
+  display: flex !important;
+}
+
+@media (max-width: 991px) {
+  body.lockscreen.pos-sale-theme .pos-sale-main {
+    padding: 8px 12px 80px;
+    align-items: stretch;
+  }
+  body.lockscreen.pos-sale-theme .pos-checkout-row {
+    flex-direction: column !important;
+    gap: 12px !important;
+    max-width: 100% !important;
+  }
+  body.lockscreen.pos-sale-theme #pos_sidebar_wrap,
+  body.lockscreen.pos-sale-theme #pos_checkout_wrap {
+    flex: 1 1 auto !important;
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+  body.lockscreen.pos-sale-theme #pos_checkout_wrap {
+    order: 1 !important;
+  }
+  body.lockscreen.pos-sale-theme #pos_sidebar_wrap {
+    order: 2 !important;
+  }
+}
+
+/* ── Top header — Lightspeed chrome ── */
+body.lockscreen.pos-sale-theme .pos-header.zoho-topbar {
+  background: #0a0a0a !important;
+  border-bottom: 1px solid #1f1f1f;
+  padding: 0 !important;
+  position: sticky;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  z-index: 50;
+  float: none !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-ls-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  max-width: none;
+  margin: 0;
+  padding: 0 16px 0 20px;
+  min-height: 48px;
+  height: 48px;
+  box-sizing: border-box;
+}
+
+body.lockscreen.pos-sale-theme .pos-ls-topbar-left,
+body.lockscreen.pos-sale-theme .pos-ls-topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+body.lockscreen.pos-sale-theme .pos-ls-topbar-right {
+  justify-content: flex-end;
+}
+
+body.lockscreen.pos-sale-theme .pos-ls-topbar-center {
+  flex: 0 1 420px;
+  display: flex;
+  justify-content: center;
+}
+
+body.lockscreen.pos-sale-theme .pos-brand-mark {
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: #fff !important;
+  margin: 0;
+  white-space: nowrap;
+  text-transform: lowercase;
+}
+
+body.lockscreen.pos-sale-theme .pos-ls-location-name,
+body.lockscreen.pos-sale-theme .pos-ls-datetime {
+  color: #8a8a8a !important;
+  font-size: 12px;
+}
+
+body.lockscreen.pos-sale-theme .pos-ls-location .form-control,
+body.lockscreen.pos-sale-theme .pos-ls-location .select2-container--default .select2-selection--single {
+  background: #1a1a1a !important;
+  border-color: #333 !important;
+  color: #ddd !important;
+  height: 28px !important;
+  min-height: 28px !important;
+  font-size: 12px !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-ls-global-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  max-width: 420px;
+  height: 34px;
+  padding: 0 14px;
+  background: #1c1c1c;
+  border: 1px solid #2e2e2e;
+  border-radius: 20px;
+  color: #9a9a9a;
+  font-size: 13px;
+  cursor: text;
+}
+
+body.lockscreen.pos-sale-theme .pos-ls-global-search:hover {
+  border-color: #3a3a3a;
+  color: #cfcfcf;
+}
+
+body.lockscreen.pos-sale-theme .pos-ls-global-search span {
+  flex: 1;
+  text-align: left;
+  color: inherit !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-ls-global-search kbd {
+  background: transparent;
+  border: 0;
+  color: #666;
+  font-size: 11px;
+  font-family: inherit;
+  padding: 0;
+  box-shadow: none;
+}
+
+body.lockscreen.pos-sale-theme .pos-ls-text-btn {
+  background: none;
+  border: 0;
+  color: #cfcfcf !important;
+  font-size: 13px;
+  padding: 4px 6px;
+  cursor: pointer;
+}
+
+body.lockscreen.pos-sale-theme .pos-ls-text-btn:hover {
+  color: #fff !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-ls-icon-btn {
+  background: transparent !important;
+  border: 0 !important;
+  color: #cfcfcf !important;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-ls-icon-btn:hover {
+  background: #222 !important;
+  color: #fff !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-ls-username {
+  color: #e8e8e8 !important;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+body.lockscreen.pos-sale-theme .pos-ls-tools-menu {
+  background: #1f1f1f !important;
+  border: 1px solid #3a3a3a !important;
+  border-radius: 8px !important;
+  box-shadow: 0 10px 28px rgba(0,0,0,.55) !important;
+  padding: 6px 0 !important;
+  min-width: 220px;
+  margin-top: 8px !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-ls-tools-menu > li > a {
+  color: #f0f0f0 !important;
+  font-size: 13px !important;
+  padding: 9px 16px !important;
+  display: block;
+}
+
+body.lockscreen.pos-sale-theme .pos-ls-tools-menu > li > a:hover {
+  background: #2c2c2c !important;
+  color: #fff !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-ls-tools-menu .divider {
+  background: #333 !important;
+  margin: 6px 0 !important;
+  height: 1px;
+}
+
+/* legacy header bits */
+body.lockscreen.pos-sale-theme .pos-header,
+body.lockscreen.pos-sale-theme .pos-header p,
+body.lockscreen.pos-sale-theme .pos-header strong,
+body.lockscreen.pos-sale-theme .pos-header span,
+body.lockscreen.pos-sale-theme .pos-header a {
+  color: var(--pos-text) !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-nav-divider {
+  background: var(--pos-border) !important;
+}
+
+/* ── Product panel (center) ── */
+body.lockscreen.pos-sale-theme .pos-sidebar-root {
+  background: transparent !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  padding: 8px 8px 8px !important;
+  height: 100%;
+  min-height: 0;
+  display: flex !important;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+body.lockscreen.pos-sale-theme .pos-products-heading {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--pos-muted);
+  margin: 0 0 8px;
+}
+
+body.lockscreen.pos-sale-theme .pos-product-search-wrap {
+  margin-bottom: 14px;
+}
+
+body.lockscreen.pos-sale-theme .pos-product-search-wrap .input-group {
+  width: 100%;
+  display: flex !important;
+  align-items: center !important;
+  background: var(--pos-input);
+  border: 1px solid #3a3a3a;
+  border-radius: 4px;
+  overflow: hidden;
+  min-height: 42px;
+}
+
+body.lockscreen.pos-sale-theme .pos-product-search-wrap .input-group-btn {
+  display: flex !important;
+  align-items: center !important;
+  align-self: stretch;
+}
+
+body.lockscreen.pos-sale-theme .pos-product-search-wrap .input-group-btn .btn,
+body.lockscreen.pos-sale-theme .pos-product-search-wrap .input-group-addon {
+  background: transparent !important;
+  border: 0 !important;
+  color: var(--pos-muted) !important;
+  box-shadow: none !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 42px !important;
+  min-height: 42px !important;
+  line-height: 1 !important;
+  padding: 0 12px !important;
+  margin: 0 !important;
+  float: none !important;
+  width: auto !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-product-search-wrap .input-group-addon i,
+body.lockscreen.pos-sale-theme .pos-product-search-wrap .input-group-btn .btn i {
+  line-height: 1 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  vertical-align: middle !important;
+  height: 1em;
+  width: 1em;
+  position: relative;
+  top: 0 !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-product-search-wrap .input-group-addon i::before,
+body.lockscreen.pos-sale-theme .pos-product-search-wrap .input-group-btn .btn i::before {
+  line-height: 1 !important;
+  vertical-align: middle !important;
+  position: relative;
+  top: 0 !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-product-search-wrap #search_product {
+  background: transparent !important;
+  border: 0 !important;
+  color: var(--pos-text) !important;
+  height: 42px !important;
+  min-height: 42px !important;
+  font-size: 14px;
+  box-shadow: none !important;
+  flex: 1 1 auto;
+  line-height: 42px !important;
+  padding: 0 10px !important;
+  margin: 0 !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-product-search-wrap #search_product::placeholder {
+  color: #6e6e6e;
+}
+
+body.lockscreen.pos-sale-theme .pos-sidebar-root .tw-dw-btn,
+body.lockscreen.pos-sale-theme #show_featured_products {
+  background: var(--pos-panel-2) !important;
+  border-color: var(--pos-border) !important;
+  color: var(--pos-text) !important;
+  border-radius: 6px !important;
+  box-shadow: none !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-sidebar-root .tw-dw-btn:hover,
+body.lockscreen.pos-sale-theme #show_featured_products:hover {
+  background: #2c2c2c !important;
+  transform: none !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-sidebar-root .tw-dw-badge {
+  background: #333 !important;
+  border-color: #444 !important;
+  color: #ddd !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-sidebar-root .tw-text-indigo-600,
+body.lockscreen.pos-sale-theme .pos-sidebar-root .tw-text-violet-600,
+body.lockscreen.pos-sale-theme .pos-sidebar-root .tw-text-amber-500 {
+  color: var(--pos-accent) !important;
+}
+
+/* Drawers */
+body.lockscreen.pos-sale-theme .pos-drawer-panel {
+  background: var(--pos-panel) !important;
+  color: var(--pos-text);
+}
+
+body.lockscreen.pos-sale-theme .pos-drawer-panel h3,
+body.lockscreen.pos-sale-theme .pos-drawer-panel .tw-text-slate-900 {
+  color: var(--pos-text) !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-drawer-panel .tw-border-slate-100 {
+  border-color: var(--pos-border) !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-drawer-panel .tw-bg-slate-100 {
+  background: #2a2a2a !important;
+  color: #ccc !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-card {
+  background: var(--pos-tile) !important;
+  border-color: var(--pos-border) !important;
+  color: var(--pos-text) !important;
+  box-shadow: none !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-card-name {
+  color: var(--pos-text) !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-card.is-active.cat,
+body.lockscreen.pos-sale-theme .pos-card.is-active.brand {
+  border-color: var(--pos-accent) !important;
+  background: rgba(59, 141, 221, 0.15) !important;
+}
+
+/* Product tiles — small square cards with image, name, price */
+body.lockscreen.pos-sale-theme #product_list_items,
+body.lockscreen.pos-sale-theme #featured_products_box {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: flex-start !important;
+  align-content: flex-start !important;
+  margin: 0 -4px;
+  width: 100%;
+}
+
+body.lockscreen.pos-sale-theme #product_list_items > [class*="col-"],
+body.lockscreen.pos-sale-theme #featured_products_box > [class*="col-"] {
+  float: none !important;
+  flex: 0 0 20% !important;
+  max-width: 20% !important;
+  width: 20% !important;
+  padding: 5px !important;
+  height: auto !important;
+  align-self: flex-start !important;
+  box-sizing: border-box;
+}
+
+@media (max-width: 1400px) {
+  body.lockscreen.pos-sale-theme #product_list_items > [class*="col-"],
+  body.lockscreen.pos-sale-theme #featured_products_box > [class*="col-"] {
+    flex-basis: 25% !important;
+    max-width: 25% !important;
+    width: 25% !important;
+  }
+}
+
+@media (max-width: 1100px) {
+  body.lockscreen.pos-sale-theme #product_list_items > [class*="col-"],
+  body.lockscreen.pos-sale-theme #featured_products_box > [class*="col-"] {
+    flex-basis: 33.333% !important;
+    max-width: 33.333% !important;
+    width: 33.333% !important;
+  }
+}
+
+@media (max-width: 575px) {
+  body.lockscreen.pos-sale-theme #product_list_items > [class*="col-"],
+  body.lockscreen.pos-sale-theme #featured_products_box > [class*="col-"] {
+    flex-basis: 50% !important;
+    max-width: 50% !important;
+    width: 50% !important;
+  }
+}
+
+body.lockscreen.pos-sale-theme .product_box {
+  position: relative;
+  background: #2a2a2a !important;
+  border: 1px solid #3a3a3a !important;
+  border-radius: 8px !important;
+  box-shadow: none !important;
+  height: auto !important;
+  min-height: 0 !important;
+  aspect-ratio: 1 / 1.05;
+  padding: 8px 8px 10px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-start !important;
+  align-items: center !important;
+  transition: background .15s, border-color .15s;
+  overflow: hidden;
+  margin-bottom: 0 !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-products-placeholder {
+  color: var(--pos-muted) !important;
+}
+
+body.lockscreen.pos-sale-theme .product_box:hover {
+  background: #333 !important;
+  transform: none !important;
+  box-shadow: none !important;
+  border-color: #4a4a4a !important;
+}
+
+body.lockscreen.pos-sale-theme .product_box .image-container {
+  display: block !important;
+  width: 100% !important;
+  height: 52% !important;
+  min-height: 56px !important;
+  max-height: 90px !important;
+  margin: 0 0 6px !important;
+  border-radius: 4px;
+  background-color: transparent !important;
+  background-size: contain !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  flex: 0 0 auto;
+}
+
+/* No product image — name + price only, no placeholder preview */
+body.lockscreen.pos-sale-theme .product_box.product_box--no-image {
+  justify-content: center !important;
+  padding: 12px 8px 14px !important;
+}
+
+body.lockscreen.pos-sale-theme .product_box.product_box--no-image .image-container {
+  display: none !important;
+}
+
+body.lockscreen.pos-sale-theme .product_box.product_box--no-image .text_div {
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+body.lockscreen.pos-sale-theme .product_box .text_div {
+  margin: 0 !important;
+  width: 100%;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 0;
+}
+
+body.lockscreen.pos-sale-theme .product_box .text_div .text,
+body.lockscreen.pos-sale-theme .product_box .text_div small.text {
+  display: -webkit-box !important;
+  color: #ffffff !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  line-height: 1.3 !important;
+  max-height: 2.6em !important;
+  text-transform: none;
+  letter-spacing: 0;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  text-align: center;
+  width: 100%;
+  word-break: break-word;
+}
+
+body.lockscreen.pos-sale-theme .product_box .product_price {
+  display: block !important;
+  color: #ffffff !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  margin-top: 4px !important;
+  line-height: 1.2 !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+body.lockscreen.pos-sale-theme .product_box .pos-tile-stock {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 2;
+  font-size: 10px;
+  color: #ffffff !important;
+  font-weight: 600;
+  background: rgba(0, 0, 0, 0.45);
+  padding: 2px 5px;
+  border-radius: 3px;
+  line-height: 1.2;
+}
+
+body.lockscreen.pos-sale-theme .product_box,
+body.lockscreen.pos-sale-theme .product_box * {
+  color: #ffffff !important;
+}
+
+body.lockscreen.pos-sale-theme .product_box.product_out_of_stock {
+  opacity: 0.55 !important;
+  background: #1a1a1a !important;
+}
+
+body.lockscreen.pos-sale-theme #featured_products_box .product_box {
+  background: #322b1a !important;
+  border-color: #5a4a20 !important;
+}
+
+body.lockscreen.pos-sale-theme #featured_products_box .product_box:hover {
+  background: #3d3420 !important;
+}
+
+body.lockscreen.pos-sale-theme #featured_products_box .product_box .text_div .text,
+body.lockscreen.pos-sale-theme #featured_products_box .product_box .pos-tile-stock {
+  color: #fff !important;
+}
+
+body.lockscreen.pos-sale-theme #product_list_body {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  height: 100% !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  padding-right: 8px !important;
+  padding-bottom: 96px !important;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: #666 #1a1a1a;
+}
+
+body.lockscreen.pos-sale-theme .pos-products-section > .col-md-12 {
+  overflow: hidden !important;
+  min-height: 0 !important;
+  flex: 1 1 auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+body.lockscreen.pos-sale-theme #product_list_items {
+  padding-bottom: 24px !important;
+  margin-bottom: 0;
+  overflow: visible;
+}
+
+body.lockscreen.pos-sale-theme #product_list_items::after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+body.lockscreen.pos-sale-theme .pos-product-scroll-spacer {
+  display: block;
+  width: 100%;
+  height: 72px;
+  flex: 0 0 72px;
+  pointer-events: none;
+}
+
+body.lockscreen.pos-sale-theme #product_list_body::-webkit-scrollbar,
+body.lockscreen.pos-sale-theme .pos_product_div::-webkit-scrollbar {
+  width: 6px;
+}
+
+body.lockscreen.pos-sale-theme #product_list_body::-webkit-scrollbar-thumb,
+body.lockscreen.pos-sale-theme .pos_product_div::-webkit-scrollbar-thumb {
+  background: #666;
+  border-radius: 3px;
+}
+
+body.lockscreen.pos-sale-theme #product_list_body::-webkit-scrollbar-thumb:hover,
+body.lockscreen.pos-sale-theme .pos_product_div::-webkit-scrollbar-thumb:hover {
+  background: #888;
+}
+
+body.lockscreen.pos-sale-theme #product_list_body::-webkit-scrollbar-track,
+body.lockscreen.pos-sale-theme .pos_product_div::-webkit-scrollbar-track {
+  background: #1a1a1a;
+}
+
+body.lockscreen.pos-sale-theme #no_products_found ~ h4,
+body.lockscreen.pos-sale-theme #product_list_items h4 {
+  color: var(--pos-muted);
+}
+
+body.lockscreen.pos-sale-theme #suggestion_page_loader {
+  display: none !important;
+  flex: 0 0 auto;
+  padding: 6px 0 10px !important;
+  color: #888 !important;
+  background: transparent !important;
+}
+
+body.lockscreen.pos-sale-theme #suggestion_page_loader.is-visible {
+  display: block !important;
+}
+
+body.lockscreen.pos-sale-theme #suggestion_page_loader .fa-spinner {
+  font-size: 18px !important;
+  color: #888 !important;
+}
+/* ── Cart / checkout panel ── */
+body.lockscreen.pos-sale-theme #pos_checkout_wrap > .pos-checkout-inner,
+body.lockscreen.pos-sale-theme #pos_checkout_wrap > div {
+  background: transparent !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  border: 0 !important;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: visible;
+}
+
+body.lockscreen.pos-sale-theme #pos_checkout_wrap .box-body {
+  padding: 0 !important;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  background: transparent !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-cart-panel {
+  background: #1a1a1a !important;
+  border: 1px solid #2a2a2a !important;
+  border-radius: 8px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  height: auto !important;
+  overflow: visible; /* customer dropdown must not clip */
+  padding: 0 !important;
+  position: relative;
+  z-index: 1;
+}
+
+body.lockscreen.pos-sale-theme #pos_checkout_wrap .box-body > .pos-cart-actions {
+  flex: 0 0 auto;
+}
+
+body.lockscreen.pos-sale-theme #pos_checkout_wrap .box-body > .pos-cart-panel {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-cart-panel > .row {
+  margin: 0 !important;
+  padding: 10px 12px 0;
+  flex: 0 0 auto;
+}
+
+/* Cart lines scroll; footer (totals/pay) stays pinned */
+body.lockscreen.pos-sale-theme .pos-cart-panel .pos_product_div,
+body.lockscreen.pos-sale-theme .pos-cart-panel > .row.pos-cart-lines,
+body.lockscreen.pos-sale-theme .pos-cart-panel > .row:last-of-type {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow: auto !important;
+  margin: 0 !important;
+  padding: 0 4px !important;
+  background: #1a1a1a !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-cart-panel > .pos_form_totals {
+  flex: 0 0 auto !important;
+  margin-top: auto !important;
+  position: relative;
+  z-index: 5;
+  width: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  background: #1a1a1a !important;
+  border-top: 1px solid #2a2a2a !important;
+  padding: 8px 10px 12px !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-cart-actions {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+  margin: 0 0 10px;
+  padding: 2px 2px 8px;
+  position: relative;
+  z-index: 1200 !important;
+  overflow: visible !important;
+}
+
+body.lockscreen.pos-sale-theme #pos_checkout_wrap .box-body > .pos-cart-actions {
+  flex: 0 0 auto;
+  position: relative;
+  z-index: 1200 !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-customer-bar {
+  margin: 0 !important;
+  position: relative;
+  z-index: 40;
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-cart-panel > .row:first-of-type {
+  margin: 0 !important;
+  padding: 10px 12px 0 !important;
+  width: 100% !important;
+  display: block !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-cart-panel > .row:first-of-type > [class*="col-"] {
+  width: 100% !important;
+  max-width: 100% !important;
+  float: none !important;
+  padding: 0 !important;
+  display: block !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-customer-bar .input-group {
+  background: #222;
+  border: 1px solid #333;
+  border-radius: 4px;
+  overflow: visible;
+  position: relative;
+  display: flex !important;
+  align-items: center !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-height: 42px;
+}
+
+body.lockscreen.pos-sale-theme .pos-customer-bar .input-group-addon {
+  background: transparent !important;
+  border: 0 !important;
+  color: #8a8a8a !important;
+  flex: 0 0 auto;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 42px !important;
+  min-height: 42px !important;
+  line-height: 1 !important;
+  padding: 0 12px !important;
+  margin: 0 !important;
+  float: none !important;
+  width: auto !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-customer-bar .input-group-addon i {
+  line-height: 1 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  vertical-align: middle !important;
+  height: 1em;
+  width: 1em;
+  position: relative;
+  top: 0 !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-customer-bar .input-group-addon i::before {
+  line-height: 1 !important;
+  vertical-align: middle !important;
+  position: relative;
+  top: 0 !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-customer-bar .input-group-btn {
+  display: none !important; /* add-customer lives in select2 footer */
+}
+
+body.lockscreen.pos-sale-theme .pos-customer-bar .select2-container,
+body.lockscreen.pos-sale-theme .pos-customer-bar .select2-container--default {
+  width: 100% !important;
+  max-width: 100% !important;
+  flex: 1 1 auto !important;
+  display: block !important;
+  position: relative !important;
+  z-index: 2;
+}
+
+body.lockscreen.pos-sale-theme .pos-customer-bar .select2-container .select2-selection {
+  cursor: pointer !important;
+  pointer-events: auto !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-customer-bar .select2-container--default .select2-selection--single,
+body.lockscreen.pos-sale-theme .pos-customer-bar .select2-selection--single {
+  border: 0 !important;
+  background: #222 !important;
+  background-color: #222 !important;
+  height: 42px !important;
+  color: #f2f2f2 !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-customer-bar .select2-selection__rendered {
+  line-height: 42px !important;
+  color: #f2f2f2 !important;
+  padding-left: 4px !important;
+  padding-right: 20px !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-customer-bar .select2-selection__rendered.pos-cust-placeholder-text {
+  color: #9a9a9a !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-customer-bar .select2-selection__placeholder {
+  color: #9a9a9a !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-customer-bar .select2-selection__arrow {
+  height: 42px !important;
+  top: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+body.lockscreen.pos-sale-theme .select2-container--default .select2-search--dropdown .select2-search__field,
+.select2-dropdown.pos-customer-select-dropdown .select2-search__field {
+  background: #2a2a2a !important;
+  background-color: #2a2a2a !important;
+  border: 1px solid #3a3a3a !important;
+  border-radius: 4px !important;
+  color: #fff !important;
+  box-shadow: none !important;
+  outline: none !important;
+  height: 36px !important;
+  padding: 6px 12px !important;
+}
+
+/* In-cart customer dropdown (not a floating page popup) */
+body.lockscreen.pos-sale-theme .pos-customer-bar {
+  position: relative !important;
+  z-index: 80 !important;
+  overflow: visible !important;
+}
+
+body.lockscreen.pos-sale-theme #pos_checkout_wrap,
+body.lockscreen.pos-sale-theme #pos_checkout_wrap > div,
+body.lockscreen.pos-sale-theme #pos_checkout_wrap .box-body,
+body.lockscreen.pos-sale-theme .pos-cart-panel,
+body.lockscreen.pos-sale-theme .pos-checkout-inner,
+body.lockscreen.pos-sale-theme .pos-customer-bar .input-group {
+  overflow: visible !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-customer-bar .select2-dropdown,
+body.lockscreen.pos-sale-theme .select2-dropdown.pos-customer-select-dropdown {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  z-index: 90 !important;
+  position: absolute !important;
+  top: 100% !important;
+  left: 0 !important;
+  margin-top: 4px !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-customer-select-dropdown .select2-search--dropdown {
+  padding: 10px 12px 8px !important;
+  background: #1f1f1f !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-cart-actions button,
+body.lockscreen.pos-sale-theme .pos-cart-actions a,
+body.lockscreen.pos-sale-theme .pos-cart-action-btn {
+  background: none !important;
+  border: 0 !important;
+  color: var(--pos-accent) !important;
+  font-size: 13px !important;
+  padding: 0 !important;
+  cursor: pointer;
+  box-shadow: none !important;
+  line-height: 1.3;
+}
+
+body.lockscreen.pos-sale-theme .pos-cart-actions button:hover,
+body.lockscreen.pos-sale-theme .pos-cart-actions a:hover,
+body.lockscreen.pos-sale-theme .pos-cart-action-btn:hover {
+  color: #6bb0f0 !important;
+  text-decoration: none;
+}
+
+body.lockscreen.pos-sale-theme .pos-cart-action-btn.is-active {
+  color: #fff !important;
+  box-shadow: inset 0 -2px 0 var(--pos-accent);
+  padding-bottom: 2px !important;
+}
+
+/* Retrieve sale — Lightspeed-style parked list panel */
+body.lockscreen.pos-sale-theme .pos-retrieve-panel {
+  display: none;
+  position: absolute;
+  top: calc(100% - 2px);
+  right: 0;
+  left: auto;
+  width: 520px;
+  max-width: min(520px, calc(100vw - 80px));
+  max-height: min(70vh, 520px);
+  overflow: hidden;
+  background: #1c1c1c;
+  border: 1px solid #333;
+  border-radius: 6px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
+  z-index: 1400;
+}
+
+body.lockscreen.pos-sale-theme .pos-retrieve-panel.is-open {
+  display: block;
+}
+
+body.lockscreen.pos-sale-theme .pos-retrieve-sheet {
+  display: flex;
+  flex-direction: column;
+  max-height: min(70vh, 520px);
+  color: #f2f2f2;
+}
+
+body.lockscreen.pos-sale-theme .pos-retrieve-sheet-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px 8px;
+  border-bottom: 1px solid #2e2e2e;
+  flex: 0 0 auto;
+}
+
+body.lockscreen.pos-sale-theme .pos-retrieve-col-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #bdbdbd;
+}
+
+body.lockscreen.pos-sale-theme .pos-retrieve-col-label--cust {
+  margin-left: auto;
+  min-width: 140px;
+  text-align: left;
+}
+
+body.lockscreen.pos-sale-theme .pos-retrieve-sheet-body {
+  overflow-y: auto;
+  flex: 1 1 auto;
+  max-height: min(62vh, 460px);
+  scrollbar-width: thin;
+  scrollbar-color: #666 #1a1a1a;
+}
+
+body.lockscreen.pos-sale-theme .pos-retrieve-row {
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
+  padding: 12px 14px;
+  border-bottom: 1px solid #2a2a2a;
+}
+
+body.lockscreen.pos-sale-theme .pos-retrieve-row:hover {
+  background: #242424;
+}
+
+body.lockscreen.pos-sale-theme .pos-retrieve-sale {
+  display: flex;
+  gap: 10px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+body.lockscreen.pos-sale-theme .pos-retrieve-thumbs {
+  display: grid;
+  grid-template-columns: repeat(2, 28px);
+  grid-template-rows: repeat(2, 28px);
+  gap: 3px;
+  flex: 0 0 auto;
+}
+
+body.lockscreen.pos-sale-theme .pos-retrieve-thumb {
+  width: 28px;
+  height: 28px;
+  border-radius: 3px;
+  background: #fff center/cover no-repeat;
+  display: inline-block;
+}
+
+body.lockscreen.pos-sale-theme .pos-retrieve-thumb--blank {
+  background: #3a3a3a;
+}
+
+body.lockscreen.pos-sale-theme .pos-retrieve-thumb--more {
+  background: #2f2f2f;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+body.lockscreen.pos-sale-theme .pos-retrieve-sale-meta {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+body.lockscreen.pos-sale-theme .pos-retrieve-line {
+  font-size: 12px;
+  color: #f0f0f0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.35;
+}
+
+body.lockscreen.pos-sale-theme .pos-retrieve-line--more,
+body.lockscreen.pos-sale-theme .pos-retrieve-parked,
+body.lockscreen.pos-sale-theme .pos-retrieve-note,
+body.lockscreen.pos-sale-theme .pos-retrieve-customer-sub {
+  font-size: 11px;
+  color: #9a9a9a;
+}
+
+body.lockscreen.pos-sale-theme .pos-retrieve-parked {
+  margin-top: 4px;
+}
+
+body.lockscreen.pos-sale-theme .pos-retrieve-note {
+  margin-top: 2px;
+  font-style: italic;
+}
+
+body.lockscreen.pos-sale-theme .pos-retrieve-customer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 180px;
+  min-width: 160px;
+}
+
+body.lockscreen.pos-sale-theme .pos-retrieve-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: #111;
+  flex-shrink: 0;
+}
+
+body.lockscreen.pos-sale-theme .pos-retrieve-customer-meta {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+body.lockscreen.pos-sale-theme .pos-retrieve-customer-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+body.lockscreen.pos-sale-theme .pos-retrieve-open,
+body.lockscreen.pos-sale-theme .pos-retrieve-delete {
+  color: #bdbdbd !important;
+  padding: 4px !important;
+  font-size: 13px !important;
+  flex-shrink: 0;
+}
+
+body.lockscreen.pos-sale-theme .pos-retrieve-open:hover {
+  color: var(--pos-accent) !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-retrieve-delete:hover {
+  color: #ef5350 !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-retrieve-empty {
+  text-align: center;
+  color: #9a9a9a;
+  padding: 28px 12px;
+  margin: 0;
+}
+
+body.lockscreen.pos-sale-theme .pos-more-actions-dropdown {
+  position: relative;
+  display: inline-block;
+  z-index: 1210;
+}
+
+body.lockscreen.pos-sale-theme .pos-more-actions-dropdown.open {
+  z-index: 1300;
+}
+
+body.lockscreen.pos-sale-theme .pos-more-menu,
+body.lockscreen.pos-sale-theme .pos-more-actions-dropdown.open > .dropdown-menu.pos-more-menu {
+  background: #252525 !important;
+  background-color: #252525 !important;
+  border: 1px solid #444 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.75) !important;
+  padding: 6px 0 !important;
+  min-width: 230px;
+  margin-top: 6px !important;
+  z-index: 1300 !important;
+  position: absolute !important;
+  right: 0 !important;
+  left: auto !important;
+  top: 100% !important;
+  opacity: 1 !important;
+  filter: none !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-more-menu > li > a.pos-more-item,
+body.lockscreen.pos-sale-theme .pos-more-menu > li > a {
+  color: #ffffff !important;
+  font-size: 13.5px !important;
+  padding: 10px 16px !important;
+  background: transparent !important;
+  display: block;
+  white-space: nowrap;
+  opacity: 1 !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-more-menu > li > a:hover,
+body.lockscreen.pos-sale-theme .pos-more-menu > li > a:focus {
+  background: #333 !important;
+  color: #ffffff !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-more-menu > li > a.pos-more-item--danger {
+  color: #ff6b6b !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-more-menu .pos-more-divider,
+body.lockscreen.pos-sale-theme .pos-more-menu .divider {
+  background: #3a3a3a !important;
+  margin: 4px 0 !important;
+  height: 1px;
+  overflow: hidden;
+}
+
+/* Cart summary like screenshot */
+body.lockscreen.pos-sale-theme .pos_form_totals .pos_totals_left {
+  display: flex !important;
+  flex-direction: column !important;
+  flex-wrap: nowrap !important;
+  gap: 0 !important;
+  background: transparent !important;
+  order: 1;
+  padding: 4px 12px 8px;
+  border-top: 1px solid var(--pos-border);
+}
+
+body.lockscreen.pos-sale-theme .pos_form_totals .pos_totals_cell {
+  flex: none !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  background: transparent !important;
+  flex-direction: row !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  padding: 7px 0 !important;
+  border: 0 !important;
+}
+
+body.lockscreen.pos-sale-theme .pos_form_totals .pos_totals_label {
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  color: var(--pos-muted) !important;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+  text-align: left !important;
+}
+
+body.lockscreen.pos-sale-theme .pos_form_totals .pos_totals_value {
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: var(--pos-text) !important;
+}
+
+body.lockscreen.pos-sale-theme .pos_form_totals .pos_totals_cell:first-child {
+  display: none !important; /* hide item count cell; shown on Pay button */
+}
+
+/* Show Subtotal / Discount / Tax only in cart footer summary */
+body.lockscreen.pos-sale-theme .pos_form_totals .pos_totals_left > .pos_totals_cell:nth-child(4),
+body.lockscreen.pos-sale-theme .pos_form_totals .pos_totals_left > .pos_totals_cell:nth-child(n+6) {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  overflow: hidden !important;
+  clip: rect(0,0,0,0) !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  border: 0 !important;
+}
+
+body.lockscreen.pos-sale-theme .pos_form_totals .pos-add-row {
+  order: 0;
+}
+
+body.lockscreen.pos-sale-theme .pos_form_totals .pos-pay-cta {
+  order: 3;
+  margin: 8px 0 0;
+  width: 100%;
+  display: flex !important;
+  background: #3b8ddd !important;
+  border-color: #2f7bc4 !important;
+  color: #fff !important;
+  pointer-events: auto !important;
+  z-index: 20;
+}
+
+body.lockscreen.pos-sale-theme .pos_form_totals {
+  flex-direction: column !important;
+  background: #1a1a1a !important;
+  border-top: 1px solid #2a2a2a !important;
+  display: flex !important;
+}
+
+/* Cart table rows cleaner */
+body.lockscreen.pos-sale-theme .pos-empty-state-row .tw-bg-slate-100 {
+  background: #252525 !important;
+}
+body.lockscreen.pos-sale-theme .pos-empty-state-row .tw-text-slate-400,
+body.lockscreen.pos-sale-theme .pos-empty-state-row .tw-text-slate-600 {
+  color: #8a8a8a !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-empty-state-row td,
+body.lockscreen.pos-sale-theme .pos-empty-td,
+body.lockscreen.pos-sale-theme .pos-empty-cart {
+  background: #1a1a1a !important;
+  background-color: #1a1a1a !important;
+  border: 0 !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-empty-state-row .tw-rounded-full,
+body.lockscreen.pos-sale-theme .pos-empty-cart-icon {
+  background: #252525 !important;
+  color: #777 !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-empty-cart-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #cfcfcf !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-empty-cart-sub {
+  font-size: 13px;
+  color: #8a8a8a !important;
+  line-height: 1.45;
+  max-width: 16rem;
+}
+
+body.lockscreen.pos-sale-theme #pos_table,
+body.lockscreen.pos-sale-theme #pos_table > tbody,
+body.lockscreen.pos-sale-theme #pos_table > thead,
+body.lockscreen.pos-sale-theme #pos_table > tbody > tr,
+body.lockscreen.pos-sale-theme #pos_table > tbody > tr > td,
+body.lockscreen.pos-sale-theme #pos_table > thead > tr > th {
+  background: #1a1a1a !important;
+  background-color: #1a1a1a !important;
+  color: #f2f2f2 !important;
+  border-color: #2a2a2a !important;
+}
+
+/* Hide secondary cart meta rows (keep in DOM for features) */
+body.lockscreen.pos-sale-theme .pos-cart-panel > .row:nth-of-type(2) {
+  display: none !important;
+}
+
+body.lockscreen.pos-sale-theme #pos_table.pos-has-rows thead {
+  display: none !important;
+}
+
+body.lockscreen.pos-sale-theme #pos_table > tbody > tr.product_row > td {
+  border-bottom: 1px solid var(--pos-border) !important;
+  padding: 12px 6px !important;
+}
+
+body.lockscreen.pos-sale-theme #pos_table .product_row img {
+  display: none !important;
+}
+
+body.lockscreen.pos-sale-theme #pos_table .text-link,
+body.lockscreen.pos-sale-theme #pos_table .text-info,
+body.lockscreen.pos-sale-theme #pos_table td span.tw-font-semibold {
+  text-transform: none;
+  color: #ffffff !important;
+  font-size: 13px !important;
+}
+
+body.lockscreen.pos-sale-theme #add_pos_sell_form .form-control,
+body.lockscreen.pos-sale-theme #add_pos_sell_form .input-group-addon,
+body.lockscreen.pos-sale-theme #add_pos_sell_form .input-group-btn .btn,
+body.lockscreen.pos-sale-theme #edit_pos_sell_form .form-control,
+body.lockscreen.pos-sale-theme #edit_pos_sell_form .input-group-addon,
+body.lockscreen.pos-sale-theme #edit_pos_sell_form .input-group-btn .btn {
+  background: var(--pos-input) !important;
+  border-color: var(--pos-border) !important;
+  color: var(--pos-text) !important;
+  box-shadow: none !important;
+}
+
+body.lockscreen.pos-sale-theme #customer_id + .select2-container .select2-selection--single,
+body.lockscreen.pos-sale-theme .select2-container--default .select2-selection--single {
+  background: #222 !important;
+  background-color: #222 !important;
+  border-color: #333 !important;
+  color: #f2f2f2 !important;
+  height: 42px;
+}
+
+body.lockscreen.pos-sale-theme .select2-container--default .select2-selection--single .select2-selection__rendered {
+  color: var(--pos-text) !important;
+  line-height: 36px;
+}
+
+body.lockscreen.pos-sale-theme .select2-container--default .select2-selection--single .select2-selection__placeholder {
+  color: var(--pos-muted) !important;
+}
+
+body.lockscreen.pos-sale-theme .select2-dropdown {
+  background: var(--pos-panel-2) !important;
+  border-color: var(--pos-border) !important;
+  color: var(--pos-text) !important;
+}
+
+body.lockscreen.pos-sale-theme .select2-results__option {
+  color: var(--pos-text);
+}
+
+body.lockscreen.pos-sale-theme .select2-container--default .select2-results__option--highlighted[aria-selected] {
+  background: var(--pos-accent) !important;
+}
+
+/* Customer search dropdown — Lightspeed in-cart style */
+body.lockscreen.pos-sale-theme .pos-customer-select-dropdown,
+.select2-dropdown.pos-customer-select-dropdown {
+  background: #1f1f1f !important;
+  border: 1px solid #333 !important;
+  border-radius: 6px !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.65) !important;
+  overflow: hidden;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+  max-width: none !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-customer-select-dropdown .select2-results > .select2-results__options,
+.select2-dropdown.pos-customer-select-dropdown .select2-results > .select2-results__options {
+  max-height: 280px !important;
+  overflow-y: auto !important;
+  background: #1f1f1f !important;
+}
+
+/* Dark scrollbar inside customer list + cart */
+body.lockscreen.pos-sale-theme .pos-customer-select-dropdown .select2-results__options::-webkit-scrollbar,
+body.lockscreen.pos-sale-theme .pos-cart-panel .pos_product_div::-webkit-scrollbar,
+body.lockscreen.pos-sale-theme .pos-cart-lines::-webkit-scrollbar {
+  width: 6px;
+  background: transparent;
+}
+
+body.lockscreen.pos-sale-theme .pos-customer-select-dropdown .select2-results__options::-webkit-scrollbar-thumb,
+body.lockscreen.pos-sale-theme .pos-cart-panel .pos_product_div::-webkit-scrollbar-thumb,
+body.lockscreen.pos-sale-theme .pos-cart-lines::-webkit-scrollbar-thumb {
+  background: #444;
+  border-radius: 3px;
+}
+
+body.lockscreen.pos-sale-theme .pos-customer-select-dropdown .select2-results__options::-webkit-scrollbar-track,
+body.lockscreen.pos-sale-theme .pos-cart-panel .pos_product_div::-webkit-scrollbar-track,
+body.lockscreen.pos-sale-theme .pos-cart-lines::-webkit-scrollbar-track {
+  background: #1a1a1a;
+}
+
+body.lockscreen.pos-sale-theme #pos_checkout_wrap,
+body.lockscreen.pos-sale-theme .pos-cart-panel,
+body.lockscreen.pos-sale-theme .pos-cart-lines,
+body.lockscreen.pos-sale-theme .pos_product_div {
+  scrollbar-color: #444 #1a1a1a;
+  scrollbar-width: thin;
+}
+
+body.lockscreen.pos-sale-theme .pos-customer-select-dropdown .select2-results__option,
+.select2-dropdown.pos-customer-select-dropdown .select2-results__option {
+  padding: 0 !important;
+  background: transparent !important;
+  color: #fff !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-customer-select-dropdown .select2-results__option--highlighted,
+body.lockscreen.pos-sale-theme .pos-customer-select-dropdown .select2-results__option[aria-selected=true],
+.select2-dropdown.pos-customer-select-dropdown .select2-results__option--highlighted {
+  background: #2a2a2a !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-cust-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+}
+
+body.lockscreen.pos-sale-theme .pos-cust-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #111;
+  flex-shrink: 0;
+}
+
+body.lockscreen.pos-sale-theme .pos-cust-meta {
+  min-width: 0;
+  flex: 1;
+}
+
+body.lockscreen.pos-sale-theme .pos-cust-name {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #fff;
+  line-height: 1.3;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+body.lockscreen.pos-sale-theme .pos-cust-tag {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 600;
+  color: #cfcfcf;
+  background: #3a3a3a;
+  border-radius: 999px;
+  padding: 2px 8px;
+  text-transform: none;
+}
+
+body.lockscreen.pos-sale-theme .pos-cust-sub {
+  font-size: 12px;
+  color: #9a9a9a;
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── In-cart customer picker (Lightspeed — not a floating popup) ── */
+body.lockscreen.pos-sale-theme .pos-customer-bar {
+  position: relative !important;
+  z-index: 40;
+  margin-bottom: 0 !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-customer-picker {
+  display: none;
+  flex-direction: column;
+  width: 100%;
+  margin-top: 8px;
+  background: #1f1f1f;
+  border: 1px solid #333;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45);
+  position: relative;
+  z-index: 50;
+}
+
+body.lockscreen.pos-sale-theme .pos-customer-picker.is-open {
+  display: flex !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-customer-bar .select2-container,
+body.lockscreen.pos-sale-theme .pos-customer-bar .select2-selection {
+  cursor: pointer !important;
+  pointer-events: auto !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-customer-picker-search {
+  padding: 10px 12px 8px;
+  background: #1f1f1f;
+  border-bottom: 1px solid #2a2a2a;
+}
+
+body.lockscreen.pos-sale-theme .pos-customer-picker-input {
+  width: 100% !important;
+  height: 36px !important;
+  padding: 6px 12px !important;
+  background: #2a2a2a !important;
+  border: 1px solid #3a3a3a !important;
+  border-radius: 4px !important;
+  color: #fff !important;
+  font-size: 13px !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-customer-picker-input::placeholder {
+  color: #888 !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-customer-picker-input:focus {
+  border-color: #555 !important;
+  background: #303030 !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-customer-picker-list {
+  max-height: 280px;
+  overflow-y: auto;
+  background: #1f1f1f;
+  scrollbar-color: #444 #1a1a1a;
+  scrollbar-width: thin;
+}
+
+body.lockscreen.pos-sale-theme .pos-customer-picker-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+body.lockscreen.pos-sale-theme .pos-customer-picker-list::-webkit-scrollbar-thumb {
+  background: #444;
+  border-radius: 3px;
+}
+
+body.lockscreen.pos-sale-theme .pos-customer-picker-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 14px;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid #2a2a2a;
+  text-align: left;
+  cursor: pointer;
+  color: #fff;
+}
+
+body.lockscreen.pos-sale-theme .pos-customer-picker-item:hover,
+body.lockscreen.pos-sale-theme .pos-customer-picker-item:focus {
+  background: #2a2a2a;
+  outline: none;
+}
+
+body.lockscreen.pos-sale-theme .pos-customer-picker-loading,
+body.lockscreen.pos-sale-theme .pos-customer-picker-empty {
+  padding: 16px 14px;
+  color: #8a8a8a;
+  font-size: 13px;
+  text-align: center;
+}
+
+body.lockscreen.pos-sale-theme .pos-customer-picker-footer {
+  border-top: 1px solid #333;
+  padding: 10px 14px;
+  background: #1a1a1a;
+}
+
+body.lockscreen.pos-sale-theme .pos-customer-bar.is-picking .select2-selection--single {
+  border-color: #3b8ddd !important;
+}
+
+/* Hide Select2 dropdown entirely on POS — picker replaces it */
+body.lockscreen.pos-sale-theme .pos-customer-bar .select2-dropdown,
+body.lockscreen.pos-sale-theme .select2-dropdown.pos-customer-select-dropdown {
+  display: none !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-cust-add-btn,
+body.lockscreen.pos-sale-theme .pos-customer-select-dropdown .add_new_customer,
+.select2-dropdown.pos-customer-select-dropdown .add_new_customer {
+  color: #3b8ddd !important;
+  font-size: 13.5px !important;
+  font-weight: 600 !important;
+  padding: 4px 0 !important;
+  text-decoration: none !important;
+  display: inline-flex !important;
+  align-items: center;
+  gap: 6px;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-cust-add-btn:hover,
+body.lockscreen.pos-sale-theme .pos-customer-select-dropdown .add_new_customer:hover {
+  color: #6bb0f0 !important;
+  text-decoration: underline !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-cust-add-btn,
+body.lockscreen.pos-sale-theme .pos-customer-select-dropdown .add_new_customer,
+.select2-dropdown.pos-customer-select-dropdown .add_new_customer {
+  color: var(--pos-accent) !important;
+  font-size: 13.5px !important;
+  font-weight: 600 !important;
+  padding: 6px 4px !important;
+  text-decoration: none !important;
+  display: inline-flex !important;
+  align-items: center;
+  gap: 6px;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  white-space: normal;
+  text-align: left;
+  width: 100%;
+}
+
+body.lockscreen.pos-sale-theme .pos-cust-add-btn:hover,
+body.lockscreen.pos-sale-theme .pos-customer-select-dropdown .add_new_customer:hover {
+  color: #6bb0f0 !important;
+  text-decoration: underline !important;
+}
+
+body.lockscreen.pos-sale-theme #pos_checkout_wrap .form-group .input-group {
+  background: #222 !important;
+  border: 1px solid #333 !important;
+  border-radius: 6px;
+  overflow: visible;
+}
+
+body.lockscreen.pos-sale-theme #pos_checkout_wrap #customer_id + .select2-container {
+  width: 100% !important;
+}
+
+body.lockscreen.pos-sale-theme #pos_checkout_wrap .form-group .input-group .input-group-addon {
+  background: transparent !important;
+  border: 0 !important;
+  color: var(--pos-muted) !important;
+}
+
+body.lockscreen.pos-sale-theme #pos_checkout_wrap .form-group .input-group .input-group-btn .btn {
+  background: transparent !important;
+  border: 0 !important;
+  color: var(--pos-accent) !important;
+  box-shadow: none !important;
+}
+
+body.lockscreen.pos-sale-theme #pos_checkout_wrap .form-group .input-group .select2-selection--single {
+  border: 0 !important;
+  background: #222 !important;
+  background-color: #222 !important;
+  height: 42px !important;
+  color: #f2f2f2 !important;
+}
+
+body.lockscreen.pos-sale-theme #pos_checkout_wrap .form-group .input-group .select2-selection__rendered {
+  line-height: 42px !important;
+  padding-left: 4px !important;
+  color: #f2f2f2 !important;
+}
+
+body.lockscreen.pos-sale-theme #pos_table {
+  background: #1a1a1a !important;
+  color: #ffffff;
+  margin-bottom: 0;
+  table-layout: fixed !important;
+  width: 100% !important;
+}
+
+body.lockscreen.pos-sale-theme #pos_table thead th,
+body.lockscreen.pos-sale-theme #pos_table .pos-th-product,
+body.lockscreen.pos-sale-theme #pos_table .pos-th-qty,
+body.lockscreen.pos-sale-theme #pos_table .pos-th-price,
+body.lockscreen.pos-sale-theme #pos_table .pos-th-subtotal,
+body.lockscreen.pos-sale-theme #pos_table .pos-th-action,
+body.lockscreen.pos-sale-theme #pos_table .pos-th-staff {
+  background: var(--pos-panel) !important;
+  color: #ffffff !important;
+  border-color: var(--pos-border) !important;
+}
+
+body.lockscreen.pos-sale-theme #pos_table > tbody > tr > td {
+  background: transparent !important;
+  border-color: #2a2a2a !important;
+  color: #ffffff !important;
+  vertical-align: middle !important;
+  padding: 10px 6px !important;
+}
+
+body.lockscreen.pos-sale-theme #pos_table > tbody > tr.product_row {
+  border-left: 3px solid transparent;
+}
+
+body.lockscreen.pos-sale-theme #pos_table > tbody > tr.product_row:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+body.lockscreen.pos-sale-theme #pos_table > tbody > tr.product_row:focus-within,
+body.lockscreen.pos-sale-theme #pos_table > tbody > tr.product_row.is-selected {
+  border-left-color: var(--pos-accent);
+  background: rgba(59, 141, 221, 0.08);
+}
+
+/* Cart line: name | qty | price | delete */
+body.lockscreen.pos-sale-theme #pos_table > tbody > tr.product_row > td:first-child {
+  width: 42% !important;
+  padding-left: 8px !important;
+}
+
+body.lockscreen.pos-sale-theme #pos_table > tbody > tr.product_row > td:nth-child(2) {
+  width: 28% !important;
+  text-align: center !important;
+}
+
+body.lockscreen.pos-sale-theme #pos_table > tbody > tr.product_row > td.pos_line_total_td,
+body.lockscreen.pos-sale-theme #pos_table > tbody > tr.product_row > td:nth-last-child(2) {
+  width: 18% !important;
+  text-align: right !important;
+  white-space: nowrap;
+}
+
+body.lockscreen.pos-sale-theme #pos_table > tbody > tr.product_row > td:last-child {
+  width: 40px !important;
+  text-align: center !important;
+  padding-right: 4px !important;
+}
+
+body.lockscreen.pos-sale-theme #pos_table .product_row > td > div[style*="display:flex"] {
+  align-items: center !important;
+  gap: 0 !important;
+}
+
+body.lockscreen.pos-sale-theme #pos_table .text-link,
+body.lockscreen.pos-sale-theme #pos_table .text-info,
+body.lockscreen.pos-sale-theme #pos_table td span.tw-font-semibold,
+body.lockscreen.pos-sale-theme #pos_table .tw-font-semibold {
+  text-transform: none !important;
+  color: #ffffff !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  line-height: 1.3 !important;
+}
+
+body.lockscreen.pos-sale-theme #pos_table .tw-text-slate-400,
+body.lockscreen.pos-sale-theme #pos_table .text-muted,
+body.lockscreen.pos-sale-theme #pos_table .pos-unit-label,
+body.lockscreen.pos-sale-theme #pos_table .tw-text-\[11px\] {
+  color: rgba(255, 255, 255, 0.72) !important;
+}
+
+body.lockscreen.pos-sale-theme #pos_table .pos-unit-label {
+  display: none !important;
+}
+
+body.lockscreen.pos-sale-theme #pos_table .pos_remove_row {
+  background: transparent !important;
+  color: #ffffff !important;
+  width: 28px !important;
+  height: 28px !important;
+  opacity: 0.75;
+}
+
+body.lockscreen.pos-sale-theme #pos_table .pos_remove_row:hover {
+  color: #ff6b6b !important;
+  background: rgba(239, 83, 80, 0.15) !important;
+  opacity: 1;
+}
+
+body.lockscreen.pos-sale-theme #pos_table .input-number {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: auto !important;
+  max-width: 100%;
+  margin: 0 auto;
+  vertical-align: middle;
+}
+
+body.lockscreen.pos-sale-theme #pos_table .input-number .input-group-btn {
+  display: table-cell !important;
+  width: auto !important;
+  visibility: visible !important;
+}
+
+body.lockscreen.pos-sale-theme #pos_table .input-number .input-group-btn.!tw-hidden,
+body.lockscreen.pos-sale-theme #pos_table .input-number .\!tw-hidden {
+  display: table-cell !important;
+}
+
+body.lockscreen.pos-sale-theme #pos_table .quantity-down,
+body.lockscreen.pos-sale-theme #pos_table .quantity-up {
+  background: #2a2a2a !important;
+  border: 1px solid #3a3a3a !important;
+  color: #ffffff !important;
+  width: 28px !important;
+  height: 28px !important;
+  padding: 0 !important;
+  line-height: 26px !important;
+  border-radius: 4px !important;
+}
+
+body.lockscreen.pos-sale-theme #pos_table .quantity-down i,
+body.lockscreen.pos-sale-theme #pos_table .quantity-up i {
+  color: #ffffff !important;
+}
+
+body.lockscreen.pos-sale-theme #pos_table .pos_quantity {
+  background: #222 !important;
+  border: 1px solid #3a3a3a !important;
+  color: #ffffff !important;
+  width: 42px !important;
+  min-width: 42px !important;
+  height: 28px !important;
+  padding: 0 4px !important;
+  text-align: center !important;
+  font-weight: 700 !important;
+  font-size: 13px !important;
+}
+
+body.lockscreen.pos-sale-theme #pos_table .pos_unit_price_inc_tax,
+body.lockscreen.pos-sale-theme #pos_table .pos_line_total,
+body.lockscreen.pos-sale-theme #pos_table .pos_line_total_text,
+body.lockscreen.pos-sale-theme #pos_table .display_currency,
+body.lockscreen.pos-sale-theme #pos_table td .display_currency,
+body.lockscreen.pos-sale-theme #pos_table td span.pos_line_total_text {
+  background: transparent !important;
+  border: 0 !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  opacity: 1 !important;
+  font-weight: 700 !important;
+  font-size: 14px !important;
+  text-align: right !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+  width: auto !important;
+  min-width: 3.5em;
+  display: inline-block !important;
+  visibility: visible !important;
+}
+
+body.lockscreen.pos-sale-theme #pos_table input.pos_unit_price_inc_tax,
+body.lockscreen.pos-sale-theme #pos_table input.pos_line_total {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  caret-color: #ffffff;
+}
+
+body.lockscreen.pos-sale-theme #pos_table input.pos_unit_price_inc_tax[readonly],
+body.lockscreen.pos-sale-theme #pos_table input.pos_line_total[readonly],
+body.lockscreen.pos-sale-theme #pos_table input.pos_unit_price_inc_tax:disabled,
+body.lockscreen.pos-sale-theme #pos_table input.pos_line_total:disabled {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  opacity: 1 !important;
+}
+
+body.lockscreen.pos-sale-theme #pos_table .pos_line_total[type="hidden"] {
+  display: none !important;
+}
+
+body.lockscreen.pos-sale-theme #pos_table .pos_line_total_text {
+  pointer-events: none;
+}
+
+body.lockscreen.pos-sale-theme .pos-empty-state-row .tw-bg-slate-100 {
+  background: #2a2a2a !important;
+  color: #ffffff !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-empty-state-row .tw-text-slate-600 {
+  color: #ffffff !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-empty-state-row .tw-text-slate-400 {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+/* Totals */
+body.lockscreen.pos-sale-theme .pos_form_totals {
+  background: var(--pos-panel) !important;
+  border-top: 0 !important;
+}
+
+body.lockscreen.pos-sale-theme .pos_form_totals .pos_totals_left {
+  background: transparent !important;
+}
+
+body.lockscreen.pos-sale-theme .pos_form_totals .pos_totals_cell {
+  background: transparent !important;
+}
+
+body.lockscreen.pos-sale-theme .pos_form_totals .pos_totals_label {
+  color: var(--pos-muted) !important;
+}
+
+body.lockscreen.pos-sale-theme .pos_form_totals .pos_totals_value,
+body.lockscreen.pos-sale-theme .pos_form_totals .pos_totals_right_value,
+body.lockscreen.pos-sale-theme .pos_form_totals .pos_totals_right_label {
+  color: var(--pos-text) !important;
+}
+
+body.lockscreen.pos-sale-theme .pos_form_totals .pos_totals_right {
+  background: var(--pos-panel) !important;
+  border-top: 1px solid var(--pos-border);
+}
+
+body.lockscreen.pos-sale-theme .pos_form_totals .pos_totals_edit {
+  color: var(--pos-accent) !important;
+}
+
+/* Footer actions — keep for JS, hide chrome (Pay lives in cart) */
+body.lockscreen.pos-sale-theme .pos-form-actions {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  border: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  left: -9999px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-ls-drafts-slot .pos-drafts-header-btn {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  width: 32px !important;
+  height: 32px !important;
+  color: #cfcfcf !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-ls-drafts-slot .pos-drafts-header-btn svg {
+  color: #cfcfcf !important;
+  stroke: #cfcfcf !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-form-actions .pos-footer-divider {
+  background: var(--pos-border) !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-form-actions button,
+body.lockscreen.pos-sale-theme .pos-form-actions .tw-text-gray-700 {
+  color: #cfcfcf !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-form-actions .js-pos-cancel {
+  background: transparent !important;
+  border-color: #5a3030 !important;
+  color: #f07178 !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-form-actions .pos-finalize {
+  background: #2a2a2a !important;
+  border: 1px solid #3d5a80 !important;
+  color: #fff !important;
+  min-width: 10rem;
+  font-size: 15px !important;
+  padding: 10px 16px !important;
+  border-radius: 6px !important;
+  display: inline-flex !important;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+body.lockscreen.pos-sale-theme .pos-form-actions .pos-express-finalize[data-pay_method="cash"] {
+  background: #1f3d2f !important;
+  border: 1px solid #2e7d4f;
+}
+
+body.lockscreen.pos-sale-theme .pos-form-actions #recent-transactions {
+  background: var(--pos-panel-2) !important;
+  color: #fff !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-pay-cta {
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  align-items: center;
+  justify-content: space-between;
+  width: 100% !important;
+  background: #3b8ddd !important;
+  border: 1px solid #2f7bc4 !important;
+  border-radius: 4px;
+  padding: 14px 18px;
+  color: #fff !important;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  margin: 8px 0 0;
+  transition: background .15s, border-color .15s;
+  position: relative;
+  z-index: 20;
+  pointer-events: auto !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-form-actions .pos-finalize {
+  display: none !important;
+}
+
+@media (max-width: 767px) {
+  body.lockscreen.pos-sale-theme .pos-form-actions .\!tw-w-full.md\:\!tw-hidden .pos-finalize {
+    display: none !important;
+  }
+  body.lockscreen.pos-sale-theme .pos_form_totals .pos-pay-cta {
+    display: flex !important;
+  }
+}
+
+body.lockscreen.pos-sale-theme .pos-pay-cta:hover {
+  background: #4a9aeb !important;
+  border-color: #4a9aeb !important;
+  color: #fff !important;
+  text-decoration: none;
+}
+
+body.lockscreen.pos-sale-theme .pos-pay-cta .pos-pay-label {
+  font-size: 22px;
+  letter-spacing: 0.01em;
+}
+
+body.lockscreen.pos-sale-theme .pos-pay-cta .pos-pay-amount {
+  font-size: 22px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Hide cart-area search when mirrored into product panel */
+body.lockscreen.pos-sale-theme .pos-cart-search-legacy {
+  display: none !important;
+}
+
+/* UI autocomplete */
+body.lockscreen.pos-sale-theme .ui-autocomplete {
+  background: var(--pos-panel-2) !important;
+  border: 1px solid var(--pos-border) !important;
+  color: var(--pos-text) !important;
+}
+
+body.lockscreen.pos-sale-theme .ui-menu-item > div,
+body.lockscreen.pos-sale-theme .ui-menu-item-wrapper {
+  color: var(--pos-text) !important;
+}
+
+body.lockscreen.pos-sale-theme .ui-state-active,
+body.lockscreen.pos-sale-theme .ui-menu-item-wrapper.ui-state-active {
+  background: var(--pos-accent) !important;
+  border-color: var(--pos-accent) !important;
+  color: #fff !important;
+}
+
+/* Modals — centered + white text (Retrieve / Park / Payment / generic) */
+body.lockscreen.pos-sale-theme .modal {
+  z-index: 10600 !important;
+}
+
+body.lockscreen.pos-sale-theme .modal-backdrop {
+  z-index: 10590 !important;
+}
+
+body.lockscreen.pos-sale-theme .modal.in,
+body.lockscreen.pos-sale-theme .modal.show {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 16px !important;
+  pointer-events: auto !important;
+}
+
+body.lockscreen.pos-sale-theme .modal.in .modal-dialog,
+body.lockscreen.pos-sale-theme .modal.show .modal-dialog,
+body.lockscreen.pos-sale-theme .view_modal .modal-dialog,
+body.lockscreen.pos-sale-theme #confirmSuspendModal .modal-dialog,
+body.lockscreen.pos-sale-theme #modal_payment .modal-dialog {
+  margin: 0 auto !important;
+  float: none !important;
+  transform: none !important;
+  max-height: calc(100vh - 40px);
+  position: relative;
+  z-index: 10601 !important;
+  pointer-events: auto !important;
+}
+
+body.lockscreen.pos-sale-theme #confirmSuspendModal .modal-content,
+body.lockscreen.pos-sale-theme #confirmSuspendModal .modal-footer,
+body.lockscreen.pos-sale-theme #confirmSuspendModal #pos-suspend,
+body.lockscreen.pos-sale-theme #modal_payment .modal-content,
+body.lockscreen.pos-sale-theme #modal_payment .modal-footer,
+body.lockscreen.pos-sale-theme #modal_payment .modal-body {
+  pointer-events: auto !important;
+  position: relative;
+  z-index: 10602 !important;
+}
+
+body.lockscreen.pos-sale-theme .modal-content,
+body.lockscreen.pos-sale-theme .view_modal .modal-content,
+body.lockscreen.pos-sale-theme #confirmSuspendModal .modal-content,
+body.lockscreen.pos-sale-theme #modal_payment .modal-content {
+  background: #1e1e1e !important;
+  color: #ffffff !important;
+  border: 1px solid #3a3a3a !important;
+  border-radius: 8px !important;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.65) !important;
+}
+
+body.lockscreen.pos-sale-theme .modal-header,
+body.lockscreen.pos-sale-theme .modal-footer,
+body.lockscreen.pos-sale-theme .view_modal .modal-header,
+body.lockscreen.pos-sale-theme .view_modal .modal-footer,
+body.lockscreen.pos-sale-theme #confirmSuspendModal .modal-header,
+body.lockscreen.pos-sale-theme #confirmSuspendModal .modal-footer {
+  border-color: #333 !important;
+  background: #1a1a1a !important;
+}
+
+body.lockscreen.pos-sale-theme .modal-title,
+body.lockscreen.pos-sale-theme .modal-body,
+body.lockscreen.pos-sale-theme .modal-body p,
+body.lockscreen.pos-sale-theme .modal-body label,
+body.lockscreen.pos-sale-theme .modal-body .form-group > label,
+body.lockscreen.pos-sale-theme .view_modal,
+body.lockscreen.pos-sale-theme .view_modal .modal-title,
+body.lockscreen.pos-sale-theme .view_modal .modal-body,
+body.lockscreen.pos-sale-theme .view_modal .modal-body p,
+body.lockscreen.pos-sale-theme .view_modal .text-center,
+body.lockscreen.pos-sale-theme #confirmSuspendModal .modal-title,
+body.lockscreen.pos-sale-theme #confirmSuspendModal .modal-body,
+body.lockscreen.pos-sale-theme #confirmSuspendModal label {
+  color: #ffffff !important;
+}
+
+body.lockscreen.pos-sale-theme .modal-body .form-control,
+body.lockscreen.pos-sale-theme .modal-body .input-group-addon,
+body.lockscreen.pos-sale-theme #confirmSuspendModal textarea.form-control,
+body.lockscreen.pos-sale-theme .view_modal .form-control {
+  background: #2a2a2a !important;
+  border-color: #444 !important;
+  color: #ffffff !important;
+}
+
+body.lockscreen.pos-sale-theme .modal-body .form-control::placeholder,
+body.lockscreen.pos-sale-theme #confirmSuspendModal textarea.form-control::placeholder {
+  color: #999 !important;
+}
+
+body.lockscreen.pos-sale-theme .close,
+body.lockscreen.pos-sale-theme .modal .close,
+body.lockscreen.pos-sale-theme .view_modal .close {
+  color: #ffffff !important;
+  opacity: 0.85 !important;
+  text-shadow: none !important;
+}
+
+body.lockscreen.pos-sale-theme .close:hover,
+body.lockscreen.pos-sale-theme .view_modal .close:hover {
+  opacity: 1 !important;
+  color: #ffffff !important;
+}
+
+body.lockscreen.pos-sale-theme .modal-backdrop.in {
+  opacity: 0.65 !important;
+}
+
+/* Payment modal — full dark, no white panels */
+body.lockscreen.pos-sale-theme #modal_payment .modal-header,
+body.lockscreen.pos-sale-theme #modal_payment .modal-footer {
+  background: #1a1a1a !important;
+  border-color: #333 !important;
+}
+
+body.lockscreen.pos-sale-theme #modal_payment .modal-body {
+  background: #1e1e1e !important;
+  color: #f2f2f2 !important;
+}
+
+body.lockscreen.pos-sale-theme #modal_payment .modal-title,
+body.lockscreen.pos-sale-theme #modal_payment .modal-body,
+body.lockscreen.pos-sale-theme #modal_payment .modal-body strong,
+body.lockscreen.pos-sale-theme #modal_payment .modal-body label,
+body.lockscreen.pos-sale-theme #modal_payment .modal-body p,
+body.lockscreen.pos-sale-theme #modal_payment .modal-body span,
+body.lockscreen.pos-sale-theme #modal_payment .lead,
+body.lockscreen.pos-sale-theme #modal_payment .text-bold {
+  color: #ffffff !important;
+}
+
+body.lockscreen.pos-sale-theme #modal_payment .box,
+body.lockscreen.pos-sale-theme #modal_payment .box-solid,
+body.lockscreen.pos-sale-theme #modal_payment .payment_row,
+body.lockscreen.pos-sale-theme #modal_payment .bg-lightgray,
+body.lockscreen.pos-sale-theme #modal_payment .bg-orange,
+body.lockscreen.pos-sale-theme #modal_payment .box-body,
+body.lockscreen.pos-sale-theme #modal_payment .bg-lightgray.box,
+body.lockscreen.pos-sale-theme #modal_payment .bg-orange.box,
+body.zoho-theme.lockscreen.pos-sale-theme #modal_payment .box.box-solid.bg-lightgray,
+body.zoho-theme.lockscreen.pos-sale-theme #modal_payment .box.box-solid.bg-lightgray .box-body,
+body.zoho-theme.lockscreen.pos-sale-theme #modal_payment .box.box-solid.bg-orange,
+body.zoho-theme.lockscreen.pos-sale-theme #modal_payment .box.box-solid.bg-orange .box-body,
+body.zoho-theme.lockscreen.pos-sale-theme #modal_payment .payment_row.bg-lightgray,
+body.zoho-theme.lockscreen.pos-sale-theme #modal_payment .payment_row .box-body {
+  background: #252525 !important;
+  background-color: #252525 !important;
+  border-color: #3a3a3a !important;
+  color: #f2f2f2 !important;
+  box-shadow: none !important;
+}
+
+body.lockscreen.pos-sale-theme #modal_payment .bg-orange,
+body.lockscreen.pos-sale-theme #modal_payment .bg-orange.box,
+body.lockscreen.pos-sale-theme #modal_payment .bg-orange > .box-body,
+body.zoho-theme.lockscreen.pos-sale-theme #modal_payment .box.box-solid.bg-orange,
+body.zoho-theme.lockscreen.pos-sale-theme #modal_payment .box.box-solid.bg-orange .box-body {
+  background: #2a2a2a !important;
+  background-color: #2a2a2a !important;
+  border: 1px solid #3a3a3a !important;
+  border-radius: 6px;
+  color: #ffffff !important;
+}
+
+body.zoho-theme.lockscreen.pos-sale-theme #modal_payment .box.box-solid.bg-orange .box-body strong,
+body.zoho-theme.lockscreen.pos-sale-theme #modal_payment .box.box-solid.bg-orange .box-body .lead,
+body.zoho-theme.lockscreen.pos-sale-theme #modal_payment .box.box-solid.bg-orange .box-body .text-bold {
+  color: #ffffff !important;
+}
+
+body.zoho-theme.lockscreen.pos-sale-theme #modal_payment .box.box-solid.bg-orange .box-body hr {
+  border-top-color: #444 !important;
+}
+
+/* Select2 dropdown opened from payment modal (appended to body) */
+body.lockscreen.pos-sale-theme .select2-container--open .select2-dropdown {
+  background: #1c1c1c !important;
+  border-color: #444 !important;
+  color: #fff !important;
+}
+
+body.lockscreen.pos-sale-theme .select2-container--open .select2-results__option {
+  color: #f2f2f2 !important;
+  background: #1c1c1c !important;
+}
+
+body.lockscreen.pos-sale-theme .select2-container--open .select2-results__option--highlighted,
+body.lockscreen.pos-sale-theme .select2-container--open .select2-results__option[aria-selected="true"] {
+  background: #3b8ddd !important;
+  color: #ffffff !important;
+}
+
+body.lockscreen.pos-sale-theme #modal_payment .bg-orange hr,
+body.lockscreen.pos-sale-theme #modal_payment hr {
+  border-top-color: #444 !important;
+  border-bottom: 0 !important;
+  margin: 10px 0 !important;
+}
+
+body.lockscreen.pos-sale-theme #modal_payment .form-control,
+body.lockscreen.pos-sale-theme #modal_payment .input-group-addon,
+body.lockscreen.pos-sale-theme #modal_payment textarea.form-control,
+body.lockscreen.pos-sale-theme #modal_payment select.form-control {
+  background: #1c1c1c !important;
+  border-color: #444 !important;
+  color: #ffffff !important;
+}
+
+body.lockscreen.pos-sale-theme #modal_payment .form-control:focus {
+  border-color: #3b8ddd !important;
+  box-shadow: none !important;
+}
+
+body.lockscreen.pos-sale-theme #modal_payment .input-group-addon {
+  color: #b0b0b0 !important;
+}
+
+body.lockscreen.pos-sale-theme #modal_payment .select2-container--default .select2-selection--single {
+  background: #1c1c1c !important;
+  border-color: #444 !important;
+  color: #fff !important;
+}
+
+body.lockscreen.pos-sale-theme #modal_payment .select2-container--default .select2-selection--single .select2-selection__rendered {
+  color: #ffffff !important;
+}
+
+body.lockscreen.pos-sale-theme #modal_payment .select2-container--default .select2-selection--single .select2-selection__arrow b {
+  border-color: #cfcfcf transparent transparent transparent !important;
+}
+
+body.lockscreen.pos-sale-theme #modal_payment #add-payment-row {
+  background: #3b8ddd !important;
+  border-color: #2f7bc4 !important;
+  color: #ffffff !important;
+}
+
+body.lockscreen.pos-sale-theme #modal_payment #pos-save,
+body.lockscreen.pos-sale-theme #modal_payment #pos-save-card {
+  background: #3b8ddd !important;
+  border-color: #2f7bc4 !important;
+  color: #ffffff !important;
+}
+
+body.lockscreen.pos-sale-theme #modal_payment .tw-dw-btn-neutral {
+  background: #333 !important;
+  border-color: #444 !important;
+  color: #ffffff !important;
+}
+
+body.lockscreen.pos-sale-theme #modal_payment .remove_payment_row,
+body.lockscreen.pos-sale-theme #modal_payment .remove_payment_row i {
+  color: #b0b0b0 !important;
+}
+
+body.lockscreen.pos-sale-theme #modal_payment .remove_payment_row:hover,
+body.lockscreen.pos-sale-theme #modal_payment .remove_payment_row:hover i {
+  color: #ef5350 !important;
+}
+
+body.lockscreen.pos-sale-theme #modal_payment .total_payable_span,
+body.lockscreen.pos-sale-theme #modal_payment .total_paying,
+body.lockscreen.pos-sale-theme #modal_payment .change_return_span,
+body.lockscreen.pos-sale-theme #modal_payment .balance_due,
+body.lockscreen.pos-sale-theme #modal_payment .total_quantity {
+  color: #6bb0f0 !important;
+}
+
+body.lockscreen.pos-sale-theme #modal_payment .payment_row .box-body,
+body.lockscreen.pos-sale-theme #modal_payment #payment_rows_div .box {
+  border-radius: 6px !important;
+}
+
+/* Saved drafts dropdown — dark panel, readable text (no white-on-white) */
+body.lockscreen.pos-sale-theme .pos-drafts-dropdown,
+body.zoho-theme.lockscreen.pos-sale-theme .pos-drafts-dropdown {
+  background: #1c1c1c !important;
+  border: 1px solid #333 !important;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55) !important;
+  color: #f2f2f2 !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-drafts-dropdown__header,
+body.zoho-theme.lockscreen.pos-sale-theme .pos-drafts-dropdown__header {
+  background: #222 !important;
+  border-bottom-color: #333 !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-drafts-dropdown__title,
+body.zoho-theme.lockscreen.pos-sale-theme .pos-drafts-dropdown__title {
+  color: #ffffff !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-drafts-dropdown__close,
+body.lockscreen.pos-sale-theme .pos-drafts-panel__refresh,
+body.zoho-theme.lockscreen.pos-sale-theme .pos-drafts-dropdown__close,
+body.zoho-theme.lockscreen.pos-sale-theme .pos-drafts-panel__refresh {
+  background: #2a2a2a !important;
+  border-color: #444 !important;
+  color: #cfcfcf !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-drafts-panel__tab,
+body.zoho-theme.lockscreen.pos-sale-theme .pos-drafts-panel__tab {
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  color: #9a9a9a !important;
+  border-bottom: 2px solid transparent !important;
+  padding: 6px 10px !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-drafts-panel__tab--active,
+body.zoho-theme.lockscreen.pos-sale-theme .pos-drafts-panel__tab--active {
+  background: transparent !important;
+  color: #ffffff !important;
+  border-bottom-color: var(--pos-accent) !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-draft-card,
+body.zoho-theme.lockscreen.pos-sale-theme .pos-draft-card {
+  background: #252525 !important;
+  border-color: #3a3a3a !important;
+  color: #f2f2f2 !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-draft-card__invoice,
+body.lockscreen.pos-sale-theme .pos-draft-card__customer,
+body.lockscreen.pos-sale-theme .pos-draft-card__date,
+body.lockscreen.pos-sale-theme .pos-draft-card__meta,
+body.lockscreen.pos-sale-theme .pos-draft-card__note,
+body.lockscreen.pos-sale-theme .pos-draft-card__main,
+body.lockscreen.pos-sale-theme .pos-draft-card__main *,
+body.zoho-theme.lockscreen.pos-sale-theme .pos-draft-card__invoice,
+body.zoho-theme.lockscreen.pos-sale-theme .pos-draft-card__customer,
+body.zoho-theme.lockscreen.pos-sale-theme .pos-draft-card__date,
+body.zoho-theme.lockscreen.pos-sale-theme .pos-draft-card__meta,
+body.zoho-theme.lockscreen.pos-sale-theme .pos-draft-card__note,
+body.zoho-theme.lockscreen.pos-sale-theme .pos-draft-card__main,
+body.zoho-theme.lockscreen.pos-sale-theme .pos-draft-card__main * {
+  color: #f2f2f2 !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-draft-card__total,
+body.zoho-theme.lockscreen.pos-sale-theme .pos-draft-card__total {
+  color: #6bb0f0 !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-draft-card__meta,
+body.lockscreen.pos-sale-theme .pos-draft-card__note,
+body.zoho-theme.lockscreen.pos-sale-theme .pos-draft-card__meta,
+body.zoho-theme.lockscreen.pos-sale-theme .pos-draft-card__note {
+  color: #b0b0b0 !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-draft-card__btn--resume,
+body.zoho-theme.lockscreen.pos-sale-theme .pos-draft-card__btn--resume {
+  background: #2a4a6a !important;
+  color: #ffffff !important;
+  border-color: #3b8ddd !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-draft-card__btn--delete,
+body.zoho-theme.lockscreen.pos-sale-theme .pos-draft-card__btn--delete {
+  background: #3a2222 !important;
+  color: #f07178 !important;
+  border-color: #5a3030 !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-drafts-panel__empty,
+body.lockscreen.pos-sale-theme .pos-drafts-panel__empty p,
+body.lockscreen.pos-sale-theme .pos-drafts-panel__empty i,
+body.lockscreen.pos-sale-theme .pos-drafts-panel__loading,
+body.zoho-theme.lockscreen.pos-sale-theme .pos-drafts-panel__empty,
+body.zoho-theme.lockscreen.pos-sale-theme .pos-drafts-panel__empty p,
+body.zoho-theme.lockscreen.pos-sale-theme .pos-drafts-panel__loading {
+  color: #b0b0b0 !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-retrieve-row.is-clickable {
+  cursor: pointer;
+}
+
+body.lockscreen.pos-sale-theme .pos-retrieve-line,
+body.lockscreen.pos-sale-theme .pos-retrieve-customer-name,
+body.lockscreen.pos-sale-theme .pos-retrieve-col-label {
+  color: #ffffff !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-retrieve-parked,
+body.lockscreen.pos-sale-theme .pos-retrieve-note,
+body.lockscreen.pos-sale-theme .pos-retrieve-customer-sub,
+body.lockscreen.pos-sale-theme .pos-retrieve-line--more {
+  color: #b0b0b0 !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-retrieve-open,
+body.lockscreen.pos-sale-theme .pos-retrieve-delete {
+  color: #cfcfcf !important;
+}
+
+/* Featured section removed from POS sale theme */
+body.lockscreen.pos-sale-theme #feature_product_div,
+body.lockscreen.pos-sale-theme #show_featured_products,
+body.lockscreen.pos-sale-theme #featured_products_box,
+body.lockscreen.pos-sale-theme #featured_empty_state_template {
+  display: none !important;
+}
+
+/* Featured empty state */
+body.lockscreen.pos-sale-theme #featured_empty_state_template .tw-text-amber-800,
+body.lockscreen.pos-sale-theme #featured_products_box .tw-text-amber-800 {
+  color: #f0c070 !important;
+}
+
+body.lockscreen.pos-sale-theme #featured_products_box a {
+  color: #ffd28a !important;
+}

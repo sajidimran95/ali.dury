@@ -5,6 +5,7 @@
 @section('content')
     <section class="content no-print">
         <input type="hidden" id="amount_rounding_method" value="{{ $pos_settings['amount_rounding_method'] ?? '' }}">
+        <input type="hidden" id="pos_defer_product_list" value="0">
         @if (!empty($pos_settings['allow_overselling']))
             <input type="hidden" id="is_overselling_allowed">
         @endif
@@ -15,6 +16,9 @@
             $is_discount_enabled = $pos_settings['disable_discount'] != 1 ? true : false;
             $is_rp_enabled = session('business.enable_rp') == 1 ? true : false;
         @endphp
+        <div class="pos-sale-shell">
+            @include('sale_pos.partials.pos_nav_sidebar')
+            <div class="pos-sale-main">
         {!! Form::open([
             'url' => action([\App\Http\Controllers\SellPosController::class, 'store']),
             'method' => 'post',
@@ -22,17 +26,15 @@
         ]) !!}
         <div class="row" style="margin:0;">
             <div class="col-md-12" style="padding:0;">
-                <div class="row tw-flex lg:tw-flex-row md:tw-flex-col sm:tw-flex-col tw-flex-col tw-items-stretch pos-checkout-row" style="gap: 4px; margin: 0; padding: 0;">
+                <div class="row tw-flex lg:tw-flex-row md:tw-flex-col sm:tw-flex-col tw-flex-col tw-items-stretch pos-checkout-row" style="gap: 0; margin: 0; padding: 0;">
                     @if (empty($pos_settings['hide_product_suggestion']))
-                        <div class="tw-w-full lg:tw-w-[40%] tw-order-2 lg:tw-order-1" style="padding:0;" id="pos_sidebar_wrap">
+                        <div class="tw-w-full lg:tw-w-[55%] tw-order-2 lg:tw-order-1" style="padding:0;" id="pos_sidebar_wrap">
                             @include('sale_pos.partials.pos_sidebar')
                         </div>
                     @endif
-                    <div class="tw-w-full @if(empty($pos_settings['hide_product_suggestion'])) lg:tw-w-[60%] tw-order-1 lg:tw-order-2 @else lg:tw-w-[100%] @endif" style="padding:0;" id="pos_checkout_wrap">
+                    <div class="tw-w-full @if(empty($pos_settings['hide_product_suggestion'])) lg:tw-w-[45%] tw-order-1 lg:tw-order-2 @else lg:tw-w-[100%] @endif" style="padding:0;" id="pos_checkout_wrap">
 
-                        <div class="tw-shadow-[rgba(17,_17,_26,_0.1)_0px_0px_16px] tw-rounded-2xl tw-bg-white" style="padding:0;overflow:hidden;height:100%;">
-
-                            {{-- <div class="box box-solid mb-12 @if (!isMobile()) mb-40 @endif"> --}}
+                        <div class="pos-checkout-inner" style="padding:0;height:100%;">
                                 <div class="box-body pb-0">
                                     {!! Form::hidden('location_id', $default_location->id ?? null, [
                                         'id' => 'location_id',
@@ -48,6 +50,7 @@
                                     @include('sale_pos.partials.pos_form')
 
                                     @include('sale_pos.partials.pos_form_totals')
+                                    </div>{{-- /.pos-cart-panel --}}
 
                                     @include('sale_pos.partials.payment_modal')
 
@@ -59,7 +62,6 @@
                                         @include('sale_pos.partials.recurring_invoice_modal')
                                     @endif
                                 </div>
-                            {{-- </div> --}}
                         </div>
                     </div>
                 </div>
@@ -67,6 +69,8 @@
         </div>
         @include('sale_pos.partials.pos_form_actions')
         {!! Form::close() !!}
+            </div>{{-- /.pos-sale-main --}}
+        </div>{{-- /.pos-sale-shell --}}
     </section>
 
     <!-- This will be printed -->
@@ -109,7 +113,7 @@
     @endif
 @stop
 @section('javascript')
-    <script src="{{ asset('js/pos.js?v=' . $asset_v) }}"></script>
+    <script src="{{ asset('js/pos.js?v=' . $asset_v . '&ls=32') }}"></script>
     <script src="{{ asset('js/printer.js?v=' . $asset_v) }}"></script>
     <script src="{{ asset('js/product.js?v=' . $asset_v) }}"></script>
     <script src="{{ asset('js/opening_stock.js?v=' . $asset_v) }}"></script>
@@ -130,4 +134,45 @@
         @endforeach
     @endif
     @include('sale_pos.partials.pos_layout_script', ['form_id' => 'add_pos_sell_form'])
+    <script>
+    (function () {
+        function syncPayCta() {
+            var src = document.getElementById('total_payable');
+            var targets = document.querySelectorAll('.pos_pay_cta_total');
+            if (!src || !targets.length) return;
+            targets.forEach(function (el) {
+                el.textContent = src.textContent;
+            });
+        }
+        $(document).ready(function () {
+            syncPayCta();
+            var src = document.getElementById('total_payable');
+            if (src && window.MutationObserver) {
+                new MutationObserver(syncPayCta).observe(src, { childList: true, characterData: true, subtree: true });
+            }
+            $(document).on('change keyup', '#final_total_input', syncPayCta);
+            setInterval(syncPayCta, 800);
+            $(document).on('click', '#pos_table tbody tr.product_row', function () {
+                $('#pos_table tbody tr.product_row').removeClass('is-selected');
+                $(this).addClass('is-selected');
+            });
+
+            // Category grid uses 6 cols (col-md-2) — fix subcategory strip row math
+            $(document).off('click.posCatFix', '.main-category').on('click.posCatFix', '.main-category', function () {
+                setTimeout(function () {
+                    var $grid = $('.pos-card-grid-categories');
+                    var $strip = $grid.find('.pos-subcat-strip');
+                    if (!$strip.length) return;
+                    var $cols = $grid.children('[class*="col-"]').not('.pos-subcat-strip');
+                    var $active = $grid.find('.pos-card.cat.is-active').closest('[class*="col-"]');
+                    if (!$active.length) return;
+                    var idx = $cols.index($active);
+                    var perRow = window.innerWidth <= 575 ? 2 : (window.innerWidth <= 1100 ? 4 : (window.innerWidth <= 1400 ? 5 : 6));
+                    var $lastInRow = $cols.eq(Math.min(Math.ceil((idx + 1) / perRow) * perRow - 1, $cols.length - 1));
+                    $strip.insertAfter($lastInRow);
+                }, 0);
+            });
+        });
+    })();
+    </script>
 @endsection

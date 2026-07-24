@@ -1,75 +1,134 @@
-<!-- Edit Order tax Modal -->
-<div class="modal-dialog modal-lg" role="document">
-	<div class="modal-content">
-		<div class="modal-header">
-			<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-			<h4 class="modal-title">@lang('lang_v1.suspended_sales')</h4>
-		</div>
-		<div class="modal-body">
-			<div class="row">
+@php
+	$subtype = !empty($transaction_sub_type) ? '?sub_type=' . $transaction_sub_type : '';
+	$avatar_colors = ['#f0ad4e', '#5bc0de', '#d9534f', '#5cb85c', '#9b59b6', '#e67e22', '#3498db', '#1abc9c'];
+	$can_open = auth()->user()->can('sell.update') || auth()->user()->can('direct_sell.update');
+@endphp
+<div class="pos-retrieve-sheet" role="dialog" aria-label="Retrieve sale">
+	<div class="pos-retrieve-sheet-head">
+		<span class="pos-retrieve-col-label">Parked sale</span>
+		<span class="pos-retrieve-col-label pos-retrieve-col-label--cust">Customer</span>
+	</div>
+	<div class="pos-retrieve-sheet-body">
+		@forelse($sales as $sale)
+			@if($sale->is_suspend)
 				@php
-					$c = 0;
-					$subtype = '';
+					$lines = $sale->sell_lines ?? collect();
+					$preview_lines = $lines->take(2);
+					$extra_count = max(0, $lines->count() - 2);
+					$thumbs = [];
+					foreach ($lines->take(4) as $line) {
+						$img = null;
+						if (!empty($line->product) && $line->product->media && $line->product->media->count() > 0) {
+							$img = $line->product->media->first()->display_url;
+						} elseif (!empty($line->product) && !empty($line->product->product_image)) {
+							$img = asset('/uploads/img/' . rawurlencode($line->product->product_image));
+						}
+						$thumbs[] = $img;
+					}
+					$cust_name = $sale->name ?: ($sale->contact->name ?? 'Walk-In Customer');
+					$cust_parts = preg_split('/\s+/', trim($cust_name));
+					$initials = '';
+					foreach (array_slice($cust_parts, 0, 2) as $part) {
+						$initials .= mb_strtoupper(mb_substr($part, 0, 1));
+					}
+					if ($initials === '') {
+						$initials = '?';
+					}
+					$color = $avatar_colors[crc32($cust_name) % count($avatar_colors)];
+					$parked_by = trim($sale->added_by ?? '')
+						?: (optional($sale->sales_person)->user_full_name
+						?? optional($sale->sales_person)->first_name
+						?? '');
+					$parked_ago = '';
+					if (!empty($sale->transaction_date)) {
+						$parked_ago = \Carbon\Carbon::parse($sale->transaction_date)->diffForHumans();
+					}
+					$mobile = $sale->mobile ?? optional($sale->contact)->mobile;
+					$email = optional($sale->contact)->email;
+					$edit_url = route('pos.edit', ['po' => $sale->id]) . $subtype;
 				@endphp
-				@if(!empty($transaction_sub_type))
-					@php
-						$subtype = '?sub_type='.$transaction_sub_type;
-					@endphp
-				@endif
-				@forelse($sales as $sale)
-					@if($sale->is_suspend)
-						<div class="col-xs-6 col-sm-3">
-							<div class="small-box bg-yellow">
-					            <div class="inner text-center">
-						            @if(!empty($sale->additional_notes))
-						            	<p><i class="fa fa-edit"></i> {{$sale->additional_notes}}</p>
-						            @endif
-					              <p>{{$sale->invoice_no}}<br>
-					              {{@format_date($sale->transaction_date)}}<br>
-					              <strong><i class="fa fa-user"></i> {{$sale->name}}</strong></p>
-					              <p><i class="fa fa-cubes"></i>@lang('lang_v1.total_items'): {{count($sale->sell_lines)}}<br>
-					              <i class="fas fa-money-bill-alt"></i> @lang('sale.total'): <span class="display_currency" data-currency_symbol=true>{{$sale->final_total}}</span>
-					              </p>
-					              @if($is_tables_enabled && !empty($sale->table->name))
-					              	@lang('restaurant.table'): {{$sale->table->name}}
-					              @endif
-					              @if($is_service_staff_enabled && !empty($sale->service_staff))
-					              	<br>@lang('restaurant.service_staff'): {{$sale->service_staff->user_full_name}}
-					              @endif
-					            </div>
-								@if(auth()->user()->can('sell.update') || auth()->user()->can('direct_sell.update'))
-									<a href="{{ route('pos.edit', ['po' => $sale->id]) . $subtype }}" class="small-box-footer bg-blue p-10">
-									@lang('sale.edit_sale') <i class="fa fa-arrow-circle-right"></i>
-									</a>
+				<div class="pos-retrieve-row @if($can_open) is-clickable @endif"
+					@if($can_open) data-href="{{ $edit_url }}" role="link" tabindex="0" @endif>
+					<div class="pos-retrieve-sale">
+						<div class="pos-retrieve-thumbs">
+							@forelse($thumbs as $idx => $thumb)
+								@if($idx === 3 && $lines->count() > 4)
+									<span class="pos-retrieve-thumb pos-retrieve-thumb--more">+{{ $lines->count() - 3 }}</span>
+								@elseif(!empty($thumb))
+									<span class="pos-retrieve-thumb" style="background-image:url({{ $thumb }})"></span>
+								@else
+									<span class="pos-retrieve-thumb pos-retrieve-thumb--blank"></span>
 								@endif
-								@if(auth()->user()->can('sell.delete') || auth()->user()->can('direct_sell.delete'))
-									<a href="{{action([\App\Http\Controllers\SellPosController::class, 'destroy'], ['po' => $sale->id])}}" class="small-box-footer delete-sale bg-red is_suspended">
-										@lang('messages.delete') <i class="fas fa-trash"></i>
-					            	</a>
-								@endif
-								@if(!auth()->user()->can('sell.update') && auth()->user()->can('edit_pos_payment'))
-									<a href="{{route('edit-pos-payment', ['po' => $sale->id])}}" 
-									class="small-box-footer bg-blue p-10">
-									@lang('lang_v1.add_edit_payment') <i class="fas fa-money-bill-alt"></i>
-									</a>
-								@endif
-					         </div>
-				         </div>
-				        @php
-				         	$c++;
-				        @endphp
-					@endif
-
-					@if($c%4==0)
-						<div class="clearfix"></div>
-					@endif
-				@empty
-					<p class="text-center">@lang('purchase.no_records_found')</p>
-				@endforelse
-			</div>
-		</div>
-		<div class="modal-footer">
-		    <button type="button" class="tw-dw-btn tw-dw-btn-neutral tw-text-white" data-dismiss="modal">@lang('messages.close')</button>
-		</div>
-	</div><!-- /.modal-content -->
-</div><!-- /.modal-dialog -->
+							@empty
+								<span class="pos-retrieve-thumb pos-retrieve-thumb--blank"></span>
+							@endforelse
+						</div>
+						<div class="pos-retrieve-sale-meta">
+							@foreach($preview_lines as $line)
+								<div class="pos-retrieve-line">
+									{{ @num_format($line->quantity) }} x {{ $line->product->name ?? 'Item' }}
+								</div>
+							@endforeach
+							@if($extra_count > 0)
+								<div class="pos-retrieve-line pos-retrieve-line--more">+{{ $extra_count }} more</div>
+							@endif
+							<div class="pos-retrieve-parked">
+								Parked {{ $parked_ago }}@if($parked_by) by {{ \Illuminate\Support\Str::limit($parked_by, 12, '...') }}@endif
+							</div>
+							@if(!empty($sale->additional_notes))
+								<div class="pos-retrieve-note">Note: {{ $sale->additional_notes }}</div>
+							@endif
+						</div>
+					</div>
+					<div class="pos-retrieve-customer">
+						<span class="pos-retrieve-avatar" style="background:{{ $color }}">{{ $initials }}</span>
+						<div class="pos-retrieve-customer-meta">
+							<div class="pos-retrieve-customer-name">{{ $cust_name }}</div>
+							@if(!empty($mobile))
+								<div class="pos-retrieve-customer-sub">{{ $mobile }}</div>
+							@elseif(!empty($email))
+								<div class="pos-retrieve-customer-sub">{{ $email }}</div>
+							@endif
+						</div>
+						@if($can_open)
+							<a href="{{ $edit_url }}" class="pos-retrieve-open" title="@lang('sale.edit_sale')" onclick="event.stopPropagation();">
+								<i class="fas fa-external-link-alt"></i>
+							</a>
+						@endif
+						@if(auth()->user()->can('sell.delete') || auth()->user()->can('direct_sell.delete'))
+							<a href="{{ action([\App\Http\Controllers\SellPosController::class, 'destroy'], ['po' => $sale->id]) }}"
+								class="pos-retrieve-delete delete-sale is_suspended" title="@lang('messages.delete')"
+								onclick="event.stopPropagation();">
+								<i class="fas fa-trash"></i>
+							</a>
+						@endif
+					</div>
+				</div>
+			@endif
+		@empty
+			<p class="pos-retrieve-empty">@lang('purchase.no_records_found')</p>
+		@endforelse
+	</div>
+</div>
+<script>
+(function () {
+	var body = document.querySelector('#pos_retrieve_panel .pos-retrieve-sheet-body');
+	if (!body || body.getAttribute('data-bound') === '1') return;
+	body.setAttribute('data-bound', '1');
+	body.addEventListener('click', function (e) {
+		if (e.target.closest('a')) return;
+		var row = e.target.closest('.pos-retrieve-row.is-clickable');
+		if (!row) return;
+		var href = row.getAttribute('data-href');
+		if (href) window.location.href = href;
+	});
+	body.addEventListener('keydown', function (e) {
+		if (e.key !== 'Enter' && e.key !== ' ') return;
+		var row = e.target.closest('.pos-retrieve-row.is-clickable');
+		if (!row) return;
+		e.preventDefault();
+		var href = row.getAttribute('data-href');
+		if (href) window.location.href = href;
+	});
+})();
+</script>

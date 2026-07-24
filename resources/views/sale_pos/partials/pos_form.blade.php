@@ -1,6 +1,68 @@
+<div class="pos-cart-actions no-print">
+	<button type="button" class="pos-cart-action-btn" id="view_suspended_sales_link" data-mirror="#view_suspended_sales" aria-expanded="false">
+		Retrieve sale
+	</button>
+	@if (empty($pos_settings['disable_suspend']))
+		<button type="button" class="pos-cart-action-btn pos-express-finalize" data-pay_method="suspend" title="@lang('lang_v1.tooltip_suspend')">
+			Park sale
+		</button>
+	@endif
+	<div class="dropdown pos-more-actions-dropdown">
+		<button type="button" class="pos-cart-action-btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" id="pos_more_actions_btn">
+			More actions... <i class="fas fa-chevron-down" style="font-size:10px;margin-left:2px;"></i>
+		</button>
+		<ul class="dropdown-menu pos-more-menu dropdown-menu-right" aria-labelledby="pos_more_actions_btn">
+			@if (!Gate::check('disable_quotation') || auth()->user()->can('superadmin') || auth()->user()->can('admin'))
+				<li>
+					<a href="javascript:void(0);" class="pos-more-item pos-nav-trigger" data-trigger="#pos-quotation">
+						Create a quote
+					</a>
+				</li>
+			@endif
+			<li>
+				<a href="javascript:void(0);" class="pos-more-item" id="pos_mark_all_fulfillment">
+					Mark all fulfillment
+				</a>
+			</li>
+			<li>
+				<a href="javascript:void(0);" class="pos-more-item" id="pos_assign_all_sale_items">
+					Assign all sale items
+				</a>
+			</li>
+			<li role="separator" class="divider pos-more-divider"></li>
+			@if (!Gate::check('disable_suspend_sale') || auth()->user()->can('superadmin') || auth()->user()->can('admin'))
+				@if (empty($pos_settings['disable_suspend']))
+					<li>
+						<a href="javascript:void(0);" class="pos-more-item pos-nav-trigger" data-trigger="#pos-suspend-btn">
+							@lang('lang_v1.suspend')
+						</a>
+					</li>
+				@endif
+			@endif
+			@if (!Gate::check('disable_credit_sale') || auth()->user()->can('superadmin') || auth()->user()->can('admin'))
+				@if (empty($pos_settings['disable_credit_sale_button']))
+					<li>
+						<a href="javascript:void(0);" class="pos-more-item pos-nav-trigger" data-trigger="#pos-credit-sale-btn">
+							@lang('lang_v1.credit_sale')
+						</a>
+					</li>
+				@endif
+			@endif
+			<li role="separator" class="divider pos-more-divider"></li>
+			<li>
+				<a href="javascript:void(0);" class="pos-more-item pos-more-item--danger pos-nav-trigger" data-trigger=".js-pos-cancel">
+					@lang('sale.cancel')
+				</a>
+			</li>
+		</ul>
+	</div>
+	<div id="pos_retrieve_panel" class="pos-retrieve-panel" aria-hidden="true"></div>
+</div>
+
+<div class="pos-cart-panel">
 <div class="row">
-	<div class="col-md-4">
-		<div class="form-group">
+	<div class="col-md-12">
+		<div class="form-group pos-customer-bar">
 			<div class="input-group">
 				<span class="input-group-addon">
 					<i class="fa fa-user"></i>
@@ -18,7 +80,7 @@
 				value="{{ $walk_in_customer['selling_price_group_id'] ?? ''}}" >
 				@endif
 				{!! Form::select('contact_id', 
-					[], null, ['class' => 'form-control mousetrap', 'id' => 'customer_id', 'placeholder' => 'Enter Customer name / phone', 'required']); !!}
+					[], null, ['class' => 'form-control mousetrap', 'id' => 'customer_id', 'placeholder' => 'Add a customer', 'required']); !!}
 				<span class="input-group-btn">
 					<button type="button" class="btn btn-default bg-white btn-flat add_new_customer" data-name=""  @if(!auth()->user()->can('customer.create')) disabled @endif><i class="fa fa-plus-circle text-primary fa-lg"></i></button>
 					@can('sell.payments')
@@ -26,35 +88,220 @@
 					@endcan
 				</span>
 			</div>
+			{{-- In-cart customer picker (Lightspeed) — not a floating Select2 popup --}}
+			<div id="pos_customer_picker" class="pos-customer-picker" aria-hidden="true">
+				<div class="pos-customer-picker-search">
+					<input type="text" id="pos_customer_picker_input" class="pos-customer-picker-input" placeholder="Search customers" autocomplete="off">
+				</div>
+				<div id="pos_customer_picker_list" class="pos-customer-picker-list"></div>
+				<div class="pos-customer-picker-footer">
+					<button type="button" class="btn btn-link add_new_customer pos-cust-add-btn" id="pos_customer_picker_add" data-name="">
+						<i class="fa fa-plus" aria-hidden="true"></i>
+						<span class="pos-cust-add-label">+ Add as a new customer</span>
+					</button>
+				</div>
+			</div>
 			<small class="text-danger hide contact_due_text"><strong>@lang('account.customer_due'):</strong> <span></span></small>
 		</div>
 	</div>
+	@if(!empty($pos_settings['hide_product_suggestion']))
 	<div class="col-md-8">
 		<div class="form-group">
 			<div class="input-group">
 				<div class="input-group-btn">
 					<button type="button" class="btn btn-default bg-white btn-flat" data-toggle="modal" data-target="#configure_search_modal" title="{{__('lang_v1.configure_product_search')}}"><i class="fas fa-search-plus"></i></button>
 				</div>
-                {{-- Removed mousetrap class as it was causing issue with barcode scanning --}}
 				{!! Form::text('search_product', null, ['class' => 'form-control', 'id' => 'search_product', 'placeholder' => __('lang_v1.search_product_placeholder'),
 				'disabled' => is_null($default_location)? true : false,
 				'autofocus' => is_null($default_location)? false : true,
 				]); !!}
 				<span class="input-group-btn">
-
-					<!-- Show button for weighing scale modal -->
 					@if(isset($pos_settings['enable_weighing_scale']) && $pos_settings['enable_weighing_scale'] == 1)
-						<button type="button" class="btn btn-default bg-white btn-flat" id="weighing_scale_btn" data-toggle="modal" data-target="#weighing_scale_modal" 
+						<button type="button" class="btn btn-default bg-white btn-flat" id="weighing_scale_btn" data-toggle="modal" data-target="#weighing_scale_modal"
 						title="@lang('lang_v1.weighing_scale')"><i class="fa fa-digital-tachograph text-primary fa-lg"></i></button>
 					@endif
-					
-
 					<button type="button" class="btn btn-default bg-white btn-flat pos_add_quick_product" data-href="{{action([\App\Http\Controllers\ProductController::class, 'quickAdd'])}}" data-container=".quick_add_product_modal"><i class="fa fa-plus-circle text-primary fa-lg"></i></button>
 				</span>
 			</div>
 		</div>
 	</div>
+	@endif
 </div>
+<script>
+(function () {
+	function closeRetrievePanel() {
+		var panel = document.getElementById('pos_retrieve_panel');
+		var link = document.getElementById('view_suspended_sales_link');
+		if (panel) {
+			panel.classList.remove('is-open');
+			panel.setAttribute('aria-hidden', 'true');
+		}
+		if (link) {
+			link.classList.remove('is-active');
+			link.setAttribute('aria-expanded', 'false');
+		}
+	}
+
+	function openSuspendedSalesModal() {
+		var mirror = document.getElementById('view_suspended_sales');
+		var href = mirror ? mirror.getAttribute('data-href') : null;
+		var panel = document.getElementById('pos_retrieve_panel');
+		var link = document.getElementById('view_suspended_sales_link');
+		if (!href || typeof jQuery === 'undefined') {
+			if (mirror) mirror.click();
+			return;
+		}
+		if (panel && panel.classList.contains('is-open')) {
+			closeRetrievePanel();
+			return;
+		}
+		if (panel && panel.getAttribute('data-loading') === '1') return;
+		if (panel) panel.setAttribute('data-loading', '1');
+		jQuery.ajax({
+			url: href,
+			dataType: 'html',
+			success: function (result) {
+				if (panel) {
+					panel.innerHTML = result;
+					panel.classList.add('is-open');
+					panel.setAttribute('aria-hidden', 'false');
+					if (link) {
+						link.classList.add('is-active');
+						link.setAttribute('aria-expanded', 'true');
+					}
+				} else {
+					var $container = jQuery((mirror && mirror.getAttribute('data-container')) || '.view_modal').first();
+					$container.html(result).modal('show');
+				}
+			},
+			error: function () {
+				if (typeof toastr !== 'undefined') {
+					toastr.error('Unable to load suspended sales');
+				}
+			},
+			complete: function () {
+				if (panel) panel.setAttribute('data-loading', '0');
+			}
+		});
+	}
+
+	document.addEventListener('click', function (e) {
+		var link = e.target.closest('#view_suspended_sales_link');
+		if (link) {
+			e.preventDefault();
+			e.stopPropagation();
+			openSuspendedSalesModal();
+			return;
+		}
+		var panel = document.getElementById('pos_retrieve_panel');
+		if (panel && panel.classList.contains('is-open') && !e.target.closest('#pos_retrieve_panel') && !e.target.closest('#view_suspended_sales_link')) {
+			closeRetrievePanel();
+		}
+	});
+
+	function closeMoreMenu(el) {
+		if (typeof jQuery !== 'undefined') {
+			jQuery(el).closest('.dropdown').removeClass('open');
+		}
+	}
+
+	// More-actions: trigger existing POS buttons
+	document.addEventListener('click', function (e) {
+		var item = e.target.closest('.pos-more-item.pos-nav-trigger');
+		if (!item) return;
+		e.preventDefault();
+		var sel = item.getAttribute('data-trigger');
+		if (!sel) return;
+		var el = document.querySelector(sel);
+		if (el) el.click();
+		closeMoreMenu(item);
+	});
+
+	// Mark all fulfillment → kitchen order / shipping note
+	document.addEventListener('click', function (e) {
+		var btn = e.target.closest('#pos_mark_all_fulfillment');
+		if (!btn) return;
+		e.preventDefault();
+		var kitchen = document.getElementById('is_kitchen_order');
+		if (kitchen) {
+			kitchen.checked = true;
+			if (typeof jQuery !== 'undefined') {
+				jQuery(kitchen).iCheck('check');
+				jQuery(kitchen).trigger('change');
+			} else {
+				kitchen.dispatchEvent(new Event('change', { bubbles: true }));
+			}
+			if (typeof toastr !== 'undefined') {
+				toastr.success('All items marked for fulfillment');
+			}
+		} else {
+			var ship = document.querySelector('[data-target="#posShippingModal"]');
+			if (ship) ship.click();
+			else if (typeof toastr !== 'undefined') {
+				toastr.info('Open shipping / note to set fulfillment');
+			}
+		}
+		closeMoreMenu(btn);
+	});
+
+	// Assign all sale items → service staff on all lines / staff modal
+	document.addEventListener('click', function (e) {
+		var btn = e.target.closest('#pos_assign_all_sale_items');
+		if (!btn) return;
+		e.preventDefault();
+
+		var staffSelects = document.querySelectorAll('select.order_line_service_staff, select#res_waiter_id, select#service_staff_id');
+		if (staffSelects.length) {
+			var first = staffSelects[0];
+			var val = first.value;
+			if (!val && first.options.length > 1) {
+				// focus first select so user can pick, then apply to all
+				if (typeof jQuery !== 'undefined' && jQuery(first).data('select2')) {
+					jQuery(first).select2('open');
+				} else {
+					first.focus();
+				}
+				if (typeof toastr !== 'undefined') {
+					toastr.info('Select staff — it will apply to all sale items');
+				}
+				var applyAll = function () {
+					var chosen = first.value;
+					if (!chosen) return;
+					staffSelects.forEach(function (sel) {
+						sel.value = chosen;
+						if (typeof jQuery !== 'undefined') {
+							jQuery(sel).trigger('change');
+						}
+					});
+					first.removeEventListener('change', applyAll);
+					if (typeof toastr !== 'undefined') {
+						toastr.success('Staff assigned to all sale items');
+					}
+				};
+				first.addEventListener('change', applyAll);
+			} else if (val) {
+				staffSelects.forEach(function (sel) {
+					sel.value = val;
+					if (typeof jQuery !== 'undefined') {
+						jQuery(sel).trigger('change');
+					}
+				});
+				if (typeof toastr !== 'undefined') {
+					toastr.success('Staff assigned to all sale items');
+				}
+			}
+		} else {
+			var staffBtn = document.getElementById('service_staff_replacement') || document.getElementById('show_service_staff_availability');
+			if (staffBtn) {
+				staffBtn.click();
+			} else if (typeof toastr !== 'undefined') {
+				toastr.info('Enable service staff in POS settings to assign items');
+			}
+		}
+		closeMoreMenu(btn);
+	});
+})();
+</script>
 
 <div class="row">
 	@if(!empty($pos_settings['show_invoice_layout']))
@@ -205,7 +452,7 @@
         @endif
     @endforeach
 @endif
-<div class="row" style="margin:0;">
+<div class="row pos-cart-lines" style="margin:0;">
 	<div class="col-sm-12 pos_product_div" style="padding:4px 0 0 0;">
 		<input type="hidden" name="sell_price_tax" id="sell_price_tax" value="{{$business_details->sell_price_tax}}">
 
@@ -243,13 +490,13 @@
 			</thead>
 			<tbody>
 				<tr class="pos-empty-state-row">
-					<td colspan="100" class="!tw-border-0 !tw-p-0">
-						<div class="tw-flex tw-flex-col tw-items-center tw-justify-center tw-text-center tw-py-10 md:tw-py-14 tw-px-6 tw-gap-3">
-							<div class="tw-w-16 tw-h-16 tw-rounded-full tw-bg-slate-100 tw-flex tw-items-center tw-justify-center tw-text-slate-400">
+					<td colspan="100" class="!tw-border-0 !tw-p-0 pos-empty-td">
+						<div class="pos-empty-cart tw-flex tw-flex-col tw-items-center tw-justify-center tw-text-center tw-py-10 md:tw-py-14 tw-px-6 tw-gap-3">
+							<div class="pos-empty-cart-icon tw-w-16 tw-h-16 tw-rounded-full tw-flex tw-items-center tw-justify-center">
 								<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 19m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"/><path d="M17 19m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"/><path d="M17 17h-11v-14h-2"/><path d="M6 5l14 1l-1 7h-13"/></svg>
 							</div>
-							<div class="tw-text-[15px] tw-font-semibold tw-text-slate-600">Your cart is empty</div>
-							<div class="tw-text-[13px] tw-text-slate-400 tw-leading-relaxed tw-max-w-sm">Scan a barcode, tap a product tile, or type to search.</div>
+							<div class="pos-empty-cart-title">Your cart is empty</div>
+							<div class="pos-empty-cart-sub">Scan a barcode, tap a product tile, or type to search.</div>
 						</div>
 					</td>
 				</tr>
@@ -258,8 +505,13 @@
 		<style>
 			#pos_table:not(.pos-has-rows) thead { display: none !important; }
 			#pos_table.pos-has-rows .pos-empty-state-row { display: none !important; }
+			#add_pos_sell_form:not(.pos-has-rows) .pos_form_totals .pos_totals_left,
+			#edit_pos_sell_form:not(.pos-has-rows) .pos_form_totals .pos_totals_left { display: none !important; }
 			#add_pos_sell_form:not(.pos-has-rows) .pos_form_totals,
-			#edit_pos_sell_form:not(.pos-has-rows) .pos_form_totals { display: none !important; }
+			#edit_pos_sell_form:not(.pos-has-rows) .pos_form_totals {
+				display: flex !important;
+				flex-direction: column !important;
+			}
 		</style>
 	</div>
 </div>

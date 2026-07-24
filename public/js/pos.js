@@ -81,36 +81,29 @@ $(document).ready(function() {
     });
 
     //get customer
-    $('select#customer_id').select2({
+    var isPosSaleTheme = $('body').hasClass('pos-sale-theme');
+    var posCustomerSelect2Opts = {
         ajax: {
             url: '/contacts/customers',
             dataType: 'json',
             delay: 250,
             data: function(params) {
-                return {
-                    q: params.term, // search term
-                    page: params.page,
-                };
+                return { q: params.term, page: params.page };
             },
             processResults: function(data) {
-                return {
-                    results: data,
-                };
+                return { results: data };
             },
         },
-        templateResult: function (data) { 
+        templateResult: function (data) {
+            if (!data.id && !data.text) return data.text;
             var template = '';
-            if (data.supplier_business_name) {
-                template += data.supplier_business_name + "<br>";
-            }
-            template += data.text + "<br>" + LANG.mobile + ": " + data.mobile;
-
-            if (typeof(data.total_rp) != "undefined") {
+            if (data.supplier_business_name) template += data.supplier_business_name + '<br>';
+            template += data.text + '<br>' + LANG.mobile + ': ' + data.mobile;
+            if (typeof(data.total_rp) != 'undefined') {
                 var rp = data.total_rp ? data.total_rp : 0;
                 template += "<br><i class='fa fa-gift text-success'></i> " + rp;
             }
-
-            return  template;
+            return template;
         },
         minimumInputLength: 1,
         language: {
@@ -118,22 +111,220 @@ $(document).ready(function() {
                 return LANG.please_enter + args.minimum + LANG.or_more_characters;
             },
             noResults: function() {
-                var name = $('#customer_id')
-                    .data('select2')
-                    .dropdown.$search.val();
+                var name = '';
+                try { name = $('#customer_id').data('select2').dropdown.$search.val() || ''; } catch (err) {}
                 return (
-                    '<button type="button" data-name="' +
-                    name +
+                    '<button type="button" data-name="' + name +
                     '" class="btn btn-link add_new_customer"><i class="fa fa-plus-circle fa-lg" aria-hidden="true"></i>&nbsp; ' +
-                    __translate('add_name_as_new_customer', { name: name }) +
-                    '</button>'
+                    __translate('add_name_as_new_customer', { name: name }) + '</button>'
                 );
             },
         },
-        escapeMarkup: function(markup) {
-            return markup;
-        },
-    });
+        escapeMarkup: function(markup) { return markup; },
+        width: '100%',
+    };
+
+    // POS: select2 holds value only — search UI is in-cart panel (no floating popup)
+    if (isPosSaleTheme) {
+        delete posCustomerSelect2Opts.ajax;
+        posCustomerSelect2Opts.minimumResultsForSearch = Infinity;
+        posCustomerSelect2Opts.minimumInputLength = 0;
+        posCustomerSelect2Opts.placeholder = 'Search customers';
+        posCustomerSelect2Opts.templateSelection = function (data) {
+            var defId = String($('#default_customer_id').val() || '');
+            if (!data.id || String(data.id) === defId) {
+                return 'Search customers';
+            }
+            return data.text || data.name || 'Search customers';
+        };
+    }
+
+    $('select#customer_id').select2(posCustomerSelect2Opts);
+
+    // Keep placeholder styling when default/walk-in is selected
+    if (isPosSaleTheme) {
+        $('select#customer_id').on('change select2:select', function () {
+            var defId = String($('#default_customer_id').val() || '');
+            var val = String($(this).val() || '');
+            var $rendered = $(this).next('.select2-container').find('.select2-selection__rendered');
+            if (!val || val === defId) {
+                $rendered
+                    .text('Search customers')
+                    .attr('title', 'Search customers')
+                    .addClass('pos-cust-placeholder-text');
+            } else {
+                $rendered.removeClass('pos-cust-placeholder-text');
+            }
+        });
+    }
+
+    function posCustomerInitials(name) {
+        name = (name || '').trim();
+        if (!name) return '?';
+        var parts = name.replace(/[^a-zA-Z0-9\s]/g, ' ').trim().split(/\s+/).filter(Boolean);
+        if (parts.length >= 2) return (parts[0].charAt(0) + parts[1].charAt(0)).toUpperCase();
+        return name.substring(0, 2).toUpperCase();
+    }
+
+    function posCustomerAvatarColor(name) {
+        var colors = ['#c9a227', '#e67e22', '#8e44ad', '#2980b9', '#16a085', '#c0392b', '#7f8c8d', '#2c3e50'];
+        var n = 0;
+        name = name || '';
+        for (var i = 0; i < name.length; i++) n += name.charCodeAt(i);
+        return colors[n % colors.length];
+    }
+
+    var posCustPickerTimer = null;
+
+    function posCustPickerOpen() {
+        if (!isPosSaleTheme) return;
+        var $picker = $('#pos_customer_picker');
+        if (!$picker.length) return;
+        $picker.addClass('is-open').attr('aria-hidden', 'false');
+        $('.pos-customer-bar').addClass('is-picking');
+        $('#pos_customer_picker_input').val('').focus();
+        posCustPickerSearch('');
+    }
+
+    function posCustPickerClose() {
+        $('#pos_customer_picker').removeClass('is-open').attr('aria-hidden', 'true');
+        $('.pos-customer-bar').removeClass('is-picking');
+    }
+
+    function posCustPickerSearch(term) {
+        var $list = $('#pos_customer_picker_list');
+        if (!$list.length) return;
+        $list.html('<div class="pos-customer-picker-loading">Searching…</div>');
+        $('#pos_customer_picker_add').attr('data-name', term || '');
+        var label = term ? ("+ Add '" + term + "' as a new customer") : '+ Add as a new customer';
+        $('#pos_customer_picker_add .pos-cust-add-label').text(label);
+
+        $.ajax({
+            url: '/contacts/customers',
+            dataType: 'json',
+            data: { q: term || '' },
+            success: function (data) {
+                if (!data || !data.length) {
+                    $list.html('<div class="pos-customer-picker-empty">No customers found</div>');
+                    return;
+                }
+                var html = '';
+                data.forEach(function (row) {
+                    var displayName = row.supplier_business_name || row.name || row.text || '';
+                    var initials = posCustomerInitials(displayName);
+                    var color = posCustomerAvatarColor(displayName);
+                    var subParts = [];
+                    if (row.contact_id) subParts.push(row.contact_id);
+                    if (row.mobile) subParts.push(row.mobile);
+                    var sub = subParts.join(' | ');
+                    html +=
+                        '<button type="button" class="pos-customer-picker-item" data-id="' + row.id + '" ' +
+                        'data-text="' + $('<div>').text(row.text || displayName).html() + '" ' +
+                        'data-name="' + $('<div>').text(displayName).html() + '" ' +
+                        'data-pay_term_number="' + (row.pay_term_number || '') + '" ' +
+                        'data-pay_term_type="' + (row.pay_term_type || '') + '" ' +
+                        'data-balance="' + (row.balance || '') + '">' +
+                            '<div class="pos-cust-avatar" style="background:' + color + '">' + initials + '</div>' +
+                            '<div class="pos-cust-meta">' +
+                                '<div class="pos-cust-name">' + $('<div>').text(displayName).html() +
+                                ' <span class="pos-cust-tag">All customers</span></div>' +
+                                (sub ? '<div class="pos-cust-sub">' + $('<div>').text(sub).html() + '</div>' : '') +
+                            '</div>' +
+                        '</button>';
+                });
+                $list.html(html);
+            },
+            error: function () {
+                $list.html('<div class="pos-customer-picker-empty">Could not load customers</div>');
+            }
+        });
+    }
+
+    // when a real customer is picked, show their name (not "Search customers")
+    function posCustPickerSelect($btn) {
+        var id = $btn.data('id');
+        var text = $btn.attr('data-text') || $btn.data('name') || '';
+        if (!id) return;
+        if ($('#customer_id option[value="' + id + '"]').length === 0) {
+            $('#customer_id').append($('<option>', { value: id, text: text }));
+        }
+        $('#customer_id').val(String(id)).trigger('change');
+        var $rendered = $('#customer_id').next('.select2-container').find('.select2-selection__rendered');
+        var defId = String($('#default_customer_id').val() || '');
+        if (String(id) === defId) {
+            $rendered.text('Search customers').attr('title', 'Search customers').addClass('pos-cust-placeholder-text');
+        } else {
+            $rendered.text(text).attr('title', text).removeClass('pos-cust-placeholder-text').css('color', '#f2f2f2');
+        }
+        var payNum = $btn.attr('data-pay_term_number');
+        var payType = $btn.attr('data-pay_term_type');
+        if (payNum) { $('input#pay_term_number').val(payNum); } else { $('input#pay_term_number').val(''); }
+        if (payType) {
+            $('#add_sell_form select[name="pay_term_type"]').val(payType);
+            $('#edit_sell_form select[name="pay_term_type"]').val(payType);
+        } else {
+            $('#add_sell_form select[name="pay_term_type"]').val('');
+            $('#edit_sell_form select[name="pay_term_type"]').val('');
+        }
+        var balance = $btn.attr('data-balance');
+        if (typeof update_shipping_address === 'function') {
+            update_shipping_address({ id: id, name: text, balance: balance });
+        }
+        if ($('#advance_balance_text').length) {
+            $('#advance_balance_text').text(__currency_trans_from_en(balance), true);
+            $('#advance_balance').val(balance);
+        }
+        if ($('.contact_due_text').length && typeof get_contact_due === 'function') {
+            get_contact_due(id);
+        }
+        posCustPickerClose();
+    }
+
+    if (isPosSaleTheme) {
+        // Block Select2 popup; open in-cart picker instead (open only — no toggle race)
+        $('#customer_id').on('select2:opening', function (e) {
+            e.preventDefault();
+            posCustPickerOpen();
+        });
+
+        $(document).on('click', '.pos-customer-bar .select2-container, .pos-customer-bar .input-group-addon', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            posCustPickerOpen();
+        });
+
+        $(document).on('input', '#pos_customer_picker_input', function () {
+            var term = $(this).val();
+            clearTimeout(posCustPickerTimer);
+            posCustPickerTimer = setTimeout(function () { posCustPickerSearch(term); }, 200);
+        });
+
+        $(document).on('click', '.pos-customer-picker-item', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            posCustPickerSelect($(this));
+        });
+
+        $(document).on('click', '#pos_customer_picker_add.add_new_customer', function (e) {
+            e.stopPropagation();
+            // existing add_new_customer handler opens modal; just close picker
+            posCustPickerClose();
+        });
+
+        $(document).on('click', '#pos_customer_picker', function (e) {
+            e.stopPropagation();
+        });
+
+        $(document).on('click', function (e) {
+            if ($(e.target).closest('.pos-customer-bar').length) return;
+            posCustPickerClose();
+        });
+
+        $(document).on('keydown', function (e) {
+            if (e.key === 'Escape') posCustPickerClose();
+        });
+    }
+
     $('#customer_id').on('select2:select', function(e) {
         var data = e.params.data;
         if (data.pay_term_number) {
@@ -695,7 +886,10 @@ $(document).ready(function() {
     });
 
     //Finalize invoice, open payment modal
-    $(document).on('click', 'button.pos-finalize', function() {
+    $(document).on('click', 'button.pos-finalize, button.pos-pay-cta', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+
         //Check if product is present or not.
         if ($('table#pos_table tbody').find('.product_row').length <= 0) {
             toastr.warning(LANG.no_products_added);
@@ -710,7 +904,13 @@ $(document).ready(function() {
             }
         }
 
-        $('#modal_payment').modal('show');
+        var $paymentModal = $('#modal_payment');
+        // Keep modal on body so it is not clipped / blocked by cart panel stacking
+        if ($paymentModal.length && $paymentModal.parent()[0] !== document.body) {
+            $paymentModal.appendTo('body');
+        }
+        $paymentModal.modal('show');
+        return false;
     });
 
     $('#modal_payment').one('shown.bs.modal', function() {
@@ -725,7 +925,7 @@ $(document).ready(function() {
     });
 
     //Finalize without showing payment options
-    $('button.pos-express-finalize').click(function() {
+    $(document).on('click', 'button.pos-express-finalize', function() {
 
         //Check if product is present or not.
         if ($('table#pos_table tbody').find('.product_row').length <= 0) {
@@ -754,6 +954,15 @@ $(document).ready(function() {
             }
         }
 
+        // Park / suspend: open note modal only (do not force payment method "suspend")
+        if (pay_method == 'suspend') {
+            if ($('#confirmSuspendModal').parent()[0] !== document.body) {
+                $('#confirmSuspendModal').appendTo('body');
+            }
+            $('div#confirmSuspendModal').modal('show');
+            return false;
+        }
+
         //Check for remaining balance & add it in 1st payment row
         var total_payable = __read_number($('input#final_total_input'));
         var total_paying = __read_number($('input#total_paying_input'));
@@ -778,8 +987,6 @@ $(document).ready(function() {
             payment_method_dropdown.change();
         if (pay_method == 'card') {
             $('div#card_details_modal').modal('show');
-        } else if (pay_method == 'suspend') {
-            $('div#confirmSuspendModal').modal('show');
         } else {
             pos_form_obj.submit();
         }
@@ -788,6 +995,11 @@ $(document).ready(function() {
     $('div#card_details_modal').on('shown.bs.modal', function(e) {
         $('input#card_number').focus();
     });
+
+    // Keep suspend modal on body so Save/Close clicks work (not clipped by cart panel)
+    if ($('#confirmSuspendModal').length) {
+        $('#confirmSuspendModal').appendTo('body');
+    }
 
     $('div#confirmSuspendModal').on('shown.bs.modal', function(e) {
         $(this)
@@ -809,11 +1021,15 @@ $(document).ready(function() {
         pos_form_obj.submit();
     });
 
-    $('button#pos-suspend').click(function() {
+    $(document).off('click.posSuspend', 'button#pos-suspend').on('click.posSuspend', 'button#pos-suspend', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
         $('input#is_suspend').val(1);
         $('div#confirmSuspendModal').modal('hide');
-        pos_form_obj.submit();
-        $('input#is_suspend').val(0);
+        // Submit after modal hide starts; keep is_suspend=1 until serialize in submitHandler
+        setTimeout(function() {
+            pos_form_obj.submit();
+        }, 50);
     });
 
     //fix select2 input issue on modal
@@ -879,15 +1095,12 @@ $(document).ready(function() {
             // var total_paying = __read_number($('input#total_paying_input'));
             var cnf = true;
 
-            //Ignore if the difference is less than 0.5
-            if ($('input#in_balance_due').val() >= 0.5) {
+            // Suspend / park: skip balance-due confirm
+            if ($('input#is_suspend').val() == '1') {
+                cnf = true;
+            } else if ($('input#in_balance_due').val() >= 0.5) {
+                //Ignore if the difference is less than 0.5
                 cnf = confirm(LANG.paid_amount_is_less_than_payable);
-                // if( total_payble > total_paying ){
-                // 	cnf = confirm( LANG.paid_amount_is_less_than_payable );
-                // } else if(total_payble < total_paying) {
-                // 	alert( LANG.paid_amount_is_more_than_payable );
-                // 	cnf = false;
-                // }
             }
 
             var total_advance_payments = 0;
@@ -926,6 +1139,23 @@ $(document).ready(function() {
 
                 var data = $(form).serialize();
                 data = data + '&status=final';
+                // Payment modal may live on body (stacking) — include its fields
+                var $payModal = $('#modal_payment');
+                if ($payModal.length && !$payModal.closest(form).length) {
+                    var payData = $payModal.find('input, select, textarea').serialize();
+                    if (payData) {
+                        data += '&' + payData;
+                    }
+                }
+                // Suspend modal may live outside the form (appended to body) — append flags manually
+                var isSuspend = $('input#is_suspend').val() == '1';
+                if (isSuspend) {
+                    data += '&is_suspend=1';
+                    var noteVal = $('#confirmSuspendModal textarea[name="additional_notes"]').val();
+                    if (typeof noteVal !== 'undefined') {
+                        data += '&additional_notes=' + encodeURIComponent(noteVal);
+                    }
+                }
                 var url = $(form).attr('action');
                 $.ajax({
                     method: 'POST',
@@ -933,17 +1163,19 @@ $(document).ready(function() {
                     data: data,
                     dataType: 'json',
                     success: function(result) {
+                        $('input#is_suspend').val(0);
                         if (result.success == 1) {
                             if (result.whatsapp_link) {
                                 window.open(result.whatsapp_link);
                             }
                             $('#modal_payment').modal('hide');
+                            $('#confirmSuspendModal').modal('hide');
                             toastr.success(result.msg);
 
                             reset_pos_form();
 
                             //Check if enabled or not
-                            if (result.receipt.is_enabled) {
+                            if (result.receipt && result.receipt.is_enabled) {
                                 pos_print(result.receipt);
                             }
                         } else {
@@ -951,6 +1183,11 @@ $(document).ready(function() {
                         }
 
                         enable_pos_form_actions();
+                    },
+                    error: function() {
+                        $('input#is_suspend').val(0);
+                        enable_pos_form_actions();
+                        toastr.error('Unable to save sale. Please try again.');
                     },
                 });
             }
@@ -1305,26 +1542,39 @@ $(document).ready(function() {
         device_model_id = $("#repair_model_id").val();
     }
 
-    //Show product list.
-    get_product_suggestion_list(
-        global_p_category_id,
-        global_brand_id,
-        $('input#location_id').val(),
-        null,
-        is_enabled_stock,
-        device_model_id
-    );
+    //Show product list — default: All Categories active + all products
+    if ($('#pos_defer_product_list').length && $('#pos_defer_product_list').val() == '1') {
+        // Categories-first UI: wait for category click / search
+    } else {
+        if (typeof pos_set_active_category_tile === 'function') {
+            pos_set_active_category_tile(global_p_category_id || 'all');
+        } else {
+            $('.pos-card-grid-categories .main-category[data-value="all"] .pos-card.cat').addClass('is-active');
+        }
+        get_product_suggestion_list(
+            global_p_category_id,
+            global_brand_id,
+            $('input#location_id').val(),
+            null,
+            is_enabled_stock,
+            device_model_id
+        );
+    }
     
     $('select#select_location_id').on('change', function(e) {
         $('input#suggestion_page').val(1);
         var location_id = $('input#location_id').val();
         if (location_id != '' || location_id != undefined) {
-            get_product_suggestion_list(
-                global_p_category_id,
-                global_brand_id,
-                $('input#location_id').val(),
-                null
-            );
+            if ($('#pos_defer_product_list').length && $('#pos_defer_product_list').val() == '1' && !global_p_category_id) {
+                // keep categories-first until a category is chosen
+            } else {
+                get_product_suggestion_list(
+                    global_p_category_id,
+                    global_brand_id,
+                    $('input#location_id').val(),
+                    null
+                );
+            }
         }
         get_featured_products();
     });
@@ -1369,6 +1619,7 @@ $(document).ready(function() {
         var kind = $(this).data('clear');
         if (kind === 'category') {
             global_p_category_id = null;
+            pos_set_active_category_tile('all');
         } else if (kind === 'brand') {
             global_brand_id = null;
         }
@@ -1378,10 +1629,22 @@ $(document).ready(function() {
         get_featured_products();
     });
 
-// on click sub category in category drawer
+    // Highlight the active category tile (All or a specific category)
+    function pos_set_active_category_tile(value) {
+        var $grid = $('.pos-card-grid-categories');
+        if (!$grid.length) return;
+        $grid.find('.pos-card.cat').removeClass('is-active');
+        var sel = (value === null || value === undefined || value === '' || value === 'all')
+            ? '.main-category[data-value="all"] .pos-card.cat'
+            : '.main-category[data-value="' + value + '"] .pos-card.cat';
+        $grid.find(sel).first().addClass('is-active');
+    }
+
+    // on click sub category in category drawer
     $('.product_category').on('click', function(e) {
         global_p_category_id = $(this).data('value');
         pos_set_filter_chip('category', $(this).data('name'));
+        pos_set_active_category_tile(global_p_category_id);
         $('input#suggestion_page').val(1);
         var location_id = $('input#location_id').val();
         if (location_id != '' || location_id != undefined) {
@@ -1397,9 +1660,9 @@ $(document).ready(function() {
     });
 
     // Category card tap:
-    //   "All"              → clear filter, close drawer
-    //   No subcategories   → filter directly, close drawer
-    //   Has subcategories  → inject pill strip below the card's row (toggle)
+    //   "All"              → clear filter, show all products
+    //   No subcategories   → filter directly
+    //   Has subcategories  → load parent products + subcategory pills
     $('.main-category').on('click', function(e) {
         e.stopPropagation();
 
@@ -1413,7 +1676,8 @@ $(document).ready(function() {
             pos_set_filter_chip('category', null);
             $grid.find('.pos-subcat-strip').remove();
             $grid.removeData('open-cat');
-            $grid.find('.pos-card.cat').removeClass('is-active');
+            pos_set_active_category_tile('all');
+            $('input#suggestion_page').val(1);
             get_product_suggestion_list(null, global_brand_id, $('input#location_id').val(), null);
             get_featured_products();
             $('.overlay-category').trigger('click');
@@ -1429,7 +1693,7 @@ $(document).ready(function() {
             pos_set_filter_chip('category', name);
             $grid.find('.pos-subcat-strip').remove();
             $grid.removeData('open-cat');
-            $grid.find('.pos-card.cat').removeClass('is-active');
+            pos_set_active_category_tile(value);
             $('input#suggestion_page').val(1);
             get_product_suggestion_list(global_p_category_id, global_brand_id, $('input#location_id').val(), null);
             get_featured_products();
@@ -1441,14 +1705,19 @@ $(document).ready(function() {
         if ($grid.data('open-cat') == value) {
             $grid.find('.pos-subcat-strip').remove();
             $grid.removeData('open-cat');
-            $grid.find('.pos-card.cat').removeClass('is-active');
             return;
         }
 
         // Mark active parent card
         $grid.data('open-cat', value);
-        $grid.find('.pos-card.cat').removeClass('is-active');
-        $(this).closest('.main-category-div').find('.pos-card.cat').addClass('is-active');
+        pos_set_active_category_tile(value);
+
+        // Load parent category products immediately (don't wait for subcategory pill)
+        global_p_category_id = value;
+        pos_set_filter_chip('category', name);
+        $('input#suggestion_page').val(1);
+        get_product_suggestion_list(global_p_category_id, global_brand_id, $('input#location_id').val(), null);
+        get_featured_products();
 
         // Find the last col in the same visual row (3 cols per row at md breakpoint)
         var $cols     = $grid.children('[class*="col-"]').not('.pos-subcat-strip');
@@ -1478,6 +1747,12 @@ $(document).ready(function() {
 
         global_p_category_id = value;
         pos_set_filter_chip('category', name);
+        // Keep parent tile active when a subcategory is chosen
+        var parentId = $(this).closest('.pos-card-grid-categories').data('open-cat') || value;
+        if ($(this).hasClass('pos-subcat-pill--all')) {
+            parentId = value;
+        }
+        pos_set_active_category_tile(parentId);
         $('input#suggestion_page').val(1);
         get_product_suggestion_list(global_p_category_id, global_brand_id, $('input#location_id').val(), null);
         get_featured_products();
@@ -1485,7 +1760,6 @@ $(document).ready(function() {
         var $grid = $('.pos-card-grid-categories');
         $grid.find('.pos-subcat-strip').remove();
         $grid.removeData('open-cat');
-        $grid.find('.pos-card.cat').removeClass('is-active');
         $('.overlay-category').trigger('click');
     });
 
@@ -1849,23 +2123,44 @@ function get_featured_products() {
     }
 }
 
+var pos_product_list_loading = false;
+var pos_product_list_exhausted = false;
+
 function get_product_suggestion_list(category_id, brand_id, location_id, url = null, is_enabled_stock = null, repair_model_id = null) {
     if($('div#product_list_body').length == 0) {
         return false;
     }
 
     var $items_container = $('div#product_list_items').length ? $('div#product_list_items') : $('div#product_list_body');
+    var page = parseInt($('input#suggestion_page').val(), 10) || 1;
+
+    if (page == 1) {
+        pos_product_list_exhausted = false;
+    }
+
+    if (pos_product_list_loading) {
+        return false;
+    }
+
+    if (page > 1 && pos_product_list_exhausted) {
+        $('#suggestion_page_loader').removeClass('is-visible').hide();
+        return false;
+    }
 
     if (url == null) {
         url = '/sells/pos/get-product-suggestion';
     }
-    $('#suggestion_page_loader').fadeIn(700);
-    var page = $('input#suggestion_page').val();
+
+    pos_product_list_loading = true;
+    $('#suggestion_page_loader').addClass('is-visible').show().css('display', 'block');
+
     if (page == 1) {
         $items_container.html('');
     }
     if ($items_container.find('input#no_products_found').length > 0) {
-        $('#suggestion_page_loader').fadeOut(700);
+        pos_product_list_exhausted = true;
+        pos_product_list_loading = false;
+        $('#suggestion_page_loader').removeClass('is-visible').hide();
         return false;
     }
     $.ajax({
@@ -1881,8 +2176,30 @@ function get_product_suggestion_list(category_id, brand_id, location_id, url = n
         },
         dataType: 'html',
         success: function(result) {
-            $items_container.append(result);
-            $('#suggestion_page_loader').fadeOut(700);
+            var html = result || '';
+            $items_container.append(html);
+            var $parsed = $('<div>').append($.parseHTML(html));
+            var productCount = $parsed.find('.product_box').length;
+            if (productCount === 0 || $parsed.find('#no_products_found').length > 0) {
+                pos_product_list_exhausted = true;
+            }
+            pos_product_list_loading = false;
+            $('#suggestion_page_loader').removeClass('is-visible').hide();
+        },
+        error: function() {
+            pos_product_list_loading = false;
+            $('#suggestion_page_loader').removeClass('is-visible').hide();
+            if (page == 1) {
+                $items_container.html(
+                    '<div class="col-md-12"><h4 class="text-center" style="color:#aaa;">Unable to load products. Please try again.</h4></div>'
+                );
+            } else {
+                pos_product_list_exhausted = true;
+            }
+        },
+        complete: function() {
+            pos_product_list_loading = false;
+            $('#suggestion_page_loader').removeClass('is-visible').hide();
         },
     });
 }
@@ -2632,6 +2949,17 @@ function set_default_customer() {
         .val(default_customer_id)
         .trigger('change');
 
+    // POS theme: show "Search customers" instead of Walk-In name (value stays walk-in)
+    if ($('body').hasClass('pos-sale-theme')) {
+        setTimeout(function () {
+            var $rendered = $('#customer_id').next('.select2-container').find('.select2-selection__rendered');
+            $rendered
+                .text('Search customers')
+                .attr('title', 'Search customers')
+                .addClass('pos-cust-placeholder-text');
+        }, 0);
+    }
+
     if ($('#default_selling_price_group').length) {
         $('#price_group').val($('#default_selling_price_group').val());
         $('#price_group').change();
@@ -2821,28 +3149,36 @@ $('table#pos_table tbody').on('change', 'input.pos_line_total', function() {
 });
 
 $('div#product_list_body').on('scroll', function() {
-
-
-    if ($(this).scrollTop() + $(this).innerHeight() >= $(this)[0].scrollHeight) {
-        var page = parseInt($('#suggestion_page').val());
-        page += 1;
-        $('#suggestion_page').val(page);
-        var location_id = $('input#location_id').val();
-        var category_id = global_p_category_id;
-        var brand_id = global_brand_id;
-
-        var is_enabled_stock = null;
-        if ($("#is_enabled_stock").length) {
-            is_enabled_stock = $("#is_enabled_stock").val();
-        }
-
-        var device_model_id = null;
-        if ($("#repair_model_id").length) {
-            device_model_id = $("#repair_model_id").val();
-        }
-
-        get_product_suggestion_list(category_id, brand_id, location_id, null, is_enabled_stock, device_model_id);
+    var el = this;
+    // Don't paginate when content fits (no real scroll) — prevents endless spinner
+    if (el.scrollHeight <= el.clientHeight + 4) {
+        return;
     }
+    if (pos_product_list_loading || pos_product_list_exhausted) {
+        return;
+    }
+    if ($(el).scrollTop() + $(el).innerHeight() < el.scrollHeight - 48) {
+        return;
+    }
+
+    var page = parseInt($('#suggestion_page').val(), 10) || 1;
+    page += 1;
+    $('#suggestion_page').val(page);
+    var location_id = $('input#location_id').val();
+    var category_id = global_p_category_id;
+    var brand_id = global_brand_id;
+
+    var is_enabled_stock = null;
+    if ($("#is_enabled_stock").length) {
+        is_enabled_stock = $("#is_enabled_stock").val();
+    }
+
+    var device_model_id = null;
+    if ($("#repair_model_id").length) {
+        device_model_id = $("#repair_model_id").val();
+    }
+
+    get_product_suggestion_list(category_id, brand_id, location_id, null, is_enabled_stock, device_model_id);
 });
 
 $(document).on('ifChecked', '#is_recurring', function() {

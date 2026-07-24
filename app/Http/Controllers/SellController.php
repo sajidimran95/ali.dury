@@ -152,7 +152,11 @@ class SellController extends Controller
                     $sells->where('transactions.sub_type', null);
                 }
 
-                $with = ['sell_lines'];
+                $with = [
+                    'sell_lines.product.media',
+                    'contact',
+                    'sales_person',
+                ];
 
                 if ($is_tables_enabled) {
                     $with[] = 'table';
@@ -164,7 +168,7 @@ class SellController extends Controller
 
                 $sales = $sells->where('transactions.is_suspend', 1)
                             ->with($with)
-                            ->addSelect('transactions.is_suspend', 'transactions.res_table_id', 'transactions.res_waiter_id', 'transactions.additional_notes')
+                            ->addSelect('transactions.is_suspend', 'transactions.res_table_id', 'transactions.res_waiter_id', 'transactions.additional_notes', 'transactions.created_by')
                             ->get();
 
                 return view('sale_pos.partials.suspended_sales_modal')->with(compact('sales', 'is_tables_enabled', 'is_service_staff_enabled', 'transaction_sub_type'));

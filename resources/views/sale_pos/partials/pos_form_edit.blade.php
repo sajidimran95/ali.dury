@@ -4,7 +4,7 @@
 	</p>
 </div>
 <div class="row">
-	<div class="col-md-4">
+	<div class="@if(empty($pos_settings['hide_product_suggestion'])) col-md-12 @else col-md-4 @endif">
 		<div class="form-group">
 			<div class="input-group">
 				<span class="input-group-addon">
@@ -34,6 +34,7 @@
 			<small class="text-danger @if(empty($customer_due)) hide @endif contact_due_text"><strong>@lang('account.customer_due'):</strong> <span>{{$customer_due ?? ''}}</span></small>
 		</div>
 	</div>
+	@if(!empty($pos_settings['hide_product_suggestion']))
 	<div class="col-md-8">
 		<div class="form-group">
 			<div class="input-group">
@@ -57,6 +58,7 @@
 			</div>
 		</div>
 	</div>
+	@endif
 </div>
 <div class="row">
 	@if(!empty($pos_settings['show_invoice_layout']))
@@ -250,8 +252,16 @@
 		<style>
 			#pos_table:not(.pos-has-rows) thead { display: none !important; }
 			#pos_table.pos-has-rows .pos-empty-state-row { display: none !important; }
+			#add_pos_sell_form:not(.pos-has-rows) .pos_form_totals .pos_totals_left,
+			#edit_pos_sell_form:not(.pos-has-rows) .pos_form_totals .pos_totals_left,
+			#add_pos_sell_form:not(.pos-has-rows) .pos_form_totals .pos_totals_right,
+			#edit_pos_sell_form:not(.pos-has-rows) .pos_form_totals .pos_totals_right { display: none !important; }
 			#add_pos_sell_form:not(.pos-has-rows) .pos_form_totals,
-			#edit_pos_sell_form:not(.pos-has-rows) .pos_form_totals { display: none !important; }
+			#edit_pos_sell_form:not(.pos-has-rows) .pos_form_totals {
+				display: block !important;
+				background: transparent !important;
+				border-top: 0 !important;
+			}
 		</style>
 	</div>
 </div>

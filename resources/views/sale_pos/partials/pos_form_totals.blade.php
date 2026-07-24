@@ -1,5 +1,19 @@
 <div class="pos_form_totals">
 
+	<div class="pos-add-row no-print">
+		<span class="pos-add-label">ADD</span>
+		@if($is_discount_enabled)
+			@if(!(Gate::check('disable_discount') && !auth()->user()->can('superadmin') && !auth()->user()->can('admin')))
+				<button type="button" class="pos-add-link" id="pos-edit-discount" data-toggle="modal" data-target="#posEditDiscountModal">Discount</button>
+				<button type="button" class="pos-add-link" data-toggle="modal" data-target="#posEditDiscountModal">Promo code</button>
+			@endif
+		@endif
+		@if(($pos_settings['disable_order_tax'] ?? 0) == 0)
+			<button type="button" class="pos-add-link" id="pos-edit-tax" data-toggle="modal" data-target="#posEditOrderTaxModal">Tax</button>
+		@endif
+		<button type="button" class="pos-add-link" data-toggle="modal" data-target="#posShippingModal">Note</button>
+	</div>
+
 	<div class="pos_totals_left">
 
 		{{-- Items --}}
@@ -22,10 +36,7 @@
 			<span class="pos_totals_label">
 				@if($is_discount_enabled)
 					<span class="mobile-only">DISC(-)</span>
-					<span class="desktop-only">@lang('sale.discount')(-) @show_tooltip(__('tooltip.sale_discount'))</span>
-					@if($edit_discount)
-						<i class="fas fa-edit pos_totals_edit" id="pos-edit-discount" title="@lang('sale.edit_discount')" aria-hidden="true" data-toggle="modal" data-target="#posEditDiscountModal"></i>
-					@endif
+					<span class="desktop-only">@lang('sale.discount')(-)</span>
 				@endif
 			</span>
 			<span class="pos_totals_value pos_totals_value--danger" id="total_discount">0</span>
@@ -48,8 +59,7 @@
 		<div class="pos_totals_cell @if($pos_settings['disable_order_tax'] != 0) hide @endif">
 			<span class="pos_totals_label">
 				<span class="mobile-only">TAX(+)</span>
-				<span class="desktop-only">@lang('sale.order_tax')(+) @show_tooltip(__('tooltip.sale_tax'))</span>
-				<i class="fas fa-edit pos_totals_edit" title="@lang('sale.edit_order_tax')" aria-hidden="true" data-toggle="modal" data-target="#posEditOrderTaxModal" id="pos-edit-tax"></i>
+				<span class="desktop-only">@lang('sale.order_tax')(+)</span>
 			</span>
 			<span class="pos_totals_value" id="order_tax">@if(empty($edit)) 0 @else {{$transaction->tax_amount}} @endif</span>
 			<input type="hidden" name="tax_rate_id" id="tax_rate_id" value="@if(empty($edit)) {{$business_details->default_sales_tax}} @else {{$transaction->tax_id}} @endif" data-default="{{$business_details->default_sales_tax}}">
@@ -60,8 +70,7 @@
 		<div class="pos_totals_cell">
 			<span class="pos_totals_label">
 				<span class="mobile-only">SHIP(+)</span>
-				<span class="desktop-only">@lang('sale.shipping')(+) @show_tooltip(__('tooltip.shipping'))</span>
-				<i class="fas fa-edit pos_totals_edit" title="@lang('sale.shipping')" aria-hidden="true" data-toggle="modal" data-target="#posShippingModal"></i>
+				<span class="desktop-only">@lang('sale.shipping')(+)</span>
 			</span>
 			<span class="pos_totals_value" id="shipping_charges_amount">0</span>
 			<input type="hidden" name="shipping_details" id="shipping_details" value="@if(empty($edit)){{''}}@else{{$transaction->shipping_details}}@endif" data-default="">
@@ -97,12 +106,29 @@
 		@endif
 	</div>
 
-	{{-- Total Payable hero --}}
-	<div class="pos_totals_right">
+	{{-- Subtotal hero (Lightspeed style) --}}
+	<div class="pos_totals_right pos-subtotal-bar" style="display:none !important;" aria-hidden="true">
+		<span class="pos_totals_right_label">Subtotal</span>
+		<span class="pos_totals_right_value price_total number">0</span>
+	</div>
+
+	{{-- Keep total_payable for JS --}}
+	<div class="pos_totals_right" style="display:none;">
 		<span class="pos_totals_right_label">@lang('sale.total_payable')</span>
 		<span id="total_payable" class="pos_totals_right_value number">0</span>
 		<input type="hidden" name="final_total" id="final_total_input" value="0.00">
 	</div>
+
+	@if (!Gate::check('disable_pay_checkout') || auth()->user()->can('superadmin') || auth()->user()->can('admin'))
+		@if (($pos_settings['disable_pay_checkout'] ?? 0) == 0)
+			<button type="button"
+				class="pos-pay-cta pos-finalize no-print"
+				title="@lang('lang_v1.tooltip_checkout_multi_pay')">
+				<span class="pos-pay-label">@lang('lang_v1.pay') <span class="pos-pay-items"><span class="total_quantity">0</span> items</span></span>
+				<span class="pos-pay-amount"><span class="pos_pay_cta_total display_currency" data-currency_symbol="true">0</span></span>
+			</button>
+		@endif
+	@endif
 </div>
 
 <style>

@@ -511,7 +511,8 @@ class SellPosController extends Controller
                 }
 
                 //Check for final and do some processing.
-                if ($input['status'] == 'final') {
+                // Suspended/parked sales: save the sale but do not allocate stock yet
+                if ($input['status'] == 'final' && empty($input['is_suspend'])) {
                     if (!$is_direct_sale) {
                         //set service staff timer
                         foreach ($input['products'] as $product_line) {
@@ -599,6 +600,13 @@ class SellPosController extends Controller
                             $this->moduleUtil->getModuleData('after_sales', ['transaction' => $transaction]);
                     }
 
+                } elseif ($input['status'] == 'final' && !empty($input['is_suspend'])) {
+                    // Parked sale: no payment / no stock allocation until retrieved & completed
+                    $transaction->payment_status = 'due';
+                    $transaction->save();
+                    $whatsapp_link = '';
+                    $business_details = $this->businessUtil->getDetails($business_id);
+                    $pos_settings = empty($business_details->pos_settings) ? $this->businessUtil->defaultPosSettings() : json_decode($business_details->pos_settings, true);
                 }
 
                 if (!empty($transaction->sales_order_ids)) {

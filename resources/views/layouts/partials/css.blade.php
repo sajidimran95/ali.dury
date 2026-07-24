@@ -90,6 +90,7 @@
 <link rel="stylesheet" href="{{ asset('css/zoho-theme.css?v='.$asset_v) }}">
 
 @if(isset($pos_layout) && $pos_layout)
+	<link rel="stylesheet" href="{{ asset('css/pos-sale-theme.css?v='.$asset_v.'&ls=34') }}">
 	<style type="text/css">
 		.content{
 			padding-bottom: 0px !important;
