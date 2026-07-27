@@ -37,7 +37,9 @@
             <i class="fas fa-sign-out-alt"></i> @lang('attendance.clock_out')
         </button>
         @can('attendance.view')
-            <a href="{{ action([\App\Http\Controllers\AttendanceController::class, 'report']) }}" class="att-btn att-btn--link">
+            <a href="{{ action([\App\Http\Controllers\AttendanceController::class, 'report']) }}"
+               class="att-btn att-btn--link"
+               id="att_btn_view_report">
                 <i class="fas fa-list"></i> @lang('attendance.view_report')
             </a>
         @endcan
