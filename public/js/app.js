@@ -452,11 +452,11 @@ $(document).ready(function() {
             ]);
     }
     
-    contact_table = $('#contact_table').DataTable({
+    var contact_dt_options = {
         processing: true,
         serverSide: true,
         fixedHeader:false,
-        scrollY:        "75vh",
+        scrollY: contact_table_type == 'customer' ? false : "75vh",
         scrollX:        true,
         scrollCollapse: true,
         "ajax": {
@@ -524,7 +524,9 @@ $(document).ready(function() {
             $('.footer_contact_due').html(__currency_trans_from_en(total_due));
             $('.footer_contact_return_due').html(__currency_trans_from_en(total_return_due));
         }
-    });
+    };
+
+    contact_table = $('#contact_table').DataTable(contact_dt_options);
 
     $(document).on('ifChanged', '#has_sell_due, #has_sell_return, \
     #has_purchase_due, #has_purchase_return, #has_advance_balance, #has_opening_balance', function(){

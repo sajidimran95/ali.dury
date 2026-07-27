@@ -9,6 +9,9 @@
     @endsection
 @endif
 @section('content')
+    @if ($type == 'customer')
+        @include('contact.partials.customer_index')
+    @else
     <!-- Content Header (Page header) -->
     <section class="content-header">
         <h1 class="tw-text-xl md:tw-text-3xl tw-font-bold tw-text-black"> @lang('lang_v1.' . $type . 's')
@@ -19,37 +22,20 @@
     <!-- Main content -->
     <section class="content">
         @component('components.filters', ['title' => __('report.filters')])
-            @if ($type == 'customer')
-                <div class="col-md-3">
-                    <div class="form-group">
-                        <label>
-                            {!! Form::checkbox('has_sell_due', 1, false, ['class' => 'input-icheck', 'id' => 'has_sell_due']) !!} <strong>@lang('lang_v1.sell_due')</strong>
-                        </label>
-                    </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label>
+                        {!! Form::checkbox('has_purchase_due', 1, false, ['class' => 'input-icheck', 'id' => 'has_purchase_due']) !!} <strong>@lang('report.purchase_due')</strong>
+                    </label>
                 </div>
-                <div class="col-md-3">
-                    <div class="form-group">
-                        <label>
-                            {!! Form::checkbox('has_sell_return', 1, false, ['class' => 'input-icheck', 'id' => 'has_sell_return']) !!} <strong>@lang('lang_v1.sell_return')</strong>
-                        </label>
-                    </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label>
+                        {!! Form::checkbox('has_purchase_return', 1, false, ['class' => 'input-icheck', 'id' => 'has_purchase_return']) !!} <strong>@lang('lang_v1.purchase_return')</strong>
+                    </label>
                 </div>
-            @elseif($type == 'supplier')
-                <div class="col-md-3">
-                    <div class="form-group">
-                        <label>
-                            {!! Form::checkbox('has_purchase_due', 1, false, ['class' => 'input-icheck', 'id' => 'has_purchase_due']) !!} <strong>@lang('report.purchase_due')</strong>
-                        </label>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="form-group">
-                        <label>
-                            {!! Form::checkbox('has_purchase_return', 1, false, ['class' => 'input-icheck', 'id' => 'has_purchase_return']) !!} <strong>@lang('lang_v1.purchase_return')</strong>
-                        </label>
-                    </div>
-                </div>
-            @endif
+            </div>
             <div class="col-md-3">
                 <div class="form-group">
                     <label>
@@ -64,31 +50,6 @@
                     </label>
                 </div>
             </div>
-            @if ($type == 'customer')
-                <div class="col-md-3">
-                    <div class="form-group">
-                        <label for="has_no_sell_from">@lang('lang_v1.has_no_sell_from'):</label>
-                        {!! Form::select(
-                            'has_no_sell_from',
-                            [
-                                'one_month' => __('lang_v1.one_month'),
-                                'three_months' => __('lang_v1.three_months'),
-                                'six_months' => __('lang_v1.six_months'),
-                                'one_year' => __('lang_v1.one_year'),
-                            ],
-                            null,
-                            ['class' => 'form-control', 'id' => 'has_no_sell_from', 'placeholder' => __('messages.please_select')],
-                        ) !!}
-                    </div>
-                </div>
-
-                <div class="col-md-3">
-                    <div class="form-group">
-                        <label for="cg_filter">@lang('lang_v1.customer_group'):</label>
-                        {!! Form::select('cg_filter', $customer_groups, null, ['class' => 'form-control', 'id' => 'cg_filter']) !!}
-                    </div>
-                </div>
-            @endif
 
             @if (config('constants.enable_contact_assign') === true)
                 <div class="col-md-3">
@@ -116,10 +77,7 @@
             'class' => 'box-primary',
             'title' => __('contact.all_your_contact', ['contacts' => __('lang_v1.' . $type . 's')]),
         ])
-            @if (auth()->user()->can('supplier.create') ||
-                    auth()->user()->can('customer.create') ||
-                    auth()->user()->can('supplier.view_own') ||
-                    auth()->user()->can('customer.view_own'))
+            @if (auth()->user()->can('supplier.create') || auth()->user()->can('supplier.view_own'))
                 @slot('tool')
                     <div class="box-tools">
                         <a class="tw-dw-btn tw-bg-gradient-to-r tw-from-indigo-600 tw-to-blue-500 tw-font-bold tw-text-white tw-border-none tw-rounded-full btn-modal"
@@ -136,48 +94,25 @@
                     </div>
                 @endslot
             @endif
-            @if (auth()->user()->can('supplier.view') ||
-                    auth()->user()->can('customer.view') ||
-                    auth()->user()->can('supplier.view_own') ||
-                    auth()->user()->can('customer.view_own'))
+            @if (auth()->user()->can('supplier.view') || auth()->user()->can('supplier.view_own'))
                 <div class="table-responsive">
                     <table class="table table-bordered table-striped" id="contact_table">
                         <thead>
                             <tr>
                                 <th class="tw-w-full not-export">@lang('messages.action')</th>
                                 <th>@lang('lang_v1.contact_id')</th>
-                                @if ($type == 'supplier')
-                                    <th>@lang('business.business_name')</th>
-                                    <th>@lang('contact.name')</th>
-                                    <th>@lang('business.email')</th>
-                                    <th>@lang('contact.tax_no')</th>
-                                    <th>@lang('contact.pay_term')</th>
-                                    <th>@lang('account.opening_balance')</th>
-                                    <th>@lang('lang_v1.advance_balance')</th>
-                                    <th>@lang('lang_v1.added_on')</th>
-                                    <th>@lang('business.address')</th>
-                                    <th>@lang('contact.mobile')</th>
-                                    <th>@lang('contact.total_purchase_due')</th>
-                                    <th>@lang('lang_v1.total_purchase_return_due')</th>
-                                @elseif($type == 'customer')
-                                    <th>@lang('business.business_name')</th>
-                                    <th>@lang('user.name')</th>
-                                    <th>@lang('business.email')</th>
-                                    <th>@lang('contact.tax_no')</th>
-                                    <th>@lang('lang_v1.credit_limit')</th>
-                                    <th>@lang('contact.pay_term')</th>
-                                    <th>@lang('account.opening_balance')</th>
-                                    <th>@lang('lang_v1.advance_balance')</th>
-                                    <th>@lang('lang_v1.added_on')</th>
-                                    @if ($reward_enabled)
-                                        <th id="rp_col">{{ session('business.rp_name') }}</th>
-                                    @endif
-                                    <th>@lang('lang_v1.customer_group')</th>
-                                    <th>@lang('business.address')</th>
-                                    <th>@lang('contact.mobile')</th>
-                                    <th>@lang('contact.total_sale_due')</th>
-                                    <th>@lang('lang_v1.total_sell_return_due')</th>
-                                @endif
+                                <th>@lang('business.business_name')</th>
+                                <th>@lang('contact.name')</th>
+                                <th>@lang('business.email')</th>
+                                <th>@lang('contact.tax_no')</th>
+                                <th>@lang('contact.pay_term')</th>
+                                <th>@lang('account.opening_balance')</th>
+                                <th>@lang('lang_v1.advance_balance')</th>
+                                <th>@lang('lang_v1.added_on')</th>
+                                <th>@lang('business.address')</th>
+                                <th>@lang('contact.mobile')</th>
+                                <th>@lang('contact.total_purchase_due')</th>
+                                <th>@lang('lang_v1.total_purchase_return_due')</th>
                                 @php
                                     $custom_labels = json_decode(session('business.custom_labels'), true);
                                 @endphp
@@ -221,13 +156,7 @@
                                 <td></td>
                                 <td></td>
                                 <td></td>
-                                <td @if ($type == 'supplier') colspan="6"
-                            @elseif($type == 'customer')
-                                @if ($reward_enabled)
-                                    colspan="9"
-                                @else
-                                    colspan="8" @endif
-                                    @endif>
+                                <td colspan="6">
                                     <strong>
                                         @lang('sale.total'):
                                     </strong>
@@ -255,19 +184,146 @@
         </div>
 
     </section>
+    @endif
     <!-- /.content -->
 @stop
 @section('javascript')
+    @if ($type == 'customer')
+        <script>
+            (function () {
+                function wireCustomerUi() {
+                    if (typeof contact_table === 'undefined' || !contact_table) {
+                        return setTimeout(wireCustomerUi, 50);
+                    }
+
+                    // Default compact view matches mockup; all columns remain available for export / All columns
+                    var rewardEnabled = $('#rp_col').length > 0;
+                    // Always hide: contact_id, business, email, tax, credit, pay_term, opening, advance, added_on
+                    var hideIdx = [1, 2, 4, 5, 6, 7, 8, 9, 10];
+                    if (rewardEnabled) {
+                        hideIdx.push(11); // reward points
+                    }
+                    // After name block (+ optional rp): group(show), address(show), mobile(show), due(show), then return + 10 customs
+                    var afterPrimary = rewardEnabled ? 16 : 15; // return_due index
+                    hideIdx.push(afterPrimary);
+                    for (var c = 1; c <= 10; c++) {
+                        hideIdx.push(afterPrimary + c);
+                    }
+
+                    hideIdx.forEach(function (i) {
+                        try { contact_table.column(i).visible(false, false); } catch (e) {}
+                    });
+                    contact_table.columns.adjust().draw(false);
+
+                    var $search = $('#customer_quick_search');
+                    var searchTimer = null;
+                    $search.on('keyup input', function () {
+                        var val = $(this).val();
+                        clearTimeout(searchTimer);
+                        searchTimer = setTimeout(function () {
+                            contact_table.search(val).draw();
+                        }, 250);
+                    });
+
+                    $('#customer_filters_toggle').on('click', function () {
+                        $('#customer_filters_panel').toggleClass('is-open');
+                    });
+
+                    var showingAll = false;
+                    $('#customer_toggle_columns').on('click', function () {
+                        showingAll = !showingAll;
+                        contact_table.columns().every(function () {
+                            this.visible(showingAll || hideIdx.indexOf(this.index()) === -1, false);
+                        });
+                        // Always keep action + primary columns visible when collapsing
+                        if (!showingAll) {
+                            hideIdx.forEach(function (i) {
+                                try { contact_table.column(i).visible(false, false); } catch (e) {}
+                            });
+                        }
+                        contact_table.columns.adjust().draw(false);
+                        $(this).toggleClass('active', showingAll);
+                    });
+
+                    $('#customer_export_btn').on('click', function () {
+                        var $btn = $(this);
+                        $btn.prop('disabled', true);
+                        var oldLen = contact_table.page.len();
+                        var wasHidden = [];
+                        contact_table.columns().every(function () {
+                            if (!this.visible()) {
+                                wasHidden.push(this.index());
+                                this.visible(true, false);
+                            }
+                        });
+
+                        contact_table.one('draw', function () {
+                            var csv = [];
+                            var headers = [];
+                            $('#contact_table thead th').each(function () {
+                                headers.push('"' + $(this).text().replace(/"/g, '""').trim() + '"');
+                            });
+                            csv.push(headers.join(','));
+
+                            contact_table.rows({ search: 'applied' }).every(function () {
+                                var rowNode = this.node();
+                                if (!rowNode) return;
+                                var cols = [];
+                                $(rowNode).find('td').each(function () {
+                                    cols.push('"' + $(this).text().replace(/\s+/g, ' ').replace(/"/g, '""').trim() + '"');
+                                });
+                                csv.push(cols.join(','));
+                            });
+
+                            var blob = new Blob([csv.join('\n')], { type: 'text/csv;charset=utf-8;' });
+                            var link = document.createElement('a');
+                            link.href = URL.createObjectURL(blob);
+                            link.download = 'customers.csv';
+                            link.click();
+                            URL.revokeObjectURL(link.href);
+
+                            wasHidden.forEach(function (i) {
+                                try { contact_table.column(i).visible(false, false); } catch (e) {}
+                            });
+                            contact_table.page.len(oldLen).draw(false);
+                            $btn.prop('disabled', false);
+                        });
+
+                        contact_table.page.len(-1).draw();
+                    });
+
+                    $('#contact_table tbody').on('click', 'tr', function (e) {
+                        if ($(e.target).closest('a, button, .btn-group, .dropdown-menu, input, select, label').length) {
+                            return;
+                        }
+                        var data = contact_table.row(this).data();
+                        if (!data) return;
+                        var id = data.id;
+                        if (!id && data.action) {
+                            var m = String(data.action).match(/contacts\/(\d+)/);
+                            if (m) id = m[1];
+                        }
+                        if (id) {
+                            window.location.href = '/contacts/' + id;
+                        }
+                    });
+
+                    contact_table.on('draw', function () {
+                        var info = contact_table.page.info();
+                        $('#customer_shown_count').text(info.recordsDisplay);
+                        $('#customer_total_count').text(info.recordsTotal);
+                        if (typeof __currency_convert_recursively === 'function') {
+                            __currency_convert_recursively($('.customers-page'));
+                        }
+                    });
+                }
+
+                $(document).ready(wireCustomerUi);
+            })();
+        </script>
+    @endif
     @if (!empty($api_key))
         <script>
-            // This example adds a search box to a map, using the Google Place Autocomplete
-            // feature. People can enter geographical searches. The search box will return a
-            // pick list containing a mix of places and predicted search terms.
-
-            // This example requires the Places library. Include the libraries=places
-            // parameter when you first load the API. For example:
-            // <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places">
-
             function initAutocomplete() {
                 var map = new google.maps.Map(document.getElementById('map'), {
                     center: {
@@ -285,20 +341,15 @@
                     });
                 }
 
-
-                // Create the search box and link it to the UI element.
                 var input = document.getElementById('shipping_address');
                 var searchBox = new google.maps.places.SearchBox(input);
                 map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
 
-                // Bias the SearchBox results towards current map's viewport.
                 map.addListener('bounds_changed', function() {
                     searchBox.setBounds(map.getBounds());
                 });
 
                 var markers = [];
-                // Listen for the event fired when the user selects a prediction and retrieve
-                // more details for that place.
                 searchBox.addListener('places_changed', function() {
                     var places = searchBox.getPlaces();
 
@@ -306,13 +357,11 @@
                         return;
                     }
 
-                    // Clear out the old markers.
                     markers.forEach(function(marker) {
                         marker.setMap(null);
                     });
                     markers = [];
 
-                    // For each place, get the icon, name and location.
                     var bounds = new google.maps.LatLngBounds();
                     places.forEach(function(place) {
                         if (!place.geometry) {
@@ -327,7 +376,6 @@
                             scaledSize: new google.maps.Size(25, 25)
                         };
 
-                        // Create a marker for each place.
                         markers.push(new google.maps.Marker({
                             map: map,
                             icon: icon,
@@ -335,12 +383,10 @@
                             position: place.geometry.location
                         }));
 
-                        //set position field value
                         var lat_long = [place.geometry.location.lat(), place.geometry.location.lng()]
                         $('#position').val(lat_long);
 
                         if (place.geometry.viewport) {
-                            // Only geocodes have viewport.
                             bounds.union(place.geometry.viewport);
                         } else {
                             bounds.extend(place.geometry.location);

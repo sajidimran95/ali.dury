@@ -87,12 +87,86 @@ class ContactController extends Controller
         $users = User::forDropdown($business_id);
 
         $customer_groups = [];
+        $customer_stats = null;
         if ($type == 'customer') {
             $customer_groups = CustomerGroup::forDropdown($business_id);
+            $customer_stats = $this->getCustomerListStats($business_id);
         }
 
         return view('contact.index')
-            ->with(compact('type', 'reward_enabled', 'customer_groups', 'users'));
+            ->with(compact('type', 'reward_enabled', 'customer_groups', 'users', 'customer_stats'));
+    }
+
+    /**
+     * Summary cards for the redesigned customers list (does not alter contact data).
+     */
+    private function getCustomerListStats(int $business_id): array
+    {
+        $base = Contact::where('contacts.business_id', $business_id)->onlyCustomers();
+
+        $total = (clone $base)->count();
+
+        $groupCounts = (clone $base)
+            ->leftJoin('customer_groups as cg', 'cg.id', '=', 'contacts.customer_group_id')
+            ->selectRaw('cg.name as group_name, COUNT(contacts.id) as total')
+            ->groupBy('cg.name')
+            ->pluck('total', 'group_name');
+
+        $wholesale = 0;
+        $retail = 0;
+        $no_group = (int) ($groupCounts[''] ?? $groupCounts[null] ?? 0);
+        foreach ($groupCounts as $name => $count) {
+            if ($name === null || $name === '') {
+                $no_group = (int) $count;
+                continue;
+            }
+            $lower = mb_strtolower((string) $name);
+            if (str_contains($lower, 'wholesale')) {
+                $wholesale += (int) $count;
+            }
+            if (str_contains($lower, 'retail')) {
+                $retail += (int) $count;
+            }
+        }
+
+        // If no named wholesale/retail groups, fall back to top named groups for the cards
+        $wholesale_label = __('lang_v1.wholesale_accounts');
+        $retail_label = __('lang_v1.retail_accounts');
+        if ($wholesale === 0 && $retail === 0) {
+            $named = collect($groupCounts)->filter(fn ($c, $n) => filled($n))->sortDesc()->take(2);
+            $i = 0;
+            foreach ($named as $name => $count) {
+                if ($i === 0) {
+                    $wholesale = (int) $count;
+                    $wholesale_label = $name;
+                } else {
+                    $retail = (int) $count;
+                    $retail_label = $name;
+                }
+                $i++;
+            }
+        }
+
+        $due_rows = $this->contactUtil->getContactQuery($business_id, 'customer')->get();
+        $balance_due = 0.0;
+        foreach ($due_rows as $row) {
+            $due = ($row->total_invoice ?? 0) - ($row->invoice_received ?? 0)
+                - ($row->total_ledger_discount ?? 0) - ($row->total_sell_return ?? 0)
+                + ($row->sell_return_paid ?? 0);
+            if ($due > 0) {
+                $balance_due += $due;
+            }
+        }
+
+        return [
+            'total' => $total,
+            'balance_due' => $balance_due,
+            'wholesale' => $wholesale,
+            'retail' => $retail,
+            'no_group' => $no_group,
+            'wholesale_label' => $wholesale_label,
+            'retail_label' => $retail_label,
+        ];
     }
 
     /**
@@ -485,17 +559,78 @@ class ContactController extends Controller
                 @endif
             ')
             ->editColumn('name', function ($row) {
-                $name = e($row->name);
+                $primary = ! empty($row->supplier_business_name) ? $row->supplier_business_name : $row->name;
+                $primary = e($primary);
+                $source = preg_replace('/\s+/', ' ', trim(($row->supplier_business_name ?: '').' '.($row->name ?: '')));
+                $parts = preg_split('/\s+/', $source) ?: [];
+                $initials = '';
+                foreach (array_slice($parts, 0, 2) as $part) {
+                    $initials .= mb_strtoupper(mb_substr($part, 0, 1));
+                }
+                if ($initials === '') {
+                    $initials = '?';
+                }
+                $sub = e($row->contact_id ?: ($row->email ?: ''));
+
+                $html = '<div class="cust-name-cell tw-flex tw-items-center tw-gap-3">
+                    <span class="cust-avatar tw-inline-flex tw-items-center tw-justify-center tw-rounded-full tw-bg-slate-100 tw-text-slate-600 tw-text-xs tw-font-semibold tw-shrink-0" style="width:36px;height:36px;">'.e($initials).'</span>
+                    <span class="tw-min-w-0">
+                        <span class="tw-block tw-font-semibold tw-text-slate-900 tw-truncate">'.$primary.'</span>
+                        <span class="tw-block tw-text-xs tw-text-slate-400 tw-truncate">'.$sub.'</span>
+                    </span>';
+
                 if ($row->contact_status == 'inactive') {
-                    $name = e($row->name).' <small class="label pull-right bg-red no-print">'.__('lang_v1.inactive').'</small>';
+                    $html .= ' <small class="label bg-red no-print">'.__('lang_v1.inactive').'</small>';
                 }
-
                 if (! empty($row->converted_by)) {
-                    $name .= '<span class="label bg-info label-round no-print" data-toggle="tooltip" title="Converted from leads"><i class="fas fa-sync-alt"></i></span>';
+                    $html .= '<span class="label bg-info label-round no-print" data-toggle="tooltip" title="Converted from leads"><i class="fas fa-sync-alt"></i></span>';
+                }
+                $html .= '</div>';
+
+                return $html;
+            })
+            ->editColumn('customer_group', function ($row) {
+                $name = trim((string) ($row->customer_group ?? ''));
+                if ($name === '') {
+                    return '<span class="cust-group-pill cust-group-none">'.e(__('lang_v1.no_group')).'</span>';
+                }
+                $lower = mb_strtolower($name);
+                $cls = 'cust-group-default';
+                if (str_contains($lower, 'wholesale')) {
+                    $cls = 'cust-group-wholesale';
+                } elseif (str_contains($lower, 'retail')) {
+                    $cls = 'cust-group-retail';
                 }
 
-                return $name;
+                return '<span class="cust-group-pill '.$cls.'">'.e($name).'</span>';
             })
+            ->editColumn('address', function ($row) {
+                $short = implode(', ', array_filter([$row->city, $row->state]));
+                if ($short !== '') {
+                    return e($short);
+                }
+
+                return e(implode(', ', array_filter([
+                    $row->address_line_1,
+                    $row->address_line_2,
+                    $row->city,
+                    $row->state,
+                    $row->country,
+                    $row->zip_code,
+                ])));
+            })
+            ->editColumn(
+                'due',
+                function ($row) {
+                    $due = ($row->total_invoice ?? 0) - ($row->invoice_received ?? 0)
+                        - ($row->total_ledger_discount ?? 0) - ($row->total_sell_return ?? 0)
+                        + ($row->sell_return_paid ?? 0);
+                    $cls = $due > 0.00001 ? 'contact_due cust-due-owes' : 'contact_due';
+                    $icon = $due > 0.00001 ? ' <i class="fas fa-exclamation-circle cust-due-icon" aria-hidden="true"></i>' : '';
+
+                    return '<span class="'.$cls.'" data-orig-value="'.$due.'" data-highlight="true">'.$this->transactionUtil->num_f($due, true).$icon.'</span>';
+                }
+            )
             ->editColumn('total_rp', '{{$total_rp ?? 0}}')
             ->editColumn('created_at', '{{@format_date($created_at)}}')
             ->removeColumn('total_invoice')
@@ -505,7 +640,6 @@ class ContactController extends Controller
             ->removeColumn('country')
             ->removeColumn('city')
             ->removeColumn('type')
-            ->removeColumn('id')
             ->removeColumn('is_default')
             ->removeColumn('total_sell_return')
             ->removeColumn('sell_return_paid')
@@ -525,7 +659,8 @@ class ContactController extends Controller
             $contacts->removeColumn('total_rp');
         }
 
-        return $contacts->rawColumns(['action', 'opening_balance', 'credit_limit', 'pay_term', 'due', 'return_due', 'name', 'balance'])
+        // Keep id for row → detail navigation (hidden column in DataTables)
+        return $contacts->rawColumns(['action', 'opening_balance', 'credit_limit', 'pay_term', 'due', 'return_due', 'name', 'balance', 'customer_group'])
                         ->make(true);
     }
 
