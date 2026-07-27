@@ -215,21 +215,30 @@ function update_statistics(start, end) {
 
             // assign tooltip total_sell_return 
             var lang = $('#total_srp').data('value');
-            var splitlang = lang.split('-');
-            
-            var newContent = "<p class='mb-0 text-muted fs-10 mt-5'>" + splitlang[0] + ": <span class=''>" + __currency_trans_from_en(data.total_sell_return, true) + "</span><br>" + splitlang[1] + ": <span class=''>" + __currency_trans_from_en(data.total_sell_return_paid, true) + "</span></p>";
-            $('#total_srp').attr('data-content', newContent)
+            if (lang) {
+                var splitlang = String(lang).split('-');
+                if (splitlang.length >= 2) {
+                    var newContent = "<p class='mb-0 text-muted fs-10 mt-5'>" + splitlang[0] + ": <span class=''>" + __currency_trans_from_en(data.total_sell_return, true) + "</span><br>" + splitlang[1] + ": <span class=''>" + __currency_trans_from_en(data.total_sell_return_paid, true) + "</span></p>";
+                    $('#total_srp').attr('data-content', newContent);
+                }
+            }
             // assign tooltip total_purchase_return 
-            var lang = $('#total_prp').data('value');
-            var splitlang = lang.split('-');
-            
-            var newContent = "<p class='mb-0 text-muted fs-10 mt-5'>" + splitlang[0] + ": <span class=''>" + __currency_trans_from_en(data.total_purchase_return, true) + "</span><br>" + splitlang[1] + ": <span class=''>" + __currency_trans_from_en(data.total_purchase_return_paid, true) + "</span></p>";
-            
-            $('#total_prp').attr('data-content', newContent);
+            lang = $('#total_prp').data('value');
+            if (lang) {
+                splitlang = String(lang).split('-');
+                if (splitlang.length >= 2) {
+                    newContent = "<p class='mb-0 text-muted fs-10 mt-5'>" + splitlang[0] + ": <span class=''>" + __currency_trans_from_en(data.total_purchase_return, true) + "</span><br>" + splitlang[1] + ": <span class=''>" + __currency_trans_from_en(data.total_purchase_return_paid, true) + "</span></p>";
+                    $('#total_prp').attr('data-content', newContent);
+                }
+            }
 
             if (typeof window.japsLoadPaymentMethodMix === 'function') {
                 window.japsLoadPaymentMethodMix(start, end, location_id);
             }
+        },
+        error: function () {
+            $('.total_purchase, .purchase_due, .total_sell, .invoice_due, .total_expense, .total_purchase_return, .total_sell_return, .net').html('—');
+            $('.online_orders').html('0');
         },
     });
 }

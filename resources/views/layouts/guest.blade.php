@@ -41,7 +41,8 @@
     <![endif]-->
 
     <!-- jQuery 2.2.3 -->
-    <script src="{{ asset('js/vendor.js?v=' . $asset_v) }}"></script>
+    <script src="{{ asset('js/vendor-core.js?v=' . $asset_v) }}"></script>
+<script src="{{ asset('js/vendor-ui.js?v=' . $asset_v) }}"></script>
     <script src="{{ asset('js/functions.js?v=' . $asset_v) }}"></script>
     @yield('javascript')
 </body>

@@ -16,7 +16,9 @@ $(document).ready(function() {
         removeLabel: LANG.remove,
     };
     $(document).ajaxStart(function() {
-        Pace.restart();
+        if (typeof Pace !== 'undefined' && Pace && typeof Pace.restart === 'function') {
+            Pace.restart();
+        }
     });
 
     __select2($('.select2'));
@@ -954,7 +956,9 @@ $(document).ready(function() {
         });
 
         // logo upload
-        $('#business_logo').fileinput(fileinput_setting);
+        if (typeof $.fn.fileinput === 'function') {
+            $('#business_logo').fileinput(fileinput_setting);
+        }
 
         //Purchase currency
         $('input#purchase_in_diff_currency').on('ifChecked', function(event) {
@@ -1000,7 +1004,9 @@ $(document).ready(function() {
     }
     //bussiness settings end
 
-    $('#upload_document').fileinput(fileinput_setting);
+    if ($('#upload_document').length && typeof $.fn.fileinput === 'function') {
+        $('#upload_document').fileinput(fileinput_setting);
+    }
 
     //user profile
     $('form#edit_user_profile_form').validate();

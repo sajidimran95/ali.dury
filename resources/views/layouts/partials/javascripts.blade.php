@@ -22,7 +22,48 @@
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js?v=$asset_v"></script>
 <![endif]-->
 
-<script src="{{ asset('js/vendor.js?v=' . $asset_v) }}"></script>
+@php
+    $__seg1 = request()->segment(1);
+    $__seg2 = request()->segment(2);
+    $__is_pos = !empty($pos_layout);
+    // Heavy libs — only load where the page actually uses them
+    $__needs_highcharts = ! $__is_pos && (
+        in_array($__seg1, ['home', 'reports', 'report'], true)
+        || ($__seg1 === 'ecommerce' && $__seg2 === 'dashboard')
+        || !empty($__force_highcharts)
+    );
+    $__needs_tinymce = ! $__is_pos && (
+        in_array($__seg1, [
+            'business', 'notification', 'notification-templates', 'products',
+            'contacts', 'users', 'documents-and-notes', 'invoice-schemes',
+        ], true) || !empty($__force_tinymce)
+    );
+    $__needs_fullcalendar = ! $__is_pos && (
+        ($__seg1 === 'home' && $__seg2 === 'calendar')
+        || $__seg1 === 'bookings'
+        || request()->is('restaurant/booking*')
+        || !empty($__force_fullcalendar)
+    );
+@endphp
+
+@if ($__is_pos && file_exists(public_path('js/vendor.legacy.js')))
+{{-- POS needs the full legacy vendor (Decimal, printers helpers, etc.) --}}
+<script src="{{ asset('js/vendor.legacy.js?v=' . $asset_v) }}"></script>
+@else
+{{-- Split vendor: core npm libs + UI plugins. Optional heavy plugins below. --}}
+<script src="{{ asset('js/vendor-core.js?v=' . $asset_v) }}"></script>
+<script src="{{ asset('js/vendor-ui.js?v=' . $asset_v) }}"></script>
+@if ($__needs_highcharts)
+<script src="{{ asset('js/vendor-highcharts.js?v=' . $asset_v) }}"></script>
+@endif
+@if ($__needs_tinymce)
+<script src="{{ asset('js/vendor-tinymce.js?v=' . $asset_v) }}"></script>
+@endif
+@if ($__needs_fullcalendar)
+<script src="{{ asset('js/vendor-fullcalendar.js?v=' . $asset_v) }}"></script>
+@endif
+@endif
+@stack('vendor_plugins')
 
 @if (file_exists(public_path('js/lang/' . session()->get('user.language', config('app.locale')) . '.js')))
     <script src="{{ asset('js/lang/' . session()->get('user.language', config('app.locale')) . '.js?v=' . $asset_v) }}">

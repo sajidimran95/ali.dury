@@ -673,26 +673,27 @@ $(document).on('shown.bs.modal', '.contains_select2, .view_modal', function () {
 });
 
 //common configuration : tinyMCE editor
-
-tinymce.overrideDefaults({
-    height: 300,
-    language: app_locale, // Set language dynamically
-    language_url: base_path + '/js/lang/tiny/' + app_locale + '.js', // Dynamic URL
-    theme: 'silver',
-    plugins: [
-        'advlist autolink link image lists charmap print preview hr anchor pagebreak',
-        'searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking',
-        'table template paste help',
-    ],
-    toolbar:
-        'undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify |' +
-        ' bullist numlist outdent indent | link image | print preview media fullpage | ' +
-        'forecolor backcolor',
-    menu: {
-        favs: { title: 'My Favorites', items: 'code | searchreplace' },
-    },
-    menubar: 'favs file edit view insert format tools table help',
-});
+if (typeof tinymce !== 'undefined' && tinymce && typeof tinymce.overrideDefaults === 'function') {
+    tinymce.overrideDefaults({
+        height: 300,
+        language: app_locale, // Set language dynamically
+        language_url: base_path + '/js/lang/tiny/' + app_locale + '.js', // Dynamic URL
+        theme: 'silver',
+        plugins: [
+            'advlist autolink link image lists charmap print preview hr anchor pagebreak',
+            'searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking',
+            'table template paste help',
+        ],
+        toolbar:
+            'undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify |' +
+            ' bullist numlist outdent indent | link image | print preview media fullpage | ' +
+            'forecolor backcolor',
+        menu: {
+            favs: { title: 'My Favorites', items: 'code | searchreplace' },
+        },
+        menubar: 'favs file edit view insert format tools table help',
+    });
+}
 
 // Prevent Bootstrap dialog from blocking focusin
 $(document).on('focusin', function (e) {

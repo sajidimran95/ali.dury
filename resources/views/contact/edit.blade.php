@@ -632,24 +632,39 @@
   </div><!-- /.modal-content -->
 </div><!-- /.modal-dialog -->
 <script type="text/javascript">
-(function ($) {
-    var $group = $('#customer_group_id');
-    var $cot = $('#custom_field1');
-    if (!$group.length || !$cot.length) {
-        return;
-    }
-    $group.off('change.msaCot').on('change.msaCot', function () {
-        if ($.trim($cot.val() || '') !== '') {
+(function () {
+    function bindMsaCot($) {
+        var $group = $('#customer_group_id');
+        var $cot = $('#custom_field1');
+        if (!$group.length || !$cot.length) {
             return;
         }
-        var id = String($(this).val() || '');
-        var retail = String($(this).data('msa-retail-group') || '');
-        var wholesale = String($(this).data('msa-wholesale-group') || '');
-        if (id && retail && id === retail) {
-            $cot.val('RETAIL');
-        } else if (id && wholesale && id === wholesale) {
-            $cot.val('DISTRIBUTOR');
+        $group.off('change.msaCot').on('change.msaCot', function () {
+            if ($.trim($cot.val() || '') !== '') {
+                return;
+            }
+            var id = String($(this).val() || '');
+            var retail = String($(this).data('msa-retail-group') || '');
+            var wholesale = String($(this).data('msa-wholesale-group') || '');
+            if (id && retail && id === retail) {
+                $cot.val('RETAIL');
+            } else if (id && wholesale && id === wholesale) {
+                $cot.val('DISTRIBUTOR');
+            }
+        });
+    }
+    // Modal may be included mid-body before footer vendor/jQuery loads
+    function whenJQuery(fn) {
+        if (typeof jQuery !== 'undefined') {
+            jQuery(fn);
+            return;
         }
-    });
-})(jQuery);
+        document.addEventListener('DOMContentLoaded', function () {
+            if (typeof jQuery !== 'undefined') {
+                jQuery(fn);
+            }
+        });
+    }
+    whenJQuery(bindMsaCot);
+})();
 </script>

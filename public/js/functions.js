@@ -477,6 +477,9 @@ function __page_leave_confirmation(form) {
 
 //initialize tinyMCE editor for invoice template
 function init_tinymce(editor_id) {
+    if (typeof tinymce === 'undefined' || !tinymce || typeof tinymce.init !== 'function') {
+        return;
+    }
     tinymce.init({
         selector: 'textarea#' + editor_id,
         plugins: [
