@@ -901,7 +901,35 @@ $(document).ready(function() {
         if ($addForm.length && $addForm.data('original-action')) {
             return $addForm.data('original-action');
         }
-        return pos_form_obj.attr('action');
+        if ($addForm.length) {
+            return $addForm.attr('action');
+        }
+        return (window.base_path || '') + '/pos';
+    }
+
+    function pos_resolve_contact_pk() {
+        var raw = String($('#customer_id').val() || '').trim();
+        if (/^\d+$/.test(raw)) {
+            return raw;
+        }
+        var def = String($('#default_customer_id').val() || '').trim();
+        if (/^\d+$/.test(def)) {
+            return def;
+        }
+        return '';
+    }
+
+    function pos_append_contact_id(data) {
+        var contactId = pos_resolve_contact_pk();
+        if (!contactId) {
+            return data;
+        }
+        data = data.replace(/(^|&)contact_id=[^&]*/g, '');
+        return data + (data ? '&' : '') + 'contact_id=' + encodeURIComponent(contactId);
+    }
+
+    function pos_go_to_create_with_drafts() {
+        window.location = (window.base_path || '') + '/pos/create?open_drafts=1';
     }
 
     function pos_serialize_as_create(status) {
@@ -909,8 +937,9 @@ $(document).ready(function() {
         var data = pos_form_obj.serialize();
         // Drop method override so we POST create, not PUT update
         data = data.replace(/(^|&)_method=[^&]*/g, '').replace(/^&/, '');
-        data = data + '&status=' + status;
-        return data;
+        data = data.replace(/(^|&)is_suspend=[^&]*/g, '');
+        data = data + '&status=' + status + '&is_suspend=0';
+        return pos_append_contact_id(data);
     }
 
     //Save invoice as draft (previous system behavior)
@@ -929,7 +958,40 @@ $(document).ready(function() {
             return;
         }
 
-        // Always POST as a new draft on create endpoint
+        var $editForm = $('form#edit_pos_sell_form');
+        // Editing a parked/suspended sale: convert THIS sale to draft, then show drafts list
+        if ($editForm.length) {
+            disable_pos_form_actions();
+            pos_restore_all_row_edit_modals();
+            var editData = $editForm.serialize();
+            editData = editData.replace(/(^|&)is_suspend=[^&]*/g, '');
+            editData = editData + '&status=draft&is_suspend=0';
+            editData = pos_append_contact_id(editData);
+
+            $.ajax({
+                method: 'POST',
+                url: $editForm.attr('action'),
+                data: editData,
+                dataType: 'json',
+                success: function(result) {
+                    enable_pos_form_actions();
+                    if (result.success == 1) {
+                        toastr.success(result.msg || 'Saved as draft');
+                        pos_go_to_create_with_drafts();
+                    } else {
+                        toastr.error(result.msg || 'Unable to save draft');
+                    }
+                },
+                error: function(xhr) {
+                    enable_pos_form_actions();
+                    var msg = (xhr.responseJSON && xhr.responseJSON.msg) ? xhr.responseJSON.msg : (LANG.something_went_wrong || 'Something went wrong');
+                    toastr.error(msg);
+                }
+            });
+            return false;
+        }
+
+        // Create POS: POST a new draft
         var data = pos_serialize_as_create('draft');
         var url = pos_create_url_for_draft_or_quote();
 
@@ -944,7 +1006,9 @@ $(document).ready(function() {
                 if (result.success == 1) {
                     reset_pos_form();
                     toastr.success(result.msg);
-                    if (typeof loadPosDraftsPanel === 'function') {
+                    if (typeof openPosDraftsDropdown === 'function') {
+                        openPosDraftsDropdown();
+                    } else if (typeof loadPosDraftsPanel === 'function') {
                         loadPosDraftsPanel('draft');
                     }
                 } else {
@@ -2643,6 +2707,16 @@ function closePosDraftsDropdown() {
 $(document).ready(function() {
     if ($('#pos_drafts_panel').length) {
         loadPosDraftsPanel('draft');
+        // After converting parked sale → draft on edit, land here with list open
+        if (/(?:^|[?&])open_drafts=1(?:&|$)/.test(window.location.search || '')) {
+            setTimeout(function() {
+                openPosDraftsDropdown();
+            }, 200);
+            if (window.history && window.history.replaceState) {
+                var cleanUrl = window.location.pathname + (window.location.hash || '');
+                window.history.replaceState({}, document.title, cleanUrl);
+            }
+        }
     }
     refreshPosSuspendedCount();
 
