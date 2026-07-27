@@ -382,9 +382,9 @@
 @endsection
 
 @section('javascript')
-<script src="https://code.highcharts.com/highcharts.js"></script>
+{{-- Highcharts already loaded via layouts/partials/javascripts (vendor-highcharts.js) --}}
 <script type="text/javascript">
-(function () {
+$(function () {
     var chartData = @json($chart);
     var currencySymbol = @json(session('currency')['symbol'] ?? '');
 
@@ -513,6 +513,6 @@
             data: paymentPairs.length ? paymentPairs : [{ name: 'N/A', y: 1, color: '#e2e8f0' }]
         }]
     });
-})();
+});
 </script>
 @endsection
