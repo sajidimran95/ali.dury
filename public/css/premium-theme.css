@@ -745,19 +745,123 @@ body.zoho-theme .badge {
     border-radius: 999px !important;
     font-weight: 650;
     letter-spacing: 0.01em;
-    padding: 0.35em 0.7em;
+    padding: 0.4em 0.75em;
+    font-size: 11.5px;
+    display: inline-block;
+    line-height: 1.25;
+    border: 1px solid transparent;
+    box-shadow: none;
 }
 
 body.zoho-theme .label-primary,
-body.zoho-theme .badge-primary { background: var(--p-blue) !important; }
+body.zoho-theme .badge-primary { background: var(--p-blue) !important; color: #fff !important; }
 body.zoho-theme .label-success,
-body.zoho-theme .badge-success { background: var(--p-green) !important; }
+body.zoho-theme .badge-success { background: var(--p-green) !important; color: #fff !important; }
 body.zoho-theme .label-warning,
 body.zoho-theme .badge-warning { background: var(--p-amber) !important; color: #1f2937 !important; }
 body.zoho-theme .label-danger,
-body.zoho-theme .badge-danger { background: var(--p-rose) !important; }
+body.zoho-theme .badge-danger { background: var(--p-rose) !important; color: #fff !important; }
 body.zoho-theme .label-info,
-body.zoho-theme .badge-info { background: #5ba3c9 !important; }
+body.zoho-theme .badge-info { background: #5ba3c9 !important; color: #fff !important; }
+
+/* AdminLTE status chips used in list columns (shipping, payment, etc.) */
+body.zoho-theme .label.bg-yellow,
+body.zoho-theme .badge.bg-yellow,
+body.zoho-theme small.label.bg-yellow {
+    background: var(--p-amber) !important;
+    color: #1f2937 !important;
+}
+body.zoho-theme .label.bg-green,
+body.zoho-theme .badge.bg-green,
+body.zoho-theme small.label.bg-green,
+body.zoho-theme .label.bg-light-green,
+body.zoho-theme small.label.bg-light-green {
+    background: var(--p-green) !important;
+    color: #fff !important;
+}
+body.zoho-theme .label.bg-red,
+body.zoho-theme .badge.bg-red,
+body.zoho-theme small.label.bg-red {
+    background: var(--p-rose) !important;
+    color: #fff !important;
+}
+body.zoho-theme .label.bg-info,
+body.zoho-theme .badge.bg-info,
+body.zoho-theme small.label.bg-info,
+body.zoho-theme .label.bg-primary,
+body.zoho-theme small.label.bg-primary {
+    background: #5ba3c9 !important;
+    color: #fff !important;
+}
+body.zoho-theme .label.bg-navy,
+body.zoho-theme .badge.bg-navy,
+body.zoho-theme small.label.bg-navy {
+    background: #3d4f73 !important;
+    color: #fff !important;
+}
+body.zoho-theme .label.bg-gray,
+body.zoho-theme .badge.bg-gray,
+body.zoho-theme small.label.bg-gray {
+    background: #e8ecf2 !important;
+    color: #4b5563 !important;
+}
+body.zoho-theme .label.bg-aqua,
+body.zoho-theme .badge.bg-aqua,
+body.zoho-theme small.label.bg-aqua {
+    background: #5eb9c9 !important;
+    color: #fff !important;
+}
+body.zoho-theme .label.bg-purple,
+body.zoho-theme .badge.bg-purple,
+body.zoho-theme small.label.bg-purple {
+    background: var(--p-purple) !important;
+    color: #fff !important;
+}
+body.zoho-theme .label.bg-orange,
+body.zoho-theme .badge.bg-orange,
+body.zoho-theme small.label.bg-orange {
+    background: #e89a4a !important;
+    color: #fff !important;
+}
+
+body.zoho-theme .label.bg-yellow,
+body.zoho-theme .label.bg-green,
+body.zoho-theme .label.bg-light-green,
+body.zoho-theme .label.bg-red,
+body.zoho-theme .label.bg-info,
+body.zoho-theme .label.bg-primary,
+body.zoho-theme .label.bg-navy,
+body.zoho-theme .label.bg-gray,
+body.zoho-theme .label.bg-aqua,
+body.zoho-theme .label.bg-purple,
+body.zoho-theme .label.bg-orange,
+body.zoho-theme .badge.bg-yellow,
+body.zoho-theme .badge.bg-green,
+body.zoho-theme .badge.bg-red,
+body.zoho-theme .badge.bg-info,
+body.zoho-theme .badge.bg-navy,
+body.zoho-theme .badge.bg-gray,
+body.zoho-theme .badge.bg-aqua,
+body.zoho-theme .badge.bg-purple,
+body.zoho-theme .badge.bg-orange,
+body.zoho-theme small.label.bg-yellow,
+body.zoho-theme small.label.bg-green,
+body.zoho-theme small.label.bg-light-green,
+body.zoho-theme small.label.bg-red,
+body.zoho-theme small.label.bg-info,
+body.zoho-theme small.label.bg-primary,
+body.zoho-theme small.label.bg-navy,
+body.zoho-theme small.label.bg-gray,
+body.zoho-theme small.label.bg-aqua,
+body.zoho-theme small.label.bg-purple,
+body.zoho-theme small.label.bg-orange {
+    border-radius: 999px !important;
+    padding: 0.4em 0.75em;
+    font-weight: 650;
+    font-size: 11.5px;
+    display: inline-block;
+    line-height: 1.25;
+}
 
 /* Tabs */
 body.zoho-theme .nav-tabs-custom {
@@ -866,66 +970,201 @@ body.zoho-theme .modal-backdrop.in {
     background: #0f1425;
 }
 
-/* Tables / DataTables */
-body.zoho-theme .table,
-body.zoho-theme table.dataTable {
-    background: #fff;
-    border-color: var(--p-line) !important;
+/* Tables / DataTables — modern list skin (app-wide)
+   Excludes: .table-pdf, #pos_table, .direct-sell-product-table */
+body.zoho-theme .dataTables_wrapper {
+    margin-top: 4px;
 }
 
-body.zoho-theme .table > thead > tr > th,
-body.zoho-theme table.dataTable thead th,
-body.zoho-theme .table > thead > tr > td {
-    background: #f8fafc !important;
-    color: #475569 !important;
+body.zoho-theme .box .dataTables_wrapper,
+body.zoho-theme .box-body > .table-responsive,
+body.zoho-theme .box-body > .dataTables_wrapper {
+    background: transparent;
+}
+
+body.zoho-theme .table:not(.table-pdf):not(.direct-sell-product-table):not(#pos_table),
+body.zoho-theme table.dataTable:not(.table-pdf):not(.direct-sell-product-table):not(#pos_table) {
+    background: #fff;
+    border-collapse: separate !important;
+    border-spacing: 0;
+    border: 1px solid var(--p-line) !important;
+    border-radius: 14px;
+    overflow: visible;
+    width: 100% !important;
+    margin-bottom: 0 !important;
+    box-shadow: var(--p-shadow-sm);
+}
+
+body.zoho-theme .table-bordered:not(.table-pdf):not(.direct-sell-product-table):not(#pos_table) {
+    border: 1px solid var(--p-line) !important;
+    border-radius: 14px;
+    overflow: visible;
+}
+
+/* Prefer horizontal hairlines; drop harsh vertical grid */
+body.zoho-theme .table-bordered:not(.table-pdf):not(.direct-sell-product-table):not(#pos_table) > thead > tr > th,
+body.zoho-theme .table-bordered:not(.table-pdf):not(.direct-sell-product-table):not(#pos_table) > tbody > tr > td,
+body.zoho-theme table.dataTable:not(.table-pdf):not(#pos_table) thead th,
+body.zoho-theme table.dataTable:not(.table-pdf):not(#pos_table) tbody td {
+    border-left: 0 !important;
+    border-right: 0 !important;
+}
+
+body.zoho-theme .table:not(.table-pdf):not(.direct-sell-product-table):not(#pos_table) > thead > tr > th,
+body.zoho-theme table.dataTable:not(.table-pdf):not(#pos_table) thead th,
+body.zoho-theme .table:not(.table-pdf):not(.direct-sell-product-table):not(#pos_table) > thead > tr > td {
+    background: #f7f9fc !important;
+    color: #64748b !important;
     border-bottom: 1px solid var(--p-line) !important;
     border-top: 0 !important;
-    font-size: 11.5px !important;
-    font-weight: 750 !important;
-    letter-spacing: 0.03em;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
     white-space: nowrap;
-    padding: 11px 12px !important;
+    padding: 13px 16px !important;
 }
 
-body.zoho-theme .table > tbody > tr > td,
-body.zoho-theme table.dataTable tbody td {
+body.zoho-theme .table:not(.table-pdf):not(.direct-sell-product-table):not(#pos_table) > thead > tr > th:first-child,
+body.zoho-theme table.dataTable:not(.table-pdf):not(#pos_table) thead th:first-child {
+    border-top-left-radius: 13px;
+}
+
+body.zoho-theme .table:not(.table-pdf):not(.direct-sell-product-table):not(#pos_table) > thead > tr > th:last-child,
+body.zoho-theme table.dataTable:not(.table-pdf):not(#pos_table) thead th:last-child {
+    border-top-right-radius: 13px;
+}
+
+body.zoho-theme .table:not(.table-pdf):not(.direct-sell-product-table):not(#pos_table) > tbody > tr > td,
+body.zoho-theme table.dataTable:not(.table-pdf):not(#pos_table) tbody td {
     color: var(--p-copy) !important;
-    border-color: var(--p-line) !important;
+    border-top: 0 !important;
+    border-bottom: 1px solid #eef1f6 !important;
     font-size: 13.5px !important;
-    padding: 11px 12px !important;
+    padding: 14px 16px !important;
     vertical-align: middle !important;
+    background: #fff;
 }
 
-body.zoho-theme .table-striped > tbody > tr:nth-of-type(odd) {
-    background: #fcfdff !important;
+body.zoho-theme .table:not(.table-pdf):not(.direct-sell-product-table):not(#pos_table) > tbody > tr:last-child > td,
+body.zoho-theme table.dataTable:not(.table-pdf):not(#pos_table) tbody tr:last-child td {
+    border-bottom: 0 !important;
 }
 
-body.zoho-theme .table-hover > tbody > tr:hover:not([class*="bg-"]),
-body.zoho-theme table.dataTable tbody tr:hover:not([class*="bg-"]) {
-    background: #f5f8fc !important;
+body.zoho-theme .table-striped:not(.table-pdf):not(.direct-sell-product-table):not(#pos_table) > tbody > tr:nth-of-type(odd) > td,
+body.zoho-theme table.dataTable:not(.table-pdf):not(#pos_table).stripe tbody tr.odd > td,
+body.zoho-theme table.dataTable:not(.table-pdf):not(#pos_table) tbody tr.odd > td {
+    background: #fbfcfe !important;
 }
 
-body.zoho-theme .table-bordered {
-    border: 1px solid var(--p-line) !important;
-    border-radius: 12px;
-    /* Keep overflow visible so Actions dropdowns are not clipped */
+body.zoho-theme .table-hover:not(.table-pdf):not(.direct-sell-product-table):not(#pos_table) > tbody > tr:hover:not([class*="bg-"]) > td,
+body.zoho-theme table.dataTable:not(.table-pdf):not(#pos_table) tbody tr:hover:not([class*="bg-"]) > td {
+    background: #f3f8fd !important;
+}
+
+/* DataTables scroll head/body alignment */
+body.zoho-theme .dataTables_scrollHeadInner,
+body.zoho-theme .dataTables_scrollHead table,
+body.zoho-theme .dataTables_scrollBody table {
+    border-radius: 0 !important;
+    box-shadow: none !important;
+}
+
+body.zoho-theme .dataTables_scroll {
+    border: 1px solid var(--p-line);
+    border-radius: 14px;
+    box-shadow: var(--p-shadow-sm);
+    overflow: hidden;
+    background: #fff;
+}
+
+body.zoho-theme .dataTables_scroll:has(.btn-group.open),
+body.zoho-theme .dataTables_scroll:has(.of-visible) {
     overflow: visible;
+}
+
+body.zoho-theme .dataTables_scroll .table,
+body.zoho-theme .dataTables_scroll table.dataTable {
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+}
+
+/* DataTables toolbar: length / search / export / info / pagination */
+body.zoho-theme .dataTables_wrapper .dataTables_length,
+body.zoho-theme .dataTables_wrapper .dataTables_filter,
+body.zoho-theme .dataTables_wrapper .dataTables_info,
+body.zoho-theme .dataTables_wrapper .dataTables_paginate {
+    color: var(--p-muted);
+    font-size: 13px;
+    margin-bottom: 10px;
 }
 
 body.zoho-theme .dataTables_wrapper .dataTables_filter input,
 body.zoho-theme .dataTables_wrapper .dataTables_length select {
     border: 1px solid var(--p-line-strong) !important;
     border-radius: 10px !important;
-    height: 34px;
-    padding: 4px 10px;
+    height: 36px;
+    min-width: 64px;
+    padding: 4px 12px;
+    background: #fff;
+    color: var(--p-ink);
     box-shadow: var(--p-shadow-sm);
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+body.zoho-theme .dataTables_wrapper .dataTables_filter input {
+    min-width: 200px;
+}
+
+body.zoho-theme .dataTables_wrapper .dataTables_filter input:focus,
+body.zoho-theme .dataTables_wrapper .dataTables_length select:focus {
+    border-color: #a8c7e6 !important;
+    box-shadow: var(--p-focus);
+}
+
+body.zoho-theme .dataTables_wrapper .dt-buttons {
+    margin-bottom: 8px;
+}
+
+body.zoho-theme .dataTables_wrapper .dt-buttons .btn,
+body.zoho-theme .dataTables_wrapper .dt-buttons .tw-dw-btn {
+    border-radius: 10px !important;
+    border: 1px solid var(--p-line-strong) !important;
+    background: #fff !important;
+    color: var(--p-copy) !important;
+    font-weight: 600;
+    font-size: 12.5px;
+    padding: 6px 12px !important;
+    min-height: 34px;
+    box-shadow: var(--p-shadow-sm);
+    margin: 0 4px 6px 0;
+}
+
+body.zoho-theme .dataTables_wrapper .dt-buttons .btn:hover,
+body.zoho-theme .dataTables_wrapper .dt-buttons .tw-dw-btn:hover {
+    background: var(--p-blue-soft) !important;
+    border-color: #c5d8ec !important;
+    color: var(--p-blue-dark) !important;
+}
+
+body.zoho-theme .dataTables_wrapper .dataTables_paginate {
+    padding-top: 4px;
 }
 
 body.zoho-theme .dataTables_wrapper .dataTables_paginate .paginate_button {
-    border-radius: 8px !important;
+    border-radius: 999px !important;
     border: 1px solid transparent !important;
-    margin: 0 2px !important;
+    margin: 0 3px !important;
+    padding: 5px 12px !important;
+    min-width: 34px;
+    text-align: center;
+    background: transparent !important;
+    color: var(--p-copy) !important;
+    font-weight: 600;
+    font-size: 13px;
+    box-shadow: none !important;
 }
 
 body.zoho-theme .dataTables_wrapper .dataTables_paginate .paginate_button.current,
@@ -933,19 +1172,97 @@ body.zoho-theme .dataTables_wrapper .dataTables_paginate .paginate_button.curren
     background: var(--p-blue) !important;
     border-color: var(--p-blue) !important;
     color: #fff !important;
+    box-shadow: 0 2px 8px rgba(79, 143, 206, 0.35) !important;
 }
 
-body.zoho-theme .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+body.zoho-theme .dataTables_wrapper .dataTables_paginate .paginate_button:hover:not(.current):not(.disabled) {
     background: var(--p-blue-soft) !important;
     border-color: #d4e6f6 !important;
     color: var(--p-blue-dark) !important;
 }
 
-body.zoho-theme .dataTables_wrapper .dataTables_info,
-body.zoho-theme .dataTables_wrapper .dataTables_length,
-body.zoho-theme .dataTables_wrapper .dataTables_filter {
-    color: var(--p-muted);
+body.zoho-theme .dataTables_wrapper .dataTables_paginate .paginate_button.disabled,
+body.zoho-theme .dataTables_wrapper .dataTables_paginate .paginate_button.disabled:hover {
+    opacity: 0.45;
+    background: transparent !important;
+    color: var(--p-muted) !important;
+    cursor: default;
+}
+
+/* In-table Actions dropdown triggers */
+body.zoho-theme table tbody .btn-group > .btn,
+body.zoho-theme table tbody .tw-dw-btn.tw-dw-btn-xs.tw-dw-btn-outline.tw-dw-btn-info,
+body.zoho-theme table tbody .btn-info.dropdown-toggle,
+body.zoho-theme table tbody .btn-xs.dropdown-toggle {
+    border-radius: 999px !important;
+    font-weight: 650 !important;
+    font-size: 12px !important;
+    letter-spacing: 0.01em;
+    min-height: 30px;
+    padding: 5px 12px !important;
+    box-shadow: none !important;
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+
+body.zoho-theme table tbody .tw-dw-btn.tw-dw-btn-xs.tw-dw-btn-outline.tw-dw-btn-info,
+body.zoho-theme table tbody .btn-info.dropdown-toggle,
+body.zoho-theme table tbody .btn-group > .btn-info {
+    color: var(--p-blue-dark) !important;
+    border: 1px solid #b7d2eb !important;
+    background: var(--p-blue-soft) !important;
+}
+
+body.zoho-theme table tbody .tw-dw-btn.tw-dw-btn-xs.tw-dw-btn-outline.tw-dw-btn-info:hover,
+body.zoho-theme table tbody .tw-dw-btn.tw-dw-btn-xs.tw-dw-btn-outline.tw-dw-btn-info:focus,
+body.zoho-theme table tbody .btn-info.dropdown-toggle:hover,
+body.zoho-theme table tbody .btn-info.dropdown-toggle:focus,
+body.zoho-theme table tbody .btn-group.open > .btn-info,
+body.zoho-theme table tbody .btn-group.open > .tw-dw-btn-info {
+    background: var(--p-blue) !important;
+    border-color: var(--p-blue) !important;
+    color: #fff !important;
+    box-shadow: 0 2px 8px rgba(79, 143, 206, 0.28) !important;
+}
+
+body.zoho-theme table tbody .dropdown-menu {
+    border: 1px solid var(--p-line) !important;
+    border-radius: 12px !important;
+    box-shadow: var(--p-shadow-md) !important;
+    padding: 6px !important;
+    margin-top: 6px !important;
+    min-width: 180px;
+}
+
+body.zoho-theme table tbody .dropdown-menu > li > a {
+    border-radius: 8px;
+    padding: 8px 12px;
     font-size: 13px;
+    color: var(--p-copy);
+}
+
+body.zoho-theme table tbody .dropdown-menu > li > a:hover {
+    background: var(--p-blue-soft) !important;
+    color: var(--p-blue-dark) !important;
+}
+
+/* Keep Actions menus unclipped inside common list shells */
+body.zoho-theme .box:has(.btn-group.open),
+body.zoho-theme .box-body:has(.btn-group.open),
+body.zoho-theme .table-responsive:has(.btn-group.open),
+body.zoho-theme .dataTables_wrapper:has(.btn-group.open),
+body.zoho-theme .dataTables_scrollBody.of-visible {
+    overflow: visible !important;
+}
+
+/* Processing indicator */
+body.zoho-theme .dataTables_processing {
+    background: rgba(255, 255, 255, 0.92) !important;
+    border: 1px solid var(--p-line) !important;
+    border-radius: 12px !important;
+    box-shadow: var(--p-shadow-md);
+    color: var(--p-ink);
+    font-weight: 600;
+    padding: 12px 18px !important;
 }
 
 /* Select2 */
