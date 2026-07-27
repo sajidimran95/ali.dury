@@ -306,21 +306,10 @@ window.japsLoadPaymentMethodMix = function(start, end, locationId) {
             legend: { enabled: false },
             exporting: {
                 enabled: true,
+                fallbackToExportServer: false,
                 buttons: {
                     contextButton: {
-                        align: 'right',
-                        verticalAlign: 'top',
-                        x: 0,
-                        y: 0,
-                        symbolStroke: '#6b7280',
-                        theme: {
-                            fill: 'transparent',
-                            stroke: 'none',
-                            states: {
-                                hover: { fill: 'rgba(0,0,0,0.04)' },
-                                select: { fill: 'rgba(0,0,0,0.06)' }
-                            }
-                        }
+                        enabled: false
                     }
                 }
             },
@@ -378,5 +367,73 @@ window.japsLoadPaymentMethodMix = function(start, end, locationId) {
                 data: pieData
             }]
         });
+
+        // Align 3-line menu with Sales card header (top-right)
+        (function bindPaymentMixHeaderMenu() {
+            var $btn = $('#payment_method_mix_menu_btn');
+            var $menu = $('#payment_method_mix_export_menu');
+            if (!$btn.length) {
+                return;
+            }
+            if (!$menu.length) {
+                $menu = $(
+                    '<div id="payment_method_mix_export_menu" class="japs-dash-chart-card__export-menu" hidden>' +
+                        '<button type="button" data-export="print">Print chart</button>' +
+                        '<button type="button" data-export="image/png">Download PNG image</button>' +
+                        '<button type="button" data-export="image/jpeg">Download JPEG image</button>' +
+                        '<button type="button" data-export="application/pdf">Download PDF document</button>' +
+                        '<button type="button" data-export="image/svg+xml">Download SVG vector image</button>' +
+                    '</div>'
+                ).appendTo('.japs-dash-chart-card--payment .japs-dash-chart-card__header');
+            }
+
+            var closeMenu = function() {
+                $menu.attr('hidden', true);
+                $btn.attr('aria-expanded', 'false');
+            };
+
+            $btn.off('click.japsPayMixMenu').on('click.japsPayMixMenu', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                var isOpen = !$menu.attr('hidden');
+                if (isOpen) {
+                    closeMenu();
+                    return;
+                }
+                $menu.removeAttr('hidden');
+                $btn.attr('aria-expanded', 'true');
+            });
+
+            $menu.off('click.japsPayMixMenu').on('click.japsPayMixMenu', 'button[data-export]', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                var chart = window.japsPaymentMixChart;
+                var type = $(this).data('export');
+                closeMenu();
+                if (!chart) {
+                    return;
+                }
+                if (type === 'print') {
+                    if (typeof chart.print === 'function') {
+                        chart.print();
+                    }
+                    return;
+                }
+                if (typeof chart.exportChartLocal === 'function') {
+                    chart.exportChartLocal({ type: type });
+                } else if (typeof chart.exportChart === 'function') {
+                    chart.exportChart({ type: type });
+                }
+            });
+
+            $(document)
+                .off('click.japsPayMixMenu')
+                .on('click.japsPayMixMenu', function(e) {
+                    if ($(e.target).closest('#payment_method_mix_menu_btn, #payment_method_mix_export_menu').length) {
+                        return;
+                    }
+                    closeMenu();
+                });
+        })();
     });
 };

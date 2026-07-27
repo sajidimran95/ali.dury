@@ -94,7 +94,9 @@
                     <div class="japs-dash-charts-row">
                         @if ((auth()->user()->can('sell.view') || auth()->user()->can('direct_sell.view')) && !empty($all_locations))
                             <div class="japs-dash-chart-card japs-dash-chart-card--sales zoho-dashboard__main-chart">
-                                <h3 class="japs-dash-chart-card__title">{{ __('home.sells_last_30_days') }}</h3>
+                                <div class="japs-dash-chart-card__header">
+                                    <h3 class="japs-dash-chart-card__title">{{ __('home.sells_last_30_days') }}</h3>
+                                </div>
                                 <div class="zoho-dashboard__main-chart-canvas japs-dash-chart-card__canvas">
                                     {!! $sells_chart_1->container() !!}
                                 </div>
@@ -123,7 +125,12 @@
                             </div>
                         @endif
                         <div class="japs-dash-chart-card japs-dash-chart-card--payment">
-                            <h3 class="japs-dash-chart-card__title">{{ __('home.payment_method_mix') }}</h3>
+                            <div class="japs-dash-chart-card__header">
+                                <h3 class="japs-dash-chart-card__title">{{ __('home.payment_method_mix') }}</h3>
+                                <button type="button" class="japs-dash-chart-card__menu-btn" id="payment_method_mix_menu_btn" aria-label="Chart menu" title="Chart menu" aria-expanded="false" aria-haspopup="true">
+                                    <span class="japs-dash-chart-card__menu-icon" aria-hidden="true"></span>
+                                </button>
+                            </div>
                             <div class="japs-dash-payment-body">
                                 <div class="japs-dash-payment-mix">
                                     <ul id="payment_method_mix_legend" class="japs-dash-payment-legend" aria-label="{{ __('home.payment_method_mix') }}"></ul>
