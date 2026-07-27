@@ -35,6 +35,7 @@
 							{!! Form::hidden('location_id', $transaction->location_id, ['id' => 'location_id', 'data-receipt_printer_type' => !empty($location_printer_type) ? $location_printer_type : 'browser', 'data-default_payment_accounts' => $transaction->location->default_payment_accounts]); !!}
 							{!! Form::hidden('sub_type', isset($sub_type) ? $sub_type : null) !!}
 							<input type="hidden" id="item_addition_method" value="{{$business_details->item_addition_method}}">
+							@include('sale_pos.partials.pos_cart_actions')
 							<div class="pos-cart-panel">
 							@include('sale_pos.partials.pos_form_edit')
 
@@ -117,6 +118,7 @@
 	@endif
 
 	@include('sale_pos.partials.pos_layout_script', ['form_id' => 'edit_pos_sell_form'])
+	@include('sale_pos.partials.pos_cart_actions_script')
 	<script>
 	(function () {
 		function syncPayCta() {

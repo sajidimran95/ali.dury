@@ -308,13 +308,20 @@ $(document).ready(function() {
 
     // when a real customer is picked, show their name (walk-in keeps its name)
     function posCustPickerSelect($btn) {
-        var id = $btn.data('id');
-        var text = $btn.attr('data-text') || $btn.data('name') || '';
-        if (!id) return;
+        // Always use attribute — jQuery .data() can cache/coerce incorrectly
+        var id = String($btn.attr('data-id') || '');
+        var text = $btn.attr('data-text') || $btn.attr('data-name') || '';
+        // Must be numeric contacts.id (not contact code like CO0001)
+        if (!id || !/^\d+$/.test(id)) {
+            if (typeof toastr !== 'undefined') {
+                toastr.error('Invalid customer selected. Please try again.');
+            }
+            return;
+        }
         if ($('#customer_id option[value="' + id + '"]').length === 0) {
             $('#customer_id').append($('<option>', { value: id, text: text }));
         }
-        $('#customer_id').val(String(id)).trigger('change');
+        $('#customer_id').val(id).trigger('change');
         var $rendered = $('#customer_id').next('.select2-container').find('.select2-selection__rendered');
         $rendered.text(text).attr('title', text).removeClass('pos-cust-placeholder-text').css('color', '#f2f2f2');
         var payNum = $btn.attr('data-pay_term_number');
@@ -1202,16 +1209,28 @@ $(document).ready(function() {
             var data = pos_form_obj.serialize();
             data = data + '&status=final&is_suspend=1';
 
-            // Ensure contact_id — POS theme can display Walk-In without select value
-            var contactId = $('#customer_id').val() || $('#default_customer_id').val() || '';
-            if (contactId) {
-                if (!$('#customer_id').val()) {
-                    var cname = $('#default_customer_name').val() || 'Walk-In Customer';
-                    if ($('#customer_id option[value="' + contactId + '"]').length === 0) {
-                        $('#customer_id').append($('<option>', { value: contactId, text: cname }));
-                    }
-                    $('#customer_id').val(String(contactId)).trigger('change');
+            // Ensure numeric contacts.id — never send contact codes like CO0001
+            function posResolveContactPk() {
+                var raw = String($('#customer_id').val() || '').trim();
+                if (/^\d+$/.test(raw)) {
+                    return raw;
                 }
+                var def = String($('#default_customer_id').val() || '').trim();
+                if (/^\d+$/.test(def)) {
+                    return def;
+                }
+                return '';
+            }
+
+            var contactId = posResolveContactPk();
+            if (contactId) {
+                var cname = $('#customer_id option:selected').text()
+                    || $('#default_customer_name').val()
+                    || 'Walk-In Customer';
+                if ($('#customer_id option[value="' + contactId + '"]').length === 0) {
+                    $('#customer_id').append($('<option>', { value: contactId, text: cname }));
+                }
+                $('#customer_id').val(contactId).trigger('change');
                 data = data.replace(/(^|&)contact_id=[^&]*/g, '');
                 data += (data ? '&' : '') + 'contact_id=' + encodeURIComponent(contactId);
             } else {
@@ -3343,9 +3362,8 @@ function reset_pos_form(){
 
 	//If on edit page then redirect to Add POS page
 	if($('form#edit_pos_sell_form').length > 0){
-		setTimeout(function() {
-			window.location = $("input#pos_redirect_url").val();
-		}, 4000);
+		var redirectUrl = $("input#pos_redirect_url").val() || ((window.base_path || '') + '/pos/create');
+		window.location = redirectUrl;
 		return true;
 	}
 

@@ -347,13 +347,11 @@ class SellPosController extends Controller
 
             $input['is_suspend'] = isset($input['is_suspend']) && 1 == $input['is_suspend'] ? 1 : 0;
 
-            // POS UI can show "Walk-In Customer" without a selected option value
-            if (empty($input['contact_id'])) {
-                $walk_in = $this->contactUtil->getWalkInCustomer($request->session()->get('user.business_id'));
-                if (!empty($walk_in['id'])) {
-                    $input['contact_id'] = $walk_in['id'];
-                }
-            }
+            $business_id_for_contact = $request->session()->get('user.business_id');
+            $input['contact_id'] = $this->resolvePosContactId(
+                $input['contact_id'] ?? null,
+                $business_id_for_contact
+            );
 
             if (empty($input['contact_id'])) {
                 $output = ['success' => 0, 'msg' => 'Please select a customer'];
@@ -431,8 +429,8 @@ class SellPosController extends Controller
                     $input['exchange_rate'] = 1;
                 }
 
-                //Customer group details
-                $contact_id = $request->get('contact_id', null);
+                //Customer group details (use resolved contacts.id, not raw request which may be CO000x)
+                $contact_id = $input['contact_id'] ?? null;
                 $cg = $this->contactUtil->getCustomerGroup($business_id, $contact_id);
                 $input['customer_group_id'] = (empty($cg) || empty($cg->id)) ? null : $cg->id;
 
@@ -745,6 +743,38 @@ class SellPosController extends Controller
                     ->with('status', $output);
             }
         }
+    }
+
+    /**
+     * Resolve POS customer to contacts.id (PK).
+     * UI sometimes posts contacts.contact_id codes like "CO0001" which break the FK.
+     */
+    private function resolvePosContactId($contactId, $businessId)
+    {
+        if (!empty($contactId) && ctype_digit((string) $contactId)) {
+            $exists = Contact::where('business_id', $businessId)
+                ->where('id', (int) $contactId)
+                ->exists();
+            if ($exists) {
+                return (int) $contactId;
+            }
+        }
+
+        if (!empty($contactId) && !ctype_digit((string) $contactId)) {
+            $byCode = Contact::where('business_id', $businessId)
+                ->where('contact_id', $contactId)
+                ->value('id');
+            if (!empty($byCode)) {
+                return (int) $byCode;
+            }
+        }
+
+        $walkIn = $this->contactUtil->getWalkInCustomer($businessId);
+        if (!empty($walkIn['id'])) {
+            return (int) $walkIn['id'];
+        }
+
+        return null;
     }
 
     /**
@@ -1207,13 +1237,11 @@ class SellPosController extends Controller
 
             $input['is_suspend'] = isset($input['is_suspend']) && 1 == $input['is_suspend'] ? 1 : 0;
 
-            // POS UI can show "Walk-In Customer" without a selected option value
-            if (empty($input['contact_id'])) {
-                $walk_in = $this->contactUtil->getWalkInCustomer($request->session()->get('user.business_id'));
-                if (!empty($walk_in['id'])) {
-                    $input['contact_id'] = $walk_in['id'];
-                }
-            }
+            $business_id_for_contact = $request->session()->get('user.business_id');
+            $input['contact_id'] = $this->resolvePosContactId(
+                $input['contact_id'] ?? null,
+                $business_id_for_contact
+            );
 
             $is_direct_sale = false;
             if (!empty($input['products'])) {
@@ -1294,8 +1322,8 @@ class SellPosController extends Controller
                     $input['exchange_rate'] = 1;
                 }
 
-                //Customer group details
-                $contact_id = $request->get('contact_id', null);
+                //Customer group details (use resolved contacts.id)
+                $contact_id = $input['contact_id'] ?? null;
                 $cg = $this->contactUtil->getCustomerGroup($business_id, $contact_id);
                 $input['customer_group_id'] = (empty($cg) || empty($cg->id)) ? null : $cg->id;
 
