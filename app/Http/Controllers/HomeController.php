@@ -130,18 +130,41 @@ class HomeController extends Controller
             ['currency' => $currency->code]
         ));
 
-        $sells_chart_1->labels($labels)
+        // Sales chart: vertical column (bar) chart
+        $sells_chart_1_options['chart']['type'] = 'column';
+        $sells_chart_1_options['colors'] = ['#3b82f6'];
+        $sells_chart_1_options['yAxis']['title']['text'] = null;
+        $sells_chart_1_options['yAxis']['gridLineColor'] = '#e5e7eb';
+        $sells_chart_1_options['yAxis']['gridLineDashStyle'] = 'Solid';
+        $sells_chart_1_options['yAxis']['gridLineWidth'] = 1;
+        $sells_chart_1_options['yAxis']['min'] = 0;
+        $sells_chart_1_options['xAxis']['labels']['rotation'] = -45;
+        $sells_chart_1_options['legend']['enabled'] = false;
+        $sells_chart_1_options['plotOptions'] = [
+            'column' => [
+                'borderWidth' => 0,
+                'borderRadius' => 3,
+                'color' => '#3b82f6',
+                'pointPadding' => 0.15,
+                'groupPadding' => 0.1,
+            ],
+            'series' => [
+                'type' => 'column',
+                'borderWidth' => 0,
+            ],
+        ];
+
+        // Shorter x-axis labels like screenshot (e.g. Jul 12)
+        $short_labels = [];
+        foreach ($dates as $date) {
+            $short_labels[] = date('M j', strtotime($date));
+        }
+
+        $sells_chart_1->labels($short_labels)
                         ->options($sells_chart_1_options);
 
-        if (! empty($location_sells)) {
-            foreach ($location_sells as $location_sell) {
-                $sells_chart_1->dataset($location_sell['loc_label'], 'line', $location_sell['values']);
-            }
-        }
-
-        if (count($all_locations) > 1) {
-            $sells_chart_1->dataset(__('report.all_locations'), 'line', $all_sell_values);
-        }
+        // Single combined sales series (column)
+        $sells_chart_1->dataset(__('home.total_sell'), 'column', $all_sell_values);
 
         $labels = [];
         $values = [];
@@ -187,16 +210,30 @@ class HomeController extends Controller
             'home.total_sells',
             ['currency' => $currency->code]
         ));
+        $sells_chart_2_options['chart']['type'] = 'column';
+        $sells_chart_2_options['colors'] = ['#3b82f6'];
+        $sells_chart_2_options['yAxis']['title']['text'] = null;
+        $sells_chart_2_options['yAxis']['gridLineColor'] = '#e5e7eb';
+        $sells_chart_2_options['yAxis']['gridLineDashStyle'] = 'Solid';
+        $sells_chart_2_options['yAxis']['gridLineWidth'] = 1;
+        $sells_chart_2_options['yAxis']['min'] = 0;
+        $sells_chart_2_options['legend']['enabled'] = false;
+        $sells_chart_2_options['plotOptions'] = [
+            'column' => [
+                'borderWidth' => 0,
+                'borderRadius' => 3,
+                'color' => '#3b82f6',
+                'pointPadding' => 0.15,
+                'groupPadding' => 0.1,
+            ],
+            'series' => [
+                'type' => 'column',
+                'borderWidth' => 0,
+            ],
+        ];
         $sells_chart_2->labels($labels)
                     ->options($sells_chart_2_options);
-        if (! empty($fy_sells_by_location_data)) {
-            foreach ($fy_sells_by_location_data as $location_sell) {
-                $sells_chart_2->dataset($location_sell['loc_label'], 'line', $location_sell['values']);
-            }
-        }
-        if (count($all_locations) > 1) {
-            $sells_chart_2->dataset(__('report.all_locations'), 'line', $values);
-        }
+        $sells_chart_2->dataset(__('home.total_sell'), 'column', $values);
 
         //Get Dashboard widgets from module
         $module_widgets = $this->moduleUtil->getModuleData('dashboard_widget');
@@ -678,9 +715,77 @@ class HomeController extends Controller
         $pending_html = view('home.partials.pending_actions', compact('groups'))->render();
         $activities_html = view('home.partials.recent_activities', compact('activities'))->render();
 
+        $attention_items = [];
+        foreach ($groups as $group) {
+            foreach ($group['items'] as $item) {
+                $attention_items[] = $item;
+            }
+        }
+
         return response()->json([
             'pending_html' => $pending_html,
             'activities_html' => $activities_html,
+            'attention_items' => $attention_items,
+        ]);
+    }
+
+    /**
+     * Payment method breakdown for dashboard line chart.
+     */
+    public function getPaymentMethodMix()
+    {
+        if (! request()->ajax()) {
+            abort(404);
+        }
+
+        $start = request()->input('start', \Carbon::now()->subDays(29)->format('Y-m-d'));
+        $end = request()->input('end', \Carbon::now()->format('Y-m-d'));
+        $location_id = request()->input('location_id');
+        $business_id = request()->session()->get('user.business_id');
+        $permitted_locations = auth()->user()->permitted_locations();
+
+        $payment_types = $this->transactionUtil->payment_types(null, true, $business_id);
+
+        $query = \App\TransactionPayment::join('transactions as t', 'transaction_payments.transaction_id', '=', 't.id')
+            ->where('transaction_payments.business_id', $business_id)
+            ->whereNull('transaction_payments.parent_id')
+            ->where('transaction_payments.method', '!=', 'advance')
+            ->where('t.status', 'final')
+            ->whereIn('t.type', ['sell', 'purchase'])
+            ->whereBetween(\DB::raw('date(t.transaction_date)'), [$start, $end]);
+
+        if ($permitted_locations != 'all') {
+            $query->whereIn('t.location_id', $permitted_locations);
+        }
+        if (! empty($location_id)) {
+            $query->where('t.location_id', $location_id);
+        }
+
+        $rows = $query
+            ->select('transaction_payments.method', \DB::raw('SUM(transaction_payments.amount) as total'))
+            ->groupBy('transaction_payments.method')
+            ->orderByDesc('total')
+            ->get();
+
+        $series = [];
+        $grand_total = 0;
+        foreach ($rows as $row) {
+            $amount = (float) $row->total;
+            if ($amount <= 0) {
+                continue;
+            }
+            $grand_total += $amount;
+            $series[] = [
+                'method' => $row->method,
+                'label' => $payment_types[$row->method] ?? ucfirst(str_replace('_', ' ', $row->method)),
+                'amount' => $amount,
+            ];
+        }
+
+        return response()->json([
+            'series' => $series,
+            'total' => $grand_total,
+            'has_data' => $grand_total > 0,
         ]);
     }
 
@@ -771,8 +876,9 @@ class HomeController extends Controller
                         'fontWeight' => '600',
                     ],
                 ],
-                'gridLineColor' => '#e8edf4',
-                'gridLineDashStyle' => 'Dash',
+                'gridLineColor' => '#e5e7eb',
+                'gridLineDashStyle' => 'Solid',
+                'gridLineWidth' => 1,
                 'labels' => [
                     'style' => [
                         'color' => '#64748b',

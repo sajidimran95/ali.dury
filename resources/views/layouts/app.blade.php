@@ -13,6 +13,10 @@
 @endif
 
 @php
+    $dashboard_home = $request->segment(1) == 'home';
+@endphp
+
+@php
     $whitelist = ['127.0.0.1', '::1'];
 @endphp
 
@@ -35,7 +39,7 @@
 
 </head>
 <body
-    class="tw-font-sans tw-antialiased tw-text-gray-900 zoho-theme @if ($pos_layout) hold-transition lockscreen pos-sale-theme @else hold-transition skin-@if (!empty(session('business.theme_color'))){{ session('business.theme_color') }}@else{{ 'blue-light' }} @endif sidebar-mini @endif" >
+    class="tw-font-sans tw-antialiased tw-text-gray-900 zoho-theme @if ($pos_layout) hold-transition lockscreen pos-sale-theme @elseif(!empty($dashboard_home)) hold-transition japs-dashboard-home sidebar-mini @else hold-transition skin-@if (!empty(session('business.theme_color'))){{ session('business.theme_color') }}@else{{ 'blue-light' }} @endif sidebar-mini @endif" >
     <div class="tw-flex thetop">
         <script type="text/javascript">
             if (localStorage.getItem("upos_sidebar_collapse") == 'true') {

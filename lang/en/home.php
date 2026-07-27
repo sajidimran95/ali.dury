@@ -11,7 +11,13 @@ return [
     |
     */
     'home' => 'Home',
-    'welcome_message' => 'Welcome :name, ✨',
+    'welcome_message' => 'Welcome back, :name',
+    'needs_attention' => 'Needs attention',
+    'payment_method_mix' => 'Payment method mix',
+    'last_30_days' => 'Last 30 days',
+    'net_profit' => 'Net profit',
+    'net_profit_hint' => 'Sales minus cost and expenses',
+    'payment_mix_total' => ':amount total',
     'total_sell' => 'Total Sales',
     'total_purchase' => 'Total purchase',
     'invoice_due' => 'Invoice due',

@@ -24,8 +24,8 @@
                         </div>
                     </div>
 
-                    @if (auth()->user()->can('dashboard.data') && $is_admin)
-                        <div class="zoho-dashboard__toolbar">
+                    <div class="zoho-dashboard__toolbar japs-dash-toolbar">
+                        @if (auth()->user()->can('dashboard.data') && $is_admin)
                             @if (count($all_locations) > 1)
                                 <div class="zoho-dashboard__toolbar-item">
                                     {!! Form::select('dashboard_location', $all_locations, null, [
@@ -41,16 +41,11 @@
                                 <span>{{ __('messages.filter_by_date') }}</span>
                                 <svg aria-hidden="true" class="tw-size-3.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"><path d="M6 9l6 6l6 -6"/></svg>
                             </button>
-                        </div>
-                    @elseif(!auth()->user()->can('dashboard.data'))
-                        <div class="zoho-dashboard__toolbar zoho-dashboard__toolbar--attendance">
+                        @endif
+                        <div class="japs-dash-toolbar-attendance @if(!auth()->user()->can('dashboard.data')) japs-dash-toolbar-attendance--solo @endif">
                             @include('home.partials.attendance_clock')
                         </div>
-                    @endif
-                </div>
-
-                <div class="zoho-dashboard__tabs" aria-hidden="true">
-                    <span class="zoho-dashboard__tab zoho-dashboard__tab--active">{{ __('home.home') }}</span>
+                    </div>
                 </div>
 
                 @if (auth()->user()->can('dashboard.data') && $is_admin)
@@ -65,151 +60,94 @@
                         $card_profit_loss = action([\App\Http\Controllers\ReportController::class, 'getProfitLoss']);
                         $card_online_orders = route('ecommerce.admin.orders');
                     @endphp
-                    <div class="japs-dashboard-stats zoho-dashboard__stats tw-grid tw-grid-cols-1 sm:tw-grid-cols-2 xl:tw-grid-cols-3 tw-gap-3 sm:tw-gap-4">
-                        <a href="{{ $card_sells }}" class="zoho-stat-card zoho-stat-card--link" title="{{ __('home.total_sell') }}">
-                            <div class="zoho-stat-card__icon zoho-stat-card__icon--sky">
-                                <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"><path d="M6 19m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"/><path d="M17 19m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"/><path d="M17 17h-11v-14h-2"/><path d="M6 5l14 1l-1 7h-13"/></svg>
-                            </div>
-                            <div class="zoho-stat-card__body">
-                                <p class="zoho-stat-card__label">{{ __('home.total_sell') }}</p>
-                                <p class="zoho-stat-card__value total_sell"></p>
-                            </div>
-                        </a>
 
-                        <a href="{{ $card_profit_loss }}" class="zoho-stat-card zoho-stat-card--link" title="{{ __('lang_v1.net') }}">
-                            <div class="zoho-stat-card__icon zoho-stat-card__icon--green">
-                                <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"><path d="M5 21v-16a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v16l-3 -2l-2 2l-2 -2l-2 2l-2 -2l-3 2"/><path d="M14.8 8a2 2 0 0 0 -1.8 -1h-2a2 2 0 1 0 0 4h2a2 2 0 1 1 0 4h-2a2 2 0 0 1 -1.8 -1"/><path d="M12 6v10"/></svg>
-                            </div>
-                            <div class="zoho-stat-card__body">
-                                <p class="zoho-stat-card__label">{{ __('lang_v1.net') }} @show_tooltip(__('lang_v1.net_home_tooltip'))</p>
-                                <p class="zoho-stat-card__value net"></p>
-                            </div>
+                    <div class="japs-dash-kpi-row">
+                        <a href="{{ $card_sells }}" class="japs-dash-kpi-card" title="{{ __('home.total_sell') }}">
+                            <p class="japs-dash-kpi-card__label">{{ __('home.total_sell') }}</p>
+                            <p class="japs-dash-kpi-card__value total_sell"></p>
+                            <p class="japs-dash-kpi-card__hint">{{ __('home.last_30_days') }}</p>
                         </a>
+                        <a href="{{ $card_profit_loss }}" class="japs-dash-kpi-card japs-dash-kpi-card--profit" title="{{ __('home.net_profit') }}">
+                            <p class="japs-dash-kpi-card__label">{{ __('home.net_profit') }} @show_tooltip(__('lang_v1.net_home_tooltip'))</p>
+                            <p class="japs-dash-kpi-card__value net"></p>
+                            <p class="japs-dash-kpi-card__hint">{{ __('home.net_profit_hint') }}</p>
+                        </a>
+                        <a href="{{ $card_purchases }}" class="japs-dash-kpi-card" title="{{ __('home.total_purchase') }}">
+                            <p class="japs-dash-kpi-card__label">{{ __('home.total_purchase') }}</p>
+                            <p class="japs-dash-kpi-card__value total_purchase"></p>
+                            <p class="japs-dash-kpi-card__hint">{{ __('home.last_30_days') }}</p>
+                        </a>
+                        <a href="{{ $card_expenses }}" class="japs-dash-kpi-card" title="{{ __('lang_v1.expense') }}">
+                            <p class="japs-dash-kpi-card__label">{{ __('lang_v1.expense') }}</p>
+                            <p class="japs-dash-kpi-card__value total_expense"></p>
+                            <p class="japs-dash-kpi-card__hint">{{ __('home.last_30_days') }}</p>
+                        </a>
+                    </div>
 
-                        <a href="{{ $card_sells_due }}" class="zoho-stat-card zoho-stat-card--link" title="{{ __('home.invoice_due') }}">
-                            <div class="zoho-stat-card__icon zoho-stat-card__icon--amber">
-                                <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"/><path d="M9 7l1 0"/><path d="M9 13l6 0"/><path d="M13 17l2 0"/></svg>
-                            </div>
-                            <div class="zoho-stat-card__body">
-                                <p class="zoho-stat-card__label">{{ __('home.invoice_due') }}</p>
-                                <p class="zoho-stat-card__value invoice_due"></p>
-                            </div>
-                        </a>
+                    <div class="japs-dash-attention">
+                        <h2 class="japs-dash-attention__title">{{ __('home.needs_attention') }}</h2>
+                        <div class="japs-dash-attention__pills" id="dashboard_needs_attention">
+                            <span class="japs-dash-attention__loading">{{ __('lang_v1.loading') }}...</span>
+                        </div>
+                    </div>
 
-                        <a href="{{ $card_sell_return }}" class="zoho-stat-card zoho-stat-card--link" title="{{ __('lang_v1.total_sell_return') }}">
-                            <div class="zoho-stat-card__icon zoho-stat-card__icon--red">
-                                <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"><path d="M21 7l-18 0"/><path d="M18 10l3 -3l-3 -3"/><path d="M6 20l-3 -3l3 -3"/><path d="M3 17l18 0"/></svg>
+                    <div class="japs-dash-charts-row">
+                        @if ((auth()->user()->can('sell.view') || auth()->user()->can('direct_sell.view')) && !empty($all_locations))
+                            <div class="japs-dash-chart-card japs-dash-chart-card--sales zoho-dashboard__main-chart">
+                                <h3 class="japs-dash-chart-card__title">{{ __('home.sells_last_30_days') }}</h3>
+                                <div class="zoho-dashboard__main-chart-canvas japs-dash-chart-card__canvas">
+                                    {!! $sells_chart_1->container() !!}
+                                </div>
+                                <div class="japs-dash-chart-card__footer japs-dash-chart-card__footer--split">
+                                    <a href="{{ $card_sell_return }}" class="japs-dash-mini-stat" title="{{ __('lang_v1.total_sell_return') }}">
+                                        <span class="japs-dash-mini-stat__label">
+                                            {{ __('lang_v1.total_sell_return') }}
+                                            <i class="fa fa-info-circle hover-q no-print" aria-hidden="true" data-container="body"
+                                            data-toggle="popover" data-placement="auto bottom" id="total_srp"
+                                            data-value="{{ __('lang_v1.total_sell_return') }}-{{ __('lang_v1.total_sell_return_paid') }}"
+                                            data-content="" data-html="true" data-trigger="hover"></i>
+                                        </span>
+                                        <span class="japs-dash-mini-stat__value total_sell_return"></span>
+                                    </a>
+                                    <a href="{{ $card_purchase_return }}" class="japs-dash-mini-stat" title="{{ __('lang_v1.total_purchase_return') }}">
+                                        <span class="japs-dash-mini-stat__label">
+                                            {{ __('lang_v1.total_purchase_return') }}
+                                            <i class="fa fa-info-circle hover-q no-print" aria-hidden="true" data-container="body"
+                                            data-toggle="popover" data-placement="auto bottom" id="total_prp"
+                                            data-value="{{ __('lang_v1.total_purchase_return') }}-{{ __('lang_v1.total_purchase_return_paid') }}"
+                                            data-content="" data-html="true" data-trigger="hover"></i>
+                                        </span>
+                                        <span class="japs-dash-mini-stat__value total_purchase_return"></span>
+                                    </a>
+                                </div>
                             </div>
-                            <div class="zoho-stat-card__body">
-                                <p class="zoho-stat-card__label">
-                                    {{ __('lang_v1.total_sell_return') }}
-                                    <i class="fa fa-info-circle text-info hover-q no-print" aria-hidden="true" data-container="body"
-                                    data-toggle="popover" data-placement="auto bottom" id="total_srp"
-                                    data-value="{{ __('lang_v1.total_sell_return') }}-{{ __('lang_v1.total_sell_return_paid') }}"
-                                    data-content="" data-html="true" data-trigger="hover"></i>
-                                </p>
-                                <p class="zoho-stat-card__value total_sell_return"></p>
+                        @endif
+                        <div class="japs-dash-chart-card japs-dash-chart-card--payment">
+                            <h3 class="japs-dash-chart-card__title">{{ __('home.payment_method_mix') }}</h3>
+                            <div class="japs-dash-payment-body">
+                                <div id="payment_method_mix_chart" class="japs-dash-payment-chart"></div>
+                                <p id="payment_method_mix_empty" class="japs-dash-payment-empty" style="display:none;">{{ __('lang_v1.no_data') }}</p>
                             </div>
-                        </a>
-
-                        <a href="{{ $card_purchases }}" class="zoho-stat-card zoho-stat-card--link" title="{{ __('home.total_purchase') }}">
-                            <div class="zoho-stat-card__icon zoho-stat-card__icon--sky">
-                                <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"><path d="M12 3v12"/><path d="M16 11l-4 4l-4 -4"/><path d="M3 12a9 9 0 0 0 18 0"/></svg>
+                            <div class="japs-dash-chart-card__footer">
+                                <a href="{{ $card_online_orders }}" class="japs-dash-mini-stat" title="{{ __('home.online_orders') }}">
+                                    <span class="japs-dash-mini-stat__label">
+                                        {{ __('home.online_orders') }}
+                                        @show_tooltip(__('home.online_orders_tooltip'))
+                                    </span>
+                                    <span class="japs-dash-mini-stat__value online_orders"></span>
+                                </a>
                             </div>
-                            <div class="zoho-stat-card__body">
-                                <p class="zoho-stat-card__label">{{ __('home.total_purchase') }}</p>
-                                <p class="zoho-stat-card__value total_purchase"></p>
-                            </div>
-                        </a>
-
-                        <a href="{{ $card_purchases_due }}" class="zoho-stat-card zoho-stat-card--link" title="{{ __('home.purchase_due') }}">
-                            <div class="zoho-stat-card__icon zoho-stat-card__icon--amber">
-                                <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"><path d="M12 9v4"/><path d="M10.363 3.591l-8.106 13.534a1.914 1.914 0 0 0 1.636 2.871h16.214a1.914 1.914 0 0 0 1.636 -2.87l-8.106 -13.536a1.914 1.914 0 0 0 -3.274 0z"/><path d="M12 16h.01"/></svg>
-                            </div>
-                            <div class="zoho-stat-card__body">
-                                <p class="zoho-stat-card__label">{{ __('home.purchase_due') }}</p>
-                                <p class="zoho-stat-card__value purchase_due"></p>
-                            </div>
-                        </a>
-
-                        <a href="{{ $card_purchase_return }}" class="zoho-stat-card zoho-stat-card--link" title="{{ __('lang_v1.total_purchase_return') }}">
-                            <div class="zoho-stat-card__icon zoho-stat-card__icon--red">
-                                <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"><path d="M5 21v-16a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v16l-3 -2l-2 2l-2 -2l-2 2l-2 -2l-3 2"/><path d="M15 14v-2a2 2 0 0 0 -2 -2h-4l2 -2m0 4l-2 -2"/></svg>
-                            </div>
-                            <div class="zoho-stat-card__body">
-                                <p class="zoho-stat-card__label">
-                                    {{ __('lang_v1.total_purchase_return') }}
-                                    <i class="fa fa-info-circle text-info hover-q no-print" aria-hidden="true" data-container="body"
-                                    data-toggle="popover" data-placement="auto bottom" id="total_prp"
-                                    data-value="{{ __('lang_v1.total_purchase_return') }}-{{ __('lang_v1.total_purchase_return_paid') }}"
-                                    data-content="" data-html="true" data-trigger="hover"></i>
-                                </p>
-                                <p class="zoho-stat-card__value total_purchase_return"></p>
-                            </div>
-                        </a>
-
-                        <a href="{{ $card_expenses }}" class="zoho-stat-card zoho-stat-card--link" title="{{ __('lang_v1.expense') }}">
-                            <div class="zoho-stat-card__icon zoho-stat-card__icon--rose">
-                                <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"><path d="M5 21v-16a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v16l-3 -2l-2 2l-2 -2l-2 2l-2 -2l-3 2"/><path d="M14.8 8a2 2 0 0 0 -1.8 -1h-2a2 2 0 1 0 0 4h2a2 2 0 1 1 0 4h-2a2 2 0 0 1 -1.8 -1"/><path d="M12 6v10"/></svg>
-                            </div>
-                            <div class="zoho-stat-card__body">
-                                <p class="zoho-stat-card__label">{{ __('lang_v1.expense') }}</p>
-                                <p class="zoho-stat-card__value total_expense"></p>
-                            </div>
-                        </a>
-
-                        <a href="{{ $card_online_orders }}" class="zoho-stat-card zoho-stat-card--link" title="{{ __('home.online_orders') }}">
-                            <div class="zoho-stat-card__icon zoho-stat-card__icon--sky">
-                                <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"><path d="M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2z"/><path d="M3 9h18"/><path d="M9 13h6"/></svg>
-                            </div>
-                            <div class="zoho-stat-card__body">
-                                <p class="zoho-stat-card__label">
-                                    {{ __('home.online_orders') }}
-                                    @show_tooltip(__('home.online_orders_tooltip'))
-                                </p>
-                                <p class="zoho-stat-card__value online_orders"></p>
-                            </div>
-                        </a>
+                        </div>
                     </div>
                 @endif
             </div>
         </div>
     </div>
 
-                @if ((auth()->user()->can('sell.view') || auth()->user()->can('direct_sell.view')) && !empty($all_locations))
-                    <div class="zoho-dashboard__main-chart tw-bg-white tw-shadow-sm tw-rounded-2xl tw-ring-1 tw-ring-gray-200">
-                        <div class="tw-p-4 sm:tw-p-5">
-                            <div class="tw-flex tw-items-center tw-gap-2.5">
-                                <div class="tw-border tw-flex tw-items-center tw-justify-center tw-rounded-xl tw-w-10 tw-h-10">
-                                    <svg aria-hidden="true" class="tw-size-5 tw-text-sky-500 tw-shrink-0"
-                                        xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="2"
-                                        stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                                        <path d="M6 19m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path>
-                                        <path d="M17 19m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path>
-                                        <path d="M17 17h-11v-14h-2"></path>
-                                        <path d="M6 5l14 1l-1 7h-13"></path>
-                                    </svg>
-                                </div>
-                                <h3 class="tw-font-bold tw-text-base lg:tw-text-lg">
-                                    {{ __('home.sells_last_30_days') }}
-                                </h3>
-                            </div>
-                            <div class="tw-mt-4">
-                                <div class="zoho-dashboard__main-chart-canvas tw-w-full tw-border tw-border-gray-200 tw-border-dashed tw-rounded-xl tw-bg-gray-50">
-                                    {!! $sells_chart_1->container() !!}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                @endif
     @if (auth()->user()->can('dashboard.data'))
             </div>{{-- /.zoho-dashboard__main --}}
 
             <aside class="zoho-dashboard__aside" id="dashboard_side_panel">
-                <div class="zoho-dashboard__aside-attendance">
-                    @include('home.partials.attendance_clock')
-                </div>
                 <div class="zoho-side-panel">
                     <div class="zoho-side-panel__tabs">
                         <button type="button" class="zoho-side-panel__tab zoho-side-panel__tab--active"
@@ -232,6 +170,10 @@
         </div>{{-- /.zoho-dashboard__layout --}}
 
         <div class="japs-dashboard-content zoho-dashboard__body">
+            @php
+                $custom_labels = json_decode(session('business.custom_labels'), true) ?: [];
+                $is_service_staff_enabled = !empty(session('business.enabled_modules')) && in_array('service_staff', session('business.enabled_modules'));
+            @endphp
             <div class="tw-grid tw-grid-cols-1 tw-gap-4 sm:tw-gap-5 lg:tw-grid-cols-2">
                 @if (auth()->user()->can('so.view_all') || auth()->user()->can('so.view_own'))
                     <div class="tw-transition-all lg:tw-col-span-2 tw-duration-200 tw-bg-white tw-shadow-sm tw-rounded-2xl tw-ring-1 tw-ring-gray-200 zoho-so-summary-card">
@@ -565,27 +507,24 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="tw-flow-root tw-mt-5  tw-border-gray-200">
-                                <div class="tw--mx-4 tw--my-2 tw-overflow-x-auto sm:tw--mx-5">
-                                    <div class="tw-inline-block tw-min-w-full tw-py-2 tw-align-middle sm:tw-px-5">
-                                        <table class="table table-bordered table-striped ajax_view"
-                                            id="sales_order_table">
-                                            <thead>
-                                                <tr>
-                                                    <th class="not-export">@lang('messages.action')</th>
-                                                    <th>@lang('messages.date')</th>
-                                                    <th>@lang('restaurant.order_no')</th>
-                                                    <th>@lang('sale.customer_name')</th>
-                                                    <th>@lang('lang_v1.contact_no')</th>
-                                                    <th>@lang('sale.location')</th>
-                                                    <th>@lang('sale.status')</th>
-                                                    <th>@lang('lang_v1.shipping_status')</th>
-                                                    <th>@lang('lang_v1.quantity_remaining')</th>
-                                                    <th>@lang('lang_v1.added_by')</th>
-                                                </tr>
-                                            </thead>
-                                        </table>
-                                    </div>
+                            <div class="tw-mt-5 japs-dash-full-table">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-striped ajax_view" id="sales_order_table" style="width: 100%;">
+                                        <thead>
+                                            <tr>
+                                                <th class="not-export">@lang('messages.action')</th>
+                                                <th>@lang('messages.date')</th>
+                                                <th>@lang('restaurant.order_no')</th>
+                                                <th>@lang('sale.customer_name')</th>
+                                                <th>@lang('lang_v1.contact_no')</th>
+                                                <th>@lang('sale.location')</th>
+                                                <th>@lang('sale.status')</th>
+                                                <th>@lang('lang_v1.shipping_status')</th>
+                                                <th>@lang('lang_v1.quantity_remaining')</th>
+                                                <th>@lang('lang_v1.added_by')</th>
+                                            </tr>
+                                        </thead>
+                                    </table>
                                 </div>
                             </div>
                         </div>
@@ -757,50 +696,39 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="tw-flow-root tw-mt-5  tw-border-gray-200">
-                                <div class="tw--mx-4 tw--my-2 tw-overflow-x-auto sm:tw--mx-5">
-                                    <div class="tw-inline-block tw-min-w-full tw-py-2 tw-align-middle sm:tw-px-5">
-                                        <table class="table table-bordered table-striped ajax_view" id="shipments_table">
-                                            <thead>
-                                                <tr>
-                                                    <th class="not-export">@lang('messages.action')</th>
-                                                    <th>@lang('messages.date')</th>
-                                                    <th>@lang('sale.invoice_no')</th>
-                                                    <th>@lang('sale.customer_name')</th>
-                                                    <th>@lang('lang_v1.contact_no')</th>
-                                                    <th>@lang('sale.location')</th>
-                                                    <th>@lang('lang_v1.shipping_status')</th>
-                                                    @if (!empty($custom_labels['shipping']['custom_field_1']))
-                                                        <th>
-                                                            {{ $custom_labels['shipping']['custom_field_1'] }}
-                                                        </th>
-                                                    @endif
-                                                    @if (!empty($custom_labels['shipping']['custom_field_2']))
-                                                        <th>
-                                                            {{ $custom_labels['shipping']['custom_field_2'] }}
-                                                        </th>
-                                                    @endif
-                                                    @if (!empty($custom_labels['shipping']['custom_field_3']))
-                                                        <th>
-                                                            {{ $custom_labels['shipping']['custom_field_3'] }}
-                                                        </th>
-                                                    @endif
-                                                    @if (!empty($custom_labels['shipping']['custom_field_4']))
-                                                        <th>
-                                                            {{ $custom_labels['shipping']['custom_field_4'] }}
-                                                        </th>
-                                                    @endif
-                                                    @if (!empty($custom_labels['shipping']['custom_field_5']))
-                                                        <th>
-                                                            {{ $custom_labels['shipping']['custom_field_5'] }}
-                                                        </th>
-                                                    @endif
-                                                    <th>@lang('sale.payment_status')</th>
-                                                    <th>@lang('restaurant.service_staff')</th>
-                                                </tr>
-                                            </thead>
-                                        </table>
-                                    </div>
+                            <div class="tw-mt-5 japs-dash-full-table">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-striped ajax_view" id="shipments_table" style="width: 100%;">
+                                        <thead>
+                                            <tr>
+                                                <th class="not-export">@lang('messages.action')</th>
+                                                <th>@lang('messages.date')</th>
+                                                <th>@lang('sale.invoice_no')</th>
+                                                <th>@lang('sale.customer_name')</th>
+                                                <th>@lang('lang_v1.contact_no')</th>
+                                                <th>@lang('sale.location')</th>
+                                                <th>@lang('lang_v1.delivery_person')</th>
+                                                <th>@lang('lang_v1.shipping_status')</th>
+                                                @if (!empty($custom_labels['shipping']['custom_field_1']))
+                                                    <th>{{ $custom_labels['shipping']['custom_field_1'] }}</th>
+                                                @endif
+                                                @if (!empty($custom_labels['shipping']['custom_field_2']))
+                                                    <th>{{ $custom_labels['shipping']['custom_field_2'] }}</th>
+                                                @endif
+                                                @if (!empty($custom_labels['shipping']['custom_field_3']))
+                                                    <th>{{ $custom_labels['shipping']['custom_field_3'] }}</th>
+                                                @endif
+                                                @if (!empty($custom_labels['shipping']['custom_field_4']))
+                                                    <th>{{ $custom_labels['shipping']['custom_field_4'] }}</th>
+                                                @endif
+                                                @if (!empty($custom_labels['shipping']['custom_field_5']))
+                                                    <th>{{ $custom_labels['shipping']['custom_field_5'] }}</th>
+                                                @endif
+                                                <th>@lang('sale.payment_status')</th>
+                                                <th>@lang('restaurant.service_staff')</th>
+                                            </tr>
+                                        </thead>
+                                    </table>
                                 </div>
                             </div>
                         </div>
@@ -901,6 +829,69 @@
     @if (!empty($all_locations))
         {!! $sells_chart_1->script() !!}
         {!! $sells_chart_2->script() !!}
+        <script type="text/javascript">
+            $(function () {
+                if (!$('body').hasClass('japs-dashboard-home') || typeof Highcharts === 'undefined') {
+                    return;
+                }
+                setTimeout(function () {
+                    if (!$('body').hasClass('japs-dashboard-home') || typeof Highcharts === 'undefined') {
+                        return;
+                    }
+                    var columnStyle = {
+                        chart: {
+                            backgroundColor: 'transparent',
+                            type: 'column'
+                        },
+                        colors: ['#3b82f6'],
+                        legend: { enabled: false },
+                        xAxis: {
+                            lineColor: '#e5e7eb',
+                            tickColor: '#e5e7eb',
+                            labels: {
+                                rotation: -45,
+                                style: { color: '#6b7280', fontSize: '10px' }
+                            }
+                        },
+                        yAxis: {
+                            gridLineColor: '#e5e7eb',
+                            gridLineWidth: 1,
+                            gridLineDashStyle: 'Solid',
+                            title: { text: null },
+                            min: 0,
+                            labels: { style: { color: '#6b7280', fontSize: '11px' } }
+                        },
+                        plotOptions: {
+                            column: {
+                                borderWidth: 0,
+                                borderRadius: 3,
+                                color: '#3b82f6',
+                                pointPadding: 0.15,
+                                groupPadding: 0.1
+                            },
+                            series: {
+                                type: 'column',
+                                borderWidth: 0
+                            }
+                        }
+                    };
+                    (Highcharts.charts || []).forEach(function (chart) {
+                        if (!chart || !chart.renderTo) return;
+                        // Skip dynamic charts that already set their own column style
+                        var id = chart.renderTo.id || '';
+                        if (id === 'payment_method_mix_chart' || id === 'so_summary_chart') return;
+
+                        chart.update(columnStyle, false);
+                        if (chart.series && chart.series.length) {
+                            chart.series.forEach(function (s) {
+                                try { s.update({ type: 'column', color: '#3b82f6', borderWidth: 0 }, false); } catch (e) {}
+                            });
+                        }
+                        chart.redraw();
+                    });
+                }, 400);
+            });
+        </script>
     @endif
     @if (auth()->user()->can('so.view_all') || auth()->user()->can('so.view_own'))
     <script type="text/javascript">
@@ -941,7 +932,7 @@
 
                 soSummaryChart = Highcharts.chart('so_summary_chart', {
                     chart: {
-                        type: 'areaspline',
+                        type: 'column',
                         height: 300,
                         backgroundColor: 'transparent',
                         spacing: [8, 8, 8, 0]
@@ -952,17 +943,21 @@
                     xAxis: {
                         categories: data.labels,
                         tickInterval: data.label_step,
-                        lineColor: '#dfe7f1',
-                        tickColor: '#dfe7f1',
-                        labels: { style: { color: '#64748b', fontSize: '11px', fontWeight: '500' } }
+                        lineColor: '#e5e7eb',
+                        tickColor: '#e5e7eb',
+                        labels: {
+                            rotation: -45,
+                            style: { color: '#6b7280', fontSize: '10px', fontWeight: '500' }
+                        }
                     },
                     yAxis: {
                         title: { text: null },
                         max: yMax,
-                        gridLineColor: '#e8edf4',
-                        gridLineDashStyle: 'Dash',
+                        gridLineColor: '#e5e7eb',
+                        gridLineWidth: 1,
+                        gridLineDashStyle: 'Solid',
                         labels: {
-                            style: { color: '#64748b', fontSize: '11px', fontWeight: '500' },
+                            style: { color: '#6b7280', fontSize: '11px', fontWeight: '500' },
                             formatter: function() {
                                 var v = this.value;
                                 if (v >= 1000) {
@@ -987,24 +982,12 @@
                         }
                     },
                     plotOptions: {
-                        areaspline: {
-                            fillColor: {
-                                linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
-                                stops: [
-                                    [0, 'rgba(79, 143, 206, 0.24)'],
-                                    [1, 'rgba(79, 143, 206, 0.02)']
-                                ]
-                            },
-                            marker: {
-                                enabled: data.has_data,
-                                radius: 3,
-                                fillColor: '#ffffff',
-                                lineColor: '#4f8fce',
-                                lineWidth: 2,
-                                states: { hover: { enabled: true, radius: 4 } }
-                            },
-                            lineWidth: 3,
-                            color: '#4f8fce',
+                        column: {
+                            borderWidth: 0,
+                            borderRadius: 3,
+                            color: '#3b82f6',
+                            pointPadding: 0.15,
+                            groupPadding: 0.1,
                             enableMouseTracking: data.has_data
                         },
                         series: {
@@ -1013,6 +996,7 @@
                     },
                     series: [{
                         name: isValue ? '{{ __('lang_v1.by_value') }}' : '{{ __('lang_v1.by_quantity') }}',
+                        type: 'column',
                         data: data.has_data ? data.values : data.values.map(function() { return null; }),
                         showInLegend: false
                     }]
@@ -1043,8 +1027,8 @@
             sales_order_table = $('#sales_order_table').DataTable({
                 processing: true,
                 serverSide: true,
-                fixedHeader:false,
-                scrollY: "75vh",
+                fixedHeader: false,
+                autoWidth: false,
                 scrollX: true,
                 scrollCollapse: true,
                 aaSorting: [
@@ -1332,13 +1316,13 @@
             sell_table = $('#shipments_table').DataTable({
                 processing: true,
                 serverSide: true,
-                fixedHeader:false,
+                fixedHeader: false,
+                autoWidth: false,
+                scrollX: true,
+                scrollCollapse: true,
                 aaSorting: [
                     [1, 'desc']
                 ],
-                scrollY: "75vh",
-                scrollX: true,
-                scrollCollapse: true,
                 "ajax": {
                     "url": '{{ action([\App\Http\Controllers\SellController::class, 'index']) }}',
                     "data": function(d) {
@@ -1375,6 +1359,10 @@
                         name: 'bl.name'
                     },
                     {
+                        data: 'delivery_person',
+                        name: 'delivery_person'
+                    },
+                    {
                         data: 'shipping_status',
                         name: 'shipping_status'
                     },
@@ -1407,7 +1395,8 @@
                             data: 'shipping_custom_field_5',
                             name: 'shipping_custom_field_5'
                         },
-                    @endif {
+                    @endif
+                    {
                         data: 'payment_status',
                         name: 'payment_status'
                     },
@@ -1420,7 +1409,7 @@
                     }
                 ],
                 "fnDrawCallback": function(oSettings) {
-                    __currency_convert_recursively($('#sell_table'));
+                    __currency_convert_recursively($('#shipments_table'));
                 },
                 createdRow: function(row, data, dataIndex) {
                     $(row).find('td:eq(4)').attr('class', 'clickable_td');
@@ -1429,6 +1418,14 @@
 
             $('#pending_shipments_location').change(function() {
                 sell_table.ajax.reload();
+            });
+            $(window).on('resize', function() {
+                if ($.fn.DataTable.isDataTable('#sales_order_table')) {
+                    $('#sales_order_table').DataTable().columns.adjust();
+                }
+                if ($.fn.DataTable.isDataTable('#shipments_table')) {
+                    $('#shipments_table').DataTable().columns.adjust();
+                }
             });
         });
     </script>
@@ -1458,11 +1455,49 @@
                     success: function (resp) {
                         $panel.find('.zoho-side-panel__pane[data-pane="pending"]').html(resp.pending_html);
                         $panel.find('.zoho-side-panel__pane[data-pane="activities"]').html(resp.activities_html);
+                        renderNeedsAttention(resp.attention_items || []);
                     },
                     error: function () {
                         $panel.find('.zoho-side-panel__pane').html('<div class="zoho-side-panel__empty"><p>{{ __('messages.something_went_wrong') }}</p></div>');
+                        $('#dashboard_needs_attention').html('<span class="japs-dash-attention__empty">{{ __('messages.something_went_wrong') }}</span>');
                     }
                 });
+            }
+
+            function renderNeedsAttention(items) {
+                var $wrap = $('#dashboard_needs_attention');
+                if (!$wrap.length) {
+                    return;
+                }
+                if (!items.length) {
+                    $wrap.html('<span class="japs-dash-attention__empty">{{ __('lang_v1.no_pending_actions') }}</span>');
+                    return;
+                }
+
+                // Prefer screenshot order: Invoice due, To be shipped, Purchase due, Below alert quantity
+                var preferred = [
+                    @json(__('home.invoice_due')),
+                    @json(__('lang_v1.to_be_shipped')),
+                    @json(__('home.purchase_due')),
+                    @json(__('lang_v1.below_alert_quantity'))
+                ];
+                var sorted = items.slice().sort(function (a, b) {
+                    var ai = preferred.indexOf(a.label);
+                    var bi = preferred.indexOf(b.label);
+                    if (ai === -1) ai = 999;
+                    if (bi === -1) bi = 999;
+                    return ai - bi;
+                }).slice(0, 4);
+
+                var html = '';
+                sorted.forEach(function (item) {
+                    var active = item.count > 0 ? ' is-active' : '';
+                    html += '<a href="' + item.url + '" class="japs-dash-attention-pill' + active + '">';
+                    html += '<span class="japs-dash-attention-pill__label">' + item.label + '</span>';
+                    html += '<span class="japs-dash-attention-pill__count">' + item.count + '</span>';
+                    html += '</a>';
+                });
+                $wrap.html(html);
             }
 
             $panel.on('click', '.zoho-side-panel__tab', function () {

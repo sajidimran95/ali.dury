@@ -227,6 +227,103 @@ function update_statistics(start, end) {
             
             $('#total_prp').attr('data-content', newContent);
 
+            if (typeof window.japsLoadPaymentMethodMix === 'function') {
+                window.japsLoadPaymentMethodMix(start, end, location_id);
+            }
         },
     });
 }
+
+window.japsLoadPaymentMethodMix = function(start, end, locationId) {
+    if (!$('#payment_method_mix_chart').length) {
+        return;
+    }
+
+    $.get('/home/payment-method-mix', {
+        start: start,
+        end: end,
+        location_id: locationId || ''
+    }, function(data) {
+        if (typeof Highcharts === 'undefined') {
+            return;
+        }
+
+        if (window.japsPaymentMixChart) {
+            window.japsPaymentMixChart.destroy();
+            window.japsPaymentMixChart = null;
+        }
+
+        if (!data.has_data) {
+            $('#payment_method_mix_empty').show();
+            $('#payment_method_mix_chart').hide();
+            return;
+        }
+
+        $('#payment_method_mix_empty').hide();
+        $('#payment_method_mix_chart').show();
+
+        var categories = [];
+        var values = [];
+        (data.series || []).forEach(function(item) {
+            categories.push(item.label);
+            values.push(item.amount);
+        });
+
+        window.japsPaymentMixChart = Highcharts.chart('payment_method_mix_chart', {
+            chart: {
+                type: 'column',
+                backgroundColor: 'transparent',
+                height: 240,
+                spacing: [8, 8, 8, 4]
+            },
+            title: { text: null },
+            credits: { enabled: false },
+            legend: { enabled: false },
+            xAxis: {
+                categories: categories,
+                lineColor: '#e5e7eb',
+                tickColor: '#e5e7eb',
+                labels: {
+                    style: { color: '#6b7280', fontSize: '11px', fontWeight: '500' }
+                }
+            },
+            yAxis: {
+                title: { text: null },
+                min: 0,
+                gridLineColor: '#eef0f3',
+                gridLineWidth: 1,
+                labels: {
+                    style: { color: '#6b7280', fontSize: '11px' },
+                    formatter: function() {
+                        return __currency_trans_from_en(this.value, false);
+                    }
+                }
+            },
+            tooltip: {
+                backgroundColor: '#111827',
+                borderColor: '#111827',
+                style: { color: '#fff' },
+                formatter: function() {
+                    var pct = data.total > 0 ? Math.round((this.y / data.total) * 100) : 0;
+                    return '<b>' + this.x + '</b><br/>' +
+                        __currency_trans_from_en(this.y, true) +
+                        ' (' + pct + '%)';
+                }
+            },
+            plotOptions: {
+                column: {
+                    borderWidth: 0,
+                    borderRadius: 3,
+                    color: '#3b82f6',
+                    pointPadding: 0.15,
+                    groupPadding: 0.1
+                }
+            },
+            series: [{
+                name: 'Payment',
+                type: 'column',
+                data: values
+            }]
+        });
+    });
+};
