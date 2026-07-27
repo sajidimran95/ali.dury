@@ -12,27 +12,48 @@
 <style>
     .customers-page .content-header { padding-bottom: 0; }
     .customers-page .cust-stat-card {
+        position: relative;
+        overflow: hidden;
         background: #fff;
-        border: 1px solid #e8ecf1;
-        border-radius: 14px;
-        padding: 18px 20px;
-        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
-        min-height: 92px;
+        border: 1px solid #e7eaf0;
+        border-radius: 18px;
+        padding: 22px 20px 18px;
+        box-shadow: 0 2px 10px rgba(15, 20, 37, 0.045);
+        min-height: 112px;
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .customers-page .cust-stat-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        border-radius: 18px 18px 0 0;
+        background: #4f8fce;
+    }
+    .customers-page .tw-grid > .cust-stat-card:nth-child(1)::before { background: #4f8fce; }
+    .customers-page .tw-grid > .cust-stat-card:nth-child(2)::before { background: #d5aa35; }
+    .customers-page .tw-grid > .cust-stat-card:nth-child(3)::before { background: #4db39e; }
+    .customers-page .tw-grid > .cust-stat-card:nth-child(4)::before { background: #7c72c9; }
+    .customers-page .cust-stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 22px rgba(15, 20, 37, 0.07);
     }
     .customers-page .cust-stat-label {
-        font-size: 13px;
-        color: #64748b;
+        font-size: 14px;
+        color: #7a8495;
         font-weight: 500;
-        margin-bottom: 8px;
+        margin-bottom: 10px;
     }
     .customers-page .cust-stat-value {
-        font-size: 28px;
+        font-size: 26px;
         font-weight: 700;
-        color: #0f172a;
-        line-height: 1.1;
-        letter-spacing: -0.02em;
+        color: #151b2b;
+        line-height: 1.15;
+        letter-spacing: -0.03em;
     }
-    .customers-page .cust-stat-value.is-due { color: #b45309; }
+    .customers-page .cust-stat-value.is-due { color: #b78616; }
     .customers-page .cust-toolbar {
         display: flex;
         flex-wrap: wrap;

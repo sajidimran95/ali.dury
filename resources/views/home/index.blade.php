@@ -62,25 +62,41 @@
                     @endphp
 
                     <div class="japs-dash-kpi-row">
-                        <a href="{{ $card_sells }}" class="japs-dash-kpi-card" title="{{ __('home.total_sell') }}">
-                            <p class="japs-dash-kpi-card__label">{{ __('home.total_sell') }}</p>
-                            <p class="japs-dash-kpi-card__value total_sell"></p>
-                            <p class="japs-dash-kpi-card__hint">{{ __('home.last_30_days') }}</p>
+                        <a href="{{ $card_sells }}" class="japs-dash-kpi-card japs-dash-kpi-card--blue" title="{{ __('home.total_sell') }}">
+                            <div class="japs-dash-kpi-card__body">
+                                <p class="japs-dash-kpi-card__label">{{ __('home.total_sell') }}</p>
+                                <p class="japs-dash-kpi-card__value total_sell"></p>
+                            </div>
+                            <span class="japs-dash-kpi-card__icon" aria-hidden="true">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+                            </span>
                         </a>
-                        <a href="{{ $card_profit_loss }}" class="japs-dash-kpi-card japs-dash-kpi-card--profit" title="{{ __('home.net_profit') }}">
-                            <p class="japs-dash-kpi-card__label">{{ __('home.net_profit') }} @show_tooltip(__('lang_v1.net_home_tooltip'))</p>
-                            <p class="japs-dash-kpi-card__value net"></p>
-                            <p class="japs-dash-kpi-card__hint">{{ __('home.net_profit_hint') }}</p>
+                        <a href="{{ $card_profit_loss }}" class="japs-dash-kpi-card japs-dash-kpi-card--teal japs-dash-kpi-card--profit" title="{{ __('home.net_profit') }}">
+                            <div class="japs-dash-kpi-card__body">
+                                <p class="japs-dash-kpi-card__label">{{ __('home.net_profit') }} @show_tooltip(__('lang_v1.net_home_tooltip'))</p>
+                                <p class="japs-dash-kpi-card__value net"></p>
+                            </div>
+                            <span class="japs-dash-kpi-card__icon" aria-hidden="true">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg>
+                            </span>
                         </a>
-                        <a href="{{ $card_purchases }}" class="japs-dash-kpi-card" title="{{ __('home.total_purchase') }}">
-                            <p class="japs-dash-kpi-card__label">{{ __('home.total_purchase') }}</p>
-                            <p class="japs-dash-kpi-card__value total_purchase"></p>
-                            <p class="japs-dash-kpi-card__hint">{{ __('home.last_30_days') }}</p>
+                        <a href="{{ $card_sells_due }}" class="japs-dash-kpi-card japs-dash-kpi-card--amber" title="{{ __('home.invoice_due') }}">
+                            <div class="japs-dash-kpi-card__body">
+                                <p class="japs-dash-kpi-card__label">{{ __('home.invoice_due') }}</p>
+                                <p class="japs-dash-kpi-card__value invoice_due"></p>
+                            </div>
+                            <span class="japs-dash-kpi-card__icon" aria-hidden="true">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg>
+                            </span>
                         </a>
-                        <a href="{{ $card_expenses }}" class="japs-dash-kpi-card" title="{{ __('lang_v1.expense') }}">
-                            <p class="japs-dash-kpi-card__label">{{ __('lang_v1.expense') }}</p>
-                            <p class="japs-dash-kpi-card__value total_expense"></p>
-                            <p class="japs-dash-kpi-card__hint">{{ __('home.last_30_days') }}</p>
+                        <a href="{{ $card_purchases }}" class="japs-dash-kpi-card japs-dash-kpi-card--violet" title="{{ __('home.total_purchase') }}">
+                            <div class="japs-dash-kpi-card__body">
+                                <p class="japs-dash-kpi-card__label">{{ __('home.total_purchase') }}</p>
+                                <p class="japs-dash-kpi-card__value total_purchase"></p>
+                            </div>
+                            <span class="japs-dash-kpi-card__icon" aria-hidden="true">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.27 6.96L12 12.01l8.73-5.05"/><path d="M12 22.08V12"/></svg>
+                            </span>
                         </a>
                     </div>
 
@@ -101,25 +117,35 @@
                                     {!! $sells_chart_1->container() !!}
                                 </div>
                                 <div class="japs-dash-chart-card__footer japs-dash-chart-card__footer--split">
-                                    <a href="{{ $card_sell_return }}" class="japs-dash-mini-stat" title="{{ __('lang_v1.total_sell_return') }}">
-                                        <span class="japs-dash-mini-stat__label">
-                                            {{ __('lang_v1.total_sell_return') }}
-                                            <i class="fa fa-info-circle hover-q no-print" aria-hidden="true" data-container="body"
-                                            data-toggle="popover" data-placement="auto bottom" id="total_srp"
-                                            data-value="{{ __('lang_v1.total_sell_return') }}-{{ __('lang_v1.total_sell_return_paid') }}"
-                                            data-content="" data-html="true" data-trigger="hover"></i>
+                                    <a href="{{ $card_sell_return }}" class="japs-dash-mini-stat japs-dash-mini-stat--rose" title="{{ __('lang_v1.total_sell_return') }}">
+                                        <div class="japs-dash-mini-stat__body">
+                                            <span class="japs-dash-mini-stat__label">
+                                                {{ __('lang_v1.total_sell_return') }}
+                                                <i class="fa fa-info-circle hover-q no-print" aria-hidden="true" data-container="body"
+                                                data-toggle="popover" data-placement="auto bottom" id="total_srp"
+                                                data-value="{{ __('lang_v1.total_sell_return') }}-{{ __('lang_v1.total_sell_return_paid') }}"
+                                                data-content="" data-html="true" data-trigger="hover"></i>
+                                            </span>
+                                            <span class="japs-dash-mini-stat__value total_sell_return"></span>
+                                        </div>
+                                        <span class="japs-dash-mini-stat__icon" aria-hidden="true">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
                                         </span>
-                                        <span class="japs-dash-mini-stat__value total_sell_return"></span>
                                     </a>
-                                    <a href="{{ $card_purchase_return }}" class="japs-dash-mini-stat" title="{{ __('lang_v1.total_purchase_return') }}">
-                                        <span class="japs-dash-mini-stat__label">
-                                            {{ __('lang_v1.total_purchase_return') }}
-                                            <i class="fa fa-info-circle hover-q no-print" aria-hidden="true" data-container="body"
-                                            data-toggle="popover" data-placement="auto bottom" id="total_prp"
-                                            data-value="{{ __('lang_v1.total_purchase_return') }}-{{ __('lang_v1.total_purchase_return_paid') }}"
-                                            data-content="" data-html="true" data-trigger="hover"></i>
+                                    <a href="{{ $card_purchase_return }}" class="japs-dash-mini-stat japs-dash-mini-stat--amber" title="{{ __('lang_v1.total_purchase_return') }}">
+                                        <div class="japs-dash-mini-stat__body">
+                                            <span class="japs-dash-mini-stat__label">
+                                                {{ __('lang_v1.total_purchase_return') }}
+                                                <i class="fa fa-info-circle hover-q no-print" aria-hidden="true" data-container="body"
+                                                data-toggle="popover" data-placement="auto bottom" id="total_prp"
+                                                data-value="{{ __('lang_v1.total_purchase_return') }}-{{ __('lang_v1.total_purchase_return_paid') }}"
+                                                data-content="" data-html="true" data-trigger="hover"></i>
+                                            </span>
+                                            <span class="japs-dash-mini-stat__value total_purchase_return"></span>
+                                        </div>
+                                        <span class="japs-dash-mini-stat__icon" aria-hidden="true">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
                                         </span>
-                                        <span class="japs-dash-mini-stat__value total_purchase_return"></span>
                                     </a>
                                 </div>
                             </div>
@@ -145,12 +171,17 @@
                                 <p id="payment_method_mix_empty" class="japs-dash-payment-empty" style="display:none;">{{ __('lang_v1.no_data') }}</p>
                             </div>
                             <div class="japs-dash-chart-card__footer">
-                                <a href="{{ $card_online_orders }}" class="japs-dash-mini-stat" title="{{ __('home.online_orders') }}">
-                                    <span class="japs-dash-mini-stat__label">
-                                        {{ __('home.online_orders') }}
-                                        @show_tooltip(__('home.online_orders_tooltip'))
+                                <a href="{{ $card_online_orders }}" class="japs-dash-mini-stat japs-dash-mini-stat--blue" title="{{ __('home.online_orders') }}">
+                                    <div class="japs-dash-mini-stat__body">
+                                        <span class="japs-dash-mini-stat__label">
+                                            {{ __('home.online_orders') }}
+                                            @show_tooltip(__('home.online_orders_tooltip'))
+                                        </span>
+                                        <span class="japs-dash-mini-stat__value online_orders"></span>
+                                    </div>
+                                    <span class="japs-dash-mini-stat__icon" aria-hidden="true">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
                                     </span>
-                                    <span class="japs-dash-mini-stat__value online_orders"></span>
                                 </a>
                             </div>
                         </div>

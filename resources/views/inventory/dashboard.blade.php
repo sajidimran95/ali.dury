@@ -35,42 +35,144 @@
     </div>
 </section>
 
-<section class="content">
+<section class="content inv-dash">
+<style>
+.inv-dash .inv-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+@media (max-width: 1199px) {
+    .inv-dash .inv-kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 575px) {
+    .inv-dash .inv-kpi-grid { grid-template-columns: 1fr; }
+}
+.inv-dash .inv-kpi {
+    --kpi-accent: #4f8fce;
+    --kpi-soft: #eef6fd;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+    min-height: 112px;
+    background: #fff;
+    border: 1px solid #e7eaf0;
+    border-radius: 18px;
+    padding: 22px 20px 18px;
+    box-shadow: 0 2px 10px rgba(15, 20, 37, 0.045);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.inv-dash .inv-kpi::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    border-radius: 18px 18px 0 0;
+    background: var(--kpi-accent);
+}
+.inv-dash .inv-kpi:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 22px rgba(15, 20, 37, 0.07);
+}
+.inv-dash .inv-kpi--blue { --kpi-accent: #4f8fce; --kpi-soft: #eef6fd; }
+.inv-dash .inv-kpi--teal { --kpi-accent: #4db39e; --kpi-soft: #ecf8f4; }
+.inv-dash .inv-kpi--amber { --kpi-accent: #d5aa35; --kpi-soft: #fff8e6; }
+.inv-dash .inv-kpi--violet { --kpi-accent: #7c72c9; --kpi-soft: #f5f0fc; }
+.inv-dash .inv-kpi__body { flex: 1; min-width: 0; }
+.inv-dash .inv-kpi__label {
+    margin: 0 0 10px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #7a8495;
+}
+.inv-dash .inv-kpi__value {
+    margin: 0;
+    font-size: 26px;
+    font-weight: 700;
+    color: #151b2b;
+    line-height: 1.15;
+    letter-spacing: -0.03em;
+}
+.inv-dash .inv-kpi__value.is-warn { color: #b78616; }
+.inv-dash .inv-kpi__value.is-money { color: #2d927b; }
+.inv-dash .inv-kpi__hint {
+    margin-top: 8px;
+    font-size: 12px;
+    color: #94a3b8;
+}
+.inv-dash .inv-kpi__icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    background: var(--kpi-soft);
+    color: var(--kpi-accent);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.inv-dash .inv-kpi__icon svg { width: 22px; height: 22px; display: block; }
+</style>
+
     {{-- KPI cards --}}
-    <div class="tw-grid tw-grid-cols-1 sm:tw-grid-cols-2 xl:tw-grid-cols-4 tw-gap-4 tw-mb-6">
-        <div class="tw-rounded-xl tw-bg-white tw-border tw-border-gray-200 tw-shadow-sm tw-p-5">
-            <div class="tw-text-sm tw-font-medium tw-text-gray-500">@lang('lang_v1.total_products')</div>
-            <div class="tw-mt-2 tw-text-3xl tw-font-bold tw-text-gray-900">{{ @num_format($stats['total_products']) }}</div>
-            <div class="tw-mt-1 tw-text-xs tw-text-gray-400">{{ @num_format($stats['stock_tracked']) }} @lang('lang_v1.stock_tracked')</div>
+    <div class="inv-kpi-grid">
+        <div class="inv-kpi inv-kpi--blue">
+            <div class="inv-kpi__body">
+                <div class="inv-kpi__label">@lang('lang_v1.total_products')</div>
+                <div class="inv-kpi__value">{{ @num_format($stats['total_products']) }}</div>
+                <div class="inv-kpi__hint">{{ @num_format($stats['stock_tracked']) }} @lang('lang_v1.stock_tracked')</div>
+            </div>
+            <span class="inv-kpi__icon" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.27 6.96L12 12.01l8.73-5.05"/><path d="M12 22.08V12"/></svg>
+            </span>
         </div>
 
-        <div class="tw-rounded-xl tw-bg-white tw-border tw-border-gray-200 tw-shadow-sm tw-p-5">
-            <div class="tw-text-sm tw-font-medium tw-text-gray-500">@lang('lang_v1.inventory_value')</div>
-            <div class="tw-mt-2 tw-text-3xl tw-font-bold tw-text-gray-900">
-                <span class="display_currency" data-currency_symbol="true" data-orig-value="{{ $stats['inventory_value'] }}">{{ $stats['inventory_value'] }}</span>
+        <div class="inv-kpi inv-kpi--teal">
+            <div class="inv-kpi__body">
+                <div class="inv-kpi__label">@lang('lang_v1.inventory_value')</div>
+                <div class="inv-kpi__value is-money">
+                    <span class="display_currency" data-currency_symbol="true" data-orig-value="{{ $stats['inventory_value'] }}">{{ $stats['inventory_value'] }}</span>
+                </div>
+                <div class="inv-kpi__hint">
+                    @lang('lang_v1.at_selling_price'):
+                    <span class="display_currency" data-currency_symbol="true" data-orig-value="{{ $stats['sell_value'] }}">{{ $stats['sell_value'] }}</span>
+                </div>
             </div>
-            <div class="tw-mt-1 tw-text-xs tw-text-gray-400">
-                @lang('lang_v1.at_selling_price'):
-                <span class="display_currency" data-currency_symbol="true" data-orig-value="{{ $stats['sell_value'] }}">{{ $stats['sell_value'] }}</span>
-            </div>
+            <span class="inv-kpi__icon" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg>
+            </span>
         </div>
 
-        <div class="tw-rounded-xl tw-bg-white tw-border tw-border-gray-200 tw-shadow-sm tw-p-5">
-            <div class="tw-text-sm tw-font-medium tw-text-gray-500">@lang('lang_v1.low_stock')</div>
-            <div class="tw-mt-2 tw-text-3xl tw-font-bold {{ $stats['low_stock'] > 0 ? 'tw-text-amber-600' : 'tw-text-gray-900' }}">
-                {{ @num_format($stats['low_stock']) }}
+        <div class="inv-kpi inv-kpi--amber">
+            <div class="inv-kpi__body">
+                <div class="inv-kpi__label">@lang('lang_v1.low_stock')</div>
+                <div class="inv-kpi__value {{ $stats['low_stock'] > 0 ? 'is-warn' : '' }}">
+                    {{ @num_format($stats['low_stock']) }}
+                </div>
+                <div class="inv-kpi__hint">
+                    {{ @num_format($stats['out_of_stock']) }} @lang('lang_v1.out_of_stock')
+                </div>
             </div>
-            <div class="tw-mt-1 tw-text-xs tw-text-gray-400">
-                {{ @num_format($stats['out_of_stock']) }} @lang('lang_v1.out_of_stock')
-            </div>
+            <span class="inv-kpi__icon" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </span>
         </div>
 
-        <div class="tw-rounded-xl tw-bg-white tw-border tw-border-gray-200 tw-shadow-sm tw-p-5">
-            <div class="tw-text-sm tw-font-medium tw-text-gray-500">@lang('category.categories')</div>
-            <div class="tw-mt-2 tw-text-3xl tw-font-bold tw-text-gray-900">{{ @num_format($stats['categories']) }}</div>
-            <div class="tw-mt-1 tw-text-xs tw-text-gray-400">
-                {{ @num_format($stats['brands']) }} @lang('brand.brands') · {{ @num_format($stats['units']) }} @lang('unit.units')
+        <div class="inv-kpi inv-kpi--violet">
+            <div class="inv-kpi__body">
+                <div class="inv-kpi__label">@lang('category.categories')</div>
+                <div class="inv-kpi__value">{{ @num_format($stats['categories']) }}</div>
+                <div class="inv-kpi__hint">
+                    {{ @num_format($stats['brands']) }} @lang('brand.brands') · {{ @num_format($stats['units']) }} @lang('unit.units')
+                </div>
             </div>
+            <span class="inv-kpi__icon" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+            </span>
         </div>
     </div>
 

@@ -1271,13 +1271,13 @@ body.zoho-theme .japs-dashboard-stats > .zoho-stat-card {
     flex-direction: row !important;
     align-items: flex-start !important;
     justify-content: space-between !important;
-    gap: 12px;
-    min-height: 118px;
-    padding: 18px 18px 16px !important;
+    gap: 14px;
+    min-height: 112px;
+    padding: 22px 20px 18px !important;
     background: #fff !important;
     border: 1px solid var(--p-line) !important;
-    border-radius: 16px !important;
-    box-shadow: var(--p-shadow-sm) !important;
+    border-radius: 18px !important;
+    box-shadow: var(--p-shadow) !important;
     transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
 }
 
@@ -1287,8 +1287,8 @@ body.zoho-theme .zoho-stat-card::before {
     top: 0;
     left: 0;
     right: 0;
-    height: 3px;
-    border-radius: 16px 16px 0 0;
+    height: 4px;
+    border-radius: 18px 18px 0 0;
     background: var(--p-blue);
 }
 
@@ -1308,15 +1308,15 @@ body.zoho-theme .zoho-stat-card__body {
     order: 1;
     flex: 1;
     min-width: 0;
-    padding-top: 4px;
+    padding-top: 2px;
     overflow: visible;
 }
 
 body.zoho-theme .zoho-stat-card__icon {
     order: 2;
-    width: 42px !important;
-    height: 42px !important;
-    border-radius: 12px !important;
+    width: 48px !important;
+    height: 48px !important;
+    border-radius: 14px !important;
     box-shadow: none !important;
     display: inline-flex !important;
     align-items: center;
@@ -1325,8 +1325,8 @@ body.zoho-theme .zoho-stat-card__icon {
 }
 
 body.zoho-theme .zoho-stat-card__icon svg {
-    width: 20px;
-    height: 20px;
+    width: 22px;
+    height: 22px;
 }
 
 body.zoho-theme .zoho-stat-card__icon--sky { background: var(--p-blue-soft) !important; color: #367db9 !important; }
@@ -1337,10 +1337,10 @@ body.zoho-theme .zoho-stat-card__icon--rose { background: var(--p-rose-soft) !im
 
 body.zoho-theme .zoho-stat-card__label {
     color: var(--p-muted) !important;
-    font-size: 12.5px !important;
-    font-weight: 600 !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
     letter-spacing: 0.01em;
-    margin: 0 0 8px !important;
+    margin: 0 0 10px !important;
     line-height: 1.35 !important;
     white-space: normal !important;
     overflow: visible !important;
@@ -1354,9 +1354,9 @@ body.zoho-theme .zoho-stat-card__label {
 body.zoho-theme .zoho-stat-card__value {
     color: var(--p-ink) !important;
     font-family: var(--p-font) !important;
-    font-size: 22px !important;
-    font-weight: 750 !important;
-    letter-spacing: -0.04em;
+    font-size: 26px !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.03em;
     line-height: 1.15 !important;
     margin: 0 !important;
     white-space: nowrap;
