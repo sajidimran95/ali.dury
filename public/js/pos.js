@@ -1242,15 +1242,24 @@ $(document).ready(function() {
                 dataType: 'json',
                 success: function(result) {
                     $('input#is_suspend').val(0);
-                    if (result.success == 1) {
+                    if (result.success == 1 || result.success === true) {
                         $('#confirmSuspendModal').modal('hide');
                         toastr.success(result.msg);
+
+                        // Always clear cart lines after a successful park
+                        $('.row_edit_product_price_model').remove();
+                        $('table#pos_table tbody tr.product_row').remove();
+                        $('input#product_row_count').val(0);
+                        if (typeof pos_sync_empty_state === 'function') {
+                            pos_sync_empty_state();
+                        }
 
                         var $addForm = $('#add_pos_sell_form');
                         if ($addForm.length && $addForm.data('original-action')) {
                             $addForm.attr('action', $addForm.data('original-action'));
                             $addForm.find('input[name="_method"]').remove();
                             $addForm.removeAttr('data-retrieved-id');
+                            $addForm.removeData('retrieved-id');
                         }
 
                         reset_pos_form();
@@ -3339,24 +3348,32 @@ function reset_pos_form(){
 		}, 4000);
 		return true;
 	}
+
+    // Clear cart lines FIRST (before any optional widgets that may throw)
+    $('.row_edit_product_price_model').remove();
+    $('table#pos_table tbody tr.product_row').remove();
+    $('input#product_row_count').val(0);
+    if (typeof pos_sync_empty_state === 'function') {
+        pos_sync_empty_state();
+    }
 	
     //reset all repair defects tags
-    if ($("#repair_defects").length > 0) {
-        tagify_repair_defects.removeAllTags();
+    if ($("#repair_defects").length > 0 && typeof tagify_repair_defects !== 'undefined' && tagify_repair_defects) {
+        try { tagify_repair_defects.removeAllTags(); } catch (e) {}
     }
 
-	if(pos_form_obj[0]){
+	if(typeof pos_form_obj !== 'undefined' && pos_form_obj[0]){
 		pos_form_obj[0].reset();
 	}
-	if(sell_form[0]){
+	if(typeof sell_form !== 'undefined' && sell_form && sell_form[0]){
 		sell_form[0].reset();
 	}
 	set_default_customer();
 	set_location();
 
-	$('tr.product_row').remove();
 	$('span.total_quantity, span.price_total, span#total_discount, span#order_tax, span#total_payable, span#shipping_charges_amount, span#loyalty_amount_display').text(0);
-	$('span.total_payable_span', 'span.total_paying', 'span.balance_due').text(0);
+	$('span.total_payable_span, span.total_paying, span.balance_due').text(0);
+    $('.pos_pay_cta_total').text(__currency_trans_from_en(0, true));
 
 	$('#modal_payment').find('.remove_payment_row').each( function(){
 		$(this).closest('.payment_row').remove();
@@ -3401,11 +3418,15 @@ function reset_pos_form(){
     if ($('#status').length > 0 && $('#status').is(":visible")) {
         $('#status').val('').trigger('change');
     }
-    if ($('#transaction_date').length > 0) {
+    if ($('#transaction_date').length > 0 && $('#transaction_date').data('DateTimePicker')) {
         $('#transaction_date').data("DateTimePicker").date(moment());
     }
     if ($('.paid_on').length > 0) {
-        $('.paid_on').data("DateTimePicker").date(moment());
+        $('.paid_on').each(function () {
+            if ($(this).data('DateTimePicker')) {
+                $(this).data('DateTimePicker').date(moment());
+            }
+        });
     }
     if ($('#commission_agent').length > 0) {
         $('#commission_agent').val('').trigger('change');
@@ -3415,11 +3436,24 @@ function reset_pos_form(){
     $('.contact_due_text').find('span').text('');
     $('.contact_due_text').addClass('hide');
 
+    // Clear retrieved parked-sale binding
+    var $addForm = $('#add_pos_sell_form');
+    if ($addForm.length && $addForm.data('original-action')) {
+        $addForm.attr('action', $addForm.data('original-action'));
+        $addForm.find('input[name="_method"]').remove();
+        $addForm.removeAttr('data-retrieved-id');
+        $addForm.removeData('retrieved-id');
+    }
+
     $(document).trigger('sell_form_reset');
 
     // Set global_is_clear_local_storage to true to clear local storage
     global_is_clear_local_storage = true;
     saveFormDataToLocalStorage();
+
+    if (typeof pos_total_row === 'function') {
+        try { pos_total_row(); } catch (e) {}
+    }
 }
 
 function set_default_customer() {

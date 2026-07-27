@@ -137,6 +137,8 @@
 		}
 	}
 
+	window.posCloseRetrievePanel = closeRetrievePanel;
+
 	function openSuspendedSalesModal() {
 		var mirror = document.getElementById('view_suspended_sales');
 		var href = mirror ? mirror.getAttribute('data-href') : null;
@@ -303,6 +305,17 @@
 			dataType: 'html',
 			success: function (result) {
 				jQuery(panel).html(result);
+				var count = jQuery(panel).find('.pos-retrieve-row').length;
+				var $badge = jQuery('#pos_suspended_count');
+				if ($badge.length) {
+					$badge.text(count).toggleClass('tw-hidden', count === 0);
+				}
+				jQuery('#view_suspended_sales').toggleClass('pos-tb-btn--has-items', count > 0);
+				// Close empty parked list so it does not sit over the cart
+				if (count === 0) {
+					closeRetrievePanel();
+					return;
+				}
 				if (panel.classList.contains('is-open')) {
 					positionRetrievePanel();
 				}

@@ -1968,6 +1968,8 @@ $(document).ready(function() {
                                 $('.view_modal').modal('hide');
                                 if (typeof window.posReloadRetrievePanel === 'function') {
                                     window.posReloadRetrievePanel();
+                                } else if (typeof window.posCloseRetrievePanel === 'function') {
+                                    window.posCloseRetrievePanel();
                                 }
                                 if (typeof window.refreshPosSuspendedCount === 'function') {
                                     window.refreshPosSuspendedCount();
