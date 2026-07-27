@@ -85,23 +85,24 @@ class DataController
         }
 
         Menu::modify('admin-sidebar-menu', function ($menu) {
+            $isEcom = request()->segment(1) == 'ecommerce';
             $menu->dropdown(
                 __('ecommerce::lang.ecommerce'),
-                function ($sub) {
-                    $sub->url(route('ecommerce.admin.dashboard'), __('ecommerce::lang.dashboard'), ['icon' => 'fa fas fa-tachometer-alt', 'active' => request()->segment(2) == 'dashboard']);
-                    $sub->url(route('ecommerce.admin.products'), __('ecommerce::lang.products'), ['icon' => 'fa fas fa-boxes', 'active' => request()->segment(2) == 'products']);
+                function ($sub) use ($isEcom) {
+                    $sub->url(route('ecommerce.admin.dashboard'), __('ecommerce::lang.dashboard'), ['icon' => 'fa fas fa-tachometer-alt', 'active' => $isEcom && request()->segment(2) == 'dashboard']);
+                    $sub->url(route('ecommerce.admin.products'), __('ecommerce::lang.products'), ['icon' => 'fa fas fa-boxes', 'active' => $isEcom && request()->segment(2) == 'products']);
                     $sub->url(action([\App\Http\Controllers\TaxonomyController::class, 'index']).'?type=product', __('ecommerce::lang.categories'), ['icon' => 'fa fas fa-tags']);
                     $sub->url(action([\App\Http\Controllers\BrandController::class, 'index']), __('ecommerce::lang.brands'), ['icon' => 'fa fas fa-copyright']);
-                    $sub->url(route('ecommerce.admin.collections'), __('ecommerce::lang.collections'), ['icon' => 'fa fas fa-layer-group', 'active' => request()->segment(2) == 'collections']);
-                    $sub->url(route('ecommerce.admin.banners'), __('ecommerce::lang.banners'), ['icon' => 'fa fas fa-images', 'active' => request()->segment(2) == 'banners']);
-                    $sub->url(route('ecommerce.admin.customers'), __('ecommerce::lang.customers'), ['icon' => 'fa fas fa-users', 'active' => request()->segment(2) == 'customers']);
-                    $sub->url(route('ecommerce.admin.orders'), __('ecommerce::lang.orders'), ['icon' => 'fa fas fa-shopping-bag', 'active' => request()->segment(2) == 'orders']);
-                    $sub->url(route('ecommerce.admin.coupons'), __('ecommerce::lang.coupons'), ['icon' => 'fa fas fa-ticket-alt', 'active' => request()->segment(2) == 'coupons']);
-                    $sub->url(route('ecommerce.admin.reviews'), __('ecommerce::lang.reviews'), ['icon' => 'fa fas fa-star', 'active' => request()->segment(2) == 'reviews']);
-                    $sub->url(route('ecommerce.admin.reports'), __('ecommerce::lang.reports'), ['icon' => 'fa fas fa-chart-line', 'active' => request()->segment(2) == 'reports']);
-                    $sub->url(route('ecommerce.admin.settings'), __('ecommerce::lang.settings'), ['icon' => 'fa fas fa-cog', 'active' => request()->segment(2) == 'settings']);
+                    $sub->url(route('ecommerce.admin.collections'), __('ecommerce::lang.collections'), ['icon' => 'fa fas fa-layer-group', 'active' => $isEcom && request()->segment(2) == 'collections']);
+                    $sub->url(route('ecommerce.admin.banners'), __('ecommerce::lang.banners'), ['icon' => 'fa fas fa-images', 'active' => $isEcom && request()->segment(2) == 'banners']);
+                    $sub->url(route('ecommerce.admin.customers'), __('ecommerce::lang.customers'), ['icon' => 'fa fas fa-users', 'active' => $isEcom && request()->segment(2) == 'customers']);
+                    $sub->url(route('ecommerce.admin.orders'), __('ecommerce::lang.orders'), ['icon' => 'fa fas fa-shopping-bag', 'active' => $isEcom && request()->segment(2) == 'orders']);
+                    $sub->url(route('ecommerce.admin.coupons'), __('ecommerce::lang.coupons'), ['icon' => 'fa fas fa-ticket-alt', 'active' => $isEcom && request()->segment(2) == 'coupons']);
+                    $sub->url(route('ecommerce.admin.reviews'), __('ecommerce::lang.reviews'), ['icon' => 'fa fas fa-star', 'active' => $isEcom && request()->segment(2) == 'reviews']);
+                    $sub->url(route('ecommerce.admin.reports'), __('ecommerce::lang.reports'), ['icon' => 'fa fas fa-chart-line', 'active' => $isEcom && request()->segment(2) == 'reports']);
+                    $sub->url(route('ecommerce.admin.settings'), __('ecommerce::lang.settings'), ['icon' => 'fa fas fa-cog', 'active' => $isEcom && request()->segment(2) == 'settings']);
                 },
-                ['icon' => 'fa fas fa-store']
+                ['icon' => 'fa fas fa-store', 'active' => $isEcom]
             )->order(25);
         });
     }

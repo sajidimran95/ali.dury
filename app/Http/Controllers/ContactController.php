@@ -632,11 +632,6 @@ class ContactController extends Controller
                 return '<span class="cust-group-pill '.$cls.'">'.e($name).'</span>';
             })
             ->editColumn('address', function ($row) {
-                $short = implode(', ', array_filter([$row->city, $row->state]));
-                if ($short !== '') {
-                    return e($short);
-                }
-
                 return e(implode(', ', array_filter([
                     $row->address_line_1,
                     $row->address_line_2,
@@ -652,10 +647,8 @@ class ContactController extends Controller
                     $due = ($row->total_invoice ?? 0) - ($row->invoice_received ?? 0)
                         - ($row->total_ledger_discount ?? 0) - ($row->total_sell_return ?? 0)
                         + ($row->sell_return_paid ?? 0);
-                    $cls = $due > 0.00001 ? 'contact_due cust-due-owes' : 'contact_due';
-                    $icon = $due > 0.00001 ? ' <i class="fas fa-exclamation-circle cust-due-icon" aria-hidden="true"></i>' : '';
 
-                    return '<span class="'.$cls.'" data-orig-value="'.$due.'" data-highlight="true">'.$this->transactionUtil->num_f($due, true).$icon.'</span>';
+                    return '<span class="contact_due" data-orig-value="'.$due.'" data-highlight="true">'.$this->transactionUtil->num_f($due, true).'</span>';
                 }
             )
             ->editColumn('total_rp', function ($row) {

@@ -28,10 +28,15 @@
     @include('aiassistance::partials.styles')
     <script>
     (function () {
-        // Mount on <body> so position:fixed anchors to the viewport bottom
-        // (overflow/transform on layout wrappers otherwise pin it mid-page).
-        function mountAiToBody() {
-            ['#ai-ask-fab-btn', '#ai-modal-backdrop', '#ai-modal'].forEach(function (sel) {
+        function mountAiUi() {
+            var fab = document.getElementById('ai-ask-fab-btn');
+            var slot = document.getElementById('japs-footer-ai-slot');
+            // Keep pill inside the sticky page footer
+            if (fab && slot && fab.parentElement !== slot) {
+                slot.appendChild(fab);
+            }
+            // Modal layers stay on body for overlay stacking
+            ['#ai-modal-backdrop', '#ai-modal'].forEach(function (sel) {
                 var el = document.querySelector(sel);
                 if (el && el.parentElement !== document.body) {
                     document.body.appendChild(el);
@@ -39,80 +44,12 @@
             });
         }
 
-        function scrollRoot() {
-            return document.getElementById('scrollable-container')
-                || document.scrollingElement
-                || document.documentElement;
-        }
-
-        function setAiFabVisible(visible) {
-            var fab = document.getElementById('ai-ask-fab-btn');
-            if (!fab) {
-                return;
-            }
-            fab.classList.toggle('is-visible', !!visible);
-        }
-
-        // Show only when user has scrolled to the page bottom / footer area.
-        function updateAiFabVisibility() {
-            var root = scrollRoot();
-            if (!root) {
-                setAiFabVisible(false);
-                return;
-            }
-
-            var scrollTop = root.scrollTop || 0;
-            var clientHeight = root.clientHeight || 0;
-            var scrollHeight = root.scrollHeight || 0;
-
-            // Must be able to scroll, and must have scrolled down
-            var canScroll = scrollHeight > (clientHeight + 60);
-            if (!canScroll || scrollTop < 30) {
-                setAiFabVisible(false);
-                return;
-            }
-
-            // Near absolute bottom of the scroll area (footer lives here)
-            var distanceFromBottom = scrollHeight - (scrollTop + clientHeight);
-            var atBottom = distanceFromBottom <= 120;
-
-            // Also accept when footer element is visible in the scroll viewport
-            var footer = document.getElementById('japs-page-footer');
-            if (!atBottom && footer && root.getBoundingClientRect) {
-                var rootRect = root.getBoundingClientRect();
-                var footRect = footer.getBoundingClientRect();
-                atBottom = footRect.top < rootRect.bottom && footRect.bottom > rootRect.top;
-            }
-
-            setAiFabVisible(atBottom);
-        }
-
-        function bindScrollWatch() {
-            var root = document.getElementById('scrollable-container');
-            setAiFabVisible(false);
-
-            if (root) {
-                root.addEventListener('scroll', updateAiFabVisibility, { passive: true });
-            }
-            window.addEventListener('scroll', updateAiFabVisibility, { passive: true });
-            window.addEventListener('resize', updateAiFabVisibility);
-
-            // Re-check after late content (tables, charts) finishes laying out
-            updateAiFabVisibility();
-            setTimeout(updateAiFabVisibility, 300);
-            setTimeout(updateAiFabVisibility, 1000);
-        }
-
-        function boot() {
-            mountAiToBody();
-            bindScrollWatch();
-        }
-
         if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', boot);
+            document.addEventListener('DOMContentLoaded', mountAiUi);
         } else {
-            boot();
+            mountAiUi();
         }
+        setTimeout(mountAiUi, 0);
 
         function openAiModal(tab) {
             var $modal = $('#ai-modal');

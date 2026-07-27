@@ -196,22 +196,21 @@
                         return setTimeout(wireCustomerUi, 50);
                     }
 
-                    // Default compact view matches mockup; all columns remain available for export / All columns
+                    // Keep a compact subset for optional collapse; default shows ALL columns
                     var rewardEnabled = $('#rp_col').length > 0;
-                    // Always hide: contact_id, business, email, tax, credit, pay_term, opening, advance, added_on
                     var hideIdx = [1, 2, 4, 5, 6, 7, 8, 9, 10];
                     if (rewardEnabled) {
-                        hideIdx.push(11); // reward points
+                        hideIdx.push(11);
                     }
-                    // After name block (+ optional rp): group(show), address(show), mobile(show), due(show), then return + 10 customs
-                    var afterPrimary = rewardEnabled ? 16 : 15; // return_due index
+                    var afterPrimary = rewardEnabled ? 16 : 15;
                     hideIdx.push(afterPrimary);
                     for (var c = 1; c <= 10; c++) {
                         hideIdx.push(afterPrimary + c);
                     }
 
-                    hideIdx.forEach(function (i) {
-                        try { contact_table.column(i).visible(false, false); } catch (e) {}
+                    // Ensure every column is visible by default (design should not hide data columns)
+                    contact_table.columns().every(function () {
+                        this.visible(true, false);
                     });
                     contact_table.columns.adjust().draw(false);
 
@@ -229,14 +228,19 @@
                         $('#customer_filters_panel').toggleClass('is-open');
                     });
 
-                    var showingAll = false;
+                    // Toggle: All columns (default) <-> Compact view
+                    var showingAll = true;
+                    $('#customer_toggle_columns').addClass('active');
                     $('#customer_toggle_columns').on('click', function () {
                         showingAll = !showingAll;
-                        contact_table.columns().every(function () {
-                            this.visible(showingAll || hideIdx.indexOf(this.index()) === -1, false);
-                        });
-                        // Always keep action + primary columns visible when collapsing
-                        if (!showingAll) {
+                        if (showingAll) {
+                            contact_table.columns().every(function () {
+                                this.visible(true, false);
+                            });
+                        } else {
+                            contact_table.columns().every(function () {
+                                this.visible(hideIdx.indexOf(this.index()) === -1, false);
+                            });
                             hideIdx.forEach(function (i) {
                                 try { contact_table.column(i).visible(false, false); } catch (e) {}
                             });

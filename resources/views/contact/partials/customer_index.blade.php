@@ -73,20 +73,35 @@
         gap: 6px;
     }
     .customers-page .cust-btn:hover { background: #f8fafc; }
-    .customers-page .cust-add-btn {
+    /* Header lives outside .customers-page — keep button styles unscoped */
+    a.cust-add-btn,
+    .cust-add-btn {
         height: 42px;
-        border: none;
-        border-radius: 10px;
-        padding: 0 18px;
-        font-weight: 700;
+        border: none !important;
+        border-radius: 10px !important;
+        padding: 0 18px !important;
+        font-weight: 700 !important;
+        font-size: 14px !important;
+        line-height: 42px !important;
         color: #fff !important;
-        background: #2563eb;
-        display: inline-flex;
+        background: #2563eb !important;
+        display: inline-flex !important;
         align-items: center;
+        justify-content: center;
         gap: 6px;
         text-decoration: none !important;
+        box-shadow: 0 1px 2px rgba(37, 99, 235, 0.25);
+        white-space: nowrap;
+        cursor: pointer;
     }
-    .customers-page .cust-add-btn:hover { background: #1d4ed8; color: #fff !important; }
+    a.cust-add-btn:hover,
+    a.cust-add-btn:focus,
+    .cust-add-btn:hover,
+    .cust-add-btn:focus {
+        background: #1d4ed8 !important;
+        color: #fff !important;
+        text-decoration: none !important;
+    }
     .customers-page .cust-filters-panel {
         display: none;
         background: #fff;
@@ -103,9 +118,14 @@
         overflow: hidden;
         box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
     }
+    .customers-page .cust-table-wrap .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
     .customers-page #contact_table {
         margin: 0 !important;
         width: 100% !important;
+        min-width: 1400px;
         border: none !important;
     }
     .customers-page #contact_table thead th {
@@ -318,7 +338,7 @@
                             <th class="not-export">@lang('messages.action')</th>
                             <th>@lang('lang_v1.contact_id')</th>
                             <th>@lang('business.business_name')</th>
-                            <th>@lang('lang_v1.customer')</th>
+                            <th>@lang('contact.name')</th>
                             <th>@lang('business.email')</th>
                             <th>@lang('contact.tax_no')</th>
                             <th>@lang('lang_v1.credit_limit')</th>
@@ -330,9 +350,9 @@
                                 <th id="rp_col">{{ session('business.rp_name') }}</th>
                             @endif
                             <th>@lang('lang_v1.customer_group')</th>
-                            <th>@lang('lang_v1.location')</th>
+                            <th>@lang('business.address')</th>
                             <th>@lang('contact.mobile')</th>
-                            <th>@lang('lang_v1.balance_due')</th>
+                            <th>@lang('contact.total_sale_due')</th>
                             <th>@lang('lang_v1.total_sell_return_due')</th>
                             @php
                                 $custom_labels = json_decode(session('business.custom_labels'), true);

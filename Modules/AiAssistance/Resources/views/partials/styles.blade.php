@@ -344,16 +344,16 @@
 .ai-modal.open { display: block; }
 .ai-modal .ai-panel { max-height: calc(100vh - 48px); }
 .ai-ask-fab {
-    position: fixed !important;
+    position: static !important;
     top: auto !important;
     left: auto !important;
-    right: 78px !important;
-    bottom: 24px !important;
-    z-index: 1050;
-    display: inline-flex;
+    right: auto !important;
+    bottom: auto !important;
+    z-index: 1;
+    display: inline-flex !important;
     align-items: center;
     gap: 8px;
-    padding: 12px 18px;
+    padding: 10px 16px;
     border-radius: 999px;
     color: #fff !important;
     text-decoration: none !important;
@@ -363,25 +363,19 @@
     letter-spacing: -0.02em;
     border: 0;
     background: linear-gradient(135deg, #7c3aed, #2563eb);
-    box-shadow: 0 10px 25px rgba(37, 99, 235, 0.35);
+    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
     cursor: pointer;
     -webkit-font-smoothing: antialiased;
     white-space: nowrap;
     line-height: 1.2;
     height: auto;
-    min-height: 44px;
+    min-height: 40px;
     box-sizing: border-box;
     margin: 0 !important;
     transform: none !important;
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-    transition: opacity 0.2s ease, visibility 0.2s ease;
-}
-.ai-ask-fab.is-visible {
-    opacity: 1;
-    visibility: visible;
-    pointer-events: auto;
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
 }
 .ai-ask-fab:hover { filter: brightness(1.05); color: #fff !important; }
 .ai-ask-fab i {
