@@ -1182,11 +1182,102 @@ $(document).ready(function() {
     $(document).off('click.posSuspend', 'button#pos-suspend').on('click.posSuspend', 'button#pos-suspend', function(e) {
         e.preventDefault();
         e.stopPropagation();
+
+        if ($('table#pos_table tbody').find('.product_row').length <= 0) {
+            toastr.warning(LANG.no_products_added);
+            return false;
+        }
+
         $('input#is_suspend').val(1);
         $('div#confirmSuspendModal').modal('hide');
-        // Submit after modal hide starts; keep is_suspend=1 until serialize in submitHandler
+
+        // Park directly (like draft) — avoid silent jquery.validate failures on hidden payment/shipping fields
         setTimeout(function() {
-            pos_form_obj.submit();
+            if (typeof pos_form_obj === 'undefined' || !pos_form_obj.length) {
+                return;
+            }
+            disable_pos_form_actions();
+            pos_restore_all_row_edit_modals();
+
+            var data = pos_form_obj.serialize();
+            data = data + '&status=final&is_suspend=1';
+
+            // Ensure contact_id — POS theme can display Walk-In without select value
+            var contactId = $('#customer_id').val() || $('#default_customer_id').val() || '';
+            if (contactId) {
+                if (!$('#customer_id').val()) {
+                    var cname = $('#default_customer_name').val() || 'Walk-In Customer';
+                    if ($('#customer_id option[value="' + contactId + '"]').length === 0) {
+                        $('#customer_id').append($('<option>', { value: contactId, text: cname }));
+                    }
+                    $('#customer_id').val(String(contactId)).trigger('change');
+                }
+                data = data.replace(/(^|&)contact_id=[^&]*/g, '');
+                data += (data ? '&' : '') + 'contact_id=' + encodeURIComponent(contactId);
+            } else {
+                enable_pos_form_actions();
+                toastr.error('Please select a customer before parking');
+                return;
+            }
+
+            var noteVal = $('#confirmSuspendModal textarea[name="additional_notes"]').val();
+            if (typeof noteVal !== 'undefined') {
+                data += '&additional_notes=' + encodeURIComponent(noteVal);
+            }
+
+            // Prefer create endpoint for new park; use current action for repark (retrieved sale)
+            var parkUrl = pos_form_obj.attr('action');
+            var retrievedId = pos_form_obj.attr('data-retrieved-id') || pos_form_obj.data('retrieved-id');
+            if (retrievedId) {
+                parkUrl = (window.base_path || '') + '/pos/' + retrievedId;
+                if (data.indexOf('_method=') === -1) {
+                    data += '&_method=PUT';
+                }
+            }
+
+            $.ajax({
+                method: 'POST',
+                url: parkUrl,
+                data: data,
+                dataType: 'json',
+                success: function(result) {
+                    $('input#is_suspend').val(0);
+                    if (result.success == 1) {
+                        $('#confirmSuspendModal').modal('hide');
+                        toastr.success(result.msg);
+
+                        var $addForm = $('#add_pos_sell_form');
+                        if ($addForm.length && $addForm.data('original-action')) {
+                            $addForm.attr('action', $addForm.data('original-action'));
+                            $addForm.find('input[name="_method"]').remove();
+                            $addForm.removeAttr('data-retrieved-id');
+                        }
+
+                        reset_pos_form();
+
+                        if (result.receipt && result.receipt.is_enabled) {
+                            pos_print(result.receipt);
+                        }
+                        if (typeof refreshPosSuspendedCount === 'function') {
+                            refreshPosSuspendedCount();
+                        }
+                        if (typeof loadPosDraftsPanel === 'function' && $('#pos_drafts_panel').length) {
+                            loadPosDraftsPanel('draft');
+                        }
+                    } else {
+                        toastr.error(result.msg || 'Unable to park sale');
+                    }
+                    enable_pos_form_actions();
+                },
+                error: function(xhr) {
+                    $('input#is_suspend').val(0);
+                    enable_pos_form_actions();
+                    var msg = (xhr.responseJSON && (xhr.responseJSON.msg || xhr.responseJSON.message))
+                        ? (xhr.responseJSON.msg || xhr.responseJSON.message)
+                        : 'Unable to park sale. Please try again.';
+                    toastr.error(msg);
+                },
+            });
         }, 50);
     });
 
@@ -3172,13 +3263,7 @@ function pos_load_retrieved_sale_into_cart(row) {
             if (!$form.data('original-action')) {
                 $form.data('original-action', $form.attr('action'));
             }
-            var href = row.getAttribute('data-href') || '';
-            var updateUrl = href.replace(/\/edit(\?.*)?$/, '$1');
-            if (!updateUrl || updateUrl === href) {
-                updateUrl = (window.base_path || '') + '/pos/' + tid;
-            }
-            // Keep query-less update URL
-            updateUrl = updateUrl.split('?')[0];
+            var updateUrl = (window.base_path || '') + '/pos/' + tid;
             $form.attr('action', updateUrl);
             if (!$form.find('input[name="_method"]').length) {
                 $form.prepend('<input type="hidden" name="_method" value="PUT">');
@@ -3342,10 +3427,10 @@ function set_default_customer() {
     var default_customer_name = $('#default_customer_name').val();
     var default_customer_balance = $('#default_customer_balance').val();
     var default_customer_address = $('#default_customer_address').val();
-    var exists = default_customer_id ? $('select#customer_id option[value=' + default_customer_id + ']').length : 0;
+    var exists = default_customer_id ? $('select#customer_id option[value="' + default_customer_id + '"]').length : 0;
     if (exists == 0 && default_customer_id) {
         $('select#customer_id').append(
-            $('<option>', { value: default_customer_id, text: default_customer_name })
+            $('<option>', { value: default_customer_id, text: default_customer_name || 'Walk-In Customer' })
         );
     }
     $('#advance_balance_text').text(__currency_trans_from_en(default_customer_balance), true);
@@ -3354,9 +3439,11 @@ function set_default_customer() {
     if (default_customer_address) {
         $('#shipping_address').val(default_customer_address);
     }
-    $('select#customer_id')
-        .val(default_customer_id)
-        .trigger('change');
+    if (default_customer_id) {
+        $('select#customer_id')
+            .val(String(default_customer_id))
+            .trigger('change');
+    }
 
     // POS theme: keep walk-in / default customer name visible (selected)
     if ($('body').hasClass('pos-sale-theme') && default_customer_name) {

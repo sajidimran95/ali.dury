@@ -46,11 +46,7 @@
     );
 @endphp
 
-@if ($__is_pos && file_exists(public_path('js/vendor.legacy.js')))
-{{-- POS needs the full legacy vendor (Decimal, printers helpers, etc.) --}}
-<script src="{{ asset('js/vendor.legacy.js?v=' . $asset_v) }}"></script>
-@else
-{{-- Split vendor: core npm libs + UI plugins. Optional heavy plugins below. --}}
+{{-- Split vendor: core (jQuery, Decimal, Tagify, …) + UI plugins. Do NOT use vendor.legacy on POS — it lacks Decimal and breaks park/totals. --}}
 <script src="{{ asset('js/vendor-core.js?v=' . $asset_v) }}"></script>
 <script src="{{ asset('js/vendor-ui.js?v=' . $asset_v) }}"></script>
 @if ($__needs_highcharts)
@@ -61,7 +57,6 @@
 @endif
 @if ($__needs_fullcalendar)
 <script src="{{ asset('js/vendor-fullcalendar.js?v=' . $asset_v) }}"></script>
-@endif
 @endif
 @stack('vendor_plugins')
 

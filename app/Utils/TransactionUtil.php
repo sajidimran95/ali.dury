@@ -53,9 +53,9 @@ class TransactionUtil extends Util
 
         //if pay term empty set contact pay term
         if (empty($pay_term_number) || empty($pay_term_type)) {
-            $contact = Contact::find($input['contact_id']);
-            $pay_term_number = $contact->pay_term_number;
-            $pay_term_type = $contact->pay_term_type;
+            $contact = ! empty($input['contact_id']) ? Contact::find($input['contact_id']) : null;
+            $pay_term_number = $contact->pay_term_number ?? null;
+            $pay_term_type = $contact->pay_term_type ?? null;
         }
         $transaction = Transaction::create([
             'business_id' => $business_id,
@@ -182,9 +182,9 @@ class TransactionUtil extends Util
 
         //if pay term empty set contact pay term
         if (empty($pay_term_number) || empty($pay_term_type)) {
-            $contact = Contact::find($input['contact_id']);
-            $pay_term_number = $contact->pay_term_number;
-            $pay_term_type = $contact->pay_term_type;
+            $contact = ! empty($input['contact_id']) ? Contact::find($input['contact_id']) : null;
+            $pay_term_number = $contact->pay_term_number ?? null;
+            $pay_term_type = $contact->pay_term_type ?? null;
         }
 
         $update_date = [
@@ -4139,8 +4139,11 @@ class TransactionUtil extends Util
         $exclude_transaction_id = null,
         $uf_number = true
     ) {
-        //If draft ignore credit limit check
-        if ($input['status'] == 'draft' || (isset($input['type']) && $input['type'] == 'sales_order')) {
+        //If draft / parked / sales order — ignore credit limit check
+        if ($input['status'] == 'draft'
+            || (isset($input['type']) && $input['type'] == 'sales_order')
+            || (! empty($input['is_suspend']) && (int) $input['is_suspend'] === 1)
+        ) {
             return false;
         }
 
@@ -4158,7 +4161,16 @@ class TransactionUtil extends Util
             return false;
         }
 
-        $credit_limit = Contact::find($input['contact_id'])->credit_limit;
+        if (empty($input['contact_id'])) {
+            return false;
+        }
+
+        $contact = Contact::find($input['contact_id']);
+        if (empty($contact)) {
+            return false;
+        }
+
+        $credit_limit = $contact->credit_limit;
 
         if ($credit_limit == null) {
             return false;

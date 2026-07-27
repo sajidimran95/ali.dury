@@ -345,6 +345,27 @@ class SellPosController extends Controller
                 $input['sub_status'] = 'proforma';
             }
 
+            $input['is_suspend'] = isset($input['is_suspend']) && 1 == $input['is_suspend'] ? 1 : 0;
+
+            // POS UI can show "Walk-In Customer" without a selected option value
+            if (empty($input['contact_id'])) {
+                $walk_in = $this->contactUtil->getWalkInCustomer($request->session()->get('user.business_id'));
+                if (!empty($walk_in['id'])) {
+                    $input['contact_id'] = $walk_in['id'];
+                }
+            }
+
+            if (empty($input['contact_id'])) {
+                $output = ['success' => 0, 'msg' => 'Please select a customer'];
+                if (!$is_direct_sale) {
+                    return $output;
+                }
+
+                return redirect()
+                    ->action([\App\Http\Controllers\SellController::class, 'index'])
+                    ->with('status', $output);
+            }
+
             //Add change return
             $change_return = $this->dummyPaymentLine;
             if (!empty($input['payment']['change_return'])) {
@@ -352,8 +373,10 @@ class SellPosController extends Controller
                 unset($input['payment']['change_return']);
             }
 
-            //Check Customer credit limit
-            $is_credit_limit_exeeded = $this->transactionUtil->isCustomerCreditLimitExeeded($input);
+            //Check Customer credit limit (skipped for parked sales)
+            $is_credit_limit_exeeded = !empty($input['is_suspend'])
+                ? false
+                : $this->transactionUtil->isCustomerCreditLimitExeeded($input);
 
             if ($is_credit_limit_exeeded !== false) {
                 $credit_limit_amount = $this->transactionUtil->num_f($is_credit_limit_exeeded, true);
@@ -1182,10 +1205,23 @@ class SellPosController extends Controller
                 $input['is_quotation'] = 0;
             }
 
+            $input['is_suspend'] = isset($input['is_suspend']) && 1 == $input['is_suspend'] ? 1 : 0;
+
+            // POS UI can show "Walk-In Customer" without a selected option value
+            if (empty($input['contact_id'])) {
+                $walk_in = $this->contactUtil->getWalkInCustomer($request->session()->get('user.business_id'));
+                if (!empty($walk_in['id'])) {
+                    $input['contact_id'] = $walk_in['id'];
+                }
+            }
+
             $is_direct_sale = false;
             if (!empty($input['products'])) {
                 //Get transaction value before updating.
                 $transaction_before = Transaction::find($id);
+                if (empty($transaction_before)) {
+                    return ['success' => 0, 'msg' => trans('messages.something_went_wrong')];
+                }
                 $status_before = $transaction_before->status;
                 $rp_earned_before = $transaction_before->rp_earned;
                 $rp_redeemed_before = $transaction_before->rp_redeemed;
@@ -1212,8 +1248,10 @@ class SellPosController extends Controller
                     unset($input['payment']['change_return']);
                 }
 
-                //Check Customer credit limit
-                $is_credit_limit_exeeded = $transaction_before->type == 'sell' ? $this->transactionUtil->isCustomerCreditLimitExeeded($input, $id) : false;
+                //Check Customer credit limit (skipped for parked sales)
+                $is_credit_limit_exeeded = (!empty($input['is_suspend']) || $transaction_before->type != 'sell')
+                    ? false
+                    : $this->transactionUtil->isCustomerCreditLimitExeeded($input, $id);
 
                 if ($is_credit_limit_exeeded !== false) {
                     $credit_limit_amount = $this->transactionUtil->num_f($is_credit_limit_exeeded, true);
