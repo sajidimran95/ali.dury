@@ -449,10 +449,78 @@ body.japs-dashboard-home .japs-dash-payment-body {
   justify-content: stretch;
 }
 
-body.japs-dashboard-home .japs-dash-payment-chart {
+body.japs-dashboard-home .japs-dash-payment-mix {
   width: 100%;
-  min-height: 220px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 210px;
+}
+
+body.japs-dashboard-home .japs-dash-payment-chart {
+  width: 58%;
+  min-width: 160px;
+  min-height: 210px;
+  flex: 0 0 58%;
+}
+
+body.japs-dashboard-home .japs-dash-payment-legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
   flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+body.japs-dashboard-home .japs-dash-payment-legend__item {
+  display: grid;
+  grid-template-columns: 10px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+}
+
+body.japs-dashboard-home .japs-dash-payment-legend__swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  display: inline-block;
+}
+
+body.japs-dashboard-home .japs-dash-payment-legend__label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #374151;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+body.japs-dashboard-home .japs-dash-payment-legend__pct {
+  font-size: 13px;
+  font-weight: 600;
+  color: #6b7280;
+}
+
+body.japs-dashboard-home .japs-dash-donut-center {
+  text-align: center;
+  line-height: 1.15;
+}
+
+body.japs-dashboard-home .japs-dash-donut-center__amount {
+  font-size: 16px;
+  font-weight: 700;
+  color: #111827;
+}
+
+body.japs-dashboard-home .japs-dash-donut-center__label {
+  margin-top: 2px;
+  font-size: 11px;
+  font-weight: 500;
+  color: #6b7280;
+  text-transform: none;
 }
 
 body.japs-dashboard-home .japs-dash-payment-empty {
@@ -460,6 +528,19 @@ body.japs-dashboard-home .japs-dash-payment-empty {
   text-align: center;
   padding: 40px 12px;
   margin: 0;
+  width: 100%;
+}
+
+@media (max-width: 560px) {
+  body.japs-dashboard-home .japs-dash-payment-mix {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  body.japs-dashboard-home .japs-dash-payment-chart {
+    width: 100%;
+    flex: 0 0 auto;
+  }
 }
 
 /* Footer mini-stats inside chart cards (matches screenshot) */

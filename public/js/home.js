@@ -253,76 +253,87 @@ window.japsLoadPaymentMethodMix = function(start, end, locationId) {
             window.japsPaymentMixChart = null;
         }
 
+        var $legend = $('#payment_method_mix_legend');
+        $legend.empty();
+
         if (!data.has_data) {
             $('#payment_method_mix_empty').show();
-            $('#payment_method_mix_chart').hide();
+            $('.japs-dash-payment-mix').hide();
             return;
         }
 
         $('#payment_method_mix_empty').hide();
-        $('#payment_method_mix_chart').show();
+        $('.japs-dash-payment-mix').show();
 
-        var categories = [];
-        var values = [];
-        (data.series || []).forEach(function(item) {
-            categories.push(item.label);
-            values.push(item.amount);
+        var colors = ['#3b82f6', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
+        var pieData = (data.series || []).map(function(item, idx) {
+            var color = colors[idx % colors.length];
+            var pct = data.total > 0 ? Math.round((item.amount / data.total) * 100) : 0;
+            $legend.append(
+                '<li class="japs-dash-payment-legend__item">' +
+                    '<span class="japs-dash-payment-legend__swatch" style="background:' + color + '"></span>' +
+                    '<span class="japs-dash-payment-legend__label">' + $('<div>').text(item.label).html() + '</span>' +
+                    '<span class="japs-dash-payment-legend__pct">' + pct + '%</span>' +
+                '</li>'
+            );
+            return {
+                name: item.label,
+                y: item.amount,
+                color: color
+            };
         });
 
         window.japsPaymentMixChart = Highcharts.chart('payment_method_mix_chart', {
             chart: {
-                type: 'column',
+                type: 'pie',
                 backgroundColor: 'transparent',
-                height: 240,
-                spacing: [8, 8, 8, 4]
+                height: 210,
+                spacing: [0, 0, 0, 0],
+                margin: [8, 8, 8, 8]
             },
-            title: { text: null },
+            title: {
+                text:
+                    '<div class="japs-dash-donut-center">' +
+                        '<div class="japs-dash-donut-center__amount">' + __currency_trans_from_en(data.total || 0, true) + '</div>' +
+                        '<div class="japs-dash-donut-center__label">Total</div>' +
+                    '</div>',
+                align: 'center',
+                verticalAlign: 'middle',
+                y: 18,
+                useHTML: true
+            },
             credits: { enabled: false },
             legend: { enabled: false },
-            xAxis: {
-                categories: categories,
-                lineColor: '#e5e7eb',
-                tickColor: '#e5e7eb',
-                labels: {
-                    style: { color: '#6b7280', fontSize: '11px', fontWeight: '500' }
-                }
-            },
-            yAxis: {
-                title: { text: null },
-                min: 0,
-                gridLineColor: '#eef0f3',
-                gridLineWidth: 1,
-                labels: {
-                    style: { color: '#6b7280', fontSize: '11px' },
-                    formatter: function() {
-                        return __currency_trans_from_en(this.value, false);
-                    }
-                }
-            },
             tooltip: {
                 backgroundColor: '#111827',
                 borderColor: '#111827',
+                borderRadius: 8,
                 style: { color: '#fff' },
-                formatter: function() {
+                pointFormatter: function() {
                     var pct = data.total > 0 ? Math.round((this.y / data.total) * 100) : 0;
-                    return '<b>' + this.x + '</b><br/>' +
+                    return '<b>' + this.name + '</b><br/>' +
                         __currency_trans_from_en(this.y, true) +
                         ' (' + pct + '%)';
                 }
             },
             plotOptions: {
-                column: {
-                    borderWidth: 0,
-                    borderRadius: 3,
-                    color: '#3b82f6',
-                    pointPadding: 0.15,
-                    groupPadding: 0.1
+                pie: {
+                    innerSize: '72%',
+                    size: '100%',
+                    borderWidth: 3,
+                    borderColor: '#f3f4f6',
+                    slicedOffset: 0,
+                    dataLabels: { enabled: false },
+                    showInLegend: false,
+                    states: {
+                        hover: { brightness: 0.04 }
+                    }
                 }
             },
             series: [{
                 name: 'Payment',
-                type: 'column',
-                data: values
+                type: 'pie',
+                data: pieData
             }]
         });
     });
