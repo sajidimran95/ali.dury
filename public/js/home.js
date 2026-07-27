@@ -254,16 +254,25 @@ window.japsLoadPaymentMethodMix = function(start, end, locationId) {
         }
 
         var $legend = $('#payment_method_mix_legend');
+        var $center = $('#payment_method_mix_center');
+        var $centerAmount = $center.find('.japs-dash-donut-center__amount');
+        var $centerLabel = $center.find('.japs-dash-donut-center__label');
         $legend.empty();
 
         if (!data.has_data) {
             $('#payment_method_mix_empty').show();
             $('.japs-dash-payment-mix').hide();
+            $center.hide();
             return;
         }
 
+        var totalAmountText = __currency_trans_from_en(data.total || 0, true);
+
         $('#payment_method_mix_empty').hide();
         $('.japs-dash-payment-mix').show();
+        $centerAmount.text(totalAmountText);
+        $centerLabel.text('Total');
+        $center.show();
 
         var colors = ['#3b82f6', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
         var pieData = (data.series || []).map(function(item, idx) {
@@ -287,28 +296,39 @@ window.japsLoadPaymentMethodMix = function(start, end, locationId) {
             chart: {
                 type: 'pie',
                 backgroundColor: 'transparent',
-                height: 210,
-                spacing: [0, 0, 0, 0],
-                margin: [8, 8, 8, 8]
+                height: 270,
+                spacing: [4, 4, 4, 4],
+                margin: [6, 6, 6, 6]
             },
-            title: {
-                text:
-                    '<div class="japs-dash-donut-center">' +
-                        '<div class="japs-dash-donut-center__amount">' + __currency_trans_from_en(data.total || 0, true) + '</div>' +
-                        '<div class="japs-dash-donut-center__label">Total</div>' +
-                    '</div>',
-                align: 'center',
-                verticalAlign: 'middle',
-                y: 18,
-                useHTML: true
-            },
+            title: { text: null },
+            subtitle: { text: null },
             credits: { enabled: false },
             legend: { enabled: false },
+            exporting: {
+                buttons: {
+                    contextButton: {
+                        align: 'right',
+                        verticalAlign: 'top',
+                        x: 0,
+                        y: -4
+                    }
+                }
+            },
             tooltip: {
                 backgroundColor: '#111827',
                 borderColor: '#111827',
                 borderRadius: 8,
-                style: { color: '#fff' },
+                borderWidth: 0,
+                shadow: false,
+                style: { color: '#fff', fontSize: '12px' },
+                // Keep popup at top-right of chart so it never covers center amount
+                positioner: function(labelWidth) {
+                    var chart = this.chart;
+                    return {
+                        x: chart.plotLeft + chart.plotWidth - labelWidth,
+                        y: chart.plotTop + 6
+                    };
+                },
                 pointFormatter: function() {
                     var pct = data.total > 0 ? Math.round((this.y / data.total) * 100) : 0;
                     return '<b>' + this.name + '</b><br/>' +
@@ -318,8 +338,9 @@ window.japsLoadPaymentMethodMix = function(start, end, locationId) {
             },
             plotOptions: {
                 pie: {
-                    innerSize: '72%',
-                    size: '100%',
+                    innerSize: '66%',
+                    size: '96%',
+                    center: ['50%', '50%'],
                     borderWidth: 3,
                     borderColor: '#f3f4f6',
                     slicedOffset: 0,
@@ -327,6 +348,18 @@ window.japsLoadPaymentMethodMix = function(start, end, locationId) {
                     showInLegend: false,
                     states: {
                         hover: { brightness: 0.04 }
+                    },
+                    point: {
+                        events: {
+                            mouseOver: function() {
+                                $centerAmount.text(__currency_trans_from_en(this.y, true));
+                                $centerLabel.text(this.name);
+                            },
+                            mouseOut: function() {
+                                $centerAmount.text(totalAmountText);
+                                $centerLabel.text('Total');
+                            }
+                        }
                     }
                 }
             },

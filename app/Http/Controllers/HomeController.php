@@ -730,7 +730,8 @@ class HomeController extends Controller
     }
 
     /**
-     * Payment method breakdown for dashboard line chart.
+     * Payment method breakdown for dashboard donut (sales only).
+     * Includes paid methods + unpaid credit-sale dues.
      */
     public function getPaymentMethodMix()
     {
@@ -746,22 +747,21 @@ class HomeController extends Controller
 
         $payment_types = $this->transactionUtil->payment_types(null, true, $business_id);
 
-        $query = \App\TransactionPayment::join('transactions as t', 'transaction_payments.transaction_id', '=', 't.id')
+        $paymentsQuery = \App\TransactionPayment::join('transactions as t', 'transaction_payments.transaction_id', '=', 't.id')
             ->where('transaction_payments.business_id', $business_id)
             ->whereNull('transaction_payments.parent_id')
-            ->where('transaction_payments.method', '!=', 'advance')
+            ->where('t.type', 'sell')
             ->where('t.status', 'final')
-            ->whereIn('t.type', ['sell', 'purchase'])
             ->whereBetween(\DB::raw('date(t.transaction_date)'), [$start, $end]);
 
         if ($permitted_locations != 'all') {
-            $query->whereIn('t.location_id', $permitted_locations);
+            $paymentsQuery->whereIn('t.location_id', $permitted_locations);
         }
         if (! empty($location_id)) {
-            $query->where('t.location_id', $location_id);
+            $paymentsQuery->where('t.location_id', $location_id);
         }
 
-        $rows = $query
+        $rows = $paymentsQuery
             ->select('transaction_payments.method', \DB::raw('SUM(transaction_payments.amount) as total'))
             ->groupBy('transaction_payments.method')
             ->orderByDesc('total')
@@ -781,6 +781,42 @@ class HomeController extends Controller
                 'amount' => $amount,
             ];
         }
+
+        // Credit sales / credit line: unpaid (due/partial) amount has no payment row
+        $creditQuery = \App\Transaction::where('business_id', $business_id)
+            ->where('type', 'sell')
+            ->where('status', 'final')
+            ->whereIn('payment_status', ['due', 'partial'])
+            ->whereBetween(\DB::raw('date(transaction_date)'), [$start, $end]);
+
+        if ($permitted_locations != 'all') {
+            $creditQuery->whereIn('location_id', $permitted_locations);
+        }
+        if (! empty($location_id)) {
+            $creditQuery->where('location_id', $location_id);
+        }
+
+        $credit_due = (float) $creditQuery
+            ->selectRaw('COALESCE(SUM(final_total - COALESCE((
+                SELECT SUM(tp.amount)
+                FROM transaction_payments tp
+                WHERE tp.transaction_id = transactions.id
+                  AND tp.parent_id IS NULL
+            ), 0)), 0) as credit_due')
+            ->value('credit_due');
+
+        if ($credit_due > 0) {
+            $grand_total += $credit_due;
+            $series[] = [
+                'method' => 'credit_sale',
+                'label' => __('lang_v1.credit_sale'),
+                'amount' => $credit_due,
+            ];
+        }
+
+        usort($series, function ($a, $b) {
+            return $b['amount'] <=> $a['amount'];
+        });
 
         return response()->json([
             'series' => $series,

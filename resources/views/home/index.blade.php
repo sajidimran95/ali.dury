@@ -126,8 +126,14 @@
                             <h3 class="japs-dash-chart-card__title">{{ __('home.payment_method_mix') }}</h3>
                             <div class="japs-dash-payment-body">
                                 <div class="japs-dash-payment-mix">
-                                    <div id="payment_method_mix_chart" class="japs-dash-payment-chart"></div>
                                     <ul id="payment_method_mix_legend" class="japs-dash-payment-legend" aria-label="{{ __('home.payment_method_mix') }}"></ul>
+                                    <div class="japs-dash-payment-chart-wrap">
+                                        <div id="payment_method_mix_chart" class="japs-dash-payment-chart"></div>
+                                        <div id="payment_method_mix_center" class="japs-dash-donut-center" aria-hidden="true" style="display:none;">
+                                            <div class="japs-dash-donut-center__amount"></div>
+                                            <div class="japs-dash-donut-center__label">Total</div>
+                                        </div>
+                                    </div>
                                 </div>
                                 <p id="payment_method_mix_empty" class="japs-dash-payment-empty" style="display:none;">{{ __('lang_v1.no_data') }}</p>
                             </div>

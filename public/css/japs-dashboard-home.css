@@ -441,9 +441,13 @@ body.japs-dashboard-home .zoho-dashboard__main-chart-canvas {
   flex: 1 1 auto;
 }
 
+body.japs-dashboard-home .japs-dash-chart-card--payment {
+  position: relative;
+}
+
 body.japs-dashboard-home .japs-dash-payment-body {
   flex: 1 1 auto;
-  min-height: 220px;
+  min-height: 280px;
   display: flex;
   align-items: stretch;
   justify-content: stretch;
@@ -451,35 +455,45 @@ body.japs-dashboard-home .japs-dash-payment-body {
 
 body.japs-dashboard-home .japs-dash-payment-mix {
   width: 100%;
+  min-height: 280px;
   display: flex;
+  flex-direction: row;
   align-items: center;
-  gap: 16px;
-  min-height: 210px;
-}
-
-body.japs-dashboard-home .japs-dash-payment-chart {
-  width: 58%;
-  min-width: 160px;
-  min-height: 210px;
-  flex: 0 0 58%;
+  gap: 14px;
 }
 
 body.japs-dashboard-home .japs-dash-payment-legend {
   list-style: none;
   margin: 0;
   padding: 0;
-  flex: 1 1 auto;
+  flex: 0 0 auto;
+  width: 108px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  align-items: flex-start;
+  gap: 10px;
   min-width: 0;
+  order: 0;
+}
+
+body.japs-dashboard-home .japs-dash-payment-chart-wrap {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 270px;
+}
+
+body.japs-dashboard-home .japs-dash-payment-chart {
+  width: 100%;
+  min-height: 270px;
 }
 
 body.japs-dashboard-home .japs-dash-payment-legend__item {
   display: grid;
   grid-template-columns: 10px minmax(0, 1fr) auto;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  width: 100%;
 }
 
 body.japs-dashboard-home .japs-dash-payment-legend__swatch {
@@ -505,12 +519,20 @@ body.japs-dashboard-home .japs-dash-payment-legend__pct {
 }
 
 body.japs-dashboard-home .japs-dash-donut-center {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
   text-align: center;
   line-height: 1.15;
+  pointer-events: none;
+  width: 48%;
+  max-width: 140px;
 }
 
 body.japs-dashboard-home .japs-dash-donut-center__amount {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 700;
   color: #111827;
 }
@@ -521,6 +543,13 @@ body.japs-dashboard-home .japs-dash-donut-center__label {
   font-weight: 500;
   color: #6b7280;
   text-transform: none;
+}
+
+body.japs-dashboard-home .japs-dash-payment-chart .highcharts-title,
+body.japs-dashboard-home .japs-dash-payment-chart .highcharts-subtitle,
+body.japs-dashboard-home .japs-dash-payment-chart .highcharts-data-label,
+body.japs-dashboard-home .japs-dash-payment-chart .highcharts-legend {
+  display: none !important;
 }
 
 body.japs-dashboard-home .japs-dash-payment-empty {
@@ -537,9 +566,13 @@ body.japs-dashboard-home .japs-dash-payment-empty {
     align-items: stretch;
   }
 
-  body.japs-dashboard-home .japs-dash-payment-chart {
+  body.japs-dashboard-home .japs-dash-payment-legend {
     width: 100%;
-    flex: 0 0 auto;
+    order: 1;
+  }
+
+  body.japs-dashboard-home .japs-dash-payment-chart-wrap {
+    order: 0;
   }
 }
 
