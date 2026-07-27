@@ -14,6 +14,7 @@ return [
     'welcome_message' => 'Welcome back, :name',
     'needs_attention' => 'Needs attention',
     'payment_method_mix' => 'Payment method mix',
+    'credit_sale_short' => 'Credit',
     'last_30_days' => 'Last 30 days',
     'net_profit' => 'Net profit',
     'net_profit_hint' => 'Sales minus cost and expenses',

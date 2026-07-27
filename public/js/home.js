@@ -296,21 +296,31 @@ window.japsLoadPaymentMethodMix = function(start, end, locationId) {
             chart: {
                 type: 'pie',
                 backgroundColor: 'transparent',
-                height: 270,
-                spacing: [4, 4, 4, 4],
-                margin: [6, 6, 6, 6]
+                height: 300,
+                spacing: [10, 8, 2, 2],
+                margin: [8, 8, 4, 4]
             },
             title: { text: null },
             subtitle: { text: null },
             credits: { enabled: false },
             legend: { enabled: false },
             exporting: {
+                enabled: true,
                 buttons: {
                     contextButton: {
                         align: 'right',
                         verticalAlign: 'top',
                         x: 0,
-                        y: -4
+                        y: 0,
+                        symbolStroke: '#6b7280',
+                        theme: {
+                            fill: 'transparent',
+                            stroke: 'none',
+                            states: {
+                                hover: { fill: 'rgba(0,0,0,0.04)' },
+                                select: { fill: 'rgba(0,0,0,0.06)' }
+                            }
+                        }
                     }
                 }
             },
@@ -321,7 +331,6 @@ window.japsLoadPaymentMethodMix = function(start, end, locationId) {
                 borderWidth: 0,
                 shadow: false,
                 style: { color: '#fff', fontSize: '12px' },
-                // Keep popup at top-right of chart so it never covers center amount
                 positioner: function(labelWidth) {
                     var chart = this.chart;
                     return {
@@ -339,7 +348,7 @@ window.japsLoadPaymentMethodMix = function(start, end, locationId) {
             plotOptions: {
                 pie: {
                     innerSize: '66%',
-                    size: '96%',
+                    size: '98%',
                     center: ['50%', '50%'],
                     borderWidth: 3,
                     borderColor: '#f3f4f6',

@@ -809,7 +809,7 @@ class HomeController extends Controller
             $grand_total += $credit_due;
             $series[] = [
                 'method' => 'credit_sale',
-                'label' => __('lang_v1.credit_sale'),
+                'label' => __('home.credit_sale_short'),
                 'amount' => $credit_due,
             ];
         }

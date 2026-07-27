@@ -443,11 +443,16 @@ body.japs-dashboard-home .zoho-dashboard__main-chart-canvas {
 
 body.japs-dashboard-home .japs-dash-chart-card--payment {
   position: relative;
+  overflow: visible;
+}
+
+body.japs-dashboard-home .japs-dash-chart-card--payment .highcharts-contextbutton {
+  cursor: pointer;
 }
 
 body.japs-dashboard-home .japs-dash-payment-body {
   flex: 1 1 auto;
-  min-height: 280px;
+  min-height: 300px;
   display: flex;
   align-items: stretch;
   justify-content: stretch;
@@ -455,24 +460,24 @@ body.japs-dashboard-home .japs-dash-payment-body {
 
 body.japs-dashboard-home .japs-dash-payment-mix {
   width: 100%;
-  min-height: 280px;
+  min-height: 300px;
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
 }
 
 body.japs-dashboard-home .japs-dash-payment-legend {
   list-style: none;
   margin: 0;
   padding: 0;
-  flex: 0 0 auto;
-  width: 108px;
+  flex: 0 0 118px;
+  width: 118px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 10px;
-  min-width: 0;
+  min-width: 118px;
   order: 0;
 }
 
@@ -480,12 +485,27 @@ body.japs-dashboard-home .japs-dash-payment-chart-wrap {
   position: relative;
   flex: 1 1 auto;
   min-width: 0;
-  min-height: 270px;
+  min-height: 300px;
+  overflow: visible;
 }
 
 body.japs-dashboard-home .japs-dash-payment-chart {
   width: 100%;
-  min-height: 270px;
+  min-height: 300px;
+  position: relative;
+  z-index: 3;
+}
+
+/* Chart + menu stack above center amount so popup is never covered */
+body.japs-dashboard-home .japs-dash-payment-chart .highcharts-container {
+  position: relative !important;
+  z-index: 3;
+  overflow: visible !important;
+}
+
+body.japs-dashboard-home .japs-dash-payment-chart .highcharts-menu,
+body.japs-dashboard-home .japs-dash-payment-chart .highcharts-contextmenu {
+  z-index: 20 !important;
 }
 
 body.japs-dashboard-home .japs-dash-payment-legend__item {
@@ -508,22 +528,24 @@ body.japs-dashboard-home .japs-dash-payment-legend__label {
   font-weight: 500;
   color: #374151;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  overflow: visible;
+  line-height: 1.25;
 }
 
 body.japs-dashboard-home .japs-dash-payment-legend__pct {
   font-size: 13px;
   font-weight: 600;
   color: #6b7280;
+  white-space: nowrap;
 }
 
+/* Amount stays in donut hole, under the menu layer */
 body.japs-dashboard-home .japs-dash-donut-center {
   position: absolute;
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  z-index: 2;
+  z-index: 1;
   text-align: center;
   line-height: 1.15;
   pointer-events: none;
