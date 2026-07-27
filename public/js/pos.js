@@ -2150,7 +2150,7 @@ $(document).ready(function() {
 
         var unit_sp = base_unit_selling_price * multiplier;
 
-        var sp_element = tr.find('input.pos_unit_price');
+        var sp_element = pos_row_field(tr, 'input.pos_unit_price');
         __write_number(sp_element, unit_sp);
 
         sp_element.change();
