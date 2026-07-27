@@ -125,7 +125,7 @@ class BusinessLocation extends Model
                                             ->where('vld.location_id', '=', $locationId);
                                     })
                                     ->where('p.not_for_selling', 0)
-                                    ->with(['product_variation', 'product', 'media'])
+                                    ->with(['product_variation', 'product.unit', 'media'])
                                     ->select(
                                         'variations.*',
                                         'p.enable_stock as product_enable_stock',

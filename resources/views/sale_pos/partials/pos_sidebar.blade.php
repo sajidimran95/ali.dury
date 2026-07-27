@@ -94,8 +94,8 @@
                     <div class="tw-dw-menu pos-drawer-panel pos-drawer-brand tw-min-h-full tw-bg-white">
                         <div class="tw-flex tw-items-start tw-justify-between tw-gap-3 tw-px-6 tw-pt-[22px] tw-pb-4 tw-border-b tw-border-slate-100">
                             <h3 class="tw-text-xl tw-font-bold tw-m-0">@lang('brand.brands')</h3>
-                            <button type="button" class="close-side-bar-brand tw-w-9 tw-h-9 tw-rounded-[10px] tw-bg-slate-100 tw-border-0" aria-label="Close">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                            <button type="button" class="close-side-bar-brand tw-inline-flex tw-items-center tw-justify-center tw-w-9 tw-h-9 tw-p-0 tw-leading-none tw-rounded-[10px] tw-bg-slate-100 tw-border-0" aria-label="Close">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
                             </button>
                         </div>
                         <div class="pos-drawer-body tw-px-6 tw-pt-[18px] tw-pb-6 tw-overflow-y-auto tw-flex-1">
