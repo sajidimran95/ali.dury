@@ -1483,7 +1483,8 @@ $(document).ready(function() {
                 pos_restore_all_row_edit_modals();
 
                 var data = $(form).serialize();
-                data = data + '&status=final';
+                data = data.replace(/(^|&)is_suspend=[^&]*/g, '');
+                data = data + '&status=final&is_suspend=0';
                 // Payment modal may live on body (stacking) — include its fields
                 var $payModal = $('#modal_payment');
                 if ($payModal.length && !$payModal.closest(form).length) {
@@ -1495,6 +1496,7 @@ $(document).ready(function() {
                 // Suspend modal may live outside the form (appended to body) — append flags manually
                 var isSuspend = $('input#is_suspend').val() == '1';
                 if (isSuspend) {
+                    data = data.replace(/(^|&)is_suspend=[^&]*/g, '');
                     data += '&is_suspend=1';
                     var noteVal = $('#confirmSuspendModal textarea[name="additional_notes"]').val();
                     if (typeof noteVal !== 'undefined') {
@@ -1525,18 +1527,27 @@ $(document).ready(function() {
                                 $addForm.removeAttr('data-retrieved-id');
                             }
 
-                            reset_pos_form();
+                            // Print invoice FIRST — edit page reset_pos_form() redirects immediately
+                            // and would cancel the print dialog (retrieve parked → pay flow)
+                            var doReset = function() {
+                                reset_pos_form();
+                                if (typeof refreshPosSuspendedCount === 'function') {
+                                    refreshPosSuspendedCount();
+                                }
+                                if (typeof loadPosDraftsPanel === 'function' && $('#pos_drafts_panel').length) {
+                                    loadPosDraftsPanel('draft');
+                                }
+                            };
 
-                            //Check if enabled or not
                             if (result.receipt && result.receipt.is_enabled) {
                                 pos_print(result.receipt);
-                            }
-
-                            if (typeof refreshPosSuspendedCount === 'function') {
-                                refreshPosSuspendedCount();
-                            }
-                            if (typeof loadPosDraftsPanel === 'function' && $('#pos_drafts_panel').length) {
-                                loadPosDraftsPanel('draft');
+                                if ($('form#edit_pos_sell_form').length > 0) {
+                                    setTimeout(doReset, 1200);
+                                } else {
+                                    doReset();
+                                }
+                            } else {
+                                doReset();
                             }
                         } else {
                             toastr.error(result.msg);

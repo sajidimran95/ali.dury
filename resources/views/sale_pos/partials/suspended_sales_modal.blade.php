@@ -51,8 +51,17 @@
 						?? optional($sale->sales_person)->first_name
 						?? '');
 					$parked_ago = '';
-					if (!empty($sale->transaction_date)) {
-						$parked_ago = \Carbon\Carbon::parse($sale->transaction_date)->diffForHumans();
+					// Use created_at (when parked), not sale date — transaction_date can be
+					// ahead of server time and wrongly show "X from now"
+					$parked_at_raw = $sale->created_at ?? $sale->transaction_date ?? null;
+					if (!empty($parked_at_raw)) {
+						$parked_at = \Carbon\Carbon::parse($parked_at_raw);
+						$now = \Carbon\Carbon::now();
+						if ($parked_at->greaterThan($now)) {
+							$parked_ago = 'just now';
+						} else {
+							$parked_ago = $parked_at->diffForHumans($now);
+						}
 					}
 					$mobile = $sale->mobile ?? optional($sale->contact)->mobile;
 					$email = optional($sale->contact)->email;
