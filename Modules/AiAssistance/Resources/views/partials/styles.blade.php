@@ -345,8 +345,8 @@
 .ai-modal .ai-panel { max-height: calc(100vh - 48px); }
 .ai-ask-fab {
     position: fixed;
-    right: 24px;
-    bottom: 24px;
+    right: 78px;
+    bottom: 28px;
     z-index: 1050;
     display: inline-flex;
     align-items: center;
@@ -364,8 +364,17 @@
     box-shadow: 0 10px 25px rgba(37, 99, 235, 0.35);
     cursor: pointer;
     -webkit-font-smoothing: antialiased;
+    white-space: nowrap;
+    line-height: 1.2;
+    height: auto;
+    min-height: 44px;
+    box-sizing: border-box;
 }
 .ai-ask-fab:hover { filter: brightness(1.05); color: #fff !important; }
+.ai-ask-fab i {
+    font-size: 14px;
+    line-height: 1;
+}
 @media print {
     .ai-ask-fab, .ai-modal, .ai-modal-backdrop { display: none !important; }
 }
