@@ -2476,12 +2476,11 @@ class TransactionUtil extends Util
         }
 
         if (! empty($start_date) && ! empty($end_date)) {
-            $query->whereDate('transaction_date', '>=', $start_date)
-                ->whereDate('transaction_date', '<=', $end_date);
+            $query->whereBetween('transaction_date', [$start_date.' 00:00:00', $end_date.' 23:59:59']);
         }
 
         if (empty($start_date) && ! empty($end_date)) {
-            $query->whereDate('transaction_date', '<=', $end_date);
+            $query->where('transaction_date', '<=', $end_date.' 23:59:59');
         }
 
         //Filter by the location
@@ -2522,12 +2521,11 @@ class TransactionUtil extends Util
         }
 
         if (! empty($start_date) && ! empty($end_date)) {
-            $query->whereDate('t.transaction_date', '>=', $start_date)
-                ->whereDate('t.transaction_date', '<=', $end_date);
+            $query->whereBetween('t.transaction_date', [$start_date.' 00:00:00', $end_date.' 23:59:59']);
         }
 
         if (empty($start_date) && ! empty($end_date)) {
-            $query->whereDate('t.transaction_date', '<=', $end_date);
+            $query->where('t.transaction_date', '<=', $end_date.' 23:59:59');
         }
 
         //Filter by the location
@@ -2558,12 +2556,11 @@ class TransactionUtil extends Util
         }
 
         if (! empty($start_date) && ! empty($end_date)) {
-            $query->whereDate('t.transaction_date', '>=', $start_date)
-                ->whereDate('t.transaction_date', '<=', $end_date);
+            $query->whereBetween('t.transaction_date', [$start_date.' 00:00:00', $end_date.' 23:59:59']);
         }
 
         if (empty($start_date) && ! empty($end_date)) {
-            $query->whereDate('t.transaction_date', '<=', $end_date);
+            $query->where('t.transaction_date', '<=', $end_date.' 23:59:59');
         }
 
         //Filter by the location
@@ -2609,12 +2606,11 @@ class TransactionUtil extends Util
         }
 
         if (! empty($start_date) && ! empty($end_date)) {
-            $query->whereDate('transactions.transaction_date', '>=', $start_date)
-                ->whereDate('transactions.transaction_date', '<=', $end_date);
+            $query->whereBetween('transactions.transaction_date', [$start_date.' 00:00:00', $end_date.' 23:59:59']);
         }
 
         if (empty($start_date) && ! empty($end_date)) {
-            $query->whereDate('transactions.transaction_date', '<=', $end_date);
+            $query->where('transactions.transaction_date', '<=', $end_date.' 23:59:59');
         }
 
         //Filter by the location
@@ -2649,12 +2645,11 @@ class TransactionUtil extends Util
                     );
 
         if (! empty($start_date) && ! empty($end_date)) {
-            $query->whereDate('transactions.transaction_date', '>=', $start_date)
-                ->whereDate('transactions.transaction_date', '<=', $end_date);
+            $query->whereBetween('transactions.transaction_date', [$start_date.' 00:00:00', $end_date.' 23:59:59']);
         }
 
         if (empty($start_date) && ! empty($end_date)) {
-            $query->whereDate('transactions.transaction_date', '<=', $end_date);
+            $query->where('transactions.transaction_date', '<=', $end_date.' 23:59:59');
         }
 
         $sell_details = $query->first();

@@ -32,13 +32,11 @@ class ModuleAssetServiceProvider extends ServiceProvider
      */
     protected function getModuleAssets(): array
     {
-        // Skip cache in local environment for development
-        if (app()->environment('local')) {
-            return $this->buildModuleAssets();
-        }
+        // Always cache briefly — modules rarely change mid-session and this
+        // avoids re-scanning every module DataController on each page load.
+        $ttl = app()->environment('local') ? 60 : 3600;
 
-        // Cache assets for 1 hour in non-local environments
-        return Cache::remember('module_assets', 3600, function () {
+        return Cache::remember('module_assets', $ttl, function () {
             return $this->buildModuleAssets();
         });
     }

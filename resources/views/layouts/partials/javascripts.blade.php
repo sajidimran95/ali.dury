@@ -51,6 +51,10 @@
     $default_datatable_page_entries = !empty($common_settings['default_datatable_page_entries'])
         ? $common_settings['default_datatable_page_entries']
         : 25;
+    // Cap oversized page sizes so list pages stay responsive
+    if ((int) $default_datatable_page_entries > 200 || (int) $default_datatable_page_entries < 1) {
+        $default_datatable_page_entries = 25;
+    }
 @endphp
 
 <script>
@@ -94,18 +98,10 @@
     var __new_notification_count_interval = "{{ config('constants.new_notification_count_interval', 60) }}000";
 </script>
 
-@if (file_exists(public_path('js/lang/' . session()->get('user.language', config('app.locale')) . '.js')))
-    <script src="{{ asset('js/lang/' . session()->get('user.language', config('app.locale')) . '.js?v=' . $asset_v) }}">
-    </script>
-@else
-    <script src="{{ asset('js/lang/en.js?v=' . $asset_v) }}"></script>
-@endif
-
 <script src="{{ asset('js/zoho-sidebar.js?v=' . $asset_v) }}"></script>
 <script src="{{ asset('js/functions.js?v=' . $asset_v) }}"></script>
 <script src="{{ asset('js/common.js?v=' . $asset_v) }}"></script>
 <script src="{{ asset('js/app.js?v=' . $asset_v) }}"></script>
-<script src="{{ asset('js/help-tour.js?v=' . $asset_v) }}"></script>
 <script src="{{ asset('js/documents_and_note.js?v=' . $asset_v) }}"></script>
 
 <!-- TODO -->
@@ -141,10 +137,13 @@
                 false;
             @endif
 
-        $('#calendar').fullCalendar('option', {
-            locale: locale,
-            isRTL: isRTL
-        });
+        // Only touch FullCalendar when the page actually has a calendar widget
+        if ($('#calendar').length && typeof $.fn.fullCalendar === 'function') {
+            $('#calendar').fullCalendar('option', {
+                locale: locale,
+                isRTL: isRTL
+            });
+        }
 
         // Initialize popovers and close them when clicking outside
         $('[data-toggle="popover"]').popover();
@@ -158,11 +157,6 @@
 
         $('.dt-buttons.btn-group').find('a.btn').removeClass('btn-default');
         $('.dt-buttons.btn-group').find('a.btn').removeClass('btn');
-        
-        // $('.date_range').on('show.daterangepicker', function (ev, picker) {
-        //     $(picker.container).insertAfter($(this));
-        // });
-   
     });
 </script>
 

@@ -10,6 +10,7 @@ use App\Product;
 use App\ProductRack;
 use App\ProductVariation;
 use App\PurchaseLine;
+use App\SellingPriceGroup;
 use App\TaxRate;
 use App\Transaction;
 use App\TransactionSellLine;
@@ -64,6 +65,9 @@ class ProductUtil extends Util
         $variation = $product_variation->variations()->create($variation_data);
 
         Media::uploadMedia($product->business_id, $variation, request(), 'variation_images');
+
+        // Keep every active price group covering the full inventory
+        SellingPriceGroup::ensureVariationInAllGroups((int) $product->business_id, $variation);
 
         return true;
     }
@@ -179,6 +183,7 @@ class ProductUtil extends Util
                 $i = 0;
                 foreach ($variations as $variation) {
                     Media::uploadMedia($product->business_id, $variation, request(), $images[$i]);
+                    SellingPriceGroup::ensureVariationInAllGroups((int) $product->business_id, $variation);
                     $i++;
                 }
             }
@@ -280,6 +285,7 @@ class ProductUtil extends Util
                 foreach ($new_variations as $new_variation) {
                     $variations_ids[] = $new_variation->id;
                     Media::uploadMedia($product->business_id, $new_variation, request(), $media[$i]);
+                    SellingPriceGroup::ensureVariationInAllGroups((int) $product->business_id, $new_variation);
                     $i++;
                 }
             }

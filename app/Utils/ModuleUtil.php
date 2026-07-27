@@ -55,6 +55,12 @@ class ModuleUtil extends Util
      */
     public function getModuleData($function_name, $arguments = null, $get_data_from_modules = [])
     {
+        // Memoize within a single HTTP request — sidebar/layout/modules call this repeatedly
+        $memo_key = 'moduleutil_'.$function_name.'_'.md5(json_encode([$arguments, $get_data_from_modules]));
+        if (app()->bound('request') && request()->attributes->has($memo_key)) {
+            return request()->attributes->get($memo_key);
+        }
+
         $modules = Module::toCollection()->toArray();
 
         // Batch-load all module versions in a single query instead of querying individually
@@ -106,6 +112,10 @@ class ModuleUtil extends Util
                     }
                 }
             }
+        }
+
+        if (app()->bound('request')) {
+            request()->attributes->set($memo_key, $data);
         }
 
         return $data;

@@ -457,6 +457,7 @@ return [
     'access_selling_price_groups' => 'Access selling price groups',
     'save_n_add_selling_price_group_prices' => 'Save & Add Selling-Price-Group Prices',
     'add_selling_price_group_prices' => 'Add or edit Group Prices',
+    'price_group_inventory_seeded' => ':count inventory item(s) added with default selling prices. Update group prices as needed.',
     'default_selling_price_inc_tax' => 'Default Selling Price (Inc. Tax)',
     'variation' => 'Variation',
     'price_group' => 'Price Group',

@@ -62,4 +62,87 @@ class SellingPriceGroup extends Model
 
         return $count;
     }
+
+    /**
+     * Seed every inventory variation into a price group using each item's
+     * default sell price (shared inventory — only prices differ per group).
+     */
+    public static function seedAllInventoryPrices(int $business_id, int $price_group_id): int
+    {
+        $seeded = 0;
+        $now = now();
+
+        Variation::query()
+            ->select(['variations.id', 'variations.sell_price_inc_tax'])
+            ->whereHas('product', function ($q) use ($business_id) {
+                $q->where('business_id', $business_id);
+            })
+            ->orderBy('variations.id')
+            ->chunkById(500, function ($variations) use ($price_group_id, $now, &$seeded) {
+                $ids = $variations->pluck('id')->all();
+                $existing = VariationGroupPrice::where('price_group_id', $price_group_id)
+                    ->whereIn('variation_id', $ids)
+                    ->pluck('variation_id')
+                    ->all();
+                $existingLookup = array_flip($existing);
+
+                $batch = [];
+                foreach ($variations as $variation) {
+                    if (isset($existingLookup[$variation->id])) {
+                        continue;
+                    }
+                    $batch[] = [
+                        'variation_id' => $variation->id,
+                        'price_group_id' => $price_group_id,
+                        'price_inc_tax' => $variation->sell_price_inc_tax ?? 0,
+                        'price_type' => 'fixed',
+                        'created_at' => $now,
+                        'updated_at' => $now,
+                    ];
+                }
+
+                if (! empty($batch)) {
+                    VariationGroupPrice::insert($batch);
+                    $seeded += count($batch);
+                }
+            });
+
+        return $seeded;
+    }
+
+    /**
+     * Ensure a single variation has a price row in every active price group.
+     */
+    public static function ensureVariationInAllGroups(int $business_id, $variation): void
+    {
+        if (! is_object($variation)) {
+            $variation = Variation::find($variation);
+        }
+        if (empty($variation)) {
+            return;
+        }
+
+        $group_ids = static::where('business_id', $business_id)
+            ->active()
+            ->pluck('id');
+
+        if ($group_ids->isEmpty()) {
+            return;
+        }
+
+        $price = $variation->sell_price_inc_tax ?? 0;
+
+        foreach ($group_ids as $group_id) {
+            VariationGroupPrice::firstOrCreate(
+                [
+                    'variation_id' => $variation->id,
+                    'price_group_id' => $group_id,
+                ],
+                [
+                    'price_inc_tax' => $price,
+                    'price_type' => 'fixed',
+                ]
+            );
+        }
+    }
 }

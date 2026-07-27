@@ -10,7 +10,7 @@
         <div class="col-sm-4">
             <div class="form-group">
                 @php
-                    $page_entries = [25 => 25, 50 => 50, 100 => 100, 200 => 200, 500 => 500, 1000 => 1000, -1 => __('lang_v1.all')];
+                    $page_entries = [25 => 25, 50 => 50, 100 => 100, 200 => 200];
                 @endphp
                 {!! Form::label('default_datatable_page_entries', __('lang_v1.default_datatable_page_entries')); !!}
                 {!! Form::select('common_settings[default_datatable_page_entries]', $page_entries, !empty($common_settings['default_datatable_page_entries']) ? $common_settings['default_datatable_page_entries'] : 25 , 

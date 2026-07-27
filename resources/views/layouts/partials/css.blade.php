@@ -154,7 +154,8 @@
 {{-- Premium typography --}}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"></noscript>
 {{-- Premium SaaS theme — final visual layer --}}
 <link rel="stylesheet" href="{{ asset('css/premium-theme.css?v='.$asset_v) }}">
 @if(request()->segment(1) == 'home')

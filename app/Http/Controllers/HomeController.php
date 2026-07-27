@@ -19,6 +19,7 @@ use Datatables;
 use DB;
 use Illuminate\Http\Request;
 use Illuminate\Notifications\DatabaseNotification;
+use Illuminate\Support\Facades\Cache;
 
 class HomeController extends Controller
 {
@@ -83,8 +84,11 @@ class HomeController extends Controller
         //ensure start date starts from at least 30 days before to get sells last 30 days
         $least_30_days = \Carbon::parse($fy['start'])->subDays(30)->format('Y-m-d');
 
-        //get all sells
-        $sells_this_fy = $this->transactionUtil->getSellsCurrentFy($business_id, $least_30_days, $fy['end']);
+        //get all sells (cached 3 min — heavy FY aggregate used only for dashboard charts)
+        $sells_cache_key = 'home_sells_fy_'.$business_id.'_'.auth()->id().'_'.$least_30_days.'_'.$fy['end'];
+        $sells_this_fy = Cache::remember($sells_cache_key, 180, function () use ($business_id, $least_30_days, $fy) {
+            return $this->transactionUtil->getSellsCurrentFy($business_id, $least_30_days, $fy['end']);
+        });
 
         $all_locations = BusinessLocation::forDropdown($business_id)->toArray();
 
@@ -630,10 +634,9 @@ class HomeController extends Controller
         $inventory_items = [];
 
         if (auth()->user()->can('product.view') || auth()->user()->can('product.view_own')) {
-            // getProductAlert() groups rows + reads location_id from the request itself.
-            $alert_count = $this->productUtil->getProductAlert($business_id, $permitted_locations)
-                ->get()
-                ->count();
+            // Count via subquery — avoid loading all alert rows into PHP
+            $alert_sub = $this->productUtil->getProductAlert($business_id, $permitted_locations);
+            $alert_count = DB::query()->fromSub($alert_sub->toBase(), 'product_alerts')->count();
 
             $inventory_items[] = [
                 'label' => __('lang_v1.below_alert_quantity'),
@@ -652,7 +655,7 @@ class HomeController extends Controller
                 ->where('t.business_id', $business_id)
                 ->where('p.enable_stock', 1)
                 ->whereNotNull('purchase_lines.exp_date')
-                ->whereDate('purchase_lines.exp_date', '<=', $exp_date_filter);
+                ->where('purchase_lines.exp_date', '<=', $exp_date_filter);
 
             if ($permitted_locations != 'all') {
                 $expiry_query->whereIn('t.location_id', $permitted_locations);
@@ -661,15 +664,15 @@ class HomeController extends Controller
                 $expiry_query->where('t.location_id', $location_id);
             }
 
-            $expiry_count = $expiry_query->select(
+            $expiry_sub = $expiry_query->select(
                 DB::raw('SUM(COALESCE(quantity, 0) - COALESCE(quantity_sold, 0) - COALESCE(quantity_adjusted, 0) - COALESCE(quantity_returned, 0)) as stock_left')
             )
                 ->having('stock_left', '>', 0)
                 ->groupBy('purchase_lines.variation_id')
                 ->groupBy('purchase_lines.exp_date')
-                ->groupBy('purchase_lines.lot_number')
-                ->get()
-                ->count();
+                ->groupBy('purchase_lines.lot_number');
+
+            $expiry_count = DB::query()->fromSub($expiry_sub->toBase(), 'expiry_rows')->count();
 
             $inventory_items[] = [
                 'label' => __('home.stock_expiry_alert'),
@@ -1102,8 +1105,10 @@ class HomeController extends Controller
 
         $query = Transaction::where('transactions.business_id', $business_id)
             ->where('transactions.type', 'sales_order')
-            ->whereDate('transactions.transaction_date', '>=', $start->format('Y-m-d'))
-            ->whereDate('transactions.transaction_date', '<=', $end->format('Y-m-d'));
+            ->whereBetween('transactions.transaction_date', [
+                $start->copy()->startOfDay()->toDateTimeString(),
+                $end->copy()->endOfDay()->toDateTimeString(),
+            ]);
 
         if (! empty($location_id)) {
             $query->where('transactions.location_id', $location_id);

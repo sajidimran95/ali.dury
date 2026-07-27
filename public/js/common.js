@@ -369,10 +369,10 @@ $(document).ready(function () {
         dom: '<"row margin-bottom-20 text-center"<"col-sm-2 text-left"l><"col-sm-7"B><"col-sm-3 text-right"f> r>tip',
         buttons: buttons,
         aLengthMenu: [
-            [25, 50, 100, 200, 500, 1000, -1],
-            [25, 50, 100, 200, 500, 1000, LANG.all],
+            [25, 50, 100, 200],
+            [25, 50, 100, 200],
         ],
-        iDisplayLength: __default_datatable_page_entries,
+        iDisplayLength: Math.min(parseInt(__default_datatable_page_entries, 10) || 25, 200),
         language: {
             searchPlaceholder: LANG.search + ' ...',
             search: '',

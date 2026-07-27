@@ -96,16 +96,29 @@ class SellingPriceGroupController extends Controller
             $business_id = $request->session()->get('user.business_id');
             $input['business_id'] = $business_id;
 
+            DB::beginTransaction();
+
             $spg = SellingPriceGroup::create($input);
 
             //Create a new permission related to the created selling price group
             Permission::create(['name' => 'selling_price_group.'.$spg->id]);
 
+            // Inherit full inventory — one price row per variation (starts at default sell price)
+            $seeded = SellingPriceGroup::seedAllInventoryPrices((int) $business_id, (int) $spg->id);
+
+            DB::commit();
+
+            $msg = __('lang_v1.added_success');
+            if ($seeded > 0) {
+                $msg .= ' '.__('lang_v1.price_group_inventory_seeded', ['count' => $seeded]);
+            }
+
             $output = ['success' => true,
                 'data' => $spg,
-                'msg' => __('lang_v1.added_success'),
+                'msg' => $msg,
             ];
         } catch (\Exception $e) {
+            DB::rollBack();
             \Log::emergency('File:'.$e->getFile().'Line:'.$e->getLine().'Message:'.$e->getMessage());
 
             $output = ['success' => false,
