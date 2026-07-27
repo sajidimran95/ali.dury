@@ -210,15 +210,26 @@ class ContactController extends Controller
         }
 
         return Datatables::of($contact)
-            ->addColumn('address', '{{implode(", ", array_filter([$address_line_1, $address_line_2, $city, $state, $country, $zip_code]))}}')
-            ->addColumn(
-                'due',
-                '<span class="contact_due" data-orig-value="{{$total_purchase - $purchase_paid - $total_ledger_discount}}" data-highlight=false>@format_currency($total_purchase - $purchase_paid - $total_ledger_discount)</span>'
-            )
-            ->addColumn(
-                'return_due',
-                '<span class="return_due" data-orig-value="{{$total_purchase_return - $purchase_return_paid}}" data-highlight=false>@format_currency($total_purchase_return - $purchase_return_paid)'
-            )
+            ->addColumn('address', function ($row) {
+                return implode(', ', array_filter([
+                    $row->address_line_1,
+                    $row->address_line_2,
+                    $row->city,
+                    $row->state,
+                    $row->country,
+                    $row->zip_code,
+                ]));
+            })
+            ->addColumn('due', function ($row) {
+                $due = ($row->total_purchase ?? 0) - ($row->purchase_paid ?? 0) - ($row->total_ledger_discount ?? 0);
+
+                return '<span class="contact_due" data-orig-value="'.$due.'" data-highlight="false">'.$this->transactionUtil->num_f($due, true).'</span>';
+            })
+            ->addColumn('return_due', function ($row) {
+                $return_due = ($row->total_purchase_return ?? 0) - ($row->purchase_return_paid ?? 0);
+
+                return '<span class="return_due" data-orig-value="'.$return_due.'" data-highlight="false">'.$this->transactionUtil->num_f($return_due, true).'</span>';
+            })
             ->addColumn(
                 'action',
                 function ($row) {
@@ -316,12 +327,13 @@ class ContactController extends Controller
 
                 return $html;
             })
-            ->editColumn('pay_term', '
-                @if(!empty($pay_term_type) && !empty($pay_term_number))
-                    {{$pay_term_number}}
-                    @lang("lang_v1.".$pay_term_type)
-                @endif
-            ')
+            ->editColumn('pay_term', function ($row) {
+                if (empty($row->pay_term_type) || empty($row->pay_term_number)) {
+                    return '';
+                }
+
+                return e($row->pay_term_number).' '.__('lang_v1.'.$row->pay_term_type);
+            })
             ->editColumn('name', function ($row) {
                 if ($row->contact_status == 'inactive') {
                     return e($row->name).' <small class="label pull-right bg-red no-print">'.__('lang_v1.inactive').'</small>';
@@ -329,7 +341,9 @@ class ContactController extends Controller
                     return e($row->name);
                 }
             })
-            ->editColumn('created_at', '{{@format_date($created_at)}}')
+            ->editColumn('created_at', function ($row) {
+                return $this->commonUtil->format_date($row->created_at);
+            })
             ->removeColumn('opening_balance_paid')
             ->removeColumn('type')
             ->removeColumn('id')
@@ -436,16 +450,28 @@ class ContactController extends Controller
         }
 
         $contacts = Datatables::of($query)
-            ->addColumn('address', '{{implode(", ", array_filter([$address_line_1, $address_line_2, $city, $state, $country, $zip_code]))}}')
-        //    + $sell_return_paid add this in due because after paymnet for sell return not calculated 
-            ->addColumn(
-                'due',
-                '<span class="contact_due" data-orig-value="{{$total_invoice - $invoice_received - $total_ledger_discount - $total_sell_return  + $sell_return_paid}}" data-highlight=true>@format_currency($total_invoice - $invoice_received - $total_ledger_discount -  $total_sell_return + $sell_return_paid)  </span>'
-            )
-            ->addColumn(
-                'return_due',
-                '<span class="return_due" data-orig-value="{{$total_sell_return - $sell_return_paid}}" data-highlight=false>@format_currency($total_sell_return - $sell_return_paid)</span>'
-            )
+            ->addColumn('address', function ($row) {
+                return implode(', ', array_filter([
+                    $row->address_line_1,
+                    $row->address_line_2,
+                    $row->city,
+                    $row->state,
+                    $row->country,
+                    $row->zip_code,
+                ]));
+            })
+            ->addColumn('due', function ($row) {
+                $due = ($row->total_invoice ?? 0) - ($row->invoice_received ?? 0)
+                    - ($row->total_ledger_discount ?? 0) - ($row->total_sell_return ?? 0)
+                    + ($row->sell_return_paid ?? 0);
+
+                return '<span class="contact_due" data-orig-value="'.$due.'" data-highlight="true">'.$this->transactionUtil->num_f($due, true).'</span>';
+            })
+            ->addColumn('return_due', function ($row) {
+                $return_due = ($row->total_sell_return ?? 0) - ($row->sell_return_paid ?? 0);
+
+                return '<span class="return_due" data-orig-value="'.$return_due.'" data-highlight="false">'.$this->transactionUtil->num_f($return_due, true).'</span>';
+            })
             ->addColumn(
                 'action',
                 function ($row) {
@@ -552,12 +578,13 @@ class ContactController extends Controller
 
                 return $html;
             })
-            ->editColumn('pay_term', '
-                @if(!empty($pay_term_type) && !empty($pay_term_number))
-                    {{$pay_term_number}}
-                    @lang("lang_v1.".$pay_term_type)
-                @endif
-            ')
+            ->editColumn('pay_term', function ($row) {
+                if (empty($row->pay_term_type) || empty($row->pay_term_number)) {
+                    return '';
+                }
+
+                return e($row->pay_term_number).' '.__('lang_v1.'.$row->pay_term_type);
+            })
             ->editColumn('name', function ($row) {
                 $primary = ! empty($row->supplier_business_name) ? $row->supplier_business_name : $row->name;
                 $primary = e($primary);
@@ -631,8 +658,12 @@ class ContactController extends Controller
                     return '<span class="'.$cls.'" data-orig-value="'.$due.'" data-highlight="true">'.$this->transactionUtil->num_f($due, true).$icon.'</span>';
                 }
             )
-            ->editColumn('total_rp', '{{$total_rp ?? 0}}')
-            ->editColumn('created_at', '{{@format_date($created_at)}}')
+            ->editColumn('total_rp', function ($row) {
+                return $row->total_rp ?? 0;
+            })
+            ->editColumn('created_at', function ($row) {
+                return $this->commonUtil->format_date($row->created_at);
+            })
             ->removeColumn('total_invoice')
             ->removeColumn('opening_balance_paid')
             ->removeColumn('invoice_received')

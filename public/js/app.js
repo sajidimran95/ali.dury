@@ -2750,7 +2750,45 @@ $(window).scroll(function() {
         $('.scrolltop').stop(true, true).fadeOut();
     }
 });
-$(function(){$(".scroll").click(function(){$("html,body").animate({scrollTop:$(".thetop").offset().top},"1000");return false})})
+// Zoho layout scrolls #scrollable-container, not the window
+(function () {
+    function mountScrollTop() {
+        var el = document.querySelector('.scrolltop');
+        if (el && el.parentElement !== document.body) {
+            document.body.appendChild(el);
+        }
+    }
+    function scrollRoot() {
+        return document.getElementById('scrollable-container');
+    }
+    function updateScrollTopBtn() {
+        var root = scrollRoot();
+        var top = root ? root.scrollTop : ($(window).scrollTop() || 0);
+        if (top > 100) {
+            $('.scrolltop:hidden').stop(true, true).fadeIn();
+        } else {
+            $('.scrolltop').stop(true, true).fadeOut();
+        }
+    }
+    $(function () {
+        mountScrollTop();
+        var root = scrollRoot();
+        if (root) {
+            $(root).on('scroll', updateScrollTopBtn);
+            updateScrollTopBtn();
+        }
+        $(document).off('click.japsScrollTop', '.scrolltop .scroll').on('click.japsScrollTop', '.scrolltop .scroll', function (e) {
+            e.preventDefault();
+            var $root = $(scrollRoot());
+            if ($root.length) {
+                $root.animate({ scrollTop: 0 }, 400);
+            } else {
+                $('html,body').animate({ scrollTop: 0 }, 400);
+            }
+            return false;
+        });
+    });
+})();
 
 $(document).on('click', 'a.update_contact_status', function(e){
     e.preventDefault();

@@ -344,9 +344,11 @@
 .ai-modal.open { display: block; }
 .ai-modal .ai-panel { max-height: calc(100vh - 48px); }
 .ai-ask-fab {
-    position: fixed;
-    right: 78px;
-    bottom: 28px;
+    position: fixed !important;
+    top: auto !important;
+    left: auto !important;
+    right: 78px !important;
+    bottom: 24px !important;
     z-index: 1050;
     display: inline-flex;
     align-items: center;
@@ -369,6 +371,17 @@
     height: auto;
     min-height: 44px;
     box-sizing: border-box;
+    margin: 0 !important;
+    transform: none !important;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+.ai-ask-fab.is-visible {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
 }
 .ai-ask-fab:hover { filter: brightness(1.05); color: #fff !important; }
 .ai-ask-fab i {
