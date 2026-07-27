@@ -166,9 +166,25 @@
 						link.classList.add('is-active');
 						link.setAttribute('aria-expanded', 'true');
 					}
+					if (typeof window.refreshPosSuspendedCount === 'function') {
+						var count = jQuery(panel).find('.pos-retrieve-row').length;
+						var $badge = jQuery('#pos_suspended_count');
+						if ($badge.length) {
+							$badge.text(count).toggleClass('tw-hidden', count === 0);
+						}
+						jQuery('#view_suspended_sales').toggleClass('pos-tb-btn--has-items', count > 0);
+					}
 				} else {
 					var $container = jQuery((mirror && mirror.getAttribute('data-container')) || '.view_modal').first();
 					$container.html(result).modal('show');
+					if (typeof window.refreshPosSuspendedCount === 'function') {
+						var modalCount = $container.find('.pos-retrieve-row').length;
+						var $modalBadge = jQuery('#pos_suspended_count');
+						if ($modalBadge.length) {
+							$modalBadge.text(modalCount).toggleClass('tw-hidden', modalCount === 0);
+						}
+						jQuery('#view_suspended_sales').toggleClass('pos-tb-btn--has-items', modalCount > 0);
+					}
 				}
 			},
 			error: function () {
@@ -222,7 +238,7 @@
 	};
 
 	document.addEventListener('click', function (e) {
-		var link = e.target.closest('#view_suspended_sales_link');
+		var link = e.target.closest('#view_suspended_sales_link, #view_suspended_sales');
 		if (link) {
 			e.preventDefault();
 			e.stopPropagation();
@@ -231,12 +247,12 @@
 		}
 
 		// Delete uses app.js $(document).on('click', '.delete-sale') — do not stopPropagation
-		if (e.target.closest('#pos_retrieve_panel a.pos-retrieve-delete, #pos_retrieve_panel a.delete-sale')) {
+		if (e.target.closest('#pos_retrieve_panel a.pos-retrieve-delete, #pos_retrieve_panel a.delete-sale, .view_modal a.pos-retrieve-delete, .view_modal a.delete-sale')) {
 			return;
 		}
 
 		// Retrieve sale row → add items into current cart
-		var retrieveOpen = e.target.closest('#pos_retrieve_panel a.pos-retrieve-open');
+		var retrieveOpen = e.target.closest('#pos_retrieve_panel a.pos-retrieve-open, .view_modal a.pos-retrieve-open');
 		if (retrieveOpen) {
 			e.preventDefault();
 			e.stopPropagation();
@@ -244,7 +260,7 @@
 			openRetrievedSale(rowFromOpen || retrieveOpen.getAttribute('href'));
 			return;
 		}
-		var retrieveRow = e.target.closest('#pos_retrieve_panel .pos-retrieve-row.is-clickable');
+		var retrieveRow = e.target.closest('#pos_retrieve_panel .pos-retrieve-row.is-clickable, .view_modal .pos-retrieve-row.is-clickable');
 		if (retrieveRow && !e.target.closest('a')) {
 			e.preventDefault();
 			e.stopPropagation();
@@ -253,7 +269,7 @@
 		}
 
 		var panel = document.getElementById('pos_retrieve_panel');
-		if (panel && panel.classList.contains('is-open') && !e.target.closest('#pos_retrieve_panel') && !e.target.closest('#view_suspended_sales_link')) {
+		if (panel && panel.classList.contains('is-open') && !e.target.closest('#pos_retrieve_panel') && !e.target.closest('#view_suspended_sales_link') && !e.target.closest('#view_suspended_sales')) {
 			// Keep panel open while SweetAlert delete confirm is showing
 			if (e.target.closest('.swal-modal, .swal-overlay')) {
 				return;

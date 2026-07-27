@@ -78,9 +78,12 @@
             </button>
 
             <button type="button" id="view_suspended_sales" title="{{ __('lang_v1.view_suspended_sales') }}"
-                class="pos-tb-btn btn-modal"
+                class="pos-tb-btn pos-tb-btn--badge"
                 data-container=".view_modal" data-href="{{ $view_suspended_sell_url }}">
-                <i class="fas fa-pause" style="color:#A5ADBB;"></i>
+                <span class="pos-tb-btn__icon-wrap">
+                    <i class="fas fa-pause" style="color:#A5ADBB;"></i>
+                    <span class="pos-suspended-header-badge tw-hidden" id="pos_suspended_count">0</span>
+                </span>
             </button>
 
             <div class="pos-ls-drafts-slot">

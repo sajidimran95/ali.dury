@@ -10,9 +10,10 @@
 		} elseif (!empty($product->product_image)) {
 			$tile_image = asset('/uploads/img/' . rawurlencode($product->product_image));
 		}
+		$is_out_of_stock = !empty($product->enable_stock) && (float) ($product->qty_available ?? 0) <= 0;
 	@endphp
 	<div class="col-md-3 col-xs-4 no-print !tw-px-[3px]">
-		<div class="product_box tw-w-full tw-mb-1 tw-text-center tw-cursor-pointer tw-font-semibold tw-rounded-lg tw-p-1 @if(empty($tile_image)) product_box--no-image @endif @if($product->enable_stock && $product->qty_available <= 0) product_out_of_stock @endif" data-variation_id="{{$product->id}}" title="{{$product->name}} @if($product->type == 'variable')- {{$product->variation}} @endif {{ '(' . $product->sub_sku . ')'}}">
+		<div class="product_box tw-w-full tw-mb-1 tw-text-center tw-font-semibold tw-rounded-lg tw-p-1 @if(empty($tile_image)) product_box--no-image @endif @if($is_out_of_stock) product_out_of_stock tw-cursor-not-allowed @else tw-cursor-pointer @endif" data-variation_id="{{$product->id}}" title="{{$product->name}} @if($product->type == 'variable')- {{$product->variation}} @endif {{ '(' . $product->sub_sku . ')'}}@if($is_out_of_stock) — {{ __('lang_v1.item_out_of_stock') }}@endif">
 
 		@if(!empty($tile_image))
 			<div class="image-container tw-mx-auto tw-w-full"

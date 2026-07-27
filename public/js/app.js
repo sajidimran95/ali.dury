@@ -1961,6 +1961,9 @@ $(document).ready(function() {
                                 if (typeof window.posReloadRetrievePanel === 'function') {
                                     window.posReloadRetrievePanel();
                                 }
+                                if (typeof window.refreshPosSuspendedCount === 'function') {
+                                    window.refreshPosSuspendedCount();
+                                }
                             }
                         } else {
                             toastr.error(result.msg);

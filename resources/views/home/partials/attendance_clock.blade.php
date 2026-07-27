@@ -24,6 +24,10 @@
     </div>
 
     <div class="att-clock-card__actions" id="att_actions">
+        <span class="att-live-timer hide" id="att_live_timer" aria-live="polite" title="@lang('attendance.worked_today')">
+            <i class="fas fa-clock"></i>
+            <span id="att_live_timer_value">00:00:00</span>
+        </span>
         <button type="button" class="att-btn att-btn--in" id="att_btn_clock_in">
             <i class="fas fa-sign-in-alt"></i> @lang('attendance.clock_in')
         </button>

@@ -915,12 +915,22 @@ $(function () {
         }
 
         event.preventDefault();
-        var $chiled = $(this).next('.chiled');
-        $('.chiled').not($chiled).slideUp();
+        event.stopPropagation();
+        var $toggle = $(this);
+        var $chiled = $toggle.next('.chiled');
+        var $parent = $toggle.parent();
+
+        // Close only same-level sibling panels (keeps nested Inventory > Items/Stock open)
+        $parent.siblings().children('.chiled').slideUp();
+        if ($parent.hasClass('zoho-sidebar-item')) {
+            $('#side-bar > .zoho-sidebar-item').not($parent).children('.chiled').slideUp();
+        }
+
         $chiled.slideToggle(function () {
             $('.sidebar-menu-chevron').each(function () {
                 var $currentSvgElement = $(this);
-                if ($currentSvgElement.closest('.drop_down').next('.chiled').is(':visible')) {
+                var $panel = $currentSvgElement.closest('.drop_down').next('.chiled');
+                if ($panel.length && $panel.is(':visible')) {
                     $currentSvgElement.html(
                         '<path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M6 9l6 6l6 -6" />'
                     );

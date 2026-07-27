@@ -1538,24 +1538,25 @@
                 attState = st.state || 'clocked_out';
                 clockInAt = st.clock_in_at ? new Date(st.clock_in_at) : null;
                 breakStartAt = st.break_start_at ? new Date(st.break_start_at) : null;
-                baseWorked = st.worked_seconds || 0;
-                baseBreak = st.break_seconds || 0;
+                baseWorked = parseInt(st.worked_seconds, 10) || 0;
+                baseBreak = parseInt(st.break_seconds, 10) || 0;
+                window.__attLoadedAt = Date.now();
 
                 var $widget = $('#att_clock_widget');
                 $widget.removeClass('is-working is-break is-out');
-                $('#att_btn_clock_in, #att_btn_start_break, #att_btn_end_break, #att_btn_clock_out').addClass('hide');
+                $('#att_btn_clock_in, #att_btn_start_break, #att_btn_end_break, #att_btn_clock_out, #att_live_timer').addClass('hide');
 
                 if (attState === 'clocked_in') {
                     $widget.addClass('is-working');
                     $('#att_state_label').text("{{ __('attendance.working') }}");
-                    $('#att_btn_start_break, #att_btn_clock_out').removeClass('hide');
+                    $('#att_btn_start_break, #att_btn_clock_out, #att_live_timer').removeClass('hide');
                     if (clockInAt) {
                         $('#att_meta_label').text("{{ __('attendance.clocked_in_at') }}: " + clockInAt.toLocaleTimeString());
                     }
                 } else if (attState === 'on_break') {
                     $widget.addClass('is-break');
                     $('#att_state_label').text("{{ __('attendance.on_break') }}");
-                    $('#att_btn_end_break, #att_btn_clock_out').removeClass('hide');
+                    $('#att_btn_end_break, #att_btn_clock_out, #att_live_timer').removeClass('hide');
                     $('#att_meta_label').text("{{ __('attendance.on_break') }}");
                 } else {
                     $widget.addClass('is-out');
@@ -1572,15 +1573,36 @@
                 var worked = baseWorked;
                 var brk = baseBreak;
                 var loadedAt = window.__attLoadedAt || now;
+                var elapsed = Math.max(0, Math.floor((now - loadedAt) / 1000));
 
                 if (attState === 'clocked_in') {
-                    worked = baseWorked + Math.floor((now - loadedAt) / 1000);
+                    // Prefer absolute clock_in_at so the timer keeps ticking even if tab slept
+                    if (clockInAt && !isNaN(clockInAt.getTime())) {
+                        worked = Math.max(0, Math.floor((now - clockInAt.getTime()) / 1000) - baseBreak);
+                    } else {
+                        worked = baseWorked + elapsed;
+                    }
                 } else if (attState === 'on_break') {
-                    brk = baseBreak + Math.floor((now - loadedAt) / 1000);
+                    if (breakStartAt && !isNaN(breakStartAt.getTime())) {
+                        // baseBreak already includes open break at load; advance from load time
+                        brk = baseBreak + elapsed;
+                    } else {
+                        brk = baseBreak + elapsed;
+                    }
+                    worked = baseWorked; // work time paused on break
                 }
 
-                $('#att_worked_timer').text(formatSecs(worked));
-                $('#att_break_timer').text(formatSecs(brk));
+                var workedLabel = formatSecs(worked);
+                var breakLabel = formatSecs(brk);
+                $('#att_worked_timer').text(workedLabel);
+                $('#att_break_timer').text(breakLabel);
+
+                // Toolbar live badge: show break timer while on break, else worked time
+                if (attState === 'on_break') {
+                    $('#att_live_timer_value').text(breakLabel);
+                } else {
+                    $('#att_live_timer_value').text(workedLabel);
+                }
             }
 
             function loadStatus() {
@@ -1609,8 +1631,11 @@
                                 toastr.error(result.msg);
                             }
                         }
-                        window.__attLoadedAt = Date.now();
-                        applyStatus(result.status);
+                        if (result && result.status) {
+                            applyStatus(result.status);
+                        } else {
+                            loadStatus();
+                        }
                     },
                     error: function () {
                         if (typeof toastr !== 'undefined') {

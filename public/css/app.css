@@ -877,10 +877,29 @@ table.table-text-center td, table.table-text-center th{
     display: flex;
 }
 /* .product_box .text_div, .text, .product_price, .product_out_of_stock base: moved to Tailwind in blade */
+.product_box.product_out_of_stock {
+    opacity: 0.55;
+    cursor: not-allowed !important;
+    filter: grayscale(0.7);
+    pointer-events: auto;
+    position: relative;
+}
+.product_box.product_out_of_stock:hover {
+    transform: none !important;
+    box-shadow: none !important;
+}
 .product_box.product_out_of_stock .text,
 .product_box.product_out_of_stock .text-muted,
-.product_box.product_out_of_stock .product_price {
+.product_box.product_out_of_stock .product_price,
+.product_box.product_out_of_stock .product_stock {
     color: #9ca3af !important;
+}
+.product_box.product_out_of_stock .product_stock::after {
+    content: ' · Out of stock';
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 10px;
+    letter-spacing: 0.02em;
 }
 .small-box.bg-gray:hover{
     color: #000;
@@ -1819,6 +1838,14 @@ body.lockscreen::-webkit-scrollbar-thumb:hover {
     border-color: #e7eaf0;
     color: #475569 !important;
 }
+.att-live-timer {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+.att-live-timer.hide { display: none !important; }
 
 @media (max-width: 767px) {
     .att-clock-card__actions { margin-left: 0; width: 100%; }

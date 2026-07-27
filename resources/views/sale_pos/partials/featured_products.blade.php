@@ -11,9 +11,10 @@
 		} elseif (!empty($variation->product->image_url)) {
 			$tile_image = $variation->product->image_url;
 		}
+		$is_out_of_stock = !empty($enable_stock) && (float) ($variation->qty_available ?? 0) <= 0;
 	@endphp
 	<div class="col-md-3 col-xs-4 no-print !tw-px-[3px]">
-		<div class="product_box tw-w-full tw-mb-1 tw-text-center tw-cursor-pointer tw-font-semibold tw-rounded-lg tw-p-1 @if(empty($tile_image)) product_box--no-image @endif @if($enable_stock && $variation->qty_available <= 0) product_out_of_stock @endif" data-toggle="tooltip" data-placement="bottom" data-variation_id="{{$variation->id}}" title="{{$variation->full_name}}">
+		<div class="product_box tw-w-full tw-mb-1 tw-text-center tw-font-semibold tw-rounded-lg tw-p-1 @if(empty($tile_image)) product_box--no-image @endif @if($is_out_of_stock) product_out_of_stock tw-cursor-not-allowed @else tw-cursor-pointer @endif" data-toggle="tooltip" data-placement="bottom" data-variation_id="{{$variation->id}}" title="{{$variation->full_name}}@if($is_out_of_stock) — {{ __('lang_v1.item_out_of_stock') }}@endif">
 
 		@if(!empty($tile_image))
 			<div class="image-container tw-mx-auto tw-w-full"

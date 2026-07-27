@@ -155,6 +155,10 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::post('/attach-medias-to-model', [HomeController::class, 'attachMediasToGivenModel'])->name('attach.medias.to.model');
     Route::get('/calendar', [HomeController::class, 'getCalendar'])->name('calendar');
 
+    // Inventory dashboard
+    Route::get('/inventory', [\App\Http\Controllers\InventoryDashboardController::class, 'index'])->name('inventory.dashboard');
+    Route::get('/inventory/dashboard', [\App\Http\Controllers\InventoryDashboardController::class, 'index']);
+
     // Employee attendance (clock in / out / break)
     Route::get('/attendance/status', [AttendanceController::class, 'status']);
     Route::post('/attendance/clock-in', [AttendanceController::class, 'clockIn']);

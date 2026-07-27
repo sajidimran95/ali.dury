@@ -184,6 +184,39 @@ body.japs-dashboard-home .japs-dash-toolbar-attendance .att-clock-card__actions 
   margin: 0 !important;
 }
 
+/* Live worked/break timer shown after Clock In */
+body.japs-dashboard-home .japs-dash-toolbar-attendance .att-live-timer {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 6px;
+  height: 40px;
+  padding: 0 12px;
+  border-radius: 8px;
+  background: #ecfdf5;
+  border: 1px solid #bbf7d0;
+  color: #047857;
+  font-size: 14px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+body.japs-dashboard-home .japs-dash-toolbar-attendance .att-live-timer.hide {
+  display: none !important;
+}
+
+body.japs-dashboard-home .japs-dash-toolbar-attendance .att-clock-card.is-break .att-live-timer {
+  background: #fff7ed;
+  border-color: #fed7aa;
+  color: #c2410c;
+}
+
+body.japs-dashboard-home .japs-dash-toolbar-attendance .att-live-timer i {
+  font-size: 13px;
+  opacity: 0.9;
+}
+
 body.japs-dashboard-home .japs-dash-toolbar-attendance .att-btn {
   display: inline-flex !important;
   align-items: center !important;

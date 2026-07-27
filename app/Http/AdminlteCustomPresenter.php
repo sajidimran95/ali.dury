@@ -48,7 +48,7 @@ class AdminlteCustomPresenter extends Presenter
     /**
      * Get active state on child items.
      *
-     * @param $item
+     * @param  \Nwidart\Menus\MenuItem  $item
      * @param  string  $state
      * @return null|string
      */
@@ -62,7 +62,6 @@ class AdminlteCustomPresenter extends Presenter
      */
     public function getDividerWrapper()
     {
-        // Assuming a divider is just a visual space in this design
         return '<div class="tw-my-2"></div>';
     }
 
@@ -71,7 +70,7 @@ class AdminlteCustomPresenter extends Presenter
      */
     public function getHeaderWrapper($item)
     {
-        return '<div class="tw-px-3 tw-pt-4 tw-pb-1 tw-text-xs tw-font-semibold tw-uppercase tw-tracking-wider">' . e($item->title) . '</div>';
+        return '<div class="tw-px-1 tw-pt-3 tw-pb-1 tw-text-[10px] tw-font-semibold tw-uppercase tw-tracking-wider tw-text-gray-400">' . e($item->title) . '</div>';
     }
 
     /**
@@ -85,32 +84,45 @@ class AdminlteCustomPresenter extends Presenter
             '</svg>' .
             '</a>';
 
-        $childItemsContainerStart = '';
-
-        $childItemsContainerEnd = '';
-
-        // Compile child menu items
         $childItems = $this->getChildMenuItems($item);
 
-        // echo "here";
-        // print_r($dropdownToggle);exit;
-
-        return '<div class="zoho-sidebar-item">' . $dropdownToggle . $childItemsContainerStart . $childItems . $childItemsContainerEnd . '</div>' . PHP_EOL;
+        return '<div class="zoho-sidebar-item">' . $dropdownToggle . $childItems . '</div>' . PHP_EOL;
     }
 
     /**
-     * Get multi-level dropdown wrapper.
-     *
-     * Note: This example doesn't directly implement a multi-level dropdown, as it wasn't specified, but you could extend
-     * the functionality similarly to `getMenuWithDropDownWrapper`, adjusting for deeper nesting.
+     * Nested submenu under Inventory (Items / Stock).
      *
      * @param  \Nwidart\Menus\MenuItem  $item
      * @return string
      */
     public function getMultiLevelDropdownWrapper($item)
     {
-        // Placeholder for multi-level dropdown functionality if needed
-        return '';
+        $open = $item->hasActiveOnChild();
+        $display = $open ? 'block' : 'none';
+        $activeClass = $open ? ' theme-sidebar-child-active' : '';
+
+        $toggle = '<a href="#" title="' . e($item->title) . '" class="zoho-sidebar-nested-toggle drop_down tw-flex tw-w-full tw-items-center tw-justify-between tw-text-sm tw-font-medium tw-text-gray-700 tw-py-1.5 tw-px-1 tw-rounded-md theme-sidebar-child-hover' . $activeClass . '">' .
+            '<span>' . e($item->title) . '</span>' .
+            '<svg aria-hidden="true" class="sidebar-menu-chevron tw-size-3.5 tw-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">' .
+            $this->getArray($item) .
+            '</svg></a>';
+
+        $body = '<div class="chiled zoho-sidebar-nested tw-mt-1 tw-mb-2 tw-pl-3 tw-space-y-1" style="display:' . $display . '" data-menu-title="' . e($item->title) . '">';
+        foreach ($item->getChilds() as $child) {
+            if (method_exists($child, 'hidden') && $child->hidden()) {
+                continue;
+            }
+            if ($child->isHeader()) {
+                $body .= $this->getHeaderWrapper($child) . PHP_EOL;
+            } elseif ($child->hasSubMenu()) {
+                $body .= $this->getMultiLevelDropdownWrapper($child) . PHP_EOL;
+            } else {
+                $body .= $this->renderChildMenuRow($child) . PHP_EOL;
+            }
+        }
+        $body .= '</div>';
+
+        return '<div class="zoho-sidebar-nested-group">' . $toggle . $body . '</div>';
     }
 
     /**
@@ -121,22 +133,29 @@ class AdminlteCustomPresenter extends Presenter
      */
     public function getChildMenuItems($item)
     {
-
         $children = '';
         $displayStyle = $item->hasActiveOnChild() ? 'block' : 'none';
 
-        
-
-
         if (count($item->getChilds()) > 0) {
-            
             $children .= '<div class="chiled tw-relative tw-mt-1 tw-mb-2 tw-pl-11" style="display:' . $displayStyle . '" data-menu-title="' . e($item->title) . '">
             <div class="zoho-sidebar-flyout__header">' . e(strtoupper($item->title)) . '</div>
             <div class="tw-absolute tw-inset-y-0 tw-w-px tw-h-full tw-bg-gray-100 tw-left-5 zoho-sidebar-flyout__rail"></div>
             <div class="zoho-sidebar-flyout__body tw-space-y-1">';
 
             foreach ($item->getChilds() as $child) {
-                $children .= $this->renderChildMenuRow($child) . PHP_EOL;
+                if (method_exists($child, 'hidden') && $child->hidden()) {
+                    continue;
+                }
+
+                if ($child->isHeader()) {
+                    $children .= $this->getHeaderWrapper($child) . PHP_EOL;
+                } elseif ($child->isDivider()) {
+                    $children .= $this->getDividerWrapper() . PHP_EOL;
+                } elseif ($child->hasSubMenu()) {
+                    $children .= $this->getMultiLevelDropdownWrapper($child) . PHP_EOL;
+                } else {
+                    $children .= $this->renderChildMenuRow($child) . PHP_EOL;
+                }
             }
 
             $children .= '</div></div>';
@@ -146,21 +165,17 @@ class AdminlteCustomPresenter extends Presenter
     }
 
     /**
-     * Returns the icon HTML. If the icon is SVG, it returns directly; otherwise, it assumes it's a FontAwesome class and wraps it in an <i> tag.
-     *
-     * @param string $icon
+     * @param  string  $icon
      * @return string
      */
     protected function formatIcon($icon)
     {
         $icon = (string) $icon;
 
-        // Check if the icon string contains "<svg", indicating it's an SVG icon
         if (strpos($icon, '<svg') !== false) {
             return '<span class="zoho-sidebar-menu-icon" aria-hidden="true">' . $icon . '</span>';
         }
 
-        // Assume it's a FontAwesome icon and normalize it inside the same icon frame.
         return '<span class="zoho-sidebar-menu-icon" aria-hidden="true"><i class="' .
             e($icon) . '"></i></span>';
     }
@@ -169,15 +184,13 @@ class AdminlteCustomPresenter extends Presenter
     {
         if ($item->hasActiveOnChild()) {
             return '<path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M6 9l6 6l6 -6" />';
-        } else {
-            return '<path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-            <path d="M15 6l-6 6l6 6" />';
         }
+
+        return '<path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+            <path d="M15 6l-6 6l6 6" />';
     }
 
     /**
-     * Render a submenu row (list link + optional Zoho-style quick-add button).
-     *
      * @param  \Nwidart\Menus\MenuItem  $child
      * @return string
      */
@@ -236,5 +249,3 @@ class AdminlteCustomPresenter extends Presenter
         return HTML::attributes($attributes);
     }
 }
-
-
