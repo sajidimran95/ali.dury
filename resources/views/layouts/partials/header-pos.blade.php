@@ -56,11 +56,7 @@
         </div>
 
         <div class="pos-ls-topbar-center tw-hidden lg:tw-flex">
-            <button type="button" class="pos-ls-global-search" id="pos_ls_focus_product_search" title="Search products">
-                <i class="fas fa-search"></i>
-                <span>Search</span>
-                <kbd>Ctrl+/</kbd>
-            </button>
+            {{-- Product search control hidden on POS (use categories / barcode) --}}
         </div>
 
         {{-- Previous toolbar buttons — same IDs / workflow, dark layout --}}

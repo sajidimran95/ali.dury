@@ -4801,6 +4801,7 @@ function update_serial_no(){
 
 /**
  * Saves the serialized form data from #add_pos_sell_form into LocalStorage.
+ * (Create POS only — edit page uses #edit_pos_sell_form and should not cache here.)
  */
 function saveFormDataToLocalStorage() {
 
@@ -4816,10 +4817,9 @@ function saveFormDataToLocalStorage() {
 
     // console.log("All data afer clear:", storedArrayData);
 
-    let form = $('form#add_pos_sell_form'); // Select the form by ID
-    // Check if the form exists in the DOM
+    let form = $('form#add_pos_sell_form'); // Create POS only
+    // Edit retrieved/parked sales use #edit_pos_sell_form — skip quietly
     if (form.length === 0) {
-        console.error("Error: Form #add_pos_sell_form not found.");
         return;
     }
     // Serialize form data into an array of objects: [{name: 'input_name', value: 'input_value'}, ...]

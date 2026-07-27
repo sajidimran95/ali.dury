@@ -1,24 +1,16 @@
 <div class="pos-sidebar-root">
 @if(empty($drawer_id_suffix))
-<div class="pos-products-heading">Search for products</div>
-<div class="pos-product-search-wrap">
-    <div class="form-group" style="margin-bottom: 0;">
-        <div class="input-group">
-            <span class="input-group-addon"><i class="fas fa-search"></i></span>
-            {!! Form::text('search_product', null, ['class' => 'form-control', 'id' => 'search_product', 'placeholder' => 'Start typing or scanning',
-            'disabled' => empty($default_location),
-            'autofocus' => !empty($default_location),
-            ]); !!}
-            <span class="input-group-btn">
-                <button type="button" class="btn btn-default bg-white btn-flat pos-search-configure-btn" data-toggle="modal" data-target="#configure_search_modal" title="{{__('lang_v1.configure_product_search')}}"><i class="fas fa-search-plus"></i></button>
-                @if(isset($pos_settings['enable_weighing_scale']) && $pos_settings['enable_weighing_scale'] == 1)
-                    <button type="button" class="btn btn-default bg-white btn-flat" id="weighing_scale_btn" data-toggle="modal" data-target="#weighing_scale_modal"
-                    title="@lang('lang_v1.weighing_scale')"><i class="fa fa-digital-tachograph text-primary fa-lg"></i></button>
-                @endif
-                <button type="button" class="btn btn-default bg-white btn-flat pos_add_quick_product" data-href="{{action([\App\Http\Controllers\ProductController::class, 'quickAdd'])}}" data-container=".quick_add_product_modal" title="@lang('product.add_new_product')"><i class="fa fa-plus-circle text-primary fa-lg"></i></button>
-            </span>
-        </div>
-    </div>
+{{-- Product search UI hidden — keep #search_product for barcode / keyboard shortcuts --}}
+<div class="pos-product-search-wrap pos-product-search-wrap--hidden" aria-hidden="true">
+    {!! Form::text('search_product', null, [
+        'class' => 'form-control',
+        'id' => 'search_product',
+        'placeholder' => 'Start typing or scanning',
+        'disabled' => empty($default_location),
+        'autofocus' => !empty($default_location),
+        'tabindex' => '-1',
+        'autocomplete' => 'off',
+    ]) !!}
 </div>
 @endif
 
