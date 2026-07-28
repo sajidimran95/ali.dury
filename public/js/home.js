@@ -321,14 +321,17 @@ window.japsLoadPaymentMethodMix = function(start, end, locationId) {
         var totalAmountText = __currency_trans_from_en(data.total || 0, true);
         var topItem = (data.series || [])[0];
         var topPct = data.total > 0 && topItem ? Math.round((topItem.amount / data.total) * 1000) / 10 : 0;
+        var centerDefaultAmount = (Math.round(topPct * 10) / 10) + '%';
+        var centerDefaultLabel = topItem ? topItem.label : ($centerLabel.data('default-label') || 'Total Sales');
 
         $('#payment_method_mix_empty').hide();
         $('.japs-dash-payment-mix').show();
-        $centerAmount.text(topPct + '%');
-        $centerLabel.text('Sales Growth');
+        $centerAmount.text(centerDefaultAmount);
+        $centerLabel.text(centerDefaultLabel);
         $center.show();
         $('#payment_overview_footer').show();
-        $('#payment_overview_progress').css('width', Math.min(100, topPct) + '%');
+        $('.japs-overview-sales-total').text(totalAmountText);
+        $('#payment_overview_progress').css('width', Math.min(100, Math.max(topPct, 8)) + '%');
 
         var colors = ['#3b82f6', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
         var pieData = (data.series || []).map(function(item, idx) {
@@ -352,9 +355,9 @@ window.japsLoadPaymentMethodMix = function(start, end, locationId) {
             chart: {
                 type: 'pie',
                 backgroundColor: 'transparent',
-                height: 240,
-                spacing: [0, 0, 0, 0],
-                margin: [0, 0, 0, 0]
+                height: 220,
+                spacing: [8, 8, 8, 8],
+                margin: [8, 8, 8, 8]
             },
             title: { text: null },
             subtitle: { text: null },
@@ -376,13 +379,6 @@ window.japsLoadPaymentMethodMix = function(start, end, locationId) {
                 borderWidth: 0,
                 shadow: false,
                 style: { color: '#fff', fontSize: '12px' },
-                positioner: function(labelWidth) {
-                    var chart = this.chart;
-                    return {
-                        x: chart.plotLeft + chart.plotWidth - labelWidth,
-                        y: chart.plotTop + 6
-                    };
-                },
                 pointFormatter: function() {
                     var pct = data.total > 0 ? Math.round((this.y / data.total) * 100) : 0;
                     return '<b>' + this.name + '</b><br/>' +
@@ -392,12 +388,10 @@ window.japsLoadPaymentMethodMix = function(start, end, locationId) {
             },
             plotOptions: {
                 pie: {
-                    startAngle: -90,
-                    endAngle: 90,
-                    innerSize: '72%',
-                    size: '115%',
-                    center: ['50%', '82%'],
-                    borderWidth: 4,
+                    innerSize: '68%',
+                    size: '88%',
+                    center: ['50%', '50%'],
+                    borderWidth: pieData.length > 1 ? 3 : 0,
                     borderColor: '#ffffff',
                     slicedOffset: 0,
                     dataLabels: { enabled: false },
@@ -413,8 +407,8 @@ window.japsLoadPaymentMethodMix = function(start, end, locationId) {
                                 $centerLabel.text(this.name);
                             },
                             mouseOut: function() {
-                                $centerAmount.text(topPct + '%');
-                                $centerLabel.text('Sales Growth');
+                                $centerAmount.text(centerDefaultAmount);
+                                $centerLabel.text(centerDefaultLabel);
                             }
                         }
                     }

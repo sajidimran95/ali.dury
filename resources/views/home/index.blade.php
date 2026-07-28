@@ -154,7 +154,7 @@
                                         <div id="payment_method_mix_chart" class="japs-dash-payment-chart"></div>
                                         <div id="payment_method_mix_center" class="japs-dash-donut-center" aria-hidden="true" style="display:none;">
                                             <div class="japs-dash-donut-center__amount"></div>
-                                            <div class="japs-dash-donut-center__label">{{ __('home.sales_growth') }}</div>
+                                            <div class="japs-dash-donut-center__label" data-default-label="{{ __('home.total_sell') }}">{{ __('home.total_sell') }}</div>
                                         </div>
                                     </div>
                                     <ul id="payment_method_mix_legend" class="japs-dash-payment-legend" aria-label="{{ __('home.payment_method_mix') }}"></ul>

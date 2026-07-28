@@ -538,11 +538,12 @@ body.japs-dashboard-home .japs-dash-chart-card--overview .japs-dash-payment-mix 
 }
 
 body.japs-dashboard-home .japs-dash-chart-card--overview .japs-dash-payment-chart-wrap {
-  min-height: 220px;
+  min-height: 200px;
+  position: relative;
 }
 
 body.japs-dashboard-home .japs-dash-chart-card--overview .japs-dash-payment-chart {
-  min-height: 220px;
+  min-height: 200px;
 }
 
 body.japs-dashboard-home .japs-dash-chart-card--overview .japs-dash-payment-legend {
@@ -555,16 +556,17 @@ body.japs-dashboard-home .japs-dash-chart-card--overview .japs-dash-payment-lege
 }
 
 body.japs-dashboard-home .japs-dash-chart-card--overview .japs-dash-donut-center {
-  top: 72%;
-  width: 56%;
-  max-width: 160px;
+  top: 50%;
+  width: 52%;
+  max-width: 150px;
 }
 
 body.japs-dashboard-home .japs-dash-chart-card--overview .japs-dash-donut-center__amount {
-  font-size: 28px;
+  font-size: 26px;
   font-weight: 800;
   letter-spacing: -0.03em;
   color: var(--dash-text);
+  line-height: 1.15;
 }
 
 body.japs-dashboard-home .japs-dash-chart-card--overview .japs-dash-donut-center__label {
