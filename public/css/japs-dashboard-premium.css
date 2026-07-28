@@ -1,0 +1,1398 @@
+/**
+ * Japs POS — Premium dashboard layer (app-wide + home/ecommerce/inventory/crm)
+ * Salezy-style: soft canvas, elevated cards, clean tables, modern charts.
+ */
+
+body.japs-dashboard-premium {
+  --prem-bg: #f0f4f8;
+  --prem-card: #ffffff;
+  --prem-border: #e8ecf1;
+  --prem-ink: #0f172a;
+  --prem-muted: #64748b;
+  --prem-hint: #94a3b8;
+  --prem-blue: #2563eb;
+  --prem-radius: 18px;
+  --prem-shadow: 0 2px 12px rgba(15, 23, 42, 0.05);
+  --prem-shadow-hover: 0 12px 32px rgba(15, 23, 42, 0.08);
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif !important;
+}
+
+body.japs-dashboard-premium .wrapper,
+body.japs-dashboard-premium .content-wrapper,
+body.japs-dashboard-premium .content,
+body.japs-dashboard-premium .zoho-app-body,
+body.japs-dashboard-premium #scrollable-container {
+  background: var(--prem-bg) !important;
+}
+
+body.japs-dashboard-premium .content {
+  padding: 0 0 32px !important;
+}
+
+body.japs-dashboard-premium .content-header {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 24px 28px 0 !important;
+  max-width: 1320px;
+  margin: 0 auto;
+}
+
+body.japs-dashboard-premium .content-header h1 {
+  font-size: 28px !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.02em !important;
+  color: var(--prem-ink) !important;
+}
+
+body.japs-dashboard-premium .content-header p {
+  color: var(--prem-muted) !important;
+  font-size: 14px !important;
+}
+
+/* ── Ecommerce dashboard ── */
+body.japs-dashboard-premium .ecom-dash {
+  --ed-blue: #2563eb;
+  --ed-ink: #0f172a;
+  --ed-muted: #64748b;
+  --ed-line: #e8ecf1;
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 24px 28px 32px;
+}
+
+body.japs-dashboard-premium .ecom-dash .ed-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+body.japs-dashboard-premium .ecom-dash .ed-title {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--ed-ink);
+  letter-spacing: -0.02em;
+}
+
+body.japs-dashboard-premium .ecom-dash .ed-sub {
+  margin: 4px 0 0;
+  color: var(--ed-muted);
+  font-size: 13px;
+}
+
+body.japs-dashboard-premium .ecom-dash .ed-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+body.japs-dashboard-premium .ecom-dash .ed-btn {
+  height: 38px;
+  padding: 0 14px;
+  border-radius: 10px !important;
+  border: 1px solid var(--ed-line);
+  background: #fff;
+  color: #334155;
+  font-weight: 600;
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+body.japs-dashboard-premium .ecom-dash .ed-btn:hover {
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+body.japs-dashboard-premium .ecom-dash .ed-btn-primary {
+  background: var(--ed-blue);
+  border-color: var(--ed-blue);
+  color: #fff !important;
+}
+
+body.japs-dashboard-premium .ecom-dash .ed-btn-primary:hover {
+  background: #1d4ed8;
+  color: #fff !important;
+}
+
+body.japs-dashboard-premium .ecom-dash .ed-alert {
+  border-radius: 12px;
+  border: 1px solid #fde68a;
+  background: #fffbeb;
+  color: #92400e;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+body.japs-dashboard-premium .ecom-dash .ed-kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+body.japs-dashboard-premium .ecom-dash .ed-kpi {
+  --kpi-accent: #4f8fce;
+  --kpi-soft: #eef6fd;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  background: #fff;
+  border: 1px solid #e7eaf0;
+  border-radius: var(--prem-radius) !important;
+  padding: 22px 20px 18px;
+  min-height: 112px;
+  box-shadow: var(--prem-shadow) !important;
+  text-decoration: none !important;
+  color: inherit;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+body.japs-dashboard-premium .ecom-dash .ed-kpi::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  border-radius: 18px 18px 0 0;
+  background: var(--kpi-accent);
+}
+
+body.japs-dashboard-premium .ecom-dash .ed-kpi:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--prem-shadow-hover) !important;
+  color: inherit;
+}
+
+body.japs-dashboard-premium .ecom-dash .ed-kpi--blue { --kpi-accent: #4f8fce; --kpi-soft: #eef6fd; }
+body.japs-dashboard-premium .ecom-dash .ed-kpi--teal { --kpi-accent: #4db39e; --kpi-soft: #ecf8f4; }
+body.japs-dashboard-premium .ecom-dash .ed-kpi--amber { --kpi-accent: #d5aa35; --kpi-soft: #fff8e6; }
+body.japs-dashboard-premium .ecom-dash .ed-kpi--violet { --kpi-accent: #7c72c9; --kpi-soft: #f5f0fc; }
+
+body.japs-dashboard-premium .ecom-dash .ed-kpi-label {
+  font-size: 14px;
+  color: #7a8495;
+  font-weight: 500;
+  margin: 0 0 10px;
+}
+
+body.japs-dashboard-premium .ecom-dash .ed-kpi-value {
+  font-size: 26px;
+  font-weight: 700;
+  color: #151b2b;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+  margin: 0;
+}
+
+body.japs-dashboard-premium .ecom-dash .ed-kpi-value.is-money { color: #2d927b; }
+body.japs-dashboard-premium .ecom-dash .ed-kpi-value.is-warn { color: #b78616; }
+
+body.japs-dashboard-premium .ecom-dash .ed-kpi-hint {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+body.japs-dashboard-premium .ecom-dash .ed-kpi-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  flex-shrink: 0;
+  background: var(--kpi-soft);
+  color: var(--kpi-accent);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+body.japs-dashboard-premium .ecom-dash .ed-grid {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+body.japs-dashboard-premium .ecom-dash .ed-card {
+  background: #fff;
+  border: 1px solid var(--prem-border) !important;
+  border-radius: var(--prem-radius) !important;
+  box-shadow: var(--prem-shadow) !important;
+  overflow: hidden;
+  transition: box-shadow 0.18s ease;
+}
+
+body.japs-dashboard-premium .ecom-dash .ed-card:hover {
+  box-shadow: var(--prem-shadow-hover) !important;
+}
+
+body.japs-dashboard-premium .ecom-dash .ed-card-h {
+  padding: 16px 20px;
+  border-bottom: 1px solid #eef2f7;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+body.japs-dashboard-premium .ecom-dash .ed-card-h h3 {
+  margin: 0;
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.02em;
+  color: var(--prem-ink);
+}
+
+body.japs-dashboard-premium .ecom-dash .ed-card-h a {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--prem-blue);
+  text-decoration: none;
+}
+
+body.japs-dashboard-premium .ecom-dash .ed-revenue-hero {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+body.japs-dashboard-premium .ecom-dash .ed-revenue-hero__value {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--prem-ink);
+  letter-spacing: -0.03em;
+}
+
+body.japs-dashboard-premium .ecom-dash .ed-card-b { padding: 14px 16px; }
+
+body.japs-dashboard-premium .ecom-dash .ed-chart { width: 100%; height: 300px; }
+body.japs-dashboard-premium .ecom-dash .ed-chart-sm { width: 100%; height: 220px; }
+
+body.japs-dashboard-premium .ecom-dash .ed-overview-footer {
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 1px solid #eef2f7;
+}
+
+body.japs-dashboard-premium .ecom-dash .ed-overview-footer__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--prem-muted);
+  padding: 4px 0;
+}
+
+body.japs-dashboard-premium .ecom-dash .ed-card--recent {
+  margin-bottom: 8px;
+}
+
+body.japs-dashboard-premium .ecom-dash table.ed-table { width: 100%; margin: 0; }
+
+body.japs-dashboard-premium .ecom-dash .ed-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+body.japs-dashboard-premium .ecom-dash .ed-pill-pending { background: #fff7ed; color: #c2410c; }
+body.japs-dashboard-premium .ecom-dash .ed-pill-confirmed,
+body.japs-dashboard-premium .ecom-dash .ed-pill-processing,
+body.japs-dashboard-premium .ecom-dash .ed-pill-packed { background: #eff6ff; color: #1d4ed8; }
+body.japs-dashboard-premium .ecom-dash .ed-pill-shipped { background: #f5f3ff; color: #6d28d9; }
+body.japs-dashboard-premium .ecom-dash .ed-pill-delivered { background: #ecfdf5; color: #047857; }
+body.japs-dashboard-premium .ecom-dash .ed-pill-cancelled,
+body.japs-dashboard-premium .ecom-dash .ed-pill-returned { background: #fff1f2; color: #be123c; }
+
+body.japs-dashboard-premium .ecom-dash .ed-empty {
+  color: #94a3b8;
+  text-align: center;
+  padding: 24px 8px;
+  font-size: 13px;
+}
+
+@media (max-width: 1199px) {
+  body.japs-dashboard-premium .ecom-dash .ed-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  body.japs-dashboard-premium .ecom-dash .ed-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 767px) {
+  body.japs-dashboard-premium .ecom-dash .ed-kpis { grid-template-columns: 1fr; }
+  body.japs-dashboard-premium .ecom-dash .ed-title { font-size: 22px; }
+}
+
+/* ── Inventory dashboard ── */
+body.japs-dashboard-premium .inv-dash {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 24px 28px 32px;
+}
+
+body.japs-dashboard-premium .inv-dash .inv-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+body.japs-dashboard-premium .inv-dash .inv-title {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--prem-ink);
+  letter-spacing: -0.02em;
+}
+
+body.japs-dashboard-premium .inv-dash .inv-sub {
+  margin: 4px 0 0;
+  color: var(--prem-muted);
+  font-size: 13px;
+}
+
+body.japs-dashboard-premium .inv-dash .inv-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+body.japs-dashboard-premium .inv-dash .inv-location-form { margin: 0; }
+
+body.japs-dashboard-premium .inv-dash .inv-select {
+  min-width: 180px;
+  border-radius: 10px !important;
+}
+
+body.japs-dashboard-premium .inv-dash .inv-btn {
+  height: 38px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid var(--prem-border);
+  background: #fff;
+  color: #334155;
+  font-weight: 600;
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none !important;
+}
+
+body.japs-dashboard-premium .inv-dash .inv-btn-primary {
+  background: var(--prem-blue);
+  border-color: var(--prem-blue);
+  color: #fff !important;
+}
+
+body.japs-dashboard-premium .inv-dash .inv-btn-primary:hover {
+  background: #1d4ed8;
+  color: #fff !important;
+}
+
+body.japs-dashboard-premium .inv-dash .inv-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+body.japs-dashboard-premium .inv-dash .inv-kpi {
+  --kpi-accent: #4f8fce;
+  --kpi-soft: #eef6fd;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  min-height: 112px;
+  background: #fff;
+  border: 1px solid #e7eaf0;
+  border-radius: var(--prem-radius) !important;
+  padding: 22px 20px 18px;
+  box-shadow: var(--prem-shadow) !important;
+  text-decoration: none !important;
+  color: inherit;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+body.japs-dashboard-premium .inv-dash .inv-kpi::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  border-radius: 18px 18px 0 0;
+  background: var(--kpi-accent);
+}
+
+body.japs-dashboard-premium .inv-dash .inv-kpi:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--prem-shadow-hover) !important;
+  color: inherit;
+}
+
+body.japs-dashboard-premium .inv-dash .inv-kpi--blue { --kpi-accent: #4f8fce; --kpi-soft: #eef6fd; }
+body.japs-dashboard-premium .inv-dash .inv-kpi--teal { --kpi-accent: #4db39e; --kpi-soft: #ecf8f4; }
+body.japs-dashboard-premium .inv-dash .inv-kpi--amber { --kpi-accent: #d5aa35; --kpi-soft: #fff8e6; }
+body.japs-dashboard-premium .inv-dash .inv-kpi--violet { --kpi-accent: #7c72c9; --kpi-soft: #f5f0fc; }
+
+body.japs-dashboard-premium .inv-dash .inv-kpi__label {
+  margin: 0 0 10px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #7a8495;
+}
+
+body.japs-dashboard-premium .inv-dash .inv-kpi__value {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 700;
+  color: #151b2b;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+}
+
+body.japs-dashboard-premium .inv-dash .inv-kpi__value.is-warn { color: #b78616; }
+body.japs-dashboard-premium .inv-dash .inv-kpi__value.is-money { color: #2d927b; }
+
+body.japs-dashboard-premium .inv-dash .inv-kpi__hint {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+body.japs-dashboard-premium .inv-dash .inv-kpi__icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: var(--kpi-soft);
+  color: var(--kpi-accent);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+body.japs-dashboard-premium .inv-dash .inv-kpi__icon svg { width: 22px; height: 22px; display: block; }
+
+body.japs-dashboard-premium .inv-dash .inv-panels {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+body.japs-dashboard-premium .inv-dash .inv-panel {
+  background: #fff;
+  border: 1px solid var(--prem-border) !important;
+  border-radius: var(--prem-radius) !important;
+  box-shadow: var(--prem-shadow) !important;
+  overflow: hidden;
+}
+
+body.japs-dashboard-premium .inv-dash .inv-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 16px 20px;
+  border-bottom: 1px solid #eef2f7;
+}
+
+body.japs-dashboard-premium .inv-dash .inv-panel__title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--prem-ink);
+  letter-spacing: -0.02em;
+}
+
+body.japs-dashboard-premium .inv-dash .inv-badge {
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 3px 8px;
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+body.japs-dashboard-premium .inv-dash .inv-badge--warn {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+body.japs-dashboard-premium .inv-dash .inv-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 20px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+body.japs-dashboard-premium .inv-dash .inv-row:last-child { border-bottom: 0; }
+
+body.japs-dashboard-premium .inv-dash .inv-row__name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--prem-ink);
+}
+
+body.japs-dashboard-premium .inv-dash .inv-row__meta {
+  font-size: 12px;
+  color: #94a3b8;
+  margin-top: 2px;
+}
+
+body.japs-dashboard-premium .inv-dash .inv-row__side { text-align: right; flex-shrink: 0; }
+
+body.japs-dashboard-premium .inv-dash .inv-row__value {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--prem-ink);
+}
+
+body.japs-dashboard-premium .inv-dash .inv-row__value--warn { color: #b45309; }
+
+body.japs-dashboard-premium .inv-dash .inv-empty {
+  padding: 28px 16px;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 13px;
+}
+
+@media (max-width: 1199px) {
+  body.japs-dashboard-premium .inv-dash .inv-kpi-grid,
+  body.japs-dashboard-premium .inv-dash .inv-panels {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 767px) {
+  body.japs-dashboard-premium .inv-dash .inv-kpi-grid,
+  body.japs-dashboard-premium .inv-dash .inv-panels {
+    grid-template-columns: 1fr;
+  }
+  body.japs-dashboard-premium .inv-dash .inv-title { font-size: 22px; }
+}
+
+/* ── Report panels (home lower section) ── */
+body.japs-dashboard-premium .japs-dash-reports-grid > [class*='tw-bg-white'],
+body.japs-dashboard-premium .japs-dashboard-content .tw-bg-white.tw-rounded-2xl,
+body.japs-dashboard-premium .zoho-so-summary-card {
+  background: var(--prem-card) !important;
+  border: 1px solid var(--prem-border) !important;
+  border-radius: var(--prem-radius) !important;
+  box-shadow: var(--prem-shadow) !important;
+  transition: box-shadow 0.18s ease, transform 0.18s ease;
+}
+
+body.japs-dashboard-premium .japs-dash-reports-grid > [class*='tw-bg-white']:hover,
+body.japs-dashboard-premium .japs-dashboard-content .tw-bg-white.tw-rounded-2xl:hover {
+  box-shadow: var(--prem-shadow-hover) !important;
+}
+
+body.japs-dashboard-premium .japs-dash-reports-grid h3,
+body.japs-dashboard-premium .zoho-so-summary-card__title {
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.02em !important;
+  color: var(--prem-ink) !important;
+}
+
+/* Panel icon badges */
+body.japs-dashboard-premium .japs-dash-reports-grid .tw-border.tw-rounded-xl.tw-w-10 {
+  width: 42px !important;
+  height: 42px !important;
+  border: none !important;
+  border-radius: 12px !important;
+  background: #eff6ff !important;
+}
+
+body.japs-dashboard-premium .japs-dash-reports-grid .tw-text-yellow-500 {
+  color: var(--prem-blue) !important;
+}
+
+body.japs-dashboard-premium .japs-dash-reports-grid .tw-text-sky-500 {
+  color: #0d9488 !important;
+}
+
+/* SO summary toggles — pill style */
+body.japs-dashboard-premium .zoho-so-summary-toggle {
+  border-radius: 999px !important;
+  padding: 6px 14px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  border: 1px solid var(--prem-border) !important;
+  background: #f8fafc !important;
+  color: var(--prem-muted) !important;
+}
+
+body.japs-dashboard-premium .zoho-so-summary-toggle--active {
+  background: var(--prem-ink) !important;
+  border-color: var(--prem-ink) !important;
+  color: #fff !important;
+}
+
+body.japs-dashboard-premium .zoho-so-summary-card__select,
+body.japs-dashboard-premium .japs-dash-reports-grid .select2-container--default .select2-selection--single,
+body.japs-dashboard-premium .japs-dash-reports-grid .form-control {
+  border-radius: 10px !important;
+  border-color: var(--prem-border) !important;
+  min-height: 38px !important;
+  font-size: 13px !important;
+}
+
+/* ── Premium tables (no bootstrap stripes/borders) ── */
+body.japs-dashboard-premium .japs-dashboard-content table.table,
+body.japs-dashboard-premium .japs-dash-full-table table.table,
+body.japs-dashboard-premium .ecom-dash table.ed-table {
+  border: none !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+}
+
+body.japs-dashboard-premium .japs-dashboard-content table.table thead th,
+body.japs-dashboard-premium .japs-dash-full-table table.table thead th,
+body.japs-dashboard-premium .ecom-dash table.ed-table thead th {
+  background: #f8fafc !important;
+  border: none !important;
+  border-bottom: 1px solid #eef2f7 !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  color: var(--prem-hint) !important;
+  padding: 12px 14px !important;
+}
+
+body.japs-dashboard-premium .japs-dashboard-content table.table tbody td,
+body.japs-dashboard-premium .japs-dash-full-table table.table tbody td,
+body.japs-dashboard-premium .ecom-dash table.ed-table tbody td {
+  border: none !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+  padding: 13px 14px !important;
+  font-size: 13px !important;
+  color: #334155 !important;
+  vertical-align: middle !important;
+}
+
+body.japs-dashboard-premium .japs-dashboard-content table.table-striped > tbody > tr:nth-of-type(odd),
+body.japs-dashboard-premium .japs-dash-full-table table.table-striped > tbody > tr:nth-of-type(odd) {
+  background: transparent !important;
+}
+
+body.japs-dashboard-premium .japs-dashboard-content table.table-bordered,
+body.japs-dashboard-premium .japs-dashboard-content table.table-bordered th,
+body.japs-dashboard-premium .japs-dashboard-content table.table-bordered td,
+body.japs-dashboard-premium .japs-dash-full-table table.table-bordered,
+body.japs-dashboard-premium .japs-dash-full-table table.table-bordered th,
+body.japs-dashboard-premium .japs-dash-full-table table.table-bordered td {
+  border: none !important;
+}
+
+body.japs-dashboard-premium .japs-dashboard-content table.table tbody tr:hover td,
+body.japs-dashboard-premium .japs-dash-full-table table.table tbody tr:hover td,
+body.japs-dashboard-premium .ecom-dash table.ed-table tbody tr:hover td {
+  background: #f8fafc !important;
+}
+
+body.japs-dashboard-premium .dataTables_wrapper .dataTables_length,
+body.japs-dashboard-premium .dataTables_wrapper .dataTables_filter,
+body.japs-dashboard-premium .dataTables_wrapper .dataTables_info,
+body.japs-dashboard-premium .dataTables_wrapper .dataTables_paginate {
+  font-size: 12px !important;
+  color: var(--prem-muted) !important;
+  padding: 10px 4px !important;
+}
+
+body.japs-dashboard-premium .dataTables_wrapper .dataTables_paginate .paginate_button > a,
+body.japs-dashboard-premium .dataTables_wrapper .dataTables_paginate .paginate_button > span,
+body.japs-dashboard-premium .dataTables_wrapper .dataTables_paginate > .paginate_button,
+body.japs-dashboard-premium .dataTables_wrapper .dataTables_paginate > span > .paginate_button {
+  border-radius: 8px !important;
+  border: 1px solid var(--prem-border) !important;
+  margin: 0 2px !important;
+}
+
+body.japs-dashboard-premium .dataTables_wrapper .dataTables_paginate ul.pagination > li.paginate_button {
+  border: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border-radius: 0 !important;
+  min-width: 0 !important;
+}
+
+body.japs-dashboard-premium .dataTables_wrapper .dataTables_paginate .paginate_button.current > a,
+body.japs-dashboard-premium .dataTables_wrapper .dataTables_paginate .paginate_button.current > span,
+body.japs-dashboard-premium .dataTables_wrapper .dataTables_paginate ul.pagination > li.active > a,
+body.japs-dashboard-premium .dataTables_wrapper .dataTables_paginate > .paginate_button.current,
+body.japs-dashboard-premium .dataTables_wrapper .dataTables_paginate > span > .paginate_button.current {
+  background: var(--prem-blue) !important;
+  border-color: var(--prem-blue) !important;
+  color: #fff !important;
+}
+
+/* Chart containers */
+body.japs-dashboard-premium .japs-dash-chart-card,
+body.japs-dashboard-premium .zoho-so-summary-card {
+  border-radius: var(--prem-radius) !important;
+}
+
+body.japs-dashboard-premium .japs-dash-reports-grid .tw-border-dashed {
+  border: 1px solid #eef2f7 !important;
+  background: #f8fafc !important;
+  border-radius: 12px !important;
+}
+
+/* ── Home dashboard refinements (both classes on /home) ── */
+body.japs-dashboard-premium.japs-dashboard-home .japs-dash-payment-body {
+  background: #f8fafc;
+  border: 1px solid #eef2f7;
+  border-radius: 12px;
+  padding: 8px;
+}
+
+body.japs-dashboard-premium.japs-dashboard-home .japs-dash-chart-card__title {
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.02em;
+}
+
+body.japs-dashboard-premium.japs-dashboard-home .japs-dashboard-content h3 {
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.02em !important;
+}
+
+body.japs-dashboard-premium.japs-dashboard-home .japs-dashboard-content .tw-border.tw-rounded-xl.tw-w-10 {
+  width: 42px !important;
+  height: 42px !important;
+  border: none !important;
+  border-radius: 12px !important;
+  background: #eff6ff !important;
+}
+
+body.japs-dashboard-premium.japs-dashboard-home .japs-dashboard-filter-btn,
+body.japs-dashboard-premium.japs-dashboard-home .zoho-dashboard__filter-btn {
+  border-radius: 10px !important;
+}
+
+body.japs-dashboard-premium.japs-dashboard-home .zoho-dashboard__select,
+body.japs-dashboard-premium.japs-dashboard-home .select2-container--default .select2-selection--single {
+  border-radius: 10px !important;
+}
+
+/* ── Home: modern Tailwind-style panels & tables ── */
+body.japs-dashboard-premium.japs-dashboard-home .japs-dash-reports-grid > [class*='tw-bg-white'],
+body.japs-dashboard-premium.japs-dashboard-home .japs-dashboard-content .tw-bg-white.tw-rounded-2xl {
+  --tw-ring-shadow: 0 0 #0000 !important;
+  box-shadow: var(--prem-shadow) !important;
+  ring: none !important;
+}
+
+body.japs-dashboard-premium.japs-dashboard-home .japs-dash-reports-grid .tw-p-4,
+body.japs-dashboard-premium.japs-dashboard-home .japs-dash-reports-grid .sm\:tw-p-5 {
+  padding: 20px 22px !important;
+}
+
+body.japs-dashboard-premium.japs-dashboard-home .japs-dashboard-content .tw-font-bold.tw-text-base {
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.02em !important;
+  color: var(--prem-ink) !important;
+}
+
+/* DataTables toolbar — clean Tailwind row */
+body.japs-dashboard-premium.japs-dashboard-home .japs-dash-full-table .dataTables_wrapper,
+body.japs-dashboard-premium.japs-dashboard-home .japs-dashboard-content .dataTables_wrapper {
+  font-family: inherit !important;
+}
+
+body.japs-dashboard-premium.japs-dashboard-home .japs-dash-dt-top,
+body.japs-dashboard-premium.japs-dashboard-home .dataTables_wrapper > .row.margin-bottom-20 {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 10px 16px !important;
+  margin: 0 0 14px !important;
+  text-align: left !important;
+}
+
+body.japs-dashboard-premium.japs-dashboard-home .japs-dash-dt-top::before,
+body.japs-dashboard-premium.japs-dashboard-home .japs-dash-dt-top::after,
+body.japs-dashboard-premium.japs-dashboard-home .dataTables_wrapper > .row.margin-bottom-20::before,
+body.japs-dashboard-premium.japs-dashboard-home .dataTables_wrapper > .row.margin-bottom-20::after {
+  display: none !important;
+}
+
+body.japs-dashboard-premium.japs-dashboard-home .japs-dash-dt-top > *,
+body.japs-dashboard-premium.japs-dashboard-home .dataTables_wrapper > .row.margin-bottom-20 > [class*='col-'] {
+  width: auto !important;
+  flex: 0 1 auto !important;
+  float: none !important;
+  padding: 0 !important;
+  text-align: left !important;
+}
+
+body.japs-dashboard-premium.japs-dashboard-home .dataTables_wrapper .dataTables_length label,
+body.japs-dashboard-premium.japs-dashboard-home .dataTables_wrapper .dataTables_filter label {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  margin: 0 !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  color: var(--prem-muted) !important;
+}
+
+body.japs-dashboard-premium.japs-dashboard-home .dataTables_wrapper .dataTables_length select,
+body.japs-dashboard-premium.japs-dashboard-home .dataTables_wrapper .dataTables_filter input {
+  height: 36px !important;
+  min-height: 36px !important;
+  border: 1px solid var(--prem-border) !important;
+  border-radius: 10px !important;
+  background: #fff !important;
+  color: var(--prem-ink) !important;
+  font-size: 13px !important;
+  padding: 0 12px !important;
+  box-shadow: none !important;
+  margin: 0 !important;
+}
+
+body.japs-dashboard-premium.japs-dashboard-home .dataTables_wrapper .dataTables_filter input {
+  min-width: 180px !important;
+}
+
+body.japs-dashboard-premium.japs-dashboard-home .dataTables_wrapper .dataTables_filter input:focus,
+body.japs-dashboard-premium.japs-dashboard-home .dataTables_wrapper .dataTables_length select:focus {
+  outline: none !important;
+  border-color: #93c5fd !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12) !important;
+}
+
+/* Hide export button bar on dashboard widgets */
+body.japs-dashboard-premium.japs-dashboard-home .japs-dashboard-content .dt-buttons,
+body.japs-dashboard-premium.japs-dashboard-home .japs-dash-full-table .dt-buttons {
+  display: none !important;
+}
+
+body.japs-dashboard-premium.japs-dashboard-home .dataTables_wrapper .dataTables_scroll,
+body.japs-dashboard-premium.japs-dashboard-home .dataTables_wrapper .dataTables_scrollHead,
+body.japs-dashboard-premium.japs-dashboard-home .dataTables_wrapper .dataTables_scrollBody {
+  border: none !important;
+}
+
+body.japs-dashboard-premium.japs-dashboard-home .dataTables_wrapper .dataTables_scrollBody {
+  border-radius: 0 0 12px 12px !important;
+}
+
+body.japs-dashboard-premium.japs-dashboard-home .dataTables_wrapper table.dataTable {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  width: 100% !important;
+}
+
+body.japs-dashboard-premium.japs-dashboard-home .dataTables_wrapper table.dataTable thead th {
+  border-top: none !important;
+}
+
+body.japs-dashboard-premium.japs-dashboard-home .dataTables_wrapper table.dataTable tbody tr:last-child td {
+  border-bottom: none !important;
+}
+
+body.japs-dashboard-premium.japs-dashboard-home .dataTables_wrapper .dataTables_info {
+  padding: 12px 2px 0 !important;
+  font-size: 12px !important;
+  color: var(--prem-hint) !important;
+}
+
+body.japs-dashboard-premium.japs-dashboard-home .dataTables_wrapper .dataTables_paginate {
+  padding: 8px 2px 0 !important;
+}
+
+/* Bootstrap DataTables wraps links in <li class="paginate_button">.
+   Pill styles on the <li> + floated <a> left empty circle shells after "Next".
+   Style only the inner link; keep the <li> layout-only. */
+body.japs-dashboard-premium.japs-dashboard-home .dataTables_wrapper .dataTables_paginate ul.pagination {
+  display: inline-flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  gap: 4px !important;
+  margin: 0 !important;
+  float: none !important;
+}
+
+body.japs-dashboard-premium.japs-dashboard-home .dataTables_wrapper .dataTables_paginate ul.pagination > li.paginate_button,
+body.japs-dashboard-premium.japs-dashboard-home .dataTables_wrapper .dataTables_paginate ul.pagination > li {
+  float: none !important;
+  display: inline-flex !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  min-width: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+body.japs-dashboard-premium.japs-dashboard-home .dataTables_wrapper .dataTables_paginate ul.pagination > li > a,
+body.japs-dashboard-premium.japs-dashboard-home .dataTables_wrapper .dataTables_paginate ul.pagination > li > span,
+body.japs-dashboard-premium.japs-dashboard-home .dataTables_wrapper .dataTables_paginate .paginate_button > a,
+body.japs-dashboard-premium.japs-dashboard-home .dataTables_wrapper .dataTables_paginate .paginate_button > span {
+  float: none !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: #fff !important;
+  color: var(--prem-muted) !important;
+  font-weight: 600 !important;
+  font-size: 12px !important;
+  padding: 5px 10px !important;
+  min-width: 34px !important;
+  min-height: 32px !important;
+  margin: 0 !important;
+  border: 1px solid var(--prem-border) !important;
+  border-radius: 999px !important;
+  box-shadow: none !important;
+  line-height: 1.2 !important;
+}
+
+body.japs-dashboard-premium.japs-dashboard-home .dataTables_wrapper .dataTables_paginate ul.pagination > li.active > a,
+body.japs-dashboard-premium.japs-dashboard-home .dataTables_wrapper .dataTables_paginate ul.pagination > li.active > span,
+body.japs-dashboard-premium.japs-dashboard-home .dataTables_wrapper .dataTables_paginate ul.pagination > li.paginate_button.current > a,
+body.japs-dashboard-premium.japs-dashboard-home .dataTables_wrapper .dataTables_paginate .paginate_button.current > a {
+  background: var(--prem-blue, #3b82f6) !important;
+  border-color: var(--prem-blue, #3b82f6) !important;
+  color: #fff !important;
+}
+
+body.japs-dashboard-premium.japs-dashboard-home .dataTables_wrapper .dataTables_paginate ul.pagination > li.disabled > a,
+body.japs-dashboard-premium.japs-dashboard-home .dataTables_wrapper .dataTables_paginate ul.pagination > li.disabled > span,
+body.japs-dashboard-premium.japs-dashboard-home .dataTables_wrapper .dataTables_paginate ul.pagination > li.paginate_button.disabled > a {
+  opacity: 0.45 !important;
+  cursor: default !important;
+  background: #fff !important;
+  color: var(--prem-muted) !important;
+}
+
+body.japs-dashboard-premium.japs-dashboard-home .dataTables_wrapper .dataTables_paginate .paginate_button {
+  background: #fff !important;
+  color: var(--prem-muted) !important;
+  font-weight: 600 !important;
+  font-size: 12px !important;
+  padding: 5px 10px !important;
+}
+
+body.japs-dashboard-premium.japs-dashboard-home .dataTables_wrapper .dataTables_paginate ul.pagination > li.paginate_button {
+  background: transparent !important;
+  padding: 0 !important;
+  font-size: inherit !important;
+}
+
+body.japs-dashboard-premium.japs-dashboard-home .dataTables_wrapper .dataTables_paginate .paginate_button:hover:not(.current):not(.disabled) {
+  background: #f1f5f9 !important;
+  border-color: var(--prem-border) !important;
+  color: var(--prem-ink) !important;
+}
+
+body.japs-dashboard-premium.japs-dashboard-home .dataTables_wrapper .dataTables_paginate ul.pagination > li > a:hover,
+body.japs-dashboard-premium.japs-dashboard-home .dataTables_wrapper .dataTables_paginate ul.pagination > li:not(.active):not(.disabled) > a:hover {
+  background: #f1f5f9 !important;
+  border-color: var(--prem-border) !important;
+  color: var(--prem-ink) !important;
+}
+
+body.japs-dashboard-premium.japs-dashboard-home .dataTables_empty,
+body.japs-dashboard-premium.japs-dashboard-home table.dataTable td.dataTables_empty {
+  padding: 36px 16px !important;
+  color: var(--prem-hint) !important;
+  font-size: 13px !important;
+  font-style: normal !important;
+  text-align: center !important;
+  background: #fafbfc !important;
+}
+
+body.japs-dashboard-premium.japs-dashboard-home .dataTables_processing {
+  background: rgba(255, 255, 255, 0.92) !important;
+  border: 1px solid var(--prem-border) !important;
+  border-radius: 12px !important;
+  box-shadow: var(--prem-shadow) !important;
+  color: var(--prem-ink) !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+}
+
+/* Status labels in dashboard tables */
+body.japs-dashboard-premium.japs-dashboard-home .japs-dashboard-content .label,
+body.japs-dashboard-premium.japs-dashboard-home .japs-dashboard-content .badge,
+body.japs-dashboard-premium.japs-dashboard-home .japs-dashboard-content span[class*='bg-'] {
+  border-radius: 999px !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  padding: 4px 10px !important;
+  letter-spacing: 0.01em;
+}
+
+body.japs-dashboard-premium.japs-dashboard-home .japs-dashboard-content table .btn-group > .btn,
+body.japs-dashboard-premium.japs-dashboard-home .japs-dashboard-content table .tw-dw-btn-xs {
+  border-radius: 8px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  min-height: 30px !important;
+  padding: 4px 12px !important;
+  box-shadow: none !important;
+}
+
+body.japs-dashboard-premium.japs-dashboard-home .japs-dashboard-content table .btn-info,
+body.japs-dashboard-premium.japs-dashboard-home .japs-dashboard-content table .tw-dw-btn-info {
+  background: #eff6ff !important;
+  border: 1px solid #bfdbfe !important;
+  color: #1d4ed8 !important;
+}
+
+body.japs-dashboard-premium.japs-dashboard-home .japs-dashboard-content table .btn-info:hover,
+body.japs-dashboard-premium.japs-dashboard-home .japs-dashboard-content table .tw-dw-btn-info:hover {
+  background: #2563eb !important;
+  border-color: #2563eb !important;
+  color: #fff !important;
+}
+
+/* Attention pills — softer Tailwind chips */
+body.japs-dashboard-premium.japs-dashboard-home .japs-dash-attention-pill {
+  border-radius: 999px !important;
+  background: #fff !important;
+  border: 1px solid var(--prem-border) !important;
+  color: var(--prem-muted) !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  padding: 7px 14px !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+}
+
+body.japs-dashboard-premium.japs-dashboard-home .japs-dash-attention-pill.is-active {
+  background: #fff7ed !important;
+  border-color: #fed7aa !important;
+  color: #c2410c !important;
+}
+
+body.japs-dashboard-premium.japs-dashboard-home .japs-dash-attention-pill__count {
+  background: #f1f5f9 !important;
+  color: var(--prem-ink) !important;
+  font-size: 11px !important;
+}
+
+body.japs-dashboard-premium.japs-dashboard-home .japs-dash-attention-pill.is-active .japs-dash-attention-pill__count {
+  background: rgba(194, 65, 12, 0.12) !important;
+  color: #c2410c !important;
+}
+
+/* Wider, airier layout */
+body.japs-dashboard-premium.japs-dashboard-home .zoho-dashboard__layout,
+body.japs-dashboard-premium.japs-dashboard-home .japs-dashboard-content {
+  max-width: 1360px !important;
+}
+
+body.japs-dashboard-premium.japs-dashboard-home .japs-dash-reports-grid {
+  gap: 20px !important;
+}
+
+@media (max-width: 767px) {
+  body.japs-dashboard-premium .ecom-dash,
+  body.japs-dashboard-premium .inv-dash,
+  body.japs-dashboard-premium .crm-dash,
+  body.japs-dashboard-premium.japs-dashboard-home .zoho-dashboard__layout,
+  body.japs-dashboard-premium.japs-dashboard-home .japs-dashboard-content {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+}
+
+/* ── CRM dashboard ── */
+body.japs-dashboard-premium .crm-dash {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 24px 28px 32px;
+}
+
+body.japs-dashboard-premium .crm-dash .crm-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+body.japs-dashboard-premium .crm-dash .crm-title {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--prem-ink);
+  letter-spacing: -0.02em;
+}
+
+body.japs-dashboard-premium .crm-dash .crm-sub {
+  margin: 4px 0 0;
+  color: var(--prem-muted);
+  font-size: 13px;
+}
+
+body.japs-dashboard-premium .crm-dash .crm-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+body.japs-dashboard-premium .crm-dash .crm-btn {
+  height: 38px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid var(--prem-border);
+  background: #fff;
+  color: #334155;
+  font-weight: 600;
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none !important;
+}
+
+body.japs-dashboard-premium .crm-dash .crm-btn-primary {
+  background: var(--prem-blue);
+  border-color: var(--prem-blue);
+  color: #fff !important;
+}
+
+body.japs-dashboard-premium .crm-dash .crm-btn-primary:hover {
+  background: #1d4ed8;
+  color: #fff !important;
+}
+
+body.japs-dashboard-premium .crm-dash .crm-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+body.japs-dashboard-premium .crm-dash .crm-kpi {
+  --kpi-accent: #4f8fce;
+  --kpi-soft: #eef6fd;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  min-height: 112px;
+  background: #fff;
+  border: 1px solid #e7eaf0;
+  border-radius: var(--prem-radius);
+  padding: 22px 20px 18px;
+  box-shadow: var(--prem-shadow);
+  text-decoration: none !important;
+  color: inherit;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+body.japs-dashboard-premium .crm-dash .crm-kpi::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  border-radius: 18px 18px 0 0;
+  background: var(--kpi-accent);
+}
+
+body.japs-dashboard-premium .crm-dash .crm-kpi:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--prem-shadow-hover);
+  color: inherit;
+}
+
+body.japs-dashboard-premium .crm-dash .crm-kpi--blue { --kpi-accent: #4f8fce; --kpi-soft: #eef6fd; }
+body.japs-dashboard-premium .crm-dash .crm-kpi--teal { --kpi-accent: #4db39e; --kpi-soft: #ecf8f4; }
+body.japs-dashboard-premium .crm-dash .crm-kpi--amber { --kpi-accent: #d5aa35; --kpi-soft: #fff8e6; }
+body.japs-dashboard-premium .crm-dash .crm-kpi--violet { --kpi-accent: #7c72c9; --kpi-soft: #f5f0fc; }
+
+body.japs-dashboard-premium .crm-dash .crm-kpi__label {
+  margin: 0 0 10px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #7a8495;
+}
+
+body.japs-dashboard-premium .crm-dash .crm-kpi__value {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 700;
+  color: #151b2b;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+}
+
+body.japs-dashboard-premium .crm-dash .crm-kpi__value.is-warn { color: #b78616; }
+
+body.japs-dashboard-premium .crm-dash .crm-kpi__icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: var(--kpi-soft);
+  color: var(--kpi-accent);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+body.japs-dashboard-premium .crm-dash .crm-kpi__icon svg { width: 22px; height: 22px; display: block; }
+
+body.japs-dashboard-premium .crm-dash .crm-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 16px;
+}
+
+body.japs-dashboard-premium .crm-dash .crm-card {
+  background: #fff;
+  border: 1px solid var(--prem-border);
+  border-radius: var(--prem-radius);
+  box-shadow: var(--prem-shadow);
+  overflow: hidden;
+}
+
+body.japs-dashboard-premium .crm-dash .crm-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 16px 20px;
+  border-bottom: 1px solid #eef2f7;
+}
+
+body.japs-dashboard-premium .crm-dash .crm-card__title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--prem-ink);
+  letter-spacing: -0.02em;
+}
+
+body.japs-dashboard-premium .crm-dash .crm-link {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--prem-blue);
+  text-decoration: none;
+}
+
+body.japs-dashboard-premium .crm-dash .crm-card__body { padding: 8px 0; }
+body.japs-dashboard-premium .crm-dash .crm-card__body--flush { padding: 0; }
+
+body.japs-dashboard-premium .crm-dash table.crm-table {
+  width: 100%;
+  margin: 0;
+  border: none !important;
+}
+
+body.japs-dashboard-premium .crm-dash table.crm-table thead th {
+  background: #f8fafc !important;
+  border: none !important;
+  border-bottom: 1px solid #eef2f7 !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  color: var(--prem-hint) !important;
+  padding: 12px 16px !important;
+}
+
+body.japs-dashboard-premium .crm-dash table.crm-table tbody td {
+  border: none !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+  padding: 13px 16px !important;
+  font-size: 13px !important;
+  color: #334155 !important;
+}
+
+body.japs-dashboard-premium .crm-dash table.crm-table tbody tr:hover td {
+  background: #f8fafc !important;
+}
+
+body.japs-dashboard-premium .crm-dash table.crm-table a {
+  color: var(--prem-blue);
+  font-weight: 600;
+}
+
+body.japs-dashboard-premium .crm-dash .crm-pipeline-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 20px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+body.japs-dashboard-premium .crm-dash .crm-pipeline-row:last-child { border-bottom: 0; }
+
+body.japs-dashboard-premium .crm-dash .crm-pipeline-row__name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--prem-ink);
+}
+
+body.japs-dashboard-premium .crm-dash .crm-pipeline-row__count {
+  min-width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: var(--prem-blue);
+  font-size: 12px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 8px;
+}
+
+body.japs-dashboard-premium .crm-dash .crm-empty {
+  padding: 28px 16px;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 13px;
+}
+
+@media (max-width: 1199px) {
+  body.japs-dashboard-premium .crm-dash .crm-kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  body.japs-dashboard-premium .crm-dash .crm-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 767px) {
+  body.japs-dashboard-premium .crm-dash .crm-kpi-grid { grid-template-columns: 1fr; }
+  body.japs-dashboard-premium .crm-dash .crm-title { font-size: 22px; }
+}

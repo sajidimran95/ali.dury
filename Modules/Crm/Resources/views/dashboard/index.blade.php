@@ -1,88 +1,17 @@
 @extends('layouts.app')
 @section('title', __('crm::lang.dashboard'))
 @section('content')
-<section class="content-header">
-    <h1 class="tw-text-xl md:tw-text-3xl tw-font-bold">@lang('crm::lang.dashboard')</h1>
-</section>
 <section class="content crm-dash">
-<style>
-.crm-dash .crm-kpi-grid {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 16px;
-    margin-bottom: 24px;
-}
-@media (max-width: 1199px) {
-    .crm-dash .crm-kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-}
-@media (max-width: 575px) {
-    .crm-dash .crm-kpi-grid { grid-template-columns: 1fr; }
-}
-.crm-dash .crm-kpi {
-    --kpi-accent: #4f8fce;
-    --kpi-soft: #eef6fd;
-    position: relative;
-    overflow: hidden;
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 14px;
-    min-height: 112px;
-    background: #fff;
-    border: 1px solid #e7eaf0;
-    border-radius: 18px;
-    padding: 22px 20px 18px;
-    box-shadow: 0 2px 10px rgba(15, 20, 37, 0.045);
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
-    text-decoration: none !important;
-    color: inherit;
-}
-.crm-dash .crm-kpi::before {
-    content: "";
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 4px;
-    border-radius: 18px 18px 0 0;
-    background: var(--kpi-accent);
-}
-.crm-dash .crm-kpi:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 22px rgba(15, 20, 37, 0.07);
-    color: inherit;
-}
-.crm-dash .crm-kpi--blue { --kpi-accent: #4f8fce; --kpi-soft: #eef6fd; }
-.crm-dash .crm-kpi--teal { --kpi-accent: #4db39e; --kpi-soft: #ecf8f4; }
-.crm-dash .crm-kpi--amber { --kpi-accent: #d5aa35; --kpi-soft: #fff8e6; }
-.crm-dash .crm-kpi--violet { --kpi-accent: #7c72c9; --kpi-soft: #f5f0fc; }
-.crm-dash .crm-kpi__body { flex: 1; min-width: 0; }
-.crm-dash .crm-kpi__label {
-    margin: 0 0 10px;
-    font-size: 14px;
-    font-weight: 500;
-    color: #7a8495;
-}
-.crm-dash .crm-kpi__value {
-    margin: 0;
-    font-size: 26px;
-    font-weight: 700;
-    color: #151b2b;
-    line-height: 1.15;
-    letter-spacing: -0.03em;
-}
-.crm-dash .crm-kpi__value.is-warn { color: #b78616; }
-.crm-dash .crm-kpi__icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 14px;
-    background: var(--kpi-soft);
-    color: var(--kpi-accent);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-.crm-dash .crm-kpi__icon svg { width: 22px; height: 22px; display: block; }
-</style>
+    <div class="crm-head">
+        <div>
+            <h1 class="crm-title">{{ __('home.welcome_message', ['name' => Session::get('user.first_name')]) }}</h1>
+            <p class="crm-sub">@lang('crm::lang.dashboard') · {{ @format_date(\Carbon::now()) }}</p>
+        </div>
+        <div class="crm-actions">
+            <a href="{{ route('crm.leads.create') }}" class="crm-btn crm-btn-primary">@lang('crm::lang.add_lead')</a>
+            <a href="{{ route('crm.pipeline.index') }}" class="crm-btn">@lang('crm::lang.pipeline')</a>
+        </div>
+    </div>
 
     <div class="crm-kpi-grid">
         <a href="{{ route('crm.leads.index') }}" class="crm-kpi crm-kpi--blue">
@@ -126,17 +55,15 @@
         </a>
     </div>
 
-    <div class="row">
-        <div class="col-md-7">
-            <div class="box box-solid">
-                <div class="box-header with-border">
-                    <h3 class="box-title">@lang('crm::lang.recent_leads')</h3>
-                    <div class="box-tools">
-                        <a href="{{ route('crm.leads.create') }}" class="btn btn-sm btn-primary">@lang('crm::lang.add_lead')</a>
-                    </div>
-                </div>
-                <div class="box-body table-responsive">
-                    <table class="table table-bordered">
+    <div class="crm-grid">
+        <div class="crm-card crm-card--wide">
+            <div class="crm-card__header">
+                <h3 class="crm-card__title">@lang('crm::lang.recent_leads')</h3>
+                <a href="{{ route('crm.leads.index') }}" class="crm-link">@lang('crm::lang.view')</a>
+            </div>
+            <div class="crm-card__body crm-card__body--flush">
+                <div class="table-responsive">
+                    <table class="table crm-table">
                         <thead>
                             <tr>
                                 <th>@lang('crm::lang.name')</th>
@@ -154,33 +81,28 @@
                                 <td><a href="{{ route('crm.leads.show', $lead->id) }}">@lang('crm::lang.view')</a></td>
                             </tr>
                         @empty
-                            <tr><td colspan="4" class="text-center text-muted">—</td></tr>
+                            <tr><td colspan="4" class="crm-empty">—</td></tr>
                         @endforelse
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
-        <div class="col-md-5">
-            <div class="box box-solid">
-                <div class="box-header with-border">
-                    <h3 class="box-title">@lang('crm::lang.pipeline_summary')</h3>
-                    <div class="box-tools">
-                        <a href="{{ route('crm.pipeline.index') }}" class="btn btn-sm btn-default">@lang('crm::lang.pipeline')</a>
+
+        <div class="crm-card">
+            <div class="crm-card__header">
+                <h3 class="crm-card__title">@lang('crm::lang.pipeline_summary')</h3>
+                <a href="{{ route('crm.pipeline.index') }}" class="crm-link">@lang('crm::lang.pipeline')</a>
+            </div>
+            <div class="crm-card__body">
+                @forelse($pipeline_summary as $row)
+                    <div class="crm-pipeline-row">
+                        <span class="crm-pipeline-row__name">{{ $row['name'] }}</span>
+                        <span class="crm-pipeline-row__count">{{ $row['count'] }}</span>
                     </div>
-                </div>
-                <div class="box-body">
-                    <ul class="list-group">
-                        @forelse($pipeline_summary as $row)
-                            <li class="list-group-item">
-                                {{ $row['name'] }}
-                                <span class="badge">{{ $row['count'] }}</span>
-                            </li>
-                        @empty
-                            <li class="list-group-item text-muted">@lang('crm::lang.no_stage')</li>
-                        @endforelse
-                    </ul>
-                </div>
+                @empty
+                    <div class="crm-empty">@lang('crm::lang.no_stage')</div>
+                @endforelse
             </div>
         </div>
     </div>

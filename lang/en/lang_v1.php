@@ -1324,6 +1324,7 @@ return [
     'by_value' => 'By Value',
     'last_month' => 'Last Month',
     'last_30_days' => 'Last 30 Days',
+    'from_previous_period' => 'From previous period:',
     'this_year' => 'This Year',
     'no_sales_orders_in_period' => 'No sales orders created during this period.',
     'sales_order_help_text' => 'The sales order, sometimes abbreviated as SO, is an order issued by a business or sole trader to a customer. A sales order may be for products and/or services.',

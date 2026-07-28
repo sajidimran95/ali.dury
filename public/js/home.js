@@ -27,17 +27,18 @@ $(document).ready(function() {
         update_statistics(start, end);
     });
 
-    //atock alert datatables
+    // Stock alert datatables
+    if ($('#stock_alert_table').length) {
     var stock_alert_table = $('#stock_alert_table').DataTable({
         processing: true,
         serverSide: true,
         ordering: false,
         searching: false,
-        scrollY:        "75vh",
+        scrollY:        "300px",
         scrollX:        true,
         scrollCollapse: true,
         fixedHeader: false,
-        dom: 'Btirp',
+        dom: 'tirp',
         ajax: {
             "url": '/home/product-stock-alert',
             "data": function ( d ) {
@@ -54,17 +55,20 @@ $(document).ready(function() {
     $('#stock_alert_location').change( function(){
         stock_alert_table.ajax.reload();
     });
-    //payment dues datatables
+    }
+
+    // Payment dues datatables
+    if ($('#purchase_payment_dues_table').length) {
     purchase_payment_dues_table = $('#purchase_payment_dues_table').DataTable({
         processing: true,
         serverSide: true,
         ordering: false,
         searching: false,
-        scrollY:        "75vh",
+        scrollY:        "300px",
         scrollX:        true,
         scrollCollapse: true,
         fixedHeader: false,
-        dom: 'Btirp',
+        dom: 'tirp',
         ajax: {
             "url": '/home/purchase-payment-dues',
             "data": function ( d ) {
@@ -81,18 +85,20 @@ $(document).ready(function() {
     $('#purchase_payment_dues_location').change( function(){
         purchase_payment_dues_table.ajax.reload();
     });
+    }
 
-    //Sales dues datatables
+    // Sales dues datatables
+    if ($('#sales_payment_dues_table').length) {
     sales_payment_dues_table = $('#sales_payment_dues_table').DataTable({
         processing: true,
         serverSide: true,
         ordering: false,
         searching: false,
-        scrollY:        "75vh",
+        scrollY:        "300px",
         scrollX:        true,
         scrollCollapse: true,
         fixedHeader: false,
-        dom: 'Btirp',
+        dom: 'tirp',
         ajax: {
             "url": '/home/sales-payment-dues',
             "data": function ( d ) {
@@ -109,17 +115,19 @@ $(document).ready(function() {
     $('#sales_payment_dues_location').change( function(){
         sales_payment_dues_table.ajax.reload();
     });
+    }
 
-    //Stock expiry report table
+    // Stock expiry report table
+    if ($('#stock_expiry_alert_table').length) {
     stock_expiry_alert_table = $('#stock_expiry_alert_table').DataTable({
         processing: true,
         serverSide: true,
         searching: false,
-        scrollY:        "75vh",
+        scrollY:        "300px",
         scrollX:        true,
         scrollCollapse: true,
         fixedHeader: false,
-        dom: 'Btirp',
+        dom: 'tirp',
         ajax: {
             url: '/reports/stock-expiry',
             data: function(d) {
@@ -138,6 +146,7 @@ $(document).ready(function() {
             __currency_convert_recursively($('#stock_expiry_alert_table'));
         },
     });
+    }
 
     if ($('#quotation_table').length) {
         quotation_datatable = $('#quotation_table').DataTable({
@@ -169,6 +178,29 @@ $(document).ready(function() {
     }
 });
 
+function japsFormatDelta(pct) {
+    var num = parseFloat(pct);
+    if (isNaN(num)) {
+        return { text: '—', cls: '' };
+    }
+    var arrow = num >= 0 ? '↑' : '↓';
+    return {
+        text: arrow + ' ' + Math.abs(num) + '%',
+        cls: num >= 0 ? 'is-up' : 'is-down'
+    };
+}
+
+function japsApplyDelta($el, pct) {
+    if (!$el || !$el.length) {
+        return;
+    }
+    var delta = japsFormatDelta(pct);
+    $el.text(delta.text).removeClass('is-up is-down');
+    if (delta.cls) {
+        $el.addClass(delta.cls);
+    }
+}
+
 function update_statistics(start, end) {
     var location_id = '';
     if ($('#dashboard_location').length > 0) {
@@ -198,6 +230,7 @@ function update_statistics(start, end) {
 
             //sell details
             $('.total_sell').html(__currency_trans_from_en(data.total_sell, true));
+            $('.japs-chart-total-sell').html(__currency_trans_from_en(data.total_sell, true));
             $('.invoice_due').html(__currency_trans_from_en(data.invoice_due, true));
             //expense details
             $('.total_expense').html(__currency_trans_from_en(data.total_expense, true));
@@ -212,6 +245,16 @@ function update_statistics(start, end) {
             $('.net').html(__currency_trans_from_en(data.net, true));
             var onlineOrders = typeof data.online_orders !== 'undefined' ? data.online_orders : 0;
             $('.online_orders').html(onlineOrders);
+
+            if (data.change_pct) {
+                japsApplyDelta($('[data-kpi="total_sell"]'), data.change_pct.total_sell);
+                japsApplyDelta($('[data-kpi="net"]'), data.change_pct.net);
+                japsApplyDelta($('[data-kpi="invoice_due"]'), data.change_pct.invoice_due);
+                japsApplyDelta($('[data-kpi="total_purchase"]'), data.change_pct.total_purchase);
+                japsApplyDelta($('.japs-chart-sell-growth'), data.change_pct.total_sell);
+            }
+
+            $('.japs-overview-sales-total').text(__currency_trans_from_en(data.total_sell, true));
 
             // assign tooltip total_sell_return 
             var lang = $('#total_srp').data('value');
@@ -276,12 +319,16 @@ window.japsLoadPaymentMethodMix = function(start, end, locationId) {
         }
 
         var totalAmountText = __currency_trans_from_en(data.total || 0, true);
+        var topItem = (data.series || [])[0];
+        var topPct = data.total > 0 && topItem ? Math.round((topItem.amount / data.total) * 1000) / 10 : 0;
 
         $('#payment_method_mix_empty').hide();
         $('.japs-dash-payment-mix').show();
-        $centerAmount.text(totalAmountText);
-        $centerLabel.text('Total');
+        $centerAmount.text(topPct + '%');
+        $centerLabel.text('Sales Growth');
         $center.show();
+        $('#payment_overview_footer').show();
+        $('#payment_overview_progress').css('width', Math.min(100, topPct) + '%');
 
         var colors = ['#3b82f6', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
         var pieData = (data.series || []).map(function(item, idx) {
@@ -305,9 +352,9 @@ window.japsLoadPaymentMethodMix = function(start, end, locationId) {
             chart: {
                 type: 'pie',
                 backgroundColor: 'transparent',
-                height: 300,
-                spacing: [10, 8, 2, 2],
-                margin: [8, 8, 4, 4]
+                height: 240,
+                spacing: [0, 0, 0, 0],
+                margin: [0, 0, 0, 0]
             },
             title: { text: null },
             subtitle: { text: null },
@@ -345,11 +392,13 @@ window.japsLoadPaymentMethodMix = function(start, end, locationId) {
             },
             plotOptions: {
                 pie: {
-                    innerSize: '66%',
-                    size: '98%',
-                    center: ['50%', '50%'],
-                    borderWidth: 3,
-                    borderColor: '#f3f4f6',
+                    startAngle: -90,
+                    endAngle: 90,
+                    innerSize: '72%',
+                    size: '115%',
+                    center: ['50%', '82%'],
+                    borderWidth: 4,
+                    borderColor: '#ffffff',
                     slicedOffset: 0,
                     dataLabels: { enabled: false },
                     showInLegend: false,
@@ -359,12 +408,13 @@ window.japsLoadPaymentMethodMix = function(start, end, locationId) {
                     point: {
                         events: {
                             mouseOver: function() {
-                                $centerAmount.text(__currency_trans_from_en(this.y, true));
+                                var pct = data.total > 0 ? Math.round((this.y / data.total) * 1000) / 10 : 0;
+                                $centerAmount.text(pct + '%');
                                 $centerLabel.text(this.name);
                             },
                             mouseOut: function() {
-                                $centerAmount.text(totalAmountText);
-                                $centerLabel.text('Total');
+                                $centerAmount.text(topPct + '%');
+                                $centerLabel.text('Sales Growth');
                             }
                         }
                     }

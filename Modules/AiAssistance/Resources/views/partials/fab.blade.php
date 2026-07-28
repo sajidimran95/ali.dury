@@ -17,9 +17,17 @@
 @endphp
 
 @if($show_ai_fab && empty($pos_layout))
-    <button type="button" class="ai-ask-fab" id="ai-ask-fab-btn" title="@lang('aiassistance::lang.ask_ai')">
-        <i class="fa fa-magic"></i>
-        <span>@lang('aiassistance::lang.ask_ai')</span>
+    <button type="button" class="ai-ask-fab" id="ai-ask-fab-btn" title="@lang('aiassistance::lang.boost_with_ai')">
+        <span class="ai-ask-fab__icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 3l1.4 4.2L18 8.6l-4.2 1.4L12 14.2l-1.4-4.2L6.4 8.6l4.2-1.4L12 3z" fill="currentColor"/>
+                <path d="M18.5 14.5l.7 2.1 2.1.7-2.1.7-.7 2.1-.7-2.1-2.1-.7 2.1-.7.7-2.1z" fill="currentColor" opacity=".85"/>
+            </svg>
+        </span>
+        <span class="ai-ask-fab__text">
+            <span class="ai-ask-fab__title">@lang('aiassistance::lang.boost_with_ai')</span>
+            <span class="ai-ask-fab__desc">@lang('aiassistance::lang.boost_with_ai_desc')</span>
+        </span>
     </button>
     <div class="ai-modal-backdrop" id="ai-modal-backdrop"></div>
     <div class="ai-modal" id="ai-modal">
@@ -30,12 +38,10 @@
     (function () {
         function mountAiUi() {
             var fab = document.getElementById('ai-ask-fab-btn');
-            var slot = document.getElementById('japs-footer-ai-slot');
-            // Keep pill inside the sticky page footer
+            var slot = document.getElementById('japs-sidebar-ai-slot');
             if (fab && slot && fab.parentElement !== slot) {
                 slot.appendChild(fab);
             }
-            // Modal layers stay on body for overlay stacking
             ['#ai-modal-backdrop', '#ai-modal'].forEach(function (sel) {
                 var el = document.querySelector(sel);
                 if (el && el.parentElement !== document.body) {

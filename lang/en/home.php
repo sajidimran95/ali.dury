@@ -14,6 +14,7 @@ return [
     'welcome_message' => 'Welcome back, :name',
     'needs_attention' => 'Needs attention',
     'payment_method_mix' => 'Payment method mix',
+    'sales_growth' => 'Sales Growth',
     'credit_sale_short' => 'Credit',
     'last_30_days' => 'Last 30 days',
     'net_profit' => 'Net profit',
@@ -38,4 +39,8 @@ return [
     'stock_expiry_alert' => 'Stock Expiry Alert',
     'todays_profit' => "Today's profit",
     'dashboard' => 'Dashboard',
+    'main_menu' => 'Main Menu',
+    'revenue_insights' => 'Revenue Insights',
+    'sales_overview' => 'Sales Overview',
+    'recent_sales' => 'Recent Sales',
 ];

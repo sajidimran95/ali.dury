@@ -275,6 +275,42 @@ body.lockscreen.pos-sale-theme .pos-inline-categories {
   order: 0;
   margin-bottom: 8px;
   width: 100%;
+  min-height: 0;
+}
+
+/* Scrollable category strip — cap height when many categories */
+body.lockscreen.pos-sale-theme .pos-category-scroll {
+  max-height: min(252px, 34vh);
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 4px;
+  margin-right: -2px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: #666 #1a1a1a;
+}
+
+body.lockscreen.pos-sale-theme .pos-category-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+body.lockscreen.pos-sale-theme .pos-category-scroll::-webkit-scrollbar-thumb {
+  background: #666;
+  border-radius: 3px;
+}
+
+body.lockscreen.pos-sale-theme .pos-category-scroll::-webkit-scrollbar-thumb:hover {
+  background: #888;
+}
+
+body.lockscreen.pos-sale-theme .pos-category-scroll::-webkit-scrollbar-track {
+  background: #1a1a1a;
+}
+
+@media (max-width: 767px) {
+  body.lockscreen.pos-sale-theme .pos-category-scroll {
+    max-height: min(220px, 30vh);
+  }
 }
 
 body.lockscreen.pos-sale-theme .pos-filter-tools {

@@ -14,6 +14,8 @@
 
 @php
     $dashboard_home = $request->segment(1) == 'home';
+    // Premium canvas for all non-POS pages (dashboards + rest of app)
+    $dashboard_premium = ! $pos_layout;
 @endphp
 
 @php
@@ -39,7 +41,7 @@
 
 </head>
 <body
-    class="tw-font-sans tw-antialiased tw-text-gray-900 zoho-theme @if ($pos_layout) hold-transition lockscreen pos-sale-theme @elseif(!empty($dashboard_home)) hold-transition japs-dashboard-home sidebar-mini @else hold-transition skin-@if (!empty(session('business.theme_color'))){{ session('business.theme_color') }}@else{{ 'blue-light' }} @endif sidebar-mini @endif" >
+    class="tw-font-sans tw-antialiased tw-text-gray-900 zoho-theme @if ($pos_layout) hold-transition lockscreen pos-sale-theme @elseif(!empty($dashboard_home)) hold-transition japs-dashboard-home japs-dashboard-premium sidebar-mini @elseif(!empty($dashboard_premium)) hold-transition japs-dashboard-premium sidebar-mini @else hold-transition skin-@if (!empty(session('business.theme_color'))){{ session('business.theme_color') }}@else{{ 'blue-light' }} @endif sidebar-mini @endif" >
     <div class="tw-flex thetop">
         <script type="text/javascript">
             if (localStorage.getItem("upos_sidebar_collapse") == 'true') {

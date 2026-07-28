@@ -343,6 +343,13 @@
 }
 .ai-modal.open { display: block; }
 .ai-modal .ai-panel { max-height: calc(100vh - 48px); }
+/* Sidebar "Boost with AI" card — matches left-nav promo placement */
+.japs-sidebar-ai-slot:empty {
+    display: none;
+}
+.japs-sidebar-ai-slot {
+    margin: 0 0 8px;
+}
 .ai-ask-fab {
     position: static !important;
     top: auto !important;
@@ -350,39 +357,93 @@
     right: auto !important;
     bottom: auto !important;
     z-index: 1;
-    display: inline-flex !important;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 16px;
-    border-radius: 999px;
-    color: #fff !important;
+    display: none !important; /* hidden until mounted in sidebar */
+    align-items: flex-start;
+    gap: 10px;
+    width: 100%;
+    padding: 12px 12px 13px;
+    border-radius: 14px;
+    color: #1f2937 !important;
     text-decoration: none !important;
+    text-align: left;
     font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
-    font-weight: 700;
-    font-size: 14px;
-    letter-spacing: -0.02em;
-    border: 0;
-    background: linear-gradient(135deg, #7c3aed, #2563eb);
-    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
+    border: 1px solid #e8ecf3;
+    background: #f4f6fa;
+    box-shadow: none;
     cursor: pointer;
     -webkit-font-smoothing: antialiased;
-    white-space: nowrap;
-    line-height: 1.2;
+    line-height: 1.25;
     height: auto;
-    min-height: 40px;
+    min-height: 0;
     box-sizing: border-box;
     margin: 0 !important;
     transform: none !important;
     opacity: 1 !important;
-    visibility: visible !important;
     pointer-events: auto !important;
+    transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
 }
-.ai-ask-fab:hover { filter: brightness(1.05); color: #fff !important; }
-.ai-ask-fab i {
-    font-size: 14px;
-    line-height: 1;
+.japs-sidebar-ai-slot .ai-ask-fab {
+    display: flex !important;
 }
+.ai-ask-fab:hover {
+    background: #eef2f8 !important;
+    border-color: #d5deee;
+    color: #111827 !important;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+}
+.ai-ask-fab__icon {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(59, 130, 246, 0.12);
+    color: #3b82f6;
+}
+.ai-ask-fab__text {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+}
+.ai-ask-fab__title {
+    display: block;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: #1f2937;
+    line-height: 1.25;
+}
+.ai-ask-fab__desc {
+    display: block;
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1.35;
+    color: #6b7280;
+    white-space: normal;
+}
+.ai-ask-fab:hover .ai-ask-fab__title {
+    color: #111827;
+}
+.ai-ask-fab:hover .ai-ask-fab__desc {
+    color: #4b5563;
+}
+
+/* Collapsed sidebar: icon only */
+body.zoho-theme .side-bar.zoho-sidebar-collapsed .ai-ask-fab,
+body.zoho-theme.sidebar-collapse .side-bar .ai-ask-fab {
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+}
+body.zoho-theme .side-bar.zoho-sidebar-collapsed .ai-ask-fab__text,
+body.zoho-theme.sidebar-collapse .side-bar .ai-ask-fab__text {
+    display: none !important;
+}
+
 @media print {
-    .ai-ask-fab, .ai-modal, .ai-modal-backdrop { display: none !important; }
+    .ai-ask-fab, .ai-modal, .ai-modal-backdrop, .japs-sidebar-ai-slot { display: none !important; }
 }
 </style>

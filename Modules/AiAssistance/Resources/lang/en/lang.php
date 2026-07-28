@@ -2,6 +2,8 @@
 
 return [
     'ask_ai' => 'Japs AI',
+    'boost_with_ai' => 'Boost with AI',
+    'boost_with_ai_desc' => 'AI-powered replies, tag insights, and tools that save hours.',
     'ai_assistant' => 'Japs AI',
     'ask_about_data' => 'Ask about your data',
     'subtitle' => 'Live insights and a chat that knows — and can act on — your business data.',

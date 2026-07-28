@@ -13,7 +13,7 @@ class AdminlteCustomPresenter extends Presenter
      */
     public function getOpenTagWrapper()
     {
-        return '<div class="tw-flex-1 tw-overflow-y-auto tw-min-h-0" id="side-bar">' . PHP_EOL;
+        return '<div class="zoho-sidebar-nav" id="side-bar">' . PHP_EOL;
     }
 
     /**
@@ -70,7 +70,7 @@ class AdminlteCustomPresenter extends Presenter
      */
     public function getHeaderWrapper($item)
     {
-        return '<div class="tw-px-1 tw-pt-3 tw-pb-1 tw-text-[10px] tw-font-semibold tw-uppercase tw-tracking-wider tw-text-gray-400">' . e($item->title) . '</div>';
+        return '<div class="zoho-sidebar-section tw-px-1 tw-pt-3 tw-pb-1 tw-text-[10px] tw-font-semibold tw-uppercase tw-tracking-wider tw-text-gray-400">' . e($item->title) . '</div>';
     }
 
     /**

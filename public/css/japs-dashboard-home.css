@@ -3,19 +3,21 @@
  * Light SaaS cards: welcome, KPIs, needs attention, charts, secondary stats.
  */
 body.japs-dashboard-home {
-  --dash-bg: #f4f5f7;
+  --dash-bg: #f0f4f8;
   --dash-card: #ffffff;
-  --dash-border: #e6e8ec;
-  --dash-text: #1a1a1a;
-  --dash-muted: #6b7280;
-  --dash-hint: #9ca3af;
+  --dash-border: #e2e8f0;
+  --dash-text: #0f172a;
+  --dash-muted: #64748b;
+  --dash-hint: #94a3b8;
   --dash-blue: #3b82f6;
-  --dash-green: #16a34a;
-  --dash-pill-active-bg: #f5ebe0;
-  --dash-pill-active-border: #d4b896;
-  --dash-pill-active-text: #7a5c3a;
-  --dash-pill-idle-bg: #f3f4f6;
-  --dash-pill-idle-border: #e5e7eb;
+  --dash-blue-soft: #eff6ff;
+  --dash-green: #10b981;
+  --dash-green-soft: #ecfdf5;
+  --dash-pill-active-bg: #fff7ed;
+  --dash-pill-active-border: #fed7aa;
+  --dash-pill-active-text: #c2410c;
+  --dash-pill-idle-bg: #ffffff;
+  --dash-pill-idle-border: #e2e8f0;
   background: var(--dash-bg) !important;
   color: var(--dash-text) !important;
 }
@@ -87,11 +89,11 @@ body.japs-dashboard-home .zoho-dashboard__greeting {
 body.japs-dashboard-home .japs-dashboard-welcome,
 body.japs-dashboard-home .zoho-dashboard__welcome {
   color: var(--dash-text) !important;
-  font-size: 28px !important;
-  font-weight: 700 !important;
-  letter-spacing: -0.02em;
+  font-size: 30px !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.03em;
   margin: 0 !important;
-  line-height: 1.2 !important;
+  line-height: 1.15 !important;
 }
 
 body.japs-dashboard-home .japs-dashboard-welcome-sub,
@@ -293,36 +295,29 @@ body.japs-dashboard-home .japs-dash-kpi-row {
   }
 }
 
-body.japs-dashboard-home .japs-dash-kpi-card {
-  --kpi-accent: #4f8fce;
-  --kpi-soft: #eef6fd;
-  position: relative;
-  display: flex !important;
-  flex-direction: row !important;
-  align-items: flex-start !important;
-  justify-content: space-between !important;
-  gap: 14px;
-  min-height: 112px;
-  background: #fff !important;
-  border: 1px solid #e7eaf0 !important;
-  border-radius: 18px !important;
-  padding: 22px 20px 20px !important;
-  text-decoration: none !important;
-  color: #151b2b !important;
-  box-shadow: 0 2px 10px rgba(15, 20, 37, 0.045);
-  overflow: hidden;
-  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+body.japs-dashboard-home .japs-dash-kpi-card::before {
+  display: none;
 }
 
-body.japs-dashboard-home .japs-dash-kpi-card::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  border-radius: 18px 18px 0 0;
-  background: var(--kpi-accent);
+body.japs-dashboard-home .japs-dash-kpi-card {
+  --kpi-accent: #3b82f6;
+  --kpi-soft: #eff6ff;
+  position: relative;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  justify-content: flex-start !important;
+  gap: 0;
+  min-height: 148px;
+  background: #fff !important;
+  border: 1px solid var(--dash-border) !important;
+  border-radius: 20px !important;
+  padding: 18px 18px 16px !important;
+  text-decoration: none !important;
+  color: var(--dash-text) !important;
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04);
+  overflow: hidden;
+  transition: box-shadow 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
 }
 
 body.japs-dashboard-home .japs-dash-kpi-card--blue {
@@ -348,37 +343,90 @@ body.japs-dashboard-home .japs-dash-kpi-card--rose {
 
 body.japs-dashboard-home .japs-dash-kpi-card:hover {
   text-decoration: none !important;
-  color: #151b2b !important;
-  transform: translateY(-2px);
-  border-color: #d6dce7 !important;
-  box-shadow: 0 8px 22px rgba(15, 20, 37, 0.07);
+  color: #0f172a !important;
+  transform: translateY(-1px);
+  border-color: #dbe3ee !important;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.07);
+}
+
+body.japs-dashboard-home .japs-dash-kpi-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
 }
 
 body.japs-dashboard-home .japs-dash-kpi-card__body {
   flex: 1;
   min-width: 0;
-  padding-top: 2px;
 }
 
 body.japs-dashboard-home .japs-dash-kpi-card__label {
-  margin: 0 0 10px;
-  font-size: 14px;
+  margin: 0 0 6px;
+  font-size: 13px;
   font-weight: 500;
-  color: #7a8495 !important;
+  color: var(--dash-muted) !important;
   line-height: 1.35;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-wrap: wrap;
+  display: block;
 }
 
 body.japs-dashboard-home .japs-dash-kpi-card__value {
   margin: 0;
-  font-size: 26px;
+  font-size: 30px;
   font-weight: 700;
-  color: #151b2b !important;
-  line-height: 1.15;
+  color: var(--dash-text) !important;
+  line-height: 1.1;
   letter-spacing: -0.03em;
+}
+
+body.japs-dashboard-home .japs-dash-kpi-card__footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid #f1f5f9;
+}
+
+body.japs-dashboard-home .japs-dash-kpi-card__delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  background: #f1f5f9;
+  color: var(--dash-muted);
+}
+
+body.japs-dashboard-home .japs-dash-kpi-card__delta.is-up {
+  background: var(--dash-green-soft);
+  color: #047857;
+}
+
+body.japs-dashboard-home .japs-dash-kpi-card__delta.is-down {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+body.japs-dashboard-home .japs-dash-kpi-card__period {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--dash-hint) !important;
+}
+
+body.japs-dashboard-home .japs-dash-kpi-card__icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--kpi-soft) !important;
+  color: var(--kpi-accent) !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 body.japs-dashboard-home .japs-dash-kpi-card--profit .japs-dash-kpi-card__value,
@@ -392,25 +440,180 @@ body.japs-dashboard-home .japs-dash-kpi-card__hint {
   color: #94a3b8 !important;
 }
 
-body.japs-dashboard-home .japs-dash-kpi-card__icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 14px;
-  background: var(--kpi-soft) !important;
-  color: var(--kpi-accent) !important;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
 body.japs-dashboard-home .japs-dash-kpi-card__icon svg {
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
   display: block;
 }
 
-/* ── Needs attention ── */
+/* ── Revenue chart card (reference style) ── */
+body.japs-dashboard-home .japs-dash-revenue-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+body.japs-dashboard-home .japs-dash-revenue-head__left {
+  min-width: 0;
+}
+
+body.japs-dashboard-home .japs-dash-revenue-hero {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+body.japs-dashboard-home .japs-dash-revenue-hero__value {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--dash-text);
+  line-height: 1.1;
+}
+
+body.japs-dashboard-home .japs-dash-growth-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  background: #f1f5f9;
+  color: var(--dash-muted);
+}
+
+body.japs-dashboard-home .japs-dash-growth-pill.is-up {
+  background: var(--dash-green-soft);
+  color: #047857;
+}
+
+body.japs-dashboard-home .japs-dash-growth-pill.is-down {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+body.japs-dashboard-home .japs-dash-period-switch {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  border: 1px solid var(--dash-border);
+  flex-shrink: 0;
+}
+
+body.japs-dashboard-home .japs-dash-period-switch__btn {
+  border: 0;
+  background: transparent;
+  color: var(--dash-muted);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 7px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  line-height: 1;
+  transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+
+body.japs-dashboard-home .japs-dash-period-switch__btn.is-active {
+  background: var(--dash-text);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.15);
+}
+
+body.japs-dashboard-home .japs-dash-chart-card--revenue .japs-dash-chart-card__canvas {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+}
+
+body.japs-dashboard-home .japs-dash-chart-card--overview .japs-dash-payment-mix {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+}
+
+body.japs-dashboard-home .japs-dash-chart-card--overview .japs-dash-payment-chart-wrap {
+  min-height: 220px;
+}
+
+body.japs-dashboard-home .japs-dash-chart-card--overview .japs-dash-payment-chart {
+  min-height: 220px;
+}
+
+body.japs-dashboard-home .japs-dash-chart-card--overview .japs-dash-payment-legend {
+  width: 100%;
+  flex: none;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 12px 18px;
+  margin-top: 8px;
+}
+
+body.japs-dashboard-home .japs-dash-chart-card--overview .japs-dash-donut-center {
+  top: 72%;
+  width: 56%;
+  max-width: 160px;
+}
+
+body.japs-dashboard-home .japs-dash-chart-card--overview .japs-dash-donut-center__amount {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--dash-text);
+}
+
+body.japs-dashboard-home .japs-dash-chart-card--overview .japs-dash-donut-center__label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--dash-muted);
+  margin-top: 4px;
+}
+
+body.japs-dashboard-home .japs-dash-overview-footer {
+  margin-top: 12px;
+  padding-top: 14px;
+  border-top: 1px solid #f1f5f9;
+}
+
+body.japs-dashboard-home .japs-dash-overview-footer__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+body.japs-dashboard-home .japs-dash-overview-footer__label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--dash-muted);
+}
+
+body.japs-dashboard-home .japs-dash-overview-footer__value {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--dash-text);
+}
+
+body.japs-dashboard-home .japs-dash-overview-progress {
+  height: 6px;
+  border-radius: 999px;
+  background: #e8edf5;
+  overflow: hidden;
+}
+
+body.japs-dashboard-home .japs-dash-overview-progress__bar {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #3b82f6, #60a5fa);
+  transition: width 0.4s ease;
+}
+
 body.japs-dashboard-home .japs-dash-attention {
   margin-top: 28px;
 }
@@ -490,18 +693,24 @@ body.japs-dashboard-home .japs-dash-charts-row {
 body.japs-dashboard-home .japs-dash-chart-card {
   display: flex;
   flex-direction: column;
-  background: #f3f4f6 !important;
-  border: 0 !important;
-  border-radius: 14px !important;
-  padding: 18px 18px 14px !important;
-  min-height: 360px;
-  box-shadow: none !important;
+  background: #ffffff !important;
+  border: 1px solid var(--dash-border) !important;
+  border-radius: 20px !important;
+  padding: 22px 22px 18px !important;
+  min-height: 380px;
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04) !important;
+  transition: box-shadow 0.18s ease, transform 0.18s ease;
+}
+
+body.japs-dashboard-home .japs-dash-chart-card:hover {
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.08) !important;
 }
 
 body.japs-dashboard-home .japs-dash-chart-card__title {
   margin: 0;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
+  letter-spacing: -0.02em;
   color: var(--dash-text) !important;
 }
 
@@ -591,10 +800,11 @@ body.japs-dashboard-home .japs-dash-chart-card--payment .highcharts-contextbutto
 
 body.japs-dashboard-home .japs-dash-chart-card__canvas,
 body.japs-dashboard-home .zoho-dashboard__main-chart-canvas {
-  background: transparent !important;
-  border: 0 !important;
+  background: #f8fafc !important;
+  border: 1px solid #eef2f7 !important;
+  border-radius: 12px !important;
   min-height: 240px;
-  padding: 0 !important;
+  padding: 8px !important;
   flex: 1 1 auto;
 }
 
@@ -764,6 +974,10 @@ body.japs-dashboard-home .japs-dash-chart-card__footer--split {
   grid-template-columns: 1fr 1fr;
 }
 
+body.japs-dashboard-home .japs-dash-mini-stat::before {
+  display: none;
+}
+
 body.japs-dashboard-home .japs-dash-mini-stat {
   --mini-accent: #4f8fce;
   --mini-soft: #eef6fd;
@@ -774,26 +988,15 @@ body.japs-dashboard-home .japs-dash-mini-stat {
   align-items: flex-start !important;
   justify-content: space-between !important;
   gap: 12px;
-  min-height: 92px;
+  min-height: 88px;
   background: #ffffff !important;
-  border: 1px solid #e7eaf0 !important;
-  border-radius: 16px !important;
-  padding: 18px 16px 16px !important;
+  border: 1px solid #e8ecf1 !important;
+  border-radius: 14px !important;
+  padding: 16px 14px 14px !important;
   text-decoration: none !important;
-  color: #151b2b !important;
-  box-shadow: 0 2px 10px rgba(15, 20, 37, 0.045);
-  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
-}
-
-body.japs-dashboard-home .japs-dash-mini-stat::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  border-radius: 16px 16px 0 0;
-  background: var(--mini-accent);
+  color: #0f172a !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+  transition: box-shadow 0.18s ease, transform 0.18s ease, border-color 0.18s ease;
 }
 
 body.japs-dashboard-home .japs-dash-mini-stat--blue {
@@ -895,9 +1098,15 @@ body.japs-dashboard-home .zoho-dashboard__body .tw-bg-white,
 body.japs-dashboard-home .zoho-so-summary-card {
   background: #fff !important;
   border: 1px solid var(--dash-border) !important;
-  border-radius: 12px !important;
-  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04) !important;
+  border-radius: 18px !important;
+  box-shadow: 0 2px 12px rgba(15, 23, 42, 0.05) !important;
   overflow: visible !important;
+  transition: box-shadow 0.18s ease;
+}
+
+body.japs-dashboard-home .japs-dashboard-content .tw-bg-white:hover,
+body.japs-dashboard-home .zoho-so-summary-card:hover {
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.08) !important;
 }
 
 body.japs-dashboard-home .japs-dashboard-content h3,
@@ -908,4 +1117,68 @@ body.japs-dashboard-home .zoho-so-summary-card__title {
 body.japs-dashboard-home .zoho-dashboard__tabs,
 body.japs-dashboard-home .japs-dashboard-stats.zoho-dashboard__stats {
   display: none !important;
+}
+
+/* Chart period panes */
+body.japs-dashboard-home .japs-dash-chart-panes {
+  position: relative;
+  min-height: 280px;
+}
+
+body.japs-dashboard-home .japs-dash-chart-pane {
+  display: none;
+}
+
+body.japs-dashboard-home .japs-dash-chart-pane.is-active {
+  display: block;
+}
+
+/* Recent sales card */
+body.japs-dashboard-home .japs-dash-recent-card {
+  background: #fff;
+  border: 1px solid var(--dash-border);
+  border-radius: 18px;
+  box-shadow: 0 2px 12px rgba(15, 23, 42, 0.05);
+  padding: 20px 22px 16px;
+}
+
+body.japs-dashboard-home .japs-dash-recent-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+body.japs-dashboard-home .japs-dash-recent-card__title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--dash-text);
+  letter-spacing: -0.02em;
+}
+
+body.japs-dashboard-home .japs-dash-recent-card__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+body.japs-dashboard-home .japs-dash-recent-filter {
+  min-width: 160px;
+  border-radius: 10px !important;
+}
+
+body.japs-dashboard-home .japs-dash-recent-viewall {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--dash-blue);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+body.japs-dashboard-home .japs-dash-recent-viewall:hover {
+  text-decoration: underline;
+  color: #2563eb;
 }

@@ -332,6 +332,29 @@ class HomeController extends Controller
                 ->where('status', 'final')
                 ->sum('final_total');
 
+            // Period-over-period change for dashboard KPI deltas
+            $start_date = \Carbon::parse($start);
+            $end_date = \Carbon::parse($end);
+            $days = $start_date->diffInDays($end_date) + 1;
+            $prev_end = $start_date->copy()->subDay();
+            $prev_start = $prev_end->copy()->subDays($days - 1)->format('Y-m-d');
+            $prev_end_str = $prev_end->format('Y-m-d');
+
+            $prev_purchase = $this->transactionUtil->getPurchaseTotals($business_id, $prev_start, $prev_end_str, $location_id, $created_by);
+            $prev_sell = $this->transactionUtil->getSellTotals($business_id, $prev_start, $prev_end_str, $location_id, $created_by);
+            $prev_txn = $this->transactionUtil->getTransactionTotals($business_id, $transaction_types, $prev_start, $prev_end_str, $location_id, $created_by);
+            $prev_invoice_due = (float) ($prev_sell['invoice_due'] ?? 0);
+            $prev_total_sell = (float) ($prev_sell['total_sell_inc_tax'] ?? 0);
+            $prev_total_purchase = (float) ($prev_purchase['total_purchase_inc_tax'] ?? 0);
+            $prev_net = $prev_total_sell - $prev_invoice_due - (float) ($prev_txn['total_expense'] ?? 0);
+
+            $output['change_pct'] = [
+                'total_sell' => $this->percentChange($output['total_sell'], $prev_total_sell),
+                'total_purchase' => $this->percentChange($output['total_purchase'], $prev_total_purchase),
+                'invoice_due' => $this->percentChange($output['invoice_due'], $prev_invoice_due),
+                'net' => $this->percentChange($output['net'], $prev_net),
+            ];
+
             return $output;
         }
     }
@@ -866,6 +889,22 @@ class HomeController extends Controller
             'total_unread' => $total_unread,
             'notification_html' => $notification_html,
         ];
+    }
+
+    /**
+     * @param  float|int  $current
+     * @param  float|int  $previous
+     */
+    private function percentChange($current, $previous)
+    {
+        $current = (float) $current;
+        $previous = (float) $previous;
+
+        if ($previous == 0.0) {
+            return $current > 0 ? 100.0 : 0.0;
+        }
+
+        return round((($current - $previous) / abs($previous)) * 100, 1);
     }
 
     private function __chartOptions($title)
