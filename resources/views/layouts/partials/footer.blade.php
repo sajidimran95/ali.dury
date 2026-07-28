@@ -11,9 +11,21 @@
   display: flex !important;
   flex-direction: column !important;
 }
+/* Contain Bootstrap floats so the footer cannot climb into mid-page gaps */
+#scrollable-container > .content,
+#scrollable-container > .content-header,
+#scrollable-container > section {
+  flex: 0 0 auto;
+  width: 100%;
+  display: flow-root;
+}
 .japs-page-footer {
   margin-top: auto;
-  background: transparent;
+  flex-shrink: 0;
+  width: 100%;
+  position: relative;
+  z-index: 2;
+  background: #f7f9fc;
   border-top: 1px solid #e2e8f0;
 }
 .japs-page-footer__inner {

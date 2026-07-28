@@ -153,7 +153,7 @@
             <div class="col-sm-8">
               <div class="form-group">
                 {!! Form::label('product_description', __('lang_v1.product_description') . ':') !!}
-                  {!! Form::textarea('product_description', $product->product_description, ['class' => 'form-control']); !!}
+                  {!! Form::textarea('product_description', $product->product_description, ['class' => 'form-control', 'id' => 'product_description', 'autocomplete' => 'off']); !!}
               </div>
             </div>
             <div class="col-sm-4">
@@ -164,6 +164,7 @@
               </div>
             </div>
             </div>
+            <div class="row">
             <div class="col-sm-4">
               <div class="form-group">
                 {!! Form::label('product_brochure', __('lang_v1.product_brochure') . ':') !!}
@@ -176,6 +177,7 @@
                     </p>
                 </small>
               </div>
+            </div>
             </div>
     @endcomponent
 

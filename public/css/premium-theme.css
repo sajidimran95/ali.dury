@@ -116,6 +116,27 @@ body.zoho-theme:not(.pos-sale-theme):not(.lockscreen) .zoho-app-body {
 body.zoho-theme:not(.pos-sale-theme):not(.lockscreen) .zoho-main-column,
 body.zoho-theme:not(.pos-sale-theme):not(.lockscreen) #scrollable-container {
     background: #f7f9fc !important;
+    isolation: isolate;
+    position: relative;
+    z-index: 1;
+}
+
+/* Keep page footer below content — never paint through floated form gaps */
+body.zoho-theme:not(.pos-sale-theme) #scrollable-container > .content,
+body.zoho-theme:not(.pos-sale-theme) #scrollable-container > .content-header,
+body.zoho-theme:not(.pos-sale-theme) #scrollable-container > section {
+    flex: 0 0 auto;
+    width: 100%;
+    display: flow-root;
+}
+
+body.zoho-theme:not(.pos-sale-theme) .japs-page-footer {
+    margin-top: auto;
+    flex-shrink: 0;
+    width: 100%;
+    position: relative;
+    z-index: 2;
+    background: #f7f9fc !important;
 }
 
 /* ── Focus / a11y ── */
@@ -2847,13 +2868,59 @@ body.zoho-theme:not(.pos-sale-theme) .form-group > label + .text-info {
     line-height: 1;
 }
 
-/* Controls always start on a full-width row under the label line */
-body.zoho-theme:not(.pos-sale-theme) .form-group > .form-control,
+/* Controls always start on a full-width row under the label line.
+   Do NOT force display on textareas — TinyMCE must be able to hide its source field. */
+body.zoho-theme:not(.pos-sale-theme) .form-group > input.form-control,
+body.zoho-theme:not(.pos-sale-theme) .form-group > select.form-control,
 body.zoho-theme:not(.pos-sale-theme) .form-group > .select2-container,
 body.zoho-theme:not(.pos-sale-theme) .form-group > select + .select2-container {
     display: block !important;
     width: 100% !important;
     clear: both;
+}
+
+body.zoho-theme:not(.pos-sale-theme) .form-group > textarea.form-control {
+    width: 100% !important;
+    clear: both;
+}
+
+/* TinyMCE: hide source textarea + keep editor opaque so page/sidebar text cannot bleed through */
+body.zoho-theme:not(.pos-sale-theme) .form-group > textarea.form-control:has(+ .tox-tinymce),
+body.zoho-theme:not(.pos-sale-theme) textarea.form-control:has(+ .tox-tinymce) {
+    display: none !important;
+    visibility: hidden !important;
+    position: absolute !important;
+    height: 0 !important;
+    min-height: 0 !important;
+    width: 0 !important;
+    max-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    overflow: hidden !important;
+}
+
+body.zoho-theme:not(.pos-sale-theme) .tox-tinymce {
+    border: 1px solid var(--p-line) !important;
+    border-radius: 10px !important;
+    overflow: hidden !important;
+    background: #fff !important;
+    box-shadow: var(--p-shadow-sm);
+}
+
+body.zoho-theme:not(.pos-sale-theme) .tox .tox-edit-area,
+body.zoho-theme:not(.pos-sale-theme) .tox .tox-edit-area__iframe,
+body.zoho-theme:not(.pos-sale-theme) .tox .tox-sidebar-wrap {
+    background: #fff !important;
+}
+
+body.zoho-theme:not(.pos-sale-theme) .tox .tox-editor-header,
+body.zoho-theme:not(.pos-sale-theme) .tox .tox-menubar,
+body.zoho-theme:not(.pos-sale-theme) .tox .tox-toolbar,
+body.zoho-theme:not(.pos-sale-theme) .tox .tox-toolbar__primary {
+    background: #fff !important;
 }
 
 body.zoho-theme:not(.pos-sale-theme) .form-group > .input-group {

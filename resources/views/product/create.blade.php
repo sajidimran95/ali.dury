@@ -153,7 +153,7 @@
                         {!! Form::label('product_description', __('lang_v1.product_description') . ':') !!}
                     </div> 
                 </div>
-                {!! Form::textarea('product_description', !empty($duplicate_product->product_description) ? $duplicate_product->product_description : null, ['class' => 'form-control']); !!}
+                {!! Form::textarea('product_description', !empty($duplicate_product->product_description) ? $duplicate_product->product_description : null, ['class' => 'form-control', 'id' => 'product_description', 'autocomplete' => 'off']); !!}
             </div>
         </div>
         <div class="col-sm-4">
@@ -172,16 +172,18 @@
             </div>
         </div>
     </div>
-    <div class="col-sm-4">
-        <div class="form-group">
-            {!! Form::label('product_brochure', __('lang_v1.product_brochure') . ':') !!}
-            {!! Form::file('product_brochure', ['id' => 'product_brochure', 'accept' => implode(',', array_keys(config('constants.document_upload_mimes_types')))]); !!}
-            <small>
-                <p class="help-block">
-                    @lang('purchase.max_file_size', ['size' => (config('constants.document_size_limit') / 1000000)])
-                    @includeIf('components.document_help_text')
-                </p>
-            </small>
+    <div class="row">
+        <div class="col-sm-4">
+            <div class="form-group">
+                {!! Form::label('product_brochure', __('lang_v1.product_brochure') . ':') !!}
+                {!! Form::file('product_brochure', ['id' => 'product_brochure', 'accept' => implode(',', array_keys(config('constants.document_upload_mimes_types')))]); !!}
+                <small>
+                    <p class="help-block">
+                        @lang('purchase.max_file_size', ['size' => (config('constants.document_size_limit') / 1000000)])
+                        @includeIf('components.document_help_text')
+                    </p>
+                </small>
+            </div>
         </div>
     </div>
     @endcomponent
