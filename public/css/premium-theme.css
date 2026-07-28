@@ -1631,19 +1631,24 @@ body.zoho-theme:not(.pos-sale-theme) .select2-container--default .select2-select
 body.zoho-theme:not(.pos-sale-theme) .select2-container--default .select2-selection--multiple {
     border: 1px solid var(--p-line-strong) !important;
     border-radius: 10px !important;
-    min-height: 38px !important;
+    min-height: 40px !important;
+    height: 40px !important;
     background: #fff !important;
     box-shadow: var(--p-shadow-sm);
 }
 
+body.zoho-theme:not(.pos-sale-theme) .select2-container--default .select2-selection--multiple {
+    height: auto !important;
+}
+
 body.zoho-theme:not(.pos-sale-theme) .select2-container--default .select2-selection--single .select2-selection__rendered {
     color: var(--p-ink) !important;
-    line-height: 36px !important;
+    line-height: 38px !important;
     padding-left: 12px !important;
 }
 
 body.zoho-theme:not(.pos-sale-theme) .select2-container--default .select2-selection--single .select2-selection__arrow {
-    height: 36px !important;
+    height: 38px !important;
 }
 
 body.zoho-theme:not(.pos-sale-theme) .select2-container--default.select2-container--focus .select2-selection--single,
@@ -2818,14 +2823,88 @@ body.zoho-theme:not(.pos-sale-theme) .form-control:focus {
     box-shadow: var(--p-focus) !important;
 }
 
+/* Labels stay inline so @show_tooltip icons sit on the same row (not between label & field) */
 body.zoho-theme:not(.pos-sale-theme) .form-group > label:not(.radio-inline):not(.checkbox-inline),
 body.zoho-theme:not(.pos-sale-theme) .control-label {
-    display: block;
+    display: inline-flex !important;
+    align-items: center;
     color: #475569 !important;
     font-size: 12.5px !important;
     font-weight: 650 !important;
     margin-bottom: 6px !important;
     letter-spacing: 0.01em;
+    line-height: 1.25;
+    min-height: 16px;
+}
+
+body.zoho-theme:not(.pos-sale-theme) .form-group > label + .fa-info-circle,
+body.zoho-theme:not(.pos-sale-theme) .form-group > label + i.hover-q,
+body.zoho-theme:not(.pos-sale-theme) .form-group > label + .text-info {
+    display: inline-block;
+    margin-left: 6px;
+    margin-bottom: 6px;
+    vertical-align: middle;
+    line-height: 1;
+}
+
+/* Controls always start on a full-width row under the label line */
+body.zoho-theme:not(.pos-sale-theme) .form-group > .form-control,
+body.zoho-theme:not(.pos-sale-theme) .form-group > .select2-container,
+body.zoho-theme:not(.pos-sale-theme) .form-group > select + .select2-container {
+    display: block !important;
+    width: 100% !important;
+    clear: both;
+}
+
+body.zoho-theme:not(.pos-sale-theme) .form-group > .input-group {
+    display: table !important;
+    width: 100% !important;
+    clear: both;
+}
+
+body.zoho-theme:not(.pos-sale-theme) .form-group > select.select2 {
+    width: 100% !important;
+}
+
+/* Checkbox-only groups: skip spacer <br>, align with sibling field controls */
+body.zoho-theme:not(.pos-sale-theme) .form-group > br {
+    display: none;
+}
+
+body.zoho-theme:not(.pos-sale-theme) .form-group:has(> label .input-icheck),
+body.zoho-theme:not(.pos-sale-theme) .form-group:has(> label input[type="checkbox"]) {
+    padding-top: 22px;
+}
+
+body.zoho-theme:not(.pos-sale-theme) .form-group:has(> label .input-icheck) > label,
+body.zoho-theme:not(.pos-sale-theme) .form-group:has(> label input[type="checkbox"]) > label {
+    display: inline-flex !important;
+    align-items: center;
+    min-height: 40px;
+    margin-bottom: 0 !important;
+    font-weight: 650 !important;
+}
+
+body.zoho-theme:not(.pos-sale-theme) .input-group {
+    display: table;
+    width: 100%;
+}
+
+body.zoho-theme:not(.pos-sale-theme) .input-group .form-control {
+    border-radius: 10px 0 0 10px !important;
+}
+
+body.zoho-theme:not(.pos-sale-theme) .input-group .select2-container {
+    display: table-cell !important;
+    vertical-align: middle;
+    width: 100% !important;
+    float: none !important;
+}
+
+body.zoho-theme:not(.pos-sale-theme) .input-group .select2-container--default .select2-selection--single {
+    border-radius: 10px 0 0 10px !important;
+    height: 40px !important;
+    min-height: 40px !important;
 }
 
 body.zoho-theme:not(.pos-sale-theme) .input-group-addon {
@@ -2833,11 +2912,23 @@ body.zoho-theme:not(.pos-sale-theme) .input-group-addon {
     border-color: var(--p-line) !important;
     color: var(--p-muted) !important;
     min-width: 40px;
+    height: 40px;
+    vertical-align: middle;
+}
+
+body.zoho-theme:not(.pos-sale-theme) .input-group-btn {
+    width: 1%;
+    vertical-align: middle;
+    white-space: nowrap;
 }
 
 body.zoho-theme:not(.pos-sale-theme) .input-group-btn .btn {
     height: 40px;
+    line-height: 1;
+    padding: 0 12px;
     border-radius: 0 10px 10px 0 !important;
+    border-color: var(--p-line) !important;
+    box-sizing: border-box;
 }
 
 body.zoho-theme:not(.pos-sale-theme) .input-group-btn:first-child .btn {

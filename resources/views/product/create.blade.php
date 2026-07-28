@@ -116,10 +116,10 @@
 
         <div class="col-sm-4">
             <div class="form-group">
-                <br>
                 <label>
                     {!! Form::checkbox('enable_stock', 1, !empty($duplicate_product) ? $duplicate_product->enable_stock : true, ['class' => 'input-icheck', 'id' => 'enable_stock']); !!} <strong>@lang('product.manage_stock')</strong>
-                </label>@show_tooltip(__('tooltip.enable_stock')) <p class="help-block"><i>@lang('product.enable_stock_help')</i></p>
+                </label>@show_tooltip(__('tooltip.enable_stock'))
+                <p class="help-block"><i>@lang('product.enable_stock_help')</i></p>
             </div>
         </div>
         <div class="col-sm-4 @if(!empty($duplicate_product) && $duplicate_product->enable_stock == 0) hide @endif" id="alert_quantity_div">
