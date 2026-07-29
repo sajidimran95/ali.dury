@@ -180,7 +180,7 @@ class HomeController extends Controller
             $fy_months[] = $month_year;
 
             $labels[] = \Carbon::createFromFormat('m-Y', $month_year)
-                            ->format('M-Y');
+                            ->format('M');
             $date = strtotime('+1 month', $date);
 
             $total_sell_in_month_year = $sells_this_fy->where('yearmonth', $month_year)->sum('total_sells');
@@ -217,18 +217,19 @@ class HomeController extends Controller
         $sells_chart_2_options['chart']['type'] = 'column';
         $sells_chart_2_options['colors'] = ['#3b82f6'];
         $sells_chart_2_options['yAxis']['title']['text'] = null;
-        $sells_chart_2_options['yAxis']['gridLineColor'] = '#e5e7eb';
+        $sells_chart_2_options['yAxis']['gridLineColor'] = '#eef2f7';
         $sells_chart_2_options['yAxis']['gridLineDashStyle'] = 'Solid';
         $sells_chart_2_options['yAxis']['gridLineWidth'] = 1;
         $sells_chart_2_options['yAxis']['min'] = 0;
+        $sells_chart_2_options['xAxis']['labels']['rotation'] = 0;
         $sells_chart_2_options['legend']['enabled'] = false;
         $sells_chart_2_options['plotOptions'] = [
             'column' => [
                 'borderWidth' => 0,
-                'borderRadius' => 3,
+                'borderRadius' => 8,
                 'color' => '#3b82f6',
-                'pointPadding' => 0.15,
-                'groupPadding' => 0.1,
+                'pointPadding' => 0.18,
+                'groupPadding' => 0.08,
             ],
             'series' => [
                 'type' => 'column',

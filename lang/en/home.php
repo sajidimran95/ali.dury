@@ -43,4 +43,6 @@ return [
     'revenue_insights' => 'Revenue Insights',
     'sales_overview' => 'Sales Overview',
     'recent_sales' => 'Recent Sales',
+    'monthly' => 'Monthly',
+    'yearly' => 'Yearly',
 ];

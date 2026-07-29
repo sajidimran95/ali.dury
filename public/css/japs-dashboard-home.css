@@ -584,6 +584,35 @@ body.japs-dashboard-home .japs-dash-period-switch__btn.is-active {
   box-shadow: 0 2px 8px rgba(15, 23, 42, 0.15);
 }
 
+body.japs-dashboard-home .japs-dash-revenue-legend {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 14px;
+  margin: 0 0 6px;
+  flex-wrap: wrap;
+}
+
+body.japs-dashboard-home .japs-dash-revenue-legend__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--dash-muted);
+}
+
+body.japs-dashboard-home .japs-dash-revenue-legend__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+body.japs-dashboard-home .japs-dash-revenue-legend__dot--earn {
+  background: #3b82f6;
+}
+
 body.japs-dashboard-home .japs-dash-chart-card--revenue .japs-dash-chart-card__canvas {
   background: transparent !important;
   border: none !important;
@@ -596,36 +625,39 @@ body.japs-dashboard-home .japs-dash-chart-card--overview .japs-dash-payment-mix 
   gap: 0;
 }
 
-body.japs-dashboard-home .japs-dash-chart-card--overview .japs-dash-payment-chart-wrap {
-  min-height: 200px;
+body.japs-dashboard-home .japs-dash-chart-card--overview .japs-dash-payment-chart-wrap,
+body.japs-dashboard-home .japs-dash-gauge-wrap {
+  min-height: 170px;
   position: relative;
+  width: 100%;
+  margin: 0 auto;
 }
 
-body.japs-dashboard-home .japs-dash-chart-card--overview .japs-dash-payment-chart {
+body.japs-dashboard-home .japs-dash-chart-card--overview .japs-dash-payment-chart,
+body.japs-dashboard-home .japs-dash-gauge-chart {
   min-height: 200px;
 }
 
 body.japs-dashboard-home .japs-dash-chart-card--overview .japs-dash-payment-legend {
-  width: 100%;
-  flex: none;
-  flex-direction: row;
-  flex-wrap: wrap;
-  gap: 12px 18px;
-  margin-top: 8px;
+  display: none !important;
 }
 
-body.japs-dashboard-home .japs-dash-chart-card--overview .japs-dash-donut-center {
-  top: 50%;
-  width: 52%;
-  max-width: 150px;
+body.japs-dashboard-home .japs-dash-chart-card--overview .japs-dash-donut-center,
+body.japs-dashboard-home .japs-dash-gauge-center {
+  left: 50%;
+  top: 72%;
+  transform: translate(-50%, -50%);
+  width: auto;
+  max-width: none;
+  z-index: 2;
 }
 
 body.japs-dashboard-home .japs-dash-chart-card--overview .japs-dash-donut-center__amount {
-  font-size: 26px;
+  font-size: 28px;
   font-weight: 800;
   letter-spacing: -0.03em;
   color: var(--dash-text);
-  line-height: 1.15;
+  line-height: 1.1;
 }
 
 body.japs-dashboard-home .japs-dash-chart-card--overview .japs-dash-donut-center__label {
@@ -636,9 +668,19 @@ body.japs-dashboard-home .japs-dash-chart-card--overview .japs-dash-donut-center
 }
 
 body.japs-dashboard-home .japs-dash-overview-footer {
-  margin-top: 12px;
+  margin-top: 8px;
   padding-top: 14px;
   border-top: 1px solid #f1f5f9;
+}
+
+body.japs-dashboard-home .japs-dash-overview-footer--split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+body.japs-dashboard-home .japs-dash-overview-footer__col {
+  min-width: 0;
 }
 
 body.japs-dashboard-home .japs-dash-overview-footer__row {
@@ -650,19 +692,24 @@ body.japs-dashboard-home .japs-dash-overview-footer__row {
 }
 
 body.japs-dashboard-home .japs-dash-overview-footer__label {
+  display: block;
   font-size: 12px;
   font-weight: 500;
   color: var(--dash-muted);
+  margin-bottom: 4px;
 }
 
 body.japs-dashboard-home .japs-dash-overview-footer__value {
-  font-size: 14px;
+  display: block;
+  font-size: 15px;
   font-weight: 700;
   color: var(--dash-text);
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
 }
 
 body.japs-dashboard-home .japs-dash-overview-progress {
-  height: 6px;
+  height: 4px;
   border-radius: 999px;
   background: #e8edf5;
   overflow: hidden;
@@ -671,8 +718,16 @@ body.japs-dashboard-home .japs-dash-overview-progress {
 body.japs-dashboard-home .japs-dash-overview-progress__bar {
   height: 100%;
   border-radius: 999px;
-  background: linear-gradient(90deg, #3b82f6, #60a5fa);
+  background: #3b82f6;
   transition: width 0.4s ease;
+}
+
+body.japs-dashboard-home .japs-dash-overview-progress--muted {
+  background: #eef2f7;
+}
+
+body.japs-dashboard-home .japs-dash-overview-progress__bar--muted {
+  background: #cbd5e1;
 }
 
 body.japs-dashboard-home .japs-dash-attention {
@@ -1192,8 +1247,16 @@ body.japs-dashboard-home .japs-dash-chart-pane {
   display: none;
 }
 
+body.japs-dashboard-home .japs-dash-chart-pane[hidden] {
+  display: none !important;
+}
+
 body.japs-dashboard-home .japs-dash-chart-pane.is-active {
-  display: block;
+  display: block !important;
+}
+
+body.japs-dashboard-home .japs-dash-chart-pane.is-active[hidden] {
+  display: block !important;
 }
 
 /* Recent sales card */

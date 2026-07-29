@@ -255,6 +255,10 @@ function update_statistics(start, end) {
             }
 
             $('.japs-overview-sales-total').text(__currency_trans_from_en(data.total_sell, true));
+            $('.japs-overview-target-total').text(__currency_trans_from_en(data.invoice_due, true));
+            window.japsSalesGrowthPct = data.change_pct && typeof data.change_pct.total_sell === 'number'
+                ? data.change_pct.total_sell
+                : null;
 
             // assign tooltip total_sell_return 
             var lang = $('#total_srp').data('value');
@@ -305,24 +309,25 @@ window.japsLoadPaymentMethodMix = function(start, end, locationId) {
             window.japsPaymentMixChart = null;
         }
 
-        var $legend = $('#payment_method_mix_legend');
         var $center = $('#payment_method_mix_center');
         var $centerAmount = $center.find('.japs-dash-donut-center__amount');
         var $centerLabel = $center.find('.japs-dash-donut-center__label');
-        $legend.empty();
 
         if (!data.has_data) {
             $('#payment_method_mix_empty').show();
             $('.japs-dash-payment-mix').hide();
             $center.hide();
+            $('#payment_overview_footer').hide();
             return;
         }
 
         var totalAmountText = __currency_trans_from_en(data.total || 0, true);
+        var growthPct = typeof window.japsSalesGrowthPct === 'number' ? window.japsSalesGrowthPct : null;
         var topItem = (data.series || [])[0];
         var topPct = data.total > 0 && topItem ? Math.round((topItem.amount / data.total) * 1000) / 10 : 0;
-        var centerDefaultAmount = (Math.round(topPct * 10) / 10) + '%';
-        var centerDefaultLabel = topItem ? topItem.label : ($centerLabel.data('default-label') || 'Total Sales');
+        var centerPct = growthPct !== null ? (Math.round(Math.abs(growthPct) * 10) / 10) : topPct;
+        var centerDefaultAmount = centerPct + '%';
+        var centerDefaultLabel = $centerLabel.data('default-label') || 'Sales Growth';
 
         $('#payment_method_mix_empty').hide();
         $('.japs-dash-payment-mix').show();
@@ -331,33 +336,38 @@ window.japsLoadPaymentMethodMix = function(start, end, locationId) {
         $center.show();
         $('#payment_overview_footer').show();
         $('.japs-overview-sales-total').text(totalAmountText);
-        $('#payment_overview_progress').css('width', Math.min(100, Math.max(topPct, 8)) + '%');
+        $('#payment_overview_progress').css('width', Math.min(100, Math.max(centerPct, 8)) + '%');
 
-        var colors = ['#3b82f6', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
-        var pieData = (data.series || []).map(function(item, idx) {
-            var color = colors[idx % colors.length];
-            var pct = data.total > 0 ? Math.round((item.amount / data.total) * 100) : 0;
-            $legend.append(
-                '<li class="japs-dash-payment-legend__item">' +
-                    '<span class="japs-dash-payment-legend__swatch" style="background:' + color + '"></span>' +
-                    '<span class="japs-dash-payment-legend__label">' + $('<div>').text(item.label).html() + '</span>' +
-                    '<span class="japs-dash-payment-legend__pct">' + pct + '%</span>' +
-                '</li>'
-            );
-            return {
-                name: item.label,
-                y: item.amount,
-                color: color
-            };
-        });
+        var dueText = $('.invoice_due').first().text();
+        if (dueText && dueText.indexOf('fa-spin') === -1) {
+            $('.japs-overview-target-total').text(dueText);
+        }
+        var targetPct = Math.min(100, Math.max(topPct, 12));
+        $('#payment_overview_target_progress').css('width', Math.max(targetPct, 8) + '%');
+
+        // Divided semi-gauge (Salezy): equal slots with wider gaps
+        var segmentCount = 24;
+        var pieData = [];
+        for (var i = 0; i < segmentCount; i++) {
+            var t = segmentCount <= 1 ? 0 : i / (segmentCount - 1);
+            // Left = strong blue, right = almost white blue
+            var r = Math.round(29 + (239 - 29) * t);
+            var g = Math.round(78 + (246 - 78) * t);
+            var b = Math.round(216 + (255 - 216) * t);
+            pieData.push({
+                name: centerDefaultLabel,
+                y: 1,
+                color: 'rgb(' + r + ',' + g + ',' + b + ')'
+            });
+        }
 
         window.japsPaymentMixChart = Highcharts.chart('payment_method_mix_chart', {
             chart: {
                 type: 'pie',
                 backgroundColor: 'transparent',
-                height: 220,
-                spacing: [8, 8, 8, 8],
-                margin: [8, 8, 8, 8]
+                height: 210,
+                spacing: [4, 8, 0, 8],
+                margin: [8, 8, 0, 8]
             },
             title: { text: null },
             subtitle: { text: null },
@@ -367,9 +377,7 @@ window.japsLoadPaymentMethodMix = function(start, end, locationId) {
                 enabled: true,
                 fallbackToExportServer: false,
                 buttons: {
-                    contextButton: {
-                        enabled: false
-                    }
+                    contextButton: { enabled: false }
                 }
             },
             tooltip: {
@@ -380,31 +388,29 @@ window.japsLoadPaymentMethodMix = function(start, end, locationId) {
                 shadow: false,
                 style: { color: '#fff', fontSize: '12px' },
                 pointFormatter: function() {
-                    var pct = data.total > 0 ? Math.round((this.y / data.total) * 100) : 0;
-                    return '<b>' + this.name + '</b><br/>' +
-                        __currency_trans_from_en(this.y, true) +
-                        ' (' + pct + '%)';
+                    return '<b>' + centerDefaultLabel + '</b><br/>' + centerDefaultAmount;
                 }
             },
             plotOptions: {
                 pie: {
-                    innerSize: '68%',
-                    size: '88%',
-                    center: ['50%', '50%'],
-                    borderWidth: pieData.length > 1 ? 3 : 0,
+                    startAngle: -90,
+                    endAngle: 90,
+                    center: ['50%', '88%'],
+                    size: '160%',
+                    innerSize: '70%',
+                    borderWidth: 7,
                     borderColor: '#ffffff',
                     slicedOffset: 0,
                     dataLabels: { enabled: false },
                     showInLegend: false,
                     states: {
-                        hover: { brightness: 0.04 }
+                        hover: { brightness: 0.03, halo: 0 }
                     },
                     point: {
                         events: {
                             mouseOver: function() {
-                                var pct = data.total > 0 ? Math.round((this.y / data.total) * 1000) / 10 : 0;
-                                $centerAmount.text(pct + '%');
-                                $centerLabel.text(this.name);
+                                $centerAmount.text(centerDefaultAmount);
+                                $centerLabel.text(centerDefaultLabel);
                             },
                             mouseOut: function() {
                                 $centerAmount.text(centerDefaultAmount);
@@ -415,22 +421,21 @@ window.japsLoadPaymentMethodMix = function(start, end, locationId) {
                 }
             },
             series: [{
-                name: 'Payment',
+                name: 'Sales',
                 type: 'pie',
                 data: pieData
             }]
         });
 
-        // Align 3-line menu with Sales card header (top-right)
         (function bindPaymentMixHeaderMenu() {
             var $btn = $('#payment_method_mix_menu_btn');
-            var $menu = $('#payment_method_mix_export_menu');
+            var $menu = $('#payment_overview_export_menu');
             if (!$btn.length) {
                 return;
             }
             if (!$menu.length) {
                 $menu = $(
-                    '<div id="payment_method_mix_export_menu" class="japs-dash-chart-card__export-menu" hidden>' +
+                    '<div id="payment_overview_export_menu" class="japs-dash-chart-card__export-menu" hidden>' +
                         '<button type="button" data-export="print">Print chart</button>' +
                         '<button type="button" data-export="image/png">Download PNG image</button>' +
                         '<button type="button" data-export="image/jpeg">Download JPEG image</button>' +
@@ -482,7 +487,7 @@ window.japsLoadPaymentMethodMix = function(start, end, locationId) {
             $(document)
                 .off('click.japsPayMixMenu')
                 .on('click.japsPayMixMenu', function(e) {
-                    if ($(e.target).closest('#payment_method_mix_menu_btn, #payment_method_mix_export_menu').length) {
+                    if ($(e.target).closest('#payment_method_mix_menu_btn, #payment_overview_export_menu').length) {
                         return;
                     }
                     closeMenu();
