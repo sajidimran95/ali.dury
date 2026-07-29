@@ -147,10 +147,11 @@ class HomeController extends Controller
         $sells_chart_1_options['plotOptions'] = [
             'column' => [
                 'borderWidth' => 0,
-                'borderRadius' => 3,
+                'borderRadius' => 14,
                 'color' => '#3b82f6',
-                'pointPadding' => 0.15,
-                'groupPadding' => 0.1,
+                'pointPadding' => 0.01,
+                'groupPadding' => 0.02,
+                'maxPointWidth' => 58,
             ],
             'series' => [
                 'type' => 'column',
@@ -226,10 +227,11 @@ class HomeController extends Controller
         $sells_chart_2_options['plotOptions'] = [
             'column' => [
                 'borderWidth' => 0,
-                'borderRadius' => 8,
+                'borderRadius' => 14,
                 'color' => '#3b82f6',
-                'pointPadding' => 0.18,
-                'groupPadding' => 0.08,
+                'pointPadding' => 0.01,
+                'groupPadding' => 0.02,
+                'maxPointWidth' => 58,
             ],
             'series' => [
                 'type' => 'column',
@@ -849,6 +851,90 @@ class HomeController extends Controller
             'series' => $series,
             'total' => $grand_total,
             'has_data' => $grand_total > 0,
+        ]);
+    }
+
+    /**
+     * Revenue Insights chart data.
+     * Monthly tab = last 30 days (daily bars).
+     * Yearly tab = current financial year (month bars).
+     */
+    public function getRevenueInsights()
+    {
+        if (! request()->ajax()) {
+            abort(404);
+        }
+
+        if (! auth()->user()->can('dashboard.data')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $location_id = request()->input('location_id');
+        $business_id = request()->session()->get('user.business_id');
+        $fy = $this->businessUtil->getCurrentFinancialYear($business_id);
+
+        $dailyEnd = \Carbon::now()->endOfDay();
+        $dailyStart = \Carbon::now()->subDays(29)->startOfDay();
+        $fyStart = \Carbon::parse($fy['start'])->startOfDay();
+        $fyEnd = \Carbon::parse($fy['end'])->endOfDay();
+
+        // Pull enough sell rows for both views in one query
+        $rangeStart = $fyStart->lt($dailyStart) ? $fyStart->copy() : $dailyStart->copy();
+        $rangeEnd = $fyEnd->gt($dailyEnd) ? $fyEnd->copy() : $dailyEnd->copy();
+
+        $sells = $this->transactionUtil->getSellsCurrentFy(
+            $business_id,
+            $rangeStart->format('Y-m-d').' 00:00:00',
+            $rangeEnd->format('Y-m-d').' 23:59:59'
+        );
+
+        if (! empty($location_id)) {
+            $sells = $sells->where('location_id', (int) $location_id)->values();
+        }
+
+        $byDate = [];
+        $byMonth = [];
+        foreach ($sells as $row) {
+            $d = ! empty($row->date) ? \Carbon::parse($row->date)->format('Y-m-d') : null;
+            $ym = $row->yearmonth ?? (! empty($d) ? \Carbon::parse($d)->format('m-Y') : null);
+            $amount = (float) ($row->total_sells ?? 0);
+            if ($d) {
+                $byDate[$d] = ($byDate[$d] ?? 0) + $amount;
+            }
+            if ($ym) {
+                $byMonth[$ym] = ($byMonth[$ym] ?? 0) + $amount;
+            }
+        }
+
+        // Monthly tab: last 30 days
+        $daily_labels = [];
+        $daily_values = [];
+        $cursor = $dailyStart->copy();
+        while ($cursor->lte($dailyEnd->copy()->startOfDay())) {
+            $date = $cursor->format('Y-m-d');
+            $daily_labels[] = $cursor->format('M j');
+            $daily_values[] = (float) ($byDate[$date] ?? 0);
+            $cursor->addDay();
+        }
+
+        // Yearly tab: financial year months
+        $monthly_labels = [];
+        $monthly_values = [];
+        $monthCursor = $fyStart->copy()->startOfMonth();
+        $monthEnd = $fyEnd->copy()->startOfMonth();
+        while ($monthCursor->lte($monthEnd)) {
+            $ym = $monthCursor->format('m-Y');
+            $monthly_labels[] = $monthCursor->format('M');
+            $monthly_values[] = (float) ($byMonth[$ym] ?? 0);
+            $monthCursor->addMonth();
+        }
+
+        return response()->json([
+            'daily_labels' => $daily_labels,
+            'daily_values' => $daily_values,
+            'monthly_labels' => $monthly_labels,
+            'monthly_values' => $monthly_values,
+            'has_data' => (array_sum($daily_values) > 0) || (array_sum($monthly_values) > 0),
         ]);
     }
 

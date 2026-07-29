@@ -620,22 +620,47 @@ body.japs-dashboard-home .japs-dash-chart-card--revenue .japs-dash-chart-card__c
 }
 
 body.japs-dashboard-home .japs-dash-chart-card--overview .japs-dash-payment-mix {
+  flex: 1 1 auto;
+  display: flex;
   flex-direction: column;
   align-items: stretch;
   gap: 0;
+  min-height: 0;
 }
 
 body.japs-dashboard-home .japs-dash-chart-card--overview .japs-dash-payment-chart-wrap,
 body.japs-dashboard-home .japs-dash-gauge-wrap {
-  min-height: 170px;
+  min-height: 260px;
   position: relative;
   width: 100%;
+  max-width: 340px;
   margin: 0 auto;
+  flex: 1 1 auto;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  z-index: 1;
 }
 
 body.japs-dashboard-home .japs-dash-chart-card--overview .japs-dash-payment-chart,
 body.japs-dashboard-home .japs-dash-gauge-chart {
-  min-height: 200px;
+  min-height: 280px;
+  width: 100%;
+  height: 280px;
+  flex: 0 0 auto;
+  z-index: 1 !important;
+}
+
+body.japs-dashboard-home .japs-dash-gauge-svg {
+  display: block;
+  width: 100%;
+  height: 280px;
+  min-height: 280px;
+  overflow: visible;
+  margin-top: 0;
+  pointer-events: none;
+  position: relative;
+  z-index: 1;
 }
 
 body.japs-dashboard-home .japs-dash-chart-card--overview .japs-dash-payment-legend {
@@ -644,27 +669,21 @@ body.japs-dashboard-home .japs-dash-chart-card--overview .japs-dash-payment-lege
 
 body.japs-dashboard-home .japs-dash-chart-card--overview .japs-dash-donut-center,
 body.japs-dashboard-home .japs-dash-gauge-center {
-  left: 50%;
-  top: 72%;
-  transform: translate(-50%, -50%);
-  width: auto;
-  max-width: none;
-  z-index: 2;
+  display: none !important;
 }
 
-body.japs-dashboard-home .japs-dash-chart-card--overview .japs-dash-donut-center__amount {
-  font-size: 28px;
-  font-weight: 800;
-  letter-spacing: -0.03em;
-  color: var(--dash-text);
-  line-height: 1.1;
+body.japs-dashboard-home .japs-dash-chart-card--overview {
+  min-height: 440px;
+  padding: 16px 14px 14px !important;
 }
 
-body.japs-dashboard-home .japs-dash-chart-card--overview .japs-dash-donut-center__label {
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--dash-muted);
-  margin-top: 4px;
+body.japs-dashboard-home .japs-dash-chart-card--overview .japs-dash-payment-body {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  padding-top: 0;
+  min-height: 0;
 }
 
 body.japs-dashboard-home .japs-dash-overview-footer {
@@ -794,7 +813,7 @@ body.japs-dashboard-home .japs-dash-attention__loading {
 /* ── Charts ── */
 body.japs-dashboard-home .japs-dash-charts-row {
   display: grid;
-  grid-template-columns: 1.7fr 1fr;
+  grid-template-columns: minmax(0, 2.2fr) minmax(280px, 0.95fr);
   gap: 16px;
   margin-top: 24px;
   align-items: stretch;
@@ -828,6 +847,14 @@ body.japs-dashboard-home .japs-dash-chart-card__title {
   font-weight: 700;
   letter-spacing: -0.02em;
   color: var(--dash-text) !important;
+}
+
+body.japs-dashboard-home .japs-dash-overview-period {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--dash-muted);
 }
 
 body.japs-dashboard-home .japs-dash-chart-card__header {
@@ -1240,7 +1267,7 @@ body.japs-dashboard-home .japs-dashboard-stats.zoho-dashboard__stats {
 /* Chart period panes */
 body.japs-dashboard-home .japs-dash-chart-panes {
   position: relative;
-  min-height: 280px;
+  min-height: 300px;
 }
 
 body.japs-dashboard-home .japs-dash-chart-pane {

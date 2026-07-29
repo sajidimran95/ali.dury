@@ -357,9 +357,10 @@
                             plotOptions: {
                                 column: {
                                     borderWidth: 0,
-                                    borderRadius: 8,
-                                    pointPadding: 0.18,
-                                    groupPadding: 0.08,
+                                    borderRadius: 14,
+                                    pointPadding: 0.01,
+                                    groupPadding: 0.02,
+                                    maxPointWidth: 58,
                                     states: { hover: { brightness: 0.06 } }
                                 },
                                 series: { borderWidth: 0, animation: false }
@@ -386,13 +387,14 @@
                                     };
                                     point.update({
                                         color: isPeak ? peakGradient : inactiveColor,
-                                        borderRadius: isPeak ? 10 : 8
+                                        borderRadius: isPeak ? 16 : 14
                                     }, false);
                                 });
                             });
                         }
                         chart.redraw();
                     }
+                    window.japsStyleRevenueChart = styleRevenueChart;
 
                     function refreshActiveRevenueChart() {
                         (Highcharts.charts || []).forEach(function (chart) {
@@ -423,12 +425,43 @@
                         }
                     });
 
+                    // Apply filter data that may have arrived before Highcharts finished init
+                    if (window.japsRevenueInsightsData && typeof window.japsApplyRevenueInsightsData === 'function') {
+                        window.japsApplyRevenueInsightsData(window.japsRevenueInsightsData);
+                    } else if (typeof window.japsLoadRevenueInsights === 'function' && $('#dashboard_date_filter').length) {
+                        try {
+                            var picker = $('#dashboard_date_filter').data('daterangepicker');
+                            if (picker) {
+                                window.japsLoadRevenueInsights(
+                                    picker.startDate.format('YYYY-MM-DD'),
+                                    picker.endDate.format('YYYY-MM-DD'),
+                                    $('#dashboard_location').length ? $('#dashboard_location').val() : ''
+                                );
+                            }
+                        } catch (e3) {}
+                    }
+
                     $('.japs-dash-period-switch__btn').off('click.japsRevenueTab').on('click.japsRevenueTab', function () {
                         var period = $(this).data('period');
                         $('.japs-dash-period-switch__btn').removeClass('is-active');
                         $(this).addClass('is-active');
                         $('.japs-dash-chart-pane').removeClass('is-active').attr('hidden', true);
                         $('.japs-dash-chart-pane[data-period="' + period + '"]').addClass('is-active').removeAttr('hidden');
+                        var cached = window.japsRevenueInsightsData;
+                        if (cached && typeof Highcharts !== 'undefined') {
+                            (Highcharts.charts || []).forEach(function (chart) {
+                                if (!isRevenueChart(chart)) return;
+                                var $pane = $(chart.renderTo).closest('.japs-dash-chart-pane');
+                                if (!$pane.hasClass('is-active')) return;
+                                var labels = period === 'fy' ? (cached.monthly_labels || []) : (cached.daily_labels || []);
+                                var values = period === 'fy' ? (cached.monthly_values || []) : (cached.daily_values || []);
+                                try {
+                                    chart.xAxis[0].setCategories(labels, false);
+                                    chart.series[0].setData(values, false);
+                                    chart.redraw();
+                                } catch (e) {}
+                            });
+                        }
                         // Yearly pane was display:none — reflow + same Salezy style as Monthly
                         setTimeout(refreshActiveRevenueChart, 30);
                         setTimeout(refreshActiveRevenueChart, 180);

@@ -279,8 +279,13 @@ function update_statistics(start, end) {
                 }
             }
 
+            // Sales Overview follows dashboard date filter
             if (typeof window.japsLoadPaymentMethodMix === 'function') {
                 window.japsLoadPaymentMethodMix(start, end, location_id);
+            }
+            // Revenue Insights bars follow dashboard date filter
+            if (typeof window.japsLoadRevenueInsights === 'function') {
+                window.japsLoadRevenueInsights(start, end, location_id);
             }
         },
         error: function () {
@@ -289,6 +294,74 @@ function update_statistics(start, end) {
         },
     });
 }
+
+window.japsLoadRevenueInsights = function(start, end, locationId) {
+    if (!$('.japs-dash-chart-card--revenue').length) {
+        return;
+    }
+    // Monthly / Yearly ranges are fixed on the server (30 days / FY).
+    // start/end kept for API compatibility; location still filters.
+    $.get('/home/revenue-insights', {
+        location_id: locationId || ''
+    }, function(data) {
+        if (!data || typeof Highcharts === 'undefined') {
+            return;
+        }
+        window.japsRevenueInsightsData = data;
+        window.japsApplyRevenueInsightsData(data);
+    });
+};
+
+window.japsApplyRevenueInsightsData = function(data) {
+    if (!data || typeof Highcharts === 'undefined') {
+        return;
+    }
+    var charts = (Highcharts.charts || []).filter(function(chart) {
+        return chart && chart.renderTo && $(chart.renderTo).closest('.japs-dash-chart-pane').length;
+    });
+    if (!charts.length) {
+        // Charts not ready yet — retry shortly
+        clearTimeout(window.japsRevenueApplyTimer);
+        window.japsRevenueApplyTimer = setTimeout(function() {
+            window.japsApplyRevenueInsightsData(data);
+        }, 250);
+        return;
+    }
+
+    function applySeries(chart, labels, values, isYearly) {
+        if (!chart || !chart.series || !chart.series[0]) {
+            return;
+        }
+        try {
+            chart.xAxis[0].setCategories(labels || [], false);
+            chart.series[0].setData((values || []).map(function(v) {
+                return typeof v === 'number' ? v : parseFloat(v) || 0;
+            }), false);
+            chart.update({
+                xAxis: {
+                    labels: {
+                        rotation: isYearly ? 0 : -45
+                    }
+                }
+            }, false);
+            chart.reflow();
+            chart.redraw();
+        } catch (e) {}
+        if (typeof window.japsStyleRevenueChart === 'function') {
+            window.japsStyleRevenueChart(chart);
+        }
+    }
+
+    charts.forEach(function(chart) {
+        var $pane = $(chart.renderTo).closest('.japs-dash-chart-pane');
+        var period = $pane.data('period');
+        if (period === 'fy') {
+            applySeries(chart, data.monthly_labels || [], data.monthly_values || [], true);
+        } else {
+            applySeries(chart, data.daily_labels || [], data.daily_values || [], false);
+        }
+    });
+};
 
 window.japsLoadPaymentMethodMix = function(start, end, locationId) {
     if (!$('#payment_method_mix_chart').length) {
@@ -300,28 +373,16 @@ window.japsLoadPaymentMethodMix = function(start, end, locationId) {
         end: end,
         location_id: locationId || ''
     }, function(data) {
-        if (typeof Highcharts === 'undefined') {
-            return;
-        }
-
         if (window.japsPaymentMixChart) {
-            window.japsPaymentMixChart.destroy();
+            try {
+                window.japsPaymentMixChart.destroy();
+            } catch (e) {}
             window.japsPaymentMixChart = null;
         }
 
         var $center = $('#payment_method_mix_center');
         var $centerAmount = $center.find('.japs-dash-donut-center__amount');
         var $centerLabel = $center.find('.japs-dash-donut-center__label');
-
-        if (!data.has_data) {
-            $('#payment_method_mix_empty').show();
-            $('.japs-dash-payment-mix').hide();
-            $center.hide();
-            $('#payment_overview_footer').hide();
-            return;
-        }
-
-        var totalAmountText = __currency_trans_from_en(data.total || 0, true);
         var growthPct = typeof window.japsSalesGrowthPct === 'number' ? window.japsSalesGrowthPct : null;
         var topItem = (data.series || [])[0];
         var topPct = data.total > 0 && topItem ? Math.round((topItem.amount / data.total) * 1000) / 10 : 0;
@@ -329,103 +390,141 @@ window.japsLoadPaymentMethodMix = function(start, end, locationId) {
         var centerDefaultAmount = centerPct + '%';
         var centerDefaultLabel = $centerLabel.data('default-label') || 'Sales Growth';
 
+        // Footer from dashboard filter totals; % is drawn inside the SVG gauge
         $('#payment_method_mix_empty').hide();
         $('.japs-dash-payment-mix').show();
-        $centerAmount.text(centerDefaultAmount);
-        $centerLabel.text(centerDefaultLabel);
-        $center.show();
+        $center.hide();
         $('#payment_overview_footer').show();
-        $('.japs-overview-sales-total').text(totalAmountText);
         $('#payment_overview_progress').css('width', Math.min(100, Math.max(centerPct, 8)) + '%');
-
-        var dueText = $('.invoice_due').first().text();
-        if (dueText && dueText.indexOf('fa-spin') === -1) {
-            $('.japs-overview-target-total').text(dueText);
-        }
-        var targetPct = Math.min(100, Math.max(topPct, 12));
+        var targetPct = Math.min(100, Math.max(topPct || centerPct, 12));
         $('#payment_overview_target_progress').css('width', Math.max(targetPct, 8) + '%');
 
-        // Divided semi-gauge (Salezy): equal slots with wider gaps
-        var segmentCount = 24;
-        var pieData = [];
-        for (var i = 0; i < segmentCount; i++) {
-            var t = segmentCount <= 1 ? 0 : i / (segmentCount - 1);
-            // Left = strong blue, right = almost white blue
-            var r = Math.round(29 + (239 - 29) * t);
-            var g = Math.round(78 + (246 - 78) * t);
-            var b = Math.round(216 + (255 - 216) * t);
-            pieData.push({
-                name: centerDefaultLabel,
-                y: 1,
-                color: 'rgb(' + r + ',' + g + ',' + b + ')'
-            });
+        // Radial Gauge Chart (Salezy): progress-filled segmented semi-gauge
+        var gaugeHost = document.getElementById('payment_method_mix_chart');
+        function renderRoundedSegmentGauge() {
+            var el = gaugeHost;
+            if (!el) {
+                return;
+            }
+
+            var w = Math.max(el.clientWidth || 320, 280);
+            var h = Math.max(el.clientHeight || 280, 260);
+            var cx = w / 2;
+            // Keep gauge higher in the card (more top space used)
+            var cy = h * 0.78;
+            var rOuter = Math.min(w * 0.44, h * 0.7, 160);
+            var band = Math.max(48, Math.round(rOuter * 0.34));
+            var rInner = rOuter - band;
+            var segmentCount = 18;
+            var gapDeg = 2;
+            var startDeg = -180;
+            var endDeg = 0;
+            var totalSweep = endDeg - startDeg;
+            var segSweep = (totalSweep - gapDeg * segmentCount) / segmentCount;
+            var corner = Math.min(band * 0.22, (segSweep * rOuter * Math.PI / 180) * 0.28, 9);
+            var fillRatio = Math.min(1, Math.max(0, centerPct / 100));
+            var filledCount = Math.max(0, Math.round(fillRatio * segmentCount));
+
+            function pt(r, deg) {
+                var rad = (deg * Math.PI) / 180;
+                return {
+                    x: cx + r * Math.cos(rad),
+                    y: cy + r * Math.sin(rad)
+                };
+            }
+
+            // Rounded radial blocks (Salezy): soft outer corners, flat inner edge
+            function segmentPath(a0, a1) {
+                var ang = Math.min((corner / rOuter) * (180 / Math.PI), (a1 - a0) / 2 - 0.05);
+                if (!(ang > 0.12)) {
+                    ang = 0;
+                }
+                var o0 = a0 + ang;
+                var o1 = a1 - ang;
+                var rMid = rOuter - (ang > 0 ? corner : 0);
+
+                var pOS = pt(rOuter, o0);
+                var pOE = pt(rOuter, o1);
+                var pOR = pt(rMid, a1);
+                var pIR = pt(rInner, a1);
+                var pIL = pt(rInner, a0);
+                var pOL = pt(rMid, a0);
+
+                function arc(r, to, sweep) {
+                    return ' A ' + r + ' ' + r + ' 0 0 ' + sweep + ' ' +
+                        to.x.toFixed(2) + ' ' + to.y.toFixed(2);
+                }
+
+                var d = 'M ' + pOS.x.toFixed(2) + ' ' + pOS.y.toFixed(2);
+                d += arc(rOuter, pOE, 1);
+                if (ang > 0) {
+                    d += arc(corner, pOR, 1);
+                }
+                d += ' L ' + pIR.x.toFixed(2) + ' ' + pIR.y.toFixed(2);
+                d += arc(rInner, pIL, 0);
+                d += ' L ' + pOL.x.toFixed(2) + ' ' + pOL.y.toFixed(2);
+                if (ang > 0) {
+                    d += arc(corner, pOS, 1);
+                }
+                d += ' Z';
+                return d;
+            }
+
+            function fillColor(i, isActive) {
+                if (!isActive) {
+                    return '#e8eef6';
+                }
+                var t = filledCount <= 1 ? 0 : i / (filledCount - 1);
+                var rr = Math.round(29 + (147 - 29) * t);
+                var gg = Math.round(78 + (197 - 78) * t);
+                var bb = Math.round(216 + (253 - 216) * t);
+                return 'rgb(' + rr + ',' + gg + ',' + bb + ')';
+            }
+
+            var parts = '';
+            for (var i = 0; i < segmentCount; i++) {
+                var a0 = startDeg + gapDeg / 2 + i * (segSweep + gapDeg);
+                var a1 = a0 + segSweep;
+                parts += '<path d="' + segmentPath(a0, a1) + '" fill="' + fillColor(i, i < filledCount) + '" />';
+            }
+
+            // Center % text inside SVG so it never mismatches the gauge
+            var labelY = cy - rInner * 0.22;
+            var pctText = String(centerDefaultAmount).replace(/</g, '');
+            var lblText = String(centerDefaultLabel).replace(/</g, '');
+            parts +=
+                '<text x="' + cx + '" y="' + (labelY - 6).toFixed(1) + '" text-anchor="middle" ' +
+                'dominant-baseline="middle" fill="#0f172a" font-size="34" font-weight="800" ' +
+                'font-family="Inter, Segoe UI, system-ui, sans-serif" letter-spacing="-0.04em">' +
+                pctText + '</text>';
+            parts +=
+                '<text x="' + cx + '" y="' + (labelY + 22).toFixed(1) + '" text-anchor="middle" ' +
+                'dominant-baseline="middle" fill="#94a3b8" font-size="12" font-weight="500" ' +
+                'font-family="Inter, Segoe UI, system-ui, sans-serif">' +
+                lblText + '</text>';
+
+            el.innerHTML =
+                '<svg class="japs-dash-gauge-svg" viewBox="0 0 ' + w + ' ' + h + '"' +
+                ' width="100%" height="100%" preserveAspectRatio="xMidYMin meet"' +
+                ' role="img" aria-label="Sales growth ' + pctText + '">' +
+                parts +
+                '</svg>';
+
+            // Hide HTML center overlay — SVG text is the source of truth
+            $center.hide();
         }
 
-        window.japsPaymentMixChart = Highcharts.chart('payment_method_mix_chart', {
-            chart: {
-                type: 'pie',
-                backgroundColor: 'transparent',
-                height: 210,
-                spacing: [4, 8, 0, 8],
-                margin: [8, 8, 0, 8]
-            },
-            title: { text: null },
-            subtitle: { text: null },
-            credits: { enabled: false },
-            legend: { enabled: false },
-            exporting: {
-                enabled: true,
-                fallbackToExportServer: false,
-                buttons: {
-                    contextButton: { enabled: false }
+        renderRoundedSegmentGauge();
+        window.japsPaymentMixChart = {
+            destroy: function() {
+                if (gaugeHost) {
+                    gaugeHost.innerHTML = '';
                 }
             },
-            tooltip: {
-                backgroundColor: '#111827',
-                borderColor: '#111827',
-                borderRadius: 8,
-                borderWidth: 0,
-                shadow: false,
-                style: { color: '#fff', fontSize: '12px' },
-                pointFormatter: function() {
-                    return '<b>' + centerDefaultLabel + '</b><br/>' + centerDefaultAmount;
-                }
-            },
-            plotOptions: {
-                pie: {
-                    startAngle: -90,
-                    endAngle: 90,
-                    center: ['50%', '88%'],
-                    size: '160%',
-                    innerSize: '70%',
-                    borderWidth: 7,
-                    borderColor: '#ffffff',
-                    slicedOffset: 0,
-                    dataLabels: { enabled: false },
-                    showInLegend: false,
-                    states: {
-                        hover: { brightness: 0.03, halo: 0 }
-                    },
-                    point: {
-                        events: {
-                            mouseOver: function() {
-                                $centerAmount.text(centerDefaultAmount);
-                                $centerLabel.text(centerDefaultLabel);
-                            },
-                            mouseOut: function() {
-                                $centerAmount.text(centerDefaultAmount);
-                                $centerLabel.text(centerDefaultLabel);
-                            }
-                        }
-                    }
-                }
-            },
-            series: [{
-                name: 'Sales',
-                type: 'pie',
-                data: pieData
-            }]
-        });
+            reflow: function() {
+                renderRoundedSegmentGauge();
+            }
+        };
 
         (function bindPaymentMixHeaderMenu() {
             var $btn = $('#payment_method_mix_menu_btn');

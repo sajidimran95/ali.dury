@@ -152,6 +152,7 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::get('/home/sales-order-summary', [HomeController::class, 'getSalesOrderSummary']);
     Route::get('/home/dashboard-side-panel', [HomeController::class, 'getDashboardSidePanel']);
     Route::get('/home/payment-method-mix', [HomeController::class, 'getPaymentMethodMix']);
+    Route::get('/home/revenue-insights', [HomeController::class, 'getRevenueInsights']);
     Route::post('/attach-medias-to-model', [HomeController::class, 'attachMediasToGivenModel'])->name('attach.medias.to.model');
     Route::get('/calendar', [HomeController::class, 'getCalendar'])->name('calendar');
 
