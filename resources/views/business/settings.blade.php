@@ -11,7 +11,7 @@
 </section>
 
 <!-- Main content -->
-<section class="content">
+<section class="content business-settings-page">
 {!! Form::open(['url' => action([\App\Http\Controllers\BusinessController::class, 'postBusinessSettings']), 'method' => 'post', 'id' => 'bussiness_edit_form',
            'files' => true ]) !!}
     <div class="row">
@@ -19,7 +19,7 @@
        <!--  <pos-tab-container> -->
         {{-- <div class="col-xs-12 pos-tab-container"> --}}
         @component('components.widget', ['class' =>  'pos-tab-container'])
-            <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2 pos-tab-menu tw-rounded-lg">
+            <div class="col-lg-2 col-md-3 col-sm-12 col-xs-12 pos-tab-menu tw-rounded-lg">
                 <div class="list-group">
                     <a href="#" class="list-group-item text-center tw-font-bold tw-text-sm md:tw-text-base  active">@lang('business.business')</a>
                     <a href="#" class="list-group-item text-center tw-font-bold tw-text-sm md:tw-text-base">@lang('business.tax') @show_tooltip(__('tooltip.business_tax'))</a>
@@ -41,7 +41,7 @@
                     <a href="#" class="list-group-item text-center tw-font-bold tw-text-sm md:tw-text-base">@lang('lang_v1.custom_labels')</a>
                 </div>
             </div>
-            <div class="col-lg-10 col-md-10 col-sm-10 col-xs-10 pos-tab">
+            <div class="col-lg-10 col-md-9 col-sm-12 col-xs-12 pos-tab">
                 <!-- tab 1 start -->
                 @include('business.partials.settings_business')
                 <!-- tab 1 end -->
