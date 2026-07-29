@@ -4192,9 +4192,22 @@ class ReportController extends Controller
         $content = $exporter->export();
         $filename = $exporter->suggestedFilename();
 
+        // Reject accidental UTF-8 BOM / ensure ASCII-safe download (MSA parsers are strict).
+        $content = preg_replace('/^\xEF\xBB\xBF/', '', $content);
+        $content = preg_replace("/\r\n\r\n+/", "\r\n", $content);
+
+        if (! preg_match('/^SID/m', $content) || ! preg_match('/^PUR/m', $content)) {
+            // Still download, but warn — MSA will see zero volume without stores/sales.
+            session()->flash('status', [
+                'success' => 0,
+                'msg' => 'MSA file downloaded, but it has no SID/PUR sales rows for this week. Add retailer sales (or widen the week/category) before submitting to MFT Hub.',
+            ]);
+        }
+
         return response($content, 200, [
             'Content-Type' => 'text/plain; charset=US-ASCII',
             'Content-Disposition' => 'attachment; filename="'.$filename.'"',
+            'X-Content-Type-Options' => 'nosniff',
         ]);
     }
 }

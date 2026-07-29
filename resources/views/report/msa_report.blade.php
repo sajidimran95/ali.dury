@@ -152,6 +152,8 @@
                         <li>@lang('report.msa_format_note_2')</li>
                         <li>@lang('report.msa_format_note_3')</li>
                         <li>@lang('report.msa_format_note_4')</li>
+                        <li>@lang('report.msa_format_note_5')</li>
+                        <li>@lang('report.msa_format_note_6')</li>
                     </ul>
                 </div>
             @endcomponent

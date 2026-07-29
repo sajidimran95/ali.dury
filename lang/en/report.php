@@ -97,6 +97,8 @@ return [
     'msa_format_notes_title' => 'How this matches the sample files',
     'msa_format_note_1' => 'File layout matches requirements/msa report samples: HID → BID → SID/PUR → TOT.',
     'msa_format_note_2' => 'Filename pattern: {Location}_TOB_{DistributorID}_{WeekEndingYYYYMMDD}.txt',
-    'msa_format_note_3' => 'Product custom field 1 = items per selling unit (default 200). Custom field 2 = MSA category (default 003231 cigarettes). Custom field 3/4 = promo code / promo description.',
+    'msa_format_note_3' => 'Product custom field 1 = items per selling unit (1–250 only; default inferred from product type, NOT always 200). Custom field 2 = MSA category (003231 cigarettes, 003292 e-cig/vape, etc). Custom field 3/4 = promo code / promo description.',
     'msa_format_note_4' => 'Customer custom field 1 = class of trade (RETAIL/DISTRIBUTOR/OTHER). Custom field 3 = cash & carry (Y/N). Assign Retailer or Wholesale customer group for POS pricing.',
+    'msa_format_note_5' => 'PUR measures stay in fixed slots: 001 qty, 002 dollars (zeros OK), 004 saleable returns, 005 unsaleable returns. BID uses 003 inventory + 006 floor returns. One CRLF per record — no blank lines.',
+    'msa_format_note_6' => 'Export only Tobacco (or a subcategory). Hemp/THC SKUs must not use cigarette code 003231 — put them in E-Cigarettes (003292) or exclude them from the TOB file.',
 ];

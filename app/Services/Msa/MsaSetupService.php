@@ -249,11 +249,11 @@ class MsaSetupService
 
         $labels['product_cf_details'][1] = [
             'type' => 'dropdown',
-            'dropdown_options' => "200\n5\n10\n20\n25\n40\n60\n100\n250",
+            'dropdown_options' => "1\n4\n5\n10\n20\n25\n40\n60\n100\n200\n250",
         ];
         $labels['product_cf_details'][2] = [
             'type' => 'dropdown',
-            'dropdown_options' => "003231\n003211\n003251\n003252\n003292\n003221\n003241\n003213\n003212\n003214\n003215\n003227",
+            'dropdown_options' => "003231\n003211\n003251\n003252\n003292\n003221\n003241\n003261\n003213\n003212\n003214\n003215\n003227",
         ];
         $labels['product_cf_details'][3] = [
             'type' => 'text',
@@ -525,23 +525,27 @@ class MsaSetupService
     }
 
     /**
-     * Fill blank MSA fields on tobacco products (e.g. Lux → Cigarettes / 200 / 003231).
+     * Fill blank MSA fields on tobacco products using subcategory defaults
+     * (never force every SKU into Cigarettes / 200 / 003231).
      */
     public function ensureTobaccoProductDefaults(int $businessId, int $tobaccoCategoryId, ?int $defaultTaxId = null): void
     {
-        $cigaretteId = Category::where('business_id', $businessId)
+        $subs = Category::where('business_id', $businessId)
             ->where('parent_id', $tobaccoCategoryId)
-            ->where('name', 'Cigarettes')
-            ->value('id');
+            ->get()
+            ->keyBy(fn ($c) => strtolower((string) $c->name));
 
-        if (! $cigaretteId) {
-            return;
-        }
+        $defaultsBySub = [
+            'cigarettes' => ['items' => '200', 'code' => '003231'],
+            'moist spit tobacco' => ['items' => '5', 'code' => '003211'],
+            'cigars' => ['items' => '20', 'code' => '003251'],
+            'little filtered cigars' => ['items' => '20', 'code' => '003252'],
+            'e-cigarettes' => ['items' => '1', 'code' => '003292'],
+            'ryo tobacco' => ['items' => '1', 'code' => '003221'],
+            'pipe tobacco' => ['items' => '1', 'code' => '003241'],
+        ];
 
-        $subIds = Category::where('business_id', $businessId)
-            ->where('parent_id', $tobaccoCategoryId)
-            ->pluck('id')
-            ->push($tobaccoCategoryId);
+        $subIds = $subs->pluck('id')->push($tobaccoCategoryId);
 
         $products = Product::with('variations')
             ->where('business_id', $businessId)
@@ -554,18 +558,26 @@ class MsaSetupService
         foreach ($products as $product) {
             $dirty = false;
 
-            if (empty($product->sub_category_id) && (int) $product->category_id === $tobaccoCategoryId) {
-                $product->sub_category_id = $cigaretteId;
+            $subName = '';
+            if (! empty($product->sub_category_id)) {
+                $match = $subs->firstWhere('id', (int) $product->sub_category_id);
+                $subName = strtolower((string) ($match->name ?? ''));
+            }
+
+            // Only fill blanks — never overwrite existing MSA fields / subcategory.
+            $defaults = $defaultsBySub[$subName] ?? null;
+
+            $cf1 = trim((string) ($product->product_custom_field1 ?? ''));
+            $cf1Digits = preg_replace('/\D+/', '', $cf1);
+            // Repair barcode/SKU values wrongly stored as "items per unit"
+            if ($cf1 === '' || strlen($cf1Digits) > 3 || (int) $cf1Digits > 250) {
+                $product->product_custom_field1 = $defaults['items'] ?? '1';
                 $dirty = true;
             }
 
-            if ($product->product_custom_field1 === null || $product->product_custom_field1 === '') {
-                $product->product_custom_field1 = '200';
-                $dirty = true;
-            }
-
-            if ($product->product_custom_field2 === null || $product->product_custom_field2 === '') {
-                $product->product_custom_field2 = '003231';
+            $cf2 = preg_replace('/\D+/', '', (string) ($product->product_custom_field2 ?? ''));
+            if ($cf2 === '' || strlen($cf2) !== 6 || ! str_starts_with($cf2, '003')) {
+                $product->product_custom_field2 = $defaults['code'] ?? '003292';
                 $dirty = true;
             }
 

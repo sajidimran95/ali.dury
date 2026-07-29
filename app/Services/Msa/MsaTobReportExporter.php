@@ -93,7 +93,12 @@ class MsaTobReportExporter
         }
         $lines[] = $this->buildTot();
 
-        return implode("\r\n", $lines) . "\r\n";
+        // One record per line, CRLF only — never blank lines (MSA rejects double-spaced files).
+        $lines = array_values(array_filter(array_map(function ($line) {
+            return rtrim(str_replace(["\r", "\n"], '', (string) $line));
+        }, $lines), fn ($line) => $line !== ''));
+
+        return implode("\r\n", $lines)."\r\n";
     }
 
     public function suggestedFilename(): string
@@ -581,6 +586,10 @@ class MsaTobReportExporter
 
     protected function formatPur(array $sid, array $pur): string
     {
+        // Altria STARS: keep FIXED measure slots even when dollars are zero.
+        // Do NOT shift 004/005 into the 002 column. Order must be:
+        //   001 qty shipped | 002 dollars (zeros OK) | 004 saleable | 005 unsaleable
+        // Floor returns (006) belong on BID, not PUR.
         return 'PUR'
             . $this->lj($sid['custNo'], 8)
             . $this->lj($sid['shipNo'], 8)
@@ -592,11 +601,11 @@ class MsaTobReportExporter
             . '001'
             . $this->measureValue($pur['qty_shipped'], 11)
             . '002'
-            . $this->measureValue($pur['dollars'], 11)
+            . $this->measureValue($pur['dollars'] ?? 0, 11)
             . '004'
-            . $this->measureValue(-1 * abs($pur['saleable_returns']), 11, true)
+            . $this->measureValue(-1 * abs($pur['saleable_returns'] ?? 0), 11, true)
             . '005'
-            . $this->measureValue(-1 * abs($pur['unsaleable_returns']), 11, true);
+            . $this->measureValue(-1 * abs($pur['unsaleable_returns'] ?? 0), 11, true);
     }
 
     protected function buildTot(): string
@@ -662,27 +671,76 @@ class MsaTobReportExporter
     {
         $name = $product->name;
         if ($product->type === 'variable' && ! empty($variation->name) && $variation->name !== 'DUMMY') {
-            $name .= ' ' . $variation->name;
+            $name .= ' '.$variation->name;
         }
 
-        return $name;
+        // Strip CR/LF — embedded newlines create blank lines MSA cannot process.
+        return preg_replace('/\s+/', ' ', str_replace(["\r", "\n", "\t"], ' ', $name));
     }
 
+    /**
+     * Items per selling unit (carton=200, can/roll=5, pack, each=1).
+     * Reject UPC/SKU-sized values accidentally stored in custom field 1 (caused inflated units).
+     */
     protected function itemsPerSellingUnit(Product $product): int
     {
-        $custom = (int) preg_replace('/\D+/', '', (string) ($product->product_custom_field1 ?? ''));
-        if ($custom > 0) {
-            return $custom;
+        $raw = preg_replace('/\D+/', '', (string) ($product->product_custom_field1 ?? ''));
+        // Valid MSA values are small (1–250). Anything larger is almost certainly a barcode/SKU.
+        if ($raw !== '' && strlen($raw) <= 3) {
+            $custom = (int) $raw;
+            if ($custom >= 1 && $custom <= 250) {
+                return $custom;
+            }
         }
 
-        return 200;
+        return $this->inferItemsPerSellingUnit($product);
+    }
+
+    protected function inferItemsPerSellingUnit(Product $product): int
+    {
+        $subName = '';
+        $catName = '';
+        if (! empty($product->sub_category_id)) {
+            $subName = (string) (Category::where('id', $product->sub_category_id)->value('name') ?? '');
+        }
+        if (! empty($product->category_id)) {
+            $catName = (string) (Category::where('id', $product->category_id)->value('name') ?? '');
+        }
+
+        $haystack = strtolower(trim(($product->name ?? '').' '.$subName.' '.$catName));
+
+        if (preg_match('/\bcarton\b/', $haystack) || preg_match('/\bcigarettes?\b/', $haystack)) {
+            return 200;
+        }
+        if (preg_match('/\b(can|roll|cans)\b/', $haystack) && preg_match('/\b(moist|snuff|cope|skoal|copenhagen)\b/', $haystack)) {
+            return 5;
+        }
+        if (preg_match('/\b(cigarillo|little\s+cigar|filtered\s+cigar)\b/', $haystack)) {
+            return 20;
+        }
+        if (preg_match('/\b(pod|pods|refill)\b/', $haystack)) {
+            return 4;
+        }
+        if (preg_match('/\b(e-?cig|vape|disposable|puff|thc|hemp|delta|gumm|flower|preroll|pre-roll|wrap)\b/', $haystack)) {
+            return 1;
+        }
+        if (preg_match('/\bcigar\b/', $haystack)) {
+            return 20;
+        }
+        if (preg_match('/\b(ryo|pipe)\b/', $haystack)) {
+            return 1;
+        }
+
+        // Safe default for unknown non-cigarette SKUs: each (not 200 cartons).
+        return 1;
     }
 
     protected function msaCategoryCode(Product $product): string
     {
         $custom = preg_replace('/\D+/', '', (string) ($product->product_custom_field2 ?? ''));
-        if (strlen($custom) >= 4) {
-            return substr(str_pad($custom, 6, '0', STR_PAD_LEFT), -6);
+        // Accept only known-length MSA codes (6 digits). Reject barcodes stuffed into CF2.
+        if (strlen($custom) === 6 && str_starts_with($custom, '003')) {
+            return $custom;
         }
 
         // Prefer subcategory, then parent category description "MSA category code ######"
@@ -694,34 +752,58 @@ class MsaTobReportExporter
             if (! $category) {
                 continue;
             }
-            if (preg_match('/\b(\d{6})\b/', (string) $category->description, $m)) {
+            if (preg_match('/\b(003\d{3})\b/', (string) $category->description, $m)) {
                 return $m[1];
             }
-            $name = strtolower($category->name ?? '');
-            if (str_contains($name, 'e-cig') || str_contains($name, 'vape')) {
-                return '003292';
-            }
-            if (str_contains($name, 'little') && str_contains($name, 'cigar')) {
-                return '003252';
-            }
-            if (str_contains($name, 'cigar')) {
-                return '003251';
-            }
-            if (str_contains($name, 'moist') || str_contains($name, 'spit') || str_contains($name, 'snuff') || str_contains($name, 'chew') || str_contains($name, 'snus')) {
-                return '003211';
-            }
-            if (str_contains($name, 'ryo')) {
-                return '003221';
-            }
-            if (str_contains($name, 'pipe')) {
-                return '003241';
-            }
-            if (str_contains($name, 'cigarette')) {
-                return '003231';
+            $inferred = $this->inferMsaCategoryFromText((string) ($category->name ?? ''));
+            if ($inferred !== null) {
+                return $inferred;
             }
         }
 
-        return '003231';
+        $fromName = $this->inferMsaCategoryFromText((string) ($product->name ?? ''));
+        if ($fromName !== null) {
+            return $fromName;
+        }
+
+        // Last resort — only for clearly tobacco-named items; otherwise e-cig/other (not cigarettes).
+        return '003292';
+    }
+
+    protected function inferMsaCategoryFromText(string $text): ?string
+    {
+        $name = strtolower($text);
+
+        if (preg_match('/\b(e-?cig|vape|disposable|puff|pod|juul|elf\s*bar|geek|mr\s*fog)\b/', $name)) {
+            return '003292';
+        }
+        if (preg_match('/\b(hemp\s*wrap|blunt\s*wrap|wraps?|papers?|tubes?)\b/', $name)) {
+            return '003261'; // wraps / papers family
+        }
+        if (preg_match('/\b(little|filtered)\b.*\bcigar|\bcigarillo\b/', $name)) {
+            return '003252';
+        }
+        if (preg_match('/\bcigar\b/', $name)) {
+            return '003251';
+        }
+        if (preg_match('/\b(moist|spit|snuff|chew|snus|copenhagen|skoal)\b/', $name)) {
+            return '003211';
+        }
+        if (preg_match('/\b(ryo|roll[\s-]?your[\s-]?own|bugler)\b/', $name)) {
+            return '003221';
+        }
+        if (preg_match('/\bpipe\s*tobacco\b/', $name)) {
+            return '003241';
+        }
+        if (preg_match('/\bcigarette|marlboro|newport|camel|pall\s*mall|carton\b/', $name)) {
+            return '003231';
+        }
+        // Hemp/THC/flower/gummies are not cigarettes — map to e-cig/other rather than 003231.
+        if (preg_match('/\b(thc|delta|hemp|gumm|flower|preroll|pre-roll|caviar|resin|wax|mushroom|psilly)\b/', $name)) {
+            return '003292';
+        }
+
+        return null;
     }
 
     protected function zipPlus4(?string $zip): string
