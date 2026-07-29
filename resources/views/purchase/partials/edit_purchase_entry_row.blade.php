@@ -45,10 +45,14 @@
     @foreach($purchase->purchase_lines as $purchase_line)
         <tr @if(!empty($purchase_line->purchase_order_line) && !empty($common_settings['enable_purchase_order'])) data-purchase_order_id="{{$purchase_line->purchase_order_line->transaction_id}}" @endif  @if(!empty($purchase_line->purchase_requisition_line) && !empty($common_settings['enable_purchase_requisition'])) data-purchase_requisition_id="{{$purchase_line->purchase_requisition_line->transaction_id}}" @endif>
             <td><span class="sr_number"></span></td>
-            <td>
-                {{ $purchase_line->product->name }} ({{$purchase_line->variations->sub_sku}})
-                @if( $purchase_line->product->type == 'variable') 
-                    <br/>(<b>{{ $purchase_line->variations->product_variation->name}}</b> : {{ $purchase_line->variations->name}})
+            <td class="purchase-product-name-cell">
+                <div class="purchase-product-name" title="{{ $purchase_line->product->name }} ({{$purchase_line->variations->sub_sku}})">
+                    {{ $purchase_line->product->name }} <span class="text-muted">({{$purchase_line->variations->sub_sku}})</span>
+                </div>
+                @if( $purchase_line->product->type == 'variable')
+                    <div class="purchase-product-variation">
+                        <b>{{ $purchase_line->variations->product_variation->name}}</b> : {{ $purchase_line->variations->name}}
+                    </div>
                 @endif
             </td>
 
@@ -139,8 +143,8 @@
                 <input type="hidden" class="row_subtotal_before_tax_hidden" value="{{number_format($purchase_line->quantity * $purchase_line->purchase_price/$purchase->exchange_rate, $currency_precision, $currency_details->decimal_separator, $currency_details->thousand_separator)}}">
             </td>
 
-            <td class="{{$hide_tax}}">
-                <div class="input-group">
+            <td class="{{$hide_tax}} purchase-line-tax-cell">
+                <div class="purchase-line-tax-wrap">
                     <select name="purchases[{{ $loop->index }}][purchase_line_tax_id]" class="form-control input-sm purchase_line_tax_id" placeholder="'Please Select'">
                         <option value="" data-tax_amount="0" @if( empty( $purchase_line->tax_id ) )
                         selected @endif >@lang('lang_v1.none')</option>
@@ -148,10 +152,10 @@
                             <option value="{{ $tax->id }}" data-tax_amount="{{ $tax->amount }}" @if( $purchase_line->tax_id == $tax->id) selected @endif >{{ $tax->name }}</option>
                         @endforeach
                     </select>
-                    <span class="input-group-addon purchase_product_unit_tax_text">
+                    {!! Form::hidden('purchases[' . $loop->index . '][item_tax]', number_format($purchase_line->item_tax/$purchase->exchange_rate, $currency_precision, $currency_details->decimal_separator, $currency_details->thousand_separator), ['class' => 'purchase_product_unit_tax']); !!}
+                    <span class="purchase_product_unit_tax_text">
                         {{number_format($purchase_line->item_tax/$purchase->exchange_rate, $currency_precision, $currency_details->decimal_separator, $currency_details->thousand_separator)}}
                     </span>
-                    {!! Form::hidden('purchases[' . $loop->index . '][item_tax]', number_format($purchase_line->item_tax/$purchase->exchange_rate, $currency_precision, $currency_details->decimal_separator, $currency_details->thousand_separator), ['class' => 'purchase_product_unit_tax']); !!}
                 </div>
             </td>
             <td class="{{$hide_tax}}">
@@ -248,7 +252,9 @@
                 </td>
             @endif
             @endif
-            <td><i class="fa fa-times remove_purchase_entry_row text-danger" title="Remove" style="cursor:pointer;"></i></td>
+            <td class="purchase-row-remove-cell">
+                <i class="fa fa-times remove_purchase_entry_row text-danger" title="Remove" aria-label="Remove"></i>
+            </td>
         </tr>
         <?php $row_count = $loop->index + 1 ; ?>
     @endforeach

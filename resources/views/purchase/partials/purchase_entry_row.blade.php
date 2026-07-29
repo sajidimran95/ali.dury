@@ -1,17 +1,18 @@
 @foreach( $variations as $variation)
     <tr @if(!empty($purchase_order_line)) data-purchase_order_id="{{$purchase_order_line->transaction_id}}" @endif @if(!empty($purchase_requisition_line)) data-purchase_requisition_id="{{$purchase_requisition_line->transaction_id}}" @endif>
         <td><span class="sr_number"></span></td>
-        <td>
-            {{ $product->name }} ({{$variation->sub_sku}})
+        <td class="purchase-product-name-cell">
+            <div class="purchase-product-name" title="{{ $product->name }} ({{$variation->sub_sku}})">
+                {{ $product->name }} <span class="text-muted">({{$variation->sub_sku}})</span>
+            </div>
             @if( $product->type == 'variable' )
-                <br/>
-                (<b>{{ $variation->product_variation->name }}</b> : {{ $variation->name }})
+                <div class="purchase-product-variation">
+                    <b>{{ $variation->product_variation->name }}</b> : {{ $variation->name }}
+                </div>
             @endif
             @if($product->enable_stock == 1)
-                <br>
-                <small class="text-muted" style="white-space: nowrap;">@lang('report.current_stock'): @if(!empty($variation->variation_location_details->first())) {{@num_format($variation->variation_location_details->first()->qty_available)}} @else 0 @endif {{ $product->unit->short_name }}</small>
+                <small class="purchase-product-stock text-muted">@lang('report.current_stock'): @if(!empty($variation->variation_location_details->first())) {{@num_format($variation->variation_location_details->first()->qty_available)}} @else 0 @endif {{ $product->unit->short_name }}</small>
             @endif
-            
         </td>
         <td>
             @if(!empty($purchase_order_line))
@@ -131,8 +132,8 @@
             <span class="row_subtotal_before_tax display_currency">0</span>
             <input type="hidden" class="row_subtotal_before_tax_hidden" value=0>
         </td>
-        <td class="{{$hide_tax}}">
-            <div class="input-group">
+        <td class="{{$hide_tax}} purchase-line-tax-cell">
+            <div class="purchase-line-tax-wrap">
                 <select name="purchases[{{ $row_count }}][purchase_line_tax_id]" class="form-control select2 input-sm purchase_line_tax_id" placeholder="'Please Select'">
                     <option value="" data-tax_amount="0" @if( $hide_tax == 'hide' )
                     selected @endif >@lang('lang_v1.none')</option>
@@ -141,7 +142,7 @@
                     @endforeach
                 </select>
                 {!! Form::hidden('purchases[' . $row_count . '][item_tax]', 0, ['class' => 'purchase_product_unit_tax']); !!}
-                <span class="input-group-addon purchase_product_unit_tax_text">
+                <span class="purchase_product_unit_tax_text">
                     0.00</span>
             </div>
         </td>
@@ -230,7 +231,9 @@
         @endif
         <?php $row_count++ ;?>
 
-        <td><i class="fa fa-times remove_purchase_entry_row text-danger" title="Remove" style="cursor:pointer;"></i></td>
+        <td class="purchase-row-remove-cell">
+            <i class="fa fa-times remove_purchase_entry_row text-danger" title="Remove" aria-label="Remove"></i>
+        </td>
     </tr>
 @endforeach
 

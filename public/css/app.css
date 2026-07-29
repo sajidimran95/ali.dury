@@ -578,7 +578,7 @@ div.pos-tab div.pos-tab-content:not(.active){
     color: white;
 }
 
-/* Purchase entry table: exactly 2-line headers, full text visible, tight gaps */
+/* Purchase entry table — like reference: full words, wrap at spaces, no H-scroll */
 .purchase-entry-table-wrap {
 	overflow-x: hidden !important;
 	width: 100%;
@@ -592,60 +592,181 @@ div.pos-tab div.pos-tab-content:not(.active){
 	border-collapse: collapse;
 }
 #purchase_entry_table thead th {
+	/* Full words only — break between words, never mid-letter */
 	white-space: normal !important;
-	word-break: normal;
-	overflow-wrap: break-word;
-	line-height: 1.15;
-	font-size: 9px !important;
+	word-break: normal !important;
+	overflow-wrap: normal !important;
+	hyphens: none !important;
+	-webkit-hyphens: none !important;
+	line-height: 1.25;
+	font-size: 13px !important;
 	font-weight: 700;
-	padding: 4px 1px !important;
+	padding: 8px 4px !important;
 	vertical-align: middle;
-	text-transform: uppercase;
-	letter-spacing: -0.01em;
+	text-transform: none !important;
+	letter-spacing: 0;
+	text-align: center;
+	background: #f7f9fc !important;
+	color: #334155 !important;
+}
+#purchase_entry_table.table-th-green thead th,
+#purchase_entry_table.table-th-green > thead > tr > th {
+	background: #f7f9fc !important;
+	color: #334155 !important;
 }
 #purchase_entry_table thead th .th-2line {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	gap: 0;
-	max-width: 100%;
-	width: 100%;
-}
-#purchase_entry_table thead th .th-line {
 	display: block;
-	width: 100%;
 	max-width: 100%;
-	overflow: visible;
-	text-overflow: clip;
-	white-space: normal;
-	word-break: break-word;
-	line-height: 1.15;
-	text-align: center;
-	font-size: 9px;
+	width: 100%;
+	white-space: normal !important;
+	word-break: normal !important;
+	overflow-wrap: normal !important;
+	hyphens: none !important;
+	line-height: 1.25;
 }
 #purchase_entry_table thead th small {
-	font-size: 8px;
+	font-size: 0.9em;
 	font-weight: 600;
 	text-transform: none;
 }
 #purchase_entry_table > thead > tr > th:first-child,
 #purchase_entry_table > tbody > tr > td:first-child {
-	width: 28px;
+	width: 32px;
 	padding-left: 2px !important;
 	padding-right: 2px !important;
 }
 #purchase_entry_table > thead > tr > th:last-child,
-#purchase_entry_table > tbody > tr > td:last-child {
-	width: 28px;
-	padding-left: 2px !important;
-	padding-right: 2px !important;
+#purchase_entry_table > tbody > tr > td:last-child,
+#purchase_entry_table td.purchase-row-remove-cell {
+	width: 30px !important;
+	min-width: 30px !important;
+	max-width: 34px !important;
+	padding: 2px 4px 2px 6px !important;
+	text-align: left !important;
+	vertical-align: middle !important;
+	overflow: visible !important;
+}
+#purchase_entry_table thead th:last-child .fa-trash {
+	font-size: 12px !important;
+	line-height: 1 !important;
+	display: inline-block;
+	vertical-align: middle;
+	margin: 0;
+}
+#purchase_entry_table .remove_purchase_entry_row {
+	cursor: pointer;
+	font-size: 12px !important;
+	line-height: 1 !important;
+	width: auto;
+	height: auto;
+	display: inline-block !important;
+	align-items: unset;
+	justify-content: unset;
+	margin: 0 !important;
+	padding: 0 !important;
+	vertical-align: middle;
+	float: none;
+	position: relative;
+	left: 0;
 }
 #purchase_entry_table td {
-	padding: 2px 1px !important;
+	padding: 4px 3px !important;
 	vertical-align: middle;
 	overflow: hidden;
 }
+
+/* Product name column — wider, full words, max 2 lines (not one word per line) */
+#purchase_entry_table > thead > tr > th:nth-child(2),
+#purchase_entry_table > tbody > tr > td:nth-child(2),
+#purchase_entry_table td.purchase-product-name-cell {
+	width: 16% !important;
+	min-width: 120px;
+	max-width: 220px;
+	text-align: left !important;
+	white-space: normal !important;
+	word-break: normal !important;
+	overflow-wrap: normal !important;
+	hyphens: none !important;
+	vertical-align: middle !important;
+}
+#purchase_entry_table .purchase-product-name {
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 2;
+	line-clamp: 2;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: normal !important;
+	word-break: normal !important;
+	overflow-wrap: break-word;
+	line-height: 1.3;
+	font-size: 12px;
+	font-weight: 600;
+	max-width: 100%;
+}
+#purchase_entry_table .purchase-product-variation {
+	font-size: 11px;
+	line-height: 1.2;
+	margin-top: 2px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+#purchase_entry_table .purchase-product-stock {
+	display: block;
+	margin-top: 2px;
+	font-size: 11px;
+	line-height: 1.2;
+	white-space: nowrap !important;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+/* Product Tax select — stacked so dropdown stays usable on small screens */
+#purchase_entry_table td.purchase-line-tax-cell {
+	min-width: 88px;
+	width: 9% !important;
+	vertical-align: middle !important;
+}
+#purchase_entry_table .purchase-line-tax-wrap {
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	gap: 4px;
+	width: 100%;
+	min-width: 0;
+}
+#purchase_entry_table .purchase-line-tax-wrap .select2-container {
+	width: 100% !important;
+	max-width: 100% !important;
+}
+#purchase_entry_table .purchase-line-tax-wrap .select2-container .select2-selection--single {
+	height: 28px !important;
+	min-height: 28px !important;
+}
+#purchase_entry_table .purchase-line-tax-wrap .select2-container .select2-selection__rendered {
+	line-height: 26px !important;
+	padding-left: 6px !important;
+	padding-right: 20px !important;
+	font-size: 11px !important;
+}
+#purchase_entry_table .purchase-line-tax-wrap .select2-container .select2-selection__arrow {
+	height: 26px !important;
+	right: 2px !important;
+	width: 16px !important;
+}
+#purchase_entry_table .purchase-line-tax-wrap .purchase_product_unit_tax_text {
+	display: block;
+	width: 100%;
+	text-align: center;
+	font-size: 11px;
+	font-weight: 600;
+	line-height: 1.2;
+	padding: 2px 0 0;
+	background: transparent;
+	border: 0;
+}
+
 #purchase_entry_table .form-control,
 #purchase_entry_table select.form-control,
 #purchase_entry_table input.form-control {
@@ -653,10 +774,64 @@ div.pos-tab div.pos-tab-content:not(.active){
 	max-width: 100% !important;
 	min-width: 0 !important;
 	box-sizing: border-box;
-	padding: 2px 3px !important;
-	font-size: 11px !important;
-	height: 28px !important;
-	min-height: 28px !important;
+	padding: 4px 5px !important;
+	font-size: 13px !important;
+	height: 32px !important;
+	min-height: 32px !important;
+}
+
+/* Medium */
+@media (max-width: 1400px) {
+	#purchase_entry_table thead th {
+		font-size: 11px !important;
+		padding: 6px 3px !important;
+	}
+	#purchase_entry_table td {
+		padding: 3px 2px !important;
+	}
+	#purchase_entry_table .form-control,
+	#purchase_entry_table select.form-control,
+	#purchase_entry_table input.form-control {
+		font-size: 12px !important;
+		height: 30px !important;
+		min-height: 30px !important;
+		padding: 3px 4px !important;
+	}
+}
+
+/* Small screen — same wrap style as reference, smaller text */
+@media (max-width: 1200px) {
+	#purchase_entry_table thead th {
+		font-size: 10px !important;
+		padding: 5px 2px !important;
+		line-height: 1.2;
+	}
+	#purchase_entry_table td {
+		padding: 2px 1px !important;
+	}
+	#purchase_entry_table .form-control,
+	#purchase_entry_table select.form-control,
+	#purchase_entry_table input.form-control {
+		font-size: 11px !important;
+		height: 28px !important;
+		min-height: 28px !important;
+		padding: 2px 3px !important;
+	}
+}
+
+/* Very small */
+@media (max-width: 992px) {
+	#purchase_entry_table thead th {
+		font-size: 9px !important;
+		padding: 4px 1px !important;
+	}
+	#purchase_entry_table .form-control,
+	#purchase_entry_table select.form-control,
+	#purchase_entry_table input.form-control {
+		font-size: 10px !important;
+		height: 26px !important;
+		min-height: 26px !important;
+	}
 }
 
 input[type=number]::-webkit-inner-spin-button, 
