@@ -208,11 +208,12 @@
                         hideIdx.push(afterPrimary + c);
                     }
 
-                    // Ensure every column is visible by default (design should not hide data columns)
-                    contact_table.columns().every(function () {
-                        this.visible(true, false);
-                    });
-                    contact_table.columns.adjust().draw(false);
+                    // Columns are already visible by default — avoid a second draw/adjust
+                    // that shifts the table layout after first load.
+
+                    if (typeof __currency_convert_recursively === 'function') {
+                        __currency_convert_recursively($('.customers-page').parent());
+                    }
 
                     var $search = $('#customer_quick_search');
                     var searchTimer = null;

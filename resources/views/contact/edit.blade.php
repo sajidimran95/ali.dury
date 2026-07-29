@@ -182,7 +182,7 @@
         </div>
         
         <!-- lead additional field -->
-        <div class="col-md-4 lead_additional_div">
+        <div class="col-md-4 lead_additional_div" @if(($contact->type ?? '') !== 'lead') style="display: none;" @endif>
           <div class="form-group">
               {!! Form::label('crm_source', __('lang_v1.source') . ':' ) !!}
               <div class="input-group">
@@ -193,7 +193,7 @@
               </div>
           </div>
         </div>
-        <div class="col-md-4 lead_additional_div">
+        <div class="col-md-4 lead_additional_div" @if(($contact->type ?? '') !== 'lead') style="display: none;" @endif>
           <div class="form-group">
               {!! Form::label('crm_life_stage', __('lang_v1.life_stage') . ':' ) !!}
               <div class="input-group">
@@ -204,7 +204,7 @@
               </div>
           </div>
         </div>
-        <div class="col-md-6 lead_additional_div">
+        <div class="col-md-6 lead_additional_div" @if(($contact->type ?? '') !== 'lead') style="display: none;" @endif>
           <div class="form-group">
               {!! Form::label('user_id', __('lang_v1.assigned_to') . ':*' ) !!}
               <div class="input-group">

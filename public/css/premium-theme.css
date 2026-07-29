@@ -1804,15 +1804,33 @@ body.zoho-theme:not(.pos-sale-theme) .dataTables_scrollBody.of-visible {
     overflow: visible !important;
 }
 
-/* Processing indicator */
+/* Processing indicator ? reset vendor margin-top:-26px that crops the text */
 body.zoho-theme:not(.pos-sale-theme) .dataTables_processing {
-    background: rgba(255, 255, 255, 0.92) !important;
+    position: absolute !important;
+    left: 50% !important;
+    top: 50% !important;
+    right: auto !important;
+    bottom: auto !important;
+    transform: translate(-50%, -50%) !important;
+    margin: 0 !important;
+    width: auto !important;
+    min-width: 140px;
+    max-width: calc(100% - 24px);
+    height: auto !important;
+    line-height: 1.4 !important;
+    overflow: visible !important;
+    background: rgba(255, 255, 255, 0.96) !important;
     border: 1px solid var(--p-line) !important;
     border-radius: 12px !important;
     box-shadow: var(--p-shadow-md);
-    color: var(--p-ink);
-    font-weight: 600;
-    padding: 12px 18px !important;
+    color: var(--p-ink) !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    padding: 12px 20px !important;
+    text-align: center !important;
+    z-index: 30 !important;
+    box-sizing: border-box !important;
+    white-space: nowrap;
 }
 
 /* Select2 */
@@ -3305,6 +3323,31 @@ body.zoho-theme:not(.pos-sale-theme) .modal-dialog.modal-xl {
     margin-top: 28px !important;
 }
 
+/* Contact modal: reserve select height so select2 init doesn't shift layout */
+body.zoho-theme:not(.pos-sale-theme) .contact_modal .form-control.select2,
+body.zoho-theme:not(.pos-sale-theme) .contact_modal select.select2 {
+    min-height: 40px;
+}
+body.zoho-theme:not(.pos-sale-theme) .contact_modal .select2-container {
+    width: 100% !important;
+}
+body.zoho-theme:not(.pos-sale-theme) .contact_modal .select2-container .select2-selection--single,
+body.zoho-theme:not(.pos-sale-theme) .contact_modal .select2-container .select2-selection--multiple {
+    min-height: 40px !important;
+}
+
+/* Customer list: hide raw amounts until currency JS converts */
+body.zoho-theme:not(.pos-sale-theme) .customers-page .display_currency,
+body.zoho-theme:not(.pos-sale-theme) .cust-stat-card .display_currency {
+    visibility: hidden;
+    opacity: 0;
+}
+body.zoho-theme:not(.pos-sale-theme) .customers-page .display_currency.currency-converted,
+body.zoho-theme:not(.pos-sale-theme) .cust-stat-card .display_currency.currency-converted {
+    visibility: visible;
+    opacity: 1;
+}
+
 body.zoho-theme:not(.pos-sale-theme) .modal-content {
     border: 1px solid var(--p-line) !important;
     border-radius: 16px !important;
@@ -3527,14 +3570,18 @@ body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dataTables_filter inpu
     box-sizing: border-box !important;
 }
 
+/* Processing sits centered over the table ? never cropped by box overflow */
 body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dt-toolbar > .dataTables_processing,
-body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .row.margin-bottom-20 > .dataTables_processing {
+body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .row.margin-bottom-20 > .dataTables_processing,
+body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper > .dataTables_processing {
     position: absolute !important;
-    left: 50%;
-    top: 0;
-    transform: translateX(-50%);
-    z-index: 2;
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    margin: 0 !important;
+    z-index: 30 !important;
     grid-column: unset !important;
+    grid-row: unset !important;
 }
 
 body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dataTables_length {
@@ -4111,4 +4158,30 @@ body.zoho-theme:not(.pos-sale-theme) .business-settings-page .pos-tab-content .t
         width: 100% !important;
         flex: 0 0 100%;
     }
+}
+
+/* Hide raw form until select2 / fileinput / icheck finish ? prevents load?after-load jump */
+body.zoho-theme:not(.pos-sale-theme) .business-settings-page.settings-booting .pos-tab-container {
+    opacity: 0;
+}
+body.zoho-theme:not(.pos-sale-theme) .business-settings-page.settings-ready .pos-tab-container {
+    opacity: 1;
+    transition: opacity 0.12s ease;
+}
+
+/* Match final control heights before plugins transform them */
+body.zoho-theme:not(.pos-sale-theme) .business-settings-page select.select2,
+body.zoho-theme:not(.pos-sale-theme) .business-settings-page select.form-control {
+    height: 40px !important;
+    min-height: 40px !important;
+}
+body.zoho-theme:not(.pos-sale-theme) .business-settings-page .select2-container .select2-selection--single {
+    height: 40px !important;
+    min-height: 40px !important;
+}
+body.zoho-theme:not(.pos-sale-theme) .business-settings-page input[type="file"] {
+    min-height: 40px;
+}
+body.zoho-theme:not(.pos-sale-theme) .business-settings-page .file-input .input-group {
+    min-height: 40px;
 }

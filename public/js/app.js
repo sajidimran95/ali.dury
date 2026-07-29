@@ -60,9 +60,12 @@ $(document).ready(function() {
                 if (!$container.parent().is('body')) {
                     $container.appendTo('body');
                 }
-                $container
-                    .html(result)
-                    .modal('show');
+                $container.html(result);
+                // Apply field visibility + select2 BEFORE show to avoid design jump
+                if ($container.hasClass('contact_modal') || $container.is('#global_contact_modal')) {
+                    __prepare_contact_modal($container);
+                }
+                $container.modal('show');
             },
             complete: function() {
                 $container.data('loading', false);
@@ -542,79 +545,126 @@ $(document).ready(function() {
         contact_table.ajax.reload();
     });
 
+    // Apply contact modal layout (field visibility + select2) before first paint
+    window.__prepare_contact_modal = function($modal) {
+        $modal = $modal && $modal.length ? $modal : $('.contact_modal');
+        var $root = $modal.first();
+        var type = $root.find('select#contact_type').val();
+
+        $root.find('div.lead_additional_div').hide();
+        $root.find('div.export_div').hide();
+
+        if (type == 'customer') {
+            $root.find('div.supplier_fields').hide();
+            $root.find('div.customer_fields').show();
+        } else if (type == 'supplier') {
+            $root.find('div.supplier_fields').show();
+            $root.find('div.customer_fields').hide();
+        } else if (type == 'lead') {
+            $root.find('div.supplier_fields').hide();
+            $root.find('div.customer_fields').hide();
+            $root.find('div.opening_balance').hide();
+            $root.find('div.pay_term').hide();
+            $root.find('div.lead_additional_div').show();
+            $root.find('div.shipping_addr_div').hide();
+        } else if (type == 'both') {
+            $root.find('div.supplier_fields').show();
+            $root.find('div.customer_fields').show();
+        }
+
+        if ($root.find('#is_customer_export').is(':checked')) {
+            $root.find('div.export_div').show();
+        }
+
+        // Init select2 inside modal (destroy first to avoid double-init)
+        $root.find('select.select2').each(function() {
+            var $el = $(this);
+            if ($el.hasClass('select2-hidden-accessible')) {
+                try { $el.select2('destroy'); } catch (err) {}
+            }
+            $el.select2({
+                dropdownParent: $root,
+                width: '100%'
+            });
+        });
+    };
+
     //On display of add contact modal
-    $('.contact_modal').on('shown.bs.modal', function(e) {
-        $('input[type=radio][name="contact_type_radio"]').on('change', function() {
-            if (this.value == 'individual') {
-                $('div.individual').show();
-                $('div.business').hide();
-            } else if (this.value == 'business') {
-                $('div.individual').hide();
-                $('div.business').show();
-            }
-        });
-        if ($('#is_customer_export').is(':checked')) {
-            $('div.export_div').show();
-        }
-        $('#is_customer_export').on('change', function () {
-            if ($(this).is(':checked')) {
-                $('div.export_div').show();
-            } else {
-                $('div.export_div').hide();
-            }
-        });
+    $(document).on('shown.bs.modal', '.contact_modal', function(e) {
+        var $root = $(this);
 
-        $('.more_btn').click(function(){
-            $($(this).data('target')).toggleClass('hide');
-        });
-        $('div.lead_additional_div').hide();
+        // Ensure layout is applied (covers edit_contact_button path too)
+        __prepare_contact_modal($root);
 
-        if ($('select#contact_type').val() == 'customer') {
-            $('div.supplier_fields').hide();
-            $('div.customer_fields').show();
-        } else if ($('select#contact_type').val() == 'supplier') {
-            $('div.supplier_fields').show();
-            $('div.customer_fields').hide();
-        }  else if ($('select#contact_type').val() == 'lead') {
-            $('div.supplier_fields').hide();
-            $('div.customer_fields').hide();
-            $('div.opening_balance').hide();
-            $('div.pay_term').hide();
-            $('div.lead_additional_div').show();
-            $('div.shipping_addr_div').hide();
-        }
+        $root.off('change.contactTypeRadio', 'input[type=radio][name="contact_type_radio"]')
+            .on('change.contactTypeRadio', 'input[type=radio][name="contact_type_radio"]', function() {
+                if (this.value == 'individual') {
+                    $root.find('div.individual').show();
+                    $root.find('div.business').hide();
+                } else if (this.value == 'business') {
+                    $root.find('div.individual').hide();
+                    $root.find('div.business').show();
+                }
+            });
 
-        $('select#contact_type').change(function() {
-            var t = $(this).val();
+        $root.off('change.customerExport', '#is_customer_export')
+            .on('change.customerExport', '#is_customer_export', function () {
+                if ($(this).is(':checked')) {
+                    $root.find('div.export_div').show();
+                } else {
+                    $root.find('div.export_div').hide();
+                }
+            });
 
-            if (t == 'supplier') {
-                $('div.supplier_fields').fadeIn();
-                $('div.customer_fields').fadeOut();
-            } else if (t == 'both') {
-                $('div.supplier_fields').fadeIn();
-                $('div.customer_fields').fadeIn();
-            } else if (t == 'customer') {
-                $('div.customer_fields').fadeIn();
-                $('div.supplier_fields').fadeOut();
-            } else if (t == 'lead') {
-                $('div.customer_fields').fadeOut();
-                $('div.supplier_fields').fadeOut();
-                $('div.opening_balance').fadeOut();
-                $('div.pay_term').fadeOut();
-                $('div.lead_additional_div').fadeIn();
-                $('div.shipping_addr_div').hide();
-            }
-        });
+        $root.off('click.moreBtn', '.more_btn')
+            .on('click.moreBtn', '.more_btn', function(){
+                $($(this).data('target')).toggleClass('hide');
+            });
 
-        $(".contact_modal").find('.select2').each( function(){
-            $(this).select2();
-        });
+        $root.off('change.contactType', 'select#contact_type')
+            .on('change.contactType', 'select#contact_type', function() {
+                var t = $(this).val();
+
+                if (t == 'supplier') {
+                    $root.find('div.supplier_fields').show();
+                    $root.find('div.customer_fields').hide();
+                    $root.find('div.lead_additional_div').hide();
+                    $root.find('div.opening_balance').show();
+                    $root.find('div.pay_term').show();
+                } else if (t == 'both') {
+                    $root.find('div.supplier_fields').show();
+                    $root.find('div.customer_fields').show();
+                    $root.find('div.lead_additional_div').hide();
+                } else if (t == 'customer') {
+                    $root.find('div.customer_fields').show();
+                    $root.find('div.supplier_fields').hide();
+                    $root.find('div.lead_additional_div').hide();
+                    $root.find('div.opening_balance').show();
+                    $root.find('div.pay_term').show();
+                } else if (t == 'lead') {
+                    $root.find('div.customer_fields').hide();
+                    $root.find('div.supplier_fields').hide();
+                    $root.find('div.opening_balance').hide();
+                    $root.find('div.pay_term').hide();
+                    $root.find('div.lead_additional_div').show();
+                    $root.find('div.shipping_addr_div').hide();
+                }
+            });
 
         $('form#contact_add_form, form#contact_edit_form')
-            .submit(function(e) {
+            .off('submit.contactValidate')
+            .on('submit.contactValidate', function(e) {
                 e.preventDefault();
-            })
-            .validate({
+            });
+
+        // Avoid re-binding validate multiple times on the same form instance
+        var $forms = $('form#contact_add_form, form#contact_edit_form');
+        $forms.each(function() {
+            var $form = $(this);
+            if ($form.data('validator')) {
+                return;
+            }
+            $form.validate({
                 rules: {
                     contact_id: {
                         remote: {
@@ -634,7 +684,6 @@ $(document).ready(function() {
                             },
                         },
                     },
-                    // tax_number remote validation removed - now handled with sweet alert
                 },
                 messages: {
                     contact_id: {
@@ -645,14 +694,13 @@ $(document).ready(function() {
                     }
                 },
                 submitHandler: function(form) {
-                    e.preventDefault();
                     __disable_submit_button($(form).find('button[type="submit"]'));
-                    // Start with tax number validation, then proceed to mobile check
                     checkTaxNumberAndSubmit(form);
                 },
             });
+        });
 
-            $('#contact_add_form').trigger('contactFormvalidationAdded');
+        $('#contact_add_form').trigger('contactFormvalidationAdded');
     });
 
     function checkTaxNumberAndSubmit(form) {
@@ -730,8 +778,13 @@ $(document).ready(function() {
 
     $(document).on('click', '.edit_contact_button', function(e) {
         e.preventDefault();
-        $('div.contact_modal').load($(this).attr('href'), function() {
-            $(this).modal('show');
+        var $modal = $('div.contact_modal').first();
+        $modal.load($(this).attr('href'), function() {
+            if (!$modal.parent().is('body')) {
+                $modal.appendTo('body');
+            }
+            __prepare_contact_modal($modal);
+            $modal.modal('show');
         });
     });
 
@@ -1287,6 +1340,16 @@ $(document).ready(function() {
         checkboxClass: 'icheckbox_square-blue',
         radioClass: 'iradio_square-blue',
     });
+    // Business settings: mark ready after core widgets (page JS may refine further)
+    if ($('.business-settings-page.settings-booting').length) {
+        // Keep booting until page-specific scripts (tinymce/fileinput) finish;
+        // fallback reveal so page never stays invisible if those scripts fail.
+        setTimeout(function () {
+            $('.business-settings-page.settings-booting')
+                .removeClass('settings-booting')
+                .addClass('settings-ready');
+        }, 400);
+    }
     $(document).on('ifChecked', '.check_all', function() {
         $(this)
             .closest('.check_group')

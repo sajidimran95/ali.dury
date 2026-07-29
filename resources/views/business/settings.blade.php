@@ -11,7 +11,7 @@
 </section>
 
 <!-- Main content -->
-<section class="content business-settings-page">
+<section class="content business-settings-page settings-booting">
 {!! Form::open(['url' => action([\App\Http\Controllers\BusinessController::class, 'postBusinessSettings']), 'method' => 'post', 'id' => 'bussiness_edit_form',
            'files' => true ]) !!}
     <div class="row">
@@ -239,6 +239,11 @@
             browseLabel: LANG.file_browse_label,
             removeLabel: LANG.remove,
         });
+
+        // Show settings only after select2 / fileinput / tinymce / icheck have applied
+        $('.business-settings-page')
+            .removeClass('settings-booting')
+            .addClass('settings-ready');
 
         $('#btn_reset_database_fresh_pos').click(function() {
             var phrase = $('#fresh_pos_reset_phrase').val();
