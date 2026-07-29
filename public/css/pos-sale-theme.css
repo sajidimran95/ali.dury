@@ -5405,7 +5405,9 @@ body.lockscreen.pos-sale-theme #global_contact_modal .modal-footer .btn {
 body.lockscreen.pos-sale-theme .contact_modal .select2-container,
 body.lockscreen.pos-sale-theme .contact_modal .select2-container--default {
   width: 100% !important;
+  max-width: 100% !important;
   z-index: 1;
+  box-sizing: border-box;
 }
 
 body.lockscreen.pos-sale-theme .contact_modal .select2-container--default .select2-selection--multiple,
@@ -5415,22 +5417,72 @@ body.lockscreen.pos-sale-theme .contact_modal .select2-container--default .selec
   color: #ffffff !important;
   min-height: 40px !important;
   border-radius: 6px !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
 }
 
 body.lockscreen.pos-sale-theme .contact_modal .select2-container--default .select2-selection--multiple .select2-selection__rendered {
   color: #ffffff !important;
   padding: 4px 8px !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 4px;
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  overflow: visible !important;
+}
+
+/* Hide empty ghost choice (blank option chip with only ×) */
+body.lockscreen.pos-sale-theme .contact_modal .select2-container--default .select2-selection--multiple .select2-selection__choice[title=""],
+body.lockscreen.pos-sale-theme .contact_modal .select2-container--default .select2-selection--multiple .select2-selection__choice:empty,
+body.lockscreen.pos-sale-theme .contact_modal .select2-selection__choice[title=""] {
+  display: none !important;
 }
 
 body.lockscreen.pos-sale-theme .contact_modal .select2-container--default .select2-selection--multiple .select2-selection__choice {
   background: #3b8ddd !important;
   border-color: #2f7bc4 !important;
   color: #ffffff !important;
+  margin: 0 !important;
+  float: none !important;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+body.lockscreen.pos-sale-theme .contact_modal .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+  color: #ffffff !important;
+  margin-right: 4px;
+  float: none !important;
+  border: 0 !important;
+  background: transparent !important;
+  padding: 0 2px 0 0 !important;
+  font-size: 14px !important;
+  line-height: 1 !important;
+}
+
+/* Hide allowClear × on multi-select (duplicate of per-choice remove) */
+body.lockscreen.pos-sale-theme .contact_modal .select2-container--default .select2-selection--multiple .select2-selection__clear {
+  display: none !important;
+}
+
+body.lockscreen.pos-sale-theme .contact_modal .select2-container--default .select2-selection--multiple .select2-search,
+body.lockscreen.pos-sale-theme .contact_modal .select2-container--default .select2-selection--multiple .select2-search--inline {
+  float: none !important;
+  flex: 1 1 auto;
+  min-width: 60px;
+  max-width: 100%;
 }
 
 body.lockscreen.pos-sale-theme .contact_modal .select2-container--default .select2-selection--multiple .select2-search__field {
   color: #ffffff !important;
   background: transparent !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
 }
 
 body.lockscreen.pos-sale-theme .contact_modal .select2-container--default .select2-selection--multiple .select2-search__field::placeholder {
@@ -5440,6 +5492,12 @@ body.lockscreen.pos-sale-theme .contact_modal .select2-container--default .selec
 
 body.lockscreen.pos-sale-theme .contact_modal .select2-container--default .select2-selection--multiple .select2-selection__placeholder {
   color: #999 !important;
+}
+
+/* Hide blank option in dropdown list */
+body.lockscreen.pos-sale-theme .select2-container--open .select2-results__option[id$="-"],
+body.lockscreen.pos-sale-theme .select2-container--open .select2-results__option:empty {
+  display: none !important;
 }
 
 /* Select2 dropdown for contact modal (appended to body) */

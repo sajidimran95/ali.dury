@@ -12,8 +12,11 @@ $(document).ready(function() {
     fileinput_setting = {
         showUpload: false,
         showPreview: false,
+        showCancel: false,
         browseLabel: LANG.file_browse_label,
         removeLabel: LANG.remove,
+        browseClass: 'btn btn-primary btn-sm',
+        removeClass: 'btn btn-default btn-sm',
     };
     $(document).ajaxStart(function() {
         if (typeof Pace !== 'undefined' && Pace && typeof Pace.restart === 'function') {
@@ -605,7 +608,8 @@ $(document).ready(function() {
                 dropdownParent: $(document.body),
                 width: '100%',
                 placeholder: $el.data('placeholder') || LANG.please_select || 'Please Select',
-                allowClear: !$el.prop('required'),
+                // allowClear adds an extra × next to choice chips on multi-select — only for single
+                allowClear: !$el.prop('required') && !$el.prop('multiple'),
                 closeOnSelect: !$el.prop('multiple')
             });
         });

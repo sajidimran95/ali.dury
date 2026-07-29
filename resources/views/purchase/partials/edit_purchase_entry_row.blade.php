@@ -6,33 +6,48 @@
     $currency_precision = session('business.currency_precision', 2);
     $quantity_precision = session('business.quantity_precision', 2);
 @endphp
-<div class="table-responsive">
+<div class="table-responsive purchase-entry-table-wrap">
     <table class="table table-condensed table-bordered table-th-green text-center table-striped" 
     id="purchase_entry_table">
         <thead>
+              @php
+                  $purchase_th_2line = function ($text) {
+                      $text = trim($text);
+                      if ($text === '') {
+                          return '';
+                      }
+                      if (preg_match('/^(.+?)\s+(\([^)]+\))$/u', $text, $m)) {
+                          return e($m[1]) . '<br><small>' . e($m[2]) . '</small>';
+                      }
+                      $parts = preg_split('/\s+/u', $text, 2);
+                      return count($parts) === 2
+                          ? e($parts[0]) . '<br>' . e($parts[1])
+                          : e($text);
+                  };
+              @endphp
               <tr>
                 <th>#</th>
-                <th>@lang( 'product.product_name' )</th>
-                <th>@if(empty($is_purchase_order)) @lang( 'purchase.purchase_quantity' ) @else @lang( 'lang_v1.order_quantity' ) @endif</th>
-                <th>@lang( 'lang_v1.unit_cost_before_discount' )</th>
-                <th>@lang( 'lang_v1.discount_percent' )</th>
-                <th>@lang( 'purchase.unit_cost_before_tax' )</th>
-                <th class="{{$hide_tax}}">@lang( 'purchase.subtotal_before_tax' )</th>
-                <th class="{{$hide_tax}}">@lang( 'purchase.product_tax' )</th>
-                <th class="{{$hide_tax}}">@lang( 'purchase.net_cost' )</th>
-                <th>@lang( 'purchase.line_total' )</th>
+                <th>{!! $purchase_th_2line(__('product.product_name')) !!}</th>
+                <th>{!! $purchase_th_2line(empty($is_purchase_order) ? __('purchase.purchase_quantity') : __('lang_v1.order_quantity')) !!}</th>
+                <th>{!! $purchase_th_2line(__('lang_v1.unit_cost_before_discount')) !!}</th>
+                <th>{!! $purchase_th_2line(__('lang_v1.discount_percent')) !!}</th>
+                <th>{!! $purchase_th_2line(__('purchase.unit_cost_before_tax')) !!}</th>
+                <th class="{{$hide_tax}}">{!! $purchase_th_2line(__('purchase.subtotal_before_tax')) !!}</th>
+                <th class="{{$hide_tax}}">{!! $purchase_th_2line(__('purchase.product_tax')) !!}</th>
+                <th class="{{$hide_tax}}">{!! $purchase_th_2line(__('purchase.net_cost')) !!}</th>
+                <th>{!! $purchase_th_2line(__('purchase.line_total')) !!}</th>
                 <th class="@if(!session('business.enable_editing_product_from_purchase') || !empty($is_purchase_order)) hide @endif">
-                    @lang( 'lang_v1.profit_margin' )
+                    {!! $purchase_th_2line(__('lang_v1.profit_margin')) !!}
                 </th>
                 @if(empty($is_purchase_order))
-                    <th>@lang( 'purchase.unit_selling_price') <small>(@lang('product.inc_of_tax'))</small></th>
+                    <th>{!! $purchase_th_2line(__('purchase.unit_selling_price')) !!}<br><small>(@lang('product.inc_of_tax'))</small></th>
                     @if(session('business.enable_lot_number'))
                         <th>
-                            @lang('lang_v1.lot_number')
+                            {!! $purchase_th_2line(__('lang_v1.lot_number')) !!}
                         </th>
                     @endif
                     @if(session('business.enable_product_expiry'))
-                        <th>@lang('product.mfg_date') / @lang('product.exp_date')</th>
+                        <th>@lang('product.mfg_date') /<br>@lang('product.exp_date')</th>
                     @endif
                 @endif
                 <th>

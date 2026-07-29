@@ -209,7 +209,7 @@
             <div class="col-md-6 lead_additional_div" @if(($type ?? '') !== 'lead') style="display: none;" @endif>
                   <div class="form-group">
                       {!! Form::label('user_id', __('lang_v1.assigned_to') . ':*' ) !!}
-                      {!! Form::select('user_id[]', ['' => ''] + (collect($users ?? [])->toArray()), null , [
+                      {!! Form::select('user_id[]', collect($users ?? [])->toArray(), null , [
                           'class' => 'form-control select2',
                           'id' => 'user_id',
                           'multiple',
@@ -225,8 +225,7 @@
                 <div class="col-md-6">
                       <div class="form-group">
                           {!! Form::label('assigned_to_users', __('lang_v1.assigned_to') . ':' ) !!}
-                          {{-- Empty option required for Select2 multiple placeholder --}}
-                          {!! Form::select('assigned_to_users[]', ['' => ''] + (collect($users ?? [])->toArray()), null , [
+                          {!! Form::select('assigned_to_users[]', collect($users ?? [])->toArray(), null , [
                               'class' => 'form-control select2',
                               'id' => 'assigned_to_users',
                               'multiple',

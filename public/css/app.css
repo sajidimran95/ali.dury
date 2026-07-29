@@ -511,9 +511,116 @@ div.pos-tab div.pos-tab-content:not(.active){
 	background-color: #3c8dbc;
     color: white;
 }
+/* Purchase attach document — compact, no Cancel, Browse stays inside box */
+.purchase-attach-document {
+	max-width: 100%;
+	overflow: hidden;
+}
+.purchase-attach-document .file-input {
+	width: 100% !important;
+	max-width: 100% !important;
+	overflow: hidden;
+}
+.purchase-attach-document .file-input .input-group {
+	display: flex !important;
+	flex-wrap: nowrap;
+	align-items: stretch;
+	width: 100% !important;
+	max-width: 100% !important;
+	margin: 0;
+}
+.purchase-attach-document .file-input .form-control,
+.purchase-attach-document .file-input .file-caption {
+	flex: 1 1 auto;
+	min-width: 0 !important;
+	width: auto !important;
+	height: 30px !important;
+	padding: 4px 8px !important;
+	font-size: 12px !important;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.purchase-attach-document .file-input .input-group-btn {
+	display: flex !important;
+	flex: 0 0 auto;
+	width: auto !important;
+	white-space: nowrap;
+}
+.purchase-attach-document .file-input .btn,
+.purchase-attach-document .file-input .btn-file {
+	height: 30px !important;
+	min-height: 30px !important;
+	padding: 0 8px !important;
+	font-size: 11px !important;
+	line-height: 28px !important;
+	display: inline-flex !important;
+	align-items: center;
+	justify-content: center;
+	gap: 4px;
+	box-sizing: border-box;
+}
+.purchase-attach-document .file-input .fileinput-cancel-button,
+.purchase-attach-document .file-input .fileinput-upload-button {
+	display: none !important;
+}
+.purchase-attach-help,
+.purchase-attach-document .help-block {
+	font-size: 10px !important;
+	line-height: 1.35 !important;
+	margin-top: 4px !important;
+	margin-bottom: 0 !important;
+	color: #888 !important;
+	word-break: break-word;
+}
+
 .table-th-green th{
 	background-color: #5cb85c;
     color: white;
+}
+
+/* Purchase entry table: 2-line headers, fit width, no horizontal scrollbar */
+.purchase-entry-table-wrap {
+	overflow-x: hidden !important;
+	width: 100%;
+	max-width: 100%;
+}
+#purchase_entry_table {
+	table-layout: fixed;
+	width: 100% !important;
+	max-width: 100%;
+	margin-bottom: 0;
+}
+#purchase_entry_table thead th {
+	white-space: normal !important;
+	word-break: break-word;
+	overflow-wrap: anywhere;
+	line-height: 1.2;
+	font-size: 11px;
+	font-weight: 700;
+	padding: 6px 3px !important;
+	vertical-align: middle;
+	text-transform: uppercase;
+}
+#purchase_entry_table thead th small {
+	font-size: 10px;
+	font-weight: 600;
+	text-transform: none;
+}
+#purchase_entry_table td {
+	padding: 4px 2px !important;
+	vertical-align: middle;
+	overflow: hidden;
+}
+#purchase_entry_table .form-control,
+#purchase_entry_table select.form-control,
+#purchase_entry_table input.form-control {
+	width: 100% !important;
+	max-width: 100% !important;
+	min-width: 0 !important;
+	box-sizing: border-box;
+	padding: 3px 4px;
+	font-size: 12px;
+	height: auto;
 }
 
 input[type=number]::-webkit-inner-spin-button, 

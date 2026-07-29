@@ -4224,3 +4224,69 @@ body.zoho-theme:not(.pos-sale-theme) .business-settings-page input[type="file"] 
 body.zoho-theme:not(.pos-sale-theme) .business-settings-page .file-input .input-group {
     min-height: 40px;
 }
+
+/* Purchase Attach Document ? compact, hide Cancel, keep Browse inside box */
+body.zoho-theme:not(.pos-sale-theme) .purchase-attach-document {
+    max-width: 100%;
+    overflow: hidden;
+}
+body.zoho-theme:not(.pos-sale-theme) .purchase-attach-document .file-input {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow: hidden;
+}
+body.zoho-theme:not(.pos-sale-theme) .purchase-attach-document .file-input .input-group {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    align-items: stretch;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: 0 !important;
+    margin: 0;
+    gap: 0;
+}
+body.zoho-theme:not(.pos-sale-theme) .purchase-attach-document .file-input .form-control,
+body.zoho-theme:not(.pos-sale-theme) .purchase-attach-document .file-input .file-caption {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    width: auto !important;
+    height: 30px !important;
+    min-height: 30px !important;
+    padding: 4px 8px !important;
+    font-size: 12px !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+body.zoho-theme:not(.pos-sale-theme) .purchase-attach-document .file-input .input-group-btn {
+    display: flex !important;
+    flex: 0 0 auto !important;
+    width: auto !important;
+    white-space: nowrap;
+}
+body.zoho-theme:not(.pos-sale-theme) .purchase-attach-document .file-input .btn,
+body.zoho-theme:not(.pos-sale-theme) .purchase-attach-document .file-input .btn-file,
+body.zoho-theme:not(.pos-sale-theme) .purchase-attach-document .btn-file {
+    height: 30px !important;
+    min-height: 30px !important;
+    padding: 0 8px !important;
+    font-size: 11px !important;
+    line-height: 1 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 4px !important;
+    box-sizing: border-box !important;
+}
+body.zoho-theme:not(.pos-sale-theme) .purchase-attach-document .file-input .fileinput-cancel-button,
+body.zoho-theme:not(.pos-sale-theme) .purchase-attach-document .file-input .fileinput-upload-button {
+    display: none !important;
+}
+body.zoho-theme:not(.pos-sale-theme) .purchase-attach-document .help-block,
+body.zoho-theme:not(.pos-sale-theme) .purchase-attach-help {
+    font-size: 10px !important;
+    line-height: 1.35 !important;
+    margin-top: 4px !important;
+    margin-bottom: 0 !important;
+    color: #64748b !important;
+    word-break: break-word;
+}

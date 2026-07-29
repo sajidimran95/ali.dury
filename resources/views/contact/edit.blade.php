@@ -221,7 +221,7 @@
           <div class="col-md-6">
                 <div class="form-group">
                     {!! Form::label('assigned_to_users', __('lang_v1.assigned_to') . ':' ) !!}
-                    {!! Form::select('assigned_to_users[]', ['' => ''] + (collect($users ?? [])->toArray()), $assigned_to_users ?? [] , [
+                    {!! Form::select('assigned_to_users[]', collect($users ?? [])->toArray(), $assigned_to_users ?? [] , [
                         'class' => 'form-control select2',
                         'id' => 'assigned_to_users',
                         'multiple',

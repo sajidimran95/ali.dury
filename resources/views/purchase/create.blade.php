@@ -121,10 +121,10 @@
 		    </div>
 
 			<div class="col-sm-3">
-                <div class="form-group">
+                <div class="form-group purchase-attach-document">
                     {!! Form::label('document', __('purchase.attach_document') . ':') !!}
                     {!! Form::file('document', ['id' => 'upload_document', 'accept' => implode(',', array_keys(config('constants.document_upload_mimes_types')))]); !!}
-                    <p class="help-block">
+                    <p class="help-block purchase-attach-help">
                     	@lang('purchase.max_file_size', ['size' => (config('constants.document_size_limit') / 1000000)])
                     	@includeIf('components.document_help_text')
                     </p>
@@ -254,35 +254,50 @@
 		@endphp
 		<div class="row">
 			<div class="col-sm-12">
-				<div class="table-responsive">
+				@php
+					$purchase_th_2line = function ($text) {
+						$text = trim($text);
+						if ($text === '') {
+							return '';
+						}
+						if (preg_match('/^(.+?)\s+(\([^)]+\))$/u', $text, $m)) {
+							return e($m[1]) . '<br><small>' . e($m[2]) . '</small>';
+						}
+						$parts = preg_split('/\s+/u', $text, 2);
+						return count($parts) === 2
+							? e($parts[0]) . '<br>' . e($parts[1])
+							: e($text);
+					};
+				@endphp
+				<div class="table-responsive purchase-entry-table-wrap">
 					<table class="table table-condensed table-bordered table-th-green text-center table-striped" id="purchase_entry_table">
 						<thead>
 							<tr>
 								<th>#</th>
-								<th>@lang( 'product.product_name' )</th>
-								<th>@lang( 'purchase.purchase_quantity' )</th>
-								<th>@lang( 'lang_v1.unit_cost_before_discount' )</th>
-								<th>@lang( 'lang_v1.discount_percent' )</th>
-								<th>@lang( 'purchase.unit_cost_before_tax' )</th>
-								<th class="{{$hide_tax}}">@lang( 'purchase.subtotal_before_tax' )</th>
-								<th class="{{$hide_tax}}">@lang( 'purchase.product_tax' )</th>
-								<th class="{{$hide_tax}}">@lang( 'purchase.net_cost' )</th>
-								<th>@lang( 'purchase.line_total' )</th>
+								<th>{!! $purchase_th_2line(__('product.product_name')) !!}</th>
+								<th>{!! $purchase_th_2line(__('purchase.purchase_quantity')) !!}</th>
+								<th>{!! $purchase_th_2line(__('lang_v1.unit_cost_before_discount')) !!}</th>
+								<th>{!! $purchase_th_2line(__('lang_v1.discount_percent')) !!}</th>
+								<th>{!! $purchase_th_2line(__('purchase.unit_cost_before_tax')) !!}</th>
+								<th class="{{$hide_tax}}">{!! $purchase_th_2line(__('purchase.subtotal_before_tax')) !!}</th>
+								<th class="{{$hide_tax}}">{!! $purchase_th_2line(__('purchase.product_tax')) !!}</th>
+								<th class="{{$hide_tax}}">{!! $purchase_th_2line(__('purchase.net_cost')) !!}</th>
+								<th>{!! $purchase_th_2line(__('purchase.line_total')) !!}</th>
 								<th class="@if(!session('business.enable_editing_product_from_purchase')) hide @endif">
-									@lang( 'lang_v1.profit_margin' )
+									{!! $purchase_th_2line(__('lang_v1.profit_margin')) !!}
 								</th>
 								<th>
-									@lang( 'purchase.unit_selling_price' )
-									<small>(@lang('product.inc_of_tax'))</small>
+									{!! $purchase_th_2line(__('purchase.unit_selling_price')) !!}
+									<br><small>(@lang('product.inc_of_tax'))</small>
 								</th>
 								@if(session('business.enable_lot_number'))
 									<th>
-										@lang('lang_v1.lot_number')
+										{!! $purchase_th_2line(__('lang_v1.lot_number')) !!}
 									</th>
 								@endif
 								@if(session('business.enable_product_expiry'))
 									<th>
-										@lang('product.mfg_date') / @lang('product.exp_date')
+										@lang('product.mfg_date') /<br>@lang('product.exp_date')
 									</th>
 								@endif
 								<th><i class="fa fa-trash" aria-hidden="true"></i></th>
