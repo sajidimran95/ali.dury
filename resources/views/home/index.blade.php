@@ -4,6 +4,7 @@
 @section('content')
 
     @if (auth()->user()->can('dashboard.data'))
+        <div class="japs-dashboard-page">
         <div class="zoho-dashboard__layout">
             <div class="zoho-dashboard__main">
     @endif
@@ -178,6 +179,7 @@
     </div>
 
     @if (auth()->user()->can('dashboard.data'))
+        </div>{{-- /.zoho-dashboard__main --}}
         </div>{{-- /.zoho-dashboard__layout --}}
 
         <div class="japs-dashboard-content zoho-dashboard__body">
@@ -215,6 +217,7 @@
                 </div>
             @endif
         </div>{{-- /.japs-dashboard-content --}}
+        </div>{{-- /.japs-dashboard-page --}}
     @endif
 
 @endsection

@@ -1836,6 +1836,19 @@ body.zoho-theme .zoho-dashboard__layout {
     align-items: stretch !important;
 }
 
+body.japs-dashboard-home .zoho-dashboard__layout {
+    padding-left: var(--dash-page-x) !important;
+    padding-right: var(--dash-page-x) !important;
+}
+
+body.japs-dashboard-home .japs-dashboard-page .japs-dashboard-content.zoho-dashboard__body,
+body.japs-dashboard-home .japs-dashboard-page .japs-dashboard-content {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    padding-top: 8px !important;
+    padding-bottom: 0 !important;
+}
+
 body.zoho-theme .zoho-dashboard__main {
     display: flex;
     flex-direction: column;

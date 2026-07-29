@@ -1112,12 +1112,21 @@ body.japs-dashboard-premium.japs-dashboard-home .japs-dash-attention-pill.is-act
   color: #c2410c !important;
 }
 
-/* Wider, airier layout — dashboard content stays centered */
-body.japs-dashboard-premium.japs-dashboard-home .zoho-dashboard__layout,
-body.japs-dashboard-premium.japs-dashboard-home .japs-dashboard-content {
-  max-width: 1360px !important;
+/* Moderate-width home dashboard — centered, aligned sections */
+body.japs-dashboard-premium.japs-dashboard-home .japs-dashboard-page {
+  width: 100% !important;
+  max-width: var(--dash-page-max, 1360px) !important;
   margin-left: auto !important;
   margin-right: auto !important;
+}
+
+body.japs-dashboard-premium.japs-dashboard-home .japs-dashboard-page .zoho-dashboard__layout,
+body.japs-dashboard-premium.japs-dashboard-home .japs-dashboard-page .japs-dashboard-content,
+body.japs-dashboard-premium.japs-dashboard-home .japs-dashboard-page .japs-dashboard-content.zoho-dashboard__body {
+  width: 100% !important;
+  max-width: none !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
 }
 
 body.japs-dashboard-premium.japs-dashboard-home .japs-dash-reports-grid {

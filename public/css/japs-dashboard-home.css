@@ -18,6 +18,8 @@ body.japs-dashboard-home {
   --dash-pill-active-text: #c2410c;
   --dash-pill-idle-bg: #ffffff;
   --dash-pill-idle-border: #e2e8f0;
+  --dash-page-x: 24px;
+  --dash-page-max: 1360px;
   background: var(--dash-bg) !important;
   color: var(--dash-text) !important;
 }
@@ -41,17 +43,74 @@ body.japs-dashboard-home .japs-dashboard-content {
   background: transparent !important;
 }
 
-/* Centered main content with left/right gaps */
+/* Moderate-width center column — slightly wider than before, not full screen */
+body.japs-dashboard-home .japs-dashboard-page {
+  width: 100% !important;
+  max-width: var(--dash-page-max) !important;
+  margin: 0 auto !important;
+  padding: 0 var(--dash-page-x) 32px !important;
+  box-sizing: border-box;
+}
+
+body.japs-dashboard-home .japs-dashboard-page .zoho-dashboard__layout,
+body.japs-dashboard-home .japs-dashboard-page .japs-dashboard-content.zoho-dashboard__body,
+body.japs-dashboard-home .japs-dashboard-page .japs-dashboard-content {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  box-sizing: border-box;
+}
+
+body.japs-dashboard-home .japs-dashboard-page .zoho-dashboard__layout {
+  display: block !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+body.japs-dashboard-home .japs-dashboard-page .japs-dashboard-content.zoho-dashboard__body,
+body.japs-dashboard-home .japs-dashboard-page .japs-dashboard-content {
+  padding-top: 8px !important;
+  padding-bottom: 0 !important;
+}
+
+body.japs-dashboard-home.japs-dashboard-premium .japs-dashboard-page .japs-dashboard-content.zoho-dashboard__body {
+  padding: 8px 0 0 !important;
+}
+
+/* Fallback when page wrapper is not used */
 body.japs-dashboard-home .zoho-dashboard__layout {
   display: block !important;
-  padding: 0 28px 28px !important;
-  max-width: 1280px;
-  margin: 0 auto;
+  width: 100% !important;
+  max-width: var(--dash-page-max) !important;
+  margin: 0 auto !important;
+  padding: 0 var(--dash-page-x) 28px !important;
+  box-sizing: border-box;
 }
 
 body.japs-dashboard-home .zoho-dashboard__main {
   width: 100% !important;
   max-width: none !important;
+}
+
+body.japs-dashboard-home .japs-dashboard-page .zoho-dashboard,
+body.japs-dashboard-home .japs-dashboard-page .zoho-dashboard__main {
+  width: 100% !important;
+  max-width: none !important;
+}
+
+body.japs-dashboard-home.japs-dashboard-premium #scrollable-container {
+  width: 100% !important;
+  max-width: none !important;
+  padding: 0 !important;
+}
+
+body.japs-dashboard-home.japs-dashboard-premium .zoho-main-column {
+  width: 100% !important;
+  max-width: none !important;
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
 }
 
 body.japs-dashboard-home .zoho-dashboard__aside {
@@ -1077,11 +1136,13 @@ body.japs-dashboard-home .japs-dash-secondary-row {
   display: none !important;
 }
 
-/* Extra reports below — centered container with left/right gaps */
+/* Reports section — same horizontal alignment as hero above */
 body.japs-dashboard-home .japs-dashboard-content {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 8px 28px 32px !important;
+  width: 100% !important;
+  max-width: var(--dash-page-max) !important;
+  margin: 0 auto !important;
+  padding: 8px var(--dash-page-x) 32px !important;
+  box-sizing: border-box;
 }
 
 body.japs-dashboard-home .japs-dash-full-table,
@@ -1183,4 +1244,10 @@ body.japs-dashboard-home .japs-dash-recent-viewall {
 body.japs-dashboard-home .japs-dash-recent-viewall:hover {
   text-decoration: underline;
   color: #2563eb;
+}
+
+@media (max-width: 767px) {
+  body.japs-dashboard-home {
+    --dash-page-x: 16px;
+  }
 }
