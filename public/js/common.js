@@ -366,7 +366,8 @@ $(document).ready(function () {
         //Uncomment below line to enable save state of datatable.
         //stateSave: true,
         fixedHeader: true,
-        dom: '<"row margin-bottom-20 text-center"<"col-sm-2 text-left"l><"col-sm-7"B><"col-sm-3 text-right"f> r>tip',
+        // Toolbar: length + export left, search right (same row on laptop)
+        dom: '<"row margin-bottom-20 dt-toolbar"<"dt-toolbar__left"lB><"dt-toolbar__right"f>r>tip',
         buttons: buttons,
         aLengthMenu: [
             [25, 50, 100, 200],

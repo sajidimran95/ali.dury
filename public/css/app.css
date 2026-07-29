@@ -46,6 +46,33 @@
 }
 
 /* Keep "Show entries", export buttons and search aligned on one line */
+.dataTables_wrapper > .row.margin-bottom-20,
+.dataTables_wrapper .dt-toolbar {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 12px;
+    width: 100%;
+}
+
+.dataTables_wrapper .dt-toolbar__left {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px;
+    flex: 1 1 auto;
+    min-width: 0;
+    flex-wrap: nowrap !important;
+    overflow-x: auto;
+}
+
+.dataTables_wrapper .dt-toolbar__right {
+    display: flex !important;
+    align-items: center !important;
+    flex: 0 0 auto;
+    margin-left: auto !important;
+}
+
 .dataTables_wrapper > .row.margin-bottom-20 .dataTables_length label {
     display: inline-flex !important;
     align-items: center !important;
@@ -66,9 +93,47 @@
     vertical-align: middle !important;
 }
 
-.dataTables_wrapper > .row.margin-bottom-20 .dt-buttons .tw-my-2 {
+.dataTables_wrapper > .row.margin-bottom-20 .dataTables_filter,
+.dataTables_wrapper > .row.margin-bottom-20 .dataTables_length,
+.dataTables_wrapper .dt-toolbar .dataTables_filter,
+.dataTables_wrapper .dt-toolbar .dataTables_length {
+    margin-bottom: 0 !important;
+    float: none !important;
+}
+
+.dataTables_wrapper > .row.margin-bottom-20 .dataTables_filter label,
+.dataTables_wrapper .dt-toolbar .dataTables_filter label {
+    display: inline-flex !important;
+    align-items: center !important;
+    margin: 0 !important;
+    line-height: 1 !important;
+}
+
+.dataTables_wrapper > .row.margin-bottom-20 .dataTables_filter input,
+.dataTables_wrapper .dt-toolbar .dataTables_filter input {
+    margin: 0 !important;
+    height: 38px !important;
+    vertical-align: middle !important;
+}
+
+.dataTables_wrapper > .row.margin-bottom-20 .dt-buttons .tw-my-2,
+.dataTables_wrapper > .row.margin-bottom-20 .dt-buttons .btn,
+.dataTables_wrapper > .row.margin-bottom-20 .dt-buttons .tw-dw-btn,
+.dataTables_wrapper .dt-toolbar .dt-buttons .tw-my-2,
+.dataTables_wrapper .dt-toolbar .dt-buttons .btn,
+.dataTables_wrapper .dt-toolbar .dt-buttons .tw-dw-btn {
     margin-top: 0 !important;
     margin-bottom: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
+
+.dataTables_wrapper .dt-toolbar .dt-buttons {
+    display: inline-flex !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    gap: 6px;
+    margin: 0 !important;
 }
 
 #online_indicator {
