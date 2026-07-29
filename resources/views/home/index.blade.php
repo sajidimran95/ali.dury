@@ -129,19 +129,19 @@
                                         </div>
                                     </div>
                                     <div class="japs-dash-period-switch" role="tablist" aria-label="Chart period">
-                                        <button type="button" class="japs-dash-period-switch__btn" data-period="30d">{{ __('home.monthly') }}</button>
-                                        <button type="button" class="japs-dash-period-switch__btn is-active" data-period="fy">{{ __('home.yearly') }}</button>
+                                        <button type="button" class="japs-dash-period-switch__btn is-active" data-period="30d">{{ __('home.monthly') }}</button>
+                                        <button type="button" class="japs-dash-period-switch__btn" data-period="fy">{{ __('home.yearly') }}</button>
                                     </div>
                                 </div>
                                 <div class="japs-dash-revenue-legend" aria-hidden="true">
                                     <span class="japs-dash-revenue-legend__item"><i class="japs-dash-revenue-legend__dot japs-dash-revenue-legend__dot--earn"></i>{{ __('home.total_sell') }}</span>
                                 </div>
                                 <div class="japs-dash-chart-panes">
-                                    <div class="japs-dash-chart-pane" id="japs_dash_main_chart_wrap" data-period="30d" hidden>
+                                    <div class="japs-dash-chart-pane is-active" id="japs_dash_main_chart_wrap" data-period="30d">
                                         {!! $sells_chart_1->container() !!}
                                     </div>
                                     @if (!empty($sells_chart_2))
-                                    <div class="japs-dash-chart-pane is-active" id="japs_dash_fy_chart_wrap" data-period="fy">
+                                    <div class="japs-dash-chart-pane" id="japs_dash_fy_chart_wrap" data-period="fy" hidden>
                                         {!! $sells_chart_2->container() !!}
                                     </div>
                                     @endif
