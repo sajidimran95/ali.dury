@@ -1191,36 +1191,16 @@ $(document).ready(function() {
             }
         }
 
-        // Previous system: Card opens card details popup, then finalize
-        if (pay_method == 'card') {
-            var $cardModal = $('div#card_details_modal');
-            if ($cardModal.length && $cardModal.parent()[0] !== document.body) {
-                $cardModal.appendTo('body');
-            }
-            $cardModal.modal('show');
-        } else {
-            pos_form_obj.submit();
-        }
+        // Card / cash / other express methods: finalize immediately (no card details modal)
+        pos_form_obj.submit();
     });
 
-    // Keep card details modal on body so dark overlay/layout works (design only)
-    if ($('#card_details_modal').length) {
-        $('#card_details_modal').appendTo('body');
-    }
-
-    $('div#card_details_modal').on('shown.bs.modal', function(e) {
-        var $modal = $(this);
-        var $cardType = $modal.find('select#card_type');
-        if ($cardType.length && $.fn.select2) {
-            if ($cardType.hasClass('select2-hidden-accessible')) {
-                $cardType.select2('destroy');
-            }
-            $cardType.select2({
-                dropdownParent: $modal,
-                width: '100%',
-            });
+    // Discount / tax / shipping modals live in clipped .pos-form-actions — move to body so Update works
+    ['#posEditDiscountModal', '#posEditOrderTaxModal', '#posShippingModal'].forEach(function (sel) {
+        var $m = $(sel);
+        if ($m.length && $m.parent()[0] !== document.body) {
+            $m.appendTo('body');
         }
-        $modal.find('input#card_number').focus();
     });
 
     // Keep suspend modal on body so Save/Close clicks work (not clipped by cart panel)
@@ -1232,22 +1212,6 @@ $(document).ready(function() {
         $(this)
             .find('textarea')
             .focus();
-    });
-
-    //on save card details (same previous flow)
-    $(document).off('click.posSaveCard', 'button#pos-save-card').on('click.posSaveCard', 'button#pos-save-card', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        $('input#card_number_0').val($('#card_number').val());
-        $('input#card_holder_name_0').val($('#card_holder_name').val());
-        $('input#card_transaction_number_0').val($('#card_transaction_number').val());
-        $('select#card_type_0').val($('#card_type').val());
-        $('input#card_month_0').val($('#card_month').val());
-        $('input#card_year_0').val($('#card_year').val());
-        $('input#card_security_0').val($('#card_security').val());
-
-        $('div#card_details_modal').modal('hide');
-        pos_form_obj.submit();
     });
 
     $(document).off('click.posSuspend', 'button#pos-suspend').on('click.posSuspend', 'button#pos-suspend', function(e) {
@@ -1574,19 +1538,28 @@ $(document).ready(function() {
         calculate_balance_due();
     });
 
-    //Update discount
-    $('button#posEditDiscountModalUpdate').click(function() {
+    //Update discount (delegated — modal may be moved to body)
+    $(document).off('click.posDiscountUpdate', 'button#posEditDiscountModalUpdate').on('click.posDiscountUpdate', 'button#posEditDiscountModalUpdate', function(e) {
+        e.preventDefault();
 
-        //if discount amount is not valid return false
-        if (!$("#discount_amount_modal").valid()) {
+        // Do not call .valid() — modal is appended to body (outside POS form),
+        // so jquery.validate has no form settings and throws.
+        var $discountModalAmt = $('#discount_amount_modal');
+        var discountAmt = __read_number($discountModalAmt);
+        if ($discountModalAmt.length && (discountAmt === '' || isNaN(discountAmt))) {
+            toastr.error(LANG.please_enter_discount_amount || 'Please enter a valid discount amount');
             return false;
         }
-        //Close modal
+        var maxDiscount = parseFloat($discountModalAmt.data('max-discount'));
+        if (!isNaN(maxDiscount) && $('select#discount_type_modal').val() == 'percentage' && discountAmt > maxDiscount) {
+            toastr.error($discountModalAmt.data('max-discount-error_msg') || 'Discount exceeds maximum allowed');
+            return false;
+        }
+
         $('div#posEditDiscountModal').modal('hide');
 
-        //Update values
         $('input#discount_type').val($('select#discount_type_modal').val());
-        __write_number($('input#discount_amount'), __read_number($('input#discount_amount_modal')));
+        __write_number($('input#discount_amount'), discountAmt);
 
         if ($('#reward_point_enabled').length) {
             var reward_validation = isValidatRewardPoint();
@@ -1601,8 +1574,8 @@ $(document).ready(function() {
         pos_total_row();
     });
 
-    //Shipping
-    $('button#posShippingModalUpdate').click(function() {
+    //Shipping (delegated — modal moved to body)
+    $(document).off('click.posShippingUpdate', 'button#posShippingModalUpdate').on('click.posShippingUpdate', 'button#posShippingModalUpdate', function() {
         //Close modal
         $('div#posShippingModal').modal('hide');
 
@@ -1672,8 +1645,8 @@ $(document).ready(function() {
         }
     });
 
-    //Update Order tax
-    $('button#posEditOrderTaxModalUpdate').click(function() {
+    //Update Order tax (delegated — modal moved to body)
+    $(document).off('click.posTaxUpdate', 'button#posEditOrderTaxModalUpdate').on('click.posTaxUpdate', 'button#posEditOrderTaxModalUpdate', function() {
         //Close modal
         $('div#posEditOrderTaxModal').modal('hide');
 

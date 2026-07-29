@@ -18,8 +18,11 @@
 			data-unit="{{ $unit_label }}"
 			title="{{$product->name}} @if($product->type == 'variable')- {{$product->variation}} @endif {{ '(' . $product->sub_sku . ')'}}@if($is_out_of_stock) — {{ __('lang_v1.item_out_of_stock') }}@endif">
 
-		<div class="image-container tw-mx-auto tw-w-full @if(empty($tile_image)) image-container--placeholder @endif"
-			@if(!empty($tile_image)) style="background-image: url({{ $tile_image }});" @endif>
+		<div class="image-container tw-mx-auto tw-w-full @if(empty($tile_image)) image-container--placeholder @endif">
+			@if(!empty($tile_image))
+				<img class="product_tile_img" src="{{ $tile_image }}" alt="" loading="lazy"
+					onerror="this.onerror=null;var p=this.parentElement;this.remove();if(p){p.classList.add('image-container--placeholder');}">
+			@endif
 		</div>
 
 		<div class="text_div">

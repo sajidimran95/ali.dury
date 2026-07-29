@@ -1,7 +1,8 @@
 <div class="pos-sidebar-root">
 @if(empty($drawer_id_suffix))
-{{-- Product search UI hidden — keep #search_product for barcode / keyboard shortcuts --}}
-<div class="pos-product-search-wrap pos-product-search-wrap--hidden" aria-hidden="true">
+{{-- Product search UI hidden — keep #search_product for barcode / keyboard shortcuts.
+     Do not use aria-hidden: JS focuses this input; aria-hidden on a focused ancestor is invalid. --}}
+<div class="pos-product-search-wrap pos-product-search-wrap--hidden">
     {!! Form::text('search_product', null, [
         'class' => 'form-control',
         'id' => 'search_product',
@@ -10,6 +11,7 @@
         'autofocus' => !empty($default_location),
         'tabindex' => '-1',
         'autocomplete' => 'off',
+        'aria-label' => 'Product search / barcode',
     ]) !!}
 </div>
 @endif
