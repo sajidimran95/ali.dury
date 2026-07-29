@@ -86,7 +86,8 @@
 @yield('css')
 
 <!-- app css -->
-<link rel="stylesheet" href="{{ asset('css/app.css?v='.$asset_v.'&tb=2') }}">
+<link rel="stylesheet" href="{{ asset('css/app.css?v='.$asset_v.'&tb=3') }}">
+<link rel="stylesheet" href="{{ asset('css/dt-toolbar.css?v='.$asset_v.'&tb=4') }}">
 <link rel="stylesheet" href="{{ asset('css/zoho-theme.css?v='.$asset_v) }}">
 
 @if(isset($pos_layout) && $pos_layout)
@@ -157,7 +158,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"></noscript>
 {{-- Premium SaaS theme — final visual layer --}}
-<link rel="stylesheet" href="{{ asset('css/premium-theme.css?v='.$asset_v.'&tb=2') }}">
+<link rel="stylesheet" href="{{ asset('css/premium-theme.css?v='.$asset_v.'&tb=4') }}">
 @if(!empty($dashboard_premium))
 <link rel="stylesheet" href="{{ asset('css/japs-dashboard-premium.css?v='.$asset_v) }}">
 @endif

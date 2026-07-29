@@ -1,0 +1,170 @@
+/* DataTables toolbar — all list pages, 10" laptop → large desktop */
+.dataTables_wrapper > .row.margin-bottom-20,
+.dataTables_wrapper .dt-toolbar {
+    display: grid !important;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center !important;
+    column-gap: 10px;
+    row-gap: 10px;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.dataTables_wrapper .dt-toolbar__left,
+.dataTables_wrapper .dt-toolbar__right,
+.dataTables_wrapper > .row.margin-bottom-20 > [class*="col-"] {
+    display: contents !important;
+}
+
+.dataTables_wrapper .dt-toolbar .dataTables_length,
+.dataTables_wrapper > .row.margin-bottom-20 .dataTables_length {
+    grid-column: 1;
+    grid-row: 1;
+    margin: 0 !important;
+    float: none !important;
+}
+
+.dataTables_wrapper .dt-toolbar .dt-buttons,
+.dataTables_wrapper > .row.margin-bottom-20 .dt-buttons {
+    grid-column: 2;
+    grid-row: 1;
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    gap: 6px;
+    margin: 0 !important;
+    min-width: 0;
+}
+
+.dataTables_wrapper .dt-toolbar .dataTables_filter,
+.dataTables_wrapper > .row.margin-bottom-20 .dataTables_filter {
+    grid-column: 3;
+    grid-row: 1;
+    justify-self: end;
+    margin: 0 !important;
+    float: none !important;
+}
+
+.dataTables_wrapper > .row.margin-bottom-20 .dataTables_length label,
+.dataTables_wrapper .dt-toolbar .dataTables_length label {
+    display: inline-flex !important;
+    align-items: center !important;
+    flex-wrap: nowrap !important;
+    gap: 8px !important;
+    white-space: nowrap !important;
+    margin-bottom: 0 !important;
+}
+
+.dataTables_wrapper > .row.margin-bottom-20 .dataTables_length select,
+.dataTables_wrapper .dataTables_length select.form-control {
+    display: inline-block !important;
+    width: auto !important;
+    min-width: 64px !important;
+    max-width: 84px !important;
+    margin: 0 !important;
+    float: none !important;
+    vertical-align: middle !important;
+}
+
+.dataTables_wrapper > .row.margin-bottom-20 .dataTables_filter,
+.dataTables_wrapper > .row.margin-bottom-20 .dataTables_length,
+.dataTables_wrapper .dt-toolbar .dataTables_filter,
+.dataTables_wrapper .dt-toolbar .dataTables_length {
+    margin-bottom: 0 !important;
+    float: none !important;
+}
+
+.dataTables_wrapper > .row.margin-bottom-20 .dataTables_filter label,
+.dataTables_wrapper .dt-toolbar .dataTables_filter label {
+    display: inline-flex !important;
+    align-items: center !important;
+    margin: 0 !important;
+    line-height: 1 !important;
+}
+
+.dataTables_wrapper > .row.margin-bottom-20 .dataTables_filter input,
+.dataTables_wrapper .dt-toolbar .dataTables_filter input {
+    margin: 0 !important;
+    height: 36px !important;
+    width: clamp(140px, 18vw, 220px) !important;
+    vertical-align: middle !important;
+    box-sizing: border-box !important;
+}
+
+.dataTables_wrapper > .row.margin-bottom-20 .dt-buttons .tw-my-2,
+.dataTables_wrapper > .row.margin-bottom-20 .dt-buttons .btn,
+.dataTables_wrapper > .row.margin-bottom-20 .dt-buttons .tw-dw-btn,
+.dataTables_wrapper .dt-toolbar .dt-buttons .tw-my-2,
+.dataTables_wrapper .dt-toolbar .dt-buttons .btn,
+.dataTables_wrapper .dt-toolbar .dt-buttons .tw-dw-btn {
+    margin: 0 !important;
+}
+
+/* 14"+ : show text; font scales with screen */
+@media (min-width: 1280px) {
+    .dataTables_wrapper .dt-buttons .btn,
+    .dataTables_wrapper .dt-buttons .tw-dw-btn {
+        font-size: clamp(11px, 0.72vw + 0.2rem, 12.5px) !important;
+        width: auto !important;
+        min-width: 0 !important;
+        max-width: none !important;
+        height: 36px !important;
+        padding: 0 clamp(8px, 0.65vw, 12px) !important;
+        gap: 5px !important;
+        justify-content: center !important;
+        white-space: nowrap;
+    }
+}
+
+@media (min-width: 1280px) and (max-width: 1440px) {
+    .dataTables_wrapper .dt-buttons .btn,
+    .dataTables_wrapper .dt-buttons .tw-dw-btn {
+        font-size: 11px !important;
+        padding: 0 8px !important;
+        height: 34px !important;
+        gap: 4px !important;
+    }
+}
+
+/* Below 14": icons only */
+@media (max-width: 1279px) {
+    .dataTables_wrapper .dt-buttons .btn,
+    .dataTables_wrapper .dt-buttons .tw-dw-btn {
+        font-size: 0 !important;
+        width: 34px !important;
+        min-width: 34px !important;
+        height: 34px !important;
+        padding: 0 !important;
+        justify-content: center !important;
+    }
+    .dataTables_wrapper .dt-buttons .btn i,
+    .dataTables_wrapper .dt-buttons .tw-dw-btn i,
+    .dataTables_wrapper .dt-buttons .btn .fa,
+    .dataTables_wrapper .dt-buttons .tw-dw-btn .fa {
+        font-size: 13px !important;
+        line-height: 1 !important;
+    }
+}
+
+@media (max-width: 767px) {
+    .dataTables_wrapper > .row.margin-bottom-20,
+    .dataTables_wrapper .dt-toolbar {
+        grid-template-columns: 1fr auto !important;
+    }
+    .dataTables_wrapper .dt-toolbar .dataTables_length,
+    .dataTables_wrapper > .row.margin-bottom-20 .dataTables_length {
+        grid-column: 1 !important;
+        grid-row: 1 !important;
+    }
+    .dataTables_wrapper .dt-toolbar .dataTables_filter,
+    .dataTables_wrapper > .row.margin-bottom-20 .dataTables_filter {
+        grid-column: 2 !important;
+        grid-row: 1 !important;
+    }
+    .dataTables_wrapper .dt-toolbar .dt-buttons,
+    .dataTables_wrapper > .row.margin-bottom-20 .dt-buttons {
+        grid-column: 1 / -1 !important;
+        grid-row: 2 !important;
+    }
+}

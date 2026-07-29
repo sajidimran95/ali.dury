@@ -1507,15 +1507,20 @@ body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dt-buttons .tw-dw-btn 
     background: #fff !important;
     color: var(--p-copy) !important;
     font-weight: 600;
-    font-size: 12.5px;
-    padding: 6px 12px !important;
-    min-height: 38px;
-    height: 38px;
+    font-size: clamp(11px, 0.78vw, 12.5px);
+    padding: 0 clamp(8px, 0.7vw, 12px) !important;
+    min-height: 36px;
+    height: 36px;
     box-shadow: var(--p-shadow-sm);
     margin: 0 !important;
     display: inline-flex !important;
     align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
     line-height: 1 !important;
+    white-space: nowrap;
+    width: auto !important;
+    max-width: none !important;
 }
 
 body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dt-buttons .btn:hover,
@@ -2786,21 +2791,25 @@ body.register-page {
    APP SURFACES — tables, forms, modals, views
    (non-POS only; single source of truth)
    ══════════════════════════════════════ */
-/* List pages keep a readable centered max width (dashboards stay full-bleed) */
+/* List pages: fluid width that fits 10" → large desktop without breaking */
 body.zoho-theme:not(.pos-sale-theme) .content-wrapper > .content:not(.ecom-dash):not(.inv-dash):not(.crm-dash):not(.japs-dashboard-page),
 body.zoho-theme:not(.pos-sale-theme) .zoho-app-body > .content:not(.ecom-dash):not(.inv-dash):not(.crm-dash):not(.japs-dashboard-page) {
-    max-width: 1320px;
+    max-width: min(1320px, 100%);
+    width: 100%;
     margin-left: auto;
     margin-right: auto;
-    padding-left: 28px !important;
-    padding-right: 28px !important;
+    padding-left: clamp(12px, 2vw, 28px) !important;
+    padding-right: clamp(12px, 2vw, 28px) !important;
+    box-sizing: border-box;
 }
 
 body.zoho-theme:not(.pos-sale-theme) .content-header {
-    padding: 24px 28px 10px !important;
-    max-width: 1320px;
+    padding: 24px clamp(12px, 2vw, 28px) 10px !important;
+    max-width: min(1320px, 100%);
+    width: 100%;
     margin-left: auto;
     margin-right: auto;
+    box-sizing: border-box;
 }
 
 body.zoho-theme:not(.pos-sale-theme) .content-header > h1,
@@ -3261,18 +3270,29 @@ body.zoho-theme:not(.pos-sale-theme) .info-box {
     border: 1px solid var(--p-line);
 }
 
-/* Tables / DataTables toolbar — length+exports left, search right, one row */
+/* ═══════════════════════════════════════════════════════════
+   DataTables toolbar — fits 10" laptop → large desktop
+   Same design everywhere: [Show entries] [exports…] [Search]
+   Search stays top-right; export buttons wrap inside middle cell
+   ═══════════════════════════════════════════════════════════ */
+body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper {
+    position: relative;
+}
+
 body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper > .row:first-child,
 body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .row.margin-bottom-20,
 body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dt-toolbar {
-    display: flex !important;
-    flex-wrap: nowrap !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-    gap: 12px;
+    display: grid !important;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: start !important;
+    justify-content: stretch;
+    column-gap: 10px;
+    row-gap: 10px;
     margin: 0 0 14px !important;
     text-align: left !important;
     width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
 }
 
 body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper > .row:first-child::before,
@@ -3284,57 +3304,65 @@ body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dt-toolbar::after {
     display: none !important;
 }
 
+/* Flatten wrappers so length / buttons / filter are direct grid items */
 body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dt-toolbar__left,
 body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dt-toolbar__right,
 body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper > .row:first-child > [class*="col-"],
 body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .row.margin-bottom-20 > [class*="col-"] {
+    display: contents !important;
     width: auto !important;
     max-width: none !important;
     float: none !important;
     padding: 0 !important;
     margin: 0 !important;
-    text-align: left !important;
-    display: flex !important;
-    align-items: center !important;
-    min-height: 38px;
-    box-sizing: border-box !important;
 }
 
-body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dt-toolbar__left {
-    flex: 1 1 auto !important;
-    min-width: 0 !important;
-    gap: 10px;
-    flex-wrap: nowrap !important;
-    overflow-x: auto;
-    overflow-y: hidden;
-    -webkit-overflow-scrolling: touch;
-}
-
-body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dt-toolbar__right,
-body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper > .row:first-child > [class*="col-"]:has(.dataTables_filter),
-body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .row.margin-bottom-20 > [class*="col-"]:has(.dataTables_filter) {
-    flex: 0 0 auto !important;
-    margin-left: auto !important;
-    justify-content: flex-end !important;
-}
-
-body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .row.margin-bottom-20 .dataTables_length,
-body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper > .row:first-child .dataTables_length,
 body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dt-toolbar .dataTables_length,
-body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .row.margin-bottom-20 .dataTables_filter,
-body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper > .row:first-child .dataTables_filter,
-body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dt-toolbar .dataTables_filter {
+body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .row.margin-bottom-20 .dataTables_length,
+body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper > .row:first-child .dataTables_length {
+    grid-column: 1;
+    grid-row: 1;
+    align-self: center;
     margin: 0 !important;
     float: none !important;
-    text-align: left !important;
     display: flex !important;
     align-items: center !important;
-    flex-shrink: 0;
+    min-height: 36px;
+    white-space: nowrap;
 }
 
-body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .row.margin-bottom-20 .dataTables_filter label,
-body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper > .row:first-child .dataTables_filter label,
-body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dt-toolbar .dataTables_filter label {
+body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dt-toolbar .dt-buttons,
+body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .row.margin-bottom-20 .dt-buttons,
+body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper > .row:first-child .dt-buttons,
+body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dt-buttons {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: center;
+    margin: 0 !important;
+    float: none !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    gap: 6px;
+    min-width: 0;
+    max-width: 100%;
+}
+
+body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dt-toolbar .dataTables_filter,
+body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .row.margin-bottom-20 .dataTables_filter,
+body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper > .row:first-child .dataTables_filter {
+    grid-column: 3;
+    grid-row: 1;
+    align-self: center;
+    justify-self: end;
+    margin: 0 !important;
+    float: none !important;
+    display: flex !important;
+    align-items: center !important;
+    min-height: 36px;
+}
+
+body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dataTables_filter label {
     display: inline-flex !important;
     align-items: center !important;
     margin: 0 !important;
@@ -3342,46 +3370,29 @@ body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dt-toolbar .dataTables
     line-height: 1 !important;
     white-space: nowrap !important;
     font-weight: 500 !important;
+    width: 100%;
 }
 
-body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dt-buttons {
-    margin: 0 !important;
-    display: inline-flex !important;
-    flex-wrap: nowrap !important;
-    align-items: center !important;
-    gap: 6px;
-    float: none !important;
-    flex-shrink: 1;
-    min-width: 0;
-}
-
-/* Kill tw-my-2 / leftover btn margins that drop the search bar on laptop */
-body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .row.margin-bottom-20 .dt-buttons .btn,
-body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .row.margin-bottom-20 .dt-buttons .tw-dw-btn,
-body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper > .row:first-child .dt-buttons .btn,
-body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper > .row:first-child .dt-buttons .tw-dw-btn,
-body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dt-toolbar .dt-buttons .btn,
-body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dt-toolbar .dt-buttons .tw-dw-btn,
+body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dt-buttons .btn,
+body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dt-buttons .tw-dw-btn,
 body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dt-buttons .tw-my-2 {
     margin: 0 !important;
     vertical-align: middle !important;
-    flex-shrink: 0;
+    flex: 0 0 auto;
 }
 
 body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dataTables_filter input {
-    min-width: 180px;
-    width: 200px;
-    max-width: 220px;
-    height: 38px !important;
-    min-height: 38px !important;
+    width: clamp(140px, 18vw, 220px) !important;
+    min-width: 0 !important;
+    max-width: 220px !important;
+    height: 36px !important;
+    min-height: 36px !important;
     margin: 0 !important;
-    margin-left: 0 !important;
     border-radius: 10px !important;
     vertical-align: middle !important;
     box-sizing: border-box !important;
 }
 
-/* Hide empty processing node so it never wraps the toolbar */
 body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dt-toolbar > .dataTables_processing,
 body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .row.margin-bottom-20 > .dataTables_processing {
     position: absolute !important;
@@ -3389,9 +3400,9 @@ body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .row.margin-bottom-20 >
     top: 0;
     transform: translateX(-50%);
     z-index: 2;
+    grid-column: unset !important;
 }
 
-/* Fix "Show [N] entries" — keep select + text on one line, no overlap */
 body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dataTables_length {
     margin-bottom: 0 !important;
     float: none !important;
@@ -3414,12 +3425,12 @@ body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dataTables_length sele
 body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dataTables_length .form-control {
     display: inline-block !important;
     width: auto !important;
-    min-width: 68px !important;
-    max-width: 88px !important;
-    height: 38px !important;
-    min-height: 38px !important;
+    min-width: 64px !important;
+    max-width: 84px !important;
+    height: 36px !important;
+    min-height: 36px !important;
     margin: 0 !important;
-    padding: 4px 28px 4px 10px !important;
+    padding: 4px 26px 4px 10px !important;
     float: none !important;
     position: static !important;
     vertical-align: middle !important;
@@ -3427,27 +3438,155 @@ body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dataTables_length .for
     box-sizing: border-box !important;
 }
 
-@media (max-width: 991px) {
-    body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dt-toolbar,
-    body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .row.margin-bottom-20 {
-        flex-wrap: wrap !important;
+/* 14"+ (≈1280px+): always show icon + text; text size shrinks with screen */
+@media (min-width: 1280px) {
+    body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dt-buttons .btn,
+    body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dt-buttons .tw-dw-btn {
+        font-size: clamp(11px, 0.72vw + 0.2rem, 12.5px) !important;
+        line-height: 1 !important;
+        width: auto !important;
+        min-width: 0 !important;
+        max-width: none !important;
+        height: 36px !important;
+        min-height: 36px !important;
+        padding: 0 clamp(8px, 0.65vw, 12px) !important;
+        gap: 5px !important;
+        justify-content: center !important;
     }
 
-    body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dt-toolbar__left {
-        flex: 1 1 100% !important;
-        overflow-x: auto;
+    body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dt-buttons .btn i,
+    body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dt-buttons .tw-dw-btn i,
+    body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dt-buttons .btn .fa,
+    body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dt-buttons .tw-dw-btn .fa {
+        font-size: clamp(12px, 0.7vw, 14px) !important;
+        line-height: 1 !important;
+        margin: 0 !important;
     }
 
-    body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dt-toolbar__right {
-        flex: 1 1 100% !important;
-        margin-left: 0 !important;
-        justify-content: flex-start !important;
+    body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dataTables_length label {
+        font-size: clamp(12px, 0.7vw, 13px) !important;
     }
 
     body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dataTables_filter input {
-        width: 100%;
-        max-width: none;
-        min-width: 0;
+        width: clamp(140px, 14vw, 220px) !important;
+        font-size: clamp(12px, 0.7vw, 13.5px) !important;
+    }
+}
+
+/* 14–15" band: slightly tighter labels so the row never overflows */
+@media (min-width: 1280px) and (max-width: 1440px) {
+    body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dt-buttons .btn,
+    body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dt-buttons .tw-dw-btn {
+        font-size: 11px !important;
+        padding: 0 8px !important;
+        gap: 4px !important;
+        height: 34px !important;
+        min-height: 34px !important;
+    }
+
+    body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dt-buttons {
+        gap: 4px;
+    }
+
+    body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dataTables_filter input {
+        width: clamp(130px, 12vw, 170px) !important;
+        height: 34px !important;
+        min-height: 34px !important;
+    }
+
+    body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dataTables_length select,
+    body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dataTables_length .form-control {
+        height: 34px !important;
+        min-height: 34px !important;
+    }
+}
+
+/* Below 14" / small laptop: icons only */
+@media (max-width: 1279px) {
+    body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dt-buttons .btn,
+    body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dt-buttons .tw-dw-btn {
+        font-size: 0 !important;
+        line-height: 0 !important;
+        width: 34px !important;
+        min-width: 34px !important;
+        max-width: 34px !important;
+        height: 34px !important;
+        min-height: 34px !important;
+        padding: 0 !important;
+        justify-content: center !important;
+        gap: 0 !important;
+    }
+
+    body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dt-buttons .btn i,
+    body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dt-buttons .tw-dw-btn i,
+    body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dt-buttons .btn .fa,
+    body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dt-buttons .tw-dw-btn .fa,
+    body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dt-buttons .btn svg,
+    body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dt-buttons .tw-dw-btn svg {
+        font-size: 13px !important;
+        line-height: 1 !important;
+        width: 13px;
+        height: 13px;
+        margin: 0 !important;
+    }
+
+    body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dataTables_filter input {
+        width: clamp(120px, 16vw, 170px) !important;
+    }
+}
+
+/* Tablet / small laptop: keep same 3-col grid, slightly tighter */
+@media (max-width: 1199px) {
+    body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper > .row:first-child,
+    body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .row.margin-bottom-20,
+    body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dt-toolbar {
+        column-gap: 8px;
+        row-gap: 8px;
+    }
+
+    body.zoho-theme:not(.pos-sale-theme) .content-wrapper > .content:not(.ecom-dash):not(.inv-dash):not(.crm-dash):not(.japs-dashboard-page),
+    body.zoho-theme:not(.pos-sale-theme) .zoho-app-body > .content:not(.ecom-dash):not(.inv-dash):not(.crm-dash):not(.japs-dashboard-page),
+    body.zoho-theme:not(.pos-sale-theme) .content-header {
+        padding-left: 16px !important;
+        padding-right: 16px !important;
+    }
+}
+
+/* Phone: stack cleanly — length+search row, then buttons */
+@media (max-width: 767px) {
+    body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper > .row:first-child,
+    body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .row.margin-bottom-20,
+    body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dt-toolbar {
+        grid-template-columns: 1fr auto !important;
+    }
+
+    body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dt-toolbar .dataTables_length,
+    body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .row.margin-bottom-20 .dataTables_length,
+    body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper > .row:first-child .dataTables_length {
+        grid-column: 1 !important;
+        grid-row: 1 !important;
+    }
+
+    body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dt-toolbar .dataTables_filter,
+    body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .row.margin-bottom-20 .dataTables_filter,
+    body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper > .row:first-child .dataTables_filter {
+        grid-column: 2 !important;
+        grid-row: 1 !important;
+        justify-self: end !important;
+        width: auto;
+    }
+
+    body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dt-toolbar .dt-buttons,
+    body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .row.margin-bottom-20 .dt-buttons,
+    body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper > .row:first-child .dt-buttons,
+    body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dt-buttons {
+        grid-column: 1 / -1 !important;
+        grid-row: 2 !important;
+    }
+
+    body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dataTables_filter input {
+        width: min(160px, 42vw) !important;
+        max-width: 180px !important;
     }
 }
 
@@ -3548,8 +3687,9 @@ body.zoho-theme:not(.pos-sale-theme) .nav-tabs-custom > .tab-content {
     }
 
     body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dataTables_filter input {
-        min-width: 140px;
-        width: 100%;
+        min-width: 0;
+        width: min(160px, 42vw) !important;
+        max-width: 180px !important;
     }
 }
 

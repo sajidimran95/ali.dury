@@ -393,6 +393,17 @@ $(document).ready(function () {
         },
     });
 
+    // Icon-only export buttons on laptop still need hover labels
+    $(document).on('init.dt', function (e, settings) {
+        var $wrap = $(settings.nTableWrapper);
+        $wrap.find('.dt-buttons .btn, .dt-buttons .tw-dw-btn').each(function () {
+            if (!this.getAttribute('title')) {
+                var label = ($(this).text() || '').replace(/\s+/g, ' ').trim();
+                if (label) this.setAttribute('title', label);
+            }
+        });
+    });
+
    
 
     if ($('input#iraqi_selling_price_adjustment').length > 0) {
