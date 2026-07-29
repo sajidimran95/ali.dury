@@ -50,15 +50,17 @@ body.japs-dashboard-premium .content-header p {
   font-size: 14px !important;
 }
 
-/* ── Ecommerce dashboard ── */
+/* ── Ecommerce dashboard (full width all devices) ── */
 body.japs-dashboard-premium .ecom-dash {
   --ed-blue: #2563eb;
   --ed-ink: #0f172a;
   --ed-muted: #64748b;
   --ed-line: #e8ecf1;
-  max-width: 1320px;
-  margin: 0 auto;
-  padding: 24px 28px 32px;
+  max-width: none !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 24px 20px 32px;
+  box-sizing: border-box;
 }
 
 body.japs-dashboard-premium .ecom-dash .ed-head {
@@ -334,20 +336,45 @@ body.japs-dashboard-premium .ecom-dash .ed-empty {
 }
 
 @media (max-width: 1199px) {
+  body.japs-dashboard-premium .ecom-dash {
+    padding: 20px 18px 28px;
+  }
   body.japs-dashboard-premium .ecom-dash .ed-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   body.japs-dashboard-premium .ecom-dash .ed-grid { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 767px) {
+  body.japs-dashboard-premium .ecom-dash {
+    padding: 16px 14px 24px;
+  }
   body.japs-dashboard-premium .ecom-dash .ed-kpis { grid-template-columns: 1fr; }
   body.japs-dashboard-premium .ecom-dash .ed-title { font-size: 22px; }
 }
 
-/* ── Inventory dashboard ── */
-body.japs-dashboard-premium .inv-dash {
-  max-width: 1320px;
-  margin: 0 auto;
-  padding: 24px 28px 32px;
+/* Inventory / CRM / Ecommerce: force parent shells full width */
+body.japs-dashboard-premium:has(.inv-dash) #scrollable-container,
+body.japs-dashboard-premium:has(.inv-dash) .zoho-main-column,
+body.japs-dashboard-premium:has(.inv-dash) .content-wrapper,
+body.japs-dashboard-premium:has(.inv-dash) .zoho-app-body,
+body.japs-dashboard-premium:has(.crm-dash) #scrollable-container,
+body.japs-dashboard-premium:has(.crm-dash) .zoho-main-column,
+body.japs-dashboard-premium:has(.crm-dash) .content-wrapper,
+body.japs-dashboard-premium:has(.crm-dash) .zoho-app-body,
+body.japs-dashboard-premium:has(.ecom-dash) #scrollable-container,
+body.japs-dashboard-premium:has(.ecom-dash) .zoho-main-column,
+body.japs-dashboard-premium:has(.ecom-dash) .content-wrapper,
+body.japs-dashboard-premium:has(.ecom-dash) .zoho-app-body {
+  max-width: none !important;
+  width: 100% !important;
+}
+
+body.japs-dashboard-premium:has(.inv-dash) .content-header,
+body.japs-dashboard-premium:has(.crm-dash) .content-header,
+body.japs-dashboard-premium:has(.ecom-dash) .content-header {
+  max-width: none !important;
+  margin: 0 !important;
+  padding-left: 20px !important;
+  padding-right: 20px !important;
 }
 
 body.japs-dashboard-premium .inv-dash .inv-head {
@@ -585,6 +612,9 @@ body.japs-dashboard-premium .inv-dash .inv-empty {
 }
 
 @media (max-width: 1199px) {
+  body.japs-dashboard-premium .inv-dash {
+    padding: 20px 18px 28px;
+  }
   body.japs-dashboard-premium .inv-dash .inv-kpi-grid,
   body.japs-dashboard-premium .inv-dash .inv-panels {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -592,6 +622,9 @@ body.japs-dashboard-premium .inv-dash .inv-empty {
 }
 
 @media (max-width: 767px) {
+  body.japs-dashboard-premium .inv-dash {
+    padding: 16px 14px 24px;
+  }
   body.japs-dashboard-premium .inv-dash .inv-kpi-grid,
   body.japs-dashboard-premium .inv-dash .inv-panels {
     grid-template-columns: 1fr;
@@ -1144,11 +1177,13 @@ body.japs-dashboard-premium.japs-dashboard-home .japs-dash-reports-grid {
   }
 }
 
-/* ── CRM dashboard ── */
+/* ── CRM dashboard (full width all devices) ── */
 body.japs-dashboard-premium .crm-dash {
-  max-width: 1320px;
-  margin: 0 auto;
-  padding: 24px 28px 32px;
+  max-width: none !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 24px 20px 32px;
+  box-sizing: border-box;
 }
 
 body.japs-dashboard-premium .crm-dash .crm-head {
@@ -1399,11 +1434,17 @@ body.japs-dashboard-premium .crm-dash .crm-empty {
 }
 
 @media (max-width: 1199px) {
+  body.japs-dashboard-premium .crm-dash {
+    padding: 20px 18px 28px;
+  }
   body.japs-dashboard-premium .crm-dash .crm-kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   body.japs-dashboard-premium .crm-dash .crm-grid { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 767px) {
+  body.japs-dashboard-premium .crm-dash {
+    padding: 16px 14px 24px;
+  }
   body.japs-dashboard-premium .crm-dash .crm-kpi-grid { grid-template-columns: 1fr; }
   body.japs-dashboard-premium .crm-dash .crm-title { font-size: 22px; }
 }

@@ -813,10 +813,17 @@ body.japs-dashboard-home .japs-dash-attention__loading {
 /* ── Charts ── */
 body.japs-dashboard-home .japs-dash-charts-row {
   display: grid;
-  grid-template-columns: minmax(0, 2.2fr) minmax(280px, 0.95fr);
+  grid-template-columns: minmax(0, 2.2fr) minmax(260px, 0.95fr);
   gap: 16px;
   margin-top: 24px;
   align-items: stretch;
+}
+
+@media (max-width: 1199px) {
+  body.japs-dashboard-home .japs-dash-charts-row {
+    grid-template-columns: minmax(0, 1.85fr) minmax(240px, 1fr);
+    gap: 14px;
+  }
 }
 
 @media (max-width: 991px) {
@@ -1336,8 +1343,14 @@ body.japs-dashboard-home .japs-dash-recent-viewall:hover {
   color: #2563eb;
 }
 
+@media (max-width: 1199px) {
+  body.japs-dashboard-home {
+    --dash-page-x: 18px;
+  }
+}
+
 @media (max-width: 767px) {
   body.japs-dashboard-home {
-    --dash-page-x: 16px;
+    --dash-page-x: 14px;
   }
 }
