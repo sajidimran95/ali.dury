@@ -160,7 +160,7 @@
 {{-- Premium SaaS theme — final visual layer --}}
 <link rel="stylesheet" href="{{ asset('css/premium-theme.css?v='.$asset_v.'&tb=6') }}">
 @if(!empty($dashboard_premium))
-<link rel="stylesheet" href="{{ asset('css/japs-dashboard-premium.css?v='.$asset_v.'&inv=3') }}">
+<link rel="stylesheet" href="{{ asset('css/japs-dashboard-premium.css?v='.$asset_v.'&inv=5') }}">
 @endif
 @if(!empty($dashboard_home))
 <link rel="stylesheet" href="{{ asset('css/japs-dashboard-home.css?v='.$asset_v) }}">
