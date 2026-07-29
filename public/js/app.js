@@ -604,12 +604,30 @@ $(document).ready(function() {
             $el.select2({
                 dropdownParent: $(document.body),
                 width: '100%',
-                placeholder: $el.data('placeholder') || '',
-                allowClear: true,
+                placeholder: $el.data('placeholder') || LANG.please_select || 'Please Select',
+                allowClear: !$el.prop('required'),
                 closeOnSelect: !$el.prop('multiple')
             });
         });
     };
+
+    // Fix: Bootstrap modal focus trap steals first Select2 click when dropdown is on body
+    if ($.fn.modal && $.fn.modal.Constructor && $.fn.modal.Constructor.prototype) {
+        $.fn.modal.Constructor.prototype.enforceFocus = function () {
+            var that = this;
+            $(document)
+                .off('focusin.bs.modal')
+                .on('focusin.bs.modal', function (e) {
+                    if (
+                        that.$element[0] !== e.target &&
+                        !that.$element.has(e.target).length &&
+                        !$(e.target).closest('.select2-container, .select2-dropdown, .select2-search, .datepicker, .ui-autocomplete').length
+                    ) {
+                        that.$element.trigger('focus');
+                    }
+                });
+        };
+    }
 
     //On display of add contact modal
     $(document).on('shown.bs.modal', '.contact_modal', function(e) {

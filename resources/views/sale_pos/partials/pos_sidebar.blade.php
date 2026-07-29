@@ -1,18 +1,28 @@
 <div class="pos-sidebar-root">
 @if(empty($drawer_id_suffix))
-{{-- Product search UI hidden — keep #search_product for barcode / keyboard shortcuts.
-     Do not use aria-hidden: JS focuses this input; aria-hidden on a focused ancestor is invalid. --}}
-<div class="pos-product-search-wrap pos-product-search-wrap--hidden">
-    {!! Form::text('search_product', null, [
-        'class' => 'form-control',
-        'id' => 'search_product',
-        'placeholder' => 'Start typing or scanning',
-        'disabled' => empty($default_location),
-        'autofocus' => !empty($default_location),
-        'tabindex' => '-1',
-        'autocomplete' => 'off',
-        'aria-label' => 'Product search / barcode',
-    ]) !!}
+{{-- Product search / barcode + quick-add — visible above categories --}}
+<div class="pos-product-search-wrap">
+    <div class="input-group">
+        <div class="input-group-btn">
+            <button type="button" class="btn btn-default bg-white btn-flat" data-toggle="modal" data-target="#configure_search_modal" title="{{__('lang_v1.configure_product_search')}}"><i class="fas fa-search-plus"></i></button>
+        </div>
+        {!! Form::text('search_product', null, [
+            'class' => 'form-control',
+            'id' => 'search_product',
+            'placeholder' => __('lang_v1.search_product_placeholder'),
+            'disabled' => empty($default_location),
+            'autofocus' => !empty($default_location),
+            'autocomplete' => 'off',
+            'aria-label' => __('lang_v1.search_product'),
+        ]) !!}
+        <span class="input-group-btn">
+            @if(isset($pos_settings['enable_weighing_scale']) && $pos_settings['enable_weighing_scale'] == 1)
+                <button type="button" class="btn btn-default bg-white btn-flat" id="weighing_scale_btn" data-toggle="modal" data-target="#weighing_scale_modal"
+                title="@lang('lang_v1.weighing_scale')"><i class="fa fa-digital-tachograph text-primary fa-lg"></i></button>
+            @endif
+            <button type="button" class="btn btn-default bg-white btn-flat pos_add_quick_product" data-href="{{action([\App\Http\Controllers\ProductController::class, 'quickAdd'])}}" data-container=".quick_add_product_modal" title="@lang('lang_v1.add_new_product')"><i class="fa fa-plus-circle text-primary fa-lg"></i></button>
+        </span>
+    </div>
 </div>
 @endif
 
@@ -20,7 +30,7 @@
 @if (!empty($categories))
 <div id="product_category_div" class="pos-inline-categories">
     <div class="pos-category-scroll" aria-label="@lang('category.categories')">
-    <div class="row pos-card-grid pos-card-grid-categories" data-label-all="@lang('messages.all')" style="margin: 0 -4px;">
+    <div class="row pos-card-grid pos-card-grid-categories" data-label-all="@lang('messages.all')" style="margin: 0;">
         <div class="col-md-2 col-xs-4 tw-mb-2 tw-cursor-pointer main-category-div main-category no-print"
             data-value="all" data-parent="0" style="padding-left: 4px; padding-right: 4px;">
             <div class="pos-card cat pos-cat-tile is-active">
@@ -95,7 +105,7 @@
                             </button>
                         </div>
                         <div class="pos-drawer-body tw-px-6 tw-pt-[18px] tw-pb-6 tw-overflow-y-auto tw-flex-1">
-                            <div class="row pos-card-grid pos-card-grid-brands" style="margin-right: 0; margin-left: -8px;">
+                            <div class="row pos-card-grid pos-card-grid-brands" style="margin: 0;">
                                 @foreach ($brands as $key => $brand)
                                     <div class="col-md-4 col-xs-6 tw-mb-3 tw-cursor-pointer product_brand no-print"
                                         data-value="{{ $key }}" data-name="{{ $brand }}"

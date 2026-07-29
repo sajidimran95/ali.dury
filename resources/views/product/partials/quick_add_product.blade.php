@@ -1,6 +1,6 @@
 <div class="modal-dialog modal-lg" role="document">
   <div class="modal-content">
-    {!! Form::open(['url' => action([\App\Http\Controllers\ProductController::class, 'saveQuickProduct']), 'method' => 'post', 'id' => 'quick_add_product_form' ]) !!}
+    {!! Form::open(['url' => action([\App\Http\Controllers\ProductController::class, 'saveQuickProduct']), 'method' => 'post', 'id' => 'quick_add_product_form', 'files' => true ]) !!}
 
     <div class="modal-header">
 	    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
@@ -186,31 +186,39 @@
         </div>
         @endif
         <div class="clearfix"></div>
-        <div class="col-sm-3">
+        <div class="col-sm-6">
           <div class="form-group">
             {!! Form::label('product_custom_field1',  $product_custom_field1 . ':') !!}
             {!! Form::text('product_custom_field1', null, ['class' => 'form-control', 'placeholder' => $product_custom_field1]); !!}
           </div>
         </div>
 
-        <div class="col-sm-3">
+        <div class="col-sm-6">
           <div class="form-group">
             {!! Form::label('product_custom_field2',  $product_custom_field2 . ':') !!}
             {!! Form::text('product_custom_field2',null, ['class' => 'form-control', 'placeholder' => $product_custom_field2]); !!}
           </div>
         </div>
 
-        <div class="col-sm-3">
+        <div class="col-sm-6">
           <div class="form-group">
             {!! Form::label('product_custom_field3',  $product_custom_field3 . ':') !!}
             {!! Form::text('product_custom_field3', null, ['class' => 'form-control', 'placeholder' => $product_custom_field3]); !!}
           </div>
         </div>
 
-        <div class="col-sm-3">
+        <div class="col-sm-6">
           <div class="form-group">
             {!! Form::label('product_custom_field4',  $product_custom_field4 . ':') !!}
             {!! Form::text('product_custom_field4', null, ['class' => 'form-control', 'placeholder' => $product_custom_field4]); !!}
+          </div>
+        </div>
+        <div class="clearfix"></div>
+        <div class="col-sm-12 quick-add-product-image">
+          <div class="form-group">
+            {!! Form::label('image', __('lang_v1.product_image') . ':') !!}
+            {!! Form::file('image', ['id' => 'quick_add_product_image', 'accept' => 'image/*', 'class' => 'form-control']); !!}
+            <small class="help-block">@lang('purchase.max_file_size', ['size' => (config('constants.document_size_limit') / 1000000)]). @lang('lang_v1.aspect_ratio_should_be_1_1')</small>
           </div>
         </div>
         <div class="clearfix"></div>
@@ -226,7 +234,7 @@
         @endif
       </div>
       <div class="row">
-        <div class="form-group col-sm-11 col-sm-offset-1">
+        <div class="form-group col-sm-12">
           @include('product.partials.single_product_form_part', ['profit_percent' => $default_profit_percent, 'quick_add' => true ])
         </div>
       </div>
@@ -284,11 +292,14 @@
         var form = $("form#quick_add_product_form");
         var url = form.attr('action');
         form.find('button[type="submit"]').attr('disabled', true);
+        var formData = new FormData(form[0]);
         $.ajax({
             method: "POST",
             url: url,
             dataType: 'json',
-            data: $(form).serialize(),
+            data: formData,
+            processData: false,
+            contentType: false,
             success: function(data){
                 $('.quick_add_product_modal').modal('hide');
                 if( data.success){
@@ -306,8 +317,13 @@
                     }
                     $(document).trigger({type: "quickProductAdded", 'product': data.product, 'variation': data.variation });
                 } else {
+                    form.find('button[type="submit"]').attr('disabled', false);
                     toastr.error(data.msg);
                 }
+            },
+            error: function() {
+                form.find('button[type="submit"]').attr('disabled', false);
+                toastr.error(LANG.something_went_wrong);
             }
         });
         return false;

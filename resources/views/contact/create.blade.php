@@ -209,13 +209,13 @@
             <div class="col-md-6 lead_additional_div" @if(($type ?? '') !== 'lead') style="display: none;" @endif>
                   <div class="form-group">
                       {!! Form::label('user_id', __('lang_v1.assigned_to') . ':*' ) !!}
-                      {!! Form::select('user_id[]', $users ?? [], null , [
+                      {!! Form::select('user_id[]', ['' => ''] + (collect($users ?? [])->toArray()), null , [
                           'class' => 'form-control select2',
                           'id' => 'user_id',
                           'multiple',
                           'required',
                           'style' => 'width: 100%;',
-                          'data-placeholder' => __('lang_v1.please_select'),
+                          'data-placeholder' => __('messages.please_select'),
                       ]); !!}
                   </div>
             </div>
@@ -225,13 +225,13 @@
                 <div class="col-md-6">
                       <div class="form-group">
                           {!! Form::label('assigned_to_users', __('lang_v1.assigned_to') . ':' ) !!}
-                          {{-- Keep select2 outside input-group so click opens the user list --}}
-                          {!! Form::select('assigned_to_users[]', $users ?? [], null , [
+                          {{-- Empty option required for Select2 multiple placeholder --}}
+                          {!! Form::select('assigned_to_users[]', ['' => ''] + (collect($users ?? [])->toArray()), null , [
                               'class' => 'form-control select2',
                               'id' => 'assigned_to_users',
                               'multiple',
                               'style' => 'width: 100%;',
-                              'data-placeholder' => __('lang_v1.please_select'),
+                              'data-placeholder' => __('messages.please_select'),
                           ]); !!}
                       </div>
                 </div>

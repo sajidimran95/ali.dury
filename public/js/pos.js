@@ -2280,7 +2280,9 @@ $(document).ready(function() {
     });
 
     //Quick add product
-    $(document).on('click', 'button.pos_add_quick_product', function() {
+    $(document).on('click', 'button.pos_add_quick_product', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
         var url = $(this).data('href');
         var container = $(this).data('container');
         $.ajax({
@@ -2299,6 +2301,16 @@ $(document).ready(function() {
         });
     });
 
+    // Keep barcode / product search focused after quick-add closes
+    $(document).on('hidden.bs.modal', '.quick_add_product_modal', function() {
+        var $search = $('input#search_product');
+        if ($search.length && !$search.prop('disabled')) {
+            setTimeout(function() {
+                $search.focus().select();
+            }, 50);
+        }
+    });
+
     $(document).on('change', 'form#quick_add_product_form input#single_dpp', function() {
         var unit_price = __read_number($(this));
         $('table#quick_product_opening_stock_table tbody tr').each(function() {
@@ -2314,6 +2326,16 @@ $(document).ready(function() {
             toastr.warning(LANG.select_location);
         } else {
             pos_product_row(e.variation.id);
+        }
+        // Refresh product tiles so newly assigned image shows for selected category
+        if (typeof get_product_suggestion_list === 'function' && $('div#product_list_body').length) {
+            $('input#suggestion_page').val(1);
+            get_product_suggestion_list(
+                typeof global_p_category_id !== 'undefined' ? global_p_category_id : null,
+                typeof global_brand_id !== 'undefined' ? global_brand_id : null,
+                $('input#location_id').val(),
+                null
+            );
         }
     });
 

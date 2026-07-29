@@ -1619,6 +1619,13 @@ class ProductController extends Controller
             $product = Product::create($product_details);
             event(new ProductsCreatedOrModified($product_details, 'added'));
 
+            // Product image for single type (POS quick add)
+            $image_name = $this->productUtil->uploadFile($request, 'image', config('constants.product_img_path'), 'image');
+            if (! empty($image_name)) {
+                $product->image = $image_name;
+                $product->save();
+            }
+
             if (empty(trim($request->input('sku')))) {
                 $sku = $this->productUtil->generateProductSku($product->id);
                 $product->sku = $sku;
