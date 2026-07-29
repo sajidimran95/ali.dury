@@ -908,9 +908,24 @@ $(function () {
 
     $(document).on('click', '.drop_down', function (event) {
         if (isZohoSidebarCollapsed()) {
+            // Nested submenu inside an open flyout (e.g. Inventory > Items)
+            if ($(this).hasClass('zoho-sidebar-nested-toggle')) {
+                event.preventDefault();
+                event.stopPropagation();
+                var $nested = $(this).next('.chiled');
+                $nested.slideToggle(150);
+                return;
+            }
+
+            // Top-level icon: open flyout panel to the right
+            var $item = $(this).closest('#side-bar > .zoho-sidebar-item');
+            if (!$item.length) {
+                return;
+            }
+
             event.preventDefault();
-            var $item = $(this).closest('.zoho-sidebar-item');
-            $('.zoho-sidebar-item').not($item).removeClass('zoho-sidebar-flyout-open');
+            event.stopPropagation();
+            $('#side-bar > .zoho-sidebar-item').not($item).removeClass('zoho-sidebar-flyout-open');
             $item.toggleClass('zoho-sidebar-flyout-open');
             return;
         }

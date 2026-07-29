@@ -693,12 +693,55 @@ body.zoho-theme:not(.pos-sale-theme) .japs-sidebar-ai-slot > div {
     border-radius: 14px !important;
 }
 
-/* Collapsed */
+/* Collapsed — icon rail + flyout panels */
 body.zoho-theme:not(.pos-sale-theme) .side-bar.zoho-sidebar-collapsed,
 body.zoho-theme:not(.pos-sale-theme).sidebar-collapse .side-bar {
     width: 76px !important;
     min-width: 76px !important;
     max-width: 76px !important;
+    overflow: visible !important;
+}
+
+body.zoho-theme:not(.pos-sale-theme) .side-bar.zoho-sidebar-collapsed #side-bar,
+body.zoho-theme:not(.pos-sale-theme).sidebar-collapse #side-bar {
+    overflow: visible !important;
+}
+
+body.zoho-theme:not(.pos-sale-theme) .side-bar.zoho-sidebar-collapsed #side-bar > .zoho-sidebar-item,
+body.zoho-theme:not(.pos-sale-theme).sidebar-collapse #side-bar > .zoho-sidebar-item {
+    position: relative;
+    overflow: visible !important;
+}
+
+body.zoho-theme:not(.pos-sale-theme) .side-bar.zoho-sidebar-collapsed #side-bar > .zoho-sidebar-item > .chiled,
+body.zoho-theme:not(.pos-sale-theme).sidebar-collapse #side-bar > .zoho-sidebar-item > .chiled {
+    display: none !important;
+    position: absolute !important;
+    left: calc(100% - 1px) !important;
+    top: 0 !important;
+    min-width: 220px !important;
+    z-index: 1065 !important;
+    margin: 0 !important;
+}
+
+body.zoho-theme:not(.pos-sale-theme) .side-bar.zoho-sidebar-collapsed #side-bar > .zoho-sidebar-item:hover > .chiled,
+body.zoho-theme:not(.pos-sale-theme) .side-bar.zoho-sidebar-collapsed #side-bar > .zoho-sidebar-item.zoho-sidebar-flyout-open > .chiled,
+body.zoho-theme:not(.pos-sale-theme).sidebar-collapse #side-bar > .zoho-sidebar-item:hover > .chiled,
+body.zoho-theme:not(.pos-sale-theme).sidebar-collapse #side-bar > .zoho-sidebar-item.zoho-sidebar-flyout-open > .chiled {
+    display: block !important;
+}
+
+body.zoho-theme:not(.pos-sale-theme) .side-bar.zoho-sidebar-collapsed #side-bar > .zoho-sidebar-item > .chiled .chiled,
+body.zoho-theme:not(.pos-sale-theme).sidebar-collapse #side-bar > .zoho-sidebar-item > .chiled .chiled {
+    position: static !important;
+    left: auto !important;
+    top: auto !important;
+    min-width: 0 !important;
+    box-shadow: none !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    margin-left: 0 !important;
+    padding-left: 12px !important;
 }
 
 body.zoho-theme:not(.pos-sale-theme) .side-bar.zoho-sidebar-collapsed #side-bar a.drop_down,

@@ -72,6 +72,10 @@
 
         localStorage.setItem(STORAGE_KEY, collapsed ? 'true' : 'false');
 
+        document.querySelectorAll('.zoho-sidebar-item').forEach(function (item) {
+            item.classList.remove('zoho-sidebar-flyout-open');
+        });
+
         document.dispatchEvent(
             new CustomEvent('zoho-sidebar-toggled', { detail: { collapsed: collapsed } })
         );
