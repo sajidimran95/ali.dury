@@ -18,8 +18,8 @@ body.japs-dashboard-home {
   --dash-pill-active-text: #c2410c;
   --dash-pill-idle-bg: #ffffff;
   --dash-pill-idle-border: #e2e8f0;
-  --dash-page-x: 24px;
-  --dash-page-max: 1360px;
+  --dash-page-x: 20px;
+  --dash-page-max: none;
   background: var(--dash-bg) !important;
   color: var(--dash-text) !important;
 }
@@ -43,13 +43,13 @@ body.japs-dashboard-home .japs-dashboard-content {
   background: transparent !important;
 }
 
-/* Moderate-width center column — slightly wider than before, not full screen */
+/* Full-width dashboard on all devices */
 body.japs-dashboard-home .japs-dashboard-page {
   width: 100% !important;
-  max-width: var(--dash-page-max) !important;
-  margin: 0 auto !important;
+  max-width: none !important;
+  margin: 0 !important;
   padding: 0 var(--dash-page-x) 32px !important;
-  box-sizing: border-box;
+  box-sizing: border-box !important;
 }
 
 body.japs-dashboard-home .japs-dashboard-page .zoho-dashboard__layout,
@@ -83,8 +83,8 @@ body.japs-dashboard-home.japs-dashboard-premium .japs-dashboard-page .japs-dashb
 body.japs-dashboard-home .zoho-dashboard__layout {
   display: block !important;
   width: 100% !important;
-  max-width: var(--dash-page-max) !important;
-  margin: 0 auto !important;
+  max-width: none !important;
+  margin: 0 !important;
   padding: 0 var(--dash-page-x) 28px !important;
   box-sizing: border-box;
 }
@@ -1218,11 +1218,11 @@ body.japs-dashboard-home .japs-dash-secondary-row {
   display: none !important;
 }
 
-/* Reports section — same horizontal alignment as hero above */
+/* Reports section — full width like hero above */
 body.japs-dashboard-home .japs-dashboard-content {
   width: 100% !important;
-  max-width: var(--dash-page-max) !important;
-  margin: 0 auto !important;
+  max-width: none !important;
+  margin: 0 !important;
   padding: 8px var(--dash-page-x) 32px !important;
   box-sizing: border-box;
 }

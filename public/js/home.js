@@ -6,6 +6,7 @@ $(document).ready(function() {
             $('#dashboard_date_filter span').html(
                 start.format(moment_date_format) + ' ~ ' + end.format(moment_date_format)
             );
+            // Filter by date → only the 4 KPI cards (not Revenue / Sales Overview)
             update_statistics(start.format('YYYY-MM-DD'), end.format('YYYY-MM-DD'));
             if ($('#quotation_table').length && $('#dashboard_location').length) {
                 quotation_datatable.ajax.reload();
@@ -13,6 +14,8 @@ $(document).ready(function() {
         });
 
         update_statistics(moment().format('YYYY-MM-DD'), moment().format('YYYY-MM-DD'));
+        // Charts load once with their own periods (not date filter)
+        japsLoadDashboardCharts();
     }
 
     $('#dashboard_location').change( function(e) {
@@ -25,6 +28,7 @@ $(document).ready(function() {
                     .endDate.format('YYYY-MM-DD');
 
         update_statistics(start, end);
+        japsLoadDashboardCharts();
     });
 
     // Stock alert datatables
@@ -228,9 +232,8 @@ function update_statistics(start, end) {
             $('.total_purchase').html(__currency_trans_from_en(data.total_purchase, true));
             $('.purchase_due').html(__currency_trans_from_en(data.purchase_due, true));
 
-            //sell details
+            //sell details (KPI cards only — Filter by date)
             $('.total_sell').html(__currency_trans_from_en(data.total_sell, true));
-            $('.japs-chart-total-sell').html(__currency_trans_from_en(data.total_sell, true));
             $('.invoice_due').html(__currency_trans_from_en(data.invoice_due, true));
             //expense details
             $('.total_expense').html(__currency_trans_from_en(data.total_expense, true));
@@ -251,14 +254,7 @@ function update_statistics(start, end) {
                 japsApplyDelta($('[data-kpi="net"]'), data.change_pct.net);
                 japsApplyDelta($('[data-kpi="invoice_due"]'), data.change_pct.invoice_due);
                 japsApplyDelta($('[data-kpi="total_purchase"]'), data.change_pct.total_purchase);
-                japsApplyDelta($('.japs-chart-sell-growth'), data.change_pct.total_sell);
             }
-
-            $('.japs-overview-sales-total').text(__currency_trans_from_en(data.total_sell, true));
-            $('.japs-overview-target-total').text(__currency_trans_from_en(data.invoice_due, true));
-            window.japsSalesGrowthPct = data.change_pct && typeof data.change_pct.total_sell === 'number'
-                ? data.change_pct.total_sell
-                : null;
 
             // assign tooltip total_sell_return 
             var lang = $('#total_srp').data('value');
@@ -278,15 +274,7 @@ function update_statistics(start, end) {
                     $('#total_prp').attr('data-content', newContent);
                 }
             }
-
-            // Sales Overview follows dashboard date filter
-            if (typeof window.japsLoadPaymentMethodMix === 'function') {
-                window.japsLoadPaymentMethodMix(start, end, location_id);
-            }
-            // Revenue Insights bars follow dashboard date filter
-            if (typeof window.japsLoadRevenueInsights === 'function') {
-                window.japsLoadRevenueInsights(start, end, location_id);
-            }
+            // Revenue Insights + Sales Overview are NOT updated by Filter by date
         },
         error: function () {
             $('.total_purchase, .purchase_due, .total_sell, .invoice_due, .total_expense, .total_purchase_return, .total_sell_return, .net').html('—');
@@ -295,12 +283,49 @@ function update_statistics(start, end) {
     });
 }
 
+/** Load Revenue Insights (Monthly/Yearly) + Sales Overview (current month) */
+window.japsLoadDashboardCharts = function() {
+    var location_id = $('#dashboard_location').length ? ($('#dashboard_location').val() || '') : '';
+    if (typeof window.japsLoadSalesOverviewCurrentMonth === 'function') {
+        window.japsLoadSalesOverviewCurrentMonth(location_id);
+    }
+    if (typeof window.japsLoadRevenueInsights === 'function') {
+        window.japsLoadRevenueInsights(null, null, location_id);
+    }
+};
+
+window.japsLoadSalesOverviewCurrentMonth = function(locationId) {
+    if (!$('#payment_method_mix_chart').length || typeof moment === 'undefined') {
+        return;
+    }
+    var start = moment().startOf('month').format('YYYY-MM-DD');
+    var end = moment().endOf('month').format('YYYY-MM-DD');
+
+    $.get('/home/get-totals', {
+        start: start,
+        end: end,
+        location_id: locationId || ''
+    }, function(ov) {
+        $('.japs-overview-sales-total').text(__currency_trans_from_en(ov.total_sell || 0, true));
+        $('.japs-overview-target-total').text(__currency_trans_from_en(ov.invoice_due || 0, true));
+        window.japsSalesGrowthPct = ov.change_pct && typeof ov.change_pct.total_sell === 'number'
+            ? ov.change_pct.total_sell
+            : null;
+        if (typeof window.japsLoadPaymentMethodMix === 'function') {
+            window.japsLoadPaymentMethodMix(start, end, locationId || '');
+        }
+    }).fail(function() {
+        if (typeof window.japsLoadPaymentMethodMix === 'function') {
+            window.japsLoadPaymentMethodMix(start, end, locationId || '');
+        }
+    });
+};
+
 window.japsLoadRevenueInsights = function(start, end, locationId) {
     if (!$('.japs-dash-chart-card--revenue').length) {
         return;
     }
-    // Monthly / Yearly ranges are fixed on the server (30 days / FY).
-    // start/end kept for API compatibility; location still filters.
+    // Monthly = last 30 days, Yearly = FY — fixed on server (ignores date filter)
     $.get('/home/revenue-insights', {
         location_id: locationId || ''
     }, function(data) {
@@ -309,6 +334,30 @@ window.japsLoadRevenueInsights = function(start, end, locationId) {
         }
         window.japsRevenueInsightsData = data;
         window.japsApplyRevenueInsightsData(data);
+
+        // Header total / growth from active tab period (Monthly = 30d)
+        var isYearly = $('.japs-dash-period-switch__btn.is-active').data('period') === 'fy';
+        var values = isYearly ? (data.monthly_values || []) : (data.daily_values || []);
+        var sum = 0;
+        for (var i = 0; i < values.length; i++) {
+            sum += parseFloat(values[i]) || 0;
+        }
+        $('.japs-chart-total-sell').html(__currency_trans_from_en(sum, true));
+
+        // Growth for the matching period
+        var endD = moment().format('YYYY-MM-DD');
+        var startD = isYearly
+            ? moment().startOf('year').format('YYYY-MM-DD')
+            : moment().subtract(29, 'days').format('YYYY-MM-DD');
+        $.get('/home/get-totals', {
+            start: startD,
+            end: endD,
+            location_id: locationId || ''
+        }, function(tot) {
+            if (tot.change_pct) {
+                japsApplyDelta($('.japs-chart-sell-growth'), tot.change_pct.total_sell);
+            }
+        });
     });
 };
 

@@ -42,6 +42,7 @@ return [
     'main_menu' => 'Main Menu',
     'revenue_insights' => 'Revenue Insights',
     'sales_overview' => 'Sales Overview',
+    'current_month_sale' => 'Current Month Sale',
     'recent_sales' => 'Recent Sales',
     'monthly' => 'Monthly',
     'yearly' => 'Yearly',

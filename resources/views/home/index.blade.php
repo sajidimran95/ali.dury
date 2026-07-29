@@ -169,7 +169,7 @@
                             </div>
                             <div class="japs-dash-overview-footer japs-dash-overview-footer--split" id="payment_overview_footer" style="display:none;">
                                 <div class="japs-dash-overview-footer__col">
-                                    <span class="japs-dash-overview-footer__label">{{ __('home.total_sell') }}</span>
+                                    <span class="japs-dash-overview-footer__label">{{ __('home.current_month_sale') }}</span>
                                     <span class="japs-dash-overview-footer__value japs-overview-sales-total">—</span>
                                     <div class="japs-dash-overview-progress">
                                         <div class="japs-dash-overview-progress__bar" id="payment_overview_progress" style="width:0%"></div>
@@ -425,20 +425,11 @@
                         }
                     });
 
-                    // Apply filter data that may have arrived before Highcharts finished init
+                    // Apply chart data that may have arrived before Highcharts finished init
                     if (window.japsRevenueInsightsData && typeof window.japsApplyRevenueInsightsData === 'function') {
                         window.japsApplyRevenueInsightsData(window.japsRevenueInsightsData);
-                    } else if (typeof window.japsLoadRevenueInsights === 'function' && $('#dashboard_date_filter').length) {
-                        try {
-                            var picker = $('#dashboard_date_filter').data('daterangepicker');
-                            if (picker) {
-                                window.japsLoadRevenueInsights(
-                                    picker.startDate.format('YYYY-MM-DD'),
-                                    picker.endDate.format('YYYY-MM-DD'),
-                                    $('#dashboard_location').length ? $('#dashboard_location').val() : ''
-                                );
-                            }
-                        } catch (e3) {}
+                    } else if (typeof window.japsLoadDashboardCharts === 'function') {
+                        window.japsLoadDashboardCharts();
                     }
 
                     $('.japs-dash-period-switch__btn').off('click.japsRevenueTab').on('click.japsRevenueTab', function () {
@@ -460,6 +451,26 @@
                                     chart.series[0].setData(values, false);
                                     chart.redraw();
                                 } catch (e) {}
+                            });
+                            var sumVals = period === 'fy' ? (cached.monthly_values || []) : (cached.daily_values || []);
+                            var sum = 0;
+                            for (var si = 0; si < sumVals.length; si++) {
+                                sum += parseFloat(sumVals[si]) || 0;
+                            }
+                            $('.japs-chart-total-sell').html(
+                                typeof __currency_trans_from_en === 'function'
+                                    ? __currency_trans_from_en(sum, true)
+                                    : sum
+                            );
+                            var locId = $('#dashboard_location').length ? ($('#dashboard_location').val() || '') : '';
+                            var endD = moment().format('YYYY-MM-DD');
+                            var startD = period === 'fy'
+                                ? moment().startOf('year').format('YYYY-MM-DD')
+                                : moment().subtract(29, 'days').format('YYYY-MM-DD');
+                            $.get('/home/get-totals', { start: startD, end: endD, location_id: locId }, function (tot) {
+                                if (tot.change_pct && typeof japsApplyDelta === 'function') {
+                                    japsApplyDelta($('.japs-chart-sell-growth'), tot.change_pct.total_sell);
+                                }
                             });
                         }
                         // Yearly pane was display:none — reflow + same Salezy style as Monthly
