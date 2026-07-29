@@ -1112,10 +1112,12 @@ body.japs-dashboard-premium.japs-dashboard-home .japs-dash-attention-pill.is-act
   color: #c2410c !important;
 }
 
-/* Wider, airier layout */
+/* Wider, airier layout — dashboard content stays centered */
 body.japs-dashboard-premium.japs-dashboard-home .zoho-dashboard__layout,
 body.japs-dashboard-premium.japs-dashboard-home .japs-dashboard-content {
   max-width: 1360px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
 }
 
 body.japs-dashboard-premium.japs-dashboard-home .japs-dash-reports-grid {
