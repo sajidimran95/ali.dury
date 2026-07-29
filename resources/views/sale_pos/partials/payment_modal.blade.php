@@ -256,7 +256,12 @@
                         <div class="col-md-3">
                             <div class="form-group">
                                 {!! Form::label('card_type', __('lang_v1.card_type')) !!}
-                                {!! Form::select('', ['visa' => 'Visa', 'master' => 'MasterCard'], 'visa', [
+                                {!! Form::select('', [
+                                    'credit' => 'Credit Card',
+                                    'debit' => 'Debit Card',
+                                    'visa' => 'Visa',
+                                    'master' => 'MasterCard',
+                                ], 'visa', [
                                     'class' => 'form-control select2',
                                     'id' => 'card_type',
                                 ]) !!}

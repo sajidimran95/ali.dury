@@ -136,8 +136,8 @@
 
 <script src="{{ asset('js/zoho-sidebar.js?v=' . $asset_v . '&modal=1') }}"></script>
 <script src="{{ asset('js/functions.js?v=' . $asset_v . '&fn=2') }}"></script>
-<script src="{{ asset('js/common.js?v=' . $asset_v . '&modal=2') }}"></script>
-<script src="{{ asset('js/app.js?v=' . $asset_v . '&modal=6') }}"></script>
+<script src="{{ asset('js/common.js?v=' . $asset_v . '&modal=3') }}"></script>
+<script src="{{ asset('js/app.js?v=' . $asset_v . '&modal=10') }}"></script>
 <script src="{{ asset('js/documents_and_note.js?v=' . $asset_v) }}"></script>
 
 <!-- TODO -->

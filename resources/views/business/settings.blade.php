@@ -11,7 +11,7 @@
 </section>
 
 <!-- Main content -->
-<section class="content business-settings-page settings-booting">
+<section class="content business-settings-page">
 {!! Form::open(['url' => action([\App\Http\Controllers\BusinessController::class, 'postBusinessSettings']), 'method' => 'post', 'id' => 'bussiness_edit_form',
            'files' => true ]) !!}
     <div class="row">
@@ -228,22 +228,32 @@
             }
         })
 
-        tinymce.init({
-            selector: 'textarea#display_screen_heading',
-            height: 250
-        });
-
-        $('.carousel_image').fileinput({
-            showUpload: true,
-            showPreview: true,
-            browseLabel: LANG.file_browse_label,
-            removeLabel: LANG.remove,
-        });
-
-        // Show settings only after select2 / fileinput / tinymce / icheck have applied
-        $('.business-settings-page')
-            .removeClass('settings-booting')
-            .addClass('settings-ready');
+        // Defer heavy widgets until Display Screen tab is opened (faster first paint)
+        window.__businessSettingsDisplayReady = false;
+        window.__initBusinessSettingsDisplayTab = function () {
+            if (window.__businessSettingsDisplayReady) {
+                return;
+            }
+            window.__businessSettingsDisplayReady = true;
+            if (typeof tinymce !== 'undefined' && $('#display_screen_heading').length) {
+                tinymce.init({
+                    selector: 'textarea#display_screen_heading',
+                    height: 250
+                });
+            }
+            if (typeof $.fn.fileinput === 'function') {
+                $('.carousel_image').each(function () {
+                    if (!$(this).data('fileinput')) {
+                        $(this).fileinput({
+                            showUpload: true,
+                            showPreview: true,
+                            browseLabel: LANG.file_browse_label,
+                            removeLabel: LANG.remove,
+                        });
+                    }
+                });
+            }
+        };
 
         $('#btn_reset_database_fresh_pos').click(function() {
             var phrase = $('#fresh_pos_reset_phrase').val();

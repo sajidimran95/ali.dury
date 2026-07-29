@@ -21,7 +21,12 @@
 	<div class="col-md-3">
 		<div class="form-group">
 			{!! Form::label("card_type_$row_index", __('lang_v1.card_type')) !!}
-			{!! Form::select("payment[$row_index][card_type]", ['credit' => 'Credit Card', 'debit' => 'Debit Card','visa' => 'Visa', 'master' => 'MasterCard'], $payment_line['card_type'],['class' => 'form-control', 'id' => "card_type_$row_index" ]); !!}
+			{!! Form::select("payment[$row_index][card_type]", [
+				'credit' => 'Credit Card',
+				'debit' => 'Debit Card',
+				'visa' => 'Visa',
+				'master' => 'MasterCard',
+			], $payment_line['card_type'] ?? 'visa', ['class' => 'form-control', 'id' => "card_type_$row_index"]); !!}
 		</div>
 	</div>
 	<div class="col-md-3">

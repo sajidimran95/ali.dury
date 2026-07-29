@@ -242,7 +242,7 @@ $(document).ready(function() {
         var $list = $('#pos_customer_picker_list');
         $list.html('<div class="pos-customer-picker-empty">Type to search customers</div>');
         $('#pos_customer_picker_add').attr('data-name', '');
-        $('#pos_customer_picker_add .pos-cust-add-label').text('+ Add as a new customer');
+        $('#pos_customer_picker_add .pos-cust-add-label').text('Add as a new customer');
     }
 
     function posCustPickerClose() {
@@ -255,7 +255,7 @@ $(document).ready(function() {
         if (!$list.length) return;
         term = $.trim(term || '');
         $('#pos_customer_picker_add').attr('data-name', term);
-        var label = term ? ("+ Add '" + term + "' as a new customer") : '+ Add as a new customer';
+        var label = term ? ("Add '" + term + "' as a new customer") : 'Add as a new customer';
         $('#pos_customer_picker_add .pos-cust-add-label').text(label);
 
         // Search-wise only — do not list everyone on empty query (previous: 1 letter)
@@ -1537,6 +1537,10 @@ $(document).ready(function() {
                                 if (typeof loadPosDraftsPanel === 'function' && $('#pos_drafts_panel').length) {
                                     loadPosDraftsPanel('draft');
                                 }
+                                // Silent stock refresh after sale (no grid reload)
+                                if (typeof posFetchLiveStock === 'function') {
+                                    setTimeout(posFetchLiveStock, 300);
+                                }
                             };
 
                             if (result.receipt && result.receipt.is_enabled) {
@@ -1686,15 +1690,24 @@ $(document).ready(function() {
     $(document).on('click', '.add_new_customer', function() {
         $('#customer_id').select2('close');
         var name = $(this).data('name');
-        $('.contact_modal')
-            .find('input#name')
-            .val(name);
-        $('.contact_modal')
-            .find('select#contact_type')
+        var $modal = $('.contact_modal').first();
+        $modal.find('input#name').val(name);
+        $modal.find('select#contact_type')
             .val('customer')
             .closest('div.contact_type_div')
             .addClass('hide');
-        $('.contact_modal').modal('show');
+        // Default to Individual so name + DOB fields are visible
+        var $indiv = $modal.find('#inlineRadio1');
+        if ($indiv.length) {
+            if ($indiv.parent().hasClass('iradio_square-blue')) {
+                $indiv.iCheck('check');
+            } else {
+                $indiv.prop('checked', true);
+            }
+            $modal.find('div.individual').show();
+            $modal.find('div.business').hide();
+        }
+        $modal.modal('show');
     });
     $('form#quick_add_contact')
         .submit(function(e) {
@@ -1960,6 +1973,11 @@ $(document).ready(function() {
             is_enabled_stock,
             device_model_id
         );
+    }
+
+    // Real-time stock: poll DB + update tiles without full page reload
+    if (typeof startPosLiveStockPolling === 'function') {
+        startPosLiveStockPolling();
     }
     
     $('select#select_location_id').on('change', function(e) {
@@ -2532,6 +2550,140 @@ function get_featured_products() {
 
 var pos_product_list_loading = false;
 var pos_product_list_exhausted = false;
+var pos_live_stock_timer = null;
+var pos_live_stock_requesting = false;
+
+/** Cart qty by variation_id */
+function posGetCartQtyByVariation() {
+    var qtyMap = {};
+    $('table#pos_table tbody tr.product_row').each(function () {
+        var vid = String($(this).find('input.row_variation_id').val() || '');
+        if (!vid) {
+            return;
+        }
+        var qty = __read_number($(this).find('input.pos_quantity')) || 0;
+        qtyMap[vid] = (qtyMap[vid] || 0) + qty;
+    });
+    return qtyMap;
+}
+
+/** Update tile stock text/class from data-base-qty minus cart qty */
+function posSyncProductStockDisplay() {
+    var qtyMap = posGetCartQtyByVariation();
+    var allowOversell = $('input#is_overselling_allowed').length > 0;
+
+    $('div.product_box[data-variation_id]').each(function () {
+        var $box = $(this);
+        if (String($box.data('enable-stock')) !== '1') {
+            return;
+        }
+        var vid = String($box.data('variation_id'));
+        var baseQty = parseFloat($box.attr('data-base-qty'));
+        if (isNaN(baseQty)) {
+            baseQty = parseFloat($box.data('base-qty')) || 0;
+        }
+        var remaining = baseQty - (qtyMap[vid] || 0);
+        if (remaining < 0 && !allowOversell) {
+            remaining = 0;
+        }
+        var unit = $box.data('unit') || $box.find('.product_stock').data('stock-label') || 'Pc(s)';
+        var $stock = $box.find('.product_stock');
+        if ($stock.length) {
+            $stock.text(Math.round(remaining) + ' ' + unit + ' in stock');
+        }
+        if (remaining <= 0 && !allowOversell) {
+            $box.addClass('product_out_of_stock tw-cursor-not-allowed').removeClass('tw-cursor-pointer');
+        } else {
+            $box.removeClass('product_out_of_stock tw-cursor-not-allowed').addClass('tw-cursor-pointer');
+        }
+    });
+}
+
+/** Apply server stock values onto tiles, then re-apply cart reservation */
+function posApplyLiveStock(stocks) {
+    if (!stocks) {
+        return;
+    }
+    Object.keys(stocks).forEach(function (vid) {
+        var info = stocks[vid];
+        var $boxes = $('div.product_box[data-variation_id="' + vid + '"]');
+        $boxes.each(function () {
+            var $box = $(this);
+            $box.attr('data-enable-stock', info.enable_stock ? 1 : 0);
+            $box.data('enable-stock', info.enable_stock ? 1 : 0);
+            $box.attr('data-base-qty', info.qty_available);
+            $box.data('base-qty', info.qty_available);
+        });
+    });
+    posSyncProductStockDisplay();
+}
+
+/** Fetch live stock for currently visible product tiles (silent — no loader / no grid reload) */
+function posFetchLiveStock() {
+    if (pos_live_stock_requesting) {
+        return;
+    }
+    var location_id = $('input#location_id').val();
+    if (!location_id) {
+        return;
+    }
+    var ids = [];
+    $('div.product_box[data-variation_id]').each(function () {
+        var id = $(this).data('variation_id');
+        if (id && ids.indexOf(id) === -1) {
+            ids.push(id);
+        }
+    });
+    if (!ids.length) {
+        return;
+    }
+    pos_live_stock_requesting = true;
+    var runSilent = function () {
+        $.ajax({
+            method: 'GET',
+            url: '/sells/pos/get-live-stock',
+            data: {
+                location_id: location_id,
+                variation_ids: ids,
+            },
+            dataType: 'json',
+            global: false, // skip Pace top spinner / ajaxStart
+            success: function (res) {
+                if (res && res.stocks) {
+                    posApplyLiveStock(res.stocks);
+                }
+            },
+            complete: function () {
+                pos_live_stock_requesting = false;
+            },
+        });
+    };
+    // Also hide from Pace XHR tracker (same spinner)
+    if (typeof Pace !== 'undefined' && Pace && typeof Pace.ignore === 'function') {
+        Pace.ignore(runSilent);
+    } else {
+        runSilent();
+    }
+}
+
+function startPosLiveStockPolling() {
+    if (pos_live_stock_timer) {
+        clearInterval(pos_live_stock_timer);
+    }
+    // Quiet background sync — only updates stock numbers on tiles, never reloads grid
+    posFetchLiveStock();
+    pos_live_stock_timer = setInterval(function () {
+        if (document.hidden) {
+            return;
+        }
+        posFetchLiveStock();
+    }, 8000);
+    $(document).off('visibilitychange.posLiveStock').on('visibilitychange.posLiveStock', function () {
+        if (!document.hidden) {
+            posFetchLiveStock();
+        }
+    });
+}
 
 function get_product_suggestion_list(category_id, brand_id, location_id, url = null, is_enabled_stock = null, repair_model_id = null) {
     if($('div#product_list_body').length == 0) {
@@ -2592,6 +2744,9 @@ function get_product_suggestion_list(category_id, brand_id, location_id, url = n
             }
             pos_product_list_loading = false;
             $('#suggestion_page_loader').removeClass('is-visible').hide();
+            if (typeof posSyncProductStockDisplay === 'function') {
+                posSyncProductStockDisplay();
+            }
         },
         error: function() {
             pos_product_list_loading = false;
@@ -3117,6 +3272,10 @@ function pos_total_row() {
     // store on any update
     saveFormDataToLocalStorage();
 
+    // Keep product-tile stock in sync with cart (no page reload)
+    if (typeof posSyncProductStockDisplay === 'function') {
+        posSyncProductStockDisplay();
+    }
 }
 
 function get_subtotal() {
@@ -3556,6 +3715,11 @@ function reset_pos_form(){
 
     if (typeof pos_total_row === 'function') {
         try { pos_total_row(); } catch (e) {}
+    }
+
+    // Silent live stock update only (no product grid reload / no loader)
+    if (typeof posFetchLiveStock === 'function') {
+        try { posFetchLiveStock(); } catch (e) {}
     }
 }
 

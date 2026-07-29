@@ -2018,6 +2018,54 @@ class SellPosController extends Controller
     }
 
     /**
+     * Live stock qty for visible POS product tiles (no page reload).
+     */
+    public function getLiveStock(Request $request)
+    {
+        if (! $request->ajax()) {
+            abort(404);
+        }
+
+        $business_id = $request->session()->get('user.business_id');
+        $location_id = $request->get('location_id');
+        $variation_ids = $request->get('variation_ids', []);
+
+        if (! is_array($variation_ids)) {
+            $variation_ids = array_filter(explode(',', (string) $variation_ids));
+        }
+
+        $variation_ids = array_values(array_unique(array_filter(array_map('intval', $variation_ids))));
+
+        if (empty($location_id) || empty($variation_ids)) {
+            return response()->json(['stocks' => []]);
+        }
+
+        $rows = Variation::join('products as p', 'variations.product_id', '=', 'p.id')
+            ->leftJoin('variation_location_details as vld', function ($join) use ($location_id) {
+                $join->on('variations.id', '=', 'vld.variation_id')
+                    ->where('vld.location_id', '=', $location_id);
+            })
+            ->where('p.business_id', $business_id)
+            ->whereIn('variations.id', $variation_ids)
+            ->select(
+                'variations.id as variation_id',
+                'p.enable_stock',
+                DB::raw('COALESCE(vld.qty_available, 0) as qty_available')
+            )
+            ->get();
+
+        $stocks = [];
+        foreach ($rows as $row) {
+            $stocks[(string) $row->variation_id] = [
+                'enable_stock' => (int) $row->enable_stock,
+                'qty_available' => (float) $row->qty_available,
+            ];
+        }
+
+        return response()->json(['stocks' => $stocks]);
+    }
+
+    /**
      * Shows invoice url.
      *
      * @param  int  $id

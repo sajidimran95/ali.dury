@@ -221,12 +221,13 @@
           <div class="col-md-6">
                 <div class="form-group">
                     {!! Form::label('assigned_to_users', __('lang_v1.assigned_to') . ':' ) !!}
-                    <div class="input-group">
-                        <span class="input-group-addon">
-                            <i class="fa fa-user"></i>
-                        </span>
-                        {!! Form::select('assigned_to_users[]', $users, $assigned_to_users ?? [] , ['class' => 'form-control select2', 'id' => 'assigned_to_users', 'multiple', 'style' => 'width: 100%;']); !!}
-                    </div>
+                    {!! Form::select('assigned_to_users[]', $users, $assigned_to_users ?? [] , [
+                        'class' => 'form-control select2',
+                        'id' => 'assigned_to_users',
+                        'multiple',
+                        'style' => 'width: 100%;',
+                        'data-placeholder' => __('lang_v1.please_select'),
+                    ]); !!}
                 </div>
           </div>
         @endif

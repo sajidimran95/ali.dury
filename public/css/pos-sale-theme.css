@@ -4686,6 +4686,95 @@ body.lockscreen.pos-sale-theme .bootstrap-datetimepicker-widget table td span.ac
   color: #ffffff !important;
 }
 
+/* Bootstrap datepicker (DOB in Add Customer) — dark, readable text */
+body.lockscreen.pos-sale-theme .datepicker,
+body.lockscreen.pos-sale-theme .datepicker.dropdown-menu,
+body.lockscreen.pos-sale-theme div.datepicker {
+  background: #1e1e1e !important;
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+  border: 1px solid #3a3a3a !important;
+  border-radius: 8px !important;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55) !important;
+  z-index: 10650 !important;
+  padding: 8px !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+body.lockscreen.pos-sale-theme .datepicker table,
+body.lockscreen.pos-sale-theme .datepicker table tr,
+body.lockscreen.pos-sale-theme .datepicker table th,
+body.lockscreen.pos-sale-theme .datepicker table td,
+body.lockscreen.pos-sale-theme .datepicker .datepicker-days,
+body.lockscreen.pos-sale-theme .datepicker .datepicker-months,
+body.lockscreen.pos-sale-theme .datepicker .datepicker-years {
+  background: #1e1e1e !important;
+  color: #ffffff !important;
+  border-color: #333 !important;
+}
+
+body.lockscreen.pos-sale-theme .datepicker table th,
+body.lockscreen.pos-sale-theme .datepicker table td,
+body.lockscreen.pos-sale-theme .datepicker .dow,
+body.lockscreen.pos-sale-theme .datepicker .day,
+body.lockscreen.pos-sale-theme .datepicker .month,
+body.lockscreen.pos-sale-theme .datepicker .year,
+body.lockscreen.pos-sale-theme .datepicker .datepicker-switch,
+body.lockscreen.pos-sale-theme .datepicker .prev,
+body.lockscreen.pos-sale-theme .datepicker .next,
+body.lockscreen.pos-sale-theme .datepicker .cw {
+  color: #ffffff !important;
+  background: transparent !important;
+  text-shadow: none !important;
+}
+
+body.lockscreen.pos-sale-theme .datepicker table tr td.day:hover,
+body.lockscreen.pos-sale-theme .datepicker table tr td.focused,
+body.lockscreen.pos-sale-theme .datepicker table tr td span:hover,
+body.lockscreen.pos-sale-theme .datepicker table tr td.month:hover,
+body.lockscreen.pos-sale-theme .datepicker table tr td.year:hover,
+body.lockscreen.pos-sale-theme .datepicker .prev:hover,
+body.lockscreen.pos-sale-theme .datepicker .next:hover,
+body.lockscreen.pos-sale-theme .datepicker .datepicker-switch:hover {
+  background: #333 !important;
+  color: #ffffff !important;
+}
+
+body.lockscreen.pos-sale-theme .datepicker table tr td.active,
+body.lockscreen.pos-sale-theme .datepicker table tr td.active:hover,
+body.lockscreen.pos-sale-theme .datepicker table tr td.active.disabled,
+body.lockscreen.pos-sale-theme .datepicker table tr td.active.disabled:hover,
+body.lockscreen.pos-sale-theme .datepicker table tr td span.active,
+body.lockscreen.pos-sale-theme .datepicker table tr td span.active:hover,
+body.lockscreen.pos-sale-theme .datepicker table tr td.selected,
+body.lockscreen.pos-sale-theme .datepicker table tr td.selected:hover {
+  background: #3b8ddd !important;
+  background-color: #3b8ddd !important;
+  color: #ffffff !important;
+  text-shadow: none !important;
+}
+
+body.lockscreen.pos-sale-theme .datepicker table tr td.today,
+body.lockscreen.pos-sale-theme .datepicker table tr td.today:hover {
+  background: #2a4a66 !important;
+  color: #ffffff !important;
+}
+
+body.lockscreen.pos-sale-theme .datepicker table tr td.old,
+body.lockscreen.pos-sale-theme .datepicker table tr td.new,
+body.lockscreen.pos-sale-theme .datepicker table tr td.disabled,
+body.lockscreen.pos-sale-theme .datepicker table tr td.disabled:hover {
+  color: #777 !important;
+  background: transparent !important;
+}
+
+body.lockscreen.pos-sale-theme .datepicker-dropdown:before,
+body.lockscreen.pos-sale-theme .datepicker-dropdown:after {
+  border-bottom-color: #3a3a3a !important;
+}
+
 /* Price group Select2 dropdown (appended to body) — force dark */
 body.lockscreen.pos-sale-theme .select2-container--open .select2-dropdown,
 body.lockscreen.pos-sale-theme .select2-dropdown {
@@ -5078,6 +5167,155 @@ body.lockscreen.pos-sale-theme .select2-container--open .select2-search--dropdow
 body.lockscreen.pos-sale-theme .select2-container--default .select2-results__option--highlighted[aria-selected],
 body.lockscreen.pos-sale-theme .select2-container--default .select2-results__option[aria-selected="true"] {
   background: #2f2f2f !important;
+  color: #ffffff !important;
+}
+
+/* ── Add Customer popup: sticky Save; scroll form body (form wraps header/body/footer) ── */
+body.lockscreen.pos-sale-theme .contact_modal,
+body.lockscreen.pos-sale-theme #global_contact_modal {
+  overflow: hidden !important;
+}
+
+body.lockscreen.pos-sale-theme .contact_modal .modal-dialog,
+body.lockscreen.pos-sale-theme #global_contact_modal .modal-dialog {
+  margin: 12px auto !important;
+  width: calc(100% - 24px) !important;
+  max-width: 900px !important;
+  max-height: calc(100vh - 24px) !important;
+  height: calc(100vh - 24px) !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+body.lockscreen.pos-sale-theme .contact_modal .modal-content,
+body.lockscreen.pos-sale-theme #global_contact_modal .modal-content {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 1 auto !important;
+  height: 100% !important;
+  max-height: 100% !important;
+  overflow: hidden !important;
+  background: #1e1e1e !important;
+  color: #ffffff !important;
+  border: 1px solid #3a3a3a !important;
+  border-radius: 8px !important;
+}
+
+/* Form is the real flex column (contains header + body + footer) */
+body.lockscreen.pos-sale-theme .contact_modal .modal-content > form,
+body.lockscreen.pos-sale-theme #global_contact_modal .modal-content > form {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 1 auto !important;
+  height: 100% !important;
+  max-height: 100% !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+  margin: 0 !important;
+}
+
+body.lockscreen.pos-sale-theme .contact_modal .modal-header,
+body.lockscreen.pos-sale-theme #global_contact_modal .modal-header,
+body.lockscreen.pos-sale-theme .contact_modal .modal-footer,
+body.lockscreen.pos-sale-theme #global_contact_modal .modal-footer {
+  flex: 0 0 auto !important;
+  background: #1a1a1a !important;
+  border-color: #333 !important;
+  position: relative;
+  z-index: 5;
+}
+
+body.lockscreen.pos-sale-theme .contact_modal .modal-footer,
+body.lockscreen.pos-sale-theme #global_contact_modal .modal-footer {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 8px;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  padding: 12px 16px !important;
+  margin-top: auto !important;
+}
+
+body.lockscreen.pos-sale-theme .contact_modal .modal-body,
+body.lockscreen.pos-sale-theme #global_contact_modal .modal-body {
+  flex: 1 1 auto !important;
+  overflow-y: scroll !important;
+  overflow-x: hidden !important;
+  -webkit-overflow-scrolling: touch;
+  max-height: none !important;
+  height: auto !important;
+  min-height: 0 !important;
+  background: #1e1e1e !important;
+  color: #ffffff !important;
+}
+
+body.lockscreen.pos-sale-theme .contact_modal .modal-footer .tw-dw-btn,
+body.lockscreen.pos-sale-theme #global_contact_modal .modal-footer .tw-dw-btn,
+body.lockscreen.pos-sale-theme .contact_modal .modal-footer .btn,
+body.lockscreen.pos-sale-theme #global_contact_modal .modal-footer .btn {
+  pointer-events: auto !important;
+  position: relative;
+  z-index: 6;
+}
+
+/* Contact modal Assigned to (select2 multiple) — dark + clickable */
+body.lockscreen.pos-sale-theme .contact_modal .select2-container,
+body.lockscreen.pos-sale-theme .contact_modal .select2-container--default {
+  width: 100% !important;
+  z-index: 1;
+}
+
+body.lockscreen.pos-sale-theme .contact_modal .select2-container--default .select2-selection--multiple,
+body.lockscreen.pos-sale-theme .contact_modal .select2-container--default .select2-selection--single {
+  background: #2a2a2a !important;
+  border: 1px solid #444 !important;
+  color: #ffffff !important;
+  min-height: 40px !important;
+  border-radius: 6px !important;
+}
+
+body.lockscreen.pos-sale-theme .contact_modal .select2-container--default .select2-selection--multiple .select2-selection__rendered {
+  color: #ffffff !important;
+  padding: 4px 8px !important;
+}
+
+body.lockscreen.pos-sale-theme .contact_modal .select2-container--default .select2-selection--multiple .select2-selection__choice {
+  background: #3b8ddd !important;
+  border-color: #2f7bc4 !important;
+  color: #ffffff !important;
+}
+
+body.lockscreen.pos-sale-theme .contact_modal .select2-container--default .select2-selection--multiple .select2-search__field {
+  color: #ffffff !important;
+  background: transparent !important;
+}
+
+body.lockscreen.pos-sale-theme .contact_modal .select2-container--default .select2-selection--multiple .select2-search__field::placeholder {
+  color: #999 !important;
+}
+
+/* Select2 dropdown for contact modal (appended to body) */
+body.lockscreen.pos-sale-theme .select2-container--open .select2-dropdown {
+  background: #1e1e1e !important;
+  border: 1px solid #3a3a3a !important;
+  color: #ffffff !important;
+  z-index: 10660 !important;
+}
+
+body.lockscreen.pos-sale-theme .select2-container--open .select2-results__option {
+  color: #ffffff !important;
+  background: #1e1e1e !important;
+}
+
+body.lockscreen.pos-sale-theme .select2-container--open .select2-results__option--highlighted[aria-selected],
+body.lockscreen.pos-sale-theme .select2-container--open .select2-results__option[aria-selected="true"] {
+  background: #3b8ddd !important;
+  color: #ffffff !important;
+}
+
+body.lockscreen.pos-sale-theme .select2-container--open .select2-search--dropdown .select2-search__field {
+  background: #2a2a2a !important;
+  border-color: #444 !important;
   color: #ffffff !important;
 }
 

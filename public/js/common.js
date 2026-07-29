@@ -458,7 +458,35 @@ $(document).ready(function () {
         $(this).addClass('active');
         var index = $(this).index();
         $('div.pos-tab>div.pos-tab-content').removeClass('active');
-        $('div.pos-tab>div.pos-tab-content').eq(index).addClass('active');
+        var $tab = $('div.pos-tab>div.pos-tab-content').eq(index);
+        $tab.addClass('active');
+
+        // Lazy-init Select2 / iCheck when a settings tab is first opened
+        if ($('.business-settings-page').length && !$tab.data('widgets-ready')) {
+            $tab.data('widgets-ready', true);
+            var $selects = $tab.find('select.select2').filter(function () {
+                return !$(this).hasClass('select2-hidden-accessible');
+            });
+            if ($selects.length && typeof __select2 === 'function') {
+                __select2($selects);
+            }
+            $tab.find('input[type="checkbox"].input-icheck, input[type="radio"].input-icheck')
+                .filter(function () {
+                    return !$(this).parent().hasClass('icheckbox_square-blue')
+                        && !$(this).parent().hasClass('iradio_square-blue');
+                })
+                .iCheck({
+                    checkboxClass: 'icheckbox_square-blue',
+                    radioClass: 'iradio_square-blue',
+                });
+        }
+
+        // Display Screen tab: TinyMCE + carousel file inputs
+        if ($('.business-settings-page').length && typeof window.__initBusinessSettingsDisplayTab === 'function') {
+            if ($tab.find('#display_screen_heading, .carousel_image').length) {
+                window.__initBusinessSettingsDisplayTab();
+            }
+        }
     });
 
     $('.scroll-top-bottom').each(function () {

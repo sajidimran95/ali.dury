@@ -39,7 +39,7 @@
 				<div class="pos-customer-picker-footer">
 					<button type="button" class="btn btn-link add_new_customer pos-cust-add-btn" id="pos_customer_picker_add" data-name="">
 						<i class="fa fa-plus" aria-hidden="true"></i>
-						<span class="pos-cust-add-label">+ Add as a new customer</span>
+						<span class="pos-cust-add-label">Add as a new customer</span>
 					</button>
 				</div>
 			</div>

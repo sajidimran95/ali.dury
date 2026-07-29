@@ -3336,6 +3336,54 @@ body.zoho-theme:not(.pos-sale-theme) .contact_modal .select2-container .select2-
     min-height: 40px !important;
 }
 
+/* Contact modal: sticky Save footer; scroll body when More Info expands */
+body.zoho-theme:not(.pos-sale-theme) .contact_modal .modal-dialog,
+body.zoho-theme:not(.pos-sale-theme) #global_contact_modal .modal-dialog {
+    margin: 20px auto !important;
+    max-height: calc(100vh - 40px);
+    height: calc(100vh - 40px);
+    display: flex;
+    flex-direction: column;
+}
+
+body.zoho-theme:not(.pos-sale-theme) .contact_modal .modal-content,
+body.zoho-theme:not(.pos-sale-theme) #global_contact_modal .modal-content {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    height: 100%;
+    max-height: 100%;
+    overflow: hidden !important;
+}
+
+body.zoho-theme:not(.pos-sale-theme) .contact_modal .modal-content > form,
+body.zoho-theme:not(.pos-sale-theme) #global_contact_modal .modal-content > form {
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 1 auto !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+    margin: 0 !important;
+}
+
+body.zoho-theme:not(.pos-sale-theme) .contact_modal .modal-header,
+body.zoho-theme:not(.pos-sale-theme) #global_contact_modal .modal-header,
+body.zoho-theme:not(.pos-sale-theme) .contact_modal .modal-footer,
+body.zoho-theme:not(.pos-sale-theme) #global_contact_modal .modal-footer {
+    flex: 0 0 auto !important;
+}
+
+body.zoho-theme:not(.pos-sale-theme) .contact_modal .modal-body,
+body.zoho-theme:not(.pos-sale-theme) #global_contact_modal .modal-body {
+    flex: 1 1 auto !important;
+    overflow-y: scroll !important;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    min-height: 0 !important;
+}
+
 /* Customer list: hide raw amounts until currency JS converts */
 body.zoho-theme:not(.pos-sale-theme) .customers-page .display_currency,
 body.zoho-theme:not(.pos-sale-theme) .cust-stat-card .display_currency {
@@ -4158,15 +4206,6 @@ body.zoho-theme:not(.pos-sale-theme) .business-settings-page .pos-tab-content .t
         width: 100% !important;
         flex: 0 0 100%;
     }
-}
-
-/* Hide raw form until select2 / fileinput / icheck finish ? prevents load?after-load jump */
-body.zoho-theme:not(.pos-sale-theme) .business-settings-page.settings-booting .pos-tab-container {
-    opacity: 0;
-}
-body.zoho-theme:not(.pos-sale-theme) .business-settings-page.settings-ready .pos-tab-container {
-    opacity: 1;
-    transition: opacity 0.12s ease;
 }
 
 /* Match final control heights before plugins transform them */

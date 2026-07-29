@@ -21,7 +21,25 @@ $(document).ready(function() {
         }
     });
 
-    __select2($('.select2'));
+    // Business settings: only init widgets on the active tab (huge page otherwise)
+    if ($('.business-settings-page').length) {
+        var $activeSelects = $('.select2').filter(function () {
+            var $tab = $(this).closest('.pos-tab-content');
+            return !$tab.length || $tab.hasClass('active');
+        });
+        // Timezone list is huge — init after first paint so UI isn't blocked
+        var $heavy = $activeSelects.filter('#time_zone, [name="time_zone"]');
+        var $light = $activeSelects.not($heavy);
+        __select2($light);
+        if ($heavy.length) {
+            setTimeout(function () {
+                __select2($heavy);
+            }, 0);
+        }
+        $('.pos-tab-content.active').data('widgets-ready', true);
+    } else {
+        __select2($('.select2'));
+    }
 
     // popover
     $('body').on('mouseover', '[data-toggle="popover"]', function() {
@@ -582,9 +600,13 @@ $(document).ready(function() {
             if ($el.hasClass('select2-hidden-accessible')) {
                 try { $el.select2('destroy'); } catch (err) {}
             }
+            // Use body so dropdown is not clipped by modal overflow (POS sticky footer)
             $el.select2({
-                dropdownParent: $root,
-                width: '100%'
+                dropdownParent: $(document.body),
+                width: '100%',
+                placeholder: $el.data('placeholder') || '',
+                allowClear: true,
+                closeOnSelect: !$el.prop('multiple')
             });
         });
     };
@@ -618,7 +640,18 @@ $(document).ready(function() {
 
         $root.off('click.moreBtn', '.more_btn')
             .on('click.moreBtn', '.more_btn', function(){
-                $($(this).data('target')).toggleClass('hide');
+                var $target = $($(this).data('target'));
+                $target.toggleClass('hide');
+                // Keep Save visible: scroll expanded section into the modal body
+                if (!$target.hasClass('hide')) {
+                    var $body = $root.find('.modal-body');
+                    if ($body.length) {
+                        setTimeout(function () {
+                            var top = $target.position() ? $target.position().top : 0;
+                            $body.animate({ scrollTop: $body.scrollTop() + top - 12 }, 200);
+                        }, 50);
+                    }
+                }
             });
 
         $root.off('change.contactType', 'select#contact_type')
@@ -1335,21 +1368,18 @@ $(document).ready(function() {
         get_expense_sub_categories();
     });
 
-    //initialize iCheck
-    $('input[type="checkbox"].input-icheck, input[type="radio"].input-icheck').iCheck({
+    //initialize iCheck — on business settings, only active tab first
+    var $icheck = $('input[type="checkbox"].input-icheck, input[type="radio"].input-icheck');
+    if ($('.business-settings-page').length) {
+        $icheck = $icheck.filter(function () {
+            var $tab = $(this).closest('.pos-tab-content');
+            return !$tab.length || $tab.hasClass('active');
+        });
+    }
+    $icheck.iCheck({
         checkboxClass: 'icheckbox_square-blue',
         radioClass: 'iradio_square-blue',
     });
-    // Business settings: mark ready after core widgets (page JS may refine further)
-    if ($('.business-settings-page.settings-booting').length) {
-        // Keep booting until page-specific scripts (tinymce/fileinput) finish;
-        // fallback reveal so page never stays invisible if those scripts fail.
-        setTimeout(function () {
-            $('.business-settings-page.settings-booting')
-                .removeClass('settings-booting')
-                .addClass('settings-ready');
-        }, 400);
-    }
     $(document).on('ifChecked', '.check_all', function() {
         $(this)
             .closest('.check_group')
@@ -2882,10 +2912,30 @@ $(document).on('click', 'a.update_contact_status', function(e){
 });
 
 $(document).on('shown.bs.modal', '.contact_modal', function(e) {
-    $('.dob-date-picker').datepicker({
-      autoclose: true,
-      endDate: 'today',
+    var $root = $(this);
+    $root.find('.dob-date-picker').each(function () {
+        var $input = $(this);
+        if ($input.data('datepicker')) {
+            $input.datepicker('destroy');
+        }
+        $input.datepicker({
+            autoclose: true,
+            endDate: 'today',
+            // Append outside modal so overflow:hidden does not clip the calendar
+            container: 'body',
+            orientation: 'bottom auto',
+        });
     });
+});
+
+// Keep DOB picker above POS modal
+$(document).on('showDatepicker', function () {
+    $('.datepicker').css('z-index', 10650);
+});
+$(document).on('click focus', '.contact_modal .dob-date-picker', function () {
+    setTimeout(function () {
+        $('.datepicker').css('z-index', 10650);
+    }, 0);
 });
 
 $(document).on('change', '#sms_service', function(e) {

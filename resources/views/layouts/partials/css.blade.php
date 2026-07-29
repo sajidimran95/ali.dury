@@ -91,7 +91,7 @@
 <link rel="stylesheet" href="{{ asset('css/zoho-theme.css?v='.$asset_v) }}">
 
 @if(isset($pos_layout) && $pos_layout)
-	<link rel="stylesheet" href="{{ asset('css/pos-sale-theme.css?v='.$asset_v.'&ls=76') }}">
+	<link rel="stylesheet" href="{{ asset('css/pos-sale-theme.css?v='.$asset_v.'&ls=81') }}">
 	<style type="text/css">
 		.content{
 			padding-bottom: 0px !important;
@@ -158,7 +158,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"></noscript>
 {{-- Premium SaaS theme — final visual layer --}}
-<link rel="stylesheet" href="{{ asset('css/premium-theme.css?v='.$asset_v.'&tb=17') }}">
+<link rel="stylesheet" href="{{ asset('css/premium-theme.css?v='.$asset_v.'&tb=20') }}">
 @if(!empty($dashboard_premium))
 <link rel="stylesheet" href="{{ asset('css/japs-dashboard-premium.css?v='.$asset_v.'&inv=7') }}">
 @endif
