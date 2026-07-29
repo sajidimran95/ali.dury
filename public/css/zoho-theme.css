@@ -489,7 +489,8 @@ body.zoho-theme.sidebar-collapse .side-bar > .tw-px-3 {
 
 body.zoho-theme .side-bar.zoho-sidebar-collapsed #side-bar,
 body.zoho-theme.sidebar-collapse #side-bar {
-    overflow: visible !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
 }
 
 body.zoho-theme .side-bar.zoho-sidebar-collapsed #side-bar > .zoho-sidebar-item,
@@ -539,8 +540,8 @@ body.zoho-theme.sidebar-collapse #side-bar .zoho-sidebar-flyout__rail {
     display: none !important;
 }
 
-body.zoho-theme .side-bar.zoho-sidebar-collapsed #side-bar .chiled,
-body.zoho-theme.sidebar-collapse #side-bar .chiled {
+body.zoho-theme .side-bar.zoho-sidebar-collapsed #side-bar > .zoho-sidebar-item > .chiled,
+body.zoho-theme.sidebar-collapse #side-bar > .zoho-sidebar-item > .chiled {
     display: none !important;
     position: absolute;
     left: calc(100% - 1px);
@@ -556,10 +557,42 @@ body.zoho-theme.sidebar-collapse #side-bar .chiled {
     overflow: hidden;
 }
 
-body.zoho-theme .side-bar.zoho-sidebar-collapsed #side-bar .zoho-sidebar-item:hover > .chiled,
-body.zoho-theme .side-bar.zoho-sidebar-collapsed #side-bar .zoho-sidebar-item.zoho-sidebar-flyout-open > .chiled,
-body.zoho-theme.sidebar-collapse #side-bar .zoho-sidebar-item:hover > .chiled,
-body.zoho-theme.sidebar-collapse #side-bar .zoho-sidebar-item.zoho-sidebar-flyout-open > .chiled {
+body.zoho-theme .side-bar.zoho-sidebar-collapsed #side-bar > .zoho-sidebar-item.zoho-sidebar-flyout-open > .chiled,
+body.zoho-theme.sidebar-collapse #side-bar > .zoho-sidebar-item.zoho-sidebar-flyout-open > .chiled {
+    display: block !important;
+    position: fixed !important;
+    z-index: 1080 !important;
+    min-width: 240px;
+    max-height: calc(100vh - 16px) !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+}
+
+body.zoho-theme .side-bar.zoho-sidebar-collapsed #side-bar > .zoho-sidebar-item.zoho-sidebar-flyout-open > .chiled .chiled,
+body.zoho-theme.sidebar-collapse #side-bar > .zoho-sidebar-item.zoho-sidebar-flyout-open > .chiled .chiled {
+    position: static !important;
+    left: auto !important;
+    top: auto !important;
+    min-width: 0 !important;
+    max-height: none !important;
+    box-shadow: none !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    margin: 4px 0 4px 8px !important;
+    padding-left: 10px !important;
+    overflow: visible !important;
+    background: transparent !important;
+}
+
+body.zoho-theme .side-bar.zoho-sidebar-collapsed #side-bar > .zoho-sidebar-item:hover > .chiled,
+body.zoho-theme.sidebar-collapse #side-bar > .zoho-sidebar-item:hover > .chiled {
+    /* Click-open only — hover clip conflicts with scrollable icon rail */
+    display: none !important;
+}
+
+body.zoho-theme .side-bar.zoho-sidebar-collapsed #side-bar > .zoho-sidebar-item.zoho-sidebar-flyout-open:hover > .chiled,
+body.zoho-theme.sidebar-collapse #side-bar > .zoho-sidebar-item.zoho-sidebar-flyout-open:hover > .chiled {
     display: block !important;
 }
 

@@ -906,6 +906,76 @@ $(function () {
         event.stopPropagation();
     });
 
+    function clearCollapsedFlyoutStyles($panel) {
+        if (!$panel || !$panel.length) {
+            return;
+        }
+        $panel.css({
+            position: '',
+            top: '',
+            left: '',
+            right: '',
+            bottom: '',
+            maxHeight: '',
+            width: '',
+            display: '',
+            overflowY: '',
+        });
+    }
+
+    function positionCollapsedFlyout($item) {
+        var $panel = $item.children('.chiled').first();
+        if (!$panel.length) {
+            return;
+        }
+
+        var trigger = $item.children('a').first().get(0) || $item.get(0);
+        var rect = trigger.getBoundingClientRect();
+        var gap = 4;
+        var panelWidth = 240;
+        var viewportPad = 8;
+        var maxHeight = Math.max(180, window.innerHeight - viewportPad * 2);
+        var left = Math.round(rect.right + gap);
+        var top = Math.round(rect.top);
+
+        if (left + panelWidth > window.innerWidth - viewportPad) {
+            left = Math.max(viewportPad, Math.round(rect.left - panelWidth - gap));
+        }
+
+        // Temporarily show to measure height, then clamp into viewport
+        $panel.css({
+            position: 'fixed',
+            top: top + 'px',
+            left: left + 'px',
+            right: 'auto',
+            bottom: 'auto',
+            width: panelWidth + 'px',
+            maxHeight: maxHeight + 'px',
+            overflowY: 'auto',
+            display: 'block',
+            zIndex: 1080,
+        });
+
+        var panelHeight = Math.min($panel.outerHeight() || 280, maxHeight);
+        if (top + panelHeight > window.innerHeight - viewportPad) {
+            top = Math.max(viewportPad, window.innerHeight - viewportPad - panelHeight);
+        }
+
+        $panel.css({
+            top: Math.round(top) + 'px',
+            maxHeight: maxHeight + 'px',
+            overflowY: 'auto',
+        });
+    }
+
+    function closeAllCollapsedFlyouts() {
+        $('#side-bar > .zoho-sidebar-item.zoho-sidebar-flyout-open').each(function () {
+            var $item = $(this);
+            clearCollapsedFlyoutStyles($item.children('.chiled').first());
+            $item.removeClass('zoho-sidebar-flyout-open');
+        });
+    }
+
     $(document).on('click', '.drop_down', function (event) {
         if (isZohoSidebarCollapsed()) {
             // Nested submenu inside an open flyout (e.g. Inventory > Items)
@@ -913,11 +983,16 @@ $(function () {
                 event.preventDefault();
                 event.stopPropagation();
                 var $nested = $(this).next('.chiled');
-                $nested.slideToggle(150);
+                $nested.slideToggle(150, function () {
+                    var $openItem = $('#side-bar > .zoho-sidebar-item.zoho-sidebar-flyout-open').first();
+                    if ($openItem.length) {
+                        positionCollapsedFlyout($openItem);
+                    }
+                });
                 return;
             }
 
-            // Top-level icon: open flyout panel to the right
+            // Top-level icon: open flyout panel to the right (fixed + scrollable)
             var $item = $(this).closest('#side-bar > .zoho-sidebar-item');
             if (!$item.length) {
                 return;
@@ -925,8 +1000,14 @@ $(function () {
 
             event.preventDefault();
             event.stopPropagation();
-            $('#side-bar > .zoho-sidebar-item').not($item).removeClass('zoho-sidebar-flyout-open');
-            $item.toggleClass('zoho-sidebar-flyout-open');
+
+            var willOpen = !$item.hasClass('zoho-sidebar-flyout-open');
+            closeAllCollapsedFlyouts();
+
+            if (willOpen) {
+                $item.addClass('zoho-sidebar-flyout-open');
+                positionCollapsedFlyout($item);
+            }
             return;
         }
 
@@ -963,9 +1044,30 @@ $(function () {
         if (!isZohoSidebarCollapsed()) {
             return;
         }
-        if (!$(event.target).closest('.zoho-sidebar-item').length) {
-            $('.zoho-sidebar-item').removeClass('zoho-sidebar-flyout-open');
+        if (!$(event.target).closest('.zoho-sidebar-item, .chiled').length) {
+            closeAllCollapsedFlyouts();
         }
+    });
+
+    $(window).on('resize scroll', function () {
+        if (!isZohoSidebarCollapsed()) {
+            return;
+        }
+        var $openItem = $('#side-bar > .zoho-sidebar-item.zoho-sidebar-flyout-open').first();
+        if ($openItem.length) {
+            positionCollapsedFlyout($openItem);
+        }
+    });
+
+    $('#side-bar').on('scroll', function () {
+        if (!isZohoSidebarCollapsed()) {
+            return;
+        }
+        closeAllCollapsedFlyouts();
+    });
+
+    document.addEventListener('zoho-sidebar-toggled', function () {
+        closeAllCollapsedFlyouts();
     });
 
     // --- Sidebar mobile open / overlay close ---
