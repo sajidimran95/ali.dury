@@ -404,7 +404,13 @@ $(document).ready(function () {
         });
     });
 
-   
+    // After first DataTable draw, reveal the scroll container to prevent layout shift
+    $(document).on('draw.dt', function (e) {
+        var $scroll = $(e.target).closest('.dataTables_scroll');
+        if ($scroll.length && !$scroll.hasClass('dt-loaded')) {
+            $scroll.addClass('dt-loaded');
+        }
+    });
 
     if ($('input#iraqi_selling_price_adjustment').length > 0) {
         iraqi_selling_price_adjustment = true;

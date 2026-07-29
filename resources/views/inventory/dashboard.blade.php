@@ -245,7 +245,8 @@
 
 @section('javascript')
 <script type="text/javascript">
-    $(document).ready(function () {
+    // Convert immediately when scripts are ready (eliminates flash on load)
+    $(function () {
         __currency_convert_recursively($('section.inv-dash'));
     });
 </script>

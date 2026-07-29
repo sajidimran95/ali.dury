@@ -1,10 +1,10 @@
 /**
- * JAPS POS — Premium SaaS theme
+ * JAPS POS ? Premium SaaS theme
  * Final visual layer: light Salezy-style navigation, white surfaces, soft canvas.
  * Scoped to body.zoho-theme / .japs-auth-body so vendor/legacy CSS stays intact beneath.
  */
 
-/* ── Tokens ── */
+/* ?? Tokens ?? */
 body.zoho-theme,
 .japs-auth-body {
     --p-ink: #151b2b;
@@ -136,7 +136,7 @@ body.zoho-theme:not(.pos-sale-theme) .modal {
     z-index: 1100 !important;
 }
 
-/* Keep page footer below content — never paint through floated form gaps */
+/* Keep page footer below content ? never paint through floated form gaps */
 body.zoho-theme:not(.pos-sale-theme) #scrollable-container > .content,
 body.zoho-theme:not(.pos-sale-theme) #scrollable-container > .content-header,
 body.zoho-theme:not(.pos-sale-theme) #scrollable-container > section {
@@ -154,7 +154,7 @@ body.zoho-theme:not(.pos-sale-theme) .japs-page-footer {
     background: #f7f9fc !important;
 }
 
-/* ── Focus / a11y ── */
+/* ?? Focus / a11y ?? */
 body.zoho-theme a:focus-visible,
 body.zoho-theme button:focus-visible,
 body.zoho-theme input:focus-visible,
@@ -178,9 +178,9 @@ body.zoho-theme #side-bar a:focus-visible {
     }
 }
 
-/* ══════════════════════════════════════
-   SHELL — Topbar (Salezy light)
-   ══════════════════════════════════════ */
+/* ??????????????????????????????????????
+   SHELL ? Topbar (Salezy light)
+   ?????????????????????????????????????? */
 body.zoho-theme:not(.pos-sale-theme) .zoho-topbar {
     background: #fff;
     border-bottom: 1px solid #e8ecf1;
@@ -290,9 +290,9 @@ body.zoho-theme:not(.pos-sale-theme) .zoho-quick-create__link:hover {
     color: var(--p-blue-dark);
 }
 
-/* ══════════════════════════════════════
-   SHELL — Sidebar (Salezy light)
-   ══════════════════════════════════════ */
+/* ??????????????????????????????????????
+   SHELL ? Sidebar (Salezy light)
+   ?????????????????????????????????????? */
 body.zoho-theme:not(.pos-sale-theme) .side-bar {
     width: 248px !important;
     min-width: 248px !important;
@@ -308,7 +308,7 @@ body.zoho-theme:not(.pos-sale-theme) .side-bar {
     overflow: hidden !important;
 }
 
-/* Middle nav: scrolls ONLY when items overflow — no bar when short */
+/* Middle nav: scrolls ONLY when items overflow ? no bar when short */
 body.zoho-theme:not(.pos-sale-theme) #side-bar,
 body.zoho-theme:not(.pos-sale-theme) .zoho-sidebar-nav {
     flex: 1 1 0 !important;
@@ -707,7 +707,7 @@ body.zoho-theme:not(.pos-sale-theme) .japs-sidebar-ai-slot > div {
     border-radius: 14px !important;
 }
 
-/* Collapsed — icon rail scrolls; flyouts are fixed+scrollable via JS */
+/* Collapsed ? icon rail scrolls; flyouts are fixed+scrollable via JS */
 body.zoho-theme:not(.pos-sale-theme) .side-bar.zoho-sidebar-collapsed,
 body.zoho-theme:not(.pos-sale-theme).sidebar-collapse .side-bar {
     width: 76px !important;
@@ -850,9 +850,9 @@ body.zoho-theme:not(.pos-sale-theme).sidebar-collapse #side-bar .zoho-sidebar-ch
     }
 }
 
-/* ══════════════════════════════════════
-   SHARED — Page chrome
-   ══════════════════════════════════════ */
+/* ??????????????????????????????????????
+   SHARED ? Page chrome
+   ?????????????????????????????????????? */
 body.zoho-theme:not(.pos-sale-theme) .content-wrapper,
 body.zoho-theme:not(.pos-sale-theme) .content {
     background: transparent !important;
@@ -1348,8 +1348,18 @@ body.zoho-theme:not(.pos-sale-theme) .modal-backdrop.in {
     background: #0f1425;
 }
 
-/* Tables / DataTables — modern list skin (app-wide)
+/* Tables / DataTables ? modern list skin (app-wide)
    Excludes: .table-pdf, #pos_table, .direct-sell-product-table */
+
+/* Prevent layout shift during initial DataTable load ? fade in after first draw */
+body.zoho-theme:not(.pos-sale-theme) .dataTables_scroll {
+    opacity: 0;
+    transition: opacity 0.15s ease;
+}
+body.zoho-theme:not(.pos-sale-theme) .dataTables_scroll.dt-loaded {
+    opacity: 1;
+}
+
 body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper {
     margin-top: 4px;
 }
@@ -1548,7 +1558,7 @@ body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dataTables_paginate {
     padding-top: 4px;
 }
 
-/* Bootstrap DataTables uses <li class="paginate_button"><a>…</a></li>.
+/* Bootstrap DataTables uses <li class="paginate_button"><a>?</a></li>.
    Styling the <li> as a pill left empty circle shells beside real page links.
    Keep <li> layout-only; put pill chrome on the clickable child (or on the
    button itself when DataTables renders bare <a class="paginate_button">). */
@@ -1971,9 +1981,9 @@ body.zoho-theme:not(.pos-sale-theme) .scrolltop .scroll:hover {
     transform: translateY(-2px);
 }
 
-/* ══════════════════════════════════════
-   DASHBOARD — SaaS card UI (visual only)
-   ══════════════════════════════════════ */
+/* ??????????????????????????????????????
+   DASHBOARD ? SaaS card UI (visual only)
+   ?????????????????????????????????????? */
 body.zoho-theme .content-wrapper:has(.zoho-dashboard),
 body.zoho-theme .content:has(.zoho-dashboard) {
     background: var(--p-canvas) !important;
@@ -2499,9 +2509,9 @@ body.zoho-theme .zoho-dashboard__body .tw-border-dashed {
     }
 }
 
-/* ══════════════════════════════════════
+/* ??????????????????????????????????????
    POS
-   ══════════════════════════════════════ */
+   ?????????????????????????????????????? */
 body.zoho-theme.lockscreen {
     background: var(--p-canvas) !important;
 }
@@ -2583,9 +2593,9 @@ body.zoho-theme.lockscreen .content {
     padding: 10px 12px 16px !important;
 }
 
-/* ══════════════════════════════════════
+/* ??????????????????????????????????????
    AUTH
-   ══════════════════════════════════════ */
+   ?????????????????????????????????????? */
 .japs-auth-body,
 body.login-page,
 body.register-page {
@@ -2881,11 +2891,11 @@ body.register-page {
     }
 }
 
-/* ══════════════════════════════════════
-   APP SURFACES — tables, forms, modals, views
+/* ??????????????????????????????????????
+   APP SURFACES ? tables, forms, modals, views
    (non-POS only; single source of truth)
-   ══════════════════════════════════════ */
-/* List pages: fluid width that fits 10" → large desktop without breaking */
+   ?????????????????????????????????????? */
+/* List pages: fluid width that fits 10" ? large desktop without breaking */
 body.zoho-theme:not(.pos-sale-theme) .content-wrapper > .content:not(.ecom-dash):not(.inv-dash):not(.crm-dash):not(.japs-dashboard-page),
 body.zoho-theme:not(.pos-sale-theme) .zoho-app-body > .content:not(.ecom-dash):not(.inv-dash):not(.crm-dash):not(.japs-dashboard-page) {
     max-width: min(1320px, 100%);
@@ -2964,7 +2974,7 @@ body.zoho-theme:not(.pos-sale-theme) .pf-open {
     box-shadow: var(--p-shadow) !important;
 }
 
-/* Classic boxes — align with widgets */
+/* Classic boxes ? align with widgets */
 body.zoho-theme:not(.pos-sale-theme) .box,
 body.zoho-theme:not(.pos-sale-theme) .box.box-solid,
 body.zoho-theme:not(.pos-sale-theme) .box.box-primary,
@@ -2993,7 +3003,7 @@ body.zoho-theme:not(.pos-sale-theme) .box-footer {
     padding: 14px 20px !important;
 }
 
-/* Forms — denser premium fields */
+/* Forms ? denser premium fields */
 body.zoho-theme:not(.pos-sale-theme) .form-group {
     margin-bottom: 16px;
 }
@@ -3045,7 +3055,7 @@ body.zoho-theme:not(.pos-sale-theme) .form-group > label + .text-info {
 }
 
 /* Controls always start on a full-width row under the label line.
-   Do NOT force display on textareas — TinyMCE must be able to hide its source field. */
+   Do NOT force display on textareas ? TinyMCE must be able to hide its source field. */
 body.zoho-theme:not(.pos-sale-theme) .form-group > input.form-control,
 body.zoho-theme:not(.pos-sale-theme) .form-group > select.form-control,
 body.zoho-theme:not(.pos-sale-theme) .form-group > .select2-container,
@@ -3178,7 +3188,7 @@ body.zoho-theme:not(.pos-sale-theme) .input-group-btn:first-child .btn {
     border-radius: 10px 0 0 10px !important;
 }
 
-/* File browse (bootstrap-fileinput) — center Browse label */
+/* File browse (bootstrap-fileinput) ? center Browse label */
 body.zoho-theme:not(.pos-sale-theme) .btn-file,
 body.zoho-theme:not(.pos-sale-theme) .input-group-btn .btn-file,
 body.zoho-theme:not(.pos-sale-theme) .file-input .btn {
@@ -3394,11 +3404,11 @@ body.zoho-theme:not(.pos-sale-theme) .info-box {
     border: 1px solid var(--p-line);
 }
 
-/* ═══════════════════════════════════════════════════════════
-   DataTables toolbar — fits 10" laptop → large desktop
-   Same design everywhere: [Show entries] [exports…] [Search]
+/* ???????????????????????????????????????????????????????????
+   DataTables toolbar ? fits 10" laptop ? large desktop
+   Same design everywhere: [Show entries] [exports?] [Search]
    Search stays top-right; export buttons wrap inside middle cell
-   ═══════════════════════════════════════════════════════════ */
+   ??????????????????????????????????????????????????????????? */
 body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper {
     position: relative;
 }
@@ -3562,7 +3572,7 @@ body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dataTables_length .for
     box-sizing: border-box !important;
 }
 
-/* 14"+ (≈1280px+): always show icon + text; text size shrinks with screen */
+/* 14"+ (?1280px+): always show icon + text; text size shrinks with screen */
 @media (min-width: 1280px) {
     body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dt-buttons .btn,
     body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dt-buttons .tw-dw-btn {
@@ -3597,7 +3607,7 @@ body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dataTables_length .for
     }
 }
 
-/* 14–15" band: slightly tighter labels so the row never overflows */
+/* 14?15" band: slightly tighter labels so the row never overflows */
 @media (min-width: 1280px) and (max-width: 1440px) {
     body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dt-buttons .btn,
     body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dt-buttons .tw-dw-btn {
@@ -3676,7 +3686,7 @@ body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dataTables_length .for
     }
 }
 
-/* Phone: stack cleanly — length+search row, then buttons */
+/* Phone: stack cleanly ? length+search row, then buttons */
 @media (max-width: 767px) {
     body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper > .row:first-child,
     body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .row.margin-bottom-20,
@@ -3714,7 +3724,7 @@ body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dataTables_length .for
     }
 }
 
-/* Active page — style the clickable child, never the wrapping <li> */
+/* Active page ? style the clickable child, never the wrapping <li> */
 body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dataTables_paginate .paginate_button.current > a,
 body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dataTables_paginate .paginate_button.current > span,
 body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dataTables_paginate ul.pagination > li.active > a,
@@ -3817,9 +3827,9 @@ body.zoho-theme:not(.pos-sale-theme) .nav-tabs-custom > .tab-content {
     }
 }
 
-/* ══════════════════════════════════════
+/* ??????????????????????????????????????
    RTL / PRINT / RESPONSIVE
-   ══════════════════════════════════════ */
+   ?????????????????????????????????????? */
 html[dir="rtl"] body.zoho-theme .side-bar {
     border-right: 0 !important;
     border-left: 1px solid #1c2338 !important;
@@ -3879,7 +3889,7 @@ html[dir="rtl"] body.zoho-theme .zoho-stat-card::before {
 }
 
 /* --------------------------------------
-   Business Settings — all tabs screen-wise
+   Business Settings ? all tabs screen-wise
    -------------------------------------- */
 body.zoho-theme:not(.pos-sale-theme) .business-settings-page .pos-tab-container {
     overflow: hidden;
@@ -4030,7 +4040,7 @@ body.zoho-theme:not(.pos-sale-theme) .business-settings-page .pos-tab-content .t
     overflow-x: auto;
 }
 
-/* Laptop / 14" — max 2 fields per row across ALL tabs */
+/* Laptop / 14" ? max 2 fields per row across ALL tabs */
 @media (max-width: 1399px) {
     body.zoho-theme:not(.pos-sale-theme) .business-settings-page .pos-tab-content .row > .col-xs-3,
     body.zoho-theme:not(.pos-sale-theme) .business-settings-page .pos-tab-content .row > .col-sm-3,
@@ -4057,7 +4067,7 @@ body.zoho-theme:not(.pos-sale-theme) .business-settings-page .pos-tab-content .t
     }
 }
 
-/* Tablet — horizontal tab strip + single column fields */
+/* Tablet ? horizontal tab strip + single column fields */
 @media (max-width: 991px) {
     body.zoho-theme:not(.pos-sale-theme) .business-settings-page .pos-tab-menu {
         margin-bottom: 12px;

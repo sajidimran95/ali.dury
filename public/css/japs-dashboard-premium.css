@@ -453,9 +453,15 @@ body.japs-dashboard-premium .inv-dash .inv-pulse__actions {
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
+  min-height: 48px; /* prevent layout shift when select2 initializes */
 }
 
-body.japs-dashboard-premium .inv-dash .inv-location-form { margin: 0; }
+body.japs-dashboard-premium .inv-dash .inv-location-form {
+  margin: 0;
+  /* reserve space before select2 replaces native select */
+  min-width: 170px;
+  min-height: 40px;
+}
 
 body.japs-dashboard-premium .inv-dash .inv-select,
 body.japs-dashboard-premium .inv-dash .select2-container--default .select2-selection--single {
@@ -1557,6 +1563,19 @@ body.japs-dashboard-premium.japs-dashboard-home .japs-dash-reports-grid {
     padding-left: 16px !important;
     padding-right: 16px !important;
   }
+}
+
+/* ── display_currency flash prevention — show placeholder until JS converts ── */
+body.japs-dashboard-premium .inv-dash .display_currency,
+body.japs-dashboard-premium .crm-dash .display_currency {
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+}
+body.japs-dashboard-premium .inv-dash .display_currency.currency-converted,
+body.japs-dashboard-premium .crm-dash .display_currency.currency-converted {
+    visibility: visible;
+    opacity: 1;
 }
 
 /* ── CRM dashboard — unique light pulse layout ── */

@@ -112,7 +112,7 @@ function __currency_trans_from_en(
 
 function __currency_convert_recursively(element, use_page_currency = false) {
     element.find('.display_currency').each(function() {
-        var value = $(this).text();
+        var value = $(this).data('orig-value') !== undefined ? $(this).data('orig-value') : $(this).text();
 
         var show_symbol = $(this).data('currency_symbol');
         if (show_symbol == undefined || show_symbol != true) {
@@ -140,6 +140,7 @@ function __currency_convert_recursively(element, use_page_currency = false) {
         }
 
         $(this).text(__currency_trans_from_en(value, show_symbol, use_page_currency, __currency_precision, is_quantity));
+        $(this).addClass('currency-converted');
     });
 }
 
