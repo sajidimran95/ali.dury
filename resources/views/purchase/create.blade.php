@@ -254,50 +254,34 @@
 		@endphp
 		<div class="row">
 			<div class="col-sm-12">
-				@php
-					$purchase_th_2line = function ($text) {
-						$text = trim($text);
-						if ($text === '') {
-							return '';
-						}
-						if (preg_match('/^(.+?)\s+(\([^)]+\))$/u', $text, $m)) {
-							return e($m[1]) . '<br><small>' . e($m[2]) . '</small>';
-						}
-						$parts = preg_split('/\s+/u', $text, 2);
-						return count($parts) === 2
-							? e($parts[0]) . '<br>' . e($parts[1])
-							: e($text);
-					};
-				@endphp
 				<div class="table-responsive purchase-entry-table-wrap">
 					<table class="table table-condensed table-bordered table-th-green text-center table-striped" id="purchase_entry_table">
 						<thead>
 							<tr>
 								<th>#</th>
-								<th>{!! $purchase_th_2line(__('product.product_name')) !!}</th>
-								<th>{!! $purchase_th_2line(__('purchase.purchase_quantity')) !!}</th>
-								<th>{!! $purchase_th_2line(__('lang_v1.unit_cost_before_discount')) !!}</th>
-								<th>{!! $purchase_th_2line(__('lang_v1.discount_percent')) !!}</th>
-								<th>{!! $purchase_th_2line(__('purchase.unit_cost_before_tax')) !!}</th>
-								<th class="{{$hide_tax}}">{!! $purchase_th_2line(__('purchase.subtotal_before_tax')) !!}</th>
-								<th class="{{$hide_tax}}">{!! $purchase_th_2line(__('purchase.product_tax')) !!}</th>
-								<th class="{{$hide_tax}}">{!! $purchase_th_2line(__('purchase.net_cost')) !!}</th>
-								<th>{!! $purchase_th_2line(__('purchase.line_total')) !!}</th>
+								<th>@include('purchase.partials.th_2line', ['text' => __('product.product_name')])</th>
+								<th>@include('purchase.partials.th_2line', ['text' => __('purchase.purchase_quantity')])</th>
+								<th>@include('purchase.partials.th_2line', ['text' => __('lang_v1.unit_cost_before_discount')])</th>
+								<th>@include('purchase.partials.th_2line', ['text' => __('lang_v1.discount_percent')])</th>
+								<th>@include('purchase.partials.th_2line', ['text' => __('purchase.unit_cost_before_tax')])</th>
+								<th class="{{$hide_tax}}">@include('purchase.partials.th_2line', ['text' => __('purchase.subtotal_before_tax')])</th>
+								<th class="{{$hide_tax}}">@include('purchase.partials.th_2line', ['text' => __('purchase.product_tax')])</th>
+								<th class="{{$hide_tax}}">@include('purchase.partials.th_2line', ['text' => __('purchase.net_cost')])</th>
+								<th>@include('purchase.partials.th_2line', ['text' => __('purchase.line_total')])</th>
 								<th class="@if(!session('business.enable_editing_product_from_purchase')) hide @endif">
-									{!! $purchase_th_2line(__('lang_v1.profit_margin')) !!}
+									@include('purchase.partials.th_2line', ['text' => __('lang_v1.profit_margin')])
 								</th>
 								<th>
-									{!! $purchase_th_2line(__('purchase.unit_selling_price')) !!}
-									<br><small>(@lang('product.inc_of_tax'))</small>
+									@include('purchase.partials.th_2line', ['text' => __('purchase.unit_selling_price') . ' (' . __('product.inc_of_tax') . ')'])
 								</th>
 								@if(session('business.enable_lot_number'))
 									<th>
-										{!! $purchase_th_2line(__('lang_v1.lot_number')) !!}
+										@include('purchase.partials.th_2line', ['text' => __('lang_v1.lot_number')])
 									</th>
 								@endif
 								@if(session('business.enable_product_expiry'))
 									<th>
-										@lang('product.mfg_date') /<br>@lang('product.exp_date')
+										@include('purchase.partials.th_2line', ['text' => __('product.mfg_date') . ' / ' . __('product.exp_date')])
 									</th>
 								@endif
 								<th><i class="fa fa-trash" aria-hidden="true"></i></th>

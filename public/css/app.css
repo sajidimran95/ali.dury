@@ -578,7 +578,7 @@ div.pos-tab div.pos-tab-content:not(.active){
     color: white;
 }
 
-/* Purchase entry table: 2-line headers, fit width, no horizontal scrollbar */
+/* Purchase entry table: exactly 2-line headers, full text visible, tight gaps */
 .purchase-entry-table-wrap {
 	overflow-x: hidden !important;
 	width: 100%;
@@ -589,25 +589,60 @@ div.pos-tab div.pos-tab-content:not(.active){
 	width: 100% !important;
 	max-width: 100%;
 	margin-bottom: 0;
+	border-collapse: collapse;
 }
 #purchase_entry_table thead th {
 	white-space: normal !important;
-	word-break: break-word;
-	overflow-wrap: anywhere;
-	line-height: 1.2;
-	font-size: 11px;
+	word-break: normal;
+	overflow-wrap: break-word;
+	line-height: 1.15;
+	font-size: 9px !important;
 	font-weight: 700;
-	padding: 6px 3px !important;
+	padding: 4px 1px !important;
 	vertical-align: middle;
 	text-transform: uppercase;
+	letter-spacing: -0.01em;
+}
+#purchase_entry_table thead th .th-2line {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 0;
+	max-width: 100%;
+	width: 100%;
+}
+#purchase_entry_table thead th .th-line {
+	display: block;
+	width: 100%;
+	max-width: 100%;
+	overflow: visible;
+	text-overflow: clip;
+	white-space: normal;
+	word-break: break-word;
+	line-height: 1.15;
+	text-align: center;
+	font-size: 9px;
 }
 #purchase_entry_table thead th small {
-	font-size: 10px;
+	font-size: 8px;
 	font-weight: 600;
 	text-transform: none;
 }
+#purchase_entry_table > thead > tr > th:first-child,
+#purchase_entry_table > tbody > tr > td:first-child {
+	width: 28px;
+	padding-left: 2px !important;
+	padding-right: 2px !important;
+}
+#purchase_entry_table > thead > tr > th:last-child,
+#purchase_entry_table > tbody > tr > td:last-child {
+	width: 28px;
+	padding-left: 2px !important;
+	padding-right: 2px !important;
+}
 #purchase_entry_table td {
-	padding: 4px 2px !important;
+	padding: 2px 1px !important;
 	vertical-align: middle;
 	overflow: hidden;
 }
@@ -618,9 +653,10 @@ div.pos-tab div.pos-tab-content:not(.active){
 	max-width: 100% !important;
 	min-width: 0 !important;
 	box-sizing: border-box;
-	padding: 3px 4px;
-	font-size: 12px;
-	height: auto;
+	padding: 2px 3px !important;
+	font-size: 11px !important;
+	height: 28px !important;
+	min-height: 28px !important;
 }
 
 input[type=number]::-webkit-inner-spin-button, 

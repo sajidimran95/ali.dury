@@ -4290,3 +4290,27 @@ body.zoho-theme:not(.pos-sale-theme) .purchase-attach-help {
     color: #64748b !important;
     word-break: break-word;
 }
+
+/* Purchase entry headers ? full 2-line labels, tight cells */
+body.zoho-theme:not(.pos-sale-theme) #purchase_entry_table thead th {
+    font-size: 9px !important;
+    padding: 4px 1px !important;
+    line-height: 1.15 !important;
+    white-space: normal !important;
+}
+body.zoho-theme:not(.pos-sale-theme) #purchase_entry_table thead th .th-line {
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    word-break: break-word !important;
+    font-size: 9px !important;
+}
+body.zoho-theme:not(.pos-sale-theme) #purchase_entry_table td {
+    padding: 2px 1px !important;
+}
+body.zoho-theme:not(.pos-sale-theme) #purchase_entry_table .form-control {
+    padding: 2px 3px !important;
+    font-size: 11px !important;
+    height: 28px !important;
+    min-height: 28px !important;
+}
