@@ -47,8 +47,23 @@
 
 /* Keep "Show entries", export buttons and search aligned on one line */
 .dataTables_wrapper > .row.margin-bottom-20 .dataTables_length label {
-    white-space: nowrap;
-    margin-bottom: 0;
+    display: inline-flex !important;
+    align-items: center !important;
+    flex-wrap: nowrap !important;
+    gap: 8px !important;
+    white-space: nowrap !important;
+    margin-bottom: 0 !important;
+}
+
+.dataTables_wrapper > .row.margin-bottom-20 .dataTables_length select,
+.dataTables_wrapper .dataTables_length select.form-control {
+    display: inline-block !important;
+    width: auto !important;
+    min-width: 68px !important;
+    max-width: 88px !important;
+    margin: 0 !important;
+    float: none !important;
+    vertical-align: middle !important;
 }
 
 .dataTables_wrapper > .row.margin-bottom-20 .dt-buttons .tw-my-2 {

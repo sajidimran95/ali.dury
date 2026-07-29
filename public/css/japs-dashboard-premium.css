@@ -871,8 +871,8 @@ body.japs-dashboard-premium.japs-dashboard-home .dataTables_wrapper > .row.margi
   display: flex !important;
   flex-wrap: wrap !important;
   align-items: center !important;
-  justify-content: space-between !important;
-  gap: 10px 16px !important;
+  justify-content: flex-start !important;
+  gap: 10px 12px !important;
   margin: 0 0 14px !important;
   text-align: left !important;
 }
@@ -887,10 +887,16 @@ body.japs-dashboard-premium.japs-dashboard-home .dataTables_wrapper > .row.margi
 body.japs-dashboard-premium.japs-dashboard-home .japs-dash-dt-top > *,
 body.japs-dashboard-premium.japs-dashboard-home .dataTables_wrapper > .row.margin-bottom-20 > [class*='col-'] {
   width: auto !important;
-  flex: 0 1 auto !important;
+  max-width: none !important;
+  flex: 0 0 auto !important;
   float: none !important;
   padding: 0 !important;
   text-align: left !important;
+}
+
+body.japs-dashboard-premium.japs-dashboard-home .dataTables_wrapper > .row.margin-bottom-20 > [class*='col-']:has(.dataTables_filter),
+body.japs-dashboard-premium.japs-dashboard-home .dataTables_wrapper .dataTables_filter {
+  margin-left: auto !important;
 }
 
 body.japs-dashboard-premium.japs-dashboard-home .dataTables_wrapper .dataTables_length label,

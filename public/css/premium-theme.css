@@ -2774,8 +2774,9 @@ body.register-page {
    APP SURFACES — tables, forms, modals, views
    (non-POS only; single source of truth)
    ══════════════════════════════════════ */
-body.zoho-theme:not(.pos-sale-theme) .content-wrapper > .content:not(.ecom-dash):not(.inv-dash):not(.crm-dash),
-body.zoho-theme:not(.pos-sale-theme) .zoho-app-body > .content:not(.ecom-dash):not(.inv-dash):not(.crm-dash) {
+/* List pages keep a readable centered max width (dashboards stay full-bleed) */
+body.zoho-theme:not(.pos-sale-theme) .content-wrapper > .content:not(.ecom-dash):not(.inv-dash):not(.crm-dash):not(.japs-dashboard-page),
+body.zoho-theme:not(.pos-sale-theme) .zoho-app-body > .content:not(.ecom-dash):not(.inv-dash):not(.crm-dash):not(.japs-dashboard-page) {
     max-width: 1320px;
     margin-left: auto;
     margin-right: auto;
@@ -3248,22 +3249,48 @@ body.zoho-theme:not(.pos-sale-theme) .info-box {
     border: 1px solid var(--p-line);
 }
 
-/* Tables / DataTables toolbar polish */
+/* Tables / DataTables toolbar polish — keep controls clustered on wide screens */
 body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper > .row:first-child,
 body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .row.margin-bottom-20 {
     display: flex !important;
     flex-wrap: wrap;
     align-items: center;
-    justify-content: space-between;
-    gap: 10px 16px;
+    justify-content: flex-start;
+    gap: 10px 12px;
     margin: 0 0 14px !important;
+}
+
+body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper > .row:first-child::before,
+body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper > .row:first-child::after,
+body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .row.margin-bottom-20::before,
+body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .row.margin-bottom-20::after {
+    display: none !important;
 }
 
 body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper > .row:first-child > [class*="col-"],
 body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .row.margin-bottom-20 > [class*="col-"] {
     width: auto !important;
+    max-width: none !important;
+    flex: 0 0 auto !important;
     float: none !important;
     padding: 0 !important;
+    text-align: left !important;
+}
+
+/* Search stays on the right; length + export buttons stay together on the left */
+body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper > .row:first-child > [class*="col-"]:has(.dataTables_filter),
+body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .row.margin-bottom-20 > [class*="col-"]:has(.dataTables_filter),
+body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper > .row:first-child > [class*="col-"]:has(.dataTables_filter),
+body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dataTables_filter {
+    margin-left: auto !important;
+}
+
+body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dt-buttons {
+    margin-bottom: 0 !important;
+    display: inline-flex !important;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
 }
 
 body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dataTables_filter input {
@@ -3272,9 +3299,39 @@ body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dataTables_filter inpu
     border-radius: 10px !important;
 }
 
-body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dataTables_length select {
-    height: 38px;
-    border-radius: 10px !important;
+/* Fix "Show [N] entries" — keep select + text on one line, no overlap */
+body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dataTables_length {
+    margin-bottom: 0 !important;
+    float: none !important;
+}
+
+body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dataTables_length label {
+    display: inline-flex !important;
+    align-items: center !important;
+    flex-wrap: nowrap !important;
+    gap: 8px !important;
+    white-space: nowrap !important;
+    margin: 0 !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    color: var(--p-muted) !important;
+    line-height: 1.2 !important;
+}
+
+body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dataTables_length select,
+body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dataTables_length .form-control {
+    display: inline-block !important;
+    width: auto !important;
+    min-width: 68px !important;
+    max-width: 88px !important;
+    height: 36px !important;
+    min-height: 36px !important;
+    margin: 0 !important;
+    padding: 4px 28px 4px 10px !important;
+    float: none !important;
+    position: static !important;
+    vertical-align: middle !important;
+    flex: 0 0 auto !important;
 }
 
 /* Active page — style the clickable child, never the wrapping <li> */
