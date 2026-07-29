@@ -1085,11 +1085,13 @@ $(function () {
     // --- Sidebar mobile open / overlay close ---
     $(document).on('click', '.small-view-button', function () {
         $('.side-bar').addClass('small-view-side-active');
-        $('.overlay').fadeIn('slow');
+        $('.overlay').removeClass('tw-hidden').stop(true, true).fadeIn('slow');
     });
 
     $(document).on('click', '.overlay', function () {
-        $('.overlay').fadeOut('slow');
+        $('.overlay').stop(true, true).fadeOut('slow', function () {
+            $(this).addClass('tw-hidden').css('display', '');
+        });
         $('.side-bar').removeClass('small-view-side-active');
         if (window.ZohoSidebar && window.ZohoSidebar.closeMobileSidebar) {
             window.ZohoSidebar.closeMobileSidebar();
@@ -1099,14 +1101,14 @@ $(function () {
     // --- Sidebar responsive resize ---
     $(window).on('resize', function () {
         if ($(window).width() >= 1024) {
-            $('.overlay').fadeOut('slow');
+            $('.overlay').stop(true, true).fadeOut(0).addClass('tw-hidden').css('display', '');
             $('.side-bar').removeClass('small-view-side-active');
             if (window.ZohoSidebar && window.ZohoSidebar.closeMobileSidebar) {
                 window.ZohoSidebar.closeMobileSidebar();
             }
         }
         if ($('.side-bar').hasClass('small-view-side-active')) {
-            $('.overlay').fadeIn('slow');
+            $('.overlay').removeClass('tw-hidden').stop(true, true).fadeIn('slow');
         }
     });
 

@@ -33,6 +33,7 @@
         }
 
         if (overlay) {
+            overlay.classList.remove('tw-hidden');
             overlay.style.display = 'block';
         }
     }
@@ -47,6 +48,7 @@
         }
 
         if (overlay) {
+            overlay.classList.add('tw-hidden');
             overlay.style.display = 'none';
         }
     }

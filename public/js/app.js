@@ -45,7 +45,7 @@ $(document).ready(function() {
             return;
         }
 
-        if ($container.hasClass('show') || $container.data('loading')) {
+        if ($container.hasClass('show') || $container.hasClass('in') || $container.data('loading')) {
             return;
         }
 
@@ -55,6 +55,11 @@ $(document).ready(function() {
             url: $(this).data('href'),
             dataType: 'html',
             success: function(result) {
+                // Move modal to <body> so backdrop/overlay isn't trapped by
+                // #scrollable-container { isolation: isolate; z-index: 1 }
+                if (!$container.parent().is('body')) {
+                    $container.appendTo('body');
+                }
                 $container
                     .html(result)
                     .modal('show');
@@ -63,6 +68,14 @@ $(document).ready(function() {
                 $container.data('loading', false);
             },
         });
+    });
+
+    // Any Bootstrap modal opened from inside the app shell → lift to body
+    $(document).on('show.bs.modal', '.modal', function () {
+        var $modal = $(this);
+        if (!$modal.parent().is('body')) {
+            $modal.appendTo('body');
+        }
     });
 
     $(document).on('submit', 'form#brand_add_form', function(e) {

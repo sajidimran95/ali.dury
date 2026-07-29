@@ -117,9 +117,23 @@ body.zoho-theme:not(.pos-sale-theme):not(.lockscreen) .zoho-app-body {
 body.zoho-theme:not(.pos-sale-theme):not(.lockscreen) .zoho-main-column,
 body.zoho-theme:not(.pos-sale-theme):not(.lockscreen) #scrollable-container {
     background: #f7f9fc !important;
-    isolation: isolate;
     position: relative;
     z-index: 1;
+}
+
+/* Modals + backdrop must sit above app shell (sidebar flyouts use ~1080) */
+body.zoho-theme:not(.pos-sale-theme) .modal-backdrop {
+    z-index: 1090 !important;
+    background: #0f1425 !important;
+}
+
+body.zoho-theme:not(.pos-sale-theme) .modal-backdrop.in,
+body.zoho-theme:not(.pos-sale-theme) .modal-backdrop.show {
+    opacity: 0.5 !important;
+}
+
+body.zoho-theme:not(.pos-sale-theme) .modal {
+    z-index: 1100 !important;
 }
 
 /* Keep page footer below content — never paint through floated form gaps */
@@ -1668,6 +1682,86 @@ body.zoho-theme:not(.pos-sale-theme) table tbody .btn-group.open > .tw-dw-btn-in
     border-color: var(--p-blue) !important;
     color: #fff !important;
     box-shadow: 0 2px 8px rgba(79, 143, 206, 0.28) !important;
+}
+
+/* Action column: Edit / Delete / Default aligned on one row */
+body.zoho-theme:not(.pos-sale-theme) table tbody .table-action-btns {
+    display: inline-flex !important;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    max-width: 100%;
+    vertical-align: middle;
+}
+
+body.zoho-theme:not(.pos-sale-theme) table tbody .table-action-btns > .tw-dw-btn,
+body.zoho-theme:not(.pos-sale-theme) table tbody .table-action-btns > a.tw-dw-btn,
+body.zoho-theme:not(.pos-sale-theme) table tbody .table-action-btns > .table-action-default {
+    margin: 0 !important;
+    flex: 0 0 auto;
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    height: 30px !important;
+    min-height: 30px !important;
+    font-size: 12px !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 5px !important;
+    padding: 0 10px !important;
+    border-radius: 999px !important;
+    box-sizing: border-box !important;
+}
+
+body.zoho-theme:not(.pos-sale-theme) table tbody .table-action-btns > .tw-dw-btn[disabled],
+body.zoho-theme:not(.pos-sale-theme) table tbody .table-action-btns > .tw-dw-btn:disabled {
+    opacity: 0.55 !important;
+    cursor: not-allowed !important;
+}
+
+body.zoho-theme:not(.pos-sale-theme) table tbody .table-action-default {
+    background: #ecfdf5 !important;
+    border: 1px solid #86efac !important;
+    color: #047857 !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.01em;
+}
+
+body.zoho-theme:not(.pos-sale-theme) table tbody .table-action-btns .tw-dw-btn-info {
+    color: var(--p-blue-dark) !important;
+    border: 1px solid #b7d2eb !important;
+    background: var(--p-blue-soft) !important;
+}
+
+body.zoho-theme:not(.pos-sale-theme) table tbody .table-action-btns .tw-dw-btn-info:hover {
+    background: var(--p-blue) !important;
+    border-color: var(--p-blue) !important;
+    color: #fff !important;
+}
+
+body.zoho-theme:not(.pos-sale-theme) table tbody .table-action-btns .tw-dw-btn-primary {
+    color: var(--p-blue-dark) !important;
+    border: 1px solid #b7d2eb !important;
+    background: #fff !important;
+}
+
+body.zoho-theme:not(.pos-sale-theme) table tbody .table-action-btns .tw-dw-btn-primary:hover {
+    background: var(--p-blue-soft) !important;
+    color: var(--p-blue-dark) !important;
+}
+
+body.zoho-theme:not(.pos-sale-theme) table tbody .table-action-btns .tw-dw-btn-error {
+    color: #b91c1c !important;
+    border: 1px solid #fecaca !important;
+    background: #fff !important;
+}
+
+body.zoho-theme:not(.pos-sale-theme) table tbody .table-action-btns .tw-dw-btn-error:hover:not(:disabled) {
+    background: #fef2f2 !important;
+    color: #991b1b !important;
 }
 
 body.zoho-theme:not(.pos-sale-theme) table tbody .dropdown-menu {

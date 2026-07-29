@@ -158,7 +158,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"></noscript>
 {{-- Premium SaaS theme — final visual layer --}}
-<link rel="stylesheet" href="{{ asset('css/premium-theme.css?v='.$asset_v.'&tb=4') }}">
+<link rel="stylesheet" href="{{ asset('css/premium-theme.css?v='.$asset_v.'&tb=6') }}">
 @if(!empty($dashboard_premium))
 <link rel="stylesheet" href="{{ asset('css/japs-dashboard-premium.css?v='.$asset_v.'&inv=3') }}">
 @endif
