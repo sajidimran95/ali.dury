@@ -368,12 +368,7 @@ class AdminSidebarMenu
 
             $menu->addHeader(__('home.main_menu'), 1);
 
-            $menu->url(action([\App\Http\Controllers\HomeController::class, 'index']), __('home.home'), ['icon' => '<svg xmlns="http://www.w3.org/2000/svg" class="tw-size-5 tw-shrink-0" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-            <path d="M5 12l-2 0l9 -9l9 9l-2 0" />
-            <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
-            <path d="M10 12h4v4h-4z" />
-          </svg>', 'active' => request()->segment(1) == 'home'])->order(5);
+            $menu->url(action([\App\Http\Controllers\HomeController::class, 'index']), __('home.home'), ['icon' => '<svg xmlns="http://www.w3.org/2000/svg" class="tw-size-5 tw-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9.5"/></svg>', 'active' => request()->segment(1) == 'home'])->order(5);
 
             // Inventory (flat: dashboard + products + stock links)
             if ($this->hasItemsMenu() || $this->hasInventoryMenu($enabled_modules) || auth()->user()->can('product.view') || auth()->user()->can('dashboard.data')) {
@@ -391,12 +386,7 @@ class AdminSidebarMenu
                         $this->addItemsMenuItems($sub);
                         $this->addInventoryMenuItems($sub, $enabled_modules);
                     },
-                    ['icon' => '<svg aria-hidden="true" class="tw-size-5 tw-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                    <path d="M12 6m-8 0a8 3 0 1 0 16 0a8 3 0 1 0 -16 0"></path>
-                    <path d="M4 6v6a8 3 0 0 0 16 0v-6"></path>
-                    <path d="M4 12v6a8 3 0 0 0 16 0v-6"></path>
-                  </svg>', 'id' => 'tour_step5']
+                    ['icon' => '<svg aria-hidden="true" class="tw-size-5 tw-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>', 'id' => 'tour_step5']
                 )->order(20);
             }
 
@@ -569,13 +559,7 @@ class AdminSidebarMenu
                             );
                         }
                     },
-                    ['icon' => '<svg aria-hidden="true" class="tw-size-5 tw-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                    <path d="M12 15v-12"></path>
-                    <path d="M16 7l-4 -4l-4 4"></path>
-                    <path d="M3 12a9 9 0 0 0 18 0"></path>
-                  </svg>', 'id' => 'tour_step7']
+                    ['icon' => '<svg aria-hidden="true" class="tw-size-5 tw-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="20" r="1.5"/><circle cx="17" cy="20" r="1.5"/><path d="M3 4h2l2.4 11.2a2 2 0 0 0 2 1.6h7.8a2 2 0 0 0 2-1.5L21 8H7"/></svg>', 'id' => 'tour_step7']
                 )->order(30);
             }
 
@@ -651,12 +635,7 @@ class AdminSidebarMenu
                             );
                         }
                     },
-                    ['icon' => '<svg aria-hidden="true" class="tw-size-5 tw-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                    <path d="M12 3v12"></path>
-                    <path d="M16 11l-4 4l-4 -4"></path>
-                    <path d="M3 12a9 9 0 0 0 18 0"></path>
-                  </svg>', 'id' => 'tour_step6']
+                    ['icon' => '<svg aria-hidden="true" class="tw-size-5 tw-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 7h12l-1 13H7L6 7Z"/><path d="M9 7V5a3 3 0 0 1 6 0v2"/></svg>', 'id' => 'tour_step6']
                 )->order(35);
             }
 
@@ -702,13 +681,7 @@ class AdminSidebarMenu
                             );
                         }
                     },
-                    ['icon' => ' <svg aria-hidden="true" class="tw-size-5 tw-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                    <path d="M5 21v-16a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v16l-3 -2l-2 2l-2 -2l-2 2l-2 -2l-3 2"></path>
-                    <path d="M14.8 8a2 2 0 0 0 -1.8 -1h-2a2 2 0 1 0 0 4h2a2 2 0 1 1 0 4h-2a2 2 0 0 1 -1.8 -1"></path>
-                    <path d="M12 6v10"></path>
-                  </svg>']
+                    ['icon' => '<svg aria-hidden="true" class="tw-size-5 tw-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h8l4 4v14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M15 3v4h4"/><path d="M9 13h6"/><path d="M9 17h4"/></svg>']
                 )->order(45);
             }
             //Accounts dropdown
@@ -753,14 +726,7 @@ class AdminSidebarMenu
                             ['icon' => '', 'active' => request()->segment(1) == 'account' && request()->segment(2) == 'payment-account-report']
                         );
                     },
-                    ['icon' => '<svg aria-hidden="true" class="tw-size-5 tw-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                    <path d="M3 5m0 3a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v8a3 3 0 0 1 -3 3h-12a3 3 0 0 1 -3 -3z"></path>
-                    <path d="M3 10l18 0"></path>
-                    <path d="M7 15l.01 0"></path>
-                    <path d="M11 15l2 0"></path>
-                  </svg>']
+                    ['icon' => '<svg aria-hidden="true" class="tw-size-5 tw-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>']
                 )->order(50);
             }
 
@@ -961,17 +927,7 @@ class AdminSidebarMenu
                             );
                         }
                     },
-                    ['icon' => '<svg aria-hidden="true" class="tw-size-5 tw-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                    <path d="M8 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h5.697"></path>
-                    <path d="M18 14v4h4"></path>
-                    <path d="M18 11v-4a2 2 0 0 0 -2 -2h-2"></path>
-                    <path d="M8 3m0 2a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v0a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2z"></path>
-                    <path d="M18 18m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"></path>
-                    <path d="M8 11h4"></path>
-                    <path d="M8 15h3"></path>
-                  </svg>', 'id' => 'tour_step8']
+                    ['icon' => '<svg aria-hidden="true" class="tw-size-5 tw-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5"/><path d="M4 19h16"/><path d="M8 16v-5"/><path d="M12 16V8"/><path d="M16 16v-8"/></svg>', 'id' => 'tour_step8']
                 )->order(55);
             }
 
@@ -1014,12 +970,7 @@ class AdminSidebarMenu
 
             //Notification template menu
             if (auth()->user()->can('send_notifications')) {
-                $menu->url(action([\App\Http\Controllers\NotificationTemplateController::class, 'index']), __('lang_v1.notification_templates'), ['icon' => '<svg aria-hidden="true" class="tw-size-5 tw-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                    <path d="M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10z"></path>
-                    <path d="M3 7l9 6l9 -6"></path>
-                  </svg>', 'active' => request()->segment(1) == 'notification-templates'])->order(80);
+                $menu->url(action([\App\Http\Controllers\NotificationTemplateController::class, 'index']), __('lang_v1.notification_templates'), ['icon' => '<svg aria-hidden="true" class="tw-size-5 tw-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16v12H4z"/><path d="m4 7 8 6 8-6"/></svg>', 'active' => request()->segment(1) == 'notification-templates'])->order(80);
             }
 
             //Settings Dropdown
@@ -1216,12 +1167,7 @@ class AdminSidebarMenu
                             );
                         }
                     },
-                    ['icon' => '<svg aria-hidden="true" class="tw-size-5 tw-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                    <path d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z"></path>
-                    <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"></path>
-                  </svg>', 'id' => 'tour_step3']
+                    ['icon' => '<svg aria-hidden="true" class="tw-size-5 tw-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9c0 .7.4 1.2 1 1.5H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></svg>', 'id' => 'tour_step3']
                 )->order(85);
             }
         });
