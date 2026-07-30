@@ -1,0 +1,49 @@
+{
+    "name": "nwidart/laravel-menus",
+    "description": "Laravel Menu management",
+    "keywords": [
+        "laravel",
+        "menus",
+        "navigation",
+        "nav",
+        "bootstrap"
+    ],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Nicolas Widart",
+            "email": "n.widart@gmail.com"
+        },
+        {
+            "name": "Pingpong Labs",
+            "email": "pingpong.labs@gmail.com"
+        }
+    ],
+    "require": {
+        "php": "^8.3",
+        "illuminate/support": "^13.0",
+        "illuminate/config": "^13.0",
+        "illuminate/view": "^13.0",
+        "konekt/html": "^6.8"
+    },
+    "autoload": {
+        "psr-4": {
+            "Nwidart\\Menus\\": "src"
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "6.0-dev"
+        },
+        "laravel": {
+            "providers": [
+                "Nwidart\\Menus\\MenusServiceProvider"
+            ],
+            "aliases": {
+                "Menu": "Nwidart\\Menus\\Facades\\Menu"
+            }
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
