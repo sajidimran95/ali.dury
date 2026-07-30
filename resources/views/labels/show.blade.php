@@ -106,20 +106,17 @@
 
 						</td>
 
-						<td>
-							
-							<div class="" id="price_type_div">
-								<div class="form-group">
-									{!! Form::label('print[price_type]', @trans( 'barcode.show_price' ) . ':') !!}
-									<div class="input-group">
-										<span class="input-group-addon">
-											<i class="fa fa-info"></i>
-										</span>
-										{!! Form::select('print[price_type]', ['inclusive' => __('product.inc_of_tax'), 'exclusive' => __('product.exc_of_tax')], 'inclusive', ['class' => 'form-control']); !!}
-									</div>
-								</div>
+						<td id="price_type_div">
+							<div class="checkbox">
+								<label>
+									<b>@lang( 'barcode.show_price' )</b>
+								</label>
 							</div>
 
+							<div class="input-group">
+								<div class="input-group-addon"><i class="fa fa-info"></i></div>
+								{!! Form::select('print[price_type]', ['inclusive' => __('product.inc_of_tax'), 'exclusive' => __('product.exc_of_tax')], 'inclusive', ['class' => 'form-control']); !!}
+							</div>
 						</td>
 					</tr>
 

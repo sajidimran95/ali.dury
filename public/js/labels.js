@@ -35,9 +35,9 @@ $(document).ready(function() {
 
     $('input#is_show_price').change(function() {
         if ($(this).is(':checked')) {
-            $('div#price_type_div').show();
+            $('#price_type_div').show();
         } else {
-            $('div#price_type_div').hide();
+            $('#price_type_div').hide();
         }
     });
 
