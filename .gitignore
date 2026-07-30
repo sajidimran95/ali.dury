@@ -10,6 +10,9 @@ Homestead.json
 Homestead.yaml
 npm-debug.log
 .env
+/productionsql/*
+!/productionsql/.gitignore
+/sql/*.sql
 /public/uploads/business_logos
 /public/uploads/documents
 /public/uploads/img
