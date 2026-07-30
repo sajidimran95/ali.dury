@@ -157,7 +157,7 @@
             </div>
         </div>
         <div class="col-sm-4">
-            <div class="form-group">
+                <div class="form-group product-image-upload">
                
                 <div class="row">
                     <div class="col-sm-6 image-label">

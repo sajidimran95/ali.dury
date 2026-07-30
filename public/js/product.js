@@ -581,13 +581,52 @@ $(document).ready(function() {
     var img_fileinput_setting = {
         showUpload: false,
         showPreview: true,
+        showCancel: false,
         browseLabel: LANG.file_browse_label,
         removeLabel: LANG.remove,
+        browseClass: 'btn btn-primary btn-sm',
+        removeClass: 'btn btn-default btn-sm',
         previewSettings: {
-            image: { width: 'auto', height: 'auto', 'max-width': '100%', 'max-height': '100%' },
+            image: {
+                width: '140px',
+                height: '140px',
+                'max-width': '140px',
+                'max-height': '140px',
+            },
+        },
+        previewFileIconSettings: {
+            image: '<i class="fa fa-file-image-o"></i>',
         },
     };
     $('#upload_image').fileinput(img_fileinput_setting);
+
+    function fixProductImagePreview() {
+        $('.product-image-upload .file-preview-frame .kv-file-content').css({
+            width: '140px',
+            height: '140px',
+            overflow: 'hidden',
+            padding: 0,
+            margin: 0,
+        });
+        $('.product-image-upload .file-preview-frame img.file-preview-image').css({
+            width: '140px',
+            height: '140px',
+            maxWidth: '140px',
+            maxHeight: '140px',
+            objectFit: 'cover',
+            objectPosition: 'center center',
+            display: 'block',
+            margin: 0,
+        });
+    }
+    $('#upload_image')
+        .on('fileloaded filebatchselected fileselect', function () {
+            setTimeout(fixProductImagePreview, 50);
+        })
+        .on('filecleared fileclear', function () {
+            /* no-op */
+        });
+    setTimeout(fixProductImagePreview, 100);
 
     if ($('textarea#product_description').length > 0) {
         tinymce.init({
