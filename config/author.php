@@ -4,12 +4,10 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Company/Author/Developer/Licence information of the application
+    | Company/Author/Developer information of the application
     |--------------------------------------------------------------------------
     |
-    | All details about the author/developer/contact/licence of the application
-    |
-    | IMPORTANT: CHANGING ANY OF THIS INFORMATION WILL UNSTABILIZE THE APPLICATION
+    | Branding details for Japstech POS. No external license API is used.
     |
     */
 
@@ -17,6 +15,6 @@ return [
     'vendor_url' => 'https://posjapstech.com',
     'email' => 'support@posjapstech.com',
     'app_version' => '7.0',
-    'lic1' => 'aHR0cHM6Ly9sLnVsdGltYXRlZm9zdGVycy5jb20vYXBpL3R5cGVfMQ==',
+    'lic1' => '', // no external license API
     'pid' => 1,
 ];
