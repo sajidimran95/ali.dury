@@ -334,7 +334,7 @@ class MsaSetupService
     }
 
     /**
-     * Create the tax rates UltimatePOS ships with (demo defaults) plus TN sales tax.
+     * Create the tax rates Japstech POS ships with (demo defaults) plus TN sales tax.
      *
      * @return array{default_id: int|null, rates: array<string, TaxRate>}
      */

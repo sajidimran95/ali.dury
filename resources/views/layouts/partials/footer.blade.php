@@ -1,7 +1,7 @@
 <div class="japs-page-footer no-print" id="japs-page-footer">
   <div class="japs-page-footer__inner">
     <p class="japs-page-footer__copy tw-mb-0">
-      {{ config('app.name', 'JAPS POS') }} | Copyright &copy; {{ date('Y') }} All rights reserved.
+      {{ config('app.name', 'Japstech POS') }} | Copyright &copy; {{ date('Y') }} All rights reserved.
     </p>
   </div>
 </div>

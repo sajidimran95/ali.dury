@@ -1,5 +1,5 @@
 <?php
-/* LICENSE: This source file belongs to The Web Fosters. The customer
+/* LICENSE: This source file belongs to Japstech. The customer
  * is provided a licence to use it.
  * Permission is hereby granted, to any person obtaining the licence of this
  * software and associated documentation files (the "Software"), to use the
@@ -19,9 +19,9 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH
  * THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
- * @author     The Web Fosters <thewebfosters@gmail.com>
- * @owner      The Web Fosters <thewebfosters@gmail.com>
- * @copyright  2018 The Web Fosters
+ * @author     Japstech <support@posjapstech.com>
+ * @owner      Japstech <support@posjapstech.com>
+ * @copyright  2018 Japstech
  * @license    As attached in zip file.
  */
 

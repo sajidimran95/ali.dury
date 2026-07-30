@@ -22,7 +22,7 @@
 @endsection
 
 @section('auth-title')
-    {{ config('app.name', 'JAPS POS') }}
+    {{ config('app.name', 'Japstech POS') }}
 @endsection
 
 @section('auth-subtitle')
