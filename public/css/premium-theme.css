@@ -4436,3 +4436,96 @@ body.zoho-theme:not(.pos-sale-theme) #purchase_entry_table .form-control {
         min-height: 26px !important;
     }
 }
+
+/* Product create/edit image upload — full image fill + aligned buttons */
+body.zoho-theme:not(.pos-sale-theme) .product-image-upload .file-input {
+	width: 100% !important;
+	max-width: 100%;
+}
+body.zoho-theme:not(.pos-sale-theme) .product-image-upload .file-preview {
+	border: 1px solid #e2e8f0 !important;
+	border-radius: 8px !important;
+	padding: 10px !important;
+	background: #f8fafc !important;
+	text-align: left !important;
+}
+body.zoho-theme:not(.pos-sale-theme) .product-image-upload .file-preview .close,
+body.zoho-theme:not(.pos-sale-theme) .product-image-upload .file-drop-zone .close {
+	display: none !important;
+}
+body.zoho-theme:not(.pos-sale-theme) .product-image-upload .file-preview-frame,
+body.zoho-theme:not(.pos-sale-theme) .product-image-upload .krajee-default.file-preview-frame {
+	float: none !important;
+	display: inline-block !important;
+	width: 140px !important;
+	height: auto !important;
+	max-width: 140px !important;
+	max-height: none !important;
+	margin: 0 !important;
+	padding: 0 !important;
+	overflow: hidden !important;
+	border-radius: 8px !important;
+	border: 1px solid #e2e8f0 !important;
+	box-shadow: none !important;
+	background: #fff !important;
+	position: relative !important;
+}
+body.zoho-theme:not(.pos-sale-theme) .product-image-upload .file-preview-frame .kv-file-content,
+body.zoho-theme:not(.pos-sale-theme) .product-image-upload .krajee-default.file-preview-frame .kv-file-content {
+	width: 140px !important;
+	height: 140px !important;
+	max-height: 140px !important;
+	overflow: hidden !important;
+	padding: 0 !important;
+	margin: 0 !important;
+}
+body.zoho-theme:not(.pos-sale-theme) .product-image-upload .file-preview-frame img.file-preview-image,
+body.zoho-theme:not(.pos-sale-theme) .product-image-upload .file-preview-image {
+	width: 140px !important;
+	height: 140px !important;
+	max-width: 140px !important;
+	max-height: 140px !important;
+	min-width: 140px !important;
+	min-height: 140px !important;
+	object-fit: cover !important;
+	object-position: center center !important;
+	display: block !important;
+	margin: 0 !important;
+}
+body.zoho-theme:not(.pos-sale-theme) .product-image-upload .file-preview-frame .file-thumbnail-footer {
+	position: static !important;
+	height: auto !important;
+	background: #fff !important;
+	padding: 4px 6px !important;
+	border-top: 1px solid #eef2f7 !important;
+}
+body.zoho-theme:not(.pos-sale-theme) .product-image-upload .fileinput-cancel-button {
+	display: none !important;
+}
+body.zoho-theme:not(.pos-sale-theme) .product-image-upload .file-input > .input-group {
+	display: flex !important;
+	align-items: stretch !important;
+	width: 100% !important;
+}
+body.zoho-theme:not(.pos-sale-theme) .product-image-upload .file-input > .input-group .form-control,
+body.zoho-theme:not(.pos-sale-theme) .product-image-upload .file-input > .input-group .file-caption {
+	flex: 1 1 auto;
+	min-width: 0 !important;
+	height: 34px !important;
+	min-height: 34px !important;
+}
+body.zoho-theme:not(.pos-sale-theme) .product-image-upload .file-input > .input-group .input-group-btn {
+	display: flex !important;
+	width: auto !important;
+}
+body.zoho-theme:not(.pos-sale-theme) .product-image-upload .file-input .btn,
+body.zoho-theme:not(.pos-sale-theme) .product-image-upload .file-input .btn-file {
+	height: 34px !important;
+	min-height: 34px !important;
+	padding: 0 12px !important;
+	font-size: 12px !important;
+	line-height: 32px !important;
+	display: inline-flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+}

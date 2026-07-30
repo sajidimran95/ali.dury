@@ -2160,3 +2160,149 @@ body.lockscreen::-webkit-scrollbar-thumb:hover {
     .att-clock-card__actions { margin-left: 0; width: 100%; }
     .att-btn { flex: 1 1 auto; justify-content: center; }
 }
+/* Product image upload ? fill preview (no white half), align browse/remove */
+.product-image-upload {
+	max-width: 100%;
+}
+.product-image-upload .file-input {
+	width: 100% !important;
+	max-width: 100%;
+}
+.product-image-upload .file-preview {
+	border: 1px solid #e2e8f0 !important;
+	border-radius: 8px !important;
+	padding: 10px !important;
+	background: #f8fafc !important;
+	margin-bottom: 8px !important;
+	text-align: left !important;
+}
+.product-image-upload .file-drop-zone {
+	margin: 0 !important;
+	padding: 8px !important;
+	border: 0 !important;
+	min-height: 0 !important;
+}
+.product-image-upload .file-drop-zone .file-drop-zone-title,
+.product-image-upload .file-preview .clickable .file-drop-zone-title {
+	display: none !important;
+}
+/* Hide stray close (x) on preview box */
+.product-image-upload .file-preview .close,
+.product-image-upload .file-drop-zone .close,
+.product-image-upload .file-preview > .btn.close,
+.product-image-upload .kv-file-remove.close {
+	display: none !important;
+}
+.product-image-upload .file-preview-thumbnails {
+	display: block !important;
+	width: 100% !important;
+	text-align: left !important;
+}
+.product-image-upload .file-preview-frame,
+.product-image-upload .krajee-default.file-preview-frame {
+	float: none !important;
+	display: inline-block !important;
+	width: 140px !important;
+	height: auto !important;
+	max-width: 140px !important;
+	margin: 0 !important;
+	padding: 0 !important;
+	border: 1px solid #e2e8f0 !important;
+	border-radius: 8px !important;
+	box-shadow: none !important;
+	overflow: hidden !important;
+	background: #fff !important;
+	box-sizing: border-box !important;
+	position: relative !important;
+}
+.product-image-upload .file-preview-frame .kv-file-content,
+.product-image-upload .krajee-default.file-preview-frame .kv-file-content {
+	width: 140px !important;
+	height: 140px !important;
+	max-height: 140px !important;
+	padding: 0 !important;
+	margin: 0 !important;
+	overflow: hidden !important;
+	background: #eef2f7 !important;
+}
+.product-image-upload .file-preview-frame img.file-preview-image,
+.product-image-upload .file-preview-image,
+.product-image-upload .krajee-default .file-preview-image {
+	width: 140px !important;
+	height: 140px !important;
+	max-width: 140px !important;
+	max-height: 140px !important;
+	min-width: 140px !important;
+	min-height: 140px !important;
+	object-fit: cover !important;
+	object-position: center center !important;
+	display: block !important;
+	margin: 0 !important;
+	padding: 0 !important;
+	border: 0 !important;
+}
+.product-image-upload .file-preview-frame .file-thumbnail-footer {
+	position: static !important;
+	height: auto !important;
+	padding: 4px 6px !important;
+	background: #fff !important;
+	border-top: 1px solid #eef2f7 !important;
+}
+.product-image-upload .file-preview-frame .file-footer-caption {
+	font-size: 11px !important;
+	width: 100% !important;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	padding: 0 !important;
+	margin: 0 !important;
+}
+.product-image-upload .file-preview-frame .file-actions {
+	margin-top: 2px !important;
+}
+.product-image-upload .fileinput-cancel-button,
+.product-image-upload .fileinput-upload-button {
+	display: none !important;
+}
+/* Caption + buttons same row / same height alignment */
+.product-image-upload .file-input > .input-group {
+	display: flex !important;
+	flex-wrap: nowrap;
+	align-items: stretch;
+	width: 100% !important;
+	max-width: 100%;
+	margin: 0 !important;
+}
+.product-image-upload .file-input > .input-group .form-control,
+.product-image-upload .file-input > .input-group .file-caption {
+	flex: 1 1 auto;
+	min-width: 0 !important;
+	height: 34px !important;
+	min-height: 34px !important;
+	font-size: 12px !important;
+}
+.product-image-upload .file-input > .input-group .input-group-btn {
+	display: flex !important;
+	flex: 0 0 auto;
+	width: auto !important;
+	white-space: nowrap;
+}
+.product-image-upload .file-input .btn,
+.product-image-upload .file-input .btn-file,
+.product-image-upload .file-input .fileinput-remove-button {
+	height: 34px !important;
+	min-height: 34px !important;
+	padding: 0 12px !important;
+	font-size: 12px !important;
+	line-height: 32px !important;
+	display: inline-flex !important;
+	align-items: center;
+	justify-content: center;
+	box-sizing: border-box !important;
+	margin: 0 !important;
+}
+.product-image-upload .help-block {
+	margin-top: 6px;
+	font-size: 12px;
+	line-height: 1.35;
+}

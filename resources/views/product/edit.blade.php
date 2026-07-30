@@ -157,7 +157,7 @@
               </div>
             </div>
             <div class="col-sm-4">
-              <div class="form-group">
+              <div class="form-group product-image-upload">
                 {!! Form::label('image', __('lang_v1.product_image') . ':') !!}
                 {!! Form::file('image', ['id' => 'upload_image', 'accept' => 'image/*', 'required' => $is_image_required]); !!}
                 <small><p class="help-block">@lang('purchase.max_file_size', ['size' => (config('constants.document_size_limit') / 1000000)]). @lang('lang_v1.aspect_ratio_should_be_1_1') @if(!empty($product->image)) <br> @lang('lang_v1.previous_image_will_be_replaced') @endif</p></small>
