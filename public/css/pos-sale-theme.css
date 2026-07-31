@@ -4637,6 +4637,43 @@ body.pos-cr-dark-page .popover-content {
   color: #ffffff !important;
 }
 
+/* Keyboard shortcuts / help popover tables — keep stripes dark (not white-on-white) */
+body.lockscreen.pos-sale-theme .popover .table,
+body.lockscreen.pos-sale-theme .popover .table > thead > tr > th,
+body.lockscreen.pos-sale-theme .popover .table > tbody > tr > th,
+body.lockscreen.pos-sale-theme .popover .table > tbody > tr > td,
+body.lockscreen.pos-sale-theme .popover .table-striped > tbody > tr:nth-of-type(odd),
+body.lockscreen.pos-sale-theme .popover .table-striped > tbody > tr:nth-of-type(even),
+body.lockscreen.pos-sale-theme .popover .table-striped > tbody > tr:nth-of-type(odd) > th,
+body.lockscreen.pos-sale-theme .popover .table-striped > tbody > tr:nth-of-type(odd) > td,
+body.lockscreen.pos-sale-theme .popover .table-striped > tbody > tr:nth-of-type(even) > th,
+body.lockscreen.pos-sale-theme .popover .table-striped > tbody > tr:nth-of-type(even) > td,
+body.pos-cr-dark-page .popover .table,
+body.pos-cr-dark-page .popover .table > thead > tr > th,
+body.pos-cr-dark-page .popover .table > tbody > tr > th,
+body.pos-cr-dark-page .popover .table > tbody > tr > td,
+body.pos-cr-dark-page .popover .table-striped > tbody > tr:nth-of-type(odd),
+body.pos-cr-dark-page .popover .table-striped > tbody > tr:nth-of-type(even),
+body.pos-cr-dark-page .popover .table-striped > tbody > tr:nth-of-type(odd) > th,
+body.pos-cr-dark-page .popover .table-striped > tbody > tr:nth-of-type(odd) > td,
+body.pos-cr-dark-page .popover .table-striped > tbody > tr:nth-of-type(even) > th,
+body.pos-cr-dark-page .popover .table-striped > tbody > tr:nth-of-type(even) > td {
+  background: #1e1e1e !important;
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+  border-color: #333 !important;
+}
+
+body.lockscreen.pos-sale-theme .popover .table-striped > tbody > tr:nth-of-type(odd),
+body.lockscreen.pos-sale-theme .popover .table-striped > tbody > tr:nth-of-type(odd) > th,
+body.lockscreen.pos-sale-theme .popover .table-striped > tbody > tr:nth-of-type(odd) > td,
+body.pos-cr-dark-page .popover .table-striped > tbody > tr:nth-of-type(odd),
+body.pos-cr-dark-page .popover .table-striped > tbody > tr:nth-of-type(odd) > th,
+body.pos-cr-dark-page .popover .table-striped > tbody > tr:nth-of-type(odd) > td {
+  background: #252525 !important;
+  background-color: #252525 !important;
+}
+
 body.lockscreen.pos-sale-theme .popover.top > .arrow,
 body.lockscreen.pos-sale-theme .popover.top > .arrow:after,
 body.lockscreen.pos-sale-theme .popover.bottom > .arrow,
