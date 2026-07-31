@@ -8,6 +8,7 @@ use App\Http\Controllers\BackUpController;
 use App\Http\Controllers\BarcodeController;
 use App\Http\Controllers\BrandController;
 use App\Http\Controllers\BusinessController;
+use App\Http\Controllers\PosPwaController;
 use App\Http\Controllers\BusinessLocationController;
 use App\Http\Controllers\CashRegisterController;
 use App\Http\Controllers\CategoryController;
@@ -128,6 +129,14 @@ Route::middleware(['setData'])->group(function () {
         ->name('invoice_payment');
     Route::post('/confirm-payment/{id}', [SellPosController::class, 'confirmPayment'])
         ->name('confirm_payment');
+
+    // POS Progressive Web App (public — needed for install / offline)
+    Route::get('/pos-pwa/manifest.webmanifest', [PosPwaController::class, 'manifest'])
+        ->name('pos.pwa.manifest');
+    Route::get('/pos-pwa/sw.js', [PosPwaController::class, 'serviceWorker'])
+        ->name('pos.pwa.sw');
+    Route::get('/pos-pwa/offline', [PosPwaController::class, 'offline'])
+        ->name('pos.pwa.offline');
 });
 
 //Routes for authenticated users only

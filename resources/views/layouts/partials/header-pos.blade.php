@@ -149,6 +149,16 @@
                 <i class="fas fa-expand" style="color:#646EE4;"></i>
             </button>
 
+            @php
+                $__pwa_install_on = !isset($pos_settings) || !array_key_exists('enable_pwa', $pos_settings) || !empty($pos_settings['enable_pwa']);
+            @endphp
+            @if ($__pwa_install_on)
+                <button type="button" id="pos_pwa_install_btn" title="{{ __('lang_v1.install_pos_app') }}"
+                    class="pos-tb-btn tw-hidden">
+                    <i class="fas fa-download" style="color:#3b8ddd;"></i>
+                </button>
+            @endif
+
             @if (!empty($pos_settings['customer_display_screen']))
                 <a href="{{ route('pos_display') }}" id="customer_display_screen"
                     onclick="window.open(this.href, 'customer_display', 'width='+screen.width+',height='+screen.height+',top=0,left=0'); return false;"

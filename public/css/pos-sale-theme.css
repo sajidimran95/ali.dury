@@ -5562,3 +5562,55 @@ body.lockscreen.pos-sale-theme .select2-container--open .select2-search--dropdow
   color: #ffffff !important;
 }
 
+
+/* -- POS PWA standalone (installed app) — native shell feel -- */
+html.pos-pwa-standalone,
+body.pos-pwa-standalone,
+body.lockscreen.pos-sale-theme.pos-pwa-standalone {
+  overscroll-behavior: none;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+  background: #0f0f0f !important;
+}
+
+body.pos-pwa-standalone input,
+body.pos-pwa-standalone textarea,
+body.pos-pwa-standalone [contenteditable],
+body.pos-pwa-standalone .select2-search__field {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+@media (display-mode: standalone), (display-mode: minimal-ui) {
+  body.lockscreen.pos-sale-theme {
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    padding-left: env(safe-area-inset-left, 0px);
+    min-height: 100dvh;
+    background: #0f0f0f !important;
+  }
+
+  body.lockscreen.pos-sale-theme .pos-ls-topbar,
+  body.lockscreen.pos-sale-theme .pos-header {
+    padding-top: max(0px, env(safe-area-inset-top, 0px));
+  }
+
+  body.lockscreen.pos-sale-theme .scrolltop,
+  body.lockscreen.pos-sale-theme #full_screen {
+    display: none !important;
+  }
+
+  body.lockscreen.pos-sale-theme #pos_pwa_install_btn {
+    display: none !important;
+  }
+
+  body.lockscreen.pos-sale-theme .pos-sale-shell {
+    min-height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+  }
+}
+
+body.lockscreen.pos-sale-theme #pos_pwa_install_btn:not(.tw-hidden) {
+  display: inline-flex !important;
+}

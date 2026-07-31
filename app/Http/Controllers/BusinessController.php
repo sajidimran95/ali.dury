@@ -466,12 +466,36 @@ class BusinessController extends Controller
                     $pos_settings[$inputName] = $pre_pos_setting[$inputName] ?? null;
                 }
             }
+
+            // PWA app icon (stored under uploads/pwa_icons)
+            if ($request->hasFile('pwa_icon')) {
+                $pwa_icon_name = $this->businessUtil->uploadFile($request, 'pwa_icon', 'pwa_icons', 'image');
+                if (! empty($pwa_icon_name)) {
+                    $pos_settings['pwa_icon'] = $pwa_icon_name;
+                } elseif (isset($pre_pos_setting['pwa_icon'])) {
+                    $pos_settings['pwa_icon'] = $pre_pos_setting['pwa_icon'];
+                }
+            } elseif (isset($pre_pos_setting['pwa_icon'])) {
+                $pos_settings['pwa_icon'] = $pre_pos_setting['pwa_icon'];
+            }
+
+            // Preserve PWA text fields if somehow missing from request
+            foreach (['pwa_app_name', 'pwa_short_name', 'pwa_description', 'pwa_theme_color', 'pwa_background_color'] as $pwa_key) {
+                if (! array_key_exists($pwa_key, $pos_settings) && array_key_exists($pwa_key, $pre_pos_setting)) {
+                    $pos_settings[$pwa_key] = $pre_pos_setting[$pwa_key];
+                }
+            }
+
             $default_pos_settings = $this->businessUtil->defaultPosSettings();
             foreach ($default_pos_settings as $key => $value) {
                 if (! isset($pos_settings[$key])) {
                     $pos_settings[$key] = $value;
                 }
             }
+
+            // Checkboxes: missing from request means off (do not fall back to default 1)
+            $pos_settings['enable_pwa'] = ! empty($request->input('pos_settings.enable_pwa')) ? 1 : 0;
+
             // Save pos_settings as JSON
             $business_details['pos_settings'] = json_encode($pos_settings);
 

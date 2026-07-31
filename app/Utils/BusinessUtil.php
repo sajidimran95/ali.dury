@@ -416,7 +416,23 @@ class BusinessUtil extends Util
      */
     public function defaultPosSettings()
     {
-        return ['disable_pay_checkout' => 0, 'disable_draft' => 0, 'disable_express_checkout' => 0, 'hide_product_suggestion' => 0, 'hide_recent_trans' => 0, 'disable_discount' => 0, 'disable_order_tax' => 0, 'is_pos_subtotal_editable' => 0];
+        return [
+            'disable_pay_checkout' => 0,
+            'disable_draft' => 0,
+            'disable_express_checkout' => 0,
+            'hide_product_suggestion' => 0,
+            'hide_recent_trans' => 0,
+            'disable_discount' => 0,
+            'disable_order_tax' => 0,
+            'is_pos_subtotal_editable' => 0,
+            'enable_pwa' => 1,
+            'pwa_app_name' => '',
+            'pwa_short_name' => 'POS',
+            'pwa_description' => '',
+            'pwa_theme_color' => '#0f0f0f',
+            'pwa_background_color' => '#0f0f0f',
+            'pwa_icon' => null,
+        ];
     }
 
     /**

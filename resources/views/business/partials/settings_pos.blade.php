@@ -327,7 +327,123 @@
                 </div>
             </div>
         </div>
-    </div>    
+    </div>
+
+    <hr>
+    <div class="row">
+        <div class="col-sm-12">
+            <h4>@lang('lang_v1.pos_pwa_settings')</h4>
+            <p class="help-block">@lang('lang_v1.pos_pwa_settings_help')</p>
+        </div>
+
+        <div class="col-sm-4">
+            <div class="form-group">
+                <div class="checkbox">
+                <br>
+                  <label>
+                    {!! Form::checkbox('pos_settings[enable_pwa]', 1,
+                        !array_key_exists('enable_pwa', $pos_settings) || !empty($pos_settings['enable_pwa']),
+                    [ 'class' => 'input-icheck']); !!} {{ __('lang_v1.enable_pos_pwa') }}
+                  </label>
+                  @show_tooltip(__('lang_v1.enable_pos_pwa_tooltip'))
+                </div>
+            </div>
+        </div>
+        <div class="clearfix"></div>
+
+        <div class="col-sm-4">
+            <div class="form-group">
+                {!! Form::label('pwa_app_name', __('lang_v1.pwa_app_name') . ':') !!}
+                {!! Form::text('pos_settings[pwa_app_name]', $pos_settings['pwa_app_name'] ?? null, [
+                    'class' => 'form-control',
+                    'id' => 'pwa_app_name',
+                    'placeholder' => Session::get('business.name'),
+                ]) !!}
+                <p class="help-block">@lang('lang_v1.pwa_app_name_help')</p>
+            </div>
+        </div>
+
+        <div class="col-sm-4">
+            <div class="form-group">
+                {!! Form::label('pwa_short_name', __('lang_v1.pwa_short_name') . ':') !!}
+                {!! Form::text('pos_settings[pwa_short_name]', $pos_settings['pwa_short_name'] ?? 'POS', [
+                    'class' => 'form-control',
+                    'id' => 'pwa_short_name',
+                    'maxlength' => 12,
+                ]) !!}
+                <p class="help-block">@lang('lang_v1.pwa_short_name_help')</p>
+            </div>
+        </div>
+
+        <div class="col-sm-4">
+            <div class="form-group">
+                {!! Form::label('pwa_icon', __('lang_v1.pwa_icon') . ':') !!}
+                {!! Form::file('pwa_icon', ['accept' => 'image/png,image/jpeg,image/webp', 'class' => 'form-control']) !!}
+                <p class="help-block">@lang('lang_v1.pwa_icon_help')</p>
+                @php
+                    $pwa_icon_preview = null;
+                    if (!empty($pos_settings['pwa_icon']) && file_exists(public_path('uploads/pwa_icons/' . $pos_settings['pwa_icon']))) {
+                        $pwa_icon_preview = asset('uploads/pwa_icons/' . $pos_settings['pwa_icon']);
+                    }
+                @endphp
+                @if ($pwa_icon_preview)
+                    <img src="{{ $pwa_icon_preview }}" alt="PWA icon" style="max-height:64px;margin-top:8px;border-radius:12px;border:1px solid #ddd;">
+                @endif
+            </div>
+        </div>
+
+        <div class="col-sm-12">
+            <div class="form-group">
+                {!! Form::label('pwa_description', __('lang_v1.pwa_description') . ':') !!}
+                {!! Form::textarea('pos_settings[pwa_description]', $pos_settings['pwa_description'] ?? null, [
+                    'class' => 'form-control',
+                    'id' => 'pwa_description',
+                    'rows' => 2,
+                    'placeholder' => __('lang_v1.pwa_description_placeholder'),
+                ]) !!}
+            </div>
+        </div>
+
+        <div class="col-sm-4">
+            <div class="form-group">
+                {!! Form::label('pwa_theme_color', __('lang_v1.pwa_theme_color') . ':') !!}
+                {!! Form::input('color', 'pos_settings[pwa_theme_color]', $pos_settings['pwa_theme_color'] ?? '#0f0f0f', [
+                    'class' => 'form-control',
+                    'id' => 'pwa_theme_color',
+                    'style' => 'max-width:120px;height:40px;padding:2px;',
+                ]) !!}
+                <p class="help-block">@lang('lang_v1.pwa_theme_color_help')</p>
+            </div>
+        </div>
+
+        <div class="col-sm-4">
+            <div class="form-group">
+                {!! Form::label('pwa_background_color', __('lang_v1.pwa_background_color') . ':') !!}
+                {!! Form::input('color', 'pos_settings[pwa_background_color]', $pos_settings['pwa_background_color'] ?? '#0f0f0f', [
+                    'class' => 'form-control',
+                    'id' => 'pwa_background_color',
+                    'style' => 'max-width:120px;height:40px;padding:2px;',
+                ]) !!}
+                <p class="help-block">@lang('lang_v1.pwa_background_color_help')</p>
+            </div>
+        </div>
+
+        <div class="col-sm-12">
+            <div class="callout callout-info" style="margin-top:8px;">
+                <p style="margin:0;"><strong>@lang('lang_v1.pos_pwa_how_to_install'):</strong></p>
+                <ul style="margin:8px 0 0; padding-left:18px;">
+                    <li>@lang('lang_v1.pos_pwa_install_chrome')</li>
+                    <li>@lang('lang_v1.pos_pwa_install_edge')</li>
+                    <li>@lang('lang_v1.pos_pwa_install_ios')</li>
+                </ul>
+                <p class="help-block" style="margin:10px 0 0;">
+                    @lang('lang_v1.pos_pwa_https_note')
+                    —
+                    <a href="{{ url('/pos/create') }}" target="_blank" rel="noopener">{{ url('/pos/create') }}</a>
+                </p>
+            </div>
+        </div>
+    </div>
     <hr>
     @include('business.partials.settings_weighing_scale')
 </div>

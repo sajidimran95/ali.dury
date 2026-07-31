@@ -28,10 +28,51 @@
 <head>
     <!-- Tell the browser to be responsive to screen width -->
     <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
+    <meta http-equiv="X-UA-Compatible" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
         name="viewport">
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
+
+    @php
+        $__pos_pwa = [];
+        if ($pos_layout) {
+            if (!isset($pos_settings) || !is_array($pos_settings)) {
+                $__biz = session('business');
+                $__raw = is_object($__biz) ? ($__biz->pos_settings ?? null) : null;
+                $pos_settings = !empty($__raw) ? (json_decode($__raw, true) ?: []) : [];
+            }
+            $__pwa_on = !array_key_exists('enable_pwa', $pos_settings) || !empty($pos_settings['enable_pwa']);
+            if ($__pwa_on) {
+                $__biz_name = Session::get('business.name') ?? config('app.name');
+                $__pos_pwa = [
+                    'enabled' => true,
+                    'app_name' => trim((string) ($pos_settings['pwa_app_name'] ?? '')) ?: $__biz_name,
+                    'theme_color' => $pos_settings['pwa_theme_color'] ?? '#0f0f0f',
+                    'background_color' => $pos_settings['pwa_background_color'] ?? '#0f0f0f',
+                    'icon' => asset('pwa/icon-192.png'),
+                    'apple_icon' => asset('pwa/apple-touch-icon.png'),
+                ];
+                if (!empty($pos_settings['pwa_icon']) && file_exists(public_path('uploads/pwa_icons/' . $pos_settings['pwa_icon']))) {
+                    $__pos_pwa['icon'] = asset('uploads/pwa_icons/' . $pos_settings['pwa_icon']);
+                    $__pos_pwa['apple_icon'] = $__pos_pwa['icon'];
+                } elseif (function_exists('japs_logo_url')) {
+                    // keep default icons
+                }
+            }
+        }
+    @endphp
+
+    @if (!empty($__pos_pwa['enabled']))
+        <meta name="theme-color" content="{{ $__pos_pwa['theme_color'] }}">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+        <meta name="apple-mobile-web-app-title" content="{{ \Illuminate\Support\Str::limit($__pos_pwa['app_name'], 12, '') }}">
+        <meta name="application-name" content="{{ $__pos_pwa['app_name'] }}">
+        <link rel="manifest" href="{{ route('pos.pwa.manifest', ['business_id' => session('user.business_id')]) }}">
+        <link rel="apple-touch-icon" href="{{ $__pos_pwa['apple_icon'] }}">
+        <link rel="icon" type="image/png" sizes="192x192" href="{{ $__pos_pwa['icon'] }}">
+    @endif
     
     <title>@yield('title') - {{ Session::get('business.name') }}</title>
 
@@ -139,6 +180,19 @@
         
         {{-- Module JS --}}
         @include('layouts.module-assets')
+
+        @if (!empty($__pos_pwa['enabled']))
+            <script>
+                window.__POS_PWA__ = {
+                    enabled: true,
+                    swUrl: @json(route('pos.pwa.sw')),
+                    iosHint: @json(__('lang_v1.pos_pwa_ios_hint')),
+                    installHint: @json(__('lang_v1.pos_pwa_install_hint'))
+                };
+            </script>
+            <script src="{{ asset('js/pos-pwa.js?v=' . ($asset_v ?? time())) }}" defer></script>
+        @endif
+
         <div class="modal fade view_modal" tabindex="-1" role="dialog" aria-labelledby="gridSystemModalLabel"></div>
         <div class="modal fade contact_modal" id="global_contact_modal" tabindex="-1" role="dialog" aria-labelledby="gridSystemModalLabel"></div>
 
