@@ -92,14 +92,16 @@
 	$total_bal_label = !empty($receipt_details->all_bal_label)
 		? trim(str_replace(':', '', $receipt_details->all_bal_label))
 		: 'Total Due Balance';
-	// Tax label from Invoice Layout (clear label = hide total tax). Strip trailing ":"
+	// Tax label from Invoice Layout. Strip trailing ":"
 	$tax_col_label = !empty($receipt_details->tax_label)
 		? trim(str_replace(':', '', $receipt_details->tax_label))
 		: 'Tax';
 	// Product Tax column: business "Enable inline tax" setting
 	$show_tax_column = !empty($receipt_details->enable_inline_tax);
-	// Total Tax row: Invoice Layout Tax Label set (setting ON). Amount may be 0.
-	$show_total_tax = !empty($receipt_details->show_total_tax);
+	// Total Tax row: only when layout tax label ON and tax amount > 0
+	$show_total_tax = !empty($receipt_details->show_total_tax)
+		&& !empty($receipt_details->tax_amount_uf)
+		&& (float) $receipt_details->tax_amount_uf != 0;
 	// Always show item-wise discount column on product rows (invoice only)
 	$item_disc_label = !empty($receipt_details->item_discount_label)
 		? $receipt_details->item_discount_label
@@ -916,13 +918,7 @@
 					@if($show_total_tax)
 						<tr>
 							<td class="lab">{{ $tax_col_label }}</td>
-							<td class="val">
-								@if(!empty($receipt_details->tax_amount_uf) && (float) $receipt_details->tax_amount_uf > 0)
-									{{ $receipt_details->tax }}
-								@else
-									{{ $zero_money }}
-								@endif
-							</td>
+							<td class="val">{{ $receipt_details->tax }}</td>
 						</tr>
 					@endif
 					@if(!empty($receipt_details->round_off_amount) && $receipt_details->round_off_amount > 0)

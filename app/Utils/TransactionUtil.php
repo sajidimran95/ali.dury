@@ -1478,10 +1478,16 @@ class TransactionUtil extends Util
             $output['tax_label'] .= ' ('.$tax->name.')';
         }
         $output['tax_label'] .= ':';
-        $output['tax'] = ($transaction->tax_amount != 0) ? $this->num_f($transaction->tax_amount, $show_currency, $business_details) : 0;
-        // Layout Tax Label filled = total tax row active; empty = hide
-        $output['show_total_tax'] = trim((string) ($invoice_layout->tax_label ?? '')) !== '';
-        $output['tax_amount_uf'] = (float) $transaction->tax_amount;
+        // Combined order-level tax + product line taxes (for display)
+        $total_tax_uf = (float) $transaction->tax_amount + (float) ($total_line_taxes ?? 0);
+        $output['tax_amount_uf'] = $total_tax_uf;
+        $output['tax'] = ($total_tax_uf != 0) ? $this->num_f($total_tax_uf, $show_currency, $business_details) : 0;
+        // Total Tax row on invoice:
+        // - OFF if Invoice Layout Tax Label is empty
+        // - OFF if tax amount is 0 (same as classic layouts — do not print Tax $0.00)
+        // - ON only when label is set AND tax > 0
+        $layout_tax_label_on = trim((string) ($invoice_layout->tax_label ?? '')) !== '';
+        $output['show_total_tax'] = $layout_tax_label_on && $total_tax_uf != 0;
         // Business: Enable product line tax → product Tax column on invoice
         $output['enable_inline_tax'] = ! empty($business_details->enable_inline_tax);
 
