@@ -1321,18 +1321,30 @@ class TransactionUtil extends Util
             $show_currency = false;
         }
 
-        // Available store credit = customer advance balance (POS "Advance Balance")
-        // Not reward points (customer_total_rp)
-        $store_credit = 0;
-        if (! empty($customer) && isset($customer->balance)) {
-            $store_credit = (float) $customer->balance;
-            if ($store_credit < 0) {
-                $store_credit = 0;
+        // Available Store Credit = remaining usable balance:
+        // prepaid advance (contacts.balance) + leftover credit limit after dues (when limit set).
+        // Same idea as Contacts list "Available credit limit" + POS Advance Balance.
+        $advance = 0.0;
+        if (! empty($customer)) {
+            // Fresh from DB (receipt may run after payment/balance updates on same request)
+            $advance = (float) Contact::where('id', $customer->id)->value('balance');
+            if ($advance < 0) {
+                $advance = 0;
             }
         }
+
+        $store_credit = $advance;
+        if (! empty($customer) && $customer->credit_limit !== null && $customer->credit_limit !== '') {
+            $contact_due = (float) $this->getContactDue($transaction->contact_id);
+            if ($contact_due < 0) {
+                $contact_due = 0;
+            }
+            $store_credit = ((float) $customer->credit_limit) - $contact_due + $advance;
+        }
+
         $output['customer_store_credit_uf'] = $store_credit;
         $output['customer_store_credit'] = $this->num_f($store_credit, $show_currency, $business_details);
-        $output['customer_store_credit_label'] = __('lang_v1.advance_balance');
+        $output['customer_store_credit_label'] = 'Available Store Credit';
 
         //Invoice product lines
         $is_lot_number_enabled = $business_details->enable_lot_number;

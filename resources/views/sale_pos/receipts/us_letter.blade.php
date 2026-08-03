@@ -1133,20 +1133,16 @@
 
 	<div class="usl-credit">
 		@php
-			// Prefer advance balance (store credit); fall back only if old field was set
+			// Remaining store credit (advance + credit limit left after dues)
 			$storeCreditDisp = $zero_money;
-			if (isset($receipt_details->customer_store_credit_uf)) {
-				$storeCreditDisp = ((float) $receipt_details->customer_store_credit_uf > 0)
-					? $receipt_details->customer_store_credit
-					: $zero_money;
-			} elseif (!empty($receipt_details->customer_store_credit)) {
+			if (isset($receipt_details->customer_store_credit) && $receipt_details->customer_store_credit !== '' && $receipt_details->customer_store_credit !== null) {
 				$storeCreditDisp = $receipt_details->customer_store_credit;
+			} elseif (isset($receipt_details->customer_store_credit_uf)) {
+				$storeCreditDisp = $moneyOrZero($receipt_details->customer_store_credit_uf);
 			}
 			$creditLabel = !empty($receipt_details->customer_store_credit_label)
 				? $receipt_details->customer_store_credit_label
 				: 'Available Store Credit';
-			// Prefer fixed wholesale label for this design
-			$creditLabel = 'Available Store Credit';
 		@endphp
 		{{ $creditLabel }}:
 		{{ $storeCreditDisp }}
