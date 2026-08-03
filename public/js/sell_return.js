@@ -67,18 +67,10 @@ function pos_print(receipt) {
             socket.send(JSON.stringify(content));
         }
     } else if (receipt.html_content != '') {
-        var title = document.title;
-        if (typeof receipt.print_title != 'undefined') {
-            document.title = receipt.print_title;
-        }
-
-        //If printer type browser then print content
+        // If printer type browser then print content (blank title — no invoice no in print header)
         $('#receipt_section').html(receipt.html_content);
         __currency_convert_recursively($('#receipt_section'));
-        setTimeout(function() {
-            window.print();
-            document.title = title;
-        }, 1000);
+        __print_receipt('receipt_section');
     }
 }
 

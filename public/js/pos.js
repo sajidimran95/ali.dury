@@ -3870,19 +3870,12 @@ function pos_print(receipt) {
         }
 
     } else if (receipt.html_content != '') {
-        var title = document.title;
-        if (typeof receipt.print_title != 'undefined') {
-            document.title = receipt.print_title;
-        }
+        // Do not set document.title to invoice no (removes top browser print header mark)
 
         //If printer type browser then print content
         $('#receipt_section').html(receipt.html_content);
         __currency_convert_recursively($('#receipt_section'));
         __print_receipt('receipt_section');
-
-        setTimeout(function() {
-            document.title = title;
-        }, 1200);
     }
 }
 

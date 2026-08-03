@@ -1016,6 +1016,15 @@ tr.details td.details-control {
     #toast-container {
       display: none;
     }
+    /* Prefer clean invoice print: no app chrome on the page */
+    .no-print,
+    .main-header,
+    .main-sidebar,
+    .content-header,
+    .main-footer,
+    .control-sidebar {
+        display: none !important;
+    }
 }
 
 .input-number .btn-default{

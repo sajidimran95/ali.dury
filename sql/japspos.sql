@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Jul 28, 2026 at 06:14 PM
+-- Generation Time: Aug 03, 2026 at 03:27 PM
 -- Server version: 8.4.3
--- PHP Version: 8.4.2
+-- PHP Version: 8.4.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -18,7 +18,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `japspos`
+-- Database: `japs_pos`
 --
 
 -- --------------------------------------------------------
@@ -30,11 +30,11 @@ SET time_zone = "+00:00";
 CREATE TABLE `accounts` (
   `id` int UNSIGNED NOT NULL,
   `business_id` int NOT NULL,
-  `name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `account_number` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `account_details` text COLLATE utf8mb4_unicode_ci,
+  `name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `account_number` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `account_details` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `account_type_id` int DEFAULT NULL,
-  `note` text COLLATE utf8mb4_unicode_ci,
+  `note` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `created_by` int NOT NULL,
   `is_closed` tinyint(1) NOT NULL DEFAULT '0',
   `deleted_at` timestamp NULL DEFAULT NULL,
@@ -51,16 +51,16 @@ CREATE TABLE `accounts` (
 CREATE TABLE `account_transactions` (
   `id` int UNSIGNED NOT NULL,
   `account_id` int NOT NULL,
-  `type` enum('debit','credit') COLLATE utf8mb4_unicode_ci NOT NULL,
-  `sub_type` enum('opening_balance','fund_transfer','deposit') COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `type` enum('debit','credit') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `sub_type` enum('opening_balance','fund_transfer','deposit') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `amount` decimal(22,4) NOT NULL,
-  `reff_no` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `reff_no` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `operation_date` datetime NOT NULL,
   `created_by` int NOT NULL,
   `transaction_id` int DEFAULT NULL,
   `transaction_payment_id` int DEFAULT NULL,
   `transfer_transaction_id` int DEFAULT NULL,
-  `note` text COLLATE utf8mb4_unicode_ci,
+  `note` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `deleted_at` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
@@ -74,7 +74,7 @@ CREATE TABLE `account_transactions` (
 
 CREATE TABLE `account_types` (
   `id` int UNSIGNED NOT NULL,
-  `name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `parent_account_type_id` int DEFAULT NULL,
   `business_id` int NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
@@ -89,16 +89,16 @@ CREATE TABLE `account_types` (
 
 CREATE TABLE `activity_log` (
   `id` int UNSIGNED NOT NULL,
-  `log_name` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `description` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `log_name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `subject_id` int DEFAULT NULL,
-  `subject_type` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `event` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `subject_type` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `event` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `business_id` int DEFAULT NULL,
   `causer_id` int DEFAULT NULL,
-  `causer_type` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `properties` text COLLATE utf8mb4_unicode_ci,
-  `batch_uuid` char(36) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `causer_type` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `properties` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `batch_uuid` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -207,7 +207,8 @@ INSERT INTO `activity_log` (`id`, `log_name`, `description`, `subject_id`, `subj
 (97, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-07-28 04:22:53', '2026-07-28 04:22:53'),
 (98, 'default', 'logout', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-07-28 06:40:17', '2026-07-28 06:40:17'),
 (99, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-07-28 06:40:24', '2026-07-28 06:40:24'),
-(100, 'default', 'added', 87, 'App\\Transaction', NULL, 1, 1, 'App\\User', '{\"attributes\":{\"type\":\"sell\",\"status\":\"final\",\"payment_status\":\"paid\",\"final_total\":8.99}}', NULL, '2026-07-28 08:11:08', '2026-07-28 08:11:08');
+(100, 'default', 'added', 87, 'App\\Transaction', NULL, 1, 1, 'App\\User', '{\"attributes\":{\"type\":\"sell\",\"status\":\"final\",\"payment_status\":\"paid\",\"final_total\":8.99}}', NULL, '2026-07-28 08:11:08', '2026-07-28 08:11:08'),
+(101, 'default', 'added', 88, 'App\\Transaction', NULL, 1, 1, 'App\\User', '{\"attributes\":{\"type\":\"sell\",\"status\":\"final\",\"payment_status\":\"paid\",\"final_total\":92.07}}', NULL, '2026-08-03 05:23:18', '2026-08-03 05:23:18');
 
 -- --------------------------------------------------------
 
@@ -219,8 +220,8 @@ CREATE TABLE `ai_assistance_settings` (
   `id` int UNSIGNED NOT NULL,
   `business_id` int UNSIGNED NOT NULL,
   `is_enabled` tinyint(1) NOT NULL DEFAULT '1',
-  `openai_api_key` text COLLATE utf8mb4_unicode_ci,
-  `openai_model` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `openai_api_key` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `openai_model` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -240,8 +241,8 @@ INSERT INTO `ai_assistance_settings` (`id`, `business_id`, `is_enabled`, `openai
 
 CREATE TABLE `barcodes` (
   `id` int UNSIGNED NOT NULL,
-  `name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `description` text COLLATE utf8mb4_unicode_ci,
+  `name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `width` double(22,4) DEFAULT NULL,
   `height` double(22,4) DEFAULT NULL,
   `paper_width` double(22,4) DEFAULT NULL,
@@ -288,8 +289,8 @@ CREATE TABLE `bookings` (
   `booking_start` datetime NOT NULL,
   `booking_end` datetime NOT NULL,
   `created_by` int UNSIGNED NOT NULL,
-  `booking_status` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `booking_note` text COLLATE utf8mb4_unicode_ci,
+  `booking_status` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `booking_note` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -303,8 +304,8 @@ CREATE TABLE `bookings` (
 CREATE TABLE `brands` (
   `id` int UNSIGNED NOT NULL,
   `business_id` int UNSIGNED NOT NULL,
-  `name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `description` text COLLATE utf8mb4_unicode_ci,
+  `name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `created_by` int UNSIGNED NOT NULL,
   `deleted_at` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
@@ -340,30 +341,30 @@ INSERT INTO `brands` (`id`, `business_id`, `name`, `description`, `created_by`, 
 
 CREATE TABLE `business` (
   `id` int UNSIGNED NOT NULL,
-  `name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `currency_id` int UNSIGNED NOT NULL,
   `start_date` date DEFAULT NULL,
-  `tax_number_1` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `tax_label_1` varchar(10) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `tax_number_2` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `tax_label_2` varchar(10) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `code_label_1` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `code_1` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `code_label_2` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `code_2` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `tax_number_1` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `tax_label_1` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `tax_number_2` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `tax_label_2` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `code_label_1` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `code_1` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `code_label_2` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `code_2` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `default_sales_tax` int UNSIGNED DEFAULT NULL,
   `default_profit_percent` double(5,2) NOT NULL DEFAULT '0.00',
   `owner_id` int UNSIGNED NOT NULL,
-  `time_zone` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'Asia/Kolkata',
+  `time_zone` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'Asia/Kolkata',
   `fy_start_month` tinyint NOT NULL DEFAULT '1',
-  `accounting_method` enum('fifo','lifo','avco') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'fifo',
+  `accounting_method` enum('fifo','lifo','avco') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'fifo',
   `default_sales_discount` decimal(5,2) DEFAULT NULL,
-  `sell_price_tax` enum('includes','excludes') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'includes',
-  `logo` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `sku_prefix` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `sell_price_tax` enum('includes','excludes') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'includes',
+  `logo` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `sku_prefix` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `enable_product_expiry` tinyint(1) NOT NULL DEFAULT '0',
-  `expiry_type` enum('add_expiry','add_manufacturing') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'add_expiry',
-  `on_product_expiry` enum('keep_selling','stop_selling','auto_delete') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'keep_selling',
+  `expiry_type` enum('add_expiry','add_manufacturing') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'add_expiry',
+  `on_product_expiry` enum('keep_selling','stop_selling','auto_delete') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'keep_selling',
   `stop_selling_before` int NOT NULL COMMENT 'Stop selling expied item n days before expiry',
   `enable_tooltip` tinyint(1) NOT NULL DEFAULT '1',
   `purchase_in_diff_currency` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'Allow purchase to be in different currency then the business currency',
@@ -371,9 +372,9 @@ CREATE TABLE `business` (
   `p_exchange_rate` decimal(20,3) NOT NULL DEFAULT '1.000',
   `transaction_edit_days` int UNSIGNED NOT NULL DEFAULT '30',
   `stock_expiry_alert_days` int UNSIGNED NOT NULL DEFAULT '30',
-  `keyboard_shortcuts` text COLLATE utf8mb4_unicode_ci,
-  `pos_settings` text COLLATE utf8mb4_unicode_ci,
-  `weighing_scale_setting` text COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'used to store the configuration of weighing scale',
+  `keyboard_shortcuts` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `pos_settings` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `weighing_scale_setting` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'used to store the configuration of weighing scale',
   `enable_brand` tinyint(1) NOT NULL DEFAULT '1',
   `enable_category` tinyint(1) NOT NULL DEFAULT '1',
   `enable_sub_category` tinyint(1) NOT NULL DEFAULT '1',
@@ -386,20 +387,20 @@ CREATE TABLE `business` (
   `enable_row` tinyint(1) NOT NULL DEFAULT '0',
   `enable_position` tinyint(1) NOT NULL DEFAULT '0',
   `enable_editing_product_from_purchase` tinyint(1) NOT NULL DEFAULT '1',
-  `sales_cmsn_agnt` enum('logged_in_user','user','cmsn_agnt') COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `sales_cmsn_agnt` enum('logged_in_user','user','cmsn_agnt') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `item_addition_method` tinyint(1) NOT NULL DEFAULT '1',
   `enable_inline_tax` tinyint(1) NOT NULL DEFAULT '1',
-  `currency_symbol_placement` enum('before','after') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'before',
-  `enabled_modules` text COLLATE utf8mb4_unicode_ci,
-  `date_format` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'm/d/Y',
-  `time_format` enum('12','24') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '24',
+  `currency_symbol_placement` enum('before','after') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'before',
+  `enabled_modules` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `date_format` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'm/d/Y',
+  `time_format` enum('12','24') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '24',
   `currency_precision` tinyint NOT NULL DEFAULT '2',
   `quantity_precision` tinyint NOT NULL DEFAULT '2',
-  `ref_no_prefixes` text COLLATE utf8mb4_unicode_ci,
-  `theme_color` char(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `ref_no_prefixes` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `theme_color` char(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `created_by` int DEFAULT NULL,
   `enable_rp` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'rp is the short form of reward points',
-  `rp_name` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'rp is the short form of reward points',
+  `rp_name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'rp is the short form of reward points',
   `amount_for_unit_rp` decimal(22,4) NOT NULL DEFAULT '1.0000' COMMENT 'rp is the short form of reward points',
   `min_order_total_for_rp` decimal(22,4) NOT NULL DEFAULT '1.0000' COMMENT 'rp is the short form of reward points',
   `max_rp_per_order` int DEFAULT NULL COMMENT 'rp is the short form of reward points',
@@ -408,12 +409,12 @@ CREATE TABLE `business` (
   `min_redeem_point` int DEFAULT NULL COMMENT 'rp is the short form of reward points',
   `max_redeem_point` int DEFAULT NULL COMMENT 'rp is the short form of reward points',
   `rp_expiry_period` int DEFAULT NULL COMMENT 'rp is the short form of reward points',
-  `rp_expiry_type` enum('month','year') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'year' COMMENT 'rp is the short form of reward points',
-  `email_settings` text COLLATE utf8mb4_unicode_ci,
-  `sms_settings` text COLLATE utf8mb4_unicode_ci,
-  `custom_labels` text COLLATE utf8mb4_unicode_ci,
-  `common_settings` text COLLATE utf8mb4_unicode_ci,
-  `crm_settings` text COLLATE utf8mb4_unicode_ci,
+  `rp_expiry_type` enum('month','year') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'year' COMMENT 'rp is the short form of reward points',
+  `email_settings` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `sms_settings` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `custom_labels` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `common_settings` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `crm_settings` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `is_active` tinyint(1) NOT NULL DEFAULT '1',
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
@@ -435,32 +436,32 @@ INSERT INTO `business` (`id`, `name`, `currency_id`, `start_date`, `tax_number_1
 CREATE TABLE `business_locations` (
   `id` int UNSIGNED NOT NULL,
   `business_id` int UNSIGNED NOT NULL,
-  `location_id` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `name` varchar(256) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `landmark` text COLLATE utf8mb4_unicode_ci,
-  `country` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `state` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `city` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `zip_code` char(7) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `location_id` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `name` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `landmark` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `country` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `state` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `city` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `zip_code` char(7) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `invoice_scheme_id` int UNSIGNED NOT NULL,
   `sale_invoice_scheme_id` int DEFAULT NULL,
   `invoice_layout_id` int UNSIGNED NOT NULL,
   `sale_invoice_layout_id` int DEFAULT NULL,
   `selling_price_group_id` int DEFAULT NULL,
   `print_receipt_on_invoice` tinyint(1) DEFAULT '1',
-  `receipt_printer_type` enum('browser','printer') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'browser',
+  `receipt_printer_type` enum('browser','printer') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'browser',
   `printer_id` int DEFAULT NULL,
-  `mobile` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `alternate_number` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `email` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `website` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `featured_products` text COLLATE utf8mb4_unicode_ci,
+  `mobile` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `alternate_number` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `email` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `website` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `featured_products` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `is_active` tinyint(1) NOT NULL DEFAULT '1',
-  `default_payment_accounts` text COLLATE utf8mb4_unicode_ci,
-  `custom_field1` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `custom_field2` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `custom_field3` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `custom_field4` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `default_payment_accounts` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `custom_field1` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `custom_field2` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `custom_field3` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `custom_field4` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `deleted_at` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
@@ -484,7 +485,7 @@ CREATE TABLE `cash_denominations` (
   `business_id` int NOT NULL,
   `amount` decimal(22,4) NOT NULL,
   `total_count` int NOT NULL,
-  `model_type` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `model_type` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `model_id` bigint UNSIGNED NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
@@ -501,13 +502,13 @@ CREATE TABLE `cash_registers` (
   `business_id` int UNSIGNED NOT NULL,
   `location_id` int DEFAULT NULL,
   `user_id` int UNSIGNED DEFAULT NULL,
-  `status` enum('close','open') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'open',
+  `status` enum('close','open') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'open',
   `closed_at` datetime DEFAULT NULL,
   `closing_amount` decimal(22,4) NOT NULL DEFAULT '0.0000',
   `total_card_slips` int NOT NULL DEFAULT '0',
   `total_cheques` int NOT NULL DEFAULT '0',
-  `denominations` text COLLATE utf8mb4_unicode_ci,
-  `closing_note` text COLLATE utf8mb4_unicode_ci,
+  `denominations` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `closing_note` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -530,9 +531,9 @@ CREATE TABLE `cash_register_transactions` (
   `id` int UNSIGNED NOT NULL,
   `cash_register_id` int UNSIGNED NOT NULL,
   `amount` decimal(22,4) NOT NULL DEFAULT '0.0000',
-  `pay_method` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `type` enum('debit','credit') COLLATE utf8mb4_unicode_ci NOT NULL,
-  `transaction_type` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `pay_method` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `type` enum('debit','credit') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `transaction_type` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `transaction_id` int DEFAULT NULL,
   `transaction_payment_id` int UNSIGNED DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
@@ -574,7 +575,8 @@ INSERT INTO `cash_register_transactions` (`id`, `cash_register_id`, `amount`, `p
 (34, 2, 12.0000, 'cash', 'credit', 'sell', 83, NULL, '2026-07-27 10:11:23', '2026-07-27 10:11:23'),
 (35, 2, 4.9900, 'cash', 'credit', 'sell', 84, NULL, '2026-07-27 10:11:42', '2026-07-27 10:11:42'),
 (36, 2, 12.0000, 'cash', 'credit', 'sell', 86, NULL, '2026-07-27 10:21:29', '2026-07-27 10:21:29'),
-(37, 2, 8.9900, 'card', 'credit', 'sell', 87, NULL, '2026-07-28 08:11:08', '2026-07-28 08:11:08');
+(37, 2, 8.9900, 'card', 'credit', 'sell', 87, NULL, '2026-07-28 08:11:08', '2026-07-28 08:11:08'),
+(38, 2, 92.0700, 'cash', 'credit', 'sell', 88, NULL, '2026-08-03 05:23:18', '2026-08-03 05:23:18');
 
 -- --------------------------------------------------------
 
@@ -584,14 +586,14 @@ INSERT INTO `cash_register_transactions` (`id`, `cash_register_id`, `amount`, `p
 
 CREATE TABLE `categories` (
   `id` int UNSIGNED NOT NULL,
-  `name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `business_id` int UNSIGNED NOT NULL,
-  `short_code` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `short_code` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `parent_id` int NOT NULL,
   `created_by` int UNSIGNED NOT NULL,
-  `category_type` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `description` text COLLATE utf8mb4_unicode_ci,
-  `slug` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `category_type` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `slug` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `deleted_at` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
@@ -642,7 +644,7 @@ INSERT INTO `categories` (`id`, `name`, `business_id`, `short_code`, `parent_id`
 
 CREATE TABLE `categorizables` (
   `category_id` int NOT NULL,
-  `categorizable_type` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `categorizable_type` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `categorizable_id` bigint UNSIGNED NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -655,40 +657,40 @@ CREATE TABLE `categorizables` (
 CREATE TABLE `contacts` (
   `id` int UNSIGNED NOT NULL,
   `business_id` int UNSIGNED NOT NULL,
-  `type` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `contact_type` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `land_mark` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `street_name` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `building_number` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `additional_number` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `supplier_business_name` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `name` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `prefix` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `first_name` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `middle_name` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `last_name` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `email` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `password` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `ecom_first_name` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `ecom_last_name` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `type` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `contact_type` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `land_mark` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `street_name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `building_number` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `additional_number` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `supplier_business_name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `prefix` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `first_name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `middle_name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `last_name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `email` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `password` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `ecom_first_name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `ecom_last_name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `email_verified_at` timestamp NULL DEFAULT NULL,
-  `contact_id` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `contact_status` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'active',
-  `crm_source` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `crm_life_stage` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `tax_number` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `city` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `state` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `country` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `address_line_1` text COLLATE utf8mb4_unicode_ci,
-  `address_line_2` text COLLATE utf8mb4_unicode_ci,
-  `zip_code` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `contact_id` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `contact_status` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'active',
+  `crm_source` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `crm_life_stage` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `tax_number` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `city` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `state` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `country` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `address_line_1` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `address_line_2` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `zip_code` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `dob` date DEFAULT NULL,
-  `mobile` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `landline` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `alternate_number` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `mobile` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `landline` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `alternate_number` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `pay_term_number` int DEFAULT NULL,
-  `pay_term_type` enum('days','months') COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `pay_term_type` enum('days','months') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `credit_limit` decimal(22,4) DEFAULT NULL,
   `created_by` int UNSIGNED NOT NULL,
   `balance` decimal(22,4) NOT NULL DEFAULT '0.0000',
@@ -696,31 +698,31 @@ CREATE TABLE `contacts` (
   `total_rp_used` int NOT NULL DEFAULT '0' COMMENT 'rp is the short form of reward points',
   `total_rp_expired` int NOT NULL DEFAULT '0' COMMENT 'rp is the short form of reward points',
   `is_default` tinyint(1) NOT NULL DEFAULT '0',
-  `shipping_address` text COLLATE utf8mb4_unicode_ci,
-  `shipping_custom_field_details` longtext COLLATE utf8mb4_unicode_ci,
+  `shipping_address` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `shipping_custom_field_details` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `is_export` tinyint(1) NOT NULL DEFAULT '0',
-  `export_custom_field_1` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `export_custom_field_2` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `export_custom_field_3` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `export_custom_field_4` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `export_custom_field_5` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `export_custom_field_6` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `position` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `export_custom_field_1` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `export_custom_field_2` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `export_custom_field_3` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `export_custom_field_4` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `export_custom_field_5` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `export_custom_field_6` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `position` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `customer_group_id` int DEFAULT NULL,
-  `custom_field1` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `custom_field2` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `custom_field3` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `custom_field4` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `custom_field5` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `custom_field6` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `custom_field7` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `custom_field8` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `custom_field9` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `custom_field10` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `custom_field1` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `custom_field2` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `custom_field3` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `custom_field4` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `custom_field5` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `custom_field6` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `custom_field7` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `custom_field8` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `custom_field9` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `custom_field10` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `deleted_at` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
-  `remember_token` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL
+  `remember_token` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
@@ -749,9 +751,9 @@ CREATE TABLE `crm_call_logs` (
   `business_id` int UNSIGNED NOT NULL,
   `contact_id` int UNSIGNED NOT NULL,
   `created_by` int UNSIGNED NOT NULL,
-  `subject` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `subject` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `duration` int DEFAULT NULL,
-  `description` text COLLATE utf8mb4_unicode_ci,
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `called_on` datetime DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
@@ -783,10 +785,10 @@ CREATE TABLE `crm_schedules` (
   `business_id` int UNSIGNED NOT NULL,
   `contact_id` int UNSIGNED NOT NULL,
   `created_by` int UNSIGNED NOT NULL,
-  `title` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `status` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'open',
+  `title` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `status` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'open',
   `start_datetime` datetime DEFAULT NULL,
-  `description` text COLLATE utf8mb4_unicode_ci,
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   `deleted_at` timestamp NULL DEFAULT NULL
@@ -800,12 +802,12 @@ CREATE TABLE `crm_schedules` (
 
 CREATE TABLE `currencies` (
   `id` int UNSIGNED NOT NULL,
-  `country` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `currency` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `code` varchar(25) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `symbol` varchar(25) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `thousand_separator` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `decimal_separator` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `country` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `currency` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `code` varchar(25) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `symbol` varchar(25) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `thousand_separator` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `decimal_separator` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -967,9 +969,9 @@ INSERT INTO `currencies` (`id`, `country`, `currency`, `code`, `symbol`, `thousa
 CREATE TABLE `customer_groups` (
   `id` int UNSIGNED NOT NULL,
   `business_id` int UNSIGNED NOT NULL,
-  `name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `amount` double(5,2) NOT NULL,
-  `price_calculation_type` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT 'percentage',
+  `price_calculation_type` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT 'percentage',
   `selling_price_group_id` int DEFAULT NULL,
   `created_by` int UNSIGNED NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
@@ -994,9 +996,9 @@ CREATE TABLE `dashboard_configurations` (
   `id` int UNSIGNED NOT NULL,
   `business_id` int UNSIGNED NOT NULL,
   `created_by` int NOT NULL,
-  `name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `color` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `configuration` text COLLATE utf8mb4_unicode_ci,
+  `name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `color` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `configuration` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -1009,18 +1011,18 @@ CREATE TABLE `dashboard_configurations` (
 
 CREATE TABLE `discounts` (
   `id` int UNSIGNED NOT NULL,
-  `name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `business_id` int NOT NULL,
   `brand_id` int DEFAULT NULL,
   `category_id` int DEFAULT NULL,
   `location_id` int DEFAULT NULL,
   `priority` int DEFAULT NULL,
-  `discount_type` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `discount_type` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `discount_amount` decimal(22,4) NOT NULL DEFAULT '0.0000',
   `starts_at` datetime DEFAULT NULL,
   `ends_at` datetime DEFAULT NULL,
   `is_active` tinyint(1) NOT NULL DEFAULT '1',
-  `spg` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Applicable in specified selling price group only. Use of applicable_in_spg column is discontinued',
+  `spg` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Applicable in specified selling price group only. Use of applicable_in_spg column is discontinued',
   `applicable_in_cg` tinyint(1) DEFAULT '0',
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
@@ -1047,9 +1049,9 @@ CREATE TABLE `document_and_notes` (
   `id` int UNSIGNED NOT NULL,
   `business_id` int NOT NULL,
   `notable_id` int NOT NULL,
-  `notable_type` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `heading` text COLLATE utf8mb4_unicode_ci,
-  `description` text COLLATE utf8mb4_unicode_ci,
+  `notable_type` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `heading` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `is_private` tinyint(1) NOT NULL DEFAULT '0',
   `created_by` int NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
@@ -1066,21 +1068,21 @@ CREATE TABLE `ecommerce_settings` (
   `id` int UNSIGNED NOT NULL,
   `business_id` int UNSIGNED NOT NULL,
   `is_enabled` tinyint(1) NOT NULL DEFAULT '0',
-  `store_name` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `store_logo` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `store_name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `store_logo` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `location_id` int UNSIGNED DEFAULT NULL,
   `enable_cod` tinyint(1) NOT NULL DEFAULT '1',
   `enable_stripe` tinyint(1) NOT NULL DEFAULT '0',
   `enable_paypal` tinyint(1) NOT NULL DEFAULT '0',
-  `stripe_key` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `stripe_secret` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `paypal_client_id` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `paypal_secret` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `default_country` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'United States',
-  `seo_title` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `seo_description` text COLLATE utf8mb4_unicode_ci,
-  `contact_email` text COLLATE utf8mb4_unicode_ci,
-  `contact_phone` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `stripe_key` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `stripe_secret` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `paypal_client_id` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `paypal_secret` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `default_country` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'United States',
+  `seo_title` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `seo_description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `contact_email` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `contact_phone` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `extra` json DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
@@ -1102,7 +1104,7 @@ INSERT INTO `ecommerce_settings` (`id`, `business_id`, `is_enabled`, `store_name
 CREATE TABLE `ecom_api_settings` (
   `id` int UNSIGNED NOT NULL,
   `business_id` int UNSIGNED NOT NULL,
-  `api_token` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `api_token` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -1116,11 +1118,11 @@ CREATE TABLE `ecom_api_settings` (
 CREATE TABLE `ecom_banners` (
   `id` int UNSIGNED NOT NULL,
   `business_id` int UNSIGNED NOT NULL,
-  `title` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `subtitle` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `image` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `button_text` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `button_link` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `title` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `subtitle` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `image` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `button_text` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `button_link` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `is_active` tinyint(1) NOT NULL DEFAULT '1',
   `sort_order` int NOT NULL DEFAULT '0',
   `created_at` timestamp NULL DEFAULT NULL,
@@ -1146,8 +1148,8 @@ CREATE TABLE `ecom_carts` (
   `id` int UNSIGNED NOT NULL,
   `business_id` int UNSIGNED NOT NULL,
   `contact_id` int UNSIGNED DEFAULT NULL,
-  `session_id` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `coupon_code` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `session_id` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `coupon_code` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -1231,7 +1233,8 @@ INSERT INTO `ecom_carts` (`id`, `business_id`, `contact_id`, `session_id`, `coup
 (72, 1, NULL, 'DqtcYeP47SgZlm9AQMcxtvZjhF2zNWWP6C0xeHSO', NULL, '2026-07-24 17:49:48', '2026-07-24 17:49:48'),
 (73, 1, NULL, 'KLF8GYcRTQfZy7n78u5e5m2uMQKz2yyRoBSl9Stz', NULL, '2026-07-27 14:52:56', '2026-07-27 14:52:56'),
 (74, 1, NULL, 'xnoG4j0rWF8FRUHp7FEoHEkVwTumQV2qP88dg5lE', NULL, '2026-07-28 13:50:51', '2026-07-28 13:50:51'),
-(75, 1, NULL, 'JbD4dTRjVpm1BSozsIoiiKd6mhQSNu9lrWVlRkOb', NULL, '2026-07-28 17:01:37', '2026-07-28 17:01:37');
+(75, 1, NULL, 'JbD4dTRjVpm1BSozsIoiiKd6mhQSNu9lrWVlRkOb', NULL, '2026-07-28 17:01:37', '2026-07-28 17:01:37'),
+(76, 1, NULL, '1z90uvYkLnARAJj1jaVWhsVNCnZwCI20OtipCWTz', NULL, '2026-08-03 13:44:30', '2026-08-03 13:44:30');
 
 -- --------------------------------------------------------
 
@@ -1272,10 +1275,10 @@ INSERT INTO `ecom_cart_items` (`id`, `cart_id`, `product_id`, `variation_id`, `q
 CREATE TABLE `ecom_collections` (
   `id` int UNSIGNED NOT NULL,
   `business_id` int UNSIGNED NOT NULL,
-  `name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `slug` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `description` text COLLATE utf8mb4_unicode_ci,
-  `image` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `slug` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `image` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `is_active` tinyint(1) NOT NULL DEFAULT '1',
   `sort_order` int NOT NULL DEFAULT '0',
   `created_at` timestamp NULL DEFAULT NULL,
@@ -1315,8 +1318,8 @@ CREATE TABLE `ecom_collection_products` (
 CREATE TABLE `ecom_coupons` (
   `id` int UNSIGNED NOT NULL,
   `business_id` int UNSIGNED NOT NULL,
-  `code` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `type` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'fixed',
+  `code` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `type` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'fixed',
   `value` decimal(22,4) NOT NULL DEFAULT '0.0000',
   `min_order_amount` decimal(22,4) DEFAULT NULL,
   `usage_limit` int DEFAULT NULL,
@@ -1353,16 +1356,16 @@ CREATE TABLE `ecom_customer_addresses` (
   `id` int UNSIGNED NOT NULL,
   `business_id` int UNSIGNED NOT NULL,
   `contact_id` int UNSIGNED NOT NULL,
-  `first_name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `last_name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `company` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `address_line_1` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `address_line_2` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `city` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `state` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `zip_code` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `country` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'United States',
-  `phone` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `first_name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `last_name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `company` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `address_line_1` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `address_line_2` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `city` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `state` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `zip_code` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `country` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'United States',
+  `phone` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `is_default` tinyint(1) NOT NULL DEFAULT '0',
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
@@ -1386,12 +1389,12 @@ CREATE TABLE `ecom_customer_licenses` (
   `id` int UNSIGNED NOT NULL,
   `business_id` int UNSIGNED NOT NULL,
   `contact_id` int UNSIGNED NOT NULL,
-  `license_type` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `label` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `certificate_number` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `license_type` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `label` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `certificate_number` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `expires_at` date DEFAULT NULL,
-  `file_path` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `original_name` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `file_path` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `original_name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -1406,15 +1409,15 @@ CREATE TABLE `ecom_order_meta` (
   `id` int UNSIGNED NOT NULL,
   `business_id` int UNSIGNED NOT NULL,
   `transaction_id` int UNSIGNED NOT NULL,
-  `tracking_token` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `fulfillment_status` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pending',
+  `tracking_token` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `fulfillment_status` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pending',
   `timeline` json DEFAULT NULL,
   `shipping_address` json DEFAULT NULL,
   `billing_address` json DEFAULT NULL,
   `coupon_id` int UNSIGNED DEFAULT NULL,
-  `payment_method` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `customer_email` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `customer_phone` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `payment_method` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `customer_email` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `customer_phone` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -1438,11 +1441,11 @@ CREATE TABLE `ecom_reviews` (
   `business_id` int UNSIGNED NOT NULL,
   `product_id` int UNSIGNED NOT NULL,
   `contact_id` int UNSIGNED DEFAULT NULL,
-  `author_name` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `author_name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `rating` tinyint UNSIGNED NOT NULL DEFAULT '5',
-  `review` text COLLATE utf8mb4_unicode_ci,
+  `review` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `images` json DEFAULT NULL,
-  `status` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pending',
+  `status` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pending',
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -1456,8 +1459,8 @@ CREATE TABLE `ecom_reviews` (
 CREATE TABLE `ecom_shipping_rules` (
   `id` int UNSIGNED NOT NULL,
   `business_id` int UNSIGNED NOT NULL,
-  `name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `type` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'flat',
+  `name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `type` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'flat',
   `amount` decimal(22,4) NOT NULL DEFAULT '0.0000',
   `min_order_amount` decimal(22,4) DEFAULT NULL,
   `max_weight` decimal(22,4) DEFAULT NULL,
@@ -1484,11 +1487,11 @@ INSERT INTO `ecom_shipping_rules` (`id`, `business_id`, `name`, `type`, `amount`
 CREATE TABLE `ecom_tax_rules` (
   `id` int UNSIGNED NOT NULL,
   `business_id` int UNSIGNED NOT NULL,
-  `name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `level` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'state',
-  `state` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `county` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `city` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `level` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'state',
+  `state` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `county` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `city` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `rate` decimal(8,4) NOT NULL DEFAULT '0.0000',
   `is_active` tinyint(1) NOT NULL DEFAULT '1',
   `created_at` timestamp NULL DEFAULT NULL,
@@ -1523,8 +1526,8 @@ CREATE TABLE `employee_attendances` (
   `user_id` int UNSIGNED NOT NULL,
   `clock_in_at` datetime NOT NULL,
   `clock_out_at` datetime DEFAULT NULL,
-  `status` enum('clocked_in','on_break','clocked_out') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'clocked_in',
-  `notes` text COLLATE utf8mb4_unicode_ci,
+  `status` enum('clocked_in','on_break','clocked_out') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'clocked_in',
+  `notes` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -1553,7 +1556,7 @@ CREATE TABLE `employee_attendance_breaks` (
   `attendance_id` int UNSIGNED NOT NULL,
   `break_start_at` datetime NOT NULL,
   `break_end_at` datetime DEFAULT NULL,
-  `reason` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `reason` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -1578,9 +1581,9 @@ INSERT INTO `employee_attendance_breaks` (`id`, `attendance_id`, `break_start_at
 
 CREATE TABLE `expense_categories` (
   `id` int UNSIGNED NOT NULL,
-  `name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `business_id` int UNSIGNED NOT NULL,
-  `code` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `code` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `parent_id` int DEFAULT NULL,
   `deleted_at` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
@@ -1614,31 +1617,31 @@ INSERT INTO `group_sub_taxes` (`group_tax_id`, `tax_id`) VALUES
 
 CREATE TABLE `invoice_layouts` (
   `id` int UNSIGNED NOT NULL,
-  `name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `header_text` text COLLATE utf8mb4_unicode_ci,
-  `invoice_no_prefix` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `quotation_no_prefix` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `invoice_heading` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `sub_heading_line1` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `sub_heading_line2` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `sub_heading_line3` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `sub_heading_line4` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `sub_heading_line5` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `invoice_heading_not_paid` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `invoice_heading_paid` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `quotation_heading` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `sub_total_label` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `discount_label` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `tax_label` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `total_label` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `round_off_label` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `total_due_label` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `paid_label` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `header_text` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `invoice_no_prefix` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `quotation_no_prefix` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `invoice_heading` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `sub_heading_line1` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `sub_heading_line2` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `sub_heading_line3` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `sub_heading_line4` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `sub_heading_line5` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `invoice_heading_not_paid` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `invoice_heading_paid` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `quotation_heading` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `sub_total_label` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `discount_label` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `tax_label` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `total_label` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `round_off_label` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `total_due_label` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `paid_label` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `show_client_id` tinyint(1) NOT NULL DEFAULT '0',
-  `client_id_label` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `client_tax_label` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `date_label` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `date_time_format` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `client_id_label` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `client_tax_label` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `date_label` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `date_time_format` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `show_time` tinyint(1) NOT NULL DEFAULT '1',
   `show_brand` tinyint(1) NOT NULL DEFAULT '0',
   `show_sku` tinyint(1) NOT NULL DEFAULT '1',
@@ -1647,14 +1650,14 @@ CREATE TABLE `invoice_layouts` (
   `show_lot` tinyint(1) NOT NULL DEFAULT '0',
   `show_image` tinyint(1) NOT NULL DEFAULT '0',
   `show_sale_description` tinyint(1) NOT NULL DEFAULT '0',
-  `sales_person_label` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `sales_person_label` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `show_sales_person` tinyint(1) NOT NULL DEFAULT '0',
-  `table_product_label` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `table_qty_label` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `table_unit_price_label` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `table_subtotal_label` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `cat_code_label` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `logo` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `table_product_label` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `table_qty_label` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `table_unit_price_label` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `table_subtotal_label` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `cat_code_label` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `logo` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `show_logo` tinyint(1) NOT NULL DEFAULT '0',
   `show_business_name` tinyint(1) NOT NULL DEFAULT '0',
   `show_location_name` tinyint(1) NOT NULL DEFAULT '1',
@@ -1671,33 +1674,33 @@ CREATE TABLE `invoice_layouts` (
   `show_barcode` tinyint(1) NOT NULL DEFAULT '0',
   `show_payments` tinyint(1) NOT NULL DEFAULT '0',
   `show_customer` tinyint(1) NOT NULL DEFAULT '0',
-  `customer_label` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `commission_agent_label` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `customer_label` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `commission_agent_label` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `show_commission_agent` tinyint(1) NOT NULL DEFAULT '0',
   `show_reward_point` tinyint(1) NOT NULL DEFAULT '0',
-  `highlight_color` varchar(10) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `footer_text` text COLLATE utf8mb4_unicode_ci,
-  `module_info` text COLLATE utf8mb4_unicode_ci,
-  `common_settings` text COLLATE utf8mb4_unicode_ci,
+  `highlight_color` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `footer_text` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `module_info` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `common_settings` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `is_default` tinyint(1) NOT NULL DEFAULT '0',
   `business_id` int UNSIGNED NOT NULL,
   `show_letter_head` tinyint(1) NOT NULL DEFAULT '0',
-  `letter_head` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `letter_head` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `show_qr_code` tinyint(1) NOT NULL DEFAULT '0',
-  `qr_code_fields` text COLLATE utf8mb4_unicode_ci,
-  `design` varchar(190) COLLATE utf8mb4_unicode_ci DEFAULT 'classic',
-  `cn_heading` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'cn = credit note',
-  `cn_no_label` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `cn_amount_label` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `table_tax_headings` text COLLATE utf8mb4_unicode_ci,
+  `qr_code_fields` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `design` varchar(190) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT 'classic',
+  `cn_heading` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'cn = credit note',
+  `cn_no_label` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `cn_amount_label` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `table_tax_headings` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `show_previous_bal` tinyint(1) NOT NULL DEFAULT '0',
-  `prev_bal_label` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `prev_bal_label` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `show_previous_balance_due` tinyint(1) NOT NULL DEFAULT '0',
-  `previous_balance_due_label` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `change_return_label` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `product_custom_fields` text COLLATE utf8mb4_unicode_ci,
-  `contact_custom_fields` text COLLATE utf8mb4_unicode_ci,
-  `location_custom_fields` text COLLATE utf8mb4_unicode_ci,
+  `previous_balance_due_label` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `change_return_label` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `product_custom_fields` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `contact_custom_fields` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `location_custom_fields` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -1707,7 +1710,7 @@ CREATE TABLE `invoice_layouts` (
 --
 
 INSERT INTO `invoice_layouts` (`id`, `name`, `header_text`, `invoice_no_prefix`, `quotation_no_prefix`, `invoice_heading`, `sub_heading_line1`, `sub_heading_line2`, `sub_heading_line3`, `sub_heading_line4`, `sub_heading_line5`, `invoice_heading_not_paid`, `invoice_heading_paid`, `quotation_heading`, `sub_total_label`, `discount_label`, `tax_label`, `total_label`, `round_off_label`, `total_due_label`, `paid_label`, `show_client_id`, `client_id_label`, `client_tax_label`, `date_label`, `date_time_format`, `show_time`, `show_brand`, `show_sku`, `show_cat_code`, `show_expiry`, `show_lot`, `show_image`, `show_sale_description`, `sales_person_label`, `show_sales_person`, `table_product_label`, `table_qty_label`, `table_unit_price_label`, `table_subtotal_label`, `cat_code_label`, `logo`, `show_logo`, `show_business_name`, `show_location_name`, `show_landmark`, `show_city`, `show_state`, `show_zip_code`, `show_country`, `show_mobile_number`, `show_alternate_number`, `show_email`, `show_tax_1`, `show_tax_2`, `show_barcode`, `show_payments`, `show_customer`, `customer_label`, `commission_agent_label`, `show_commission_agent`, `show_reward_point`, `highlight_color`, `footer_text`, `module_info`, `common_settings`, `is_default`, `business_id`, `show_letter_head`, `letter_head`, `show_qr_code`, `qr_code_fields`, `design`, `cn_heading`, `cn_no_label`, `cn_amount_label`, `table_tax_headings`, `show_previous_bal`, `prev_bal_label`, `show_previous_balance_due`, `previous_balance_due_label`, `change_return_label`, `product_custom_fields`, `contact_custom_fields`, `location_custom_fields`, `created_at`, `updated_at`) VALUES
-(1, 'Default', NULL, 'Invoice No.', NULL, 'Invoice', NULL, NULL, NULL, NULL, NULL, '', '', NULL, 'Subtotal', 'Discount', 'Tax', 'Total', NULL, 'Total Due', 'Total Paid', 0, NULL, NULL, 'Date', NULL, 1, 0, 1, 1, 0, 0, 0, 0, NULL, 0, 'Product', 'Quantity', 'Unit Price', 'Subtotal', NULL, NULL, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1, 'Customer', NULL, 0, 0, '#000000', '', NULL, NULL, 1, 1, 0, NULL, 0, NULL, 'classic', NULL, NULL, NULL, NULL, 0, NULL, 0, NULL, NULL, NULL, NULL, NULL, '2026-07-18 18:56:53', '2026-07-18 18:56:53');
+(1, 'Default', NULL, 'Invoice No.', NULL, 'Invoice', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Subtotal', 'Discount', 'Tax', 'Total', NULL, 'Total Due', 'Total Paid', 0, NULL, NULL, 'Date', NULL, 1, 0, 1, 1, 0, 0, 0, 0, NULL, 0, 'Product', 'Quantity', 'Unit Price', 'Subtotal', NULL, '1785766321_chatgpt-image-aug-3-2026-08-11-19-pm.png', 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 1, 1, 1, 'Customer', NULL, 0, 0, '#000000', 'Thank You For Your Business!!!', NULL, '{\"proforma_heading\":null,\"sales_order_heading\":null,\"due_date_label\":null,\"show_due_date\":\"1\",\"total_quantity_label\":null,\"item_discount_label\":null,\"discounted_unit_price_label\":null,\"total_items_label\":null,\"show_total_in_words\":\"1\",\"num_to_word_format\":\"international\",\"tax_summary_label\":null,\"zatca_phase\":\"phase_1\"}', 1, 1, 0, NULL, 0, NULL, 'us_letter', NULL, NULL, NULL, NULL, 1, NULL, 1, NULL, NULL, NULL, NULL, NULL, '2026-07-18 18:56:53', '2026-08-03 04:26:53');
 
 -- --------------------------------------------------------
 
@@ -1718,10 +1721,10 @@ INSERT INTO `invoice_layouts` (`id`, `name`, `header_text`, `invoice_no_prefix`,
 CREATE TABLE `invoice_schemes` (
   `id` int UNSIGNED NOT NULL,
   `business_id` int UNSIGNED NOT NULL,
-  `name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `scheme_type` enum('blank','year') COLLATE utf8mb4_unicode_ci NOT NULL,
-  `number_type` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'sequential',
-  `prefix` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `scheme_type` enum('blank','year') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `number_type` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'sequential',
+  `prefix` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `start_number` int DEFAULT NULL,
   `invoice_count` int NOT NULL DEFAULT '0',
   `total_digits` int DEFAULT NULL,
@@ -1735,7 +1738,7 @@ CREATE TABLE `invoice_schemes` (
 --
 
 INSERT INTO `invoice_schemes` (`id`, `business_id`, `name`, `scheme_type`, `number_type`, `prefix`, `start_number`, `invoice_count`, `total_digits`, `is_default`, `created_at`, `updated_at`) VALUES
-(1, 1, 'Default', 'blank', 'sequential', '', 1, 47, 4, 1, '2026-07-18 18:56:53', '2026-07-28 08:11:07');
+(1, 1, 'Default', 'blank', 'sequential', '', 1, 48, 4, 1, '2026-07-18 18:56:53', '2026-08-03 05:23:18');
 
 -- --------------------------------------------------------
 
@@ -1746,11 +1749,11 @@ INSERT INTO `invoice_schemes` (`id`, `business_id`, `name`, `scheme_type`, `numb
 CREATE TABLE `media` (
   `id` int UNSIGNED NOT NULL,
   `business_id` int NOT NULL,
-  `file_name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `description` text COLLATE utf8mb4_unicode_ci,
+  `file_name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `uploaded_by` int DEFAULT NULL,
-  `model_type` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `model_media_type` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `model_type` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `model_media_type` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `model_id` bigint UNSIGNED NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
@@ -1764,7 +1767,7 @@ CREATE TABLE `media` (
 
 CREATE TABLE `migrations` (
   `id` int UNSIGNED NOT NULL,
-  `migration` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `migration` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `batch` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -2091,7 +2094,7 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 
 CREATE TABLE `model_has_permissions` (
   `permission_id` int UNSIGNED NOT NULL,
-  `model_type` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `model_type` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `model_id` bigint UNSIGNED NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -2103,7 +2106,7 @@ CREATE TABLE `model_has_permissions` (
 
 CREATE TABLE `model_has_roles` (
   `role_id` int UNSIGNED NOT NULL,
-  `model_type` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `model_type` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `model_id` bigint UNSIGNED NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -2121,11 +2124,11 @@ INSERT INTO `model_has_roles` (`role_id`, `model_type`, `model_id`) VALUES
 --
 
 CREATE TABLE `notifications` (
-  `id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `type` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `notifiable_type` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `type` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `notifiable_type` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `notifiable_id` bigint UNSIGNED NOT NULL,
-  `data` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `data` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `read_at` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
@@ -2140,13 +2143,13 @@ CREATE TABLE `notifications` (
 CREATE TABLE `notification_templates` (
   `id` int UNSIGNED NOT NULL,
   `business_id` int NOT NULL,
-  `template_for` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `email_body` text COLLATE utf8mb4_unicode_ci,
-  `sms_body` text COLLATE utf8mb4_unicode_ci,
-  `whatsapp_text` text COLLATE utf8mb4_unicode_ci,
-  `subject` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `cc` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `bcc` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `template_for` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `email_body` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `sms_body` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `whatsapp_text` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `subject` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `cc` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `bcc` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `auto_send` tinyint(1) NOT NULL DEFAULT '0',
   `auto_send_sms` tinyint(1) NOT NULL DEFAULT '0',
   `auto_send_wa_notif` tinyint(1) NOT NULL DEFAULT '0',
@@ -2177,11 +2180,11 @@ INSERT INTO `notification_templates` (`id`, `business_id`, `template_for`, `emai
 --
 
 CREATE TABLE `oauth_access_tokens` (
-  `id` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `id` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `user_id` bigint DEFAULT NULL,
   `client_id` int UNSIGNED NOT NULL,
-  `name` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `scopes` text COLLATE utf8mb4_unicode_ci,
+  `name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `scopes` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `revoked` tinyint(1) NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
@@ -2195,10 +2198,10 @@ CREATE TABLE `oauth_access_tokens` (
 --
 
 CREATE TABLE `oauth_auth_codes` (
-  `id` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `id` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `user_id` bigint NOT NULL,
   `client_id` int UNSIGNED NOT NULL,
-  `scopes` text COLLATE utf8mb4_unicode_ci,
+  `scopes` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `revoked` tinyint(1) NOT NULL,
   `expires_at` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -2212,10 +2215,10 @@ CREATE TABLE `oauth_auth_codes` (
 CREATE TABLE `oauth_clients` (
   `id` int UNSIGNED NOT NULL,
   `user_id` bigint DEFAULT NULL,
-  `name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `secret` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `provider` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `redirect` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `secret` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `provider` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `redirect` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `personal_access_client` tinyint(1) NOT NULL,
   `password_client` tinyint(1) NOT NULL,
   `revoked` tinyint(1) NOT NULL,
@@ -2243,8 +2246,8 @@ CREATE TABLE `oauth_personal_access_clients` (
 --
 
 CREATE TABLE `oauth_refresh_tokens` (
-  `id` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `access_token_id` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `id` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `access_token_id` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `revoked` tinyint(1) NOT NULL,
   `expires_at` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -2256,8 +2259,8 @@ CREATE TABLE `oauth_refresh_tokens` (
 --
 
 CREATE TABLE `password_resets` (
-  `email` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `token` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `email` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `token` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -2268,8 +2271,8 @@ CREATE TABLE `password_resets` (
 --
 
 CREATE TABLE `password_resets_contacts` (
-  `email` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `token` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `email` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `token` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -2281,8 +2284,8 @@ CREATE TABLE `password_resets_contacts` (
 
 CREATE TABLE `permissions` (
   `id` int UNSIGNED NOT NULL,
-  `name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `guard_name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `guard_name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -2389,13 +2392,13 @@ INSERT INTO `permissions` (`id`, `name`, `guard_name`, `created_at`, `updated_at
 CREATE TABLE `printers` (
   `id` int UNSIGNED NOT NULL,
   `business_id` int UNSIGNED NOT NULL,
-  `name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `connection_type` enum('network','windows','linux') COLLATE utf8mb4_unicode_ci NOT NULL,
-  `capability_profile` enum('default','simple','SP2000','TEP-200M','P822D') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'default',
-  `char_per_line` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `ip_address` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `port` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `path` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `connection_type` enum('network','windows','linux') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `capability_profile` enum('default','simple','SP2000','TEP-200M','P822D') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'default',
+  `char_per_line` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `ip_address` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `port` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `path` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `created_by` int UNSIGNED NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
@@ -2409,60 +2412,60 @@ CREATE TABLE `printers` (
 
 CREATE TABLE `products` (
   `id` int UNSIGNED NOT NULL,
-  `name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `business_id` int UNSIGNED NOT NULL,
   `type` enum('single','variable','modifier','combo') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `unit_id` int UNSIGNED DEFAULT NULL,
   `secondary_unit_id` int DEFAULT NULL,
-  `sub_unit_ids` text COLLATE utf8mb4_unicode_ci,
+  `sub_unit_ids` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `brand_id` int UNSIGNED DEFAULT NULL,
   `category_id` int UNSIGNED DEFAULT NULL,
   `sub_category_id` int UNSIGNED DEFAULT NULL,
   `tax` int UNSIGNED DEFAULT NULL,
-  `tax_type` enum('inclusive','exclusive') COLLATE utf8mb4_unicode_ci NOT NULL,
+  `tax_type` enum('inclusive','exclusive') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `enable_stock` tinyint(1) NOT NULL DEFAULT '0',
   `alert_quantity` decimal(22,4) DEFAULT NULL,
-  `sku` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `barcode_type` enum('C39','C128','EAN13','EAN8','UPCA','UPCE') COLLATE utf8mb4_unicode_ci DEFAULT 'C128',
+  `sku` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `barcode_type` enum('C39','C128','EAN13','EAN8','UPCA','UPCE') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT 'C128',
   `expiry_period` decimal(4,2) DEFAULT NULL,
-  `expiry_period_type` enum('days','months') COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `expiry_period_type` enum('days','months') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `enable_sr_no` tinyint(1) NOT NULL DEFAULT '0',
-  `weight` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `product_custom_field1` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `product_custom_field2` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `product_custom_field3` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `product_custom_field4` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `product_custom_field5` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `product_custom_field6` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `product_custom_field7` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `product_custom_field8` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `product_custom_field9` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `product_custom_field10` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `product_custom_field11` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `product_custom_field12` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `product_custom_field13` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `product_custom_field14` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `product_custom_field15` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `product_custom_field16` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `product_custom_field17` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `product_custom_field18` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `product_custom_field19` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `product_custom_field20` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `image` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `product_description` text COLLATE utf8mb4_unicode_ci,
+  `weight` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `product_custom_field1` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `product_custom_field2` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `product_custom_field3` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `product_custom_field4` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `product_custom_field5` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `product_custom_field6` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `product_custom_field7` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `product_custom_field8` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `product_custom_field9` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `product_custom_field10` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `product_custom_field11` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `product_custom_field12` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `product_custom_field13` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `product_custom_field14` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `product_custom_field15` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `product_custom_field16` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `product_custom_field17` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `product_custom_field18` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `product_custom_field19` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `product_custom_field20` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `image` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `product_description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `created_by` int UNSIGNED NOT NULL,
   `preparation_time_in_minutes` int DEFAULT NULL,
   `warranty_id` int DEFAULT NULL,
   `is_inactive` tinyint(1) NOT NULL DEFAULT '0',
   `not_for_selling` tinyint(1) NOT NULL DEFAULT '0',
-  `sales_channel` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pos_only',
-  `ecom_slug` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `sales_channel` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pos_only',
+  `ecom_slug` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
-  `ecom_short_description` text COLLATE utf8mb4_unicode_ci,
-  `ecom_long_description` longtext COLLATE utf8mb4_unicode_ci,
-  `ecom_seo_title` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `ecom_seo_description` text COLLATE utf8mb4_unicode_ci,
+  `ecom_short_description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `ecom_long_description` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `ecom_seo_title` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `ecom_seo_description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `ecom_is_featured` tinyint(1) NOT NULL DEFAULT '0',
   `ecom_is_new_arrival` tinyint(1) NOT NULL DEFAULT '0',
   `ecom_online_price` decimal(22,4) DEFAULT NULL,
@@ -2558,9 +2561,9 @@ CREATE TABLE `product_racks` (
   `business_id` int UNSIGNED NOT NULL,
   `location_id` int UNSIGNED NOT NULL,
   `product_id` int UNSIGNED NOT NULL,
-  `rack` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `row` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `position` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `rack` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `row` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `position` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -2574,7 +2577,7 @@ CREATE TABLE `product_racks` (
 CREATE TABLE `product_variations` (
   `id` int UNSIGNED NOT NULL,
   `variation_template_id` int DEFAULT NULL,
-  `name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `product_id` int UNSIGNED NOT NULL,
   `is_dummy` tinyint(1) NOT NULL DEFAULT '1',
   `created_at` timestamp NULL DEFAULT NULL,
@@ -2642,7 +2645,7 @@ CREATE TABLE `purchase_lines` (
   `mfg_quantity_used` decimal(22,4) NOT NULL DEFAULT '0.0000',
   `mfg_date` date DEFAULT NULL,
   `exp_date` date DEFAULT NULL,
-  `lot_number` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `lot_number` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `sub_unit_id` int DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
@@ -2654,7 +2657,7 @@ CREATE TABLE `purchase_lines` (
 
 INSERT INTO `purchase_lines` (`id`, `transaction_id`, `product_id`, `variation_id`, `quantity`, `secondary_unit_quantity`, `pp_without_discount`, `discount_percent`, `purchase_price`, `purchase_price_inc_tax`, `item_tax`, `tax_id`, `purchase_requisition_line_id`, `purchase_order_line_id`, `quantity_sold`, `quantity_adjusted`, `quantity_returned`, `po_quantity_purchased`, `mfg_quantity_used`, `mfg_date`, `exp_date`, `lot_number`, `sub_unit_id`, `created_at`, `updated_at`) VALUES
 (1, 1, 1, 1, 100.0000, 0.0000, 20.0000, 0.00, 20.0000, 21.9500, 1.9500, 5, NULL, NULL, 1.0000, 0.0000, 0.0000, 0.0000, 0.0000, NULL, NULL, NULL, NULL, '2026-07-18 19:00:29', '2026-07-27 09:39:08'),
-(2, 2, 2, 2, 80.0000, 0.0000, 55.0000, 0.00, 55.0000, 60.3625, 5.3625, 5, NULL, NULL, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, NULL, NULL, NULL, NULL, '2026-07-18 19:00:29', '2026-07-18 19:00:29'),
+(2, 2, 2, 2, 80.0000, 0.0000, 55.0000, 0.00, 55.0000, 60.3625, 5.3625, 5, NULL, NULL, 1.0000, 0.0000, 0.0000, 0.0000, 0.0000, NULL, NULL, NULL, NULL, '2026-07-18 19:00:29', '2026-08-03 05:23:18'),
 (3, 3, 3, 3, 60.0000, 0.0000, 28.0000, 0.00, 28.0000, 30.7300, 2.7300, 5, NULL, NULL, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, NULL, NULL, NULL, NULL, '2026-07-18 19:00:29', '2026-07-18 19:00:29'),
 (4, 4, 4, 4, 50.0000, 0.0000, 18.0000, 0.00, 18.0000, 19.7550, 1.7550, 5, NULL, NULL, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, NULL, NULL, NULL, NULL, '2026-07-18 19:00:29', '2026-07-18 19:00:29'),
 (5, 5, 5, 5, 50.0000, 0.0000, 14.0000, 0.00, 14.0000, 15.3650, 1.3650, 5, NULL, NULL, 1.0000, 0.0000, 0.0000, 0.0000, 0.0000, NULL, NULL, NULL, NULL, '2026-07-18 19:00:29', '2026-07-27 05:34:00'),
@@ -2666,9 +2669,9 @@ INSERT INTO `purchase_lines` (`id`, `transaction_id`, `product_id`, `variation_i
 (11, 24, 41, 41, 52.0000, 0.0000, 1.5000, 0.00, 1.5000, 1.5000, 0.0000, NULL, NULL, NULL, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, NULL, NULL, NULL, NULL, '2026-07-27 15:11:58', '2026-07-27 15:11:58'),
 (12, 25, 42, 42, 56.0000, 0.0000, 2.1000, 0.00, 2.1000, 2.1000, 0.0000, NULL, NULL, NULL, 5.0000, 0.0000, 0.0000, 0.0000, 0.0000, NULL, NULL, NULL, NULL, '2026-07-27 15:11:58', '2026-07-27 10:11:43'),
 (13, 26, 43, 43, 60.0000, 0.0000, 2.4000, 0.00, 2.4000, 2.4000, 0.0000, NULL, NULL, NULL, 60.0000, 0.0000, 0.0000, 0.0000, 0.0000, NULL, NULL, NULL, NULL, '2026-07-27 15:11:58', '2026-07-27 05:44:05'),
-(14, 27, 44, 44, 64.0000, 0.0000, 3.2000, 0.00, 3.2000, 3.2000, 0.0000, NULL, NULL, NULL, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, NULL, NULL, NULL, NULL, '2026-07-27 15:11:58', '2026-07-27 15:11:58'),
+(14, 27, 44, 44, 64.0000, 0.0000, 3.2000, 0.00, 3.2000, 3.2000, 0.0000, NULL, NULL, NULL, 1.0000, 0.0000, 0.0000, 0.0000, 0.0000, NULL, NULL, NULL, NULL, '2026-07-27 15:11:58', '2026-08-03 05:23:18'),
 (15, 28, 45, 45, 68.0000, 0.0000, 1.6000, 0.00, 1.6000, 1.6000, 0.0000, NULL, NULL, NULL, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, NULL, NULL, NULL, NULL, '2026-07-27 15:11:58', '2026-07-27 15:11:58'),
-(16, 29, 46, 46, 72.0000, 0.0000, 1.8000, 0.00, 1.8000, 1.8000, 0.0000, NULL, NULL, NULL, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, NULL, NULL, NULL, NULL, '2026-07-27 15:11:58', '2026-07-27 15:11:58'),
+(16, 29, 46, 46, 72.0000, 0.0000, 1.8000, 0.00, 1.8000, 1.8000, 0.0000, NULL, NULL, NULL, 1.0000, 0.0000, 0.0000, 0.0000, 0.0000, NULL, NULL, NULL, NULL, '2026-07-27 15:11:58', '2026-08-03 05:23:18'),
 (17, 30, 47, 47, 76.0000, 0.0000, 1.1000, 0.00, 1.1000, 1.1000, 0.0000, NULL, NULL, NULL, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, NULL, NULL, NULL, NULL, '2026-07-27 15:11:58', '2026-07-27 15:11:58'),
 (18, 31, 48, 48, 80.0000, 0.0000, 1.4000, 0.00, 1.4000, 1.4000, 0.0000, NULL, NULL, NULL, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, NULL, NULL, NULL, NULL, '2026-07-27 15:11:58', '2026-07-27 15:11:58'),
 (19, 32, 49, 49, 84.0000, 0.0000, 0.7000, 0.00, 0.7000, 0.7000, 0.0000, NULL, NULL, NULL, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, NULL, NULL, NULL, NULL, '2026-07-27 15:11:58', '2026-07-27 15:11:58'),
@@ -2677,7 +2680,7 @@ INSERT INTO `purchase_lines` (`id`, `transaction_id`, `product_id`, `variation_i
 (22, 35, 52, 52, 96.0000, 0.0000, 4.2000, 0.00, 4.2000, 4.2000, 0.0000, NULL, NULL, NULL, 3.0000, 0.0000, 0.0000, 0.0000, 0.0000, NULL, NULL, NULL, NULL, '2026-07-27 15:11:58', '2026-07-27 09:39:08'),
 (23, 36, 53, 53, 100.0000, 0.0000, 3.1000, 0.00, 3.1000, 3.1000, 0.0000, NULL, NULL, NULL, 2.0000, 0.0000, 0.0000, 0.0000, 0.0000, NULL, NULL, NULL, NULL, '2026-07-27 15:11:58', '2026-07-27 08:47:43'),
 (24, 37, 54, 54, 104.0000, 0.0000, 5.0000, 0.00, 5.0000, 5.0000, 0.0000, NULL, NULL, NULL, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, NULL, NULL, NULL, NULL, '2026-07-27 15:11:58', '2026-07-27 15:11:58'),
-(25, 38, 55, 55, 108.0000, 0.0000, 1.9000, 0.00, 1.9000, 1.9000, 0.0000, NULL, NULL, NULL, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, NULL, NULL, NULL, NULL, '2026-07-27 15:11:58', '2026-07-27 15:11:58'),
+(25, 38, 55, 55, 108.0000, 0.0000, 1.9000, 0.00, 1.9000, 1.9000, 0.0000, NULL, NULL, NULL, 2.0000, 0.0000, 0.0000, 0.0000, 0.0000, NULL, NULL, NULL, NULL, '2026-07-27 15:11:58', '2026-08-03 05:23:18'),
 (26, 39, 56, 56, 112.0000, 0.0000, 7.5000, 0.00, 7.5000, 7.5000, 0.0000, NULL, NULL, NULL, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, NULL, NULL, NULL, NULL, '2026-07-27 15:11:58', '2026-07-27 15:11:58'),
 (27, 40, 57, 57, 116.0000, 0.0000, 8.0000, 0.00, 8.0000, 8.0000, 0.0000, NULL, NULL, NULL, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, NULL, NULL, NULL, NULL, '2026-07-27 15:11:58', '2026-07-27 15:11:58'),
 (28, 41, 7, 7, 1.0000, 0.0000, 8.0000, 0.00, 8.0000, 8.7800, 0.7800, NULL, NULL, NULL, 1.0000, 0.0000, 0.0000, 0.0000, 0.0000, NULL, NULL, NULL, NULL, '2026-07-27 15:11:58', '2026-07-27 06:26:55');
@@ -2690,7 +2693,7 @@ INSERT INTO `purchase_lines` (`id`, `transaction_id`, `product_id`, `variation_i
 
 CREATE TABLE `reference_counts` (
   `id` int UNSIGNED NOT NULL,
-  `ref_type` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `ref_type` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `ref_count` int NOT NULL,
   `business_id` int NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
@@ -2703,7 +2706,7 @@ CREATE TABLE `reference_counts` (
 
 INSERT INTO `reference_counts` (`id`, `ref_type`, `ref_count`, `business_id`, `created_at`, `updated_at`) VALUES
 (1, 'contacts', 6, 1, '2026-07-18 18:56:53', '2026-07-23 07:27:00'),
-(4, 'sell_payment', 32, 1, '2026-07-24 10:13:56', '2026-07-28 08:11:07'),
+(4, 'sell_payment', 33, 1, '2026-07-24 10:13:56', '2026-08-03 05:23:18'),
 (5, 'draft', 9, 1, '2026-07-27 05:47:31', '2026-07-27 10:11:34');
 
 -- --------------------------------------------------------
@@ -2727,8 +2730,8 @@ CREATE TABLE `res_tables` (
   `id` int UNSIGNED NOT NULL,
   `business_id` int UNSIGNED NOT NULL,
   `location_id` int UNSIGNED NOT NULL,
-  `name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `description` text COLLATE utf8mb4_unicode_ci,
+  `name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `created_by` int UNSIGNED NOT NULL,
   `deleted_at` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
@@ -2743,8 +2746,8 @@ CREATE TABLE `res_tables` (
 
 CREATE TABLE `roles` (
   `id` int UNSIGNED NOT NULL,
-  `name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `guard_name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `guard_name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `business_id` int UNSIGNED NOT NULL,
   `is_default` tinyint(1) NOT NULL DEFAULT '0',
   `is_service_staff` tinyint(1) NOT NULL DEFAULT '0',
@@ -2799,8 +2802,8 @@ INSERT INTO `role_has_permissions` (`permission_id`, `role_id`) VALUES
 
 CREATE TABLE `selling_price_groups` (
   `id` int UNSIGNED NOT NULL,
-  `name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `description` text COLLATE utf8mb4_unicode_ci,
+  `name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `business_id` int UNSIGNED NOT NULL,
   `is_active` tinyint(1) NOT NULL DEFAULT '1',
   `deleted_at` timestamp NULL DEFAULT NULL,
@@ -2834,11 +2837,11 @@ CREATE TABLE `sell_line_warranties` (
 --
 
 CREATE TABLE `sessions` (
-  `id` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `id` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `user_id` int UNSIGNED DEFAULT NULL,
-  `ip_address` varchar(45) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `user_agent` text COLLATE utf8mb4_unicode_ci,
-  `payload` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `ip_address` varchar(45) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `user_agent` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `payload` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `last_activity` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -2880,8 +2883,8 @@ CREATE TABLE `stock_adjustment_lines` (
 
 CREATE TABLE `system` (
   `id` int UNSIGNED NOT NULL,
-  `key` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `value` text COLLATE utf8mb4_unicode_ci
+  `key` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `value` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
@@ -2904,7 +2907,7 @@ INSERT INTO `system` (`id`, `key`, `value`) VALUES
 CREATE TABLE `tax_rates` (
   `id` int UNSIGNED NOT NULL,
   `business_id` int UNSIGNED NOT NULL,
-  `name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `amount` double(22,4) NOT NULL,
   `is_tax_group` tinyint(1) NOT NULL DEFAULT '0',
   `for_tax_group` tinyint(1) NOT NULL DEFAULT '0',
@@ -2940,60 +2943,60 @@ CREATE TABLE `transactions` (
   `is_kitchen_order` tinyint(1) NOT NULL DEFAULT '0',
   `res_table_id` int UNSIGNED DEFAULT NULL COMMENT 'fields to restaurant module',
   `res_waiter_id` int UNSIGNED DEFAULT NULL COMMENT 'fields to restaurant module',
-  `res_order_status` enum('received','cooked','served') COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `type` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `sub_type` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `status` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `sub_status` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `res_order_status` enum('received','cooked','served') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `type` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `sub_type` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `status` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `sub_status` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `is_quotation` tinyint(1) NOT NULL DEFAULT '0',
-  `payment_status` enum('paid','due','partial') COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `adjustment_type` enum('normal','abnormal') COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `payment_status` enum('paid','due','partial') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `adjustment_type` enum('normal','abnormal') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `contact_id` int UNSIGNED DEFAULT NULL,
   `customer_group_id` int DEFAULT NULL COMMENT 'used to add customer group while selling',
-  `invoice_no` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `ref_no` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `source` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `subscription_no` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `subscription_repeat_on` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `invoice_no` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `ref_no` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `source` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `subscription_no` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `subscription_repeat_on` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `transaction_date` datetime NOT NULL,
   `total_before_tax` decimal(22,4) NOT NULL DEFAULT '0.0000' COMMENT 'Total before the purchase/invoice tax, this includeds the indivisual product tax',
   `tax_id` int UNSIGNED DEFAULT NULL,
   `tax_amount` decimal(22,4) NOT NULL DEFAULT '0.0000',
-  `discount_type` enum('fixed','percentage') COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `discount_type` enum('fixed','percentage') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `discount_amount` decimal(22,4) DEFAULT '0.0000',
   `rp_redeemed` int NOT NULL DEFAULT '0' COMMENT 'rp is the short form of reward points',
   `rp_redeemed_amount` decimal(22,4) NOT NULL DEFAULT '0.0000' COMMENT 'rp is the short form of reward points',
-  `shipping_details` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `shipping_address` text COLLATE utf8mb4_unicode_ci,
+  `shipping_details` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `shipping_address` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `delivery_date` datetime DEFAULT NULL,
-  `shipping_status` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `delivered_to` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `shipping_status` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `delivered_to` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `delivery_person` bigint DEFAULT NULL,
   `shipping_charges` decimal(22,4) NOT NULL DEFAULT '0.0000',
-  `shipping_custom_field_1` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `shipping_custom_field_2` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `shipping_custom_field_3` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `shipping_custom_field_4` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `shipping_custom_field_5` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `additional_notes` text COLLATE utf8mb4_unicode_ci,
-  `staff_note` text COLLATE utf8mb4_unicode_ci,
+  `shipping_custom_field_1` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `shipping_custom_field_2` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `shipping_custom_field_3` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `shipping_custom_field_4` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `shipping_custom_field_5` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `additional_notes` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `staff_note` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `is_export` tinyint(1) NOT NULL DEFAULT '0',
-  `export_custom_fields_info` longtext COLLATE utf8mb4_unicode_ci,
+  `export_custom_fields_info` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `round_off_amount` decimal(22,4) NOT NULL DEFAULT '0.0000' COMMENT 'Difference of rounded total and actual total',
-  `additional_expense_key_1` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `additional_expense_key_1` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `additional_expense_value_1` decimal(22,4) NOT NULL DEFAULT '0.0000',
-  `additional_expense_key_2` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `additional_expense_key_2` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `additional_expense_value_2` decimal(22,4) NOT NULL DEFAULT '0.0000',
-  `additional_expense_key_3` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `additional_expense_key_3` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `additional_expense_value_3` decimal(22,4) NOT NULL DEFAULT '0.0000',
-  `additional_expense_key_4` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `additional_expense_key_4` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `additional_expense_value_4` decimal(22,4) NOT NULL DEFAULT '0.0000',
   `final_total` decimal(22,4) NOT NULL DEFAULT '0.0000',
   `expense_category_id` int UNSIGNED DEFAULT NULL,
   `expense_sub_category_id` int DEFAULT NULL,
   `expense_for` int UNSIGNED DEFAULT NULL,
   `commission_agent` int DEFAULT NULL,
-  `document` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `document` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `is_direct_sale` tinyint(1) NOT NULL DEFAULT '0',
   `crm_is_order_request` tinyint(1) NOT NULL DEFAULT '0',
   `is_suspend` tinyint(1) NOT NULL DEFAULT '0',
@@ -3003,38 +3006,38 @@ CREATE TABLE `transactions` (
   `return_parent_id` int DEFAULT NULL,
   `opening_stock_product_id` int DEFAULT NULL,
   `created_by` int UNSIGNED NOT NULL,
-  `purchase_requisition_ids` text COLLATE utf8mb4_unicode_ci,
-  `prefer_payment_method` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `purchase_requisition_ids` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `prefer_payment_method` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `prefer_payment_account` int DEFAULT NULL,
-  `sales_order_ids` text COLLATE utf8mb4_unicode_ci,
-  `purchase_order_ids` text COLLATE utf8mb4_unicode_ci,
-  `custom_field_1` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `custom_field_2` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `custom_field_3` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `custom_field_4` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `sales_order_ids` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `purchase_order_ids` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `custom_field_1` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `custom_field_2` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `custom_field_3` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `custom_field_4` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `import_batch` int DEFAULT NULL,
   `import_time` datetime DEFAULT NULL,
   `types_of_service_id` int DEFAULT NULL,
   `packing_charge` decimal(22,4) DEFAULT NULL,
-  `packing_charge_type` enum('fixed','percent') COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `service_custom_field_1` text COLLATE utf8mb4_unicode_ci,
-  `service_custom_field_2` text COLLATE utf8mb4_unicode_ci,
-  `service_custom_field_3` text COLLATE utf8mb4_unicode_ci,
-  `service_custom_field_4` text COLLATE utf8mb4_unicode_ci,
-  `service_custom_field_5` text COLLATE utf8mb4_unicode_ci,
-  `service_custom_field_6` text COLLATE utf8mb4_unicode_ci,
+  `packing_charge_type` enum('fixed','percent') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `service_custom_field_1` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `service_custom_field_2` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `service_custom_field_3` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `service_custom_field_4` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `service_custom_field_5` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `service_custom_field_6` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `is_created_from_api` tinyint(1) NOT NULL DEFAULT '0',
   `rp_earned` int NOT NULL DEFAULT '0' COMMENT 'rp is the short form of reward points',
-  `order_addresses` text COLLATE utf8mb4_unicode_ci,
+  `order_addresses` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `is_recurring` tinyint(1) NOT NULL DEFAULT '0',
   `recur_interval` double(22,4) DEFAULT NULL,
-  `recur_interval_type` enum('days','months','years') COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `recur_interval_type` enum('days','months','years') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `recur_repetitions` int DEFAULT NULL,
   `recur_stopped_on` datetime DEFAULT NULL,
   `recur_parent_id` int DEFAULT NULL,
-  `invoice_token` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `invoice_token` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `pay_term_number` int DEFAULT NULL,
-  `pay_term_type` enum('days','months') COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `pay_term_type` enum('days','months') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `selling_price_group_id` int DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
@@ -3104,7 +3107,8 @@ INSERT INTO `transactions` (`id`, `business_id`, `location_id`, `is_kitchen_orde
 (83, 1, 1, 0, NULL, NULL, NULL, 'sell', NULL, 'final', NULL, 0, 'paid', NULL, 1, 1, '0043', '', NULL, NULL, NULL, '2026-07-28 00:10:00', 12.0000, NULL, 0.0000, 'percentage', 0.0000, 0, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, 12.0000, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 1.000, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL, 0, 1.0000, 'days', 0, NULL, NULL, NULL, NULL, NULL, 1, '2026-07-27 10:10:47', '2026-07-27 10:11:24'),
 (84, 1, 1, 0, NULL, NULL, NULL, 'sell', NULL, 'final', NULL, 0, 'paid', NULL, 1, 1, '0044', '', NULL, NULL, NULL, '2026-07-28 00:11:00', 4.9900, NULL, 0.0000, 'percentage', 0.0000, 0, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, 4.9900, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 1.000, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL, 0, 1.0000, 'days', 0, NULL, NULL, NULL, NULL, NULL, 1, '2026-07-27 10:11:34', '2026-07-27 10:11:42'),
 (86, 1, 1, 0, NULL, NULL, NULL, 'sell', NULL, 'final', NULL, 0, 'paid', NULL, 1, 1, '0046', '', NULL, NULL, NULL, '2026-07-28 00:20:00', 12.0000, NULL, 0.0000, 'percentage', 0.0000, 0, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, 12.0000, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 1.000, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL, 0, 1.0000, 'days', 0, NULL, NULL, NULL, NULL, NULL, 1, '2026-07-27 10:20:18', '2026-07-27 10:21:29'),
-(87, 1, 1, 0, NULL, NULL, NULL, 'sell', NULL, 'final', NULL, 0, 'paid', NULL, 1, 1, '0047', '', NULL, NULL, NULL, '2026-07-28 18:11:00', 8.9900, NULL, 0.0000, 'percentage', 0.0000, 0, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, 8.9900, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 1.000, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL, 0, 1.0000, 'days', 0, NULL, NULL, NULL, NULL, NULL, 1, '2026-07-28 08:11:07', '2026-07-28 08:11:08');
+(87, 1, 1, 0, NULL, NULL, NULL, 'sell', NULL, 'final', NULL, 0, 'paid', NULL, 1, 1, '0047', '', NULL, NULL, NULL, '2026-07-28 18:11:00', 8.9900, NULL, 0.0000, 'percentage', 0.0000, 0, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, 8.9900, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 1.000, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL, 0, 1.0000, 'days', 0, NULL, NULL, NULL, NULL, NULL, 1, '2026-07-28 08:11:07', '2026-07-28 08:11:08'),
+(88, 1, 1, 0, NULL, NULL, NULL, 'sell', NULL, 'final', NULL, 0, 'paid', NULL, 2, 1, '0048', '', NULL, NULL, NULL, '2026-08-03 15:23:00', 92.0700, NULL, 0.0000, 'percentage', 0.0000, 0, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, 92.0700, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 1.000, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL, 0, 1.0000, 'days', 0, NULL, NULL, NULL, NULL, NULL, 1, '2026-08-03 05:23:18', '2026-08-03 05:23:18');
 
 -- --------------------------------------------------------
 
@@ -3118,28 +3122,28 @@ CREATE TABLE `transaction_payments` (
   `business_id` int DEFAULT NULL,
   `is_return` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'Used during sales to return the change',
   `amount` decimal(22,4) NOT NULL DEFAULT '0.0000',
-  `method` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `payment_type` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `transaction_no` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `card_transaction_number` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `card_number` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `card_type` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `card_holder_name` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `card_month` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `card_year` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `card_security` varchar(5) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `cheque_number` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `bank_account_number` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `method` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `payment_type` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `transaction_no` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `card_transaction_number` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `card_number` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `card_type` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `card_holder_name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `card_month` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `card_year` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `card_security` varchar(5) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `cheque_number` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `bank_account_number` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `paid_on` datetime DEFAULT NULL,
   `created_by` int DEFAULT NULL,
   `paid_through_link` tinyint(1) NOT NULL DEFAULT '0',
-  `gateway` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `gateway` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `is_advance` tinyint(1) NOT NULL DEFAULT '0',
   `payment_for` int DEFAULT NULL COMMENT 'stores the contact id',
   `parent_id` int DEFAULT NULL,
-  `note` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `document` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `payment_ref_no` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `note` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `document` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `payment_ref_no` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `account_id` int DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
@@ -3181,7 +3185,8 @@ INSERT INTO `transaction_payments` (`id`, `transaction_id`, `business_id`, `is_r
 (35, 83, 1, 0, 12.0000, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-27 16:11:23', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0029', NULL, '2026-07-27 10:11:23', '2026-07-27 10:11:23'),
 (36, 84, 1, 0, 4.9900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-27 16:11:42', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0030', NULL, '2026-07-27 10:11:42', '2026-07-27 10:11:42'),
 (37, 86, 1, 0, 12.0000, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-27 16:21:29', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0031', NULL, '2026-07-27 10:21:29', '2026-07-27 10:21:29'),
-(38, 87, 1, 0, 8.9900, 'card', NULL, NULL, NULL, NULL, 'visa', NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-28 14:11:07', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0032', NULL, '2026-07-28 08:11:07', '2026-07-28 08:11:07');
+(38, 87, 1, 0, 8.9900, 'card', NULL, NULL, NULL, NULL, 'visa', NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-28 14:11:07', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0032', NULL, '2026-07-28 08:11:07', '2026-07-28 08:11:07'),
+(39, 88, 1, 0, 92.0700, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-03 11:23:18', 1, 0, NULL, 0, 2, NULL, NULL, NULL, 'SP2026/0033', NULL, '2026-08-03 05:23:18', '2026-08-03 05:23:18');
 
 -- --------------------------------------------------------
 
@@ -3199,20 +3204,20 @@ CREATE TABLE `transaction_sell_lines` (
   `quantity_returned` decimal(20,4) NOT NULL DEFAULT '0.0000',
   `unit_price_before_discount` decimal(22,4) NOT NULL DEFAULT '0.0000',
   `unit_price` decimal(22,4) DEFAULT NULL COMMENT 'Sell price excluding tax',
-  `line_discount_type` enum('fixed','percentage') COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `line_discount_type` enum('fixed','percentage') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `line_discount_amount` decimal(22,4) NOT NULL DEFAULT '0.0000',
   `unit_price_inc_tax` decimal(22,4) DEFAULT NULL COMMENT 'Sell price including tax',
   `item_tax` decimal(22,4) NOT NULL COMMENT 'Tax for one quantity',
   `tax_id` int UNSIGNED DEFAULT NULL,
   `discount_id` int DEFAULT NULL,
   `lot_no_line_id` int DEFAULT NULL,
-  `sell_line_note` text COLLATE utf8mb4_unicode_ci,
+  `sell_line_note` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `so_line_id` int DEFAULT NULL,
   `so_quantity_invoiced` decimal(22,4) NOT NULL DEFAULT '0.0000',
   `res_service_staff_id` int DEFAULT NULL,
-  `res_line_order_status` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `res_line_order_status` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `parent_sell_line_id` int DEFAULT NULL,
-  `children_type` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT 'Type of children for the parent, like modifier or combo',
+  `children_type` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT 'Type of children for the parent, like modifier or combo',
   `sub_unit_id` int DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
@@ -3258,7 +3263,11 @@ INSERT INTO `transaction_sell_lines` (`id`, `transaction_id`, `product_id`, `var
 (57, 83, 7, 7, 1.0000, 0.0000, 0.0000, 10.9300, 10.9300, 'fixed', 0.0000, 12.0000, 1.0700, 5, NULL, NULL, '', NULL, 0.0000, NULL, NULL, NULL, '', NULL, '2026-07-27 10:10:47', '2026-07-27 10:11:23'),
 (58, 84, 42, 42, 1.0000, 0.0000, 0.0000, 4.9900, 4.9900, 'fixed', 0.0000, 4.9900, 0.0000, NULL, NULL, NULL, '', NULL, 0.0000, NULL, NULL, NULL, '', NULL, '2026-07-27 10:11:34', '2026-07-27 10:11:42'),
 (60, 86, 7, 7, 1.0000, 0.0000, 0.0000, 10.9300, 10.9300, 'fixed', 0.0000, 12.0000, 1.0700, 5, NULL, NULL, '', NULL, 0.0000, NULL, NULL, NULL, '', NULL, '2026-07-27 10:20:18', '2026-07-27 10:21:29'),
-(61, 87, 51, 51, 1.0000, 0.0000, 0.0000, 8.9900, 8.9900, 'fixed', 0.0000, 8.9900, 0.0000, NULL, NULL, NULL, '', NULL, 0.0000, NULL, NULL, NULL, '', NULL, '2026-07-28 08:11:07', '2026-07-28 08:11:07');
+(61, 87, 51, 51, 1.0000, 0.0000, 0.0000, 8.9900, 8.9900, 'fixed', 0.0000, 8.9900, 0.0000, NULL, NULL, NULL, '', NULL, 0.0000, NULL, NULL, NULL, '', NULL, '2026-07-28 08:11:07', '2026-07-28 08:11:07'),
+(62, 88, 44, 44, 1.0000, 0.0000, 0.0000, 6.9900, 6.9900, 'fixed', 0.0000, 6.9900, 0.0000, NULL, NULL, NULL, '', NULL, 0.0000, NULL, NULL, NULL, '', NULL, '2026-08-03 05:23:18', '2026-08-03 05:23:18'),
+(63, 88, 2, 2, 1.0000, 0.0000, 0.0000, 65.6000, 65.6000, 'fixed', 0.0000, 72.0000, 6.4000, 5, NULL, NULL, '', NULL, 0.0000, NULL, NULL, NULL, '', NULL, '2026-08-03 05:23:18', '2026-08-03 05:23:18'),
+(64, 88, 55, 55, 2.0000, 0.0000, 0.0000, 4.2900, 4.2900, 'fixed', 0.0000, 4.2900, 0.0000, NULL, NULL, NULL, '', NULL, 0.0000, NULL, NULL, NULL, '', NULL, '2026-08-03 05:23:18', '2026-08-03 05:23:18'),
+(65, 88, 46, 46, 1.0000, 0.0000, 0.0000, 4.5000, 4.5000, 'fixed', 0.0000, 4.5000, 0.0000, NULL, NULL, NULL, '', NULL, 0.0000, NULL, NULL, NULL, '', NULL, '2026-08-03 05:23:18', '2026-08-03 05:23:18');
 
 -- --------------------------------------------------------
 
@@ -3316,7 +3325,11 @@ INSERT INTO `transaction_sell_lines_purchase_lines` (`id`, `sell_line_id`, `stoc
 (32, 57, NULL, 7, 1.0000, 0.0000, '2026-07-27 10:11:24', '2026-07-27 10:11:24'),
 (33, 58, NULL, 12, 1.0000, 0.0000, '2026-07-27 10:11:43', '2026-07-27 10:11:43'),
 (34, 60, NULL, 7, 1.0000, 0.0000, '2026-07-27 10:21:29', '2026-07-27 10:21:29'),
-(35, 61, NULL, 21, 1.0000, 0.0000, '2026-07-28 08:11:08', '2026-07-28 08:11:08');
+(35, 61, NULL, 21, 1.0000, 0.0000, '2026-07-28 08:11:08', '2026-07-28 08:11:08'),
+(36, 62, NULL, 14, 1.0000, 0.0000, '2026-08-03 05:23:18', '2026-08-03 05:23:18'),
+(37, 63, NULL, 2, 1.0000, 0.0000, '2026-08-03 05:23:18', '2026-08-03 05:23:18'),
+(38, 64, NULL, 25, 2.0000, 0.0000, '2026-08-03 05:23:18', '2026-08-03 05:23:18'),
+(39, 65, NULL, 16, 1.0000, 0.0000, '2026-08-03 05:23:18', '2026-08-03 05:23:18');
 
 -- --------------------------------------------------------
 
@@ -3326,12 +3339,12 @@ INSERT INTO `transaction_sell_lines_purchase_lines` (`id`, `sell_line_id`, `stoc
 
 CREATE TABLE `types_of_services` (
   `id` int UNSIGNED NOT NULL,
-  `name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `description` text COLLATE utf8mb4_unicode_ci,
+  `name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `business_id` int NOT NULL,
-  `location_price_group` text COLLATE utf8mb4_unicode_ci,
+  `location_price_group` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `packing_charge` decimal(22,4) DEFAULT NULL,
-  `packing_charge_type` enum('fixed','percent') COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `packing_charge_type` enum('fixed','percent') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `enable_custom_fields` tinyint(1) NOT NULL DEFAULT '0',
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
@@ -3346,8 +3359,8 @@ CREATE TABLE `types_of_services` (
 CREATE TABLE `units` (
   `id` int UNSIGNED NOT NULL,
   `business_id` int UNSIGNED NOT NULL,
-  `actual_name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `short_name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `actual_name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `short_name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `allow_decimal` tinyint(1) NOT NULL,
   `base_unit_id` int DEFAULT NULL,
   `base_unit_multiplier` decimal(20,4) DEFAULT NULL,
@@ -3372,50 +3385,50 @@ INSERT INTO `units` (`id`, `business_id`, `actual_name`, `short_name`, `allow_de
 
 CREATE TABLE `users` (
   `id` int UNSIGNED NOT NULL,
-  `user_type` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'user',
-  `surname` char(10) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `first_name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `last_name` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `username` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `email` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `password` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `language` char(7) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'en',
-  `contact_no` char(15) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `address` text COLLATE utf8mb4_unicode_ci,
-  `remember_token` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `user_type` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'user',
+  `surname` char(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `first_name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `last_name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `username` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `email` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `password` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `language` char(7) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'en',
+  `contact_no` char(15) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `address` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `remember_token` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `business_id` int UNSIGNED DEFAULT NULL,
   `available_at` datetime DEFAULT NULL COMMENT 'Service staff avilable at. Calculated from product preparation_time_in_minutes',
   `paused_at` datetime DEFAULT NULL COMMENT 'Service staff available time paused at, Will be nulled on resume.',
   `max_sales_discount_percent` decimal(5,2) DEFAULT NULL,
   `allow_login` tinyint(1) NOT NULL DEFAULT '1',
-  `status` enum('active','inactive','terminated') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'active',
+  `status` enum('active','inactive','terminated') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'active',
   `is_enable_service_staff_pin` tinyint(1) NOT NULL DEFAULT '0',
-  `service_staff_pin` text COLLATE utf8mb4_unicode_ci,
+  `service_staff_pin` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `crm_contact_id` int UNSIGNED DEFAULT NULL,
   `is_cmmsn_agnt` tinyint(1) NOT NULL DEFAULT '0',
   `cmmsn_percent` decimal(4,2) NOT NULL DEFAULT '0.00',
   `selected_contacts` tinyint(1) NOT NULL DEFAULT '0',
   `dob` date DEFAULT NULL,
-  `gender` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `marital_status` enum('married','unmarried','divorced') COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `blood_group` char(10) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `contact_number` char(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `alt_number` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `family_number` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `fb_link` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `twitter_link` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `social_media_1` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `social_media_2` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `permanent_address` text COLLATE utf8mb4_unicode_ci,
-  `current_address` text COLLATE utf8mb4_unicode_ci,
-  `guardian_name` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `custom_field_1` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `custom_field_2` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `custom_field_3` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `custom_field_4` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `bank_details` longtext COLLATE utf8mb4_unicode_ci,
-  `id_proof_name` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `id_proof_number` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `gender` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `marital_status` enum('married','unmarried','divorced') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `blood_group` char(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `contact_number` char(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `alt_number` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `family_number` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `fb_link` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `twitter_link` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `social_media_1` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `social_media_2` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `permanent_address` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `current_address` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `guardian_name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `custom_field_1` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `custom_field_2` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `custom_field_3` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `custom_field_4` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `bank_details` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `id_proof_name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `id_proof_number` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `deleted_at` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
@@ -3448,9 +3461,9 @@ CREATE TABLE `user_contact_access` (
 
 CREATE TABLE `variations` (
   `id` int UNSIGNED NOT NULL,
-  `name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `product_id` int UNSIGNED NOT NULL,
-  `sub_sku` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `sub_sku` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `product_variation_id` int UNSIGNED NOT NULL,
   `variation_value_id` int DEFAULT NULL,
   `default_purchase_price` decimal(22,4) DEFAULT NULL,
@@ -3461,7 +3474,7 @@ CREATE TABLE `variations` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   `deleted_at` timestamp NULL DEFAULT NULL,
-  `combo_variations` text COLLATE utf8mb4_unicode_ci COMMENT 'Contains the combo variation details'
+  `combo_variations` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci COMMENT 'Contains the combo variation details'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
@@ -3508,7 +3521,7 @@ CREATE TABLE `variation_group_prices` (
   `variation_id` int UNSIGNED NOT NULL,
   `price_group_id` int UNSIGNED NOT NULL,
   `price_inc_tax` decimal(22,4) NOT NULL,
-  `price_type` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'fixed',
+  `price_type` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'fixed',
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -3564,7 +3577,7 @@ CREATE TABLE `variation_location_details` (
 
 INSERT INTO `variation_location_details` (`id`, `product_id`, `product_variation_id`, `variation_id`, `location_id`, `qty_available`, `created_at`, `updated_at`) VALUES
 (1, 1, 1, 1, 1, 99.0000, '2026-07-18 19:00:29', '2026-07-27 09:39:08'),
-(2, 2, 2, 2, 1, 80.0000, '2026-07-18 19:00:29', '2026-07-18 19:00:29'),
+(2, 2, 2, 2, 1, 79.0000, '2026-07-18 19:00:29', '2026-08-03 05:23:18'),
 (3, 3, 3, 3, 1, 60.0000, '2026-07-18 19:00:29', '2026-07-18 19:00:29'),
 (4, 4, 4, 4, 1, 50.0000, '2026-07-18 19:00:29', '2026-07-18 19:00:29'),
 (5, 5, 5, 5, 1, 50.0000, '2026-07-18 19:00:29', '2026-07-27 09:02:00'),
@@ -3576,9 +3589,9 @@ INSERT INTO `variation_location_details` (`id`, `product_id`, `product_variation
 (41, 41, 41, 41, 1, 52.0000, '2026-07-22 17:42:43', '2026-07-22 17:42:43'),
 (42, 42, 42, 42, 1, 55.0000, '2026-07-22 17:42:44', '2026-07-27 10:11:42'),
 (43, 43, 43, 43, 1, 0.0000, '2026-07-22 17:42:45', '2026-07-27 05:44:05'),
-(44, 44, 44, 44, 1, 64.0000, '2026-07-22 17:42:47', '2026-07-22 17:42:47'),
+(44, 44, 44, 44, 1, 63.0000, '2026-07-22 17:42:47', '2026-08-03 05:23:18'),
 (45, 45, 45, 45, 1, 68.0000, '2026-07-22 17:42:50', '2026-07-22 17:42:50'),
-(46, 46, 46, 46, 1, 72.0000, '2026-07-22 17:42:51', '2026-07-22 17:42:51'),
+(46, 46, 46, 46, 1, 71.0000, '2026-07-22 17:42:51', '2026-08-03 05:23:18'),
 (47, 47, 47, 47, 1, 76.0000, '2026-07-22 17:42:52', '2026-07-22 17:42:52'),
 (48, 48, 48, 48, 1, 80.0000, '2026-07-22 17:42:52', '2026-07-22 17:42:52'),
 (49, 49, 49, 49, 1, 84.0000, '2026-07-22 17:42:53', '2026-07-22 17:42:53'),
@@ -3587,7 +3600,7 @@ INSERT INTO `variation_location_details` (`id`, `product_id`, `product_variation
 (52, 52, 52, 52, 1, 97.0000, '2026-07-22 17:42:56', '2026-07-27 09:35:37'),
 (53, 53, 53, 53, 1, 98.0000, '2026-07-22 17:42:57', '2026-07-27 08:47:43'),
 (54, 54, 54, 54, 1, 104.0000, '2026-07-22 17:42:59', '2026-07-22 17:42:59'),
-(55, 55, 55, 55, 1, 108.0000, '2026-07-22 17:43:00', '2026-07-22 17:43:00'),
+(55, 55, 55, 55, 1, 106.0000, '2026-07-22 17:43:00', '2026-08-03 05:23:18'),
 (56, 56, 56, 56, 1, 112.0000, '2026-07-22 17:43:02', '2026-07-22 17:43:02'),
 (57, 57, 57, 57, 1, 116.0000, '2026-07-22 17:43:03', '2026-07-22 17:43:03');
 
@@ -3599,7 +3612,7 @@ INSERT INTO `variation_location_details` (`id`, `product_id`, `product_variation
 
 CREATE TABLE `variation_templates` (
   `id` int UNSIGNED NOT NULL,
-  `name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `business_id` int UNSIGNED NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
@@ -3613,7 +3626,7 @@ CREATE TABLE `variation_templates` (
 
 CREATE TABLE `variation_value_templates` (
   `id` int UNSIGNED NOT NULL,
-  `name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `variation_template_id` int UNSIGNED NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
@@ -3627,11 +3640,11 @@ CREATE TABLE `variation_value_templates` (
 
 CREATE TABLE `warranties` (
   `id` int UNSIGNED NOT NULL,
-  `name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `business_id` int NOT NULL,
-  `description` text COLLATE utf8mb4_unicode_ci,
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `duration` int NOT NULL,
-  `duration_type` enum('days','months','years') COLLATE utf8mb4_unicode_ci NOT NULL,
+  `duration_type` enum('days','months','years') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -4425,7 +4438,7 @@ ALTER TABLE `account_types`
 -- AUTO_INCREMENT for table `activity_log`
 --
 ALTER TABLE `activity_log`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=101;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=102;
 
 --
 -- AUTO_INCREMENT for table `ai_assistance_settings`
@@ -4479,7 +4492,7 @@ ALTER TABLE `cash_registers`
 -- AUTO_INCREMENT for table `cash_register_transactions`
 --
 ALTER TABLE `cash_register_transactions`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=39;
 
 --
 -- AUTO_INCREMENT for table `categories`
@@ -4563,7 +4576,7 @@ ALTER TABLE `ecom_banners`
 -- AUTO_INCREMENT for table `ecom_carts`
 --
 ALTER TABLE `ecom_carts`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=76;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=77;
 
 --
 -- AUTO_INCREMENT for table `ecom_cart_items`
@@ -4779,25 +4792,25 @@ ALTER TABLE `tax_rates`
 -- AUTO_INCREMENT for table `transactions`
 --
 ALTER TABLE `transactions`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=88;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=89;
 
 --
 -- AUTO_INCREMENT for table `transaction_payments`
 --
 ALTER TABLE `transaction_payments`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=39;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=40;
 
 --
 -- AUTO_INCREMENT for table `transaction_sell_lines`
 --
 ALTER TABLE `transaction_sell_lines`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=62;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=66;
 
 --
 -- AUTO_INCREMENT for table `transaction_sell_lines_purchase_lines`
 --
 ALTER TABLE `transaction_sell_lines_purchase_lines`
-  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=36;
+  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=40;
 
 --
 -- AUTO_INCREMENT for table `types_of_services`

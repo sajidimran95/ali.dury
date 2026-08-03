@@ -993,15 +993,15 @@ class TransactionUtil extends Util
             $output['display_name'] .= $output['location_name'];
         }
 
-        //Codes
-        if (! empty($business_details->code_label_1) && ! empty($business_details->code_1)) {
+        //Codes (business settings)
+        if (! empty($business_details->code_label_1)) {
             $output['code_label_1'] = $business_details->code_label_1;
-            $output['code_1'] = $business_details->code_1;
+            $output['code_1'] = $business_details->code_1 ?? '';
         }
 
-        if (! empty($business_details->code_label_1) && ! empty($business_details->code_1)) {
+        if (! empty($business_details->code_label_2)) {
             $output['code_label_2'] = $business_details->code_label_2;
-            $output['code_2'] = $business_details->code_2;
+            $output['code_2'] = $business_details->code_2 ?? '';
         }
 
         if ($il->show_letter_head == 1) {
@@ -1055,20 +1055,14 @@ class TransactionUtil extends Util
             $output['location_custom_fields'] .= implode(', ', $temp);
         }
 
-        //Tax Info
-        if ($il->show_tax_1 == 1 && ! empty($business_details->tax_number_1)) {
+        //Tax Info — always expose labels when layout checkbox is on (values may be blank → "-" on US Letter)
+        if ($il->show_tax_1 == 1) {
             $output['tax_label1'] = ! empty($business_details->tax_label_1) ? $business_details->tax_label_1.': ' : '';
-
-            $output['tax_info1'] = $business_details->tax_number_1;
+            $output['tax_info1'] = ! empty($business_details->tax_number_1) ? $business_details->tax_number_1 : '';
         }
-        if ($il->show_tax_2 == 1 && ! empty($business_details->tax_number_2)) {
-            if (! empty($output['tax_info1'])) {
-                $output['tax_info1'] .= ', ';
-            }
-
+        if ($il->show_tax_2 == 1) {
             $output['tax_label2'] = ! empty($business_details->tax_label_2) ? $business_details->tax_label_2.': ' : '';
-
-            $output['tax_info2'] = $business_details->tax_number_2;
+            $output['tax_info2'] = ! empty($business_details->tax_number_2) ? $business_details->tax_number_2 : '';
         }
 
         //Shop Contact Info
@@ -1224,6 +1218,18 @@ class TransactionUtil extends Util
             $output['commission_agent'] = ! empty($transaction->sale_commission_agent->user_full_name) ? $transaction->sale_commission_agent->user_full_name : '';
         }
 
+        // Payment / shipping meta for document layouts (US Letter etc.)
+        $output['payment_status'] = ! empty($transaction->payment_status) ? __('lang_v1.'.$transaction->payment_status) : '';
+        $output['payment_status_key'] = $transaction->payment_status ?? '';
+        $output['shipping_status'] = ! empty($transaction->shipping_status) ? __('lang_v1.'.$transaction->shipping_status) : '';
+        $output['pay_term'] = '';
+        if (! empty($transaction->pay_term_number) && ! empty($transaction->pay_term_type)) {
+            $output['pay_term'] = $transaction->pay_term_number.' '.__('lang_v1.'.$transaction->pay_term_type);
+        }
+        $output['location_mobile'] = $il->show_mobile_number == 1 ? ($location_details->mobile ?? '') : '';
+        $output['location_email'] = $il->show_email == 1 ? ($location_details->email ?? '') : '';
+        $output['location_alternate_number'] = $il->show_alternate_number == 1 ? ($location_details->alternate_number ?? '') : '';
+
         //Invoice info
         $output['invoice_no'] = $transaction->invoice_no;
         $output['invoice_no_prefix'] = $il->invoice_no_prefix;
@@ -1351,9 +1357,9 @@ class TransactionUtil extends Util
                 }
             }
 
+            $output['total_quantity'] = $this->num_f($total_quantity, false, $business_details, true);
             if (! empty($il->common_settings['total_quantity_label'])) {
                 $output['total_quantity_label'] = $il->common_settings['total_quantity_label'];
-                $output['total_quantity'] = $this->num_f($total_quantity, false, $business_details, true);
             }
 
             if (! empty($il->common_settings['total_items_label'])) {
@@ -1362,7 +1368,11 @@ class TransactionUtil extends Util
             }
 
             $output['subtotal_exc_tax'] = $this->num_f($subtotal_exc_tax, true, $business_details);
-            $output['total_line_discount'] = ! empty($total_line_discount) ? $this->num_f($total_line_discount, true, $business_details) : 0;
+            // Raw amount for invoice layout checks (show Line Item D/C only when > 0)
+            $output['total_line_discount_uf'] = (float) $total_line_discount;
+            $output['total_line_discount'] = $total_line_discount > 0
+                ? $this->num_f($total_line_discount, true, $business_details)
+                : null;
         } elseif ($transaction_type == 'sell_return') {
             $parent_sell = Transaction::find($transaction->return_parent_id);
             $lines = $parent_sell->sell_lines;

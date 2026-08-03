@@ -392,6 +392,16 @@ function __sum_stock(table, class_name, label_direction = 'right') {
 }
 
 function __print_receipt(section_id = null) {
+    // Blank title so browser print header does not show invoice no / page title
+    var __prev_print_title = document.title;
+    document.title = '\u200B';
+
+    var __restore_print_title = function () {
+        document.title = __prev_print_title;
+        window.removeEventListener('afterprint', __restore_print_title);
+    };
+    window.addEventListener('afterprint', __restore_print_title);
+
     if (section_id) {
         var imgs = document.getElementById(section_id).getElementsByTagName("img");
     } else {

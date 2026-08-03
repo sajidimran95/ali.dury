@@ -1851,19 +1851,8 @@ $(document).ready(function() {
                     $('#receipt_section').html(result.receipt.html_content);
                     __currency_convert_recursively($('#receipt_section'));
 
-                    var title = document.title;
-                    if (typeof result.receipt.print_title != 'undefined') {
-                        document.title = result.receipt.print_title;
-                    }
-                    if (typeof result.print_title != 'undefined') {
-                        document.title = result.print_title;
-                    }
-
+                    // Do not set document.title to invoice no (removes top browser print header mark)
                     __print_receipt('receipt_section');
-
-                    setTimeout(function() {
-                        document.title = title;
-                    }, 1200);
                 } else {
                     toastr.error(result.msg);
                 }
