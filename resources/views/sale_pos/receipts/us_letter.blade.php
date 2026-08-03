@@ -128,10 +128,33 @@
 	if ($tax_col_label === '' || $tax_col_label === '(') {
 		$tax_col_label = 'Tax';
 	}
-	$show_tax_column = !empty($receipt_details->enable_inline_tax);
-	$total_label = $lbl($receipt_details->total_label ?? null, 'Total');
-	$paid_label = $lbl($receipt_details->total_paid_label ?? null, 'Total Paid');
+	// Grand total label always from language file for standard labels
+	// (Total / Grand Total) so locale switches apply; custom layout label otherwise
+	$layout_total_raw = $lbl($receipt_details->total_label ?? null, '');
+	$standard_total_labels = array_unique([
+		'Total',
+		'Grand Total',
+		(string) __('sale.total'),
+		(string) __('lang_v1.grand_total'),
+		(string) __('purchase.grand_total'),
+	]);
+	$is_standard_total = ($layout_total_raw === '');
+	if (!$is_standard_total) {
+		foreach ($standard_total_labels as $std) {
+			if ($std !== '' && strcasecmp($layout_total_raw, $std) === 0) {
+				$is_standard_total = true;
+				break;
+			}
+		}
+	}
+	$total_label = $is_standard_total
+		? __('lang_v1.grand_total')
+		: $layout_total_raw;
+	$paid_label = $lbl($receipt_details->total_paid_label ?? null, __('sale.total_paid'));
 	$due_label = $lbl($receipt_details->total_due_label ?? null, 'Total Due');
+	if ($due_label === '') {
+		$due_label = 'Total Due';
+	}
 
 	$sym = $receipt_details->currency_symbol ?? '';
 	$zero_money = $sym !== '' ? ($sym.' 0.00') : '0.00';
@@ -968,21 +991,21 @@
 						<td class="lab">{!! $tax_total_label_html !!}</td>
 						<td class="val">{{ $taxShow }}</td>
 					</tr>
-					{{-- Rule before Total --}}
+					{{-- Rule before Grand Total --}}
 					<tr class="tot-rule"><td colspan="2"></td></tr>
-					{{-- 7. Total --}}
+					{{-- 7. Grand Total (lang_v1.grand_total) --}}
 					<tr class="grand">
-						<td class="lab">Total</td>
+						<td class="lab">{{ $total_label }}</td>
 						<td class="val">{{ $receipt_details->total }}</td>
 					</tr>
 					{{-- 8. Total Paid --}}
 					<tr class="grand">
-						<td class="lab">Total Paid</td>
+						<td class="lab">{{ $paid_label }}</td>
 						<td class="val">{{ $paidAmt }}</td>
 					</tr>
 					{{-- 9. Total Due --}}
 					<tr class="grand">
-						<td class="lab">Total Due</td>
+						<td class="lab">{{ $due_label }}</td>
 						<td class="val">{{ $dueAmt }}</td>
 					</tr>
 				</table>

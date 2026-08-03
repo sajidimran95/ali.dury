@@ -820,7 +820,7 @@
         <div class="col-sm-3">
           <div class="form-group">
             {!! Form::label('total_label', __('invoice.total_label') . ':' ) !!}
-            {!! Form::text('total_label', __('sale.total'), ['class' => 'form-control',
+            {!! Form::text('total_label', __('lang_v1.grand_total'), ['class' => 'form-control',
               'placeholder' => __('invoice.total_label') ]); !!}
           </div>
         </div>
