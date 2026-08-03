@@ -1848,6 +1848,13 @@ $(document).ready(function() {
         e.preventDefault();
         var href = $(this).data('href');
 
+        // Close open modals so they don't cover invoice print preview
+        try {
+            $('.modal.in, .modal.show').modal('hide');
+            $('.modal-backdrop').remove();
+            $('body').removeClass('modal-open').css({ 'padding-right': '', overflow: '' });
+        } catch (err) {}
+
         $.ajax({
             method: 'GET',
             url: href,

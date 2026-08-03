@@ -5683,3 +5683,25 @@ body.pos-pwa-standalone .select2-search__field {
 body.lockscreen.pos-sale-theme #pos_pwa_install_btn:not(.tw-hidden) {
   display: inline-flex !important;
 }
+
+/* Print: hide POS modals (theme uses display:flex !important which beats .no-print) */
+@media print {
+  body.lockscreen.pos-sale-theme .modal,
+  body.lockscreen.pos-sale-theme .modal.in,
+  body.lockscreen.pos-sale-theme .modal.show,
+  body.lockscreen.pos-sale-theme #recent_transactions_modal,
+  body.lockscreen.pos-sale-theme #recent_transactions_modal.in,
+  body.lockscreen.pos-sale-theme #recent_transactions_modal.show,
+  body.lockscreen.pos-sale-theme .modal-backdrop,
+  body.lockscreen.pos-sale-theme .modal-backdrop.in,
+  body.lockscreen.pos-sale-theme .modal-backdrop.show {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+
+  body.lockscreen.pos-sale-theme {
+    background: #fff !important;
+  }
+}

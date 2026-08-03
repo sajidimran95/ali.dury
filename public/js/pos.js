@@ -4061,6 +4061,14 @@ function pos_print(receipt) {
     } else if (receipt.html_content != '') {
         // Do not set document.title to invoice no (removes top browser print header mark)
 
+        // Hide any open POS popup so it is not drawn over the invoice (print + print preview)
+        try {
+            $('#recent_transactions_modal').modal('hide');
+            $('.modal-backdrop').remove();
+            $('body').removeClass('modal-open').css({ 'padding-right': '', overflow: '' });
+            $('#recent_transactions_modal').removeClass('in show').hide();
+        } catch (e) {}
+
         //If printer type browser then print content
         $('#receipt_section').html(receipt.html_content);
         __currency_convert_recursively($('#receipt_section'));
@@ -4177,13 +4185,31 @@ $(document).on('click', '#select_all_service_staff', function() {
 
 $(document).on('click', '.print-invoice-link', function(e) {
     e.preventDefault();
+    var printUrl = $(this).attr('href') + '?check_location=true';
+
+    // Close Recent Transactions / any open modal before invoice print so
+    // popup does not sit on top of receipt (POS theme keeps modals display:flex !important)
+    try {
+        $('#recent_transactions_modal').modal('hide');
+        $('.modal.in, .modal.show').not('#receipt_section').modal('hide');
+    } catch (err) {}
+    setTimeout(function() {
+        $('.modal-backdrop').remove();
+        $('body').removeClass('modal-open').css({ 'padding-right': '', overflow: '' });
+        $('#recent_transactions_modal').removeClass('in show').attr('aria-hidden', 'true').hide();
+    }, 50);
+
     $.ajax({
-        url: $(this).attr('href') + "?check_location=true",
+        url: printUrl,
         dataType: 'json',
         success: function(result) {
             if (result.success == 1) {
                 //Check if enabled or not
                 if (result.receipt.is_enabled) {
+                    // Ensure modal leftover is gone when receipt HTML is ready
+                    $('.modal-backdrop').remove();
+                    $('body').removeClass('modal-open');
+                    $('#recent_transactions_modal').removeClass('in show').hide();
                     pos_print(result.receipt);
                 }
             } else {
