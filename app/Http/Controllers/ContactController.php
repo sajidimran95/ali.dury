@@ -571,12 +571,34 @@ class ContactController extends Controller
                 return $html;
             })
             ->editColumn('credit_limit', function ($row) {
-                $html = __('lang_v1.no_limit');
-                if (! is_null($row->credit_limit)) {
-                    $html = '<span data-orig-value="'.$row->credit_limit.'">'.$this->transactionUtil->num_f($row->credit_limit, true).'</span>';
+                // Opening (configured) credit limit + remaining available after current sell dues
+                if (is_null($row->credit_limit)) {
+                    return '<span class="tw-text-slate-500">'.e(__('lang_v1.no_limit')).'</span>';
                 }
 
-                return $html;
+                $opening = (float) $row->credit_limit;
+                $due = ((float) ($row->total_invoice ?? 0))
+                    - ((float) ($row->invoice_received ?? 0))
+                    - ((float) ($row->total_ledger_discount ?? 0))
+                    - ((float) ($row->total_sell_return ?? 0))
+                    + ((float) ($row->sell_return_paid ?? 0));
+                // Unpaid opening balance also consumes credit
+                $ob_due = max(0, ((float) ($row->opening_balance ?? 0)) - ((float) ($row->opening_balance_paid ?? 0)));
+                $used = max(0, $due) + $ob_due;
+                $available = $opening - $used;
+
+                $available_class = $available < 0
+                    ? 'tw-text-red-600'
+                    : ($available <= ($opening * 0.15) ? 'tw-text-amber-600' : 'tw-text-emerald-700');
+
+                return '<div class="tw-leading-tight tw-whitespace-nowrap" data-orig-value="'.$opening.'">'
+                    .'<div class="tw-text-[11px] tw-text-slate-400">'.e(__('lang_v1.opening_credit_limit')).'</div>'
+                    .'<div class="tw-font-semibold tw-text-slate-800">'.$this->transactionUtil->num_f($opening, true).'</div>'
+                    .'<div class="tw-text-[11px] tw-text-slate-400 tw-mt-1">'.e(__('lang_v1.available_credit_limit')).'</div>'
+                    .'<div class="tw-font-semibold '.$available_class.'" data-available-value="'.$available.'">'
+                    .$this->transactionUtil->num_f($available, true)
+                    .'</div>'
+                    .'</div>';
             })
             ->editColumn('pay_term', function ($row) {
                 if (empty($row->pay_term_type) || empty($row->pay_term_number)) {

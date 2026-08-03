@@ -417,6 +417,8 @@ return [
     'tooltip_sell_product_column' => 'Click <i>product name</i> to edit price, discount & tax. <br/>Click <i>Comment Icon</i> to enter serial number / IMEI or additional note.<br/><br/>Click <i>Modifier Icon</i>(if enabled) for modifiers',
     'credit_limit' => 'Credit Limit',
     'credit_limit_help' => 'Keep blank for no limit',
+    'opening_credit_limit' => 'Opening credit limit',
+    'available_credit_limit' => 'Available credit limit',
     'cutomer_credit_limit_exeeded' => 'Customer Credit Limit Exceeded <br>:credit_limit',
     'custom_payment_1' => 'Custom Payment 1',
     'custom_payment_2' => 'Custom Payment 2',
