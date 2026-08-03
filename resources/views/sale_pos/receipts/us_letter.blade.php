@@ -92,30 +92,46 @@
 	$total_bal_label = !empty($receipt_details->all_bal_label)
 		? trim(str_replace(':', '', $receipt_details->all_bal_label))
 		: 'Total Due Balance';
-	// Tax label from Invoice Layout. Strip trailing ":"
-	$tax_col_label = !empty($receipt_details->tax_label)
-		? trim(str_replace(':', '', $receipt_details->tax_label))
-		: 'Tax';
-	// Product Tax column: business "Enable inline tax" setting
+
+	// Layout labels (name only; design always shows rows below)
+	$lbl = function ($text, $fallback = '') {
+		if ($text === null || $text === '' || $text === false) {
+			return $fallback;
+		}
+		return trim(str_replace(':', '', strip_tags((string) $text)));
+	};
+
+	// Product table — keep fixed US Letter columns (no hide/show design change)
+	$prod_label = $lbl($receipt_details->table_product_label ?? null, 'Product Name / Description');
+	$qty_label = $lbl($receipt_details->table_qty_label ?? null, 'Qty');
+	$price_label = $lbl($receipt_details->table_unit_price_label ?? null, 'Price');
+	$amt_label = $lbl($receipt_details->table_subtotal_label ?? null, 'Amount');
+	$show_item_disc_col = true;
+	$item_disc_label = $lbl($receipt_details->item_discount_label ?? null, 'Discount');
+	$show_sold_price = true;
+	$sold_price_label = $lbl($receipt_details->discounted_unit_price_label ?? null, 'Sold Price');
+
+	// Tax: product column = business inline tax; total row = layout tax label + amount > 0
+	$tax_col_label = $lbl($receipt_details->tax_label ?? null, 'Tax');
+	if ($tax_col_label === '' || $tax_col_label === '(') {
+		$tax_col_label = 'Tax';
+	}
 	$show_tax_column = !empty($receipt_details->enable_inline_tax);
-	// Total Tax row: only when layout tax label ON and tax amount > 0
 	$show_total_tax = !empty($receipt_details->show_total_tax)
 		&& !empty($receipt_details->tax_amount_uf)
 		&& (float) $receipt_details->tax_amount_uf != 0;
-	// Always show item-wise discount column on product rows (invoice only)
-	$item_disc_label = !empty($receipt_details->item_discount_label)
-		? $receipt_details->item_discount_label
-		: 'Discount';
-	$qty_label = $receipt_details->table_qty_label ?: 'Qty';
-	$price_label = $receipt_details->table_unit_price_label ?: 'Price';
-	$amt_label = $receipt_details->table_subtotal_label ?: 'Amount';
-	$prod_label = $receipt_details->table_product_label ?: 'Product Name / Description';
 
-	// Show sold/unit price columns like reference
-	$show_sold_price = true;
-	$sold_price_label = !empty($receipt_details->discounted_unit_price_label)
-		? $receipt_details->discounted_unit_price_label
-		: 'Sold Price';
+	// Totals labels — rows always shown (same design as before)
+	$subtotal_label = $lbl($receipt_details->subtotal_label ?? null, 'Subtotal');
+	// Order-level discount (POS Discount button)
+	$discount_label = $lbl($receipt_details->discount_label ?? null, 'Total Discount');
+	// Item-level discount total (product popups) — always show row
+	$line_discount_label = 'Line Item (D/C)';
+	$total_label = $lbl($receipt_details->total_label ?? null, 'Grand Total');
+	$paid_label = $lbl($receipt_details->total_paid_label ?? null, 'Total Paid');
+	$due_label = $lbl($receipt_details->total_due_label ?? null, 'Due Amount');
+	$qty_total_label = $lbl($receipt_details->total_quantity_label ?? null, 'Total Quantity');
+	$ship_label = $lbl($receipt_details->shipping_charges_label ?? null, 'Shipping');
 
 	$sym = $receipt_details->currency_symbol ?? '';
 	$zero_money = $sym !== '' ? ($sym.' 0.00') : '0.00';
@@ -683,21 +699,35 @@
 
 	@includeIf('sale_pos.receipts.partial.common_repair_invoice')
 
-	{{-- ========== LINE ITEMS (boxed grid; labels same as reference) ========== --}}
+	{{-- ========== LINE ITEMS (labels from Invoice Layout) ========== --}}
+	@php
+		$colCount = 3; // code + product + qty
+		if (empty($receipt_details->hide_price)) {
+			$colCount += 1; // price
+			if ($show_sold_price) { $colCount += 1; }
+			if ($show_item_disc_col) { $colCount += 1; }
+			if ($show_tax_column) { $colCount += 1; }
+			$colCount += 1; // amount
+		}
+	@endphp
 	<table class="usl-items">
 		<thead>
 			<tr>
-				<th style="width:12%;">Code</th>
-				<th style="width:34%;">Product Name / Description</th>
-				<th class="r" style="width:8%;">Qty</th>
+				<th style="width:12%;">@lang('product.sku')</th>
+				<th style="width:{{ $show_sold_price || $show_item_disc_col || $show_tax_column ? '28%' : '40%' }};">{{ $prod_label }}</th>
+				<th class="r" style="width:8%;">{{ $qty_label }}</th>
 				@if(empty($receipt_details->hide_price))
-					<th class="r" style="width:10%;">Price</th>
-					<th class="r" style="width:10%;">Sold Price</th>
-					<th class="r" style="width:9%;">{{ $item_disc_label }}</th>
+					<th class="r" style="width:10%;">{{ $price_label }}</th>
+					@if($show_sold_price)
+						<th class="r" style="width:10%;">{{ $sold_price_label }}</th>
+					@endif
+					@if($show_item_disc_col)
+						<th class="r" style="width:9%;">{{ $item_disc_label }}</th>
+					@endif
 					@if($show_tax_column)
 						<th class="r" style="width:9%;">{{ $tax_col_label }}</th>
 					@endif
-					<th class="r" style="width:12%;">Amount</th>
+					<th class="r" style="width:12%;">{{ $amt_label }}</th>
 				@endif
 			</tr>
 		</thead>
@@ -748,25 +778,28 @@
 					<td class="r">{{ $line['quantity'] }}</td>
 					@if(empty($receipt_details->hide_price))
 						<td class="r">{{ $line['unit_price_before_discount'] }}</td>
-						<td class="r">{{ $line['unit_price'] ?? $line['unit_price_inc_tax'] }}</td>
-						{{-- Item-wise discount (per product line) --}}
-						<td class="r">
-							@php
-								$lineDiscShow = $line['total_line_discount'] ?? null;
-								$lineDiscUf = (float) ($line['line_discount_uf'] ?? 0);
-								if ($lineDiscUf <= 0 && !empty($lineDiscShow) && $lineDiscShow !== '0' && $lineDiscShow !== '0.00') {
-									$lineDiscUf = (float) preg_replace('/[^0-9.\-]/', '', (string) $lineDiscShow);
-								}
-							@endphp
-							@if($lineDiscUf > 0)
-								{{ $lineDiscShow }}
-								@if(!empty($line['line_discount_percent']))
-									({{ $line['line_discount_percent'] }}%)
+						@if($show_sold_price)
+							<td class="r">{{ $line['unit_price'] ?? $line['unit_price_inc_tax'] }}</td>
+						@endif
+						@if($show_item_disc_col)
+							<td class="r">
+								@php
+									$lineDiscShow = $line['total_line_discount'] ?? null;
+									$lineDiscUf = (float) ($line['line_discount_uf'] ?? 0);
+									if ($lineDiscUf <= 0 && !empty($lineDiscShow) && $lineDiscShow !== '0' && $lineDiscShow !== '0.00') {
+										$lineDiscUf = (float) preg_replace('/[^0-9.\-]/', '', (string) $lineDiscShow);
+									}
+								@endphp
+								@if($lineDiscUf > 0)
+									{{ $lineDiscShow }}
+									@if(!empty($line['line_discount_percent']))
+										({{ $line['line_discount_percent'] }}%)
+									@endif
+								@else
+									0.00
 								@endif
-							@else
-								0.00
-							@endif
-						</td>
+							</td>
+						@endif
 						@if($show_tax_column)
 							<td class="r">{{ $line['tax'] ?? '0.00' }}</td>
 						@endif
@@ -781,8 +814,12 @@
 							<td class="r">{{ $modifier['quantity'] }}</td>
 							@if(empty($receipt_details->hide_price))
 								<td class="r">{{ $modifier['unit_price_inc_tax'] }}</td>
-								<td class="r">{{ $modifier['unit_price_inc_tax'] }}</td>
-								<td class="r">0.00</td>
+								@if($show_sold_price)
+									<td class="r">{{ $modifier['unit_price_inc_tax'] }}</td>
+								@endif
+								@if($show_item_disc_col)
+									<td class="r">0.00</td>
+								@endif
 								@if($show_tax_column)
 									<td class="r">0.00</td>
 								@endif
@@ -793,7 +830,7 @@
 				@endif
 			@empty
 				<tr>
-					<td colspan="7">&nbsp;</td>
+					<td colspan="{{ $colCount }}">&nbsp;</td>
 				</tr>
 			@endforelse
 		</tbody>
@@ -850,17 +887,29 @@
 			</td>
 			<td class="tots">
 				@if(empty($receipt_details->hide_price))
+				@php
+					// Item-level discount only (product line / item popup)
+					$lineDcUf = (float) ($receipt_details->total_line_discount_uf ?? 0);
+					if ($lineDcUf <= 0 && !empty($receipt_details->total_line_discount) && $receipt_details->total_line_discount !== 0 && $receipt_details->total_line_discount !== '0') {
+						$lineDcUf = (float) preg_replace('/[^0-9.\-]/', '', (string) $receipt_details->total_line_discount);
+					}
+					// Order-level discount (POS Discount button)
+					$invDisc = (float) ($receipt_details->discount_amount_unformatted ?? 0);
+					if ($invDisc <= 0 && !empty($receipt_details->discount) && $receipt_details->discount !== 0 && $receipt_details->discount !== '0') {
+						$invDisc = (float) preg_replace('/[^0-9.\-]/', '', (string) $receipt_details->discount);
+					}
+				@endphp
 				<table class="usl-tots">
 					<tr>
-						<td class="lab">Total Quantity</td>
+						<td class="lab">{{ $qty_total_label }}</td>
 						<td class="val">{{ $qtyDisp }}</td>
 					</tr>
 					<tr>
-						<td class="lab">Subtotal</td>
+						<td class="lab">{{ $subtotal_label }}</td>
 						<td class="val">{{ $receipt_details->subtotal }}</td>
 					</tr>
 					<tr>
-						<td class="lab">Shipping</td>
+						<td class="lab">{{ $ship_label }}</td>
 						<td class="val">{{ $shipAmt }}</td>
 					</tr>
 					@if(!empty($receipt_details->packing_charge))
@@ -869,20 +918,9 @@
 							<td class="val">{{ $receipt_details->packing_charge }}</td>
 						</tr>
 					@endif
-					@php
-						// Item-level discount only (from POS cart item popup: line_discount_*)
-						$lineDcUf = (float) ($receipt_details->total_line_discount_uf ?? 0);
-						if ($lineDcUf <= 0 && !empty($receipt_details->total_line_discount) && $receipt_details->total_line_discount !== 0 && $receipt_details->total_line_discount !== '0') {
-							$lineDcUf = (float) preg_replace('/[^0-9.\-]/', '', (string) $receipt_details->total_line_discount);
-						}
-						// Order-level discount only (POS "Discount" button — NOT item popup)
-						$invDisc = (float) ($receipt_details->discount_amount_unformatted ?? 0);
-						if ($invDisc <= 0 && !empty($receipt_details->discount) && $receipt_details->discount !== 0 && $receipt_details->discount !== '0') {
-							$invDisc = (float) preg_replace('/[^0-9.\-]/', '', (string) $receipt_details->discount);
-						}
-					@endphp
+					{{-- Always show item + order discount (design fixed; $0.00 when none) --}}
 					<tr>
-						<td class="lab">Line Item (D/C)</td>
+						<td class="lab">{{ $line_discount_label }}</td>
 						<td class="val">
 							@if($lineDcUf > 0)
 								{{ $receipt_details->total_line_discount }}
@@ -892,7 +930,7 @@
 						</td>
 					</tr>
 					<tr>
-						<td class="lab">Total Discount</td>
+						<td class="lab">{{ $discount_label }}</td>
 						<td class="val">
 							@if($invDisc > 0)
 								{{ $receipt_details->discount }}
@@ -930,15 +968,15 @@
 
 					<tr class="sep"><td colspan="2"></td></tr>
 					<tr class="grand">
-						<td class="lab">Grand Total</td>
+						<td class="lab">{{ $total_label }}</td>
 						<td class="val">{{ $receipt_details->total }}</td>
 					</tr>
 					<tr class="grand">
-						<td class="lab">Total Paid</td>
+						<td class="lab">{{ $paid_label }}</td>
 						<td class="val">{{ $paidAmt }}</td>
 					</tr>
 					<tr class="grand">
-						<td class="lab">Due Amount</td>
+						<td class="lab">{{ $due_label }}</td>
 						<td class="val">{{ $dueAmt }}</td>
 					</tr>
 				</table>
@@ -970,8 +1008,8 @@
 	@endphp
 	<table class="usl-bal">
 		<tr>
-			<td class="l">Previous Due Balance: {{ $prevBal }}</td>
-			<td class="r">Total Due Balance: {{ $totalBal }}</td>
+			<td class="l">{{ $prev_bal_label }}: {{ $prevBal }}</td>
+			<td class="r">{{ $total_bal_label }}: {{ $totalBal }}</td>
 		</tr>
 	</table>
 
