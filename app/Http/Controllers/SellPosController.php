@@ -841,6 +841,7 @@ class SellPosController extends Controller
         }
 
         $output['print_title'] = $receipt_details->invoice_no;
+        $output['transaction_id'] = (int) $transaction_id;
         //If print type browser - return the content, printer - return printer config data, and invoice format config
         if ($receipt_printer_type == 'printer') {
             $output['print_type'] = 'printer';
@@ -850,6 +851,8 @@ class SellPosController extends Controller
             $layout = !empty($receipt_details->design) ? 'sale_pos.receipts.' . $receipt_details->design : 'sale_pos.receipts.classic';
 
             $output['html_content'] = view($layout, compact('receipt_details'))->render();
+            // PDF print path hides browser date/URL chrome (not available for HTML print)
+            $output['print_pdf_url'] = action([\App\Http\Controllers\SellPosController::class, 'printInvoicePdf'], [$transaction_id]);
         }
 
         return $output;
@@ -1912,6 +1915,97 @@ class SellPosController extends Controller
             }
 
             return $output;
+        }
+    }
+
+    /**
+     * Stream invoice as PDF for clean print (no browser HTML date/URL headers on the document).
+     * Note: user must leave "Headers and footers" unchecked once in the print dialog if Chrome still draws them.
+     */
+    public function printInvoicePdf(Request $request, $transaction_id)
+    {
+        if (! auth()->user()->can('print_invoice') && ! auth()->user()->can('sell.view') && ! auth()->user()->can('direct_sell.view')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        try {
+            $business_id = $request->session()->get('user.business_id');
+
+            $transaction = Transaction::where('business_id', $business_id)
+                ->where('id', $transaction_id)
+                ->with(['location'])
+                ->firstOrFail();
+
+            $printer_type = 'browser';
+            $invoice_layout_id = $transaction->is_direct_sale ? $transaction->location->sale_invoice_layout_id : null;
+            $receipt = $this->receiptContent(
+                $business_id,
+                $transaction->location_id,
+                $transaction_id,
+                $printer_type,
+                false,
+                false,
+                $invoice_layout_id,
+                false
+            );
+
+            if (empty($receipt['html_content'])) {
+                abort(404, 'Invoice not available');
+            }
+
+            $invoiceNo = preg_replace('/[^A-Za-z0-9\-_]/', '', (string) ($receipt['print_title'] ?? $transaction->invoice_no ?? $transaction_id));
+            $html = $receipt['html_content'];
+
+            // Wrap with print-safe base so absolute assets load for mPDF when needed
+            $body =
+                '<!DOCTYPE html><html><head><meta charset="utf-8">' .
+                '<style>
+                    @page { margin: 10mm 12mm 12mm 12mm; }
+                    body { margin: 0; padding: 0; background: #fff; font-family: DejaVu Sans, Arial, sans-serif; }
+                    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                </style></head><body>' . $html . '</body></html>';
+
+            $mpdf = new \Mpdf\Mpdf([
+                'tempDir' => public_path('uploads/temp'),
+                'mode' => 'utf-8',
+                'format' => 'Letter',
+                'orientation' => 'P',
+                'margin_left' => 10,
+                'margin_right' => 10,
+                'margin_top' => 10,
+                'margin_bottom' => 12,
+                'margin_header' => 0,
+                'margin_footer' => 0,
+                'autoScriptToLang' => true,
+                'autoLangToFont' => true,
+                'autoVietnamese' => true,
+                'autoArabic' => true,
+            ]);
+
+            $mpdf->SetTitle('INVOICE-' . $invoiceNo);
+            $mpdf->SetAuthor('');
+            $mpdf->SetCreator('');
+            // Explicitly no mPDF headers/footers (prevents page URL / date from the PDF engine)
+            $mpdf->SetHTMLHeader('');
+            $mpdf->SetHTMLFooter('');
+            $mpdf->defaultheaderline = 0;
+            $mpdf->defaultfooterline = 0;
+            $mpdf->useSubstitutions = true;
+            $mpdf->showWatermarkText = false;
+            $mpdf->WriteHTML($body);
+
+            $pdfBinary = $mpdf->Output('', 'S');
+
+            return response($pdfBinary, 200, [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'inline; filename="INVOICE-' . $invoiceNo . '.pdf"',
+                'Cache-Control' => 'private, max-age=0, must-revalidate',
+                'Pragma' => 'public',
+            ]);
+        } catch (\Exception $e) {
+            \Log::emergency('File:'.$e->getFile().' Line:'.$e->getLine().' Message:'.$e->getMessage());
+
+            abort(500, 'Unable to generate invoice PDF');
         }
     }
 

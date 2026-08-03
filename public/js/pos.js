@@ -4108,7 +4108,12 @@ function pos_print(receipt) {
         //If printer type browser then print content
         $('#receipt_section').html(receipt.html_content);
         __currency_convert_recursively($('#receipt_section'));
-        __print_receipt('receipt_section');
+        // PDF path removes browser HTML date/URL stamps (Chrome cannot hide those on web pages)
+        var pdfUrl = receipt.print_pdf_url || '';
+        if (!pdfUrl && receipt.transaction_id) {
+            pdfUrl = (window.base_path || '') + '/sells/' + receipt.transaction_id + '/print-pdf';
+        }
+        __print_receipt('receipt_section', pdfUrl);
     }
 }
 

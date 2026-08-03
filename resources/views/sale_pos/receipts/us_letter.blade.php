@@ -423,41 +423,62 @@
 		padding-left: 8px;
 		vertical-align: top;
 	}
-	/* Ship Method / Date / Tracking / Boxes — light fill, transparent-feel (ref) */
-	.usl-ship-block {
+	/* Ship: light bg on labels only — value side transparent */
+	.usl-ship-tbl {
+		width: auto;
 		max-width: 360px;
-		background: rgba(240, 240, 240, 0.55) !important;
-		border: 0.5px solid #d0d0d0;
-		padding: 8px 10px;
+		border-collapse: collapse;
+		border: 0;
+		margin: 0;
+		background: transparent;
+	}
+	.usl-ship-tbl td {
+		padding: 4px 8px;
 		font-size: 11px;
-		line-height: 1.55;
+		line-height: 1.4;
+		border: 0.5px solid #c8c8c8;
+		vertical-align: middle;
 		color: #111;
+	}
+	.usl-ship-tbl td.k {
+		/* title/label only */
+		background: #e8e8e8 !important;
+		font-weight: 700;
+		white-space: nowrap;
+		width: 1%;
 		-webkit-print-color-adjust: exact;
 		print-color-adjust: exact;
 	}
-	.usl-ship-block .usl-ship-line {
-		margin: 0 0 4px 0;
-		padding: 0;
-		background: transparent;
-	}
-	.usl-ship-block .usl-ship-line:last-child {
-		margin-bottom: 0;
-	}
-	.usl-ship-block .usl-ship-line .k {
-		font-weight: 700;
-	}
-	.usl-ship-block .usl-ship-line .v {
+	.usl-ship-tbl td.v {
+		/* data side — no fill */
+		background: transparent !important;
 		font-weight: 400;
+		word-break: break-word;
 	}
-	/* Space between ship block and Cash / payment lines */
-	.usl-ship-block + .usl-pay,
+	/* Payments: compact Cash · amount · date (no full-width card gaps) */
+	.usl-pay-block {
+		margin-top: 12px;
+		margin-bottom: 6px;
+		font-size: 11.5px;
+		line-height: 1.5;
+		color: #111;
+	}
 	.usl-pay {
-		margin-top: 14px;
-		font-size: 11px;
+		width: auto;
+		max-width: none;
+		margin-top: 0;
+		font-size: 11.5px;
+		border-collapse: collapse;
+		table-layout: auto;
 	}
 	.usl-pay td {
-		padding: 3px 10px 3px 0;
+		padding: 2px 14px 2px 0;
 		vertical-align: middle;
+		white-space: nowrap;
+		width: auto;
+	}
+	.usl-pay td:last-child {
+		padding-right: 0;
 	}
 	/* Totals — same thin bottom line on every row (no fat rule after Tax) */
 	.usl-tots {
@@ -518,7 +539,7 @@
 	}
 	.usl-credit {
 		text-align: left;
-		margin-top: 10px;
+		margin-top: 4px;
 		font-size: 11px;
 	}
 	/* Dark balance bar */
@@ -979,23 +1000,33 @@
 					$showShipTbl = ($shipMethodVal !== '' || $shipDateVal !== '' || $shipTrackVal !== '' || $shipBoxesVal !== '');
 				@endphp
 				@if($showShipTbl)
-				<div class="usl-ship-block">
-					<div class="usl-ship-line"><span class="k">Ship Method:</span> <span class="v">{{ $shipMethodVal !== '' ? $shipMethodVal : '-' }}</span></div>
-					<div class="usl-ship-line"><span class="k">Ship Date:</span> <span class="v">{{ $shipDateVal !== '' ? $shipDateVal : '-' }}</span></div>
-					<div class="usl-ship-line"><span class="k">Tracking No:</span> <span class="v">{{ $shipTrackVal !== '' ? $shipTrackVal : '-' }}</span></div>
-					<div class="usl-ship-line"><span class="k">No of Boxes:</span> <span class="v">{{ $shipBoxesVal !== '' ? $shipBoxesVal : '-' }}</span></div>
-				</div>
-				@endif
-				@if(!empty($receipt_details->payments))
-					<table class="usl-pay">
-						@foreach($receipt_details->payments as $payment)
-							<tr>
-								<td>{{ $payment['method'] }}</td>
-								<td>{{ $payment['amount'] }}</td>
-								<td>{{ $payment['date'] }}</td>
-							</tr>
-						@endforeach
-					</table>
+				{{-- Label column light bg only; value column transparent --}}
+				<table class="usl-ship-tbl">
+					@if($shipMethodVal !== '')
+					<tr>
+						<td class="k">Ship Method:</td>
+						<td class="v">{{ $shipMethodVal }}</td>
+					</tr>
+					@endif
+					@if($shipDateVal !== '')
+					<tr>
+						<td class="k">Ship Date:</td>
+						<td class="v">{{ $shipDateVal }}</td>
+					</tr>
+					@endif
+					@if($shipTrackVal !== '')
+					<tr>
+						<td class="k">Tracking No:</td>
+						<td class="v">{{ $shipTrackVal }}</td>
+					</tr>
+					@endif
+					@if($shipBoxesVal !== '' && $shipBoxesVal !== null)
+					<tr>
+						<td class="k">No of Boxes:</td>
+						<td class="v">{{ $shipBoxesVal }}</td>
+					</tr>
+					@endif
+				</table>
 				@endif
 			</td>
 			<td class="tots">
@@ -1084,6 +1115,21 @@
 			</td>
 		</tr>
 	</table>
+
+	{{-- Payments (Cash / Card / etc.) — directly above store credit & balance bar --}}
+	@if(!empty($receipt_details->payments))
+		<div class="usl-pay-block">
+			<table class="usl-pay">
+				@foreach($receipt_details->payments as $payment)
+					<tr>
+						<td>{{ $payment['method'] }}</td>
+						<td>{{ $payment['amount'] }}</td>
+						<td>{{ $payment['date'] }}</td>
+					</tr>
+				@endforeach
+			</table>
+		</div>
+	@endif
 
 	<div class="usl-credit">
 		@php

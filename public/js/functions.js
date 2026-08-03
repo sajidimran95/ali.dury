@@ -392,12 +392,97 @@ function __sum_stock(table, class_name, label_direction = 'right') {
 }
 
 /**
- * Print invoice with multi-page support.
- * POS screen uses overflow:hidden / fixed heights which *clip* long invoices
- * to a single page. We clone receipt HTML into a full-size off-screen iframe
- * (not about:blank popup) so tables can flow to page 2+.
+ * Print invoice (HTML multipage — reliable content; PDF path left blank white in Chrome).
+ * pdf_url kept for callers; optional use via __print_invoice_pdf only.
  */
-function __print_receipt(section_id = null) {
+function __print_receipt(section_id, pdf_url) {
+    // Always multipage HTML so invoice content shows. 0×0 PDF iframe was blank preview.
+    __print_receipt_html(section_id || 'receipt_section');
+}
+
+/**
+ * Optional: fetch invoice PDF and print (letter size frame required — 0×0 prints white).
+ */
+function __print_invoice_pdf(pdf_url) {
+    if (!pdf_url) {
+        __print_receipt_html('receipt_section');
+        return;
+    }
+    var prevTitle = document.title;
+    document.title = '\u200B';
+
+    fetch(pdf_url, {
+        method: 'GET',
+        credentials: 'same-origin',
+        headers: { Accept: 'application/pdf' },
+    })
+        .then(function (res) {
+            if (!res.ok) {
+                throw new Error('pdf ' + res.status);
+            }
+            return res.blob();
+        })
+        .then(function (blob) {
+            var type = (blob.type || '').toLowerCase();
+            // Empty / HTML error / too-small PDF → HTML multipage
+            if ((type && type.indexOf('pdf') === -1) || !blob.size || blob.size < 800) {
+                throw new Error('not pdf');
+            }
+            var url = URL.createObjectURL(blob);
+            var iframe = document.getElementById('__pos_pdf_print_frame');
+            if (!iframe) {
+                iframe = document.createElement('iframe');
+                iframe.id = '__pos_pdf_print_frame';
+                iframe.setAttribute('aria-hidden', 'true');
+                document.body.appendChild(iframe);
+            }
+            // Non-zero size required — width/height 0 yields blank white print in Chrome
+            iframe.setAttribute(
+                'style',
+                'position:fixed;left:-10000px;top:0;width:8.5in;height:11in;border:0;' +
+                    'opacity:0;pointer-events:none;z-index:-1;'
+            );
+
+            var printed = false;
+            var cleanup = function () {
+                try {
+                    URL.revokeObjectURL(url);
+                } catch (e) {}
+                document.title = prevTitle;
+            };
+
+            var doPrint = function () {
+                if (printed) {
+                    return;
+                }
+                printed = true;
+                setTimeout(function () {
+                    try {
+                        iframe.contentWindow.focus();
+                        iframe.contentWindow.print();
+                        setTimeout(cleanup, 3000);
+                    } catch (err) {
+                        cleanup();
+                        __print_receipt_html('receipt_section');
+                    }
+                }, 500);
+            };
+
+            iframe.onload = doPrint;
+            iframe.src = url;
+            // Blob PDF viewers sometimes skip onload
+            setTimeout(doPrint, 1400);
+        })
+        .catch(function () {
+            document.title = prevTitle;
+            __print_receipt_html('receipt_section');
+        });
+}
+
+/**
+ * HTML multipage print (legacy fallback when PDF unavailable).
+ */
+function __print_receipt_html(section_id) {
     var section = section_id ? document.getElementById(section_id) : null;
     var prevTitle = document.title;
     var prevPath = window.location.pathname + window.location.search + window.location.hash;
@@ -427,7 +512,6 @@ function __print_receipt(section_id = null) {
     } catch (e) {}
     document.body.classList.add('pos-is-printing');
 
-    // Parent-window print (fallback) — also unclips via CSS .pos-is-printing
     var printParent = function () {
         setTimeout(function () {
             try {
@@ -443,7 +527,6 @@ function __print_receipt(section_id = null) {
         return;
     }
 
-    // Full-size iframe so table layout measures correctly for multipage
     var iframe = document.getElementById('__pos_print_frame');
     if (!iframe) {
         iframe = document.createElement('iframe');
@@ -451,7 +534,6 @@ function __print_receipt(section_id = null) {
         iframe.setAttribute('aria-hidden', 'true');
         document.body.appendChild(iframe);
     }
-    // Must be large enough for full invoice layout (0×0 breaks multipage)
     iframe.setAttribute(
         'style',
         'position:fixed;left:0;top:0;width:8.5in;height:1200px;border:0;' +
@@ -488,7 +570,15 @@ function __print_receipt(section_id = null) {
         '.usl-items tbody{display:table-row-group!important;}' +
         '.usl-items tbody tr{page-break-inside:avoid!important;break-inside:avoid!important;}' +
         '.usl-endblock{page-break-inside:auto!important;break-inside:auto!important;}' +
-        '.usl-lower,.usl-tots{page-break-inside:avoid!important;break-inside:avoid!important;}';
+        '.usl-lower,.usl-tots{page-break-inside:avoid!important;break-inside:avoid!important;}' +
+        '.usl-ship-tbl{border-collapse:collapse;width:auto;max-width:360px;}' +
+        '.usl-ship-tbl td{padding:4px 8px;font-size:11px;border:0.5px solid #c8c8c8;}' +
+        '.usl-ship-tbl td.k{background:#e8e8e8!important;font-weight:700;white-space:nowrap;' +
+        '-webkit-print-color-adjust:exact;print-color-adjust:exact;}' +
+        '.usl-ship-tbl td.v{background:transparent!important;font-weight:400;}' +
+        '.usl-pay-block{margin-top:12px;margin-bottom:6px;font-size:11.5px;}' +
+        '.usl-pay{width:auto!important;table-layout:auto;}' +
+        '.usl-pay td{padding:2px 14px 2px 0;white-space:nowrap;width:auto;}';
 
     var htmlDoc =
         '<!DOCTYPE html><html><head><meta charset="utf-8">' +
@@ -505,7 +595,6 @@ function __print_receipt(section_id = null) {
         idoc.title = '';
     } catch (e3) {}
 
-    // Grow iframe to full content height so browser can paginate all rows
     var expandFrame = function () {
         try {
             var h = Math.max(
@@ -513,7 +602,6 @@ function __print_receipt(section_id = null) {
                 idoc.documentElement.scrollHeight || 0,
                 1100
             );
-            // Cap sensibly; still tall enough for many line items
             iframe.style.height = Math.min(Math.max(h + 40, 1100), 50000) + 'px';
         } catch (e4) {}
     };

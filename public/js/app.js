@@ -1864,8 +1864,12 @@ $(document).ready(function() {
                     $('#receipt_section').html(result.receipt.html_content);
                     __currency_convert_recursively($('#receipt_section'));
 
-                    // Do not set document.title to invoice no (removes top browser print header mark)
-                    __print_receipt('receipt_section');
+                    // Prefer PDF so Chrome does not stamp page URL/date on HTML print
+                    var pdfUrl = (result.receipt && result.receipt.print_pdf_url) ? result.receipt.print_pdf_url : '';
+                    if (!pdfUrl && result.receipt && result.receipt.transaction_id) {
+                        pdfUrl = (window.base_path || '') + '/sells/' + result.receipt.transaction_id + '/print-pdf';
+                    }
+                    __print_receipt('receipt_section', pdfUrl);
                 } else {
                     toastr.error(result.msg);
                 }
