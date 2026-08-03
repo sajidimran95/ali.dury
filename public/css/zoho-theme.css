@@ -468,6 +468,14 @@ body.zoho-theme #side-bar .sidebar-menu-hidden {
     display: none !important;
 }
 
+/* Search results: keep matching branches expanded (overrides default closed submenus) */
+body.zoho-theme.zoho-sidebar-search-active #side-bar > .zoho-sidebar-item:not(.sidebar-menu-hidden) > .chiled {
+    display: block !important;
+}
+body.zoho-theme.zoho-sidebar-search-active #side-bar .zoho-sidebar-nested-group:not(.sidebar-menu-hidden) > .chiled {
+    display: block !important;
+}
+
 body.zoho-theme.zoho-sidebar-search-active .side-bar.zoho-sidebar-collapsed #side-bar .chiled .zoho-sidebar-child-row.sidebar-menu-hidden,
 body.zoho-theme.zoho-sidebar-search-active .side-bar.zoho-sidebar-collapsed #side-bar .chiled a.sidebar-menu-hidden {
     display: none !important;

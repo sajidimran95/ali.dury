@@ -234,6 +234,7 @@ class AdminSidebarMenu
                 [
                     'icon' => '',
                     'active' => request()->segment(1) == 'shipping-methods',
+                    'data-search-terms' => 'shipping method methods carrier carriers shipment ship delivery freight ups fedex usps dhl',
                 ]
             );
         }
@@ -534,7 +535,11 @@ class AdminSidebarMenu
                             $sub->url(
                                 action([\App\Http\Controllers\SellController::class, 'shipments']),
                                 __('lang_v1.shipments'),
-                                ['icon' => '', 'active' => request()->segment(1) == 'shipments']
+                                [
+                                    'icon' => '',
+                                    'active' => request()->segment(1) == 'shipments',
+                                    'data-search-terms' => 'shipment shipments shipping ship delivery package packages tracking boxes',
+                                ]
                             );
                         }
 

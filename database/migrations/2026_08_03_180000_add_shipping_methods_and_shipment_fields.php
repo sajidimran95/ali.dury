@@ -70,6 +70,15 @@ return new class extends Migration
             'FedEx',
             'USPS',
             'Freight',
+            'DHL',
+            'Amazon Logistics',
+            'OnTrac',
+            'Same Day Delivery',
+            'Next Day Air',
+            'Ground Shipping',
+            'Customer Pickup',
+            'Will Call',
+            'Courier',
             'Other',
         ];
 

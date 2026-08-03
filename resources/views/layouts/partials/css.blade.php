@@ -88,7 +88,7 @@
 <!-- app css -->
 <link rel="stylesheet" href="{{ asset('css/app.css?v='.$asset_v.'&tb=3') }}">
 <link rel="stylesheet" href="{{ asset('css/dt-toolbar.css?v='.$asset_v.'&tb=4') }}">
-<link rel="stylesheet" href="{{ asset('css/zoho-theme.css?v='.$asset_v) }}">
+<link rel="stylesheet" href="{{ asset('css/zoho-theme.css?v='.$asset_v.'&sb=2') }}">
 
 @if(isset($pos_layout) && $pos_layout)
 	<link rel="stylesheet" href="{{ asset('css/pos-sale-theme.css?v='.$asset_v.'&ls=87') }}">

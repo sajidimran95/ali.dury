@@ -852,26 +852,104 @@ $(function () {
     $('.side-bar').removeAttr('style');
 
     // --- Sidebar menu search filter ---
+    // Matches labels, title, URL path, and data-search-terms; expands matching submenus
+    // (child panels stay display:none after match unless we open them — that made
+    // Shipments / Shipping Methods look "missing" unless their parent was already open).
+    function sidebarSearchText($el) {
+        if (!$el || !$el.length) {
+            return '';
+        }
+        var parts = [];
+        var $label = $el.find('.sidebar-menu-label').first();
+        if ($label.length) {
+            parts.push($label.text());
+        } else {
+            var $span = $el.children('span').first();
+            parts.push($span.length ? $span.text() : $el.text());
+        }
+        var title = $el.attr('title');
+        if (title) {
+            parts.push(title);
+        }
+        var href = $el.attr('href') || '';
+        if (href && href !== '#') {
+            try {
+                href = href.replace(/^https?:\/\/[^/]+/i, '');
+            } catch (e) {}
+            parts.push(href.replace(/[/?#=&._-]+/g, ' '));
+        }
+        var terms = $el.attr('data-search-terms');
+        if (terms) {
+            parts.push(terms);
+        }
+        return parts.join(' ').replace(/\s+/g, ' ').trim().toLowerCase();
+    }
+
+    function sidebarQueryMatches(haystack, q) {
+        if (!q) {
+            return true;
+        }
+        if (!haystack) {
+            return false;
+        }
+        // All tokens must match (so "shipping method" hits "Shipping Methods")
+        return q.split(/\s+/).filter(Boolean).every(function (token) {
+            return haystack.indexOf(token) !== -1;
+        });
+    }
+
+    function restoreSidebarMenusAfterSearch() {
+        $('#side-bar .sidebar-menu-hidden').removeClass('sidebar-menu-hidden');
+        $('#side-bar > .zoho-sidebar-item').each(function () {
+            var $item = $(this);
+            var $panel = $item.children('.chiled');
+            if (!$panel.length) {
+                return;
+            }
+            var open = $item.children('a.drop_down').hasClass('theme-sidebar-active');
+            $panel.css('display', open ? 'block' : 'none');
+        });
+        $('#side-bar .zoho-sidebar-nested-group').each(function () {
+            var $group = $(this);
+            var $panel = $group.children('.chiled');
+            if (!$panel.length) {
+                return;
+            }
+            var open = $group.children('.zoho-sidebar-nested-toggle').hasClass('theme-sidebar-child-active');
+            $panel.css('display', open ? 'block' : 'none');
+        });
+    }
+
     function filterSidebar(q) {
-        q = q.trim().toLowerCase();
+        q = (q || '').trim().toLowerCase();
         var anyVisible = false;
+
+        if (!q) {
+            restoreSidebarMenusAfterSearch();
+            $('body').removeClass('zoho-sidebar-search-active');
+            $('#sidebar-no-results').addClass('tw-hidden');
+            $('#sidebar-search-clear').addClass('tw-hidden');
+            $('#side-bar > .zoho-sidebar-item').removeClass('zoho-sidebar-flyout-open');
+            return;
+        }
 
         $('#side-bar').children('.zoho-sidebar-item, a').each(function () {
             var $item = $(this);
             var $link = $item.is('a') ? $item : $item.children('a').first();
-            var $childLinks = $item.find('.chiled .zoho-sidebar-child-link, .chiled > a');
-            var parentText = $link.text().toLowerCase();
-            var parentMatch = !q || parentText.indexOf(q) !== -1;
+            var parentText = sidebarSearchText($link);
+            var parentMatch = sidebarQueryMatches(parentText, q);
             var anyChildMatch = false;
+            var $panel = $item.children('.chiled');
 
-            $childLinks.each(function () {
+            // Direct + nested leaf links
+            $item.find('.zoho-sidebar-child-link').each(function () {
                 var $child = $(this);
                 if ($child.hasClass('zoho-sidebar-child-add')) {
                     return;
                 }
                 var $row = $child.closest('.zoho-sidebar-child-row');
-                var childMatch = !q || $child.text().toLowerCase().indexOf(q) !== -1;
-                var hideChild = q && !parentMatch && !childMatch;
+                var childMatch = sidebarQueryMatches(sidebarSearchText($child), q);
+                var hideChild = !parentMatch && !childMatch;
                 if ($row.length) {
                     $row.toggleClass('sidebar-menu-hidden', hideChild);
                 } else {
@@ -882,20 +960,46 @@ $(function () {
                 }
             });
 
-            var showItem = !q || parentMatch || anyChildMatch;
+            // Nested submenu titles (e.g. "Items") also searchable / control expand
+            $item.find('.zoho-sidebar-nested-group').each(function () {
+                var $group = $(this);
+                var $toggle = $group.children('.zoho-sidebar-nested-toggle');
+                var groupTitleMatch = sidebarQueryMatches(sidebarSearchText($toggle), q);
+                var groupChildMatch = false;
+                $group.find('.zoho-sidebar-child-link').each(function () {
+                    if (sidebarQueryMatches(sidebarSearchText($(this)), q)) {
+                        groupChildMatch = true;
+                        return false;
+                    }
+                });
+                var showGroup = parentMatch || groupTitleMatch || groupChildMatch;
+                $group.toggleClass('sidebar-menu-hidden', !showGroup);
+                if (showGroup && (groupTitleMatch || groupChildMatch || parentMatch)) {
+                    $group.children('.chiled').css('display', 'block');
+                    if (groupTitleMatch || groupChildMatch) {
+                        anyChildMatch = true;
+                    }
+                } else {
+                    $group.children('.chiled').css('display', 'none');
+                }
+            });
+
+            var showItem = parentMatch || anyChildMatch;
             $item.toggleClass('sidebar-menu-hidden', !showItem);
             if (showItem) {
                 anyVisible = true;
-            }
-
-            if (!q && $item.hasClass('zoho-sidebar-item')) {
-                $item.removeClass('zoho-sidebar-flyout-open');
+                // Always expand matching branches so results are visible
+                if ($panel.length) {
+                    $panel.css('display', 'block');
+                }
+            } else if ($panel.length) {
+                $panel.css('display', 'none');
             }
         });
 
-        $('body').toggleClass('zoho-sidebar-search-active', !!q);
-        $('#sidebar-no-results').toggleClass('tw-hidden', anyVisible || !q);
-        $('#sidebar-search-clear').toggleClass('tw-hidden', !q);
+        $('body').toggleClass('zoho-sidebar-search-active', true);
+        $('#sidebar-no-results').toggleClass('tw-hidden', anyVisible);
+        $('#sidebar-search-clear').toggleClass('tw-hidden', false);
     }
 
     function syncMenuSearch(value) {
