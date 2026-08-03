@@ -1321,27 +1321,31 @@ class TransactionUtil extends Util
             $show_currency = false;
         }
 
-        // Available Store Credit = remaining usable balance:
-        // prepaid advance (contacts.balance) + leftover credit limit after dues (when limit set).
-        // Same idea as Contacts list "Available credit limit" + POS Advance Balance.
-        $advance = 0.0;
+        // Available Store Credit = same as Contacts list "Available credit limit"
+        // (credit_limit − outstanding due, never negative) + prepaid advance balance.
+        // Not the $0 advance column alone — Nashville Corner shows ~$484.62 available.
+        $store_credit = 0.0;
         if (! empty($customer)) {
-            // Fresh from DB (receipt may run after payment/balance updates on same request)
             $advance = (float) Contact::where('id', $customer->id)->value('balance');
             if ($advance < 0) {
                 $advance = 0;
             }
-        }
 
-        $store_credit = $advance;
-        if (! empty($customer) && $customer->credit_limit !== null && $customer->credit_limit !== '') {
-            $contact_due = (float) $this->getContactDue($transaction->contact_id);
-            if ($contact_due < 0) {
-                $contact_due = 0;
+            // Reload credit_limit from DB (in case object was stale)
+            $credit_limit = Contact::where('id', $customer->id)->value('credit_limit');
+
+            if (! is_null($credit_limit) && $credit_limit !== '') {
+                $used = (float) $this->getContactDue($transaction->contact_id);
+                if ($used < 0) {
+                    $used = 0;
+                }
+                // Match customer index: available remaining of credit line (floor at 0)
+                $store_credit = max(0, ((float) $credit_limit) - $used) + $advance;
+            } else {
+                // No credit limit configured — prepaid advance only
+                $store_credit = $advance;
             }
-            $store_credit = ((float) $customer->credit_limit) - $contact_due + $advance;
         }
-
         $output['customer_store_credit_uf'] = $store_credit;
         $output['customer_store_credit'] = $this->num_f($store_credit, $show_currency, $business_details);
         $output['customer_store_credit_label'] = 'Available Store Credit';

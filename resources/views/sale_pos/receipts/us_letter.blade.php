@@ -1133,18 +1133,20 @@
 
 	<div class="usl-credit">
 		@php
-			// Remaining store credit (advance + credit limit left after dues)
+			// Available credit limit remaining (+ advance), never negative
 			$storeCreditDisp = $zero_money;
-			if (isset($receipt_details->customer_store_credit) && $receipt_details->customer_store_credit !== '' && $receipt_details->customer_store_credit !== null) {
+			if (isset($receipt_details->customer_store_credit_uf)) {
+				$sc = (float) $receipt_details->customer_store_credit_uf;
+				if ($sc > 0 && !empty($receipt_details->customer_store_credit)) {
+					$storeCreditDisp = $receipt_details->customer_store_credit;
+				} elseif ($sc > 0) {
+					$storeCreditDisp = $moneyOrZero($sc);
+				}
+			} elseif (!empty($receipt_details->customer_store_credit)) {
 				$storeCreditDisp = $receipt_details->customer_store_credit;
-			} elseif (isset($receipt_details->customer_store_credit_uf)) {
-				$storeCreditDisp = $moneyOrZero($receipt_details->customer_store_credit_uf);
 			}
-			$creditLabel = !empty($receipt_details->customer_store_credit_label)
-				? $receipt_details->customer_store_credit_label
-				: 'Available Store Credit';
 		@endphp
-		{{ $creditLabel }}:
+		Available Store Credit:
 		{{ $storeCreditDisp }}
 	</div>
 
