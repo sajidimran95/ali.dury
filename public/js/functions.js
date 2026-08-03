@@ -481,11 +481,11 @@ function __print_invoice_pdf(pdf_url) {
 
 /**
  * HTML multipage print (legacy fallback when PDF unavailable).
+ * Keep the browser URL on the POS page (e.g. /pos/create) — never navigate or replaceState to "/".
  */
 function __print_receipt_html(section_id) {
     var section = section_id ? document.getElementById(section_id) : null;
     var prevTitle = document.title;
-    var prevPath = window.location.pathname + window.location.search + window.location.hash;
     var restored = false;
 
     var restore = function () {
@@ -496,20 +496,16 @@ function __print_receipt_html(section_id) {
         try {
             document.title = prevTitle;
             document.body.classList.remove('pos-is-printing');
-            if (window.history && window.history.replaceState && prevPath) {
-                window.history.replaceState(null, '', prevPath);
-            }
         } catch (e) {}
         window.removeEventListener('afterprint', restore);
+        window.removeEventListener('focus', restore);
     };
     window.addEventListener('afterprint', restore);
+    // Chrome print preview can leave path unsettled; ensure UI restores on focus/cancel
+    window.addEventListener('focus', restore);
 
+    // Blank title only for print header — do not change location/history
     document.title = '\u200B';
-    try {
-        if (window.history && window.history.replaceState) {
-            window.history.replaceState(null, '', '/');
-        }
-    } catch (e) {}
     document.body.classList.add('pos-is-printing');
 
     var printParent = function () {
