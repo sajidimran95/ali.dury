@@ -1249,6 +1249,23 @@ $(document).ready(function() {
         }
     });
 
+    // When opening discount modal, always show current (reset) form values — not previous sale leftover
+    $(document).off('show.bs.modal.posDiscSync', '#posEditDiscountModal').on('show.bs.modal.posDiscSync', '#posEditDiscountModal', function() {
+        if ($('#discount_type_modal').length && $('#discount_type').length) {
+            $('#discount_type_modal').val($('#discount_type').val() || 'percentage');
+        }
+        if ($('#discount_amount_modal').length && $('#discount_amount').length) {
+            __write_number($('#discount_amount_modal'), __read_number($('#discount_amount')));
+        }
+    });
+
+    // When opening tax modal, always show current form tax (cleared after each sale)
+    $(document).off('show.bs.modal.posTaxSync', '#posEditOrderTaxModal').on('show.bs.modal.posTaxSync', '#posEditOrderTaxModal', function() {
+        if ($('#order_tax_modal').length && $('#tax_rate_id').length) {
+            $('#order_tax_modal').val($('#tax_rate_id').val() || '');
+        }
+    });
+
     // Keep suspend modal on body so Save/Close clicks work (not clipped by cart panel)
     if ($('#confirmSuspendModal').length) {
         $('#confirmSuspendModal').appendTo('body');
@@ -3634,6 +3651,76 @@ function pos_load_retrieved_sale_into_cart(row) {
     return true;
 }
 
+/**
+ * Read data-default attr reliably (jQuery .data() can leave empty defaults as undefined;
+ * .val(undefined) does nothing and previous sale tax/discount would stick).
+ */
+function pos_attr_default($el, fallback) {
+    if (!$el || !$el.length) {
+        return fallback;
+    }
+    var raw = $el.attr('data-default');
+    if (raw === undefined || raw === null || String(raw).trim() === '') {
+        return fallback;
+    }
+    return raw;
+}
+
+/**
+ * Clear order-level discount + tax after each finished sale (next sale starts clean).
+ * Discount/tax modals are moved to body so form.reset() does not clear them.
+ */
+function pos_reset_order_discount_and_tax() {
+    var discAmt = pos_attr_default($('input#discount_amount'), 0);
+    var discType = pos_attr_default($('input#discount_type'), 'percentage');
+    var taxId = pos_attr_default($('input#tax_rate_id'), '');
+    var taxRate = taxId ? pos_attr_default($('input#tax_calculation_amount'), 0) : 0;
+
+    // Hidden form fields used by total calculation / submit
+    if ($('input#discount_type').length) {
+        $('input#discount_type').val(discType);
+    }
+    if ($('input#discount_amount').length) {
+        __write_number($('input#discount_amount'), discAmt);
+    }
+    if ($('input#tax_rate_id').length) {
+        // Always set a real value (empty string clears previous sale tax)
+        $('input#tax_rate_id').val(taxId === null || taxId === undefined ? '' : taxId);
+    }
+    if ($('input#tax_calculation_amount').length) {
+        __write_number($('input#tax_calculation_amount'), taxRate);
+    }
+
+    // Modals (outside form after appendTo body)
+    if ($('#discount_type_modal').length) {
+        $('#discount_type_modal').val(discType);
+    }
+    if ($('#discount_amount_modal').length) {
+        __write_number($('#discount_amount_modal'), discAmt);
+    }
+    if ($('#order_tax_modal').length) {
+        $('#order_tax_modal').val(taxId === null || taxId === undefined ? '' : taxId);
+    }
+
+    // Display spans (totals recalculated next via pos_total_row)
+    $('span#total_discount, span#order_tax').text(0);
+
+    // Reward points (order-level)
+    if ($('#rp_redeemed').length) {
+        $('#rp_redeemed').val(0);
+    }
+    if ($('#rp_redeemed_amount').length) {
+        $('#rp_redeemed_amount').val(0);
+    }
+    if ($('#rp_redeemed_modal').length) {
+        $('#rp_redeemed_modal').val(0);
+    }
+    if ($('#rp_redeemed_amount_text').length) {
+        $('#rp_redeemed_amount_text').text(__currency_trans_from_en(0, false));
+    }
+    $('span#loyalty_amount_display').text(0);
+}
+
 function reset_pos_form(){
 
 	//If on edit page then redirect to Add POS page
@@ -3677,21 +3764,31 @@ function reset_pos_form(){
         $('#is_credit_sale').val(0);
     }
 
-	//Reset discount
-	__write_number($('input#discount_amount'), $('input#discount_amount').data('default'));
-	$('input#discount_type').val($('input#discount_type').data('default'));
-
-	//Reset tax rate
-	$('input#tax_rate_id').val($('input#tax_rate_id').data('default'));
-	__write_number($('input#tax_calculation_amount'), $('input#tax_calculation_amount').data('default'));
+	// Reset order discount + tax (form fields AND modals — must not stick on next sale)
+	pos_reset_order_discount_and_tax();
 
 	$('select.payment_types_dropdown').val('cash').trigger('change');
 	$('#price_group').trigger('change');
 
 	//Reset shipping
-	__write_number($('input#shipping_charges'), $('input#shipping_charges').data('default'));
-	$('input#shipping_details').val($('input#shipping_details').data('default'));
-    $('input#shipping_address, input#shipping_status, input#delivered_to').val('');
+	__write_number($('input#shipping_charges'), pos_attr_default($('input#shipping_charges'), 0));
+	$('input#shipping_details').val(pos_attr_default($('input#shipping_details'), ''));
+    $('input#shipping_address, input#shipping_status, input#delivered_to, input#delivery_person').val('');
+    if ($('#shipping_details_modal').length) {
+        $('#shipping_details_modal').val('');
+    }
+    if ($('#shipping_charges_modal').length) {
+        __write_number($('#shipping_charges_modal'), 0);
+    }
+    if ($('#shipping_address_modal').length) {
+        $('#shipping_address_modal').val('');
+    }
+    if ($('#shipping_status_modal').length) {
+        $('#shipping_status_modal').val('');
+    }
+    if ($('#delivered_to_modal').length) {
+        $('#delivered_to_modal').val('');
+    }
 	if($('input#is_recurring').length > 0){
 		$('input#is_recurring').iCheck('update');
 	};
@@ -3702,6 +3799,17 @@ function reset_pos_form(){
         $('#invoice_layout_id').trigger('change');
     };
     $('span#round_off_text').text(0);
+
+    // Clear sale notes leftover from payment / park
+    if ($('#sale_note').length) {
+        $('#sale_note').val('');
+    }
+    if ($('#staff_note').length) {
+        $('#staff_note').val('');
+    }
+    if ($('#confirmSuspendModal textarea[name="additional_notes"]').length) {
+        $('#confirmSuspendModal textarea[name="additional_notes"]').val('');
+    }
 
     //repair module extra  fields reset
     if ($('#repair_device_id').length > 0) {
@@ -3744,6 +3852,9 @@ function reset_pos_form(){
     // Set global_is_clear_local_storage to true to clear local storage
     global_is_clear_local_storage = true;
     saveFormDataToLocalStorage();
+
+    // Re-apply discount/tax defaults last (anything above must not leave previous sale values)
+    pos_reset_order_discount_and_tax();
 
     if (typeof pos_total_row === 'function') {
         try { pos_total_row(); } catch (e) {}
