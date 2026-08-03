@@ -571,8 +571,8 @@ function __print_receipt_html(section_id) {
         '.usl-items tbody tr{page-break-inside:avoid!important;break-inside:avoid!important;}' +
         '.usl-endblock{page-break-inside:auto!important;break-inside:auto!important;}' +
         '.usl-lower,.usl-tots{page-break-inside:avoid!important;break-inside:avoid!important;}' +
-        '.usl-ship-tbl{border-collapse:collapse;width:auto;max-width:360px;}' +
-        '.usl-ship-tbl td{padding:4px 8px;font-size:11px;border:0.5px solid #c8c8c8;}' +
+        '.usl-ship-tbl{border-collapse:collapse;width:auto;max-width:360px;border:0!important;}' +
+        '.usl-ship-tbl td{padding:4px 8px;font-size:11px;border:0!important;}' +
         '.usl-ship-tbl td.k{background:#e8e8e8!important;font-weight:700;white-space:nowrap;' +
         '-webkit-print-color-adjust:exact;print-color-adjust:exact;}' +
         '.usl-ship-tbl td.v{background:transparent!important;font-weight:400;}' +

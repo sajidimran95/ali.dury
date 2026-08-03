@@ -423,12 +423,12 @@
 		padding-left: 8px;
 		vertical-align: top;
 	}
-	/* Ship: light bg on labels only — value side transparent */
+	/* Ship: light bg on labels only — value side transparent, no border lines */
 	.usl-ship-tbl {
 		width: auto;
 		max-width: 360px;
 		border-collapse: collapse;
-		border: 0;
+		border: 0 !important;
 		margin: 0;
 		background: transparent;
 	}
@@ -436,7 +436,7 @@
 		padding: 4px 8px;
 		font-size: 11px;
 		line-height: 1.4;
-		border: 0.5px solid #c8c8c8;
+		border: 0 !important;
 		vertical-align: middle;
 		color: #111;
 	}
