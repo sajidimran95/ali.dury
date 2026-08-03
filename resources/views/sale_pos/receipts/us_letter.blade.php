@@ -1218,16 +1218,5 @@
 			</td>
 		</tr>
 	</table>
-
-	<table class="usl-page">
-		<tr>
-			<td class="pg-left">
-				@if(!empty($receipt_details->invoice_no))
-					Invoice {{ $receipt_details->invoice_no }}
-				@endif
-			</td>
-			<td class="pg-right">&nbsp;</td>
-		</tr>
-	</table>
 	</div>{{-- /.usl-endblock --}}
 </div>
