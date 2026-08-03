@@ -189,16 +189,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.389.3",
+            "version": "3.390.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "09bbb4023a14316ff2c5e568301a382f7e3465f5"
+                "reference": "8026ec372223fb3ffa010b96ca14a1df329085f5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/09bbb4023a14316ff2c5e568301a382f7e3465f5",
-                "reference": "09bbb4023a14316ff2c5e568301a382f7e3465f5",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/8026ec372223fb3ffa010b96ca14a1df329085f5",
+                "reference": "8026ec372223fb3ffa010b96ca14a1df329085f5",
                 "shasum": ""
             },
             "require": {
@@ -280,9 +280,9 @@
             "support": {
                 "forum": "https://github.com/aws/aws-sdk-php/discussions",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.389.3"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.390.3"
             },
-            "time": "2026-07-29T18:09:38+00:00"
+            "time": "2026-08-03T18:28:24+00:00"
         },
         {
             "name": "balping/json-raw-encoder",
@@ -2219,7 +2219,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/knox-pesapal",
-                "reference": "fca2ce14afdfa129634840ebd9d552d51ffc5ec0"
+                "reference": "37e131bb71561611192020c5ba9348d87f08a719"
             },
             "require": {
                 "illuminate/support": "^11.0|^12.0|^13.0",
@@ -2965,16 +2965,16 @@
         },
         {
             "name": "league/commonmark",
-            "version": "2.8.3",
+            "version": "2.9.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/thephpleague/commonmark.git",
-                "reference": "1902f60f984235023acbe03db6ad614a37b3c3e7"
+                "reference": "5703d83ba3da3b2e356a5fedc848ed6d8ffb6529"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/thephpleague/commonmark/zipball/1902f60f984235023acbe03db6ad614a37b3c3e7",
-                "reference": "1902f60f984235023acbe03db6ad614a37b3c3e7",
+                "url": "https://api.github.com/repos/thephpleague/commonmark/zipball/5703d83ba3da3b2e356a5fedc848ed6d8ffb6529",
+                "reference": "5703d83ba3da3b2e356a5fedc848ed6d8ffb6529",
                 "shasum": ""
             },
             "require": {
@@ -3011,7 +3011,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-main": "2.9-dev"
+                    "dev-main": "2.10-dev"
                 }
             },
             "autoload": {
@@ -3068,7 +3068,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-07-12T15:29:16+00:00"
+            "time": "2026-08-03T13:42:31+00:00"
         },
         {
             "name": "league/config",
@@ -5083,7 +5083,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/nwidart-laravel-menus",
-                "reference": "434e08978d59314339d8e2a588ad1df30d72d6e2"
+                "reference": "cc6cb30e8ba22a77a4335346fad24ee4a2dea387"
             },
             "require": {
                 "illuminate/config": "^13.0",
@@ -5986,16 +5986,16 @@
         },
         {
             "name": "phpseclib/phpseclib",
-            "version": "3.0.55",
+            "version": "3.0.56",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpseclib/phpseclib.git",
-                "reference": "db9744e6d47e742b1f974e965ad49bdd041105af"
+                "reference": "7adbbe38cde25e2df2116dbf2673c407e24fa305"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpseclib/phpseclib/zipball/db9744e6d47e742b1f974e965ad49bdd041105af",
-                "reference": "db9744e6d47e742b1f974e965ad49bdd041105af",
+                "url": "https://api.github.com/repos/phpseclib/phpseclib/zipball/7adbbe38cde25e2df2116dbf2673c407e24fa305",
+                "reference": "7adbbe38cde25e2df2116dbf2673c407e24fa305",
                 "shasum": ""
             },
             "require": {
@@ -6076,7 +6076,7 @@
             ],
             "support": {
                 "issues": "https://github.com/phpseclib/phpseclib/issues",
-                "source": "https://github.com/phpseclib/phpseclib/tree/3.0.55"
+                "source": "https://github.com/phpseclib/phpseclib/tree/3.0.56"
             },
             "funding": [
                 {
@@ -6092,20 +6092,20 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-06-14T23:24:10+00:00"
+            "time": "2026-08-03T04:36:50+00:00"
         },
         {
             "name": "propaganistas/laravel-disposable-email",
-            "version": "2.5.0",
+            "version": "2.5.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Propaganistas/Laravel-Disposable-Email.git",
-                "reference": "f26fef96f9673441bf59799399965296513a5c8c"
+                "reference": "304ff7f64442a70a49628bce13b9bab3cc5d5fc2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Propaganistas/Laravel-Disposable-Email/zipball/f26fef96f9673441bf59799399965296513a5c8c",
-                "reference": "f26fef96f9673441bf59799399965296513a5c8c",
+                "url": "https://api.github.com/repos/Propaganistas/Laravel-Disposable-Email/zipball/304ff7f64442a70a49628bce13b9bab3cc5d5fc2",
+                "reference": "304ff7f64442a70a49628bce13b9bab3cc5d5fc2",
                 "shasum": ""
             },
             "require": {
@@ -6160,7 +6160,7 @@
             ],
             "support": {
                 "issues": "https://github.com/Propaganistas/Laravel-Disposable-Email/issues",
-                "source": "https://github.com/Propaganistas/Laravel-Disposable-Email/tree/2.5.0"
+                "source": "https://github.com/Propaganistas/Laravel-Disposable-Email/tree/2.5.1"
             },
             "funding": [
                 {
@@ -6168,7 +6168,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-07-08T09:02:45+00:00"
+            "time": "2026-08-01T01:48:13+00:00"
         },
         {
             "name": "psr/clock",
@@ -11032,7 +11032,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/laravel-paystack",
-                "reference": "2c4a887b9c5e9b018bc8e484a970be076909331d"
+                "reference": "7f227a51812d70ef70b35ee1168baba07b5dbb52"
             },
             "require": {
                 "guzzlehttp/guzzle": "^7.8",
@@ -11322,16 +11322,16 @@
         },
         {
             "name": "yajra/laravel-datatables-oracle",
-            "version": "v13.1.5",
+            "version": "v13.1.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/yajra/laravel-datatables.git",
-                "reference": "299c07a7dae380e565bd328104965b6e02286c2f"
+                "reference": "662cbca5d7c7cecd1e21b123eafda0485f0f033d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/yajra/laravel-datatables/zipball/299c07a7dae380e565bd328104965b6e02286c2f",
-                "reference": "299c07a7dae380e565bd328104965b6e02286c2f",
+                "url": "https://api.github.com/repos/yajra/laravel-datatables/zipball/662cbca5d7c7cecd1e21b123eafda0485f0f033d",
+                "reference": "662cbca5d7c7cecd1e21b123eafda0485f0f033d",
                 "shasum": ""
             },
             "require": {
@@ -11399,7 +11399,7 @@
             ],
             "support": {
                 "issues": "https://github.com/yajra/laravel-datatables/issues",
-                "source": "https://github.com/yajra/laravel-datatables/tree/v13.1.5"
+                "source": "https://github.com/yajra/laravel-datatables/tree/v13.1.6"
             },
             "funding": [
                 {
@@ -11407,7 +11407,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-07-03T01:53:46+00:00"
+            "time": "2026-07-31T03:18:01+00:00"
         }
     ],
     "packages-dev": [

@@ -21,6 +21,7 @@
 					[], null, ['class' => 'form-control mousetrap', 'id' => 'customer_id', 'placeholder' => 'Add a customer', 'required']); !!}
 				<span class="input-group-btn">
 					<button type="button" class="btn btn-default bg-white btn-flat add_new_customer" data-name=""  @if(!auth()->user()->can('customer.create')) disabled @endif><i class="fa fa-plus-circle text-primary fa-lg"></i></button>
+					<button type="button" id="pos-customer-purchase-history" class="btn btn-default bg-white btn-flat" title="@lang('lang_v1.customer_purchase_history')"><i class="fas fa-history text-primary fa-lg"></i></button>
 					@can('sell.payments')
 					<button type="button" id="pos-receive-customer-payment" class="btn btn-default bg-white btn-flat" title="@lang('lang_v1.receive_payment')"><i class="fas fa-hand-holding-usd text-primary fa-lg"></i></button>
 					@endcan

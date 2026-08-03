@@ -4590,18 +4590,21 @@ $(document).on('click', '#select_all_service_staff', function() {
 
 $(document).on('click', '.print-invoice-link', function(e) {
     e.preventDefault();
+    e.stopPropagation();
     var printUrl = $(this).attr('href') + '?check_location=true';
 
-    // Close Recent Transactions / any open modal before invoice print so
+    // Close Recent Transactions / purchase history / any open modal before invoice print so
     // popup does not sit on top of receipt (POS theme keeps modals display:flex !important)
     try {
         $('#recent_transactions_modal').modal('hide');
+        $('#pos_customer_purchase_history_modal').modal('hide');
         $('.modal.in, .modal.show').not('#receipt_section').modal('hide');
     } catch (err) {}
     setTimeout(function() {
         $('.modal-backdrop').remove();
         $('body').removeClass('modal-open').css({ 'padding-right': '', overflow: '' });
         $('#recent_transactions_modal').removeClass('in show').attr('aria-hidden', 'true').hide();
+        $('#pos_customer_purchase_history_modal').removeClass('in show').attr('aria-hidden', 'true').hide();
     }, 50);
 
     $.ajax({
@@ -4615,6 +4618,7 @@ $(document).on('click', '.print-invoice-link', function(e) {
                     $('.modal-backdrop').remove();
                     $('body').removeClass('modal-open');
                     $('#recent_transactions_modal').removeClass('in show').hide();
+                    $('#pos_customer_purchase_history_modal').removeClass('in show').hide();
                     pos_print(result.receipt);
                 }
             } else {
@@ -5218,6 +5222,191 @@ $(document).on('submit', 'form#add_expense_modal_form', function(e) {
 });
 
 // Receive Customer Payment from POS
+// Customer purchase history (last sales) on POS
+$(document).on('click', '#pos-customer-purchase-history', function (e) {
+    e.preventDefault();
+    var customer_id = $('select#customer_id').val();
+    if (!customer_id) {
+        toastr.warning(
+            (typeof LANG !== 'undefined' && LANG.select_customer_for_history) ||
+                'Select a customer to view purchase history.'
+        );
+        return;
+    }
+
+    var $modal = $('#pos_customer_purchase_history_modal');
+    if (!$modal.length) {
+        return;
+    }
+
+    var $loading = $modal.find('.pos-cust-history-loading');
+    var $empty = $modal.find('.pos-cust-history-empty');
+    var $wrap = $modal.find('.pos-cust-history-table-wrap');
+    var $tbody = $modal.find('.pos-cust-history-table tbody');
+    var $subtitle = $modal.find('.pos-cust-history-subtitle');
+
+    $tbody.empty();
+    $empty.addClass('hide');
+    $wrap.addClass('hide');
+    $loading.removeClass('hide');
+    $subtitle.text('');
+
+    var customerName =
+        $('#customer_id option:selected').text() ||
+        $('select#customer_id').find('option:selected').text() ||
+        '';
+    // Select2 may put name in rendered text
+    if ((!customerName || customerName === 'Add a customer') && $('.pos-customer-bar .select2-selection__rendered').length) {
+        customerName = $('.pos-customer-bar .select2-selection__rendered').text().trim();
+    }
+    $subtitle.text(customerName);
+
+    $modal.modal('show');
+
+    $.ajax({
+        method: 'GET',
+        url: '/contacts/purchase-history/' + customer_id,
+        data: { limit: 15 },
+        dataType: 'json',
+    })
+        .done(function (res) {
+            $loading.addClass('hide');
+            if (res.customer && res.customer.name) {
+                var sub = res.customer.name;
+                if (res.customer.mobile) {
+                    sub += ' · ' + res.customer.mobile;
+                }
+                $subtitle.text(sub);
+            }
+            var rows = (res && res.history) || [];
+            if (!rows.length) {
+                $empty.removeClass('hide');
+                return;
+            }
+            $wrap.removeClass('hide');
+            rows.forEach(function (sale, idx) {
+                var rowId = 'pos-hist-prod-' + sale.id + '-' + idx;
+                var payClass = '';
+                if (sale.payment_status === 'paid') {
+                    payClass = 'label-success';
+                } else if (sale.payment_status === 'partial') {
+                    payClass = 'label-warning';
+                } else if (sale.payment_status === 'due') {
+                    payClass = 'label-danger';
+                } else {
+                    payClass = 'label-default';
+                }
+                var itemLabel =
+                    (typeof LANG !== 'undefined' && LANG.items_count
+                        ? String(LANG.items_count).replace(':count', sale.product_count)
+                        : sale.product_count + ' item(s)');
+
+                var productsHtml = '';
+                if (sale.products && sale.products.length) {
+                    productsHtml =
+                        '<table class="table table-condensed table-striped" style="margin:0;background:transparent;">' +
+                        '<thead><tr><th>Product</th><th>SKU</th><th class="text-right">Qty</th><th class="text-right">Total</th></tr></thead><tbody>';
+                    sale.products.forEach(function (p) {
+                        productsHtml +=
+                            '<tr>' +
+                            '<td>' +
+                            $('<div>').text(p.name || '').html() +
+                            '</td>' +
+                            '<td>' +
+                            $('<div>').text(p.sku || '—').html() +
+                            '</td>' +
+                            '<td class="text-right">' +
+                            $('<div>').text(p.qty_formatted || p.qty || '').html() +
+                            '</td>' +
+                            '<td class="text-right">' +
+                            $('<div>').text(p.line_total_formatted || '').html() +
+                            '</td>' +
+                            '</tr>';
+                    });
+                    productsHtml += '</tbody></table>';
+                } else {
+                    productsHtml = '<p class="text-muted" style="margin:0;">—</p>';
+                }
+
+                var invoiceHtml = '—';
+                if (sale.invoice_no && sale.id) {
+                    var printHref =
+                        (window.base_path || '') + '/sells/' + sale.id + '/print';
+                    invoiceHtml =
+                        '<a href="' +
+                        printHref +
+                        '" class="print-invoice-link pos-cust-history-invoice" title="' +
+                        ((typeof LANG !== 'undefined' && LANG.print_invoice) || 'Print Invoice') +
+                        '">' +
+                        '<i class="fa fa-print"></i> ' +
+                        $('<div>').text(sale.invoice_no).html() +
+                        '</a>';
+                } else if (sale.invoice_no) {
+                    invoiceHtml =
+                        '<strong>' + $('<div>').text(sale.invoice_no).html() + '</strong>';
+                }
+
+                var tr =
+                    '<tr class="pos-cust-history-row" data-target="#' +
+                    rowId +
+                    '">' +
+                    '<td class="text-center"><i class="fa fa-chevron-right pos-hist-chevron"></i></td>' +
+                    '<td>' +
+                    invoiceHtml +
+                    '</td>' +
+                    '<td>' +
+                    $('<div>').text(sale.transaction_date_formatted || '').html() +
+                    (sale.location
+                        ? '<br><small class="text-muted">' +
+                          $('<div>').text(sale.location).html() +
+                          '</small>'
+                        : '') +
+                    '</td>' +
+                    '<td><span class="label ' +
+                    payClass +
+                    '">' +
+                    $('<div>').text(sale.payment_status_label || sale.payment_status || '').html() +
+                    '</span></td>' +
+                    '<td class="text-right"><strong>' +
+                    $('<div>').text(sale.final_total_formatted || '').html() +
+                    '</strong></td>' +
+                    '<td>' +
+                    $('<div>').text(itemLabel).html() +
+                    '</td>' +
+                    '</tr>' +
+                    '<tr id="' +
+                    rowId +
+                    '" class="pos-cust-history-detail hide">' +
+                    '<td colspan="6" style="background:rgba(0,0,0,0.03);padding:8px 12px;">' +
+                    productsHtml +
+                    '</td></tr>';
+                $tbody.append(tr);
+            });
+        })
+        .fail(function (xhr) {
+            $loading.addClass('hide');
+            $empty.removeClass('hide');
+            var msg =
+                (xhr.responseJSON && xhr.responseJSON.message) ||
+                (typeof LANG !== 'undefined' && LANG.something_went_wrong) ||
+                'Something went wrong';
+            toastr.error(msg);
+        });
+});
+
+$(document).on('click', '#pos_customer_purchase_history_modal .pos-cust-history-row', function () {
+    var target = $(this).data('target');
+    var $detail = $(target);
+    var $icon = $(this).find('.pos-hist-chevron');
+    if ($detail.hasClass('hide')) {
+        $detail.removeClass('hide');
+        $icon.removeClass('fa-chevron-right').addClass('fa-chevron-down');
+    } else {
+        $detail.addClass('hide');
+        $icon.removeClass('fa-chevron-down').addClass('fa-chevron-right');
+    }
+});
+
 $(document).on('click', '#pos-receive-customer-payment', function() {
     var customer_id = $('select#customer_id').val();
     if (!customer_id) {

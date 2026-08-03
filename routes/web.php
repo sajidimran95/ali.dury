@@ -200,6 +200,7 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
 
     Route::post('check-mobile', [ContactController::class, 'checkMobile']);
     Route::get('/get-contact-due/{contact_id}', [ContactController::class, 'getContactDue']);
+    Route::get('/contacts/purchase-history/{contact_id}', [ContactController::class, 'getPurchaseHistory']);
     Route::get('/contacts/payments/{contact_id}', [ContactController::class, 'getContactPayments']);
     Route::get('/contacts/map', [ContactController::class, 'contactMap']);
     Route::get('/contacts/update-status/{id}', [ContactController::class, 'updateStatus']);

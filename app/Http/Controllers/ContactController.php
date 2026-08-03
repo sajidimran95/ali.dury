@@ -1917,6 +1917,94 @@ class ContactController extends Controller
         ]);
     }
 
+    /**
+     * Last few final sales for a customer (POS purchase history).
+     */
+    public function getPurchaseHistory($contact_id)
+    {
+        if (! request()->ajax()) {
+            abort(404);
+        }
+
+        $business_id = request()->session()->get('user.business_id');
+        $contact = Contact::where('business_id', $business_id)
+            ->whereIn('type', ['customer', 'both'])
+            ->findOrFail($contact_id);
+
+        $limit = (int) request()->input('limit', 15);
+        if ($limit < 1) {
+            $limit = 15;
+        }
+        if ($limit > 30) {
+            $limit = 30;
+        }
+
+        $sells = Transaction::where('business_id', $business_id)
+            ->where('contact_id', $contact->id)
+            ->where('type', 'sell')
+            ->where('status', 'final')
+            ->with([
+                'sell_lines' => function ($q) {
+                    $q->whereNull('parent_sell_line_id')
+                        ->with(['product:id,name,sku', 'variations:id,name,sub_sku']);
+                },
+                'location:id,name',
+            ])
+            ->orderBy('transaction_date', 'desc')
+            ->orderBy('id', 'desc')
+            ->limit($limit)
+            ->get();
+
+        $history = [];
+        foreach ($sells as $sale) {
+            $products = [];
+            foreach ($sale->sell_lines as $line) {
+                $name = optional($line->product)->name ?: '—';
+                $variation = optional($line->variations)->name;
+                if (! empty($variation) && $variation != 'DUMMY') {
+                    $name .= ' - '.$variation;
+                }
+                $sku = optional($line->variations)->sub_sku ?: optional($line->product)->sku;
+                $qty = (float) $line->quantity;
+                $products[] = [
+                    'name' => $name,
+                    'sku' => $sku,
+                    'qty' => $qty,
+                    'qty_formatted' => $this->transactionUtil->num_f($qty, false, null, true),
+                    'unit_price' => (float) $line->unit_price_inc_tax,
+                    'unit_price_formatted' => $this->transactionUtil->num_f($line->unit_price_inc_tax, true),
+                    'line_total' => (float) ($line->unit_price_inc_tax * $line->quantity),
+                    'line_total_formatted' => $this->transactionUtil->num_f($line->unit_price_inc_tax * $line->quantity, true),
+                ];
+            }
+
+            $history[] = [
+                'id' => $sale->id,
+                'invoice_no' => $sale->invoice_no,
+                'transaction_date' => $sale->transaction_date,
+                'transaction_date_formatted' => $this->transactionUtil->format_date($sale->transaction_date, true),
+                'location' => optional($sale->location)->name,
+                'payment_status' => $sale->payment_status,
+                'payment_status_label' => __('lang_v1.'.$sale->payment_status),
+                'final_total' => (float) $sale->final_total,
+                'final_total_formatted' => $this->transactionUtil->num_f($sale->final_total, true),
+                'products' => $products,
+                'product_count' => count($products),
+            ];
+        }
+
+        return response()->json([
+            'success' => true,
+            'customer' => [
+                'id' => $contact->id,
+                'name' => $contact->name,
+                'mobile' => $contact->mobile,
+                'contact_id' => $contact->contact_id,
+            ],
+            'history' => $history,
+        ]);
+    }
+
     public function checkMobile(Request $request)
     {
         $business_id = $request->session()->get('user.business_id');
