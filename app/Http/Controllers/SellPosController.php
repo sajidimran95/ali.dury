@@ -1332,7 +1332,19 @@ class SellPosController extends Controller
 
                 $input['is_suspend'] = isset($input['is_suspend']) && 1 == $input['is_suspend'] ? 1 : 0;
                 if ($input['is_suspend']) {
+                    // Park name — for suspended sales list only
                     $input['sale_note'] = !empty($input['additional_notes']) ? $input['additional_notes'] : null;
+                } elseif (
+                    ($input['status'] ?? '') === 'final'
+                    && ! empty($transaction_before->is_suspend)
+                ) {
+                    // Completing a parked sale: do not print park/suspend name on the invoice
+                    $parkName = trim((string) ($transaction_before->additional_notes ?? ''));
+                    $postedNote = trim((string) ($input['sale_note'] ?? $input['additional_notes'] ?? ''));
+                    if ($postedNote === '' || ($parkName !== '' && $postedNote === $parkName)) {
+                        $input['sale_note'] = null;
+                        $input['additional_notes'] = null;
+                    }
                 }
 
                 if ($status_before == 'draft' && !empty($request->input('invoice_scheme_id'))) {
@@ -1660,6 +1672,10 @@ class SellPosController extends Controller
         $transaction->payment_status = $payment_status;
 
         if ($payment_status == 'paid') {
+            // Completing payment ends suspension; drop park name so it is not printed on invoice
+            if (! empty($transaction->is_suspend) && ! empty($transaction->additional_notes)) {
+                $transaction->additional_notes = null;
+            }
             $transaction->is_suspend = 0;
             $transaction->save();
         }

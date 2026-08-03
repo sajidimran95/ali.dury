@@ -114,7 +114,8 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     {!! Form::label('sale_note', __('sale.sell_note') . ':') !!}
-                                    {!! Form::textarea('sale_note', !empty($transaction) ? $transaction->additional_notes : null, [
+                                    {{-- Park/suspend name is stored in additional_notes; do not treat it as customer sell note --}}
+                                    {!! Form::textarea('sale_note', (!empty($transaction) && empty($transaction->is_suspend)) ? $transaction->additional_notes : null, [
                                         'class' => 'form-control',
                                         'rows' => 3,
                                         'placeholder' => __('sale.sell_note'),
