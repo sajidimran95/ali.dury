@@ -120,15 +120,13 @@
 	$discount_label_html = !empty($receipt_details->discount_label)
 		? $receipt_details->discount_label
 		: 'Discount';
-	// Tax label keeps rate name e.g. Tax (VAT@10%)
+	// Item Tax column header — just "Tax" (no rate / %)
+	$tax_col_label = 'Tax';
+	// Cart/order Tax row — layout label + rate name OK e.g. Tax (VAT@10%)
 	$tax_total_label_html = !empty($receipt_details->tax_label)
 		? $receipt_details->tax_label
 		: 'Tax:';
 	$show_tax_column = !empty($receipt_details->enable_inline_tax);
-	$tax_col_label = $lbl($receipt_details->tax_label ?? null, 'Tax');
-	if ($tax_col_label === '' || $tax_col_label === '(') {
-		$tax_col_label = 'Tax';
-	}
 	// Grand total label always from language file for standard labels
 	// (Total / Grand Total) so locale switches apply; custom layout label otherwise
 	$layout_total_raw = $lbl($receipt_details->total_label ?? null, '');
