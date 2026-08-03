@@ -162,38 +162,86 @@
 @endphp
 <style type="text/css">
 	@media print {
-		/* Zero margins hide browser chrome headers (date / title) & footers when possible */
+		/* Letter pages with room for multi-page flow */
 		@page {
 			size: letter portrait;
-			margin: 0;
+			margin: 0.4in 0.45in 0.5in 0.45in;
 		}
 		html, body {
 			margin: 0 !important;
 			padding: 0 !important;
 			background: #fff !important;
+			height: auto !important;
+			overflow: visible !important;
+		}
+		/* Receipt shell must not clip or lock to one page */
+		#receipt_section,
+		.print_section,
+		.invoice.print_section {
+			display: block !important;
+			height: auto !important;
+			max-height: none !important;
+			overflow: visible !important;
+			page-break-after: auto !important;
+			break-after: auto !important;
 		}
 		.usl-wrap {
 			width: 100% !important;
 			max-width: none !important;
-			min-height: 11in;
+			/* NO min-height / flex — that forces a single “fake” page and cuts content */
+			min-height: 0 !important;
+			height: auto !important;
+			display: block !important;
 			box-sizing: border-box !important;
-			padding: 0.4in 0.45in 0.5in 0.45in !important;
-			display: flex !important;
-			flex-direction: column !important;
-			position: relative;
+			padding: 0 !important;
+			position: static !important;
+			overflow: visible !important;
+			page-break-after: auto !important;
 		}
-		/* Footer thank-you + page number at physical page bottom */
-		.usl-foot {
-			margin-top: auto !important;
-			padding-top: 12px !important;
+		/* Repeat product header on every printed page */
+		.usl-items {
+			page-break-inside: auto !important;
+			break-inside: auto !important;
 		}
+		.usl-items thead {
+			display: table-header-group !important;
+		}
+		.usl-items tbody {
+			display: table-row-group !important;
+		}
+		/* Keep each line item together; overflow moves whole row to next page */
+		.usl-items tbody tr {
+			page-break-inside: avoid !important;
+			break-inside: avoid !important;
+		}
+		/* Keep header / parties block together on first page when possible */
+		.usl-hdr,
+		.usl-parties,
+		.usl-meta {
+			page-break-inside: avoid !important;
+			break-inside: avoid !important;
+		}
+		/* Ship + totals — may split; do not force whole block on page 1 (causes clipping) */
+		.usl-endblock {
+			page-break-inside: auto !important;
+			break-inside: auto !important;
+			page-break-before: auto !important;
+		}
+		.usl-lower,
+		.usl-tots,
+		.usl-bal {
+			page-break-inside: avoid !important;
+			break-inside: avoid !important;
+		}
+		.usl-foot,
 		.usl-page {
 			margin-top: 10px !important;
-			margin-bottom: 0 !important;
-			padding-top: 8px !important;
-			border-top: 1px solid #ccc !important;
-			position: relative;
-			bottom: 0;
+			page-break-inside: avoid !important;
+			break-inside: avoid !important;
+		}
+		/* When browser supports page counters */
+		.usl-page .pg-left .usl-page-counter::after {
+			content: counter(page);
 		}
 	}
 	.usl-wrap {
@@ -205,14 +253,13 @@
 		width: 100%;
 		max-width: 8.5in;
 		margin: 0 auto;
-		display: flex;
-		flex-direction: column;
-		min-height: 10.5in;
+		display: block;
+		/* Screen preview only — print overrides this */
+		min-height: auto;
 		box-sizing: border-box;
-		padding: 0;
-	}
-	.usl-wrap > *:not(.usl-foot):not(.usl-page) {
-		flex-shrink: 0;
+		padding: 12px 16px;
+		height: auto;
+		overflow: visible;
 	}
 	.usl-wrap table { width: 100%; border-collapse: collapse; }
 	.usl-wrap td, .usl-wrap th { vertical-align: top; }
@@ -362,7 +409,7 @@
 	.usl-items .r { text-align: right; white-space: nowrap; }
 	.usl-items .prod { font-weight: 600; }
 	.usl-items .muted { font-weight: 400; color: #333; }
-	/* Lower split */
+	/* Lower split — ship left (ref light label cells), totals right */
 	.usl-lower { margin-top: 12px; width: 100%; border-collapse: collapse; }
 	.usl-lower .ship {
 		width: 48%;
@@ -375,6 +422,28 @@
 		width: 52%;
 		padding-left: 8px;
 		vertical-align: top;
+	}
+	/* Ship Method / Date / Tracking / Boxes — plain lines, no table (ref style) */
+	.usl-ship-block {
+		max-width: 340px;
+		background: transparent;
+		font-size: 11px;
+		line-height: 1.55;
+		color: #111;
+	}
+	.usl-ship-block .usl-ship-line {
+		margin: 0 0 3px 0;
+		padding: 0;
+		background: transparent;
+	}
+	.usl-ship-block .usl-ship-line .k {
+		font-weight: 700;
+	}
+	.usl-ship-block .usl-ship-line .v {
+		font-weight: 400;
+	}
+	.usl-ship-block + .usl-pay {
+		margin-top: 6px;
 	}
 	/* Totals — same thin bottom line on every row (no fat rule after Tax) */
 	.usl-tots {
@@ -865,7 +934,8 @@
 		</tbody>
 	</table>
 
-	{{-- ========== SHIPPING (left) + TOTALS line-wise (right) ========== --}}
+	{{-- ========== SHIPPING (left) + TOTALS (right) + credit/footer (keep together when possible) ========== --}}
+	<div class="usl-endblock">
 	@php
 		$moneyOrZero = function ($val) use ($zero_money) {
 			if ($val === null || $val === '' || $val === 0 || $val === '0' || $val === '0.00') {
@@ -881,38 +951,28 @@
 	<table class="usl-lower">
 		<tr>
 			<td class="ship">
-				@if(!empty($receipt_details->shipping_details))
-					<div><strong>Ship Method:</strong> {{ $receipt_details->shipping_details }}</div>
-				@endif
-				@if(!empty($receipt_details->shipping_method))
-					<div><strong>{{ $receipt_details->shipping_method_label ?? 'Shipping Method' }}:</strong> {{ $receipt_details->shipping_method }}</div>
-				@endif
-				@if(!empty($receipt_details->shipping_date))
-					<div><strong>{{ $receipt_details->shipping_date_label ?? 'Shipping Date' }}:</strong> {{ $receipt_details->shipping_date }}</div>
-				@endif
-				@if(!empty($receipt_details->shipping_tracking_no))
-					<div><strong>{{ $receipt_details->shipping_tracking_no_label ?? 'Tracking No' }}:</strong> {{ $receipt_details->shipping_tracking_no }}</div>
-				@endif
-				@if(!empty($receipt_details->no_of_boxes))
-					<div><strong>{{ $receipt_details->no_of_boxes_label ?? 'No. of Boxes' }}:</strong> {{ $receipt_details->no_of_boxes }}</div>
-				@endif
-				@if(!empty($receipt_details->shipping_status))
-					<div><strong>Ship Status:</strong> {{ $receipt_details->shipping_status }}</div>
-				@endif
-				@if(!empty($receipt_details->shipping_custom_field_1_label))
-					<div><strong>{!! strip_tags($receipt_details->shipping_custom_field_1_label) !!}:</strong> {!! $receipt_details->shipping_custom_field_1_value ?? '' !!}</div>
-				@endif
-				@if(!empty($receipt_details->shipping_custom_field_2_label))
-					<div><strong>{!! strip_tags($receipt_details->shipping_custom_field_2_label) !!}:</strong> {!! $receipt_details->shipping_custom_field_2_value ?? '' !!}</div>
-				@endif
-				@if(!empty($receipt_details->shipping_custom_field_3_label))
-					<div><strong>{!! strip_tags($receipt_details->shipping_custom_field_3_label) !!}:</strong> {!! $receipt_details->shipping_custom_field_3_value ?? '' !!}</div>
-				@endif
-				@if(!empty($receipt_details->shipping_custom_field_4_label))
-					<div><strong>{!! strip_tags($receipt_details->shipping_custom_field_4_label) !!}:</strong> {!! $receipt_details->shipping_custom_field_4_value ?? '' !!}</div>
-				@endif
-				@if(!empty($receipt_details->shipping_custom_field_5_label))
-					<div><strong>{!! strip_tags($receipt_details->shipping_custom_field_5_label) !!}:</strong> {!! $receipt_details->shipping_custom_field_5_value ?? '' !!}</div>
+				@php
+					// One Ship Method only — prefer free-text details, else method field
+					$shipMethodVal = '';
+					if (!empty($receipt_details->shipping_details)) {
+						$shipMethodVal = $receipt_details->shipping_details;
+					} elseif (!empty($receipt_details->shipping_method)) {
+						$shipMethodVal = $receipt_details->shipping_method;
+					}
+					$shipDateVal = $receipt_details->shipping_date ?? '';
+					$shipTrackVal = $receipt_details->shipping_tracking_no ?? '';
+					$shipBoxesVal = isset($receipt_details->no_of_boxes) && $receipt_details->no_of_boxes !== '' && $receipt_details->no_of_boxes !== null
+						? $receipt_details->no_of_boxes
+						: '';
+					$showShipTbl = ($shipMethodVal !== '' || $shipDateVal !== '' || $shipTrackVal !== '' || $shipBoxesVal !== '');
+				@endphp
+				@if($showShipTbl)
+				<div class="usl-ship-block">
+					<div class="usl-ship-line"><span class="k">Ship Method:</span> <span class="v">{{ $shipMethodVal !== '' ? $shipMethodVal : '-' }}</span></div>
+					<div class="usl-ship-line"><span class="k">Ship Date:</span> <span class="v">{{ $shipDateVal !== '' ? $shipDateVal : '-' }}</span></div>
+					<div class="usl-ship-line"><span class="k">Tracking No:</span> <span class="v">{{ $shipTrackVal !== '' ? $shipTrackVal : '-' }}</span></div>
+					<div class="usl-ship-line"><span class="k">No of Boxes:</span> <span class="v">{{ $shipBoxesVal !== '' ? $shipBoxesVal : '-' }}</span></div>
+				</div>
 				@endif
 				@if(!empty($receipt_details->payments))
 					<table class="usl-pay">
@@ -1107,8 +1167,13 @@
 
 	<table class="usl-page">
 		<tr>
-			<td class="pg-left">Page 1 of 1</td>
+			<td class="pg-left">
+				@if(!empty($receipt_details->invoice_no))
+					Invoice {{ $receipt_details->invoice_no }}
+				@endif
+			</td>
 			<td class="pg-right">&nbsp;</td>
 		</tr>
 	</table>
+	</div>{{-- /.usl-endblock --}}
 </div>

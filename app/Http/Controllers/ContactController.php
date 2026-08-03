@@ -1118,8 +1118,21 @@ class ContactController extends Controller
 
             $contacts->select(
                 'contacts.id',
-                DB::raw("IF(contacts.contact_id IS NULL OR contacts.contact_id='', contacts.name, CONCAT(contacts.name, ' (', contacts.contact_id, ')')) AS text"),
-                'contacts.name',
+                // Prefer business name, then personal name; append contact code only as suffix for search
+                DB::raw("TRIM(CONCAT(
+                    IF(contacts.supplier_business_name IS NOT NULL AND contacts.supplier_business_name != '',
+                        contacts.supplier_business_name,
+                        IFNULL(contacts.name, '')
+                    ),
+                    IF(contacts.contact_id IS NOT NULL AND contacts.contact_id != '',
+                        CONCAT(' (', contacts.contact_id, ')'),
+                        ''
+                    )
+                )) AS text"),
+                DB::raw("IF(contacts.supplier_business_name IS NOT NULL AND contacts.supplier_business_name != '',
+                    contacts.supplier_business_name,
+                    IFNULL(contacts.name, '')
+                ) AS name"),
                 'contacts.contact_id',
                 'mobile',
                 'address_line_1',

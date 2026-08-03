@@ -1005,7 +1005,36 @@ tr.details td.details-control {
 }
 @media print{
     .print_section{
-        display: inline !important;
+        display: block !important;
+        height: auto !important;
+        max-height: none !important;
+        overflow: visible !important;
+        page-break-inside: auto !important;
+    }
+    #receipt_section {
+        display: block !important;
+        height: auto !important;
+        max-height: none !important;
+        overflow: visible !important;
+        page-break-inside: auto !important;
+        position: static !important;
+        width: 100% !important;
+    }
+    /* Critical for multipage: nothing may clip continuous document height */
+    html, body,
+    body.pos-is-printing,
+    body.pos-is-printing .wrapper,
+    body.pos-is-printing .content-wrapper,
+    body.pos-is-printing .content,
+    body.pos-is-printing .container-fluid {
+        height: auto !important;
+        max-height: none !important;
+        min-height: 0 !important;
+        overflow: visible !important;
+        background: #fff !important;
+    }
+    body.pos-is-printing .no-print {
+        display: none !important;
     }
     .modal-xl{
         width: 100% !important;

@@ -391,51 +391,174 @@ function __sum_stock(table, class_name, label_direction = 'right') {
     return stock_html;
 }
 
+/**
+ * Print invoice with multi-page support.
+ * POS screen uses overflow:hidden / fixed heights which *clip* long invoices
+ * to a single page. We clone receipt HTML into a full-size off-screen iframe
+ * (not about:blank popup) so tables can flow to page 2+.
+ */
 function __print_receipt(section_id = null) {
-    // Blank title so browser print header does not show invoice no / page title
-    var __prev_print_title = document.title;
-    document.title = '\u200B';
+    var section = section_id ? document.getElementById(section_id) : null;
+    var prevTitle = document.title;
+    var prevPath = window.location.pathname + window.location.search + window.location.hash;
+    var restored = false;
 
-    var __restore_print_title = function () {
-        document.title = __prev_print_title;
-        window.removeEventListener('afterprint', __restore_print_title);
+    var restore = function () {
+        if (restored) {
+            return;
+        }
+        restored = true;
+        try {
+            document.title = prevTitle;
+            document.body.classList.remove('pos-is-printing');
+            if (window.history && window.history.replaceState && prevPath) {
+                window.history.replaceState(null, '', prevPath);
+            }
+        } catch (e) {}
+        window.removeEventListener('afterprint', restore);
     };
-    window.addEventListener('afterprint', __restore_print_title);
+    window.addEventListener('afterprint', restore);
 
-    if (section_id) {
-        var imgs = document.getElementById(section_id).getElementsByTagName("img");
-    } else {
-        var imgs = document.images;
+    document.title = '\u200B';
+    try {
+        if (window.history && window.history.replaceState) {
+            window.history.replaceState(null, '', '/');
+        }
+    } catch (e) {}
+    document.body.classList.add('pos-is-printing');
+
+    // Parent-window print (fallback) — also unclips via CSS .pos-is-printing
+    var printParent = function () {
+        setTimeout(function () {
+            try {
+                window.focus();
+                window.print();
+            } catch (e) {}
+            setTimeout(restore, 2500);
+        }, 200);
+    };
+
+    if (!section || !section.innerHTML) {
+        printParent();
+        return;
     }
-    
-    img_len = imgs.length;
-    if (img_len) {
-        img_counter = 0;
 
-        [].forEach.call( imgs, function( img ) {
-            img.addEventListener( 'load', incrementImageCounter, false );
-        } );
-    } else {
-        setTimeout(function() {
-            window.print();
-
-            // setTimeout(function() {
-            //     $('#receipt_section').html('');
-            // }, 5000);
-            
-        }, 1000);
+    // Full-size iframe so table layout measures correctly for multipage
+    var iframe = document.getElementById('__pos_print_frame');
+    if (!iframe) {
+        iframe = document.createElement('iframe');
+        iframe.id = '__pos_print_frame';
+        iframe.setAttribute('aria-hidden', 'true');
+        document.body.appendChild(iframe);
     }
-}
+    // Must be large enough for full invoice layout (0×0 breaks multipage)
+    iframe.setAttribute(
+        'style',
+        'position:fixed;left:0;top:0;width:8.5in;height:1200px;border:0;' +
+        'opacity:0;pointer-events:none;z-index:-1;'
+    );
 
-function incrementImageCounter() {
-    img_counter++;
-    if ( img_counter === img_len ) {
-        window.print();
-        
-        // setTimeout(function() {
-        //     $('#receipt_section').html('');
-        // }, 5000);
+    var content = section.innerHTML;
+    var base = '';
+    try {
+        base = document.getElementsByTagName('base')[0]
+            ? document.getElementsByTagName('base')[0].href
+            : (window.location.origin + '/');
+    } catch (e2) {
+        base = window.location.origin + '/';
     }
+
+    var multipageCss =
+        '@page{size:letter portrait;margin:0.4in 0.45in 0.5in 0.45in;}' +
+        'html,body{margin:0!important;padding:0!important;background:#fff!important;' +
+        'height:auto!important;min-height:0!important;max-height:none!important;' +
+        'overflow:visible!important;}' +
+        'body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}' +
+        '*{box-sizing:border-box;}' +
+        'img{max-width:100%;}' +
+        'table{page-break-inside:auto;border-collapse:collapse;}' +
+        'thead{display:table-header-group!important;}' +
+        'tfoot{display:table-footer-group!important;}' +
+        'tr{page-break-inside:avoid;break-inside:avoid;page-break-after:auto;}' +
+        '.usl-wrap{display:block!important;height:auto!important;min-height:0!important;' +
+        'max-height:none!important;overflow:visible!important;width:100%!important;' +
+        'max-width:none!important;padding:0!important;margin:0!important;}' +
+        '.usl-items{page-break-inside:auto!important;break-inside:auto!important;width:100%;}' +
+        '.usl-items thead{display:table-header-group!important;}' +
+        '.usl-items tbody{display:table-row-group!important;}' +
+        '.usl-items tbody tr{page-break-inside:avoid!important;break-inside:avoid!important;}' +
+        '.usl-endblock{page-break-inside:auto!important;break-inside:auto!important;}' +
+        '.usl-lower,.usl-tots{page-break-inside:avoid!important;break-inside:avoid!important;}';
+
+    var htmlDoc =
+        '<!DOCTYPE html><html><head><meta charset="utf-8">' +
+        '<base href="' + base.replace(/"/g, '') + '">' +
+        '<title></title>' +
+        '<style type="text/css">' + multipageCss + '</style>' +
+        '</head><body class="pos-print-doc">' + content + '</body></html>';
+
+    var idoc = iframe.contentDocument || iframe.contentWindow.document;
+    idoc.open();
+    idoc.write(htmlDoc);
+    idoc.close();
+    try {
+        idoc.title = '';
+    } catch (e3) {}
+
+    // Grow iframe to full content height so browser can paginate all rows
+    var expandFrame = function () {
+        try {
+            var h = Math.max(
+                idoc.body.scrollHeight || 0,
+                idoc.documentElement.scrollHeight || 0,
+                1100
+            );
+            // Cap sensibly; still tall enough for many line items
+            iframe.style.height = Math.min(Math.max(h + 40, 1100), 50000) + 'px';
+        } catch (e4) {}
+    };
+
+    var triggerIframePrint = function () {
+        expandFrame();
+        setTimeout(function () {
+            expandFrame();
+            try {
+                iframe.contentWindow.focus();
+                iframe.contentWindow.print();
+            } catch (err) {
+                printParent();
+                return;
+            }
+            setTimeout(restore, 2500);
+        }, 100);
+    };
+
+    var imgs = idoc.images ? Array.prototype.slice.call(idoc.images) : [];
+    if (!imgs.length) {
+        setTimeout(triggerIframePrint, 250);
+        return;
+    }
+    var left = imgs.length;
+    var one = function () {
+        left -= 1;
+        if (left <= 0) {
+            setTimeout(triggerIframePrint, 150);
+        }
+    };
+    imgs.forEach(function (img) {
+        if (img.complete) {
+            one();
+        } else {
+            img.addEventListener('load', one, { once: true });
+            img.addEventListener('error', one, { once: true });
+        }
+    });
+    setTimeout(function () {
+        if (left > 0) {
+            left = 0;
+            triggerIframePrint();
+        }
+    }, 2500);
 }
 
 function __getUnitMultiplier(row){

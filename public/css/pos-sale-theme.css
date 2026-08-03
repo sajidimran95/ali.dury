@@ -5541,7 +5541,7 @@ body.lockscreen.pos-sale-theme .contact_modal .select2-container--default .selec
   overflow: visible !important;
 }
 
-/* Hide empty ghost choice (blank option chip with only ×) */
+/* Hide empty ghost choice (blank option chip with only ?) */
 body.lockscreen.pos-sale-theme .contact_modal .select2-container--default .select2-selection--multiple .select2-selection__choice[title=""],
 body.lockscreen.pos-sale-theme .contact_modal .select2-container--default .select2-selection--multiple .select2-selection__choice:empty,
 body.lockscreen.pos-sale-theme .contact_modal .select2-selection__choice[title=""] {
@@ -5570,7 +5570,7 @@ body.lockscreen.pos-sale-theme .contact_modal .select2-container--default .selec
   line-height: 1 !important;
 }
 
-/* Hide allowClear × on multi-select (duplicate of per-choice remove) */
+/* Hide allowClear ? on multi-select (duplicate of per-choice remove) */
 body.lockscreen.pos-sale-theme .contact_modal .select2-container--default .select2-selection--multiple .select2-selection__clear {
   display: none !important;
 }
@@ -5686,6 +5686,25 @@ body.lockscreen.pos-sale-theme #pos_pwa_install_btn:not(.tw-hidden) {
 
 /* Print: hide POS modals (theme uses display:flex !important which beats .no-print) */
 @media print {
+  /* Unclip multipage invoice ? POS uses fixed heights / overflow hidden on screen */
+  html,
+  body,
+  body.lockscreen,
+  body.lockscreen.pos-sale-theme,
+  body.lockscreen.pos-sale-theme .wrapper,
+  body.lockscreen.pos-sale-theme .content-wrapper,
+  body.lockscreen.pos-sale-theme .pos-sale-shell,
+  body.lockscreen.pos-sale-theme #scrollable-container,
+  body.lockscreen.pos-sale-theme .content,
+  body.lockscreen.pos-sale-theme .container-fluid {
+    height: auto !important;
+    max-height: none !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    position: static !important;
+    transform: none !important;
+  }
+
   body.lockscreen.pos-sale-theme .modal,
   body.lockscreen.pos-sale-theme .modal.in,
   body.lockscreen.pos-sale-theme .modal.show,
@@ -5703,5 +5722,44 @@ body.lockscreen.pos-sale-theme #pos_pwa_install_btn:not(.tw-hidden) {
 
   body.lockscreen.pos-sale-theme {
     background: #fff !important;
+  }
+
+  body.lockscreen.pos-sale-theme .no-print,
+  body.lockscreen.pos-sale-theme .pos-sale-shell,
+  body.lockscreen.pos-sale-theme .content.no-print,
+  body.lockscreen.pos-sale-theme .main-header,
+  body.lockscreen.pos-sale-theme .side-bar,
+  body.lockscreen.pos-sale-theme .pos-ls-topbar {
+    display: none !important;
+  }
+
+  #receipt_section,
+  .print_section {
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    visibility: visible !important;
+  }
+
+  /* Never lock height on print ? allows page 2+ */
+  body.pos-is-printing,
+  body.pos-is-printing * {
+    max-height: none !important;
+  }
+  body.pos-is-printing .usl-wrap {
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    display: block !important;
+  }
+  body.pos-is-printing .usl-items {
+    page-break-inside: auto !important;
+  }
+  body.pos-is-printing .usl-items tbody tr {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
   }
 }

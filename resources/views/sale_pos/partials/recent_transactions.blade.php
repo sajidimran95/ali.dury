@@ -10,17 +10,30 @@
 @if(!empty($transactions))
 	<table class="table">
 		@foreach ($transactions as $transaction)
-			<tr class="cursor-pointer" 
-	    		title="Customer: {{$transaction->contact?->name}} 
-		    		@if(!empty($transaction->contact->mobile) && $transaction->contact->is_default == 0)
-		    			<br/>Mobile: {{$transaction->contact->mobile}}
-		    		@endif
-	    		" >
+			@php
+				// Prefer business name when personal name is empty (many B2B customers store only supplier_business_name)
+				$c = $transaction->contact;
+				$customerLabel = '';
+				if (!empty($c)) {
+					$customerLabel = trim((string) ($c->supplier_business_name ?? ''));
+					if ($customerLabel === '') {
+						$customerLabel = trim((string) ($c->name ?? ''));
+					}
+					if ($customerLabel === '') {
+						$customerLabel = trim((string) ($c->contact_id ?? ''));
+					}
+				}
+				if ($customerLabel === '') {
+					$customerLabel = __('lang_v1.walk_in_customer');
+				}
+			@endphp
+			<tr class="cursor-pointer"
+	    		title="Customer: {{ $customerLabel }}@if(!empty($transaction->contact->mobile) && $transaction->contact->is_default == 0)&#10;Mobile: {{ $transaction->contact->mobile }}@endif">
 				<td>
 					{{ $loop->iteration}}.
 				</td>
 				<td class="col-md-4">
-					{{ $transaction->invoice_no }} ({{$transaction->contact?->name}})
+					{{ $transaction->invoice_no }} ({{ $customerLabel }})
 					@if(!empty($transaction->table))
 						- {{$transaction->table->name}}
 					@endif
@@ -37,7 +50,7 @@
 	    			@endif
 
 					@if(!auth()->user()->can('sell.update') && auth()->user()->can('edit_pos_payment'))
-						<a href="{{route('edit-pos-payment', ['id' => $transaction->id])}}" 
+						<a href="{{route('edit-pos-payment', ['id' => $transaction->id])}}"
 						title="@lang('lang_v1.add_edit_payment')" class="tw-dw-btn tw-dw-btn-outline tw-dw-btn-info">
 						    <i class="fas fa-money-bill-alt text-muted"></i>
 						</a>

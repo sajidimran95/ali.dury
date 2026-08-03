@@ -230,7 +230,20 @@ class Util
      */
     public function uf_date($date, $time = false)
     {
-        $date_format = session('business.date_format');
+        if ($date === null || $date === '') {
+            return $time ? \Carbon::now()->format('Y-m-d H:i:s') : \Carbon::now()->format('Y-m-d');
+        }
+
+        // Already MySQL datetime / date
+        if (is_string($date) && preg_match('/^\d{4}-\d{2}-\d{2}( \d{2}:\d{2}(:\d{2})?)?$/', trim($date))) {
+            try {
+                return \Carbon::parse($date)->format($time ? 'Y-m-d H:i:s' : 'Y-m-d');
+            } catch (\Exception $e) {
+                // fall through
+            }
+        }
+
+        $date_format = session('business.date_format') ?: 'm/d/Y';
         $mysql_format = 'Y-m-d';
         if ($time) {
             if (session('business.time_format') == 12) {
@@ -241,7 +254,55 @@ class Util
             $mysql_format = 'Y-m-d H:i:s';
         }
 
-        return ! empty($date_format) ? \Carbon::createFromFormat($date_format, $date)->format($mysql_format) : null;
+        $date = trim((string) $date);
+
+        // Try exact business format first
+        try {
+            return \Carbon::createFromFormat($date_format, $date)->format($mysql_format);
+        } catch (\Exception $e) {
+            // continue
+        }
+
+        // Common variants: with seconds, date-only when time expected, 12/24h mismatch
+        $variants = [];
+        $base = session('business.date_format') ?: 'm/d/Y';
+        if ($time) {
+            $variants = [
+                $base.' H:i',
+                $base.' H:i:s',
+                $base.' h:i A',
+                $base.' h:i:s A',
+                $base,
+                'Y-m-d H:i:s',
+                'Y-m-d H:i',
+                'Y-m-d',
+            ];
+        } else {
+            $variants = [
+                $base,
+                $base.' H:i',
+                $base.' H:i:s',
+                $base.' h:i A',
+                'Y-m-d',
+                'Y-m-d H:i:s',
+            ];
+        }
+
+        foreach (array_unique($variants) as $fmt) {
+            try {
+                return \Carbon::createFromFormat($fmt, $date)->format($mysql_format);
+            } catch (\Exception $e) {
+                // try next
+            }
+        }
+
+        try {
+            return \Carbon::parse($date)->format($mysql_format);
+        } catch (\Exception $e) {
+            \Log::warning('uf_date parse failed', ['date' => $date, 'time' => $time, 'msg' => $e->getMessage()]);
+
+            return $time ? \Carbon::now()->format('Y-m-d H:i:s') : \Carbon::now()->format('Y-m-d');
+        }
     }
 
     /**

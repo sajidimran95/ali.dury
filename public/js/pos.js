@@ -242,7 +242,16 @@ $(document).ready(function() {
             if (!data.id) {
                 return $('#default_customer_name').val() || 'Walk-In Customer';
             }
-            return data.text || data.name || ($('#default_customer_name').val() || 'Walk-In Customer');
+            var label = (data.text || data.name || '').toString().trim();
+            // If select2 only has the id as text, fall back to selected option text / default
+            if (!label || label === String(data.id)) {
+                label = $('#customer_id option:selected').text()
+                    || $('#default_customer_name').val()
+                    || ('Customer #' + data.id);
+            }
+            // Prefer name without trailing (CO000x) for bar display
+            label = label.replace(/\s*\((?:CO|C)?\d+\)\s*$/i, '').trim() || label;
+            return label;
         };
     }
 
@@ -252,7 +261,11 @@ $(document).ready(function() {
     if (isPosSaleTheme) {
         $('select#customer_id').on('change select2:select', function () {
             var $rendered = $(this).next('.select2-container').find('.select2-selection__rendered');
-            var text = $(this).find('option:selected').text() || $('#default_customer_name').val() || 'Walk-In Customer';
+            var text = ($(this).find('option:selected').text() || '').trim();
+            if (!text || text === String($(this).val())) {
+                text = $('#default_customer_name').val() || 'Walk-In Customer';
+            }
+            text = text.replace(/\s*\((?:CO|C)?\d+\)\s*$/i, '').trim() || text;
             $rendered
                 .text(text)
                 .attr('title', text)
@@ -325,7 +338,16 @@ $(document).ready(function() {
                 }
                 var html = '';
                 data.forEach(function (row) {
-                    var displayName = row.supplier_business_name || row.name || row.text || '';
+                    // Prefer real name/business name — never show contact code alone
+                    var displayName = (row.supplier_business_name || row.name || '').toString().trim();
+                    if (!displayName) {
+                        // row.text may be "Name (CO0001)" — strip trailing code
+                        displayName = (row.text || '').toString().replace(/\s*\([^)]*\)\s*$/, '').trim();
+                    }
+                    if (!displayName) {
+                        displayName = (row.contact_id || ('Customer #' + row.id)).toString();
+                    }
+                    var selectionText = displayName;
                     var initials = posCustomerInitials(displayName);
                     var color = posCustomerAvatarColor(displayName);
                     var subParts = [];
@@ -334,7 +356,7 @@ $(document).ready(function() {
                     var sub = subParts.join(' | ');
                     html +=
                         '<button type="button" class="pos-customer-picker-item" data-id="' + row.id + '" ' +
-                        'data-text="' + $('<div>').text(row.text || displayName).html() + '" ' +
+                        'data-text="' + $('<div>').text(selectionText).html() + '" ' +
                         'data-name="' + $('<div>').text(displayName).html() + '" ' +
                         'data-pay_term_number="' + (row.pay_term_number || '') + '" ' +
                         'data-pay_term_type="' + (row.pay_term_type || '') + '" ' +
@@ -358,7 +380,7 @@ $(document).ready(function() {
     function posCustPickerSelect($btn) {
         // Always use attribute — jQuery .data() can cache/coerce incorrectly
         var id = String($btn.attr('data-id') || '');
-        var text = $btn.attr('data-text') || $btn.attr('data-name') || '';
+        var text = ($btn.attr('data-name') || $btn.attr('data-text') || '').trim();
         // Must be numeric contacts.id (not contact code like CO0001)
         if (!id || !/^\d+$/.test(id)) {
             if (typeof toastr !== 'undefined') {
@@ -366,8 +388,22 @@ $(document).ready(function() {
             }
             return;
         }
-        if ($('#customer_id option[value="' + id + '"]').length === 0) {
+        if (!text || /^\(?[A-Z]*0*\d+\)?$/.test(text) || text === id) {
+            // Avoid leaving only id/code in the bar — use list label
+            var $nameEl = $btn.find('.pos-cust-name');
+            if ($nameEl.length) {
+                text = $.trim($nameEl.text()) || text;
+            }
+        }
+        if (!text) {
+            text = 'Customer #' + id;
+        }
+        // Update or create option with full name as text
+        var $opt = $('#customer_id option[value="' + id + '"]');
+        if ($opt.length === 0) {
             $('#customer_id').append($('<option>', { value: id, text: text }));
+        } else {
+            $opt.text(text);
         }
         $('#customer_id').val(id).trigger('change');
         var $rendered = $('#customer_id').next('.select2-container').find('.select2-selection__rendered');

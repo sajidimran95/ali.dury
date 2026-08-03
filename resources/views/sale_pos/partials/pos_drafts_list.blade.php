@@ -16,8 +16,24 @@
                     <span class="pos-draft-card__total display_currency">{{ $transaction->final_total }}</span>
                 </div>
                 <div class="pos-draft-card__meta">
-                    <span class="pos-draft-card__customer" title="{{ $transaction->contact?->name }}">
-                        <i class="fa fa-user"></i> {{ $transaction->contact?->name ?? __('lang_v1.walk_in_customer') }}
+                    @php
+                        $c = $transaction->contact;
+                        $customerLabel = '';
+                        if (!empty($c)) {
+                            $customerLabel = trim((string) ($c->supplier_business_name ?? ''));
+                            if ($customerLabel === '') {
+                                $customerLabel = trim((string) ($c->name ?? ''));
+                            }
+                            if ($customerLabel === '') {
+                                $customerLabel = trim((string) ($c->contact_id ?? ''));
+                            }
+                        }
+                        if ($customerLabel === '') {
+                            $customerLabel = __('lang_v1.walk_in_customer');
+                        }
+                    @endphp
+                    <span class="pos-draft-card__customer" title="{{ $customerLabel }}">
+                        <i class="fa fa-user"></i> {{ $customerLabel }}
                     </span>
                     <span class="pos-draft-card__date">{{ @format_datetime($transaction->transaction_date) }}</span>
                 </div>
