@@ -124,6 +124,7 @@
 	$tax_total_label_html = !empty($receipt_details->tax_label)
 		? $receipt_details->tax_label
 		: 'Tax:';
+	$show_tax_column = !empty($receipt_details->enable_inline_tax);
 	$tax_col_label = $lbl($receipt_details->tax_label ?? null, 'Tax');
 	if ($tax_col_label === '' || $tax_col_label === '(') {
 		$tax_col_label = 'Tax';
@@ -375,7 +376,7 @@
 		padding-left: 8px;
 		vertical-align: top;
 	}
-	/* Totals — each row has a bottom line (ref wholesale style) */
+	/* Totals — same thin bottom line on every row (no fat rule after Tax) */
 	.usl-tots {
 		width: 100%;
 		max-width: 300px;
@@ -383,17 +384,15 @@
 		border-collapse: collapse;
 		border: 0;
 	}
-	.usl-tots tr.tot-row td {
+	.usl-tots tr.tot-row td,
+	.usl-tots tr.grand td {
 		padding: 5px 4px;
 		font-size: 11.5px;
 		line-height: 1.3;
 		border: 0;
-		border-bottom: 1px solid #111;
+		border-bottom: 0.5px solid #999;
 		background: transparent;
 		vertical-align: middle;
-	}
-	.usl-tots tr.tot-row:last-child td {
-		border-bottom: 1px solid #111;
 	}
 	.usl-tots .lab {
 		text-align: left;
@@ -409,24 +408,13 @@
 		width: 38%;
 		font-variant-numeric: tabular-nums;
 	}
-	/* Stronger rule before grand total block (ref) */
-	.usl-tots tr.tot-rule td {
-		padding: 0;
-		height: 0;
-		border: 0;
-		border-bottom: 1.5px solid #111;
-		line-height: 0;
-		font-size: 0;
-	}
 	.usl-tots tr.grand td {
 		font-weight: 700;
 		font-size: 12.5px;
-		padding-top: 6px;
-		padding-bottom: 6px;
-		border-bottom: 1px solid #111;
 	}
-	.usl-tots tr.grand:first-of-type td {
-		border-top: 1.5px solid #111;
+	/* No extra spacer rule — every data row already has one equal line */
+	.usl-tots tr.tot-rule {
+		display: none;
 	}
 	.usl-tots .words td {
 		font-size: 10px;
@@ -436,6 +424,7 @@
 		padding-bottom: 4px;
 		text-align: right;
 		border: 0;
+		border-bottom: 0.5px solid #999;
 	}
 	.usl-amount-words {
 		text-align: left;
@@ -998,14 +987,12 @@
 							@endif
 						</td>
 					</tr>
-					{{-- 6. Tax (order tax only) --}}
+					{{-- 6. Tax (order tax only) — same thin line as every row --}}
 					<tr class="tot-row">
 						<td class="lab">{!! $tax_total_label_html !!}</td>
 						<td class="val">{{ $taxShow }}</td>
 					</tr>
-					{{-- Rule before Grand Total --}}
-					<tr class="tot-rule"><td colspan="2"></td></tr>
-					{{-- 7. Grand Total (lang_v1.grand_total) --}}
+					{{-- 7. Grand Total --}}
 					<tr class="grand">
 						<td class="lab">{{ $total_label }}</td>
 						<td class="val">{{ $receipt_details->total }}</td>
