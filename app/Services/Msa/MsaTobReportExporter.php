@@ -163,38 +163,58 @@ class MsaTobReportExporter
             ->get();
 
         foreach ($products as $product) {
+            if ($this->isExcludedFromMsaReport($product)) {
+                continue;
+            }
+
             foreach ($product->variations as $variation) {
                 if ($allVariationIds->isNotEmpty() && ! $allVariationIds->contains($variation->id)) {
                     continue;
                 }
 
-                $sku = $this->distributorSku($product, $variation);
-                $upc = $this->upc($product, $variation);
-                $desc = strtoupper($this->productDescription($product, $variation));
-                $itemsPerUnit = $this->itemsPerSellingUnit($product);
-                $msaCategory = $this->msaCategoryCode($product);
-                $promoCode = trim((string) ($product->product_custom_field3 ?? ''));
-                $promoDesc = trim((string) ($product->product_custom_field4 ?? ''));
-                $isPromo = ($promoCode !== '' || $promoDesc !== '') ? 'Y' : 'N';
-                // MSA inventory (003) = on-hand as of week ending (not "today").
-                $inventory = $this->inventoryAsOfWeekEnd((int) $variation->id);
-
-                $this->bids[$variation->id] = [
-                    'variation_id' => $variation->id,
-                    'upc' => $upc,
-                    'sku' => $sku,
-                    'description' => $desc,
-                    'promo_description' => strtoupper($promoDesc),
-                    'items_per_unit' => $itemsPerUnit,
-                    'promo_indicator' => $isPromo,
-                    'msa_category' => $msaCategory,
-                    'promo_code' => $promoCode,
-                    'inventory' => $inventory,
-                    'wholesaler_returns' => 0.0,
-                ];
-                $this->sumInventory += $inventory;
+                $this->registerBid($product, $variation);
             }
         }
+    }
+
+    /**
+     * Build / register one BID row (shared by inventory scan and late sale SKUs).
+     */
+    protected function registerBid(Product $product, $variation): void
+    {
+        if ($this->isExcludedFromMsaReport($product)) {
+            return;
+        }
+
+        $variationId = (int) $variation->id;
+        if (isset($this->bids[$variationId])) {
+            return;
+        }
+
+        $sku = $this->distributorSku($product, $variation);
+        $upc = $this->upc($product, $variation);
+        $desc = strtoupper($this->productDescription($product, $variation, $sku));
+        $itemsPerUnit = $this->itemsPerSellingUnit($product);
+        $msaCategory = $this->msaCategoryCode($product);
+        $promoCode = trim((string) ($product->product_custom_field3 ?? ''));
+        $promoDesc = trim((string) ($product->product_custom_field4 ?? ''));
+        $isPromo = ($promoCode !== '' || $promoDesc !== '') ? 'Y' : 'N';
+        $inventory = $this->inventoryAsOfWeekEnd($variationId);
+
+        $this->bids[$variationId] = [
+            'variation_id' => $variationId,
+            'upc' => $upc,
+            'sku' => $sku,
+            'description' => $desc,
+            'promo_description' => strtoupper($this->asciiOnly($promoDesc)),
+            'items_per_unit' => $itemsPerUnit,
+            'promo_indicator' => $isPromo,
+            'msa_category' => $msaCategory,
+            'promo_code' => $this->asciiOnly($promoCode),
+            'inventory' => $inventory,
+            'wholesaler_returns' => 0.0,
+        ];
+        $this->sumInventory += $inventory;
     }
 
     protected function buildShipments(): void
@@ -229,36 +249,27 @@ class MsaTobReportExporter
             $isReturn = $transaction->type === 'sell_return';
 
             foreach ($transaction->sell_lines as $line) {
+                $product = $line->product;
+                if (! $product || $this->isExcludedFromMsaReport($product)) {
+                    continue;
+                }
+
                 if (! empty($categoryIds)) {
-                    $product = $line->product;
-                    if (! $product || (! in_array((int) $product->category_id, $categoryIds, true) && ! in_array((int) $product->sub_category_id, $categoryIds, true))) {
+                    if (! in_array((int) $product->category_id, $categoryIds, true) && ! in_array((int) $product->sub_category_id, $categoryIds, true)) {
                         continue;
                     }
                 }
 
-                $variationId = $line->variation_id;
+                $variationId = (int) $line->variation_id;
                 if (! isset($this->bids[$variationId])) {
-                    // Ensure BID exists for sold SKU even if stock is zero / not preloaded
-                    $product = $line->product;
                     $variation = $line->variations;
-                    if (! $product || ! $variation) {
+                    if (! $variation) {
                         continue;
                     }
-                    $inventory = $this->inventoryAsOfWeekEnd((int) $variationId);
-                    $this->bids[$variationId] = [
-                        'variation_id' => $variationId,
-                        'upc' => $this->upc($product, $variation),
-                        'sku' => $this->distributorSku($product, $variation),
-                        'description' => strtoupper($this->productDescription($product, $variation)),
-                        'promo_description' => strtoupper(trim((string) ($product->product_custom_field4 ?? ''))),
-                        'items_per_unit' => $this->itemsPerSellingUnit($product),
-                        'promo_indicator' => trim((string) ($product->product_custom_field3 ?? '')) !== '' ? 'Y' : 'N',
-                        'msa_category' => $this->msaCategoryCode($product),
-                        'promo_code' => trim((string) ($product->product_custom_field3 ?? '')),
-                        'inventory' => $inventory,
-                        'wholesaler_returns' => 0.0,
-                    ];
-                    $this->sumInventory += $inventory;
+                    $this->registerBid($product, $variation);
+                    if (! isset($this->bids[$variationId])) {
+                        continue;
+                    }
                 }
 
                 $qty = (float) $line->quantity;
@@ -667,33 +678,82 @@ class MsaTobReportExporter
         return substr(str_pad($raw ?: (string) $variation->id, 14, '0', STR_PAD_LEFT), -14);
     }
 
-    protected function productDescription(Product $product, $variation): string
+    protected function productDescription(Product $product, $variation, ?string $skuFallback = null): string
     {
-        $name = $product->name;
+        $name = trim((string) ($product->name ?? ''));
         if ($product->type === 'variable' && ! empty($variation->name) && $variation->name !== 'DUMMY') {
-            $name .= ' '.$variation->name;
+            $name = trim($name.' '.$variation->name);
         }
 
-        // Strip CR/LF — embedded newlines create blank lines MSA cannot process.
-        return preg_replace('/\s+/', ' ', str_replace(["\r", "\n", "\t"], ' ', $name));
+        // Never leave BID description blank — empty description shifts unit/category columns.
+        if ($name === '') {
+            $name = 'PRODUCT ' . ($skuFallback ?: ($product->sku ?: $product->id));
+        }
+
+        // Strip CR/LF and non-ASCII so fixed-width columns never drift.
+        $name = $this->asciiOnly($name);
+        $name = preg_replace('/\s+/', ' ', str_replace(["\r", "\n", "\t"], ' ', $name));
+
+        return trim($name) !== '' ? trim($name) : ('PRODUCT ' . ($product->id ?? '0'));
     }
 
     /**
-     * Items per selling unit (carton=200, can/roll=5, pack, each=1).
+     * Altria/Liggett do not currently monitor these product types — omit from TOB file.
+     */
+    protected function isExcludedFromMsaReport(Product $product): bool
+    {
+        $subName = '';
+        $catName = '';
+        if (! empty($product->sub_category_id)) {
+            $subName = (string) (Category::where('id', $product->sub_category_id)->value('name') ?? '');
+        }
+        if (! empty($product->category_id)) {
+            $catName = (string) (Category::where('id', $product->category_id)->value('name') ?? '');
+        }
+
+        $haystack = strtolower(trim(
+            ($product->name ?? '').' '.($product->sku ?? '').' '.$subName.' '.$catName
+        ));
+
+        // Explicit exclusion markers on CF2
+        $cf2 = strtoupper(trim((string) ($product->product_custom_field2 ?? '')));
+        if (in_array($cf2, ['EXCLUDE', 'SKIP', 'N/A', 'NA'], true)) {
+            return true;
+        }
+
+        return (bool) preg_match(
+            '/\b(thc|delta[\s-]?8|delta[\s-]?9|delta[\s-]?10|kratom|kanna|hemp\b(?!\s*wrap)|cbd\s*(gumm|flower|oil|vape)|hhc|thca|thcp|mushroom|psilly)\b/i',
+            $haystack
+        );
+    }
+
+    /**
+     * Items per selling unit (carton=200, pack counts for vapor boxes, etc.).
      * Reject UPC/SKU-sized values accidentally stored in custom field 1 (caused inflated units).
      */
     protected function itemsPerSellingUnit(Product $product): int
     {
+        $inferred = $this->inferItemsPerSellingUnit($product);
+
         $raw = preg_replace('/\D+/', '', (string) ($product->product_custom_field1 ?? ''));
         // Valid MSA values are small (1–250). Anything larger is almost certainly a barcode/SKU.
         if ($raw !== '' && strlen($raw) <= 3) {
             $custom = (int) $raw;
             if ($custom >= 1 && $custom <= 250) {
+                // Prefer name/category inference when CF1 is a generic "1" but name says BOX OF 10 / BOX OF 20.
+                if ($custom === 1 && $inferred > 1) {
+                    return $inferred;
+                }
+                // Prefer pack count from name over wrong model numbers stuffed into CF1 (e.g. 49 from XU-49M).
+                if ($inferred >= 10 && $custom !== $inferred && preg_match('/\b(box\s+of|ct|count|pack|pk|pcs?)\b/i', (string) $product->name)) {
+                    return $inferred;
+                }
+
                 return $custom;
             }
         }
 
-        return $this->inferItemsPerSellingUnit($product);
+        return $inferred;
     }
 
     protected function inferItemsPerSellingUnit(Product $product): int
@@ -709,6 +769,24 @@ class MsaTobReportExporter
 
         $haystack = strtolower(trim(($product->name ?? '').' '.$subName.' '.$catName));
 
+        // Explicit pack counts: "BOX OF 10", "20 CT", "10 PC", "5 PK"
+        if (preg_match('/\bbox\s+of\s+(\d{1,3})\b/', $haystack, $m)) {
+            $n = (int) $m[1];
+            if ($n >= 1 && $n <= 250) {
+                return $n;
+            }
+        }
+        if (preg_match('/\b(\d{1,3})\s*(pc|pcs|pk|pack|packs|ct|count)\b/', $haystack, $m)) {
+            $n = (int) $m[1];
+            if ($n >= 1 && $n <= 250) {
+                return $n;
+            }
+        }
+
+        if (preg_match('/\b(lighter|zippo|torch|bic\b|clipper)\b/', $haystack)) {
+            // Torch lighter box of 20 handled above; single lighter = 1
+            return 1;
+        }
         if (preg_match('/\bcarton\b/', $haystack) || preg_match('/\bcigarettes?\b/', $haystack)) {
             return 200;
         }
@@ -719,9 +797,11 @@ class MsaTobReportExporter
             return 20;
         }
         if (preg_match('/\b(pod|pods|refill)\b/', $haystack)) {
+            // Multi-pack pods often "4 pack" captured above; single pod kit units default 4
             return 4;
         }
-        if (preg_match('/\b(e-?cig|vape|disposable|puff|thc|hemp|delta|gumm|flower|preroll|pre-roll|wrap)\b/', $haystack)) {
+        // Vapor/disposable selling unit = packs; prefer pack count from name, else 1 pack
+        if (preg_match('/\b(e-?cig|vape|disposable|puff|juul|elf\s*bar|geek)\b/', $haystack)) {
             return 1;
         }
         if (preg_match('/\bcigar\b/', $haystack)) {
@@ -737,9 +817,20 @@ class MsaTobReportExporter
 
     protected function msaCategoryCode(Product $product): string
     {
+        // Name-driven categories first for accessories that were mis-filed under vapor
+        $nameHint = $this->inferMsaCategoryFromText((string) ($product->name ?? ''));
+        if ($nameHint === '003263') {
+            return '003263'; // lighters
+        }
+
         $custom = preg_replace('/\D+/', '', (string) ($product->product_custom_field2 ?? ''));
         // Accept only known-length MSA codes (6 digits). Reject barcodes stuffed into CF2.
         if (strlen($custom) === 6 && str_starts_with($custom, '003')) {
+            // Override wrong vapor code when product is clearly a lighter
+            if ($custom === '003292' && $nameHint === '003263') {
+                return '003263';
+            }
+
             return $custom;
         }
 
@@ -753,7 +844,13 @@ class MsaTobReportExporter
                 continue;
             }
             if (preg_match('/\b(003\d{3})\b/', (string) $category->description, $m)) {
-                return $m[1];
+                $code = $m[1];
+                // Don't leave lighters on vapor just because they sit under Tobacco parent
+                if ($code === '003292' && $nameHint === '003263') {
+                    return '003263';
+                }
+
+                return $code;
             }
             $inferred = $this->inferMsaCategoryFromText((string) ($category->name ?? ''));
             if ($inferred !== null) {
@@ -761,12 +858,11 @@ class MsaTobReportExporter
             }
         }
 
-        $fromName = $this->inferMsaCategoryFromText((string) ($product->name ?? ''));
-        if ($fromName !== null) {
-            return $fromName;
+        if ($nameHint !== null) {
+            return $nameHint;
         }
 
-        // Last resort — only for clearly tobacco-named items; otherwise e-cig/other (not cigarettes).
+        // Last resort — e-cig/vapor family (not cigarettes).
         return '003292';
     }
 
@@ -774,10 +870,15 @@ class MsaTobReportExporter
     {
         $name = strtolower($text);
 
+        // Lighters / torches are NOT vapor — MSA accessory code 3263 → 003263
+        if (preg_match('/\b(lighter|lighters|zippo|torch\s*lighter|bic\b|clipper\s*lighter)\b/', $name)
+            || preg_match('/\btorch\b.*\blighter\b|\blighter\b.*\btorch\b/', $name)) {
+            return '003263';
+        }
         if (preg_match('/\b(e-?cig|vape|disposable|puff|pod|juul|elf\s*bar|geek|mr\s*fog)\b/', $name)) {
             return '003292';
         }
-        if (preg_match('/\b(hemp\s*wrap|blunt\s*wrap|wraps?|papers?|tubes?)\b/', $name)) {
+        if (preg_match('/\b(blunt\s*wrap|wraps?|papers?|tubes?)\b/', $name)) {
             return '003261'; // wraps / papers family
         }
         if (preg_match('/\b(little|filtered)\b.*\bcigar|\bcigarillo\b/', $name)) {
@@ -798,12 +899,24 @@ class MsaTobReportExporter
         if (preg_match('/\bcigarette|marlboro|newport|camel|pall\s*mall|carton\b/', $name)) {
             return '003231';
         }
-        // Hemp/THC/flower/gummies are not cigarettes — map to e-cig/other rather than 003231.
-        if (preg_match('/\b(thc|delta|hemp|gumm|flower|preroll|pre-roll|caviar|resin|wax|mushroom|psilly)\b/', $name)) {
-            return '003292';
-        }
 
         return null;
+    }
+
+    /**
+     * Fixed-width fields must be single-byte. Strip or transliterate non-ASCII.
+     */
+    protected function asciiOnly(string $value): string
+    {
+        $value = (string) $value;
+        if (function_exists('iconv')) {
+            $converted = @iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $value);
+            if ($converted !== false) {
+                $value = $converted;
+            }
+        }
+
+        return preg_replace('/[^\x20-\x7E]/', '', $value) ?? '';
     }
 
     protected function zipPlus4(?string $zip): string
@@ -822,6 +935,8 @@ class MsaTobReportExporter
 
     protected function lj(string $value, int $len): string
     {
+        $value = $this->asciiOnly($value);
+        // Byte-safe truncate for fixed-width ASCII records
         $value = substr($value, 0, $len);
 
         return str_pad($value, $len, ' ', STR_PAD_RIGHT);
@@ -829,6 +944,7 @@ class MsaTobReportExporter
 
     protected function rj(string $value, int $len, string $pad = '0'): string
     {
+        $value = $this->asciiOnly($value);
         $value = substr($value, 0, $len);
 
         return str_pad($value, $len, $pad, STR_PAD_LEFT);

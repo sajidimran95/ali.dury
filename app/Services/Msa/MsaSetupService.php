@@ -81,6 +81,8 @@ class MsaSetupService
             ['name' => 'E-Cigarettes', 'short_code' => 'ECG', 'msa' => '003292'],
             ['name' => 'RYO Tobacco', 'short_code' => 'RYO', 'msa' => '003221'],
             ['name' => 'Pipe Tobacco', 'short_code' => 'PIP', 'msa' => '003241'],
+            // Lighters belong to MSA accessory category 3263 (padded 003263) — not vapor 003292
+            ['name' => 'Lighters', 'short_code' => 'LGT', 'msa' => '003263'],
         ];
 
         foreach ($subs as $sub) {
@@ -253,7 +255,7 @@ class MsaSetupService
         ];
         $labels['product_cf_details'][2] = [
             'type' => 'dropdown',
-            'dropdown_options' => "003231\n003211\n003251\n003252\n003292\n003221\n003241\n003261\n003213\n003212\n003214\n003215\n003227",
+            'dropdown_options' => "003231\n003211\n003251\n003252\n003292\n003221\n003241\n003261\n003263\n003213\n003212\n003214\n003215\n003227",
         ];
         $labels['product_cf_details'][3] = [
             'type' => 'text',
@@ -315,6 +317,10 @@ class MsaSetupService
         if (empty($common['msa_state_tax'])) {
             $common['msa_state_tax'] = 'TN';
         }
+        // Nashville Goods sample distributor id used with Altria MFT
+        if (empty($common['msa_distributor_id'])) {
+            $common['msa_distributor_id'] = '17033752';
+        }
 
         $admin = User::where('business_id', $business->id)->orderBy('id')->first();
         if ($admin) {
@@ -331,6 +337,43 @@ class MsaSetupService
 
         $business->common_settings = $common;
         $business->save();
+
+        // Align location 1 branding for Nashville Goods HID when still a generic name
+        $location = \App\BusinessLocation::where('business_id', $business->id)->orderBy('id')->first();
+        if ($location) {
+            $dirtyLoc = false;
+            $generic = empty($location->name)
+                || stripos($location->name, 'awesome') !== false
+                || stripos($location->name, 'demo') !== false
+                || stripos($location->name, 'japs pos') !== false
+                || strcasecmp(trim($location->name), trim((string) $business->name)) === 0;
+            // Sample MSA filing uses Nashville Goods Distribution + distributor 17033752
+            if ($generic || ($common['msa_distributor_id'] ?? '') === '17033752') {
+                if (stripos((string) $location->name, 'nashville goods') === false) {
+                    $location->name = 'Nashville Goods Distribution';
+                    $dirtyLoc = true;
+                }
+            }
+            if (empty($location->city) || stripos((string) $location->city, 'nashville') === false) {
+                $location->city = 'Nashville';
+                $dirtyLoc = true;
+            }
+            if (empty($location->state) || strlen(trim((string) $location->state)) < 2) {
+                $location->state = 'TN';
+                $dirtyLoc = true;
+            }
+            if (empty($location->zip_code)) {
+                $location->zip_code = '37203';
+                $dirtyLoc = true;
+            }
+            if (empty($location->landmark) || stripos((string) $location->landmark, 'nashville') === false) {
+                $location->landmark = '1200 Broadway';
+                $dirtyLoc = true;
+            }
+            if ($dirtyLoc) {
+                $location->save();
+            }
+        }
     }
 
     /**
@@ -543,6 +586,7 @@ class MsaSetupService
             'e-cigarettes' => ['items' => '1', 'code' => '003292'],
             'ryo tobacco' => ['items' => '1', 'code' => '003221'],
             'pipe tobacco' => ['items' => '1', 'code' => '003241'],
+            'lighters' => ['items' => '1', 'code' => '003263'],
         ];
 
         $subIds = $subs->pluck('id')->push($tobaccoCategoryId);
@@ -598,6 +642,83 @@ class MsaSetupService
                         }
                     }
                 }
+            }
+
+            if ($dirty) {
+                $product->save();
+            }
+        }
+
+        // Name-based repairs for real catalog imported under wrong category / units
+        $this->repairCatalogMsaFields($businessId, $tobaccoCategoryId, $subs);
+    }
+
+    /**
+     * Reclassify lighters, pack counts (BOX OF N), and strip bad MSA units from barcode CF1.
+     *
+     * @param  \Illuminate\Support\Collection<string, Category>  $subs
+     */
+    public function repairCatalogMsaFields(int $businessId, int $tobaccoCategoryId, $subs): void
+    {
+        $lighterSub = $subs->get('lighters') ?? $subs->first(fn ($c) => strtolower((string) $c->name) === 'lighters');
+        $ecigSub = $subs->get('e-cigarettes') ?? $subs->first(fn ($c) => strtolower((string) $c->name) === 'e-cigarettes');
+
+        $products = Product::where('business_id', $businessId)->get();
+        foreach ($products as $product) {
+            $name = strtolower((string) $product->name);
+            $dirty = false;
+
+            // Empty product names break BID alignment — ensure something printable
+            if (trim((string) $product->name) === '') {
+                $product->name = 'PRODUCT ' . ($product->sku ?: $product->id);
+                $dirty = true;
+            }
+
+            // Lighters → category 003263 + Lighters subcategory
+            if (preg_match('/\b(lighter|lighters|zippo|torch\s*lighter)\b/i', (string) $product->name)
+                || (preg_match('/\btorch\b/i', (string) $product->name) && preg_match('/\b(lighter|xu-?\d)/i', (string) $product->name))) {
+                if ($lighterSub) {
+                    $product->category_id = $tobaccoCategoryId;
+                    $product->sub_category_id = $lighterSub->id;
+                    $product->product_custom_field2 = '003263';
+                    $dirty = true;
+                }
+            }
+
+            // Pack counts from product name for vapor / accessories
+            if (preg_match('/\bbox\s+of\s+(\d{1,3})\b/i', (string) $product->name, $m)
+                || preg_match('/\b(\d{1,3})\s*(pc|pcs|pk|pack|packs|ct|count)\b/i', (string) $product->name, $m)) {
+                $n = (int) $m[1];
+                if ($n >= 1 && $n <= 250) {
+                    $product->product_custom_field1 = (string) $n;
+                    $dirty = true;
+                }
+            }
+
+            // Torches that are "BOX OF 20"
+            if (preg_match('/\btorch\b/i', (string) $product->name) && preg_match('/\bbox\s+of\s+20\b/i', (string) $product->name)) {
+                $product->product_custom_field1 = '20';
+                if ($lighterSub) {
+                    $product->sub_category_id = $lighterSub->id;
+                    $product->product_custom_field2 = '003263';
+                }
+                $dirty = true;
+            }
+
+            // Clear THC etc. CF2 mistagged as cigarette/vapor — mark exclude via CF2 EXCLUDE optional
+            if (preg_match('/\b(thc|delta[\s-]?8|delta[\s-]?9|kratom|kanna)\b/i', (string) $product->name)) {
+                // Leave products in catalog but exporter skips them; blank mistyped cigarette code
+                if (trim((string) $product->product_custom_field2) === '003231') {
+                    $product->product_custom_field2 = 'EXCLUDE';
+                    $dirty = true;
+                }
+            }
+
+            // Repair barcode-length "items per unit"
+            $cf1 = preg_replace('/\D+/', '', (string) ($product->product_custom_field1 ?? ''));
+            if ($cf1 !== '' && (strlen($cf1) > 3 || (int) $cf1 > 250)) {
+                $product->product_custom_field1 = '1';
+                $dirty = true;
             }
 
             if ($dirty) {
@@ -721,6 +842,94 @@ class MsaSetupService
                 'wholesale' => 9,
                 'stock' => 30,
             ],
+            [
+                'name' => 'Newport Menthol Carton',
+                'sku' => 'TOB-CIG-NPT',
+                'sub' => 'Cigarettes',
+                'msa_items' => '200',
+                'msa_code' => '003231',
+                'purchase' => 58,
+                'retail' => 75,
+                'wholesale' => 66,
+                'stock' => 70,
+            ],
+            [
+                'name' => 'Camel Blue Carton',
+                'sku' => 'TOB-CIG-CAM',
+                'sub' => 'Cigarettes',
+                'msa_items' => '200',
+                'msa_code' => '003231',
+                'purchase' => 54,
+                'retail' => 70,
+                'wholesale' => 62,
+                'stock' => 70,
+            ],
+            [
+                'name' => 'Skoal Long Cut Classic',
+                'sku' => 'TOB-MST-SKL',
+                'sub' => 'Moist Spit Tobacco',
+                'msa_items' => '5',
+                'msa_code' => '003211',
+                'purchase' => 27,
+                'retail' => 36,
+                'wholesale' => 31,
+                'stock' => 55,
+            ],
+            [
+                'name' => 'Backwoods Honey Berry Cigars',
+                'sku' => 'TOB-CGR-BWH',
+                'sub' => 'Cigars',
+                'msa_items' => '20',
+                'msa_code' => '003251',
+                'purchase' => 22,
+                'retail' => 32,
+                'wholesale' => 27,
+                'stock' => 45,
+            ],
+            [
+                'name' => 'Esco Bars 6ml Disposable Vape Box of 10 - Blue Ras',
+                'sku' => 'TOB-ECG-ESC10',
+                'sub' => 'E-Cigarettes',
+                'msa_items' => '10',
+                'msa_code' => '003292',
+                'purchase' => 45,
+                'retail' => 65,
+                'wholesale' => 55,
+                'stock' => 80,
+            ],
+            [
+                'name' => 'Xuper XU-49M Torch Lighter Box of 20 CT',
+                'sku' => 'TOB-LGT-XU49',
+                'sub' => 'Lighters',
+                'msa_items' => '20',
+                'msa_code' => '003263',
+                'purchase' => 16,
+                'retail' => 28,
+                'wholesale' => 22,
+                'stock' => 40,
+            ],
+            [
+                'name' => 'Zippo Lighter Design Buck Wear',
+                'sku' => 'TOB-LGT-ZBW',
+                'sub' => 'Lighters',
+                'msa_items' => '1',
+                'msa_code' => '003263',
+                'purchase' => 12,
+                'retail' => 22,
+                'wholesale' => 18,
+                'stock' => 35,
+            ],
+            [
+                'name' => 'Zippo Lighter Design Eagle',
+                'sku' => 'TOB-LGT-ZEG',
+                'sub' => 'Lighters',
+                'msa_items' => '1',
+                'msa_code' => '003263',
+                'purchase' => 12,
+                'retail' => 22,
+                'wholesale' => 18,
+                'stock' => 35,
+            ],
         ];
 
         $productUtil = new ProductUtil();
@@ -829,6 +1038,177 @@ class MsaSetupService
         }
 
         $this->ensureDemoCustomers($business, $customerGroups, $userId);
+        $this->ensureDemoWeekSales($business, $locationId, $userId, $tobaccoCategoryId);
+    }
+
+    /**
+     * Create a full week of final POS sells to Nashville retailers so MSA SID/PUR export is non-empty.
+     * Idempotent via invoice_no prefix MSA-DEMO-{weekEnd}-
+     */
+    public function ensureDemoWeekSales(
+        Business $business,
+        int $locationId,
+        int $userId,
+        int $tobaccoCategoryId
+    ): int {
+        $businessId = (int) $business->id;
+        $weekEnd = Carbon::now()->isSaturday()
+            ? Carbon::now()->startOfDay()
+            : Carbon::now()->previous(Carbon::SATURDAY)->startOfDay();
+        $weekStart = $weekEnd->copy()->subDays(6)->startOfDay();
+        $weekTag = $weekEnd->format('Ymd');
+        $invoicePrefix = 'MSA-DEMO-'.$weekTag.'-';
+
+        $existing = \App\Transaction::where('business_id', $businessId)
+            ->where('type', 'sell')
+            ->where('invoice_no', 'like', $invoicePrefix.'%')
+            ->count();
+        if ($existing > 0) {
+            return $existing;
+        }
+
+        $customerNames = [
+            'Nashville Corner Mart',
+            'East Nashville Tobacco',
+            'Midtown Market',
+            'MR Wholesale Distributor',
+        ];
+        $customers = Contact::where('business_id', $businessId)
+            ->where(function ($q) use ($customerNames) {
+                $q->whereIn('supplier_business_name', $customerNames)
+                    ->orWhereIn('name', $customerNames);
+            })
+            ->get();
+        if ($customers->isEmpty()) {
+            return 0;
+        }
+
+        $subIds = Category::where('business_id', $businessId)
+            ->where(function ($q) use ($tobaccoCategoryId) {
+                $q->where('id', $tobaccoCategoryId)->orWhere('parent_id', $tobaccoCategoryId);
+            })
+            ->pluck('id')
+            ->all();
+
+        $products = Product::with('variations')
+            ->where('business_id', $businessId)
+            ->where(function ($q) use ($subIds) {
+                $q->whereIn('category_id', $subIds)->orWhereIn('sub_category_id', $subIds);
+            })
+            ->where('enable_stock', 1)
+            ->where(function ($q) {
+                // Keep monitored categories only in demo sales
+                $q->where('name', 'not like', '%THC%')
+                    ->where('name', 'not like', '%Delta%')
+                    ->where('name', 'not like', '%Kratom%')
+                    ->where('name', 'not like', '%Kanna%')
+                    ->where('name', 'not like', '%Hemp%');
+            })
+            ->get()
+            ->filter(fn ($p) => $p->variations->isNotEmpty())
+            ->values();
+
+        if ($products->isEmpty()) {
+            return 0;
+        }
+
+        $created = 0;
+        $seq = 1;
+        $dayIndex = 0;
+
+        foreach ($customers as $customer) {
+            // 2 sale days per customer within the MSA week
+            for ($d = 0; $d < 2; $d++) {
+                $saleDate = $weekStart->copy()->addDays(min(6, $dayIndex % 7))->setTime(10 + $d, 15, 0);
+                $dayIndex++;
+
+                // Pick 3–5 SKUs per invoice
+                $lines = $products->shuffle()->take(min(5, max(3, $products->count())))->values();
+                $total = 0;
+                $lineRows = [];
+                foreach ($lines as $product) {
+                    $variation = $product->variations->first();
+                    $qty = in_array(strtolower((string) ($product->product_custom_field2 ?? '')), ['003231'], true)
+                        ? rand(2, 8)
+                        : rand(1, 12);
+                    $price = (float) ($variation->sell_price_inc_tax ?: $variation->default_sell_price ?: 10);
+                    $lineTotal = round($price * $qty, 4);
+                    $total += $lineTotal;
+                    $lineRows[] = compact('product', 'variation', 'qty', 'price', 'lineTotal');
+                }
+
+                $invoiceNo = $invoicePrefix.str_pad((string) $seq, 4, '0', STR_PAD_LEFT);
+                $seq++;
+
+                $transaction = \App\Transaction::create([
+                    'business_id' => $businessId,
+                    'location_id' => $locationId,
+                    'type' => 'sell',
+                    'status' => 'final',
+                    'payment_status' => 'paid',
+                    'contact_id' => $customer->id,
+                    'invoice_no' => $invoiceNo,
+                    'transaction_date' => $saleDate->toDateTimeString(),
+                    'total_before_tax' => $total,
+                    'final_total' => $total,
+                    'tax_amount' => 0,
+                    'discount_amount' => 0,
+                    'created_by' => $userId,
+                ]);
+
+                foreach ($lineRows as $row) {
+                    \App\TransactionSellLine::create([
+                        'transaction_id' => $transaction->id,
+                        'product_id' => $row['product']->id,
+                        'variation_id' => $row['variation']->id,
+                        'quantity' => $row['qty'],
+                        'unit_price' => $row['price'],
+                        'unit_price_inc_tax' => $row['price'],
+                        'unit_price_before_discount' => $row['price'],
+                        'item_tax' => 0,
+                        'line_discount_type' => 'fixed',
+                        'line_discount_amount' => 0,
+                    ]);
+
+                    // Reduce stock without hard-failing if map missing
+                    try {
+                        $vld = VariationLocationDetails::firstOrCreate(
+                            [
+                                'product_id' => $row['product']->id,
+                                'product_variation_id' => $row['variation']->product_variation_id
+                                    ?? \App\ProductVariation::where('product_id', $row['product']->id)->value('id'),
+                                'variation_id' => $row['variation']->id,
+                                'location_id' => $locationId,
+                            ],
+                            ['qty_available' => 100]
+                        );
+                        $vld->qty_available = max(0, (float) $vld->qty_available - (float) $row['qty']);
+                        $vld->save();
+                    } catch (\Throwable $e) {
+                        // ignore stock map issues for demo seed
+                    }
+                }
+
+                // Cash payment row so payment_status stays paid
+                try {
+                    \App\TransactionPayment::create([
+                        'transaction_id' => $transaction->id,
+                        'business_id' => $businessId,
+                        'amount' => $total,
+                        'method' => 'cash',
+                        'paid_on' => $saleDate->toDateTimeString(),
+                        'created_by' => $userId,
+                        'payment_for' => $customer->id,
+                    ]);
+                } catch (\Throwable $e) {
+                    // payment table shape may vary — sale still counts for MSA PUR
+                }
+
+                $created++;
+            }
+        }
+
+        return $created;
     }
 
     /**
