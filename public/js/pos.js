@@ -524,11 +524,271 @@ $(document).ready(function() {
     set_default_customer();
 
     if ($('#search_product').length) {
+        // ------------------------------------------------------------
+        // Barcode scan optimization
+        // Hardware scanners type fast and usually end with Enter.
+        // A long autocomplete delay + uncleared field was causing
+        // double scans to concatenate: ECOM-004 + ECOM-004 = ECOM-004ECOM-004
+        // ------------------------------------------------------------
+        var posScan = {
+            lastKeyAt: 0,
+            rapidChars: 0,
+            idleTimer: null,
+            busy: false,
+            queue: [],
+        };
+
+        /**
+         * If the same code was scanned twice without a clear, fix:
+         * "ECOM-004ECOM-004" → { code: "ECOM-004", times: 2 }
+         */
+        function posNormalizeScanTerm(term) {
+            term = (term || '').toString().replace(/[\r\n\t]+/g, '').trim();
+            if (!term) {
+                return { code: '', times: 1 };
+            }
+
+            var best = { code: term, times: 1 };
+            // Prefer longer unit (full SKU repeated) over short chunks
+            for (var partLen = Math.floor(term.length / 2); partLen >= 3; partLen--) {
+                if (term.length % partLen !== 0) {
+                    continue;
+                }
+                var unit = term.substring(0, partLen);
+                var reps = term.length / partLen;
+                if (reps < 2) {
+                    continue;
+                }
+                var ok = true;
+                for (var r = 1; r < reps; r++) {
+                    if (term.substring(r * partLen, (r + 1) * partLen) !== unit) {
+                        ok = false;
+                        break;
+                    }
+                }
+                if (ok) {
+                    best = { code: unit, times: reps };
+                    break;
+                }
+            }
+            return best;
+        }
+
+        function posGetSearchParams(term) {
+            var price_group = '';
+            var search_fields = [];
+            $('.search_fields:checked').each(function (i) {
+                search_fields[i] = $(this).val();
+            });
+            if ($('#price_group').length > 0) {
+                price_group = $('#price_group').val();
+            }
+            if ($('#default_price_group').length > 0 && price_group === '') {
+                price_group = $('#default_price_group').val();
+            }
+            if ($('#types_of_service_price_group').length > 0 && $('#types_of_service_price_group').val()) {
+                price_group = $('#types_of_service_price_group').val();
+            }
+            var customer_id = $('select#customer_id').val();
+            var is_direct_sell = false;
+            if ($('input[name="is_direct_sale"]').length > 0 && $('input[name="is_direct_sale"]').val() == 1) {
+                is_direct_sell = true;
+            }
+            var disable_qty_alert = $('#disable_qty_alert').length ? true : false;
+            var is_sales_order = $('#sale_type').length && $('#sale_type').val() == 'sales_order' ? true : false;
+            var is_draft = false;
+            if ($('#status').length && ($('#status').val() == 'quotation' || $('#status').val() == 'draft')) {
+                is_draft = true;
+            }
+            var is_serial_no = false;
+            if ($('input[name="is_serial_no"]').length > 0 && $('input[name="is_serial_no"]').val() == 1) {
+                is_serial_no = true;
+            }
+            return {
+                price_group: price_group,
+                location_id: $('input#location_id').val(),
+                term: term,
+                not_for_selling: 0,
+                search_fields: search_fields,
+                auto_add_single: true,
+                product_row: $('input#product_row_count').val(),
+                customer_id: customer_id,
+                is_direct_sell: is_direct_sell,
+                is_serial_no: is_serial_no,
+                is_sales_order: is_sales_order,
+                disable_qty_alert: disable_qty_alert,
+                is_draft: is_draft,
+            };
+        }
+
+        function posScanFinish() {
+            posScan.busy = false;
+            if (posScan.queue.length) {
+                var next = posScan.queue.shift();
+                posProcessBarcodeTerm(next.code, next.times);
+            } else if (!$('#__is_mobile').length) {
+                $('#search_product').focus();
+            }
+        }
+
+        function posAddVariationQty(variation_id, qty) {
+            qty = parseInt(qty, 10) || 1;
+            if (qty < 1) {
+                qty = 1;
+            }
+            // Prefer qty-aware row addition
+            if (typeof pos_product_row === 'function') {
+                pos_product_row(variation_id, null, null, qty);
+            }
+        }
+
+        /**
+         * Process a barcode/SKU immediately (clear field first so next scan cannot append).
+         */
+        function posProcessBarcodeTerm(rawTerm, forcedTimes) {
+            var parsed = posNormalizeScanTerm(rawTerm);
+            if (!parsed.code) {
+                return;
+            }
+            var times = forcedTimes || parsed.times || 1;
+
+            if (posScan.busy) {
+                posScan.queue.push({ code: parsed.code, times: times });
+                return;
+            }
+            posScan.busy = true;
+
+            var $inp = $('#search_product');
+            // Clear immediately so the next scan starts clean
+            $inp.val('');
+            try {
+                var ac = $inp.data('ui-autocomplete');
+                if (ac) {
+                    if (ac.xhr && typeof ac.xhr.abort === 'function') {
+                        ac.xhr.abort();
+                    }
+                    ac.term = null;
+                    ac.selectedItem = null;
+                    if (typeof ac.close === 'function') {
+                        ac.close();
+                    }
+                    ac.cache = {};
+                }
+            } catch (e) {}
+
+            if ($('input#location_id').val() == '') {
+                toastr.warning(LANG.select_location);
+                posScanFinish();
+                return;
+            }
+
+            $.getJSON('/products/list', posGetSearchParams(parsed.code))
+                .done(function (data) {
+                    try {
+                        if (data && data.auto_add && data.row_data) {
+                            if (data.row_data.success) {
+                                // row may already be fully built — insert then bump qty if multi-scan
+                                if (typeof pos_add_product_row_from_data === 'function') {
+                                    pos_add_product_row_from_data(data.row_data);
+                                }
+                                // Multi-scan of same code: bump remaining qty
+                                if (times > 1 && data.row_data.variation_id) {
+                                    var extra = times - 1;
+                                    var $row = $('#pos_table tbody tr').filter(function () {
+                                        return String($(this).find('.row_variation_id').val()) === String(data.row_data.variation_id);
+                                    }).last();
+                                    if ($row.length) {
+                                        var $qty = $row.find('.pos_quantity');
+                                        var q = __read_number($qty);
+                                        __write_number($qty, q + extra);
+                                        $qty.change();
+                                    } else {
+                                        posAddVariationQty(data.row_data.variation_id, extra);
+                                    }
+                                }
+                            } else {
+                                toastr.error(data.row_data.msg || LANG.no_products_found);
+                            }
+                        } else {
+                            var products = (data && data.products) ? data.products : ($.isArray(data) ? data : []);
+                            if (products.length === 1 && products[0].variation_id) {
+                                posAddVariationQty(products[0].variation_id, times);
+                            } else if (products.length === 0) {
+                                toastr.error(LANG.no_products_found);
+                            } else {
+                                // Multiple matches — put term back for user to pick
+                                $inp.val(parsed.code);
+                                $inp.autocomplete('search', parsed.code);
+                            }
+                        }
+                    } finally {
+                        posScanFinish();
+                    }
+                })
+                .fail(function () {
+                    toastr.error(LANG.something_went_wrong || 'Search failed');
+                    posScanFinish();
+                });
+        }
+
+        // Enter from scanner: process now (do not wait for autocomplete delay)
+        $('#search_product').on('keydown.pos_scan', function (e) {
+            var now = Date.now();
+            var gap = posScan.lastKeyAt ? (now - posScan.lastKeyAt) : 999;
+            posScan.lastKeyAt = now;
+
+            // Tab → qty still handled elsewhere; skip
+            if (e.which === 9) {
+                return;
+            }
+
+            if (e.which === 13) {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                clearTimeout(posScan.idleTimer);
+                posScan.rapidChars = 0;
+                var val = $(this).val();
+                if (val && String(val).trim().length > 0) {
+                    posProcessBarcodeTerm(val);
+                }
+                return false;
+            }
+
+            // Track rapid keystroke bursts (scanner); human typing is slower
+            if (gap > 0 && gap < 45) {
+                posScan.rapidChars += 1;
+            } else if (e.which !== 16 && e.which !== 17 && e.which !== 18) {
+                posScan.rapidChars = 1;
+            }
+
+            clearTimeout(posScan.idleTimer);
+            // Scanners that do not send Enter: flush after brief silence during a rapid burst
+            posScan.idleTimer = setTimeout(function () {
+                var $s = $('#search_product');
+                var val = $s.val();
+                if (!val || String(val).trim().length < 3) {
+                    posScan.rapidChars = 0;
+                    return;
+                }
+                // Only auto-fire for scanner-like bursts (avoid interrupting normal typing searches)
+                if (posScan.rapidChars >= 4) {
+                    posScan.rapidChars = 0;
+                    posProcessBarcodeTerm(val);
+                }
+            }, 90);
+        });
+
         //Add Product
         $('#search_product')
             .autocomplete({
-                delay: 1000,
+                // Short delay: scanners finish in <50ms; long delays invite double-scan concat
+                delay: 180,
                 source: function(request, response) {
+                    // If a scan handler is already processing, ignore autocomplete noise
+                    if (posScan.busy) {
+                        response([]);
+                        return;
+                    }
                     var price_group = '';
                     var search_fields = [];
                     $('.search_fields:checked').each(function(i){
@@ -575,13 +835,22 @@ $(document).ready(function() {
                         $('input[name="is_serial_no"]').val() == 1) {
                         is_serial_no = true;
                     }
+
+                    // Fix accidental double barcode before searching autocomplete path
+                    var term = request.term;
+                    var norm = posNormalizeScanTerm(term);
+                    if (norm.times > 1) {
+                        term = norm.code;
+                        request.term = term;
+                        $('#search_product').val(term);
+                    }
                     
                     $.getJSON(
                         '/products/list',
                         {
                             price_group: price_group,
                             location_id: $('input#location_id').val(),
-                            term: request.term,
+                            term: term,
                             not_for_selling: 0,
                             search_fields: search_fields,
                             auto_add_single: true,
@@ -606,6 +875,17 @@ $(document).ready(function() {
                                         ac.term = '';
                                     }
                                     pos_add_product_row_from_data(data.row_data);
+                                    if (norm.times > 1 && data.row_data.variation_id) {
+                                        var $row = $('#pos_table tbody tr').filter(function () {
+                                            return String($(this).find('.row_variation_id').val()) === String(data.row_data.variation_id);
+                                        }).last();
+                                        if ($row.length) {
+                                            var $qty = $row.find('.pos_quantity');
+                                            var q = __read_number($qty);
+                                            __write_number($qty, q + (norm.times - 1));
+                                            $qty.change();
+                                        }
+                                    }
                                 } else {
                                     toastr.error(data.row_data.msg);
                                 }
@@ -3267,10 +3547,14 @@ function pos_product_row(variation_id = null, purchase_line_id = null, weighing_
                     add_via_ajax = false;
                     is_added = true;
 
-                    //Increment product quantity
+                    // Increment product quantity (supports multi-qty barcode / repeated scan)
                     qty_element = $(this).find('.pos_quantity');
                     var qty = __read_number(qty_element);
-                    __write_number(qty_element, qty + 1);
+                    var add_qty = parseFloat(quantity);
+                    if (isNaN(add_qty) || add_qty < 1) {
+                        add_qty = 1;
+                    }
+                    __write_number(qty_element, qty + add_qty);
                     qty_element.change();
 
                     round_row_to_iraqi_dinnar($(this));
