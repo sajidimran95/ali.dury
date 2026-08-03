@@ -352,23 +352,29 @@
 		padding-left: 8px;
 		vertical-align: top;
 	}
-	/* Totals — each row is a clean label | value line */
+	/* Totals — each row has a bottom line (ref wholesale style) */
 	.usl-tots {
 		width: 100%;
-		max-width: 280px;
+		max-width: 300px;
 		margin-left: auto;
 		border-collapse: collapse;
-	}
-	.usl-tots tr td {
-		padding: 3px 0;
-		font-size: 11.5px;
-		line-height: 1.35;
 		border: 0;
+	}
+	.usl-tots tr.tot-row td {
+		padding: 5px 4px;
+		font-size: 11.5px;
+		line-height: 1.3;
+		border: 0;
+		border-bottom: 1px solid #111;
 		background: transparent;
+		vertical-align: middle;
+	}
+	.usl-tots tr.tot-row:last-child td {
+		border-bottom: 1px solid #111;
 	}
 	.usl-tots .lab {
 		text-align: left;
-		padding-right: 18px;
+		padding-right: 12px;
 		white-space: nowrap;
 		color: #111;
 		width: 62%;
@@ -380,14 +386,24 @@
 		width: 38%;
 		font-variant-numeric: tabular-nums;
 	}
-	.usl-tots .sep td {
-		padding: 4px 0 2px 0;
-		border-top: 1px solid #999;
+	/* Stronger rule before grand total block (ref) */
+	.usl-tots tr.tot-rule td {
+		padding: 0;
+		height: 0;
+		border: 0;
+		border-bottom: 1.5px solid #111;
+		line-height: 0;
+		font-size: 0;
 	}
-	.usl-tots .grand td {
+	.usl-tots tr.grand td {
 		font-weight: 700;
 		font-size: 12.5px;
-		padding-top: 5px;
+		padding-top: 6px;
+		padding-bottom: 6px;
+		border-bottom: 1px solid #111;
+	}
+	.usl-tots tr.grand:first-of-type td {
+		border-top: 1.5px solid #111;
 	}
 	.usl-tots .words td {
 		font-size: 10px;
@@ -396,6 +412,7 @@
 		padding-top: 1px;
 		padding-bottom: 4px;
 		text-align: right;
+		border: 0;
 	}
 	.usl-amount-words {
 		text-align: left;
@@ -919,25 +936,25 @@
 						? $receipt_details->tax
 						: $zero_money;
 				@endphp
-				{{-- Fixed bottom line order (do not reorder) --}}
+				{{-- Fixed bottom line order + horizontal underlines (ref style) --}}
 				<table class="usl-tots">
-					{{-- 1 --}}
-					<tr>
+					{{-- 1. Total Quantity --}}
+					<tr class="tot-row">
 						<td class="lab">Total Quantity</td>
 						<td class="val">{{ $qtyDisp }}</td>
 					</tr>
-					{{-- 2 --}}
-					<tr>
+					{{-- 2. Subtotal --}}
+					<tr class="tot-row">
 						<td class="lab">Subtotal</td>
 						<td class="val">{{ $receipt_details->subtotal }}</td>
 					</tr>
-					{{-- 3 --}}
-					<tr>
+					{{-- 3. Shipping Charges --}}
+					<tr class="tot-row">
 						<td class="lab">Shipping Charges</td>
 						<td class="val">{{ $shipShow }}</td>
 					</tr>
-					{{-- 4 --}}
-					<tr>
+					{{-- 4. Line Item (D/C) --}}
+					<tr class="tot-row">
 						<td class="lab">Line Item (D/C)</td>
 						<td class="val">
 							@if($lineDcUf > 0)
@@ -947,8 +964,8 @@
 							@endif
 						</td>
 					</tr>
-					{{-- 5 Discount (2.00%) when order discount applies; else $0.00 --}}
-					<tr>
+					{{-- 5. Discount (2.00% when %) / amount --}}
+					<tr class="tot-row">
 						<td class="lab">{!! $discount_label_html !!}</td>
 						<td class="val">
 							@if($invDisc > 0)
@@ -958,23 +975,24 @@
 							@endif
 						</td>
 					</tr>
-					{{-- 6 Tax (VAT@10%) when tax applies; else $0.00 --}}
-					<tr>
+					{{-- 6. Tax (order tax only) --}}
+					<tr class="tot-row">
 						<td class="lab">{!! $tax_total_label_html !!}</td>
 						<td class="val">{{ $taxShow }}</td>
 					</tr>
-					<tr class="sep"><td colspan="2"></td></tr>
-					{{-- 7 --}}
+					{{-- Rule before Total --}}
+					<tr class="tot-rule"><td colspan="2"></td></tr>
+					{{-- 7. Total --}}
 					<tr class="grand">
 						<td class="lab">Total</td>
 						<td class="val">{{ $receipt_details->total }}</td>
 					</tr>
-					{{-- 8 --}}
+					{{-- 8. Total Paid --}}
 					<tr class="grand">
 						<td class="lab">Total Paid</td>
 						<td class="val">{{ $paidAmt }}</td>
 					</tr>
-					{{-- 9 --}}
+					{{-- 9. Total Due --}}
 					<tr class="grand">
 						<td class="lab">Total Due</td>
 						<td class="val">{{ $dueAmt }}</td>
