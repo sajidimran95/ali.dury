@@ -423,18 +423,25 @@
 		padding-left: 8px;
 		vertical-align: top;
 	}
-	/* Ship Method / Date / Tracking / Boxes — plain lines, no table (ref style) */
+	/* Ship Method / Date / Tracking / Boxes — light fill, transparent-feel (ref) */
 	.usl-ship-block {
-		max-width: 340px;
-		background: transparent;
+		max-width: 360px;
+		background: rgba(240, 240, 240, 0.55) !important;
+		border: 0.5px solid #d0d0d0;
+		padding: 8px 10px;
 		font-size: 11px;
 		line-height: 1.55;
 		color: #111;
+		-webkit-print-color-adjust: exact;
+		print-color-adjust: exact;
 	}
 	.usl-ship-block .usl-ship-line {
-		margin: 0 0 3px 0;
+		margin: 0 0 4px 0;
 		padding: 0;
 		background: transparent;
+	}
+	.usl-ship-block .usl-ship-line:last-child {
+		margin-bottom: 0;
 	}
 	.usl-ship-block .usl-ship-line .k {
 		font-weight: 700;
@@ -442,8 +449,15 @@
 	.usl-ship-block .usl-ship-line .v {
 		font-weight: 400;
 	}
-	.usl-ship-block + .usl-pay {
-		margin-top: 6px;
+	/* Space between ship block and Cash / payment lines */
+	.usl-ship-block + .usl-pay,
+	.usl-pay {
+		margin-top: 14px;
+		font-size: 11px;
+	}
+	.usl-pay td {
+		padding: 3px 10px 3px 0;
+		vertical-align: middle;
 	}
 	/* Totals — same thin bottom line on every row (no fat rule after Tax) */
 	.usl-tots {
@@ -578,8 +592,6 @@
 	}
 	.usl-page .pg-left { text-align: left; font-weight: 600; }
 	.usl-page .pg-right { text-align: right; }
-	.usl-pay { margin-top: 4px; font-size: 10.5px; }
-	.usl-pay td { padding: 1px 6px 1px 0; }
 	.usl-notes { margin-top: 8px; font-size: 10px; white-space: pre-line; }
 </style>
 
