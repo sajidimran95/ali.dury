@@ -985,11 +985,9 @@
 		<tr>
 			<td class="ship">
 				@php
-					// One Ship Method only — prefer free-text details, else method field
+					// Ship Method uses shipping_method only (not free-text shipping_details)
 					$shipMethodVal = '';
-					if (!empty($receipt_details->shipping_details)) {
-						$shipMethodVal = $receipt_details->shipping_details;
-					} elseif (!empty($receipt_details->shipping_method)) {
+					if (!empty($receipt_details->shipping_method)) {
 						$shipMethodVal = $receipt_details->shipping_method;
 					}
 					$shipDateVal = $receipt_details->shipping_date ?? '';
