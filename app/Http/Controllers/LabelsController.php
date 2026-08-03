@@ -97,7 +97,7 @@ class LabelsController extends Controller
     }
 
     /**
-     * Returns the html for labels preview
+     * Returns the html for labels preview (preview first; print only via button).
      *
      * @return \Illuminate\Http\Response
      */
@@ -109,16 +109,35 @@ class LabelsController extends Controller
             $barcode_setting = $request->get('barcode_setting');
             $business_id = $request->session()->get('user.business_id');
 
+            if (empty($products) || ! is_array($products)) {
+                return response(
+                    '<html><body style="font-family:sans-serif;padding:24px;">'.
+                    e(__('lang_v1.barcode_label_error')).
+                    '</body></html>',
+                    400
+                );
+            }
+
             $barcode_details = Barcode::find($barcode_setting);
-            $barcode_details->stickers_in_one_sheet = $barcode_details->is_continuous ? $barcode_details->stickers_in_one_row : $barcode_details->stickers_in_one_sheet;
-            $barcode_details->paper_height = $barcode_details->is_continuous ? $barcode_details->height : $barcode_details->paper_height;
+            if (empty($barcode_details)) {
+                return response(
+                    '<html><body style="font-family:sans-serif;padding:24px;">'.
+                    e(__('lang_v1.barcode_label_error')).
+                    '</body></html>',
+                    404
+                );
+            }
+
+            $barcode_details->stickers_in_one_sheet = $barcode_details->is_continuous
+                ? $barcode_details->stickers_in_one_row
+                : $barcode_details->stickers_in_one_sheet;
+            $barcode_details->paper_height = $barcode_details->is_continuous
+                ? $barcode_details->height
+                : $barcode_details->paper_height;
             if ($barcode_details->stickers_in_one_row == 1) {
                 $barcode_details->col_distance = 0;
                 $barcode_details->row_distance = 0;
             }
-            // if($barcode_details->is_continuous){
-            //     $barcode_details->row_distance = 0;
-            // }
 
             $business_name = $request->session()->get('business.name');
 
@@ -163,80 +182,47 @@ class LabelsController extends Controller
             $paper_width = $barcode_details->paper_width * 1;
             $paper_height = $barcode_details->paper_height * 1;
 
-            // print_r($paper_height);
-            // echo "==";
-            // print_r($margin_left);exit;
-
-            // $mpdf = new \Mpdf\Mpdf(['mode' => 'utf-8',
-            //             'format' => [$paper_width, $paper_height],
-            //             'margin_top' => $margin_top,
-            //             'margin_bottom' => $margin_top,
-            //             'margin_left' => $margin_left,
-            //             'margin_right' => $margin_left,
-            //             'autoScriptToLang' => true,
-            //             // 'disablePrintCSS' => true,
-            // 'autoLangToFont' => true,
-            // 'autoVietnamese' => true,
-            // 'autoArabic' => true
-            //             ]
-            //         );
-            //print_r($mpdf);exit;
-
             $i = 0;
             $len = count($product_details_page_wise);
-            $is_first = false;
-            $is_last = false;
-
-            //$original_aspect_ratio = 4;//(w/h)
             $factor = (($barcode_details->width / $barcode_details->height)) / ($barcode_details->is_continuous ? 2 : 4);
-            $html = '';
+            $content = '';
+
             foreach ($product_details_page_wise as $page => $page_products) {
-                if ($i == 0) {
-                    $is_first = true;
-                }
+                $is_first = ($i === 0);
+                $is_last = ($i === $len - 1);
 
-                if ($i == $len - 1) {
-                    $is_last = true;
-                }
-
-                $output = view('labels.partials.preview_2')
-                            ->with(compact('print', 'page_products', 'business_name', 'barcode_details', 'margin_top', 'margin_left', 'paper_width', 'paper_height', 'is_first', 'is_last', 'factor'))->render();
-                print_r($output);
-                //$mpdf->WriteHTML($output);
-
-                // if($i < $len - 1){
-                //     // '', '', '', '', '', '', $margin_left, $margin_left, $margin_top, $margin_top, '', '', '', '', '', '', 0, 0, 0, 0, '', [$barcode_details->paper_width*1, $barcode_details->paper_height*1]
-                //     $mpdf->AddPage();
-                // }
+                $content .= view('labels.partials.preview_2')
+                    ->with(compact(
+                        'print',
+                        'page_products',
+                        'business_name',
+                        'barcode_details',
+                        'margin_top',
+                        'margin_left',
+                        'paper_width',
+                        'paper_height',
+                        'is_first',
+                        'is_last',
+                        'factor'
+                    ))
+                    ->render();
 
                 $i++;
             }
 
-            print_r('<script>window.print()</script>');
-            exit;
-            //return $output;
-
-            //$mpdf->Output();
-
-            // $page_height = null;
-            // if ($barcode_details->is_continuous) {
-            //     $rows = ceil($total_qty/$barcode_details->stickers_in_one_row) + 0.4;
-            //     $barcode_details->paper_height = $barcode_details->top_margin + ($rows*$barcode_details->height) + ($rows*$barcode_details->row_distance);
-            // }
-
-            // $output = view('labels.partials.preview')
-            //     ->with(compact('print', 'product_details', 'business_name', 'barcode_details', 'product_details_page_wise'))->render();
-
-            // $output = ['html' => $html,
-            //                 'success' => true,
-            //                 'msg' => ''
-            //             ];
+            // Preview page only — print via toolbar button (no auto window.print)
+            return response()->view('labels.preview_window', [
+                'content' => $content,
+            ]);
         } catch (\Exception $e) {
             \Log::emergency('File:'.$e->getFile().'Line:'.$e->getLine().'Message:'.$e->getMessage());
 
-            $output = __('lang_v1.barcode_label_error');
+            return response(
+                '<html><body style="font-family:sans-serif;padding:24px;">'.
+                e(__('lang_v1.barcode_label_error')).
+                '</body></html>',
+                500
+            );
         }
-
-        //return $output;
     }
 }

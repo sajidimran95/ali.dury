@@ -895,6 +895,18 @@
 				@if(!empty($receipt_details->shipping_details))
 					<div><strong>Ship Method:</strong> {{ $receipt_details->shipping_details }}</div>
 				@endif
+				@if(!empty($receipt_details->shipping_method))
+					<div><strong>{{ $receipt_details->shipping_method_label ?? 'Shipping Method' }}:</strong> {{ $receipt_details->shipping_method }}</div>
+				@endif
+				@if(!empty($receipt_details->shipping_date))
+					<div><strong>{{ $receipt_details->shipping_date_label ?? 'Shipping Date' }}:</strong> {{ $receipt_details->shipping_date }}</div>
+				@endif
+				@if(!empty($receipt_details->shipping_tracking_no))
+					<div><strong>{{ $receipt_details->shipping_tracking_no_label ?? 'Tracking No' }}:</strong> {{ $receipt_details->shipping_tracking_no }}</div>
+				@endif
+				@if(!empty($receipt_details->no_of_boxes))
+					<div><strong>{{ $receipt_details->no_of_boxes_label ?? 'No. of Boxes' }}:</strong> {{ $receipt_details->no_of_boxes }}</div>
+				@endif
 				@if(!empty($receipt_details->shipping_status))
 					<div><strong>Ship Status:</strong> {{ $receipt_details->shipping_status }}</div>
 				@endif

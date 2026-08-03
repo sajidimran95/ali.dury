@@ -43,25 +43,9 @@ $(document).ready(function() {
 
     $('button#labels_preview').click(function() {
         if ($('form#preview_setting_form table#product_table tbody tr').length > 0) {
+            // Open preview window only (print is a button on that preview page)
             var url = base_path + '/labels/preview?' + $('form#preview_setting_form').serialize();
-
-            window.open(url, 'newwindow');
-
-            // $.ajax({
-            //     method: 'get',
-            //     url: '/labels/preview',
-            //     dataType: 'json',
-            //     data: $('form#preview_setting_form').serialize(),
-            //     success: function(result) {
-            //         if (result.success) {
-            //             $('div.display_label_div').removeClass('hide');
-            //             $('div#preview_box').html(result.html);
-            //             __currency_convert_recursively($('div#preview_box'));
-            //         } else {
-            //             toastr.error(result.msg);
-            //         }
-            //     },
-            // });
+            window.open(url, 'label_preview', 'noopener,noreferrer');
         } else {
             swal(LANG.label_no_product_error).then(value => {
                 $('#search_product_for_label').focus();
@@ -69,6 +53,7 @@ $(document).ready(function() {
         }
     });
 
+    // In-page print button (if preview is loaded inline later)
     $(document).on('click', 'button#print_label', function() {
         window.print();
     });

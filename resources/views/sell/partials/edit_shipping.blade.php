@@ -34,12 +34,15 @@
 			            {!! Form::text('delivered_to', !empty($transaction->delivered_to) ? $transaction->delivered_to : null, ['class' => 'form-control','placeholder' => __('lang_v1.delivered_to')]); !!}
 			        </div>
 			    </div>
-				<div class="col-md-4">
+			    <div class="col-md-4">
 			        <div class="form-group">
 						{!! Form::label('delivery_person', __('lang_v1.delivery_person') . ':' ) !!}
 						{!! Form::select('delivery_person',$users, !empty($transaction->delivery_person) ? $transaction->delivery_person : null, ['class' => 'form-control select2','placeholder' => __('messages.please_select')]); !!}
 			        </div>
 			    </div>
+
+			    @include('sell.partials.shipping_extra_fields', ['transaction' => $transaction, 'col' => 3])
+
 			    @php
 			        $custom_labels = json_decode(session('business.custom_labels'), true);
 
@@ -182,3 +185,13 @@
 		{!! Form::close() !!}
 	</div><!-- /.modal-content -->
 </div><!-- /.modal-dialog -->
+<script type="text/javascript">
+	(function() {
+		if ($('.shipping-date-picker').length) {
+			$('.shipping-date-picker').datepicker({ autoclose: true, todayHighlight: true });
+		}
+		if ($('.select2').length) {
+			$('.select2').select2();
+		}
+	})();
+</script>

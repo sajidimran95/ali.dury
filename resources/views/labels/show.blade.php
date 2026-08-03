@@ -251,15 +251,19 @@
 			<div class="clearfix"></div>
 			
 			<div class="col-sm-12 text-center">
-				<button type="button" id="labels_preview" class="tw-dw-btn tw-dw-btn-primary tw-dw-btn-lg tw-text-white">@lang( 'barcode.preview' )</button>
+				<button type="button" id="labels_preview" class="tw-dw-btn tw-dw-btn-primary tw-dw-btn-lg tw-text-white">
+					<i class="fa fa-eye"></i> @lang( 'barcode.preview' )
+				</button>
+				<p class="help-block" style="margin-top:10px;">@lang('barcode.preview_before_print_hint')</p>
 			</div>
 		</div>
 	@endcomponent
 	{!! Form::close() !!}
 
+	{{-- Preview opens in a new window with its own Print Labels button --}}
 	<div class="col-sm-8 hide display_label_div">
 		<h3 class="box-title">@lang( 'barcode.preview' )</h3>
-		<button type="button" class="col-sm-offset-2 btn btn-success btn-block" id="print_label">Print</button>
+		<button type="button" class="col-sm-offset-2 btn btn-success btn-block" id="print_label">@lang('barcode.print_labels')</button>
 	</div>
 	<div class="clearfix"></div>
 </section>

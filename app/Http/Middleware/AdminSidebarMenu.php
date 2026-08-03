@@ -227,6 +227,17 @@ class AdminSidebarMenu
             );
         }
 
+        if (auth()->user()->can('shipping_method.view') || auth()->user()->can('shipping_method.create')) {
+            $sub->url(
+                action([\App\Http\Controllers\ShippingMethodController::class, 'index']),
+                __('lang_v1.shipping_methods'),
+                [
+                    'icon' => '',
+                    'active' => request()->segment(1) == 'shipping-methods',
+                ]
+            );
+        }
+
         $warrantyAttrs = [
             'icon' => '',
             'active' => request()->segment(1) == 'warranties',

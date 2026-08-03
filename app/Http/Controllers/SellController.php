@@ -1532,10 +1532,19 @@ class SellController extends Controller
         try {
             $input = $request->only([
                 'shipping_details', 'shipping_address',
-                'shipping_status', 'delivered_to', 'delivery_person', 'shipping_custom_field_1', 'shipping_custom_field_2', 'shipping_custom_field_3', 'shipping_custom_field_4', 'shipping_custom_field_5',
+                'shipping_status', 'delivered_to', 'delivery_person',
+                'shipping_method', 'shipping_date', 'shipping_tracking_no', 'no_of_boxes',
+                'shipping_custom_field_1', 'shipping_custom_field_2', 'shipping_custom_field_3', 'shipping_custom_field_4', 'shipping_custom_field_5',
             ]);
 
-
+            if (! empty($input['shipping_date'])) {
+                $input['shipping_date'] = $this->transactionUtil->uf_date($input['shipping_date'], true);
+            } else {
+                $input['shipping_date'] = null;
+            }
+            if (array_key_exists('no_of_boxes', $input) && $input['no_of_boxes'] === '') {
+                $input['no_of_boxes'] = null;
+            }
             $business_id = $request->session()->get('user.business_id');
 
             $transaction = Transaction::where('business_id', $business_id)
