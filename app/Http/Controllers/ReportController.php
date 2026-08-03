@@ -4192,9 +4192,19 @@ class ReportController extends Controller
         $content = $exporter->export();
         $filename = $exporter->suggestedFilename();
 
-        // Reject accidental UTF-8 BOM / ensure ASCII-safe download (MSA parsers are strict).
-        $content = preg_replace('/^\xEF\xBB\xBF/', '', $content);
-        $content = preg_replace("/\r\n\r\n+/", "\r\n", $content);
+        // Final safety pass: strip BOM, collapse any blank lines / mixed endings to single CRLF.
+        $content = preg_replace('/^\xEF\xBB\xBF/', '', $content) ?? $content;
+        $parts = preg_split("/\r\n|\n|\r/", $content) ?: [];
+        $parts = array_values(array_filter(array_map(function ($line) {
+            // Drop control chars; keep fixed-width padding spaces on MSA rows
+            $line = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/', '', (string) $line) ?? '';
+            $line = str_replace(["\r", "\n"], '', $line);
+
+            return $line;
+        }, $parts), function ($line) {
+            return $line !== '' && preg_match('/^(HID|BID|SID|PUR|TOT)/', $line);
+        }));
+        $content = implode("\r\n", $parts)."\r\n";
 
         if (! preg_match('/^SID/m', $content) || ! preg_match('/^PUR/m', $content)) {
             // Still download, but warn — MSA will see zero volume without stores/sales.
@@ -4204,10 +4214,13 @@ class ReportController extends Controller
             ]);
         }
 
+        // Binary-ish download so browsers / antivirus do not re-wrap or re-encode newlines.
         return response($content, 200, [
-            'Content-Type' => 'text/plain; charset=US-ASCII',
+            'Content-Type' => 'application/octet-stream',
             'Content-Disposition' => 'attachment; filename="'.$filename.'"',
+            'Content-Length' => (string) strlen($content),
             'X-Content-Type-Options' => 'nosniff',
+            'Cache-Control' => 'no-store, no-cache, must-revalidate',
         ]);
     }
 }

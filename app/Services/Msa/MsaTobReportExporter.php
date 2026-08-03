@@ -93,12 +93,25 @@ class MsaTobReportExporter
         }
         $lines[] = $this->buildTot();
 
-        // One record per line, CRLF only — never blank lines (MSA rejects double-spaced files).
-        $lines = array_values(array_filter(array_map(function ($line) {
-            return rtrim(str_replace(["\r", "\n"], '', (string) $line));
-        }, $lines), fn ($line) => $line !== ''));
+        // One physical record per line — strip control chars, keep fixed-width spaces.
+        // Never emit blank lines; MSA / MFT Hub reject double-spaced files.
+        $clean = [];
+        foreach ($lines as $line) {
+            $line = (string) $line;
+            // Remove CR/LF/NUL and other controls that break fixed-width packing
+            $line = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/', '', $line) ?? '';
+            $line = str_replace(["\r", "\n"], '', $line);
+            if ($line === '') {
+                continue;
+            }
+            // Only emit known MSA record types
+            if (! preg_match('/^(HID|BID|SID|PUR|TOT)/', $line)) {
+                continue;
+            }
+            $clean[] = $line;
+        }
 
-        return implode("\r\n", $lines)."\r\n";
+        return implode("\r\n", $clean)."\r\n";
     }
 
     public function suggestedFilename(): string
@@ -481,22 +494,89 @@ class MsaTobReportExporter
         $custNo = $this->digits($contact->contact_id ?: (string) $contact->id, 8);
         $shipNo = $this->digits((string) $contact->id, 8);
         $ext = $this->digits((string) $contact->id, 8);
-        $name = strtoupper($contact->supplier_business_name ?: $contact->name);
+        $name = strtoupper(trim($contact->supplier_business_name ?: $contact->name));
+        if ($name === '') {
+            $name = 'CUSTOMER';
+        }
         $storeNo = $this->digits((string) ($contact->custom_field2 ?? $contact->id), 8);
-        $address = strtoupper(trim(($contact->address_line_1 ?? '') . ' ' . ($contact->address_line_2 ?? '')));
-        $city = strtoupper($contact->city ?? '');
-        $state = strtoupper(substr($contact->state ?? $this->stateTax, 0, 2));
+
+        $store = $this->storeAddress();
+        $address = strtoupper(trim(($contact->address_line_1 ?? '').' '.($contact->address_line_2 ?? '')));
+        $city = strtoupper(trim((string) ($contact->city ?? '')));
+        $state = strtoupper(substr(trim((string) ($contact->state ?? '')), 0, 2));
         $zip = $this->zipPlus4($contact->zip_code ?? '');
+
+        // Walk-in / default customer, or any ship-to missing address fields → use store (location) address.
+        // MSA rejects SID rows with blank street/city/zip (common for Walk-In Customer).
+        $isWalkIn = ! empty($contact->is_default)
+            || preg_match('/\bwalk[\s\-]?in\b/i', $name)
+            || preg_match('/\bwalk[\s\-]?in\b/i', (string) ($contact->name ?? ''));
+
+        $addressIncomplete = ($address === '' || $city === '' || $zip === '000000000' || $zip === '');
+
+        if ($isWalkIn || $addressIncomplete) {
+            $address = $store['address'] !== '' ? $store['address'] : $address;
+            $city = $store['city'] !== '' ? $store['city'] : $city;
+            $state = $store['state'] !== '' ? $store['state'] : $state;
+            $zip = ($store['zip'] !== '' && $store['zip'] !== '000000000') ? $store['zip'] : $zip;
+        }
+
+        // Still enforce state / zip defaults so SID is never half-empty
+        if ($state === '') {
+            $state = $store['state'] !== '' ? $store['state'] : $this->stateTax;
+        }
+        if ($zip === '' || $zip === '000000000') {
+            if ($store['zip'] !== '' && $store['zip'] !== '000000000') {
+                $zip = $store['zip'];
+            } else {
+                // Prefer real digits from location zip field raw
+                $zip = $this->zipPlus4($this->location->zip_code ?? '00000');
+            }
+        }
+        if ($address === '') {
+            $address = $store['address'] !== '' ? $store['address'] : strtoupper(trim((string) ($this->location->name ?? 'STORE')));
+        }
+        if ($city === '') {
+            $city = $store['city'] !== '' ? $store['city'] : 'UNKNOWN';
+        }
+
         $phone = $this->digits($contact->mobile ?? $contact->landline ?? '', 10);
+        if ($phone === '0000000000') {
+            $locPhone = preg_replace('/\D+/', '', (string) ($this->location->mobile ?? ''));
+            if ($locPhone !== '') {
+                $phone = $this->digits($locPhone, 10);
+            }
+        }
+
         $cot = $this->resolveClassOfTrade($contact);
-        $cashCarry = strtoupper(substr((string) ($contact->custom_field3 ?? 'N'), 0, 1));
-        if (! in_array($cashCarry, ['Y', 'N'], true)) {
+        // Walk-in / cash sales at the warehouse → cash & carry Y (parent = store)
+        $cashCarryRaw = strtoupper(substr((string) ($contact->custom_field3 ?? ''), 0, 1));
+        if ($isWalkIn) {
+            $cashCarry = 'Y';
+        } elseif (in_array($cashCarryRaw, ['Y', 'N'], true)) {
+            $cashCarry = $cashCarryRaw;
+        } else {
             $cashCarry = 'N';
         }
 
         return compact(
             'custNo', 'shipNo', 'ext', 'name', 'storeNo', 'address', 'city', 'state', 'zip', 'phone', 'cot', 'cashCarry'
         );
+    }
+
+    /**
+     * Ship-from / store address (business location) used for HID and incomplete SIDs.
+     *
+     * @return array{address:string,city:string,state:string,zip:string}
+     */
+    protected function storeAddress(): array
+    {
+        $address = strtoupper(trim((string) ($this->location->landmark ?? '')));
+        $city = strtoupper(trim((string) ($this->location->city ?? '')));
+        $state = strtoupper(substr(trim((string) ($this->location->state ?? $this->stateTax)), 0, 2));
+        $zip = $this->zipPlus4($this->location->zip_code ?? '');
+
+        return compact('address', 'city', 'state', 'zip');
     }
 
     /**
@@ -543,23 +623,36 @@ class MsaTobReportExporter
 
     protected function formatSid(array $sid): string
     {
+        $store = $this->storeAddress();
+        // Parent (cash & carry / warehouse) always the store location.
         $parentName = $sid['cashCarry'] === 'Y'
             ? strtoupper($this->location->name ?: $this->business->name)
             : $sid['name'];
         $parentAddr = $sid['cashCarry'] === 'Y'
-            ? strtoupper($this->location->landmark ?? '')
+            ? ($store['address'] !== '' ? $store['address'] : $sid['address'])
             : $sid['address'];
         $parentCity = $sid['cashCarry'] === 'Y'
-            ? strtoupper($this->location->city ?? '')
+            ? ($store['city'] !== '' ? $store['city'] : $sid['city'])
             : $sid['city'];
         $parentState = $sid['cashCarry'] === 'Y'
-            ? strtoupper(substr($this->location->state ?? $this->stateTax, 0, 2))
+            ? ($store['state'] !== '' ? $store['state'] : $sid['state'])
             : $sid['state'];
         $parentZip = $sid['cashCarry'] === 'Y'
-            ? $this->zipPlus4($this->location->zip_code ?? '')
+            ? (($store['zip'] !== '' && $store['zip'] !== '000000000') ? $store['zip'] : $sid['zip'])
             : $sid['zip'];
         $parentPhone = $sid['phone'];
+        if ($parentPhone === '' || $parentPhone === '0000000000') {
+            $parentPhone = $this->digits((string) ($this->location->mobile ?? ''), 10);
+        }
         $independentFlag = $sid['cashCarry'] === 'Y' ? 'N' : 'Y';
+
+        // Ship-to must also never be blank (walk-in already filled from store in mapSid)
+        $shipAddr = $sid['address'] !== '' ? $sid['address'] : $store['address'];
+        $shipCity = $sid['city'] !== '' ? $sid['city'] : $store['city'];
+        $shipState = $sid['state'] !== '' ? $sid['state'] : ($store['state'] !== '' ? $store['state'] : $this->stateTax);
+        $shipZip = ($sid['zip'] !== '' && $sid['zip'] !== '000000000')
+            ? $sid['zip']
+            : (($store['zip'] !== '' && $store['zip'] !== '000000000') ? $store['zip'] : $this->zipPlus4('00000'));
 
         $line = 'SID'
             . $this->lj($sid['custNo'], 8)
@@ -567,10 +660,10 @@ class MsaTobReportExporter
             . $this->lj($sid['ext'], 8)
             . $this->lj($sid['name'], 32)
             . $this->lj($sid['storeNo'], 8)
-            . $this->lj($sid['address'], 90)
-            . $this->lj($sid['city'], 25)
-            . $this->lj($sid['state'], 2)
-            . $this->lj($sid['zip'], 9)
+            . $this->lj($shipAddr, 90)
+            . $this->lj($shipCity, 25)
+            . $this->lj($shipState, 2)
+            . $this->lj($shipZip, 9)
             . $this->lj('USA', 3)
             . $this->lj($this->stateTax, 2) // option1 usually blank when using BID option2 — samples fill both TN
             . $this->lj('', 3)
@@ -592,6 +685,7 @@ class MsaTobReportExporter
             . str_repeat(' ', 42)
             . $this->rj('0', 11, '0');
 
+        // Keep exact fixed width; do not rtrim padding spaces
         return substr($this->lj($line, 551), 0, 551);
     }
 
