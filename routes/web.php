@@ -47,6 +47,7 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SalesCommissionAgentController;
 use App\Http\Controllers\SalesOrderController;
 use App\Http\Controllers\SellController;
+use App\Http\Controllers\ShippingMethodController;
 use App\Http\Controllers\SellingPriceGroupController;
 use App\Http\Controllers\SellPosController;
 use App\Http\Controllers\SellReturnController;
@@ -187,6 +188,7 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::post('/user/update-password', [UserController::class, 'updatePassword'])->name('user.updatePassword');
 
     Route::resource('brands', BrandController::class);
+    Route::resource('shipping-methods', ShippingMethodController::class)->except(['show']);
 
     // PaymentAccountController removed (legacy); payment account report remains under account routes.
 

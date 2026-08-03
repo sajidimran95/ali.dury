@@ -85,6 +85,12 @@ return [
     'brand.update' => 'Edit brand',
     'brand.delete' => 'Delete brand',
 
+    'shipping_method' => 'Shipping methods',
+    'shipping_method.view' => 'View shipping methods',
+    'shipping_method.create' => 'Add shipping methods',
+    'shipping_method.update' => 'Edit shipping methods',
+    'shipping_method.delete' => 'Delete shipping methods',
+
     'tax_rate.view' => 'View tax rate',
     'tax_rate.create' => 'Add tax rate',
     'tax_rate.update' => 'Edit tax rate',

@@ -46,6 +46,7 @@ return [
     'print_price' => 'Product Price',
     'show_price' => 'Show Price',
     'preview' => 'Preview',
+    'preview_before_print_hint' => 'Review labels below, then click Print Labels when ready.',
     'print_business_name' => 'Business name',
     'barcode_setting' => 'Barcode setting',
     'paper_width' => 'Paper width',

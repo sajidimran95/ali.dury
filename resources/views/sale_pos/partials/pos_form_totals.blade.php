@@ -73,8 +73,12 @@
 			</span>
 			<span class="pos_totals_value" id="shipping_charges_amount">0</span>
 			<input type="hidden" name="shipping_details" id="shipping_details" value="@if(empty($edit)){{''}}@else{{$transaction->shipping_details}}@endif" data-default="">
+			<input type="hidden" name="shipping_method" id="shipping_method" value="@if(empty($edit)){{''}}@else{{$transaction->shipping_method}}@endif">
 			<input type="hidden" name="shipping_address" id="shipping_address" value="@if(empty($edit)){{''}}@else{{$transaction->shipping_address}}@endif">
 			<input type="hidden" name="shipping_status" id="shipping_status" value="@if(empty($edit)){{''}}@else{{$transaction->shipping_status}}@endif">
+			<input type="hidden" name="shipping_date" id="shipping_date" value="@if(empty($edit) || empty($transaction->shipping_date)){{''}}@else{{@format_date($transaction->shipping_date)}}@endif">
+			<input type="hidden" name="shipping_tracking_no" id="shipping_tracking_no" value="@if(empty($edit)){{''}}@else{{$transaction->shipping_tracking_no}}@endif">
+			<input type="hidden" name="no_of_boxes" id="no_of_boxes" value="@if(empty($edit)){{''}}@else{{$transaction->no_of_boxes}}@endif">
 			<input type="hidden" name="delivered_to" id="delivered_to" value="@if(empty($edit)){{''}}@else{{$transaction->delivered_to}}@endif">
 			<input type="hidden" name="delivery_person" id="delivery_person" value="@if(empty($edit)){{''}}@else{{$transaction->delivery_person}}@endif">
 			<input type="hidden" name="shipping_charges" id="shipping_charges" value="@if(empty($edit)){{@num_format(0.00)}} @else{{@num_format($transaction->shipping_charges)}} @endif" data-default="0.00">

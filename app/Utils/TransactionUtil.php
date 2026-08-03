@@ -87,8 +87,16 @@ class TransactionUtil extends Util
             'commission_agent' => $input['commission_agent'] ?? null,
             'is_quotation' => isset($input['is_quotation']) ? $input['is_quotation'] : 0,
             'shipping_details' => isset($input['shipping_details']) ? $input['shipping_details'] : null,
+            'shipping_method' => isset($input['shipping_method']) ? $input['shipping_method'] : null,
             'shipping_address' => isset($input['shipping_address']) ? $input['shipping_address'] : null,
             'shipping_status' => isset($input['shipping_status']) ? $input['shipping_status'] : null,
+            'shipping_date' => ! empty($input['shipping_date'])
+                ? ($uf_data ? $this->uf_date($input['shipping_date'], true) : $input['shipping_date'])
+                : null,
+            'shipping_tracking_no' => ! empty($input['shipping_tracking_no']) ? $input['shipping_tracking_no'] : null,
+            'no_of_boxes' => isset($input['no_of_boxes']) && $input['no_of_boxes'] !== ''
+                ? (int) $input['no_of_boxes']
+                : null,
             'delivered_to' => isset($input['delivered_to']) ? $input['delivered_to'] : null,
             'delivery_person' => isset($input['delivery_person']) ? $input['delivery_person'] : null,
             'shipping_charges' => isset($input['shipping_charges']) ? $uf_data ? $this->num_uf($input['shipping_charges']) : $input['shipping_charges'] : 0,
@@ -210,9 +218,17 @@ class TransactionUtil extends Util
             'is_quotation' => isset($input['is_quotation']) ? $input['is_quotation'] : 0,
             'sub_status' => ! empty($input['sub_status']) ? $input['sub_status'] : null,
             'shipping_details' => isset($input['shipping_details']) ? $input['shipping_details'] : null,
+            'shipping_method' => isset($input['shipping_method']) ? $input['shipping_method'] : null,
             'shipping_charges' => isset($input['shipping_charges']) ? $uf_data ? $this->num_uf($input['shipping_charges']) : $input['shipping_charges'] : 0,
             'shipping_address' => isset($input['shipping_address']) ? $input['shipping_address'] : null,
             'shipping_status' => isset($input['shipping_status']) ? $input['shipping_status'] : null,
+            'shipping_date' => ! empty($input['shipping_date'])
+                ? ($uf_data ? $this->uf_date($input['shipping_date'], true) : $input['shipping_date'])
+                : null,
+            'shipping_tracking_no' => ! empty($input['shipping_tracking_no']) ? $input['shipping_tracking_no'] : null,
+            'no_of_boxes' => isset($input['no_of_boxes']) && $input['no_of_boxes'] !== ''
+                ? (int) $input['no_of_boxes']
+                : null,
             'delivered_to' => isset($input['delivered_to']) ? $input['delivered_to'] : null,
             'delivery_person' => isset($input['delivery_person']) ? $input['delivery_person'] : null,
             'shipping_custom_field_1' => ! empty($input['shipping_custom_field_1']) ? $input['shipping_custom_field_1'] : null,
@@ -1518,8 +1534,18 @@ class TransactionUtil extends Util
         $output['shipping_charges_label'] = trans('sale.shipping_charges');
         //Shipping details
         $output['shipping_details'] = $transaction->shipping_details;
+        $output['shipping_method'] = $transaction->shipping_method ?? null;
+        $output['shipping_date'] = ! empty($transaction->shipping_date)
+            ? $this->format_date($transaction->shipping_date, true)
+            : null;
+        $output['shipping_tracking_no'] = $transaction->shipping_tracking_no ?? null;
+        $output['no_of_boxes'] = $transaction->no_of_boxes ?? null;
         $output['delivered_to'] = $transaction->delivered_to;
         $output['shipping_details_label'] = trans('sale.shipping_details');
+        $output['shipping_method_label'] = trans('lang_v1.shipping_method');
+        $output['shipping_date_label'] = trans('lang_v1.shipping_date');
+        $output['shipping_tracking_no_label'] = trans('lang_v1.shipping_tracking_no');
+        $output['no_of_boxes_label'] = trans('lang_v1.no_of_boxes');
         $output['packing_charge_label'] = trans('lang_v1.packing_charge');
         $output['packing_charge'] = ($transaction->packing_charge != 0) ? $this->num_f($transaction->packing_charge, $show_currency, $business_details) : 0;
 

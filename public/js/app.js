@@ -57,6 +57,12 @@ $(document).ready(function() {
         autoclose: true,
         endDate: 'today',
     });
+    if ($('.shipping-date-picker').length) {
+        $('.shipping-date-picker').datepicker({
+            autoclose: true,
+            todayHighlight: true,
+        });
+    }
     $(document).on('click', '.btn-modal', function(e) {
         e.preventDefault();
         var container = $(this).data('container');

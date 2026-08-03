@@ -1722,4 +1722,17 @@ return [
     'pos_pwa_ios_hint' => 'On iPhone/iPad: tap Share, then Add to Home Screen.',
     'pos_pwa_install_hint' => 'Use your browser menu → Install app / Add to Home Screen.',
 
+    'shipping_methods' => 'Shipping Methods',
+    'manage_shipping_methods' => 'Manage carriers / methods used on sales (UPS, FedEx, Pickup, etc.)',
+    'all_shipping_methods' => 'All shipping methods',
+    'add_shipping_method' => 'Add shipping method',
+    'edit_shipping_method' => 'Edit shipping method',
+    'shipping_method' => 'Shipping method',
+    'shipping_date' => 'Shipping date',
+    'shipping_tracking_no' => 'Tracking number',
+    'no_of_boxes' => 'No. of boxes',
+    'shipping_method_added_success' => 'Shipping method added successfully',
+    'shipping_method_updated_success' => 'Shipping method updated successfully',
+    'shipping_method_deleted_success' => 'Shipping method deleted successfully',
+
 ];

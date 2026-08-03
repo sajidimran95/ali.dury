@@ -1646,6 +1646,18 @@ $(document).ready(function() {
         $('input#shipping_status').val($('#shipping_status_modal').val());
         $('input#delivered_to').val($('#delivered_to_modal').val());
         $('input#delivery_person').val($('#delivery_person_modal').val());
+        if ($('#shipping_method_modal').length) {
+            $('input#shipping_method').val($('#shipping_method_modal').val());
+        }
+        if ($('#shipping_date_modal').length) {
+            $('input#shipping_date').val($('#shipping_date_modal').val());
+        }
+        if ($('#shipping_tracking_no_modal').length) {
+            $('input#shipping_tracking_no').val($('#shipping_tracking_no_modal').val());
+        }
+        if ($('#no_of_boxes_modal').length) {
+            $('input#no_of_boxes').val($('#no_of_boxes_modal').val());
+        }
 
         //Update shipping charges
         __write_number(
@@ -1664,6 +1676,22 @@ $(document).ready(function() {
             .filter(':visible:first')
             .focus()
             .select();
+        if ($('#posShippingModal .shipping-date-picker').length && !$('#posShippingModal .shipping-date-picker').data('datepicker')) {
+            $('#posShippingModal .shipping-date-picker').datepicker({ autoclose: true, todayHighlight: true });
+        }
+        // Sync modal fields from current POS form values
+        if ($('#shipping_method').val()) {
+            $('#shipping_method_modal').val($('#shipping_method').val()).trigger('change');
+        }
+        if ($('#shipping_date').val()) {
+            $('#shipping_date_modal').val($('#shipping_date').val());
+        }
+        if ($('#shipping_tracking_no').val()) {
+            $('#shipping_tracking_no_modal').val($('#shipping_tracking_no').val());
+        }
+        if ($('#no_of_boxes').val()) {
+            $('#no_of_boxes_modal').val($('#no_of_boxes').val());
+        }
             // $('.select2-selection__rendered').css('padding-right', '150px');
     });
 
@@ -3774,6 +3802,19 @@ function reset_pos_form(){
 	__write_number($('input#shipping_charges'), pos_attr_default($('input#shipping_charges'), 0));
 	$('input#shipping_details').val(pos_attr_default($('input#shipping_details'), ''));
     $('input#shipping_address, input#shipping_status, input#delivered_to, input#delivery_person').val('');
+    $('input#shipping_method, input#shipping_date, input#shipping_tracking_no, input#no_of_boxes').val('');
+    if ($('#shipping_method_modal').length) {
+        $('#shipping_method_modal').val('').trigger('change');
+    }
+    if ($('#shipping_date_modal').length) {
+        $('#shipping_date_modal').val('');
+    }
+    if ($('#shipping_tracking_no_modal').length) {
+        $('#shipping_tracking_no_modal').val('');
+    }
+    if ($('#no_of_boxes_modal').length) {
+        $('#no_of_boxes_modal').val('');
+    }
     if ($('#shipping_details_modal').length) {
         $('#shipping_details_modal').val('');
     }

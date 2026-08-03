@@ -53,6 +53,47 @@
 				            {!! Form::select('delivery_person_modal', $users, !empty($transaction->delivery_person) ? $transaction->delivery_person : null, ['style' => 'width:100%' ,'class' => 'form-control select2 width-100','placeholder' => __('messages.please_select')]); !!}
 				        </div>
 				    </div>
+
+					@php
+						$tx = $transaction ?? null;
+						$pos_ship_methods = \App\ShippingMethod::forDropdown((int) session('user.business_id'), false, true);
+						$pos_ship_date = null;
+						if (!empty($tx->shipping_date)) {
+							try {
+								$pos_ship_date = \Carbon\Carbon::parse($tx->shipping_date)->format(session('business.date_format', 'm/d/Y'));
+							} catch (\Throwable $e) {
+								$pos_ship_date = $tx->shipping_date;
+							}
+						}
+					@endphp
+					<div class="col-md-6">
+						<div class="form-group">
+							{!! Form::label('shipping_method_modal', __('lang_v1.shipping_method') . ':') !!}
+							{!! Form::select('shipping_method_modal', $pos_ship_methods, $tx->shipping_method ?? null, ['class' => 'form-control select2', 'style' => 'width:100%', 'id' => 'shipping_method_modal', 'placeholder' => __('messages.please_select')]); !!}
+						</div>
+					</div>
+					<div class="col-md-6">
+						<div class="form-group">
+							{!! Form::label('shipping_date_modal', __('lang_v1.shipping_date') . ':') !!}
+							<div class="input-group">
+								<span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+								{!! Form::text('shipping_date_modal', $pos_ship_date, ['class' => 'form-control shipping-date-picker', 'id' => 'shipping_date_modal', 'placeholder' => __('lang_v1.shipping_date'), 'readonly']); !!}
+							</div>
+						</div>
+					</div>
+					<div class="col-md-6">
+						<div class="form-group">
+							{!! Form::label('shipping_tracking_no_modal', __('lang_v1.shipping_tracking_no') . ':') !!}
+							{!! Form::text('shipping_tracking_no_modal', $tx->shipping_tracking_no ?? null, ['class' => 'form-control', 'id' => 'shipping_tracking_no_modal', 'placeholder' => __('lang_v1.shipping_tracking_no')]); !!}
+						</div>
+					</div>
+					<div class="col-md-6">
+						<div class="form-group">
+							{!! Form::label('no_of_boxes_modal', __('lang_v1.no_of_boxes') . ':') !!}
+							{!! Form::number('no_of_boxes_modal', $tx->no_of_boxes ?? null, ['class' => 'form-control', 'id' => 'no_of_boxes_modal', 'min' => 0, 'step' => 1, 'placeholder' => __('lang_v1.no_of_boxes')]); !!}
+						</div>
+					</div>
+
 				    @php
 				        $custom_labels = json_decode(session('business.custom_labels'), true);
 
