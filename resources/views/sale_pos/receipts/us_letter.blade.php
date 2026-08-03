@@ -152,9 +152,10 @@
 		? __('lang_v1.grand_total')
 		: $layout_total_raw;
 	$paid_label = $lbl($receipt_details->total_paid_label ?? null, __('sale.total_paid'));
-	$due_label = $lbl($receipt_details->total_due_label ?? null, 'Total Due');
-	if ($due_label === '') {
-		$due_label = 'Total Due';
+	$due_label = $lbl($receipt_details->total_due_label ?? null, 'Due Amount');
+	// Always show "Due Amount" after Total Paid (not "Total Due")
+	if ($due_label === '' || strcasecmp(trim($due_label), 'Total Due') === 0) {
+		$due_label = 'Due Amount';
 	}
 
 	$sym = $receipt_details->currency_symbol ?? '';
@@ -1103,7 +1104,7 @@
 						<td class="lab">{{ $paid_label }}</td>
 						<td class="val">{{ $paidAmt }}</td>
 					</tr>
-					{{-- 9. Total Due --}}
+					{{-- 9. Due Amount --}}
 					<tr class="grand">
 						<td class="lab">{{ $due_label }}</td>
 						<td class="val">{{ $dueAmt }}</td>
