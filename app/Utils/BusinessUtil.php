@@ -51,7 +51,7 @@ class BusinessUtil extends Util
         $ref_count = $this->setAndGetReferenceCount('contacts', $business_id);
         $contact_id = $this->generateReferenceNumber('contacts', $ref_count, $business_id);
 
-        //Add Default/Walk-In Customer for new business
+        //Add Default/Walk-In Customer for new business (null = no credit limit)
         $customer = [
             'business_id' => $business_id,
             'type' => 'customer',
@@ -59,7 +59,7 @@ class BusinessUtil extends Util
             'created_by' => $user_id,
             'is_default' => 1,
             'contact_id' => $contact_id,
-            'credit_limit' => 0,
+            'credit_limit' => null,
         ];
         Contact::create($customer);
 

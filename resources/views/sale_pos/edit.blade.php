@@ -97,7 +97,7 @@
 @stop
 
 @section('javascript')
-	<script src="{{ asset('js/pos.js?v=' . $asset_v . '&ls=86') }}"></script>
+	<script src="{{ asset('js/pos.js?v=' . $asset_v . '&ls=89') }}"></script>
 	<script src="{{ asset('js/printer.js?v=' . $asset_v) }}"></script>
 	<script src="{{ asset('js/product.js?v=' . $asset_v) }}"></script>
 	<script src="{{ asset('js/opening_stock.js?v=' . $asset_v) }}"></script>

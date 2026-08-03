@@ -1881,14 +1881,40 @@ class ContactController extends Controller
 
     public function getContactDue($contact_id)
     {
-        if (request()->ajax()) {
-            $business_id = request()->session()->get('user.business_id');
-            $due = $this->transactionUtil->getContactDue($contact_id, $business_id);
-
-            $output = $due != 0 ? $this->transactionUtil->num_f($due, true) : '';
-
-            return $output;
+        if (! request()->ajax()) {
+            return;
         }
+
+        $business_id = request()->session()->get('user.business_id');
+        $due = (float) $this->transactionUtil->getContactDue($contact_id, $business_id);
+
+        // When editing a sale, exclude this transaction so previous due is only older balances
+        $exclude_transaction_id = request()->input('exclude_transaction_id');
+        if (! empty($exclude_transaction_id)) {
+            $tx = \App\Transaction::where('business_id', $business_id)
+                ->where('id', $exclude_transaction_id)
+                ->where('contact_id', $contact_id)
+                ->first();
+            if ($tx && $tx->type == 'sell' && $tx->status == 'final') {
+                $paid = (float) \DB::table('transaction_payments')
+                    ->where('transaction_id', $tx->id)
+                    ->selectRaw('COALESCE(SUM(IF(is_return = 1, -1 * amount, amount)), 0) as paid')
+                    ->value('paid');
+                $tx_due = max(0, (float) $tx->final_total - $paid);
+                $due -= $tx_due;
+            }
+        }
+
+        if ($due < 0) {
+            $due = 0;
+        }
+
+        $formatted = $this->transactionUtil->num_f($due, true);
+
+        return response()->json([
+            'amount' => round($due, 4),
+            'formatted' => $formatted,
+        ]);
     }
 
     public function checkMobile(Request $request)

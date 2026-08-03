@@ -1005,6 +1005,8 @@ return [
     'beginning_balance' => 'Beginning balance',
     'total_invoice' => 'Total invoice',
     'balance_due' => 'Balance due',
+    'customer_previous_due' => 'Customer previous due',
+    'payment_balance_due_help' => 'Amount still owed on this sale after payment. $0 means this sale is fully paid (extra shows as Change Return).',
     'send_ledger' => 'Send Ledger',
     'notifications' => 'Notifications',
     'ledger_attacment_help' => 'Ledger will be attached in PDF format with this email',

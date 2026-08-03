@@ -186,11 +186,22 @@
                                 <div class="col-md-12">
                                     <hr>
                                     <strong>
-                                        @lang('lang_v1.balance'):
+                                        @lang('lang_v1.customer_previous_due'):
+                                    </strong>
+                                    <br />
+                                    <span class="lead text-bold payment_customer_prev_due text-danger">0</span>
+                                    <input type="hidden" id="payment_customer_prev_due" value="0">
+                                </div>
+
+                                <div class="col-md-12">
+                                    <hr>
+                                    <strong>
+                                        @lang('lang_v1.balance_due'):
                                     </strong>
                                     <br />
                                     <span class="lead text-bold balance_due">0</span>
-                                    <input type="hidden" id="in_balance_due" value=0>
+                                    <input type="hidden" id="in_balance_due" value="0">
+                                    <p class="help-block tw-text-xs tw-mb-0" style="opacity:.7">@lang('lang_v1.payment_balance_due_help')</p>
                                 </div>
 
 

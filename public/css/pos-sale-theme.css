@@ -2438,9 +2438,9 @@ body.lockscreen.pos-sale-theme .pos_form_totals .pos_totals_cell:first-child {
   display: none !important; /* hide item count cell; shown on Pay button */
 }
 
-/* Show Subtotal / Discount / Tax only in cart footer summary */
-body.lockscreen.pos-sale-theme .pos_form_totals .pos_totals_left > .pos_totals_cell:nth-child(4),
-body.lockscreen.pos-sale-theme .pos_form_totals .pos_totals_left > .pos_totals_cell:nth-child(n+6) {
+/* Cart footer summary: Subtotal, Discount, Tax, Shipping always visible.
+   Optional rows (loyalty / packing / round-off) stay clipped when unused. */
+body.lockscreen.pos-sale-theme .pos_form_totals .pos_totals_left > .pos_totals_cell.pos-totals-optional {
   position: absolute !important;
   width: 1px !important;
   height: 1px !important;
@@ -2449,6 +2449,18 @@ body.lockscreen.pos-sale-theme .pos_form_totals .pos_totals_left > .pos_totals_c
   padding: 0 !important;
   margin: -1px !important;
   border: 0 !important;
+}
+
+/* Always show shipping price under tax */
+body.lockscreen.pos-sale-theme .pos_form_totals .pos_totals_left > .pos_totals_cell.pos-totals-shipping {
+  display: flex !important;
+  position: static !important;
+  width: 100% !important;
+  height: auto !important;
+  overflow: visible !important;
+  clip: auto !important;
+  padding: 7px 0 !important;
+  margin: 0 !important;
 }
 
 body.lockscreen.pos-sale-theme .pos_form_totals .pos-add-row {
@@ -4087,8 +4099,26 @@ body.lockscreen.pos-sale-theme #modal_payment .total_payable_span,
 body.lockscreen.pos-sale-theme #modal_payment .total_paying,
 body.lockscreen.pos-sale-theme #modal_payment .change_return_span,
 body.lockscreen.pos-sale-theme #modal_payment .balance_due,
+body.lockscreen.pos-sale-theme #modal_payment .payment_customer_prev_due,
 body.lockscreen.pos-sale-theme #modal_payment .total_quantity {
   color: #6bb0f0 !important;
+}
+
+/* Remaining balance due should stand out; settled balance OK */
+body.lockscreen.pos-sale-theme #modal_payment .balance_due.text-danger {
+  color: #ef5350 !important;
+}
+body.lockscreen.pos-sale-theme #modal_payment .balance_due.text-success {
+  color: #66bb6a !important;
+}
+body.lockscreen.pos-sale-theme #modal_payment .payment_customer_prev_due.text-danger {
+  color: #ef5350 !important;
+}
+body.lockscreen.pos-sale-theme #modal_payment .payment_customer_prev_due.text-success {
+  color: #66bb6a !important;
+}
+body.lockscreen.pos-sale-theme #modal_payment .change_return_span.text-danger {
+  color: #ef5350 !important;
 }
 
 body.lockscreen.pos-sale-theme #modal_payment .payment_row .box-body,

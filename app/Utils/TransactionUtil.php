@@ -4262,11 +4262,20 @@ class TransactionUtil extends Util
             return false;
         }
 
-        $credit_limit = $contact->credit_limit;
-
-        if ($credit_limit == null) {
+        // Walk-In / default customer: never block credit-sale (legacy installs used credit_limit = 0)
+        if (! empty($contact->is_default)) {
             return false;
         }
+
+        // null / blank = unlimited (UI: "Keep blank for no limit")
+        // Note: credit_limit of 0 means no credit allowed for that customer
+        $credit_limit = $contact->credit_limit;
+
+        if ($credit_limit === null || $credit_limit === '') {
+            return false;
+        }
+
+        $credit_limit = (float) $credit_limit;
 
         $query = Contact::where('contacts.id', $input['contact_id'])
                 ->leftjoin('transactions AS t', 'contacts.id', '=', 't.contact_id');

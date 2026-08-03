@@ -44,7 +44,7 @@
 		</div>
 
 		{{-- Loyalty --}}
-		<div class="pos_totals_cell @if(!$is_rp_enabled) hide @endif">
+		<div class="pos_totals_cell pos-totals-optional @if(!$is_rp_enabled) hide @endif">
 			<span class="pos_totals_label">
 				<span class="mobile-only">LOY</span>
 				<span class="desktop-only">{{session('business.rp_name')}}</span>
@@ -66,27 +66,33 @@
 		</div>
 
 		{{-- Shipping --}}
-		<div class="pos_totals_cell">
+		<div class="pos_totals_cell pos-totals-shipping">
 			<span class="pos_totals_label">
 				<span class="mobile-only">SHIP(+)</span>
 				<span class="desktop-only">@lang('sale.shipping')(+)</span>
 			</span>
-			<span class="pos_totals_value" id="shipping_charges_amount">0</span>
-			<input type="hidden" name="shipping_details" id="shipping_details" value="@if(empty($edit)){{''}}@else{{$transaction->shipping_details}}@endif" data-default="">
-			<input type="hidden" name="shipping_method" id="shipping_method" value="@if(empty($edit)){{''}}@else{{$transaction->shipping_method}}@endif">
-			<input type="hidden" name="shipping_address" id="shipping_address" value="@if(empty($edit)){{''}}@else{{$transaction->shipping_address}}@endif">
-			<input type="hidden" name="shipping_status" id="shipping_status" value="@if(empty($edit)){{''}}@else{{$transaction->shipping_status}}@endif">
-			<input type="hidden" name="shipping_date" id="shipping_date" value="@if(empty($edit) || empty($transaction->shipping_date)){{''}}@else{{@format_date($transaction->shipping_date)}}@endif">
-			<input type="hidden" name="shipping_tracking_no" id="shipping_tracking_no" value="@if(empty($edit)){{''}}@else{{$transaction->shipping_tracking_no}}@endif">
-			<input type="hidden" name="no_of_boxes" id="no_of_boxes" value="@if(empty($edit)){{''}}@else{{$transaction->no_of_boxes}}@endif">
-			<input type="hidden" name="delivered_to" id="delivered_to" value="@if(empty($edit)){{''}}@else{{$transaction->delivered_to}}@endif">
-			<input type="hidden" name="delivery_person" id="delivery_person" value="@if(empty($edit)){{''}}@else{{$transaction->delivery_person}}@endif">
-			<input type="hidden" name="shipping_charges" id="shipping_charges" value="@if(empty($edit)){{@num_format(0.00)}} @else{{@num_format($transaction->shipping_charges)}} @endif" data-default="0.00">
+			<span class="pos_totals_value" id="shipping_charges_amount">
+				@if(!empty($edit) && !empty($transaction))
+					{{ @num_format($transaction->shipping_charges ?? 0) }}
+				@else
+					0
+				@endif
+			</span>
+			<input type="hidden" name="shipping_details" id="shipping_details" value="@if(!empty($edit) && !empty($transaction)){{$transaction->shipping_details}}@else{{''}}@endif" data-default="">
+			<input type="hidden" name="shipping_method" id="shipping_method" value="@if(!empty($edit) && !empty($transaction)){{$transaction->shipping_method}}@else{{''}}@endif">
+			<input type="hidden" name="shipping_address" id="shipping_address" value="@if(!empty($edit) && !empty($transaction)){{$transaction->shipping_address}}@else{{''}}@endif">
+			<input type="hidden" name="shipping_status" id="shipping_status" value="@if(!empty($edit) && !empty($transaction)){{$transaction->shipping_status}}@else{{''}}@endif">
+			<input type="hidden" name="shipping_date" id="shipping_date" value="@if(!empty($edit) && !empty($transaction) && !empty($transaction->shipping_date)){{@format_date($transaction->shipping_date)}}@else{{''}}@endif">
+			<input type="hidden" name="shipping_tracking_no" id="shipping_tracking_no" value="@if(!empty($edit) && !empty($transaction)){{$transaction->shipping_tracking_no}}@else{{''}}@endif">
+			<input type="hidden" name="no_of_boxes" id="no_of_boxes" value="@if(!empty($edit) && !empty($transaction)){{$transaction->no_of_boxes}}@else{{''}}@endif">
+			<input type="hidden" name="delivered_to" id="delivered_to" value="@if(!empty($edit) && !empty($transaction)){{$transaction->delivered_to}}@else{{''}}@endif">
+			<input type="hidden" name="delivery_person" id="delivery_person" value="@if(!empty($edit) && !empty($transaction)){{$transaction->delivery_person}}@else{{''}}@endif">
+			<input type="hidden" name="shipping_charges" id="shipping_charges" value="@if(!empty($edit) && !empty($transaction)){{@num_format($transaction->shipping_charges ?? 0)}}@else{{@num_format(0.00)}}@endif" data-default="0.00">
 		</div>
 
 		{{-- Packing charge --}}
 		@if(in_array('types_of_service', $enabled_modules))
-			<div class="pos_totals_cell">
+			<div class="pos_totals_cell pos-totals-optional">
 				<span class="pos_totals_label">
 					<span class="mobile-only">PACK(+)</span>
 					<span class="desktop-only">@lang('lang_v1.packing_charge')(+)</span>
@@ -98,7 +104,7 @@
 
 		{{-- Round-off --}}
 		@if(!empty($pos_settings['amount_rounding_method']) && $pos_settings['amount_rounding_method'] > 0)
-			<div class="pos_totals_cell">
+			<div class="pos_totals_cell pos-totals-optional">
 				<span class="pos_totals_label">
 					<span class="mobile-only">RND</span>
 					<span class="desktop-only">@lang('lang_v1.round_off')</span>

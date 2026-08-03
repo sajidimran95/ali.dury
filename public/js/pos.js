@@ -1194,14 +1194,25 @@ $(document).ready(function() {
         return false;
     });
 
-    $('#modal_payment').one('shown.bs.modal', function() {
+    // Every time payment modal opens: refresh prev due + recompute balance
+    $('#modal_payment').on('shown.bs.modal', function() {
+        var customer_id = $('select#customer_id').val();
+        if (customer_id && typeof get_contact_due === 'function') {
+            get_contact_due(customer_id);
+        } else if (typeof set_payment_modal_prev_due === 'function') {
+            set_payment_modal_prev_due(0, '');
+        }
+        calculate_balance_due();
         $('#modal_payment')
-            .find('input')
+            .find('input.payment-amount')
             .filter(':visible:first')
             .focus()
             .select();
         if ($('form#edit_pos_sell_form').length == 0) {
-            $(this).find('#method_0').change();
+            var $method = $(this).find('#method_0');
+            if ($method.length) {
+                $method.trigger('change');
+            }
         }
     });
 
@@ -1457,20 +1468,32 @@ $(document).ready(function() {
                     var appended = $('#payment_rows_div').append(result);
 
                     var total_payable = __read_number($('input#final_total_input'));
-                    var total_paying = __read_number($('input#total_paying_input'));
+                    if (isNaN(total_payable)) {
+                        total_payable = 0;
+                    }
+                    // Sum existing rows only (exclude newly appended last amount)
+                    var $amounts = $('#payment_rows_div').find('.payment-amount');
+                    var total_paying = 0;
+                    $amounts.each(function (idx) {
+                        if (idx === $amounts.length - 1) {
+                            return;
+                        }
+                        var amount = __read_number($(this));
+                        if (!isNaN(amount)) {
+                            total_paying += amount;
+                        }
+                    });
                     var b_due = total_payable - total_paying;
-                    $(appended)
-                        .find('input.payment-amount')
-                        .focus();
-                    $(appended)
-                        .find('input.payment-amount')
-                        .last()
-                        .val(__currency_trans_from_en(b_due, false))
-                        .change()
-                        .select();
+                    if (isNaN(b_due) || b_due < 0) {
+                        b_due = 0;
+                    }
+                    var $newAmount = $amounts.last();
+                    __write_number($newAmount, b_due);
+                    $newAmount.focus().select().trigger('change');
                     __select2($(appended).find('.select2'));
                     $(appended).find('#method_' + row_index).change();
                     $('#payment_row_index').val(parseInt(row_index) + 1);
+                    calculate_balance_due();
                 }
             },
         });
@@ -1502,7 +1525,7 @@ $(document).ready(function() {
             // Credit sale: previous system — due sale, skip paid-amount confirm
             if ($('input#is_suspend').val() == '1' || $('input#is_credit_sale').val() == '1') {
                 cnf = true;
-            } else if ($('input#in_balance_due').val() >= 0.5) {
+            } else if (parseFloat($('input#in_balance_due').val()) >= 0.5) {
                 //Ignore if the difference is less than 0.5
                 cnf = confirm(LANG.paid_amount_is_less_than_payable);
             }
@@ -1630,8 +1653,19 @@ $(document).ready(function() {
         },
     });
 
-    $(document).on('change', '.payment-amount', function() {
+    // Live recalculate when payment amounts change (typing + blur)
+    $(document).on('change input keyup', '#payment_rows_div .payment-amount', function() {
         calculate_balance_due();
+    });
+
+    // Optional: keep other screens that use .payment-amount (sell form)
+    $(document).on('change', '.payment-amount', function() {
+        if ($(this).closest('#payment_rows_div').length) {
+            return; // already handled above
+        }
+        if (typeof calculate_balance_due === 'function') {
+            calculate_balance_due();
+        }
     });
 
     //Update discount (delegated — modal may be moved to body)
@@ -3363,10 +3397,17 @@ function pos_total_row() {
         total_quantity = total_quantity + __read_number($(this).find('input.pos_quantity'));
     });
 
-    //updating shipping charges
-    $('span#shipping_charges_amount').text(
-        __currency_trans_from_en(__read_number($('input#shipping_charges_modal')), false)
-    );
+    // Updating shipping charges display (use saved form field, fall back to modal)
+    var shipping_charges_val = 0;
+    if ($('input#shipping_charges').length) {
+        shipping_charges_val = __read_number($('input#shipping_charges'));
+    } else if ($('input#shipping_charges_modal').length) {
+        shipping_charges_val = __read_number($('input#shipping_charges_modal'));
+    }
+    if (isNaN(shipping_charges_val)) {
+        shipping_charges_val = 0;
+    }
+    $('span#shipping_charges_amount').text(__currency_trans_from_en(shipping_charges_val, false));
 
     $('span.total_quantity').each(function() {
         $(this).html(__number_f(total_quantity));
@@ -3477,7 +3518,10 @@ function calculate_billing_details(price_total) {
 
     //Check if edit form then don't update price.
     if ($('form#edit_pos_sell_form').length == 0 && $('form#edit_sell_form').length == 0) {
-        __write_number($('.payment-amount').first(), total_payable_rounded);
+        var $firstPay = $('#payment_rows_div').find('.payment-amount').first();
+        if ($firstPay.length) {
+            __write_number($firstPay, total_payable_rounded);
+        }
     }
 
     $(document).trigger('invoice_total_calculated');
@@ -3515,46 +3559,80 @@ function pos_order_tax(price_total, discount) {
 
 function calculate_balance_due() {
     var total_payable = __read_number($('#final_total_input'));
+    if (isNaN(total_payable)) {
+        total_payable = 0;
+    }
+
     var total_paying = 0;
     $('#payment_rows_div')
         .find('.payment-amount')
         .each(function() {
-            if (parseFloat($(this).val())) {
-                total_paying += __read_number($(this));
+            // Always use unformatted number (handles "1,234.56" / "0.50");
+            // previously parseFloat(val) skipped some valid amounts (e.g. ",50" style).
+            var amount = __read_number($(this));
+            if (!isNaN(amount) && amount !== 0) {
+                total_paying += amount;
             }
         });
-    var bal_due = total_payable - total_paying;
-    var change_return = 0;
 
-    //change_return
-    if (bal_due < 0 || Math.abs(bal_due) < 0.05) {
-        __write_number($('input#change_return'), bal_due * -1);
-        $('span.change_return_span').text(__currency_trans_from_en(bal_due * -1, true));
-        change_return = bal_due * -1;
+    // Round to business currency precision to avoid float noise (e.g. 13.199999)
+    var precision = typeof __currency_precision !== 'undefined' ? __currency_precision : 2;
+    var factor = Math.pow(10, precision);
+    total_payable = Math.round(total_payable * factor) / factor;
+    total_paying = Math.round(total_paying * factor) / factor;
+
+    var difference = Math.round((total_payable - total_paying) * factor) / factor;
+    var change_return = 0;
+    // Remaining amount customer still owes (always >= 0 after applying tender)
+    var bal_due = 0;
+
+    if (difference > 0) {
+        // Underpaid — show remaining balance due
+        bal_due = difference;
+        change_return = 0;
+    } else if (difference < 0) {
+        // Overpaid — change goes back to customer; sale balance is settled
+        change_return = Math.abs(difference);
         bal_due = 0;
+    } else {
+        bal_due = 0;
+        change_return = 0;
+    }
+
+    if (change_return > 0) {
+        __write_number($('input#change_return'), change_return);
+        $('span.change_return_span').text(__currency_trans_from_en(change_return, true));
+        $('#change_return_payment_data').removeClass('hide');
     } else {
         __write_number($('input#change_return'), 0);
         $('span.change_return_span').text(__currency_trans_from_en(0, true));
-        change_return = 0;
-        
-    }
-
-    if (change_return !== 0) {
-        $('#change_return_payment_data').removeClass('hide');
-    } else {
         $('#change_return_payment_data').addClass('hide');
     }
 
     __write_number($('input#total_paying_input'), total_paying);
     $('span.total_paying').text(__currency_trans_from_en(total_paying, true));
 
-    __write_number($('input#in_balance_due'), bal_due);
+    // Store raw numeric remaining due (for submit validation / localStorage)
+    // Use plain val so comparison in_balance_due >= 0.5 is reliable
+    $('input#in_balance_due').val(bal_due);
     $('span.balance_due').text(__currency_trans_from_en(bal_due, true));
 
-    __highlight(bal_due * -1, $('span.balance_due'));
+    // Highlight: underpayment (due) = danger, fully paid / over = success
+    var $bal = $('span.balance_due');
+    $bal.removeClass('text-success text-danger');
+    if (bal_due > 0) {
+        $bal.addClass('text-danger');
+    } else if (change_return > 0 || total_paying > 0) {
+        $bal.addClass('text-success');
+    }
+
+    // Change return amount is outgoing (danger tint when set)
     __highlight(change_return * -1, $('span.change_return_span'));
+
     // store payment details
-    saveFormDataToLocalStorage();
+    if (typeof saveFormDataToLocalStorage === 'function') {
+        saveFormDataToLocalStorage();
+    }
 }
 
 function isValidPosForm() {
@@ -3817,7 +3895,9 @@ function reset_pos_form(){
 	set_location();
 
 	$('span.total_quantity, span.price_total, span#total_discount, span#order_tax, span#total_payable, span#shipping_charges_amount, span#loyalty_amount_display').text(0);
-	$('span.total_payable_span, span.total_paying, span.balance_due').text(0);
+	$('span.total_payable_span, span.total_paying, span.balance_due, span.payment_customer_prev_due').text(__currency_trans_from_en(0, true));
+	$('#payment_customer_prev_due').val(0);
+	$('#in_balance_due').val(0);
     $('.pos_pay_cta_total').text(__currency_trans_from_en(0, true));
 
 	$('#modal_payment').find('.remove_payment_row').each( function(){
@@ -4944,20 +5024,102 @@ $(document).on('hidden.bs.modal', '#pos_pay_contact_due_modal', function() {
 });
 
 function get_contact_due(id) {
+    if (!id) {
+        set_payment_modal_prev_due(0, '');
+        $('.contact_due_text').find('span').text('');
+        $('.contact_due_text').addClass('hide');
+        return;
+    }
+
+    var exclude_id = '';
+    if ($('form#edit_pos_sell_form').length) {
+        var action = ($('form#edit_pos_sell_form').attr('action') || '').replace(/\/$/, '');
+        var parts = action.split('/');
+        exclude_id = parts.length ? parts[parts.length - 1] : '';
+        if (!/^\d+$/.test(String(exclude_id))) {
+            exclude_id = $('[data-transaction_id]').first().attr('data-transaction_id')
+                || $('[data-transaction_id]').first().data('transaction_id')
+                || '';
+        }
+    }
+
     $.ajax({
         method: 'get',
-        url: /get-contact-due/ + id,
-        dataType: 'text',
+        url: '/get-contact-due/' + id,
+        data: exclude_id ? { exclude_transaction_id: exclude_id } : {},
+        dataType: 'json',
         success: function(result) {
-            if (result != '') {
-                $('.contact_due_text').find('span').text(result);
+            // Support both new JSON payload and legacy plain-text response
+            var formatted = '';
+            var amount = 0;
+            if (result && typeof result === 'object') {
+                formatted = result.formatted || '';
+                amount = parseFloat(result.amount);
+                if (isNaN(amount)) {
+                    amount = 0;
+                }
+            } else if (typeof result === 'string' && result !== '') {
+                formatted = result;
+                amount = __number_uf(result);
+                if (isNaN(amount)) {
+                    amount = 0;
+                }
+            }
+
+            if (amount !== 0 && formatted !== '') {
+                $('.contact_due_text').find('span').text(formatted);
                 $('.contact_due_text').removeClass('hide');
             } else {
                 $('.contact_due_text').find('span').text('');
                 $('.contact_due_text').addClass('hide');
             }
+
+            set_payment_modal_prev_due(amount, formatted);
+        },
+        error: function() {
+            // Fallback: try text response (older backends)
+            $.ajax({
+                method: 'get',
+                url: '/get-contact-due/' + id,
+                dataType: 'text',
+                success: function(result) {
+                    if (result != '') {
+                        $('.contact_due_text').find('span').text(result);
+                        $('.contact_due_text').removeClass('hide');
+                        set_payment_modal_prev_due(__number_uf(result), result);
+                    } else {
+                        $('.contact_due_text').find('span').text('');
+                        $('.contact_due_text').addClass('hide');
+                        set_payment_modal_prev_due(0, '');
+                    }
+                },
+            });
         },
     });
+}
+
+function set_payment_modal_prev_due(amount, formatted) {
+    amount = parseFloat(amount);
+    if (isNaN(amount)) {
+        amount = 0;
+    }
+    if (amount < 0) {
+        amount = 0;
+    }
+
+    var display = formatted && formatted !== ''
+        ? formatted
+        : __currency_trans_from_en(amount, true);
+
+    $('#payment_customer_prev_due').val(amount);
+    var $span = $('span.payment_customer_prev_due');
+    $span.text(display);
+    $span.removeClass('text-success text-danger');
+    if (amount > 0) {
+        $span.addClass('text-danger');
+    } else {
+        $span.addClass('text-success');
+    }
 }
 
 function submitQuickContactForm(form) {
