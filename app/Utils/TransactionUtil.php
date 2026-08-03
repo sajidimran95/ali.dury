@@ -340,6 +340,10 @@ class TransactionUtil extends Util
                 $products_modified_combo[] = $product;
 
                 //calculate unit price and unit price before discount
+                // POS cart-item popup holds unit_price; if missing from payload, fall back so sale does not crash
+                if (! array_key_exists('unit_price', $product) || $product['unit_price'] === '' || $product['unit_price'] === null) {
+                    $product['unit_price'] = $product['unit_price_inc_tax'] ?? 0;
+                }
                 $uf_unit_price = $uf_data ? $this->num_uf($product['unit_price']) : $product['unit_price'];
                 $unit_price_before_discount = $uf_unit_price / $multiplier;
                 $unit_price = $unit_price_before_discount;
@@ -354,6 +358,12 @@ class TransactionUtil extends Util
                     }
                 }
                 $uf_quantity = $uf_data ? $this->num_uf($product['quantity']) : $product['quantity'];
+                if (! array_key_exists('item_tax', $product) || $product['item_tax'] === '' || $product['item_tax'] === null) {
+                    $product['item_tax'] = 0;
+                }
+                if (! array_key_exists('unit_price_inc_tax', $product) || $product['unit_price_inc_tax'] === '' || $product['unit_price_inc_tax'] === null) {
+                    $product['unit_price_inc_tax'] = $product['unit_price'] ?? 0;
+                }
                 $uf_item_tax = $uf_data ? $this->num_uf($product['item_tax']) : $product['item_tax'];
                 $uf_unit_price_inc_tax = $uf_data ? $this->num_uf($product['unit_price_inc_tax']) : $product['unit_price_inc_tax'];
 
@@ -361,7 +371,7 @@ class TransactionUtil extends Util
                 if (! empty($product['line_discount_amount'])) {
                     $line_discount_amount = $uf_data ? $this->num_uf($product['line_discount_amount']) : $product['line_discount_amount'];
 
-                    if ($product['line_discount_type'] == 'fixed') {
+                    if (! empty($product['line_discount_type']) && $product['line_discount_type'] == 'fixed') {
                         $line_discount_amount = $line_discount_amount / $multiplier;
                     }
                 }
@@ -375,7 +385,7 @@ class TransactionUtil extends Util
                     'line_discount_type' => ! empty($product['line_discount_type']) ? $product['line_discount_type'] : null,
                     'line_discount_amount' => $line_discount_amount,
                     'item_tax' => $uf_item_tax / $multiplier,
-                    'tax_id' => $product['tax_id'],
+                    'tax_id' => $product['tax_id'] ?? null,
                     'unit_price_inc_tax' => $uf_unit_price_inc_tax / $multiplier,
                     'sell_line_note' => ! empty($product['sell_line_note']) ? $product['sell_line_note'] : '',
                     'sub_unit_id' => ! empty($product['sub_unit_id']) ? $product['sub_unit_id'] : null,
@@ -568,7 +578,9 @@ class TransactionUtil extends Util
             $this->adjustQuantity($location_id, $product['product_id'], $product['variation_id'], $difference);
         }
 
-        $uf_unit_price = $uf_data ? $this->num_uf($product['unit_price']) : $product['unit_price'];
+        $uf_unit_price = $uf_data
+            ? $this->num_uf($product['unit_price'] ?? ($product['unit_price_inc_tax'] ?? 0))
+            : ($product['unit_price'] ?? ($product['unit_price_inc_tax'] ?? 0));
         $unit_price_before_discount = $uf_unit_price / $multiplier;
         $unit_price = $unit_price_before_discount;
         if (! empty($product['line_discount_type']) && $product['line_discount_amount']) {
@@ -583,10 +595,13 @@ class TransactionUtil extends Util
         if (! empty($product['line_discount_amount'])) {
             $line_discount_amount = $uf_data ? $this->num_uf($product['line_discount_amount']) : $product['line_discount_amount'];
 
-            if ($product['line_discount_type'] == 'fixed') {
+            if (! empty($product['line_discount_type']) && $product['line_discount_type'] == 'fixed') {
                 $line_discount_amount = $line_discount_amount / $multiplier;
             }
         }
+
+        $item_tax_raw = $product['item_tax'] ?? 0;
+        $unit_price_inc_tax_raw = $product['unit_price_inc_tax'] ?? $uf_unit_price;
 
         //Update sell lines.
         $sell_line->fill(['product_id' => $product['product_id'],
@@ -596,9 +611,9 @@ class TransactionUtil extends Util
             'unit_price' => $unit_price,
             'line_discount_type' => ! empty($product['line_discount_type']) ? $product['line_discount_type'] : null,
             'line_discount_amount' => $line_discount_amount,
-            'item_tax' => $uf_data ? $this->num_uf($product['item_tax']) / $multiplier : $product['item_tax'] / $multiplier,
-            'tax_id' => $product['tax_id'],
-            'unit_price_inc_tax' => $uf_data ? $this->num_uf($product['unit_price_inc_tax']) / $multiplier : $product['unit_price_inc_tax'] / $multiplier,
+            'item_tax' => $uf_data ? $this->num_uf($item_tax_raw) / $multiplier : $item_tax_raw / $multiplier,
+            'tax_id' => $product['tax_id'] ?? null,
+            'unit_price_inc_tax' => $uf_data ? $this->num_uf($unit_price_inc_tax_raw) / $multiplier : $unit_price_inc_tax_raw / $multiplier,
             'sell_line_note' => ! empty($product['sell_line_note']) ? $product['sell_line_note'] : '',
             'sub_unit_id' => ! empty($product['sub_unit_id']) ? $product['sub_unit_id'] : null,
             'res_service_staff_id' => ! empty($product['res_service_staff_id']) ? $product['res_service_staff_id'] : null,
@@ -1368,11 +1383,11 @@ class TransactionUtil extends Util
             }
 
             $output['subtotal_exc_tax'] = $this->num_f($subtotal_exc_tax, true, $business_details);
-            // Raw amount for invoice layout checks (show Line Item D/C only when > 0)
+            // Item-wise (line) discount total — raw + formatted (same as before)
             $output['total_line_discount_uf'] = (float) $total_line_discount;
-            $output['total_line_discount'] = $total_line_discount > 0
+            $output['total_line_discount'] = ! empty($total_line_discount)
                 ? $this->num_f($total_line_discount, true, $business_details)
-                : null;
+                : 0;
         } elseif ($transaction_type == 'sell_return') {
             $parent_sell = Transaction::find($transaction->return_parent_id);
             $lines = $parent_sell->sell_lines;
@@ -1464,8 +1479,13 @@ class TransactionUtil extends Util
         }
         $output['tax_label'] .= ':';
         $output['tax'] = ($transaction->tax_amount != 0) ? $this->num_f($transaction->tax_amount, $show_currency, $business_details) : 0;
+        // Layout Tax Label filled = total tax row active; empty = hide
+        $output['show_total_tax'] = trim((string) ($invoice_layout->tax_label ?? '')) !== '';
+        $output['tax_amount_uf'] = (float) $transaction->tax_amount;
+        // Business: Enable product line tax → product Tax column on invoice
+        $output['enable_inline_tax'] = ! empty($business_details->enable_inline_tax);
 
-        if ($transaction->tax_amount != 0 && $tax->is_tax_group) {
+        if ($transaction->tax_amount != 0 && ! empty($tax) && $tax->is_tax_group) {
             $transaction_group_tax_details = $this->groupTaxDetails($tax, $transaction->tax_amount);
 
             $output['group_tax_details'] = [];

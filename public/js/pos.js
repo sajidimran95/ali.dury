@@ -61,10 +61,35 @@ function pos_remember_row_edit_modal_parent($modal) {
     }
 }
 
+/**
+ * Put cart-item price/discount popup back inside its product row so unit_price
+ * is included in form POST. Missing unit_price causes "Something went wrong".
+ */
 function pos_restore_row_edit_modal($modal) {
+    $modal = $($modal);
+    if (!$modal.length) {
+        return;
+    }
+
     var $parent = $modal.data('original-parent');
-    if ($parent && $parent.length && $modal.parent()[0] !== $parent[0]) {
+    if ($parent && $parent.length && $parent.closest('body').length && $modal.parent()[0] !== $parent[0]) {
         $modal.appendTo($parent);
+        return;
+    }
+
+    // Fallback if original parent was lost (still on body / outside form)
+    if (!$modal.closest('tr.product_row').length) {
+        var id = $modal.attr('id') || '';
+        var match = id.match(/row_edit_product_price_modal_(\d+)/);
+        if (match) {
+            var $tr = $('table#pos_table tbody tr.product_row[data-row_index="' + match[1] + '"]');
+            if ($tr.length) {
+                var $nameCell = $tr.children('td.serial_no').length
+                    ? $tr.children('td').eq(1)
+                    : $tr.children('td').first();
+                $modal.appendTo($nameCell);
+            }
+        }
     }
 }
 
@@ -72,6 +97,29 @@ function pos_restore_all_row_edit_modals() {
     $('.row_edit_product_price_model').each(function() {
         pos_restore_row_edit_modal($(this));
     });
+}
+
+/**
+ * Serialize POS form including unit_price / line discount from item popups.
+ * Popups may be temporarily on body for Bootstrap stacking.
+ */
+function pos_serialize_sell_form($form) {
+    $form = $form && $form.length ? $form : (typeof pos_form_obj !== 'undefined' ? pos_form_obj : $());
+    pos_restore_all_row_edit_modals();
+    var data = $form.serialize() || '';
+
+    // Safety net: still-orphaned line popups (unit_price only lives here on POS)
+    $('.row_edit_product_price_model').each(function() {
+        var $modal = $(this);
+        if (!$form.length || !$form.has($modal).length) {
+            var extra = $modal.find('input, select, textarea').serialize();
+            if (extra) {
+                data += (data ? '&' : '') + extra;
+            }
+        }
+    });
+
+    return data;
 }
 
 $(document).ready(function() {
@@ -933,8 +981,7 @@ $(document).ready(function() {
     }
 
     function pos_serialize_as_create(status) {
-        pos_restore_all_row_edit_modals();
-        var data = pos_form_obj.serialize();
+        var data = pos_serialize_sell_form(pos_form_obj);
         // Drop method override so we POST create, not PUT update
         data = data.replace(/(^|&)_method=[^&]*/g, '').replace(/^&/, '');
         data = data.replace(/(^|&)is_suspend=[^&]*/g, '');
@@ -962,8 +1009,7 @@ $(document).ready(function() {
         // Editing a parked/suspended sale: convert THIS sale to draft, then show drafts list
         if ($editForm.length) {
             disable_pos_form_actions();
-            pos_restore_all_row_edit_modals();
-            var editData = $editForm.serialize();
+            var editData = pos_serialize_sell_form($editForm);
             editData = editData.replace(/(^|&)is_suspend=[^&]*/g, '');
             editData = editData + '&status=draft&is_suspend=0';
             editData = pos_append_contact_id(editData);
@@ -1232,9 +1278,8 @@ $(document).ready(function() {
                 return;
             }
             disable_pos_form_actions();
-            pos_restore_all_row_edit_modals();
 
-            var data = pos_form_obj.serialize();
+            var data = pos_serialize_sell_form(pos_form_obj);
             data = data + '&status=final&is_suspend=1';
 
             // Ensure numeric contacts.id — never send contact codes like CO0001
@@ -1443,10 +1488,8 @@ $(document).ready(function() {
             if (cnf) {
                 disable_pos_form_actions();
 
-                // Line-edit modals may sit on body for stacking — put fields back in the form
-                pos_restore_all_row_edit_modals();
-
-                var data = $(form).serialize();
+                // Includes unit_price + item discount from cart popup (may be on body)
+                var data = pos_serialize_sell_form($(form));
                 data = data.replace(/(^|&)is_suspend=[^&]*/g, '');
                 data = data + '&status=final&is_suspend=0';
                 // Payment modal may live on body (stacking) — include its fields
@@ -3212,10 +3255,8 @@ function pos_product_row(variation_id = null, purchase_line_id = null, weighing_
     }
 }
 
-//Update values for each row
+//Update values for each row (incl. item discount from cart item popup)
 function pos_each_row(row_obj) {
-    var unit_price = __read_number(pos_row_field(row_obj, 'input.pos_unit_price'));
-
     var discounted_unit_price = calculate_discounted_unit_price(row_obj);
     var tax_rate = pos_row_field(row_obj, 'select.tax_id')
         .find(':selected')
@@ -3225,15 +3266,11 @@ function pos_each_row(row_obj) {
         discounted_unit_price + __calculate_amount('percentage', tax_rate, discounted_unit_price);
     __write_number(row_obj.find('input.pos_unit_price_inc_tax'), unit_price_inc_tax);
 
-    var discount = __read_number(pos_row_field(row_obj, 'input.row_discount_amount'));
-
-    if (discount > 0) {
-        var qty = __read_number(row_obj.find('input.pos_quantity'));
-        var line_total = qty * unit_price_inc_tax;
-        __write_number(row_obj.find('input.pos_line_total'), line_total);
-    }
-
-    //var unit_price_inc_tax = __read_number(row_obj.find('input.pos_unit_price_inc_tax'));
+    // Always refresh line total so item popup discount reflects immediately (even when cleared to 0)
+    var qty = __read_number(row_obj.find('input.pos_quantity'));
+    var line_total = qty * unit_price_inc_tax;
+    __write_number(row_obj.find('input.pos_line_total'), line_total);
+    row_obj.find('span.pos_line_total_text').text(__currency_trans_from_en(line_total, true));
 
     __write_number(pos_row_field(row_obj, 'input.item_tax'), unit_price_inc_tax - discounted_unit_price);
 }

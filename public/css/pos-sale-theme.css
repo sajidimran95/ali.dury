@@ -1,5 +1,5 @@
 /**
- * POS Sale Theme — Lightspeed-inspired dark UI
+ * POS Sale Theme ? Lightspeed-inspired dark UI
  * Design-only overlay for /pos/create (and edit). Keeps all existing IDs/classes for JS.
  */
 html:has(body.lockscreen.pos-sale-theme),
@@ -38,7 +38,7 @@ body.lockscreen.pos-sale-theme .content {
   margin: 0 !important;
 }
 
-/* ── Shell: full width — left nav pinned, only product+cart centered ── */
+/* ?? Shell: full width ? left nav pinned, only product+cart centered ?? */
 body.lockscreen.pos-sale-theme .wrapper,
 body.lockscreen.pos-sale-theme .zoho-app-body,
 body.lockscreen.pos-sale-theme .zoho-main-column,
@@ -79,7 +79,7 @@ body.lockscreen.pos-sale-theme .pos-sale-shell {
   border: 0;
 }
 
-/* Left nav — icon rail + register menu (Sell / Open-Close / History / Cash / Status) */
+/* Left nav ? icon rail + register menu (Sell / Open-Close / History / Cash / Status) */
 body.lockscreen.pos-sale-theme .pos-nav-sidebar {
   flex: 0 0 268px;
   width: 268px;
@@ -133,7 +133,7 @@ body.lockscreen.pos-sale-theme.pos-nav-collapsed .pos-nav-sidebar {
   max-width: 64px;
 }
 
-/* Main: remaining space — center only product + cart */
+/* Main: remaining space ? center only product + cart */
 body.lockscreen.pos-sale-theme .pos-sale-main {
   flex: 1 1 auto;
   min-width: 0;
@@ -207,7 +207,7 @@ body.lockscreen.pos-sale-theme #pos_sidebar_wrap {
   overflow: hidden;
 }
 
-/* Cart column — slightly wider than before, not full screen */
+/* Cart column ? slightly wider than before, not full screen */
 body.lockscreen.pos-sale-theme #pos_checkout_wrap {
   flex: 0 0 430px !important;
   max-width: 430px !important;
@@ -257,7 +257,7 @@ body.lockscreen.pos-sale-theme .pos-cart-panel {
   position: relative;
 }
 
-/* Product area: search → categories (top) → products (bottom) */
+/* Product area: search ? categories (top) ? products (bottom) */
 body.lockscreen.pos-sale-theme .pos-sidebar-root {
   background: transparent !important;
   box-shadow: none !important;
@@ -289,7 +289,7 @@ body.lockscreen.pos-sale-theme .pos-inline-categories {
   min-height: 0;
 }
 
-/* Scrollable category strip — cap height when many categories */
+/* Scrollable category strip ? cap height when many categories */
 body.lockscreen.pos-sale-theme .pos-category-scroll {
   max-height: min(252px, 34vh);
   overflow-y: auto;
@@ -535,7 +535,7 @@ body.lockscreen.pos-sale-theme .pos-nav-menu svg {
   flex-shrink: 0;
 }
 
-/* Inline category tiles — MUST be block/100% wide (flex parent was crushing cols into thin strips) */
+/* Inline category tiles ? MUST be block/100% wide (flex parent was crushing cols into thin strips) */
 body.lockscreen.pos-sale-theme .pos-inline-categories,
 body.lockscreen.pos-sale-theme #product_category_div {
   display: block !important;
@@ -819,7 +819,7 @@ body.lockscreen.pos-sale-theme .pos_form_totals .pos_totals_left {
   }
 }
 
-/* ── Top header — Lightspeed chrome ── */
+/* ?? Top header ? Lightspeed chrome ?? */
 body.lockscreen.pos-sale-theme .pos-header.zoho-topbar {
   background: #0a0a0a !important;
   border-bottom: 1px solid #1f1f1f;
@@ -1191,7 +1191,7 @@ body.lockscreen.pos-sale-theme .pos-nav-divider {
   background: var(--pos-border) !important;
 }
 
-/* ── Product panel (center) ── */
+/* ?? Product panel (center) ?? */
 body.lockscreen.pos-sale-theme .pos-sidebar-root {
   background: transparent !important;
   box-shadow: none !important;
@@ -1267,7 +1267,7 @@ body.lockscreen.pos-sale-theme .pos-product-search-wrap .input-group-addon {
   flex: 0 0 auto !important;
 }
 
-/* Same quick-add + as previous POS — dark accent style */
+/* Same quick-add + as previous POS ? dark accent style */
 body.lockscreen.pos-sale-theme .pos-product-search-wrap .pos_add_quick_product {
   display: inline-flex !important;
   align-items: center !important;
@@ -1323,7 +1323,7 @@ body.lockscreen.pos-sale-theme .pos-product-search-wrap .input-group #search_pro
   color: #ffffff !important;
   height: 42px !important;
   min-height: 42px !important;
-  /* flex child must shrink — width:100% caused bottom horizontal scrollbar */
+  /* flex child must shrink ? width:100% caused bottom horizontal scrollbar */
   width: 0 !important;
   min-width: 0 !important;
   max-width: 100%;
@@ -1387,7 +1387,7 @@ body.lockscreen.pos-sale-theme .pos-drawer-panel .tw-bg-slate-100 {
   color: #ccc !important;
 }
 
-/* Brands (and other drawer) close button — center the X */
+/* Brands (and other drawer) close button ? center the X */
 body.lockscreen.pos-sale-theme .pos-drawer-panel .close-side-bar-brand,
 body.lockscreen.pos-sale-theme .pos-drawer-panel button[aria-label="Close"] {
   display: inline-flex !important;
@@ -1429,7 +1429,7 @@ body.lockscreen.pos-sale-theme .pos-card.is-active.brand {
   background: rgba(59, 141, 221, 0.15) !important;
 }
 
-/* Product tiles — small square cards with image, name, price */
+/* Product tiles ? small square cards with image, name, price */
 body.lockscreen.pos-sale-theme #product_list_items,
 body.lockscreen.pos-sale-theme #featured_products_box {
   display: flex !important;
@@ -1482,7 +1482,7 @@ body.lockscreen.pos-sale-theme #featured_products_box > [class*="col-"] {
   }
 }
 
-/* Product grid tiles — image on top, SKU / stock / price below (stacked card) */
+/* Product grid tiles ? image on top, SKU / stock / price below (stacked card) */
 body.lockscreen.pos-sale-theme .product_box {
   position: relative;
   background: #2a2a2a !important;
@@ -1506,7 +1506,7 @@ body.lockscreen.pos-sale-theme .pos-products-placeholder {
   color: var(--pos-muted) !important;
 }
 
-/* Product tiles — no hover style change */
+/* Product tiles ? no hover style change */
 body.lockscreen.pos-sale-theme .product_box:hover,
 body.lockscreen.pos-sale-theme .product_box:focus,
 body.lockscreen.pos-sale-theme .product_box:active,
@@ -1733,7 +1733,7 @@ body.lockscreen.pos-sale-theme #suggestion_page_loader .fa-spinner {
   font-size: 18px !important;
   color: #888 !important;
 }
-/* ── Cart / checkout panel ── */
+/* ?? Cart / checkout panel ?? */
 body.lockscreen.pos-sale-theme #pos_checkout_wrap > .pos-checkout-inner,
 body.lockscreen.pos-sale-theme #pos_checkout_wrap > div {
   background: transparent !important;
@@ -1788,7 +1788,7 @@ body.lockscreen.pos-sale-theme .pos-cart-panel > .row {
   box-sizing: border-box !important;
 }
 
-/* Cart lines scroll; footer (totals/pay) stays pinned — create + edit */
+/* Cart lines scroll; footer (totals/pay) stays pinned ? create + edit */
 body.lockscreen.pos-sale-theme .pos-cart-panel > .row.pos-cart-lines,
 body.lockscreen.pos-sale-theme #edit_pos_sell_form .pos-cart-panel > .row.pos-cart-lines,
 body.lockscreen.pos-sale-theme #add_pos_sell_form .pos-cart-panel > .row.pos-cart-lines {
@@ -1860,7 +1860,7 @@ body.lockscreen.pos-sale-theme .pos-customer-bar {
   max-width: 100% !important;
 }
 
-/* Customer row + date/price row — same left/right align (create + edit) */
+/* Customer row + date/price row ? same left/right align (create + edit) */
 body.lockscreen.pos-sale-theme .pos-cart-panel > .row.pos-cart-customer,
 body.lockscreen.pos-sale-theme .pos-cart-panel > .row:has(.pos-customer-bar),
 body.lockscreen.pos-sale-theme .pos-cart-panel > .row.pos-cart-meta {
@@ -2120,7 +2120,7 @@ body.lockscreen.pos-sale-theme .pos-cart-action-btn.is-active {
   padding-bottom: 2px !important;
 }
 
-/* Retrieve sale — Lightspeed-style parked list panel (solid dark, not cropped) */
+/* Retrieve sale ? Lightspeed-style parked list panel (solid dark, not cropped) */
 body.lockscreen.pos-sale-theme .pos-retrieve-panel {
   display: none;
   position: fixed;
@@ -2155,7 +2155,7 @@ body.lockscreen.pos-sale-theme .pos-retrieve-sheet {
   min-height: 0;
 }
 
-/* Retrieve sheet inside view_modal — solid dark card on solid dark page */
+/* Retrieve sheet inside view_modal ? solid dark card on solid dark page */
 body.lockscreen.pos-sale-theme .view_modal .pos-retrieve-sheet {
   width: 100%;
   max-width: 560px;
@@ -2588,7 +2588,7 @@ body.lockscreen.pos-sale-theme #pos_table > thead > tr > th {
   border-color: #2a2a2a !important;
 }
 
-/* Cart meta under customer — date + retail on one equal line, same width as customer */
+/* Cart meta under customer ? date + retail on one equal line, same width as customer */
 body.lockscreen.pos-sale-theme .pos-cart-panel > .row.pos-cart-meta {
   display: flex !important;
   flex-wrap: nowrap !important;
@@ -2620,7 +2620,7 @@ body.lockscreen.pos-sale-theme .pos-cart-meta-price {
   flex-direction: column !important;
 }
 
-/* Single meta field — full width like customer row */
+/* Single meta field ? full width like customer row */
 body.lockscreen.pos-sale-theme .pos-cart-panel > .row.pos-cart-meta:not(:has(.pos-cart-meta-price)) .pos-cart-meta-date,
 body.lockscreen.pos-sale-theme .pos-cart-panel > .row.pos-cart-meta:not(:has(.pos-cart-meta-date)) .pos-cart-meta-price {
   width: 100% !important;
@@ -2802,7 +2802,7 @@ body.lockscreen.pos-sale-theme .select2-container--default .select2-results__opt
   background: var(--pos-accent) !important;
 }
 
-/* Customer search dropdown — Lightspeed in-cart style */
+/* Customer search dropdown ? Lightspeed in-cart style */
 body.lockscreen.pos-sale-theme .pos-customer-select-dropdown,
 .select2-dropdown.pos-customer-select-dropdown {
   background: #1f1f1f !important;
@@ -2920,7 +2920,7 @@ body.lockscreen.pos-sale-theme .pos-cust-sub {
   text-overflow: ellipsis;
 }
 
-/* ── In-cart customer picker (Lightspeed — not a floating popup) ── */
+/* ?? In-cart customer picker (Lightspeed ? not a floating popup) ?? */
 body.lockscreen.pos-sale-theme .pos-customer-bar {
   position: relative !important;
   z-index: 40;
@@ -3034,7 +3034,7 @@ body.lockscreen.pos-sale-theme .pos-customer-bar.is-picking .select2-selection--
   border-color: #3b8ddd !important;
 }
 
-/* Hide Select2 dropdown entirely on POS — picker replaces it */
+/* Hide Select2 dropdown entirely on POS ? picker replaces it */
 body.lockscreen.pos-sale-theme .pos-customer-bar .select2-dropdown,
 body.lockscreen.pos-sale-theme .select2-dropdown.pos-customer-select-dropdown {
   display: none !important;
@@ -3136,6 +3136,7 @@ body.lockscreen.pos-sale-theme #pos_table {
 body.lockscreen.pos-sale-theme #pos_table thead th,
 body.lockscreen.pos-sale-theme #pos_table .pos-th-product,
 body.lockscreen.pos-sale-theme #pos_table .pos-th-qty,
+body.lockscreen.pos-sale-theme #pos_table .pos-th-disc,
 body.lockscreen.pos-sale-theme #pos_table .pos-th-price,
 body.lockscreen.pos-sale-theme #pos_table .pos-th-subtotal,
 body.lockscreen.pos-sale-theme #pos_table .pos-th-action,
@@ -3338,6 +3339,74 @@ body.lockscreen.pos-sale-theme #pos_table .pos_line_total_text {
   pointer-events: none;
 }
 
+/* Cart line item discount */
+body.lockscreen.pos-sale-theme #pos_table .pos-line-disc-td {
+  width: 14% !important;
+  min-width: 88px !important;
+  vertical-align: middle !important;
+  padding-left: 2px !important;
+  padding-right: 2px !important;
+}
+
+body.lockscreen.pos-sale-theme #pos_table .pos-line-disc {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: stretch;
+  max-width: 110px;
+  margin: 0 auto;
+}
+
+body.lockscreen.pos-sale-theme #pos_table .pos-line-disc-amt,
+body.lockscreen.pos-sale-theme #pos_table .pos-line-disc-type {
+  width: 100% !important;
+  max-width: 110px !important;
+  height: 28px !important;
+  min-height: 28px !important;
+  padding: 2px 6px !important;
+  font-size: 12px !important;
+  line-height: 1.2 !important;
+  text-align: center !important;
+  border-radius: 6px !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  background: #252525 !important;
+  color: #ffffff !important;
+}
+
+body.lockscreen.pos-sale-theme #pos_table .pos-line-disc-type {
+  padding-right: 18px !important;
+}
+
+body.lockscreen.pos-sale-theme #pos_table .pos-line-disc-help {
+  display: none;
+}
+
+/* Light theme cart disc */
+#pos_table .pos-line-disc {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  align-items: stretch;
+  max-width: 110px;
+  margin: 0 auto;
+}
+
+#pos_table .pos-line-disc-amt,
+#pos_table .pos-line-disc-type {
+  width: 100%;
+  max-width: 110px;
+  height: 30px;
+  padding: 2px 6px;
+  font-size: 12px;
+  text-align: center;
+}
+
+#pos_table .pos-line-disc-help {
+  font-size: 10px;
+  margin: 2px 0 0;
+  line-height: 1.2;
+}
+
 body.lockscreen.pos-sale-theme .pos-empty-state-row .tw-bg-slate-100 {
   background: #2a2a2a !important;
   color: #ffffff !important;
@@ -3384,7 +3453,7 @@ body.lockscreen.pos-sale-theme .pos_form_totals .pos_totals_edit {
   color: var(--pos-accent) !important;
 }
 
-/* Footer actions — keep for JS, hide chrome (Pay lives in cart) */
+/* Footer actions ? keep for JS, hide chrome (Pay lives in cart) */
 body.lockscreen.pos-sale-theme .pos-form-actions {
   position: absolute !important;
   width: 1px !important;
@@ -3413,7 +3482,7 @@ body.lockscreen.pos-sale-theme .pos-ls-drafts-slot .pos-drafts-header-btn svg {
   stroke: #cfcfcf !important;
 }
 
-/* Draft count badge — blue pill, white number (not white-on-white) */
+/* Draft count badge ? blue pill, white number (not white-on-white) */
 body.lockscreen.pos-sale-theme .pos-ls-drafts-slot .pos-drafts-header-badge,
 body.lockscreen.pos-sale-theme .pos-drafts-header-btn .pos-drafts-header-badge,
 body.lockscreen.pos-sale-theme .pos-drafts-header-btn--has-items .pos-drafts-header-badge,
@@ -3541,7 +3610,7 @@ body.lockscreen.pos-sale-theme .ui-menu-item-wrapper.ui-state-active {
   color: #fff !important;
 }
 
-/* Cart line product edit popup — centered dark card (not clipped by cart) */
+/* Cart line product edit popup ? centered dark card (not clipped by cart) */
 body.lockscreen.pos-sale-theme .row_edit_product_price_model.in,
 body.lockscreen.pos-sale-theme .row_edit_product_price_model.show {
   display: flex !important;
@@ -3595,7 +3664,7 @@ body.lockscreen.pos-sale-theme .row_edit_product_price_model .close {
   text-shadow: none !important;
 }
 
-/* Modals — centered + white text (Retrieve / Park / Payment / generic) */
+/* Modals ? centered + white text (Retrieve / Park / Payment / generic) */
 body.lockscreen.pos-sale-theme .modal {
   z-index: 10600 !important;
 }
@@ -3618,12 +3687,12 @@ body.lockscreen.pos-sale-theme .modal.show {
   justify-content: center !important;
   padding: 16px !important;
   pointer-events: auto !important;
-  /* Transparent shell — POS stays visible; backdrop dims behind popup */
+  /* Transparent shell ? POS stays visible; backdrop dims behind popup */
   background: transparent !important;
   opacity: 1 !important;
 }
 
-/* Suspend / Park — popup only over POS (do not replace screen) */
+/* Suspend / Park ? popup only over POS (do not replace screen) */
 body.lockscreen.pos-sale-theme #confirmSuspendModal.in,
 body.lockscreen.pos-sale-theme #confirmSuspendModal.show {
   background: transparent !important;
@@ -3862,7 +3931,7 @@ body.lockscreen.pos-sale-theme .modal-backdrop.show {
   background-color: #000000 !important;
 }
 
-/* Payment modal — full dark, no white panels */
+/* Payment modal ? full dark, no white panels */
 body.lockscreen.pos-sale-theme #modal_payment .modal-header,
 body.lockscreen.pos-sale-theme #modal_payment .modal-footer {
   background: #1a1a1a !important;
@@ -4027,7 +4096,7 @@ body.lockscreen.pos-sale-theme #modal_payment #payment_rows_div .box {
   border-radius: 6px !important;
 }
 
-/* Saved drafts dropdown — dark panel, readable text (no white-on-white) */
+/* Saved drafts dropdown ? dark panel, readable text (no white-on-white) */
 body.lockscreen.pos-sale-theme .pos-drafts-dropdown,
 body.zoho-theme.lockscreen.pos-sale-theme .pos-drafts-dropdown {
   background: #1c1c1c !important;
@@ -4177,7 +4246,7 @@ body.lockscreen.pos-sale-theme #featured_products_box a {
   color: #ffd28a !important;
 }
 
-/* Recent Transactions — icon only in top menu */
+/* Recent Transactions ? icon only in top menu */
 body.lockscreen.pos-sale-theme #recent-transactions,
 body.lockscreen.pos-sale-theme .pos-ls-topbar-right #recent-transactions {
   font-size: 0 !important;
@@ -4328,7 +4397,7 @@ body.lockscreen.pos-sale-theme #recent_transactions_modal .close {
   text-shadow: none !important;
 }
 
-/* Close Register + Register Details — full dark, white text only (no white panels) */
+/* Close Register + Register Details ? full dark, white text only (no white panels) */
 body.lockscreen.pos-sale-theme .close_register_modal.in,
 body.lockscreen.pos-sale-theme .close_register_modal.show,
 body.lockscreen.pos-sale-theme .register_details_modal.in,
@@ -4507,7 +4576,7 @@ body.lockscreen.pos-sale-theme .register_details_modal .tw-dw-btn-neutral {
   color: #fff !important;
 }
 
-/* Full-page Close / Register Details — all dark, no white chrome */
+/* Full-page Close / Register Details ? all dark, no white chrome */
 body.pos-cr-dark-page,
 body.pos-cr-dark-page .wrapper,
 body.pos-cr-dark-page .content-wrapper,
@@ -4614,7 +4683,7 @@ body.pos-cr-dark-page .tw-dw-btn-neutral {
   color: #fff !important;
 }
 
-/* Icon hover help popovers / tooltips — dark (not white) */
+/* Icon hover help popovers / tooltips ? dark (not white) */
 body.lockscreen.pos-sale-theme .popover,
 body.pos-cr-dark-page .popover {
   background: #1e1e1e !important;
@@ -4637,7 +4706,7 @@ body.pos-cr-dark-page .popover-content {
   color: #ffffff !important;
 }
 
-/* Keyboard shortcuts / help popover tables — keep stripes dark (not white-on-white) */
+/* Keyboard shortcuts / help popover tables ? keep stripes dark (not white-on-white) */
 body.lockscreen.pos-sale-theme .popover .table,
 body.lockscreen.pos-sale-theme .popover .table > thead > tr > th,
 body.lockscreen.pos-sale-theme .popover .table > tbody > tr > th,
@@ -4731,7 +4800,7 @@ body.lockscreen.pos-sale-theme .fa-info-circle.text-info:hover {
   color: #3b8ddd !important;
 }
 
-/* DateTime picker popup — dark */
+/* DateTime picker popup ? dark */
 body.lockscreen.pos-sale-theme .bootstrap-datetimepicker-widget,
 body.lockscreen.pos-sale-theme .bootstrap-datetimepicker-widget.dropdown-menu,
 body.lockscreen.pos-sale-theme .bootstrap-datetimepicker-widget table,
@@ -4757,7 +4826,7 @@ body.lockscreen.pos-sale-theme .bootstrap-datetimepicker-widget table td span.ac
   color: #ffffff !important;
 }
 
-/* Bootstrap datepicker (DOB in Add Customer) — dark, readable text */
+/* Bootstrap datepicker (DOB in Add Customer) ? dark, readable text */
 body.lockscreen.pos-sale-theme .datepicker,
 body.lockscreen.pos-sale-theme .datepicker.dropdown-menu,
 body.lockscreen.pos-sale-theme div.datepicker {
@@ -4846,7 +4915,7 @@ body.lockscreen.pos-sale-theme .datepicker-dropdown:after {
   border-bottom-color: #3a3a3a !important;
 }
 
-/* Price group Select2 dropdown (appended to body) — force dark */
+/* Price group Select2 dropdown (appended to body) ? force dark */
 body.lockscreen.pos-sale-theme .select2-container--open .select2-dropdown,
 body.lockscreen.pos-sale-theme .select2-dropdown {
   background: #1e1e1e !important;
@@ -4874,7 +4943,7 @@ body.lockscreen.pos-sale-theme .select2-search--dropdown .select2-search__field 
   color: #ffffff !important;
 }
 
-/* Receive Payment popup — dark layout, white text, no hover flash */
+/* Receive Payment popup ? dark layout, white text, no hover flash */
 body.lockscreen.pos-sale-theme #pos_pay_contact_due_modal.in,
 body.lockscreen.pos-sale-theme #pos_pay_contact_due_modal.show {
   background: transparent !important;
@@ -5010,7 +5079,7 @@ body.lockscreen.pos-sale-theme #pos_pay_contact_due_modal .table > tbody > tr > 
   border-color: #333 !important;
 }
 
-/* Popup titles — no hover style change (Register / Close / Discount / Tax / Shipping) */
+/* Popup titles ? no hover style change (Register / Close / Discount / Tax / Shipping) */
 body.zoho-theme.lockscreen.pos-sale-theme .modal-title,
 body.zoho-theme.lockscreen.pos-sale-theme .modal-title:hover,
 body.zoho-theme.lockscreen.pos-sale-theme .modal-title:focus,
@@ -5067,7 +5136,7 @@ body.lockscreen.pos-sale-theme.modal-open .content-wrapper {
   max-width: 100% !important;
 }
 
-/* ── Quick add product + all modals: full dark, all text white ── */
+/* ?? Quick add product + all modals: full dark, all text white ?? */
 body.lockscreen.pos-sale-theme .quick_add_product_modal {
   overflow-x: hidden !important;
 }
@@ -5093,7 +5162,7 @@ body.lockscreen.pos-sale-theme .quick_add_product_modal .modal-footer {
   color: #ffffff !important;
 }
 
-/* Vertical scroll only — no left/right scrollbar */
+/* Vertical scroll only ? no left/right scrollbar */
 body.lockscreen.pos-sale-theme .quick_add_product_modal .modal-body {
   background: #1e1e1e !important;
   max-height: min(75vh, 720px);
@@ -5290,7 +5359,7 @@ body.lockscreen.pos-sale-theme .quick_add_product_modal .close {
   text-shadow: none !important;
 }
 
-/* Global modal leftovers — force white text / dark panels */
+/* Global modal leftovers ? force white text / dark panels */
 body.lockscreen.pos-sale-theme .modal .help-block,
 body.lockscreen.pos-sale-theme .modal .text-muted,
 body.lockscreen.pos-sale-theme .modal .text-dark,
@@ -5350,7 +5419,7 @@ body.lockscreen.pos-sale-theme .select2-container--default .select2-results__opt
   color: #ffffff !important;
 }
 
-/* ── Add Customer popup: sticky Save; scroll form body (form wraps header/body/footer) ── */
+/* ?? Add Customer popup: sticky Save; scroll form body (form wraps header/body/footer) ?? */
 body.lockscreen.pos-sale-theme .contact_modal,
 body.lockscreen.pos-sale-theme #global_contact_modal {
   overflow: hidden !important;
@@ -5438,7 +5507,7 @@ body.lockscreen.pos-sale-theme #global_contact_modal .modal-footer .btn {
   z-index: 6;
 }
 
-/* Contact modal Assigned to (select2 multiple) — dark + clickable */
+/* Contact modal Assigned to (select2 multiple) ? dark + clickable */
 body.lockscreen.pos-sale-theme .contact_modal .select2-container,
 body.lockscreen.pos-sale-theme .contact_modal .select2-container--default {
   width: 100% !important;
@@ -5472,7 +5541,7 @@ body.lockscreen.pos-sale-theme .contact_modal .select2-container--default .selec
   overflow: visible !important;
 }
 
-/* Hide empty ghost choice (blank option chip with only ×) */
+/* Hide empty ghost choice (blank option chip with only �) */
 body.lockscreen.pos-sale-theme .contact_modal .select2-container--default .select2-selection--multiple .select2-selection__choice[title=""],
 body.lockscreen.pos-sale-theme .contact_modal .select2-container--default .select2-selection--multiple .select2-selection__choice:empty,
 body.lockscreen.pos-sale-theme .contact_modal .select2-selection__choice[title=""] {
@@ -5501,7 +5570,7 @@ body.lockscreen.pos-sale-theme .contact_modal .select2-container--default .selec
   line-height: 1 !important;
 }
 
-/* Hide allowClear × on multi-select (duplicate of per-choice remove) */
+/* Hide allowClear � on multi-select (duplicate of per-choice remove) */
 body.lockscreen.pos-sale-theme .contact_modal .select2-container--default .select2-selection--multiple .select2-selection__clear {
   display: none !important;
 }
@@ -5563,7 +5632,7 @@ body.lockscreen.pos-sale-theme .select2-container--open .select2-search--dropdow
 }
 
 
-/* -- POS PWA standalone (installed app) � native shell feel -- */
+/* -- POS PWA standalone (installed app) ? native shell feel -- */
 html.pos-pwa-standalone,
 body.pos-pwa-standalone,
 body.lockscreen.pos-sale-theme.pos-pwa-standalone {

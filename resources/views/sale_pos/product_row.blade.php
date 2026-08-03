@@ -116,7 +116,7 @@
 		@if(empty($is_direct_sell))
 		<div class="modal fade row_edit_product_price_model" id="row_edit_product_price_modal_{{$row_count}}" tabindex="-1" role="dialog">
 			@include('sale_pos.partials.row_edit_product_price_modal')
-		</div> 
+		</div>
 		@endif
 		<!-- Description modal end -->
 		@if(in_array('modifiers' , $enabled_modules))
