@@ -1305,6 +1305,19 @@ class TransactionUtil extends Util
             $show_currency = false;
         }
 
+        // Available store credit = customer advance balance (POS "Advance Balance")
+        // Not reward points (customer_total_rp)
+        $store_credit = 0;
+        if (! empty($customer) && isset($customer->balance)) {
+            $store_credit = (float) $customer->balance;
+            if ($store_credit < 0) {
+                $store_credit = 0;
+            }
+        }
+        $output['customer_store_credit_uf'] = $store_credit;
+        $output['customer_store_credit'] = $this->num_f($store_credit, $show_currency, $business_details);
+        $output['customer_store_credit_label'] = __('lang_v1.advance_balance');
+
         //Invoice product lines
         $is_lot_number_enabled = $business_details->enable_lot_number;
         $is_product_expiry_enabled = $business_details->enable_product_expiry;
@@ -1478,15 +1491,16 @@ class TransactionUtil extends Util
             $output['tax_label'] .= ' ('.$tax->name.')';
         }
         $output['tax_label'] .= ':';
-        // Combined order-level tax + product line taxes (for display)
-        $total_tax_uf = (float) $transaction->tax_amount + (float) ($total_line_taxes ?? 0);
-        $output['tax_amount_uf'] = $total_tax_uf;
-        $output['tax'] = ($total_tax_uf != 0) ? $this->num_f($total_tax_uf, $show_currency, $business_details) : 0;
-        // Layout Tax Label filled = tax labels enabled on invoice
+        // Order tax only (POS order tax) — product line item tax is NOT included here
+        // Item tax stays in the product-table Tax column
+        $order_tax_uf = (float) $transaction->tax_amount;
+        $output['tax_amount_uf'] = $order_tax_uf;
+        $output['tax'] = ($order_tax_uf != 0) ? $this->num_f($order_tax_uf, $show_currency, $business_details) : 0;
+        // Layout Tax Label filled = tax label enabled on invoice
         $layout_tax_label_on = trim((string) ($invoice_layout->tax_label ?? '')) !== '';
         $output['layout_tax_label_on'] = $layout_tax_label_on;
-        // Total Tax row: label ON and tax amount > 0 (do not print Tax $0.00)
-        $output['show_total_tax'] = $layout_tax_label_on && $total_tax_uf != 0;
+        // Total Tax row amount uses order tax only
+        $output['show_total_tax'] = $layout_tax_label_on && $order_tax_uf != 0;
         // Business: Enable product line tax → product Tax column on invoice
         $output['enable_inline_tax'] = ! empty($business_details->enable_inline_tax);
 
