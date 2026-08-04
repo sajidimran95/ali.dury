@@ -1474,25 +1474,118 @@ $(document).ready(function() {
         return false;
     });
 
-    // Every time payment modal opens: refresh prev due + recompute balance
+    /**
+ * Ensure Pay modal first amount = current total payable.
+ * Extra payment rows / method switches can leave 0 after close → reopen.
+ */
+function pos_sync_payment_modal_amount(cleanExtraRows) {
+    cleanExtraRows = cleanExtraRows !== false;
+
+    // Edit sale: keep existing payment lines
+    if ($('form#edit_pos_sell_form').length > 0 || $('form#edit_sell_form').length > 0) {
+        if (typeof calculate_balance_due === 'function') {
+            calculate_balance_due();
+        }
+        return;
+    }
+
+    if (cleanExtraRows) {
+        // Remove dynamically added rows (leave the first permanent row)
+        $('#payment_rows_div')
+            .find('.remove_payment_row')
+            .each(function () {
+                var $col = $(this).closest('#payment_rows_div > .col-md-12');
+                if ($col.length) {
+                    $col.remove();
+                } else {
+                    $(this).closest('.payment_row').remove();
+                }
+            });
+        if ($('#payment_row_index').length) {
+            // Next added row index after only the first (index 0) remains
+            var remaining = $('#payment_rows_div').find('.payment_row').length;
+            $('#payment_row_index').val(Math.max(1, remaining));
+        }
+    }
+
+    if ($('#is_credit_sale').length) {
+        $('#is_credit_sale').val(0);
+    }
+
+    var total_payable = __read_number($('input#final_total_input'));
+    if (isNaN(total_payable)) {
+        total_payable = 0;
+    }
+
+    var $amounts = $('#payment_rows_div').find('input.payment-amount');
+    if ($amounts.length) {
+        var $first = $amounts.first();
+        // Unlock in case a prior method left it readonly
+        $first.prop('readonly', false).removeAttr('readonly');
+        __write_number($first, total_payable);
+        // Any leftover extra rows: leave zero so total paying = payable
+        $amounts.slice(1).each(function () {
+            __write_number($(this), 0);
+        });
+    }
+
+    if (typeof calculate_balance_due === 'function') {
+        calculate_balance_due();
+    }
+}
+
+// Every time payment modal opens: refresh prev due + recompute balance + order details
     $('#modal_payment').on('shown.bs.modal', function() {
+        if (typeof update_payment_modal_customer === 'function') {
+            update_payment_modal_customer();
+        }
         var customer_id = $('select#customer_id').val();
         if (customer_id && typeof get_contact_due === 'function') {
             get_contact_due(customer_id);
         } else if (typeof set_payment_modal_prev_due === 'function') {
             set_payment_modal_prev_due(0, '');
         }
-        calculate_balance_due();
+        if (typeof pos_total_row === 'function') {
+            pos_total_row();
+        }
+        // Sync order details panel from current cart totals
+        $('#modal_payment .payment_od_discount').text($('span#total_discount').first().text() || '0');
+        if (typeof update_payment_od_item_discount === 'function') {
+            update_payment_od_item_discount();
+        }
+        $('#modal_payment .payment_od_tax').text($('span#order_tax').first().text() || '0');
+        $('#modal_payment .payment_od_shipping').text($('span#shipping_charges_amount').first().text() || '0');
+        var packTxt = $('#packing_charge_text').text();
+        if (packTxt && $.trim(packTxt) !== '' && $.trim(packTxt) !== '0') {
+            $('#modal_payment .payment_od_packing').text(packTxt);
+            $('#modal_payment .payment_od_packing_wrap').removeClass('hide');
+        }
+        if ($('form#edit_pos_sell_form').length == 0) {
+            var $method = $(this).find('#method_0');
+            if ($method.length) {
+                try {
+                    $method.trigger('change');
+                } catch (err) {}
+            }
+        }
+        // ALWAYS re-apply payable amount last (fixes 0 after method change / close / reopen)
+        if (typeof pos_sync_payment_modal_amount === 'function') {
+            pos_sync_payment_modal_amount(true);
+        }
+        if (typeof pos_update_add_payment_row_btn === 'function') {
+            pos_update_add_payment_row_btn();
+        }
         $('#modal_payment')
             .find('input.payment-amount')
             .filter(':visible:first')
             .focus()
             .select();
-        if ($('form#edit_pos_sell_form').length == 0) {
-            var $method = $(this).find('#method_0');
-            if ($method.length) {
-                $method.trigger('change');
-            }
+    });
+
+    // On close: keep amounts in sync so next open isn't stale at $0
+    $('#modal_payment').on('hidden.bs.modal', function () {
+        if (typeof pos_sync_payment_modal_amount === 'function') {
+            pos_sync_payment_modal_amount(true);
         }
     });
 
@@ -1735,7 +1828,33 @@ $(document).ready(function() {
             });
         });
 
-    $('button#add-payment-row').click(function() {
+    $('button#add-payment-row').off('click.posAddPayRow').on('click.posAddPayRow', function() {
+        // Don't add another row when current amount(s) already cover total payable
+        var total_payable = __read_number($('input#final_total_input'));
+        if (isNaN(total_payable)) {
+            total_payable = 0;
+        }
+        var total_paying = 0;
+        $('#payment_rows_div')
+            .find('.payment-amount')
+            .each(function () {
+                var amount = __read_number($(this));
+                if (!isNaN(amount)) {
+                    total_paying += amount;
+                }
+            });
+        var remaining = total_payable - total_paying;
+        // already paid in full (or overpaid) — no extra row needed
+        if (remaining <= 0.009) {
+            if (typeof toastr !== 'undefined') {
+                toastr.warning(
+                    (typeof LANG !== 'undefined' && LANG.amount_already_settled) ||
+                        'Amount already equals or exceeds total payable. No extra payment row needed.'
+                );
+            }
+            return false;
+        }
+
         var row_index = $('#payment_row_index').val();
         var location_id = $('input#location_id').val();
         $.ajax({
@@ -1747,25 +1866,43 @@ $(document).ready(function() {
                 if (result) {
                     var appended = $('#payment_rows_div').append(result);
 
-                    var total_payable = __read_number($('input#final_total_input'));
-                    if (isNaN(total_payable)) {
-                        total_payable = 0;
+                    var total_payable2 = __read_number($('input#final_total_input'));
+                    if (isNaN(total_payable2)) {
+                        total_payable2 = 0;
                     }
                     // Sum existing rows only (exclude newly appended last amount)
                     var $amounts = $('#payment_rows_div').find('.payment-amount');
-                    var total_paying = 0;
+                    var total_paying2 = 0;
                     $amounts.each(function (idx) {
                         if (idx === $amounts.length - 1) {
                             return;
                         }
                         var amount = __read_number($(this));
                         if (!isNaN(amount)) {
-                            total_paying += amount;
+                            total_paying2 += amount;
                         }
                     });
-                    var b_due = total_payable - total_paying;
+                    var b_due = total_payable2 - total_paying2;
                     if (isNaN(b_due) || b_due < 0) {
                         b_due = 0;
+                    }
+                    // If nothing left, remove the empty row we just added
+                    if (b_due <= 0.009) {
+                        var $lastRow = $amounts.last().closest('.col-md-12');
+                        if (!$lastRow.length) {
+                            $lastRow = $amounts.last().closest('.payment_row');
+                        }
+                        $lastRow.remove();
+                        if (typeof toastr !== 'undefined') {
+                            toastr.warning('Amount already equals or exceeds total payable.');
+                        }
+                        if (typeof calculate_balance_due === 'function') {
+                            calculate_balance_due();
+                        }
+                        if (typeof pos_update_add_payment_row_btn === 'function') {
+                            pos_update_add_payment_row_btn();
+                        }
+                        return;
                     }
                     var $newAmount = $amounts.last();
                     __write_number($newAmount, b_due);
@@ -1774,25 +1911,42 @@ $(document).ready(function() {
                     $(appended).find('#method_' + row_index).change();
                     $('#payment_row_index').val(parseInt(row_index) + 1);
                     calculate_balance_due();
+                    if (typeof pos_update_add_payment_row_btn === 'function') {
+                        pos_update_add_payment_row_btn();
+                    }
                 }
             },
         });
     });
 
-    $(document).on('click', '.remove_payment_row', function() {
-        swal({
-            title: LANG.sure,
-            icon: 'warning',
-            buttons: true,
-            dangerMode: true,
-        }).then(willDelete => {
-            if (willDelete) {
-                $(this)
-                    .closest('.payment_row')
-                    .remove();
+    $(document).on('click', '.remove_payment_row', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var $row = $(this).closest('.payment_row');
+        if (!$row.length) {
+            $row = $(this).closest('.box');
+        }
+        var doRemovePaymentRow = function() {
+            $row.remove();
+            if (typeof calculate_balance_due === 'function') {
                 calculate_balance_due();
             }
-        });
+        };
+        // Confirm (swal must stack above #modal_payment; fallback = remove directly)
+        if (typeof swal === 'function') {
+            swal({
+                title: (typeof LANG !== 'undefined' && LANG.sure) ? LANG.sure : 'Are you sure?',
+                icon: 'warning',
+                buttons: true,
+                dangerMode: true,
+            }).then(function(willDelete) {
+                if (willDelete) {
+                    doRemovePaymentRow();
+                }
+            });
+        } else {
+            doRemovePaymentRow();
+        }
     });
 
     pos_form_validator = pos_form_obj.validate({
@@ -3691,7 +3845,7 @@ function pos_total_row() {
     if (isNaN(shipping_charges_val)) {
         shipping_charges_val = 0;
     }
-    $('span#shipping_charges_amount').text(__currency_trans_from_en(shipping_charges_val, false));
+    $('span#shipping_charges_amount, span.payment_od_shipping').text(__currency_trans_from_en(shipping_charges_val, false));
 
     $('span.total_quantity').each(function() {
         $(this).html(__number_f(total_quantity));
@@ -3699,6 +3853,7 @@ function pos_total_row() {
 
     //$('span.unit_price_total').html(unit_price_total);
     $('span.price_total').html(__currency_trans_from_en(price_total, false));
+    update_payment_od_item_discount();
     calculate_billing_details(price_total);
 
     if (
@@ -3732,6 +3887,45 @@ function get_subtotal() {
     });
 
     return price_total;
+}
+
+/** Sum of per-line (item) discounts across the cart (qty × unit discount). */
+function get_item_discount_total() {
+    var item_discount_total = 0;
+    $('table#pos_table tbody tr').each(function() {
+        var $row = $(this);
+        if (!$row.find('input.pos_quantity').length) {
+            return;
+        }
+        var unit_price = __read_number(pos_row_field($row, 'input.pos_unit_price'));
+        if (isNaN(unit_price)) {
+            unit_price = 0;
+        }
+        var qty = __read_number($row.find('input.pos_quantity'));
+        if (isNaN(qty) || qty === 0) {
+            return;
+        }
+        var row_discount_type = pos_row_field($row, 'select.row_discount_type').val();
+        var row_discount_amount = __read_number(pos_row_field($row, 'input.row_discount_amount'));
+        if (!row_discount_amount || isNaN(row_discount_amount)) {
+            return;
+        }
+        var unit_discount = 0;
+        if (row_discount_type == 'fixed') {
+            unit_discount = row_discount_amount;
+        } else {
+            unit_discount = __calculate_amount('percentage', row_discount_amount, unit_price);
+        }
+        if (!isNaN(unit_discount) && unit_discount > 0) {
+            item_discount_total += unit_discount * qty;
+        }
+    });
+    return item_discount_total;
+}
+
+function update_payment_od_item_discount() {
+    var item_disc = get_item_discount_total();
+    $('span.payment_od_item_discount').text(__currency_trans_from_en(item_disc, false));
 }
 
 function calculate_billing_details(price_total) {
@@ -3773,7 +3967,12 @@ function calculate_billing_details(price_total) {
         packing_charge = __calculate_amount($('#packing_charge_type').val(), 
             __read_number($('input#packing_charge')), price_total);
 
-        $('#packing_charge_text').text(__currency_trans_from_en(packing_charge, false));
+        $('#packing_charge_text, span.payment_od_packing').text(__currency_trans_from_en(packing_charge, false));
+        if (packing_charge > 0) {
+            $('#modal_payment .payment_od_packing_wrap').removeClass('hide');
+        }
+    } else {
+        $('span.payment_od_packing').text(__currency_trans_from_en(0, false));
     }
 
     var total_payable = price_total + order_tax - discount + shipping_charges + packing_charge + additional_expense;
@@ -3819,7 +4018,7 @@ function pos_discount(total_amount) {
 
     var discount = __calculate_amount(calculation_type, calculation_amount, total_amount);
 
-    $('span#total_discount').text(__currency_trans_from_en(discount, false));
+    $('span#total_discount, span.payment_od_discount').text(__currency_trans_from_en(discount, false));
 
     return discount;
 }
@@ -3836,7 +4035,7 @@ function pos_order_tax(price_total, discount) {
         var order_tax = 0;
     }
 
-    $('span#order_tax').text(__currency_trans_from_en(order_tax, false));
+    $('span#order_tax, span.payment_od_tax').text(__currency_trans_from_en(order_tax, false));
 
     return order_tax;
 }
@@ -3910,12 +4109,45 @@ function calculate_balance_due() {
         $bal.addClass('text-success');
     }
 
-    // Change return amount is outgoing (danger tint when set)
+    // Return amount always shown (incl. $0 / non-cash); highlight for overpay
     __highlight(change_return * -1, $('span.change_return_span'));
+    $('span.change_return_span').addClass('text-danger');
 
     // store payment details
     if (typeof saveFormDataToLocalStorage === 'function') {
         saveFormDataToLocalStorage();
+    }
+    if (typeof pos_update_add_payment_row_btn === 'function') {
+        pos_update_add_payment_row_btn();
+    }
+}
+
+/** Enable/disable Add Payment Row when amount already covers total payable */
+function pos_update_add_payment_row_btn() {
+    var $btn = $('#add-payment-row');
+    if (!$btn.length) {
+        return;
+    }
+    var total_payable = __read_number($('input#final_total_input'));
+    if (isNaN(total_payable)) {
+        total_payable = 0;
+    }
+    var total_paying = 0;
+    $('#payment_rows_div')
+        .find('.payment-amount')
+        .each(function () {
+            var amount = __read_number($(this));
+            if (!isNaN(amount)) {
+                total_paying += amount;
+            }
+        });
+    var remaining = total_payable - total_paying;
+    if (remaining <= 0.009) {
+        $btn.prop('disabled', true).addClass('is-disabled');
+        $btn.attr('title', 'Amount already equals or exceeds total payable');
+    } else {
+        $btn.prop('disabled', false).removeClass('is-disabled');
+        $btn.removeAttr('title');
     }
 }
 
@@ -4825,6 +5057,37 @@ $(document).on('click', '.service_modal_btn', function(e) {
     }
 });
 
+$(document).on('click', '.pos-pay-method-card:not(:disabled)', function (e) {
+    e.preventDefault();
+    var $btn = $(this);
+    var method = $btn.data('method');
+    if (!method) {
+        return;
+    }
+    var $row = $btn.closest('.payment_row');
+    var $select = $row.find('select.payment_types_dropdown').first();
+    if (!$select.length) {
+        $select = $row.find('.payment_types_dropdown').first();
+    }
+    $row.find('.pos-pay-method-card').removeClass('is-active');
+    $btn.addClass('is-active');
+
+    // Existing credit sale flag (same as express Credit button)
+    if (method === 'credit_sale') {
+        if ($('#is_credit_sale').length) {
+            $('#is_credit_sale').val(1);
+        }
+        return;
+    }
+
+    if ($('#is_credit_sale').length) {
+        $('#is_credit_sale').val(0);
+    }
+    if ($select.length) {
+        $select.val(method).trigger('change');
+    }
+});
+
 $(document).on('change', '.payment_types_dropdown', function(e) {
     var default_accounts = $('select#select_location_id').length ? 
                 $('select#select_location_id')
@@ -4832,6 +5095,11 @@ $(document).on('change', '.payment_types_dropdown', function(e) {
                 .data('default_payment_accounts') : $('#location_id').data('default_payment_accounts');
     var payment_type = $(this).val();
     var payment_row = $(this).closest('.payment_row');
+    // Sync card UI selection (Pay modal card-wise methods)
+    if (payment_row.length) {
+        payment_row.find('.pos-pay-method-card').removeClass('is-active');
+        payment_row.find('.pos-pay-method-card[data-method="' + payment_type + '"]').addClass('is-active');
+    }
     if (payment_type && payment_type != 'advance') {
         var default_account = (default_accounts && default_accounts[payment_type] && default_accounts[payment_type]['account'])
             ? default_accounts[payment_type]['account']
@@ -4866,10 +5134,14 @@ $(document).on('change', '.payment_types_dropdown', function(e) {
             account_dropdown.closest('.form-group').addClass('hide');
         }
     } else {
-        if (amount_element.length && amount_element.rules) {
-            try {
-                amount_element.rules("remove", "max-value");
-            } catch (err) {}
+        if (amount_element.length) {
+            // Leaving Advance must unlock amount so total can be reapplied on next modal open
+            amount_element.prop('readonly', false).removeAttr('readonly');
+            if (amount_element.rules) {
+                try {
+                    amount_element.rules("remove", "max-value");
+                } catch (err) {}
+            }
         }
         if (account_dropdown.length) {
             account_dropdown.prop('disabled', false); 
@@ -5571,6 +5843,46 @@ function get_contact_due(id) {
     });
 }
 
+/**
+ * Fill customer name (+ mobile if known) on Pay modal top bar.
+ */
+function update_payment_modal_customer() {
+    if (!$('#payment_modal_customer_name').length) {
+        return;
+    }
+    var name = '';
+    var extra = '';
+
+    try {
+        var s2 = $('#customer_id').select2('data');
+        if (s2 && s2.length && s2[0]) {
+            var d = s2[0];
+            name = (d.text || d.name || '').toString().trim();
+            if (d.mobile) {
+                extra = String(d.mobile).trim();
+            } else if (d.contact_id) {
+                extra = String(d.contact_id).trim();
+            }
+        }
+    } catch (e) {}
+
+    if (!name) {
+        name = ($('#customer_id option:selected').text() || '').toString().trim();
+    }
+    if (!name) {
+        name = ($('#default_customer_name').val() || 'Walk-In Customer').toString().trim();
+    }
+    // Drop trailing (CO0001) style codes for cleaner display
+    name = name.replace(/\s*\((?:CO|C)?\d+\)\s*$/i, '').trim() || name;
+
+    $('#payment_modal_customer_name').text(name || '—');
+    if (extra && extra !== name) {
+        $('#payment_modal_customer_extra').text(' · ' + extra).show();
+    } else {
+        $('#payment_modal_customer_extra').text('').hide();
+    }
+}
+
 function set_payment_modal_prev_due(amount, formatted) {
     amount = parseFloat(amount);
     if (isNaN(amount)) {
@@ -5587,12 +5899,7 @@ function set_payment_modal_prev_due(amount, formatted) {
     $('#payment_customer_prev_due').val(amount);
     var $span = $('span.payment_customer_prev_due');
     $span.text(display);
-    $span.removeClass('text-success text-danger');
-    if (amount > 0) {
-        $span.addClass('text-danger');
-    } else {
-        $span.addClass('text-success');
-    }
+    $span.removeClass('text-success text-danger').addClass('text-warning');
 }
 
 function submitQuickContactForm(form) {

@@ -31,25 +31,56 @@
 		</div>
 	</div>
 	@endif
-	<div class="{{$col_class}}">
+	<div class="col-md-12">
 		<div class="form-group">
 			{!! Form::label("method_$row_index" , __('lang_v1.payment_method') . ':*') !!}
-			<div class="input-group">
-				<span class="input-group-addon">
-					<i class="fas fa-money-bill-alt"></i>
-				</span>
-				@php
-					$_payment_method = empty($payment_line['method']) && array_key_exists('cash', $payment_types) ? 'cash' : $payment_line['method'];
-				@endphp
-				{!! Form::select("payment[$row_index][method]", $payment_types, $_payment_method, ['class' => 'form-control col-md-12 payment_types_dropdown', 'required', 'id' => !$readonly ? "method_$row_index" : "method_advance_$row_index", 'style' => 'width:100%;', 'disabled' => $readonly]); !!}
-
+			@php
+				$_payment_method = empty($payment_line['method']) && array_key_exists('cash', $payment_types) ? 'cash' : $payment_line['method'];
+				$pay_method_icons = [
+					'cash' => 'fas fa-money-bill-alt',
+					'card' => 'fas fa-credit-card',
+					'cheque' => 'fas fa-money-check',
+					'bank_transfer' => 'fas fa-university',
+					'other' => 'fas fa-coins',
+					'advance' => 'fas fa-wallet',
+					'custom_pay_1' => 'fas fa-wallet',
+					'custom_pay_2' => 'fas fa-wallet',
+					'custom_pay_3' => 'fas fa-wallet',
+					'custom_pay_4' => 'fas fa-wallet',
+					'custom_pay_5' => 'fas fa-wallet',
+					'custom_pay_6' => 'fas fa-wallet',
+					'custom_pay_7' => 'fas fa-wallet',
+				];
+			@endphp
+			<div class="pos-pay-method-cards @if($readonly) is-readonly @endif" role="group" aria-label="@lang('lang_v1.payment_method')">
+				@foreach($payment_types as $pm_key => $pm_label)
+					@php
+						$pm_icon = $pay_method_icons[$pm_key] ?? 'fas fa-money-bill-wave';
+						$is_active = (string) $_payment_method === (string) $pm_key;
+						$pm_text = trim(strip_tags((string) $pm_label));
+						if ($pm_text === '') {
+							$pm_text = ucwords(str_replace(['_', '-'], ' ', (string) $pm_key));
+						}
+					@endphp
+					<button type="button"
+						class="pos-pay-method-card @if($is_active) is-active @endif"
+						data-method="{{ $pm_key }}"
+						title="{{ $pm_text }}"
+						@if($readonly) disabled @endif>
+						<span class="pos-pay-method-card__icon"><i class="{{ $pm_icon }}" aria-hidden="true"></i></span>
+						<span class="pos-pay-method-card__label">{{ $pm_text }}</span>
+					</button>
+				@endforeach
+			</div>
+			{{-- Hidden select keeps form + existing POS JS working --}}
+			<div class="pos-pay-method-select-wrap">
+				{!! Form::select("payment[$row_index][method]", $payment_types, $_payment_method, ['class' => 'form-control col-md-12 payment_types_dropdown', 'required', 'id' => !$readonly ? "method_$row_index" : "method_advance_$row_index", 'style' => 'width:100%;', 'disabled' => $readonly, 'tabindex' => '-1']); !!}
 				@if($readonly)
 					{!! Form::hidden("payment[$row_index][method]", $payment_line['method'], ['class' => 'payment_types_dropdown', 'required', 'id' => "method_$row_index"]); !!}
 				@endif
 			</div>
 		</div>
 	</div>
-
 	@php
             $pos_settings = !empty(session()->get('business.pos_settings')) ? json_decode(session()->get('business.pos_settings'), true) : [];
             $enable_cash_denomination_for_payment_methods = !empty($pos_settings['enable_cash_denomination_for_payment_methods']) ? $pos_settings['enable_cash_denomination_for_payment_methods'] : [];

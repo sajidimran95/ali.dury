@@ -19,7 +19,7 @@
 
                 @if (!Gate::check('disable_pay_checkout') || auth()->user()->can('superadmin') || auth()->user()->can('admin'))
                     <button type="button"
-                        class="pos-finalize tw-leading-none tw-whitespace-nowrap tw-flex tw-flex-row tw-items-center tw-justify-center tw-gap-1 tw-font-bold tw-text-white tw-cursor-pointer tw-text-xs md:tw-text-sm tw-bg-[#001F3E] tw-rounded-md tw-p-2 tw-w-[8.5rem] active:tw-scale-95 tw-transition-transform no-print @if ($pos_settings['disable_pay_checkout'] != 0) hide @endif"
+                        class="pos-finalize tw-leading-none tw-whitespace-nowrap tw-flex tw-flex-row tw-items-center tw-justify-center tw-gap-1 tw-font-bold tw-text-white tw-cursor-pointer tw-text-xs md:tw-text-sm tw-bg-[#001F3E] tw-rounded-md tw-p-2 tw-w-[8.5rem] active:tw-scale-95 tw-transition-transform no-print @if (($pos_settings['disable_pay_checkout'] ?? 0) != 0 || !empty($pos_settings['disable_express_checkout'])) hide @endif"
                         title="@lang('lang_v1.tooltip_checkout_multi_pay')"><i class="fas fa-money-check-alt"
                             aria-hidden="true"></i> @lang('lang_v1.checkout_multi_pay') </button>
                 @endif
@@ -74,6 +74,7 @@
                     @endif
                 @endif
 
+                @if (empty($pos_settings['disable_express_checkout']))
                 @if (!Gate::check('disable_credit_sale') || auth()->user()->can('superadmin') || auth()->user()->can('admin'))
                     @if (empty($pos_settings['disable_credit_sale_button']))
                         <input type="hidden" name="is_credit_sale" value="0" id="is_credit_sale">
@@ -94,13 +95,17 @@
                         <i class="fas fa-credit-card tw-text-[#D61B60]" aria-hidden="true"></i> @lang('lang_v1.express_checkout_card')
                     </button>
                 @endif
+                @else
+                    {{-- Credit sale flag still needed for Pay modal when express buttons hidden --}}
+                    <input type="hidden" name="is_credit_sale" value="0" id="is_credit_sale">
+                @endif
 
                 {{-- Desktop-only primary CTAs (mobile has these in its own top row) --}}
                 <div class="!tw-hidden md:!tw-flex md:tw-items-center md:tw-gap-3">
                     <span class="pos-footer-divider tw-inline-block tw-w-px tw-h-7 tw-bg-[#e2e8f0] tw-flex-shrink-0 tw-self-center tw-rounded-[1px] tw-mx-1"></span>
                     @if (!Gate::check('disable_pay_checkout') || auth()->user()->can('superadmin') || auth()->user()->can('admin'))
                         <button type="button"
-                            class="pos-finalize tw-leading-none tw-whitespace-nowrap tw-flex tw-flex-row tw-items-center tw-justify-center tw-gap-1 tw-font-bold tw-text-white tw-cursor-pointer tw-text-xs md:tw-text-sm tw-bg-[#001F3E] tw-rounded-md tw-p-2 tw-w-[8.5rem] no-print @if ($pos_settings['disable_pay_checkout'] != 0) hide @endif"
+                            class="pos-finalize tw-leading-none tw-whitespace-nowrap tw-flex tw-flex-row tw-items-center tw-justify-center tw-gap-1 tw-font-bold tw-text-white tw-cursor-pointer tw-text-xs md:tw-text-sm tw-bg-[#001F3E] tw-rounded-md tw-p-2 tw-w-[8.5rem] no-print @if (($pos_settings['disable_pay_checkout'] ?? 0) != 0 || !empty($pos_settings['disable_express_checkout'])) hide @endif"
                             title="@lang('lang_v1.tooltip_checkout_multi_pay')"><i class="fas fa-money-check-alt"
                                 aria-hidden="true"></i> @lang('lang_v1.checkout_multi_pay') </button>
                     @endif

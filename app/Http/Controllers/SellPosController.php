@@ -201,7 +201,8 @@ class SellPosController extends Controller
             }
         }
 
-        $payment_types = $this->productUtil->payment_types(null, true, $business_id);
+        // Only location-enabled payment methods (Business Locations → payment accounts is_enabled)
+        $payment_types = $this->productUtil->payment_types($default_location, true);
 
         //Shortcuts
         $shortcuts = json_decode($business_details->keyboard_shortcuts, true);

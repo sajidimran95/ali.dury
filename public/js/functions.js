@@ -574,7 +574,8 @@ function __print_receipt_html(section_id) {
         '.usl-ship-tbl td.v{background:transparent!important;font-weight:400;}' +
         '.usl-pay-block{margin-top:12px;margin-bottom:6px;font-size:11.5px;}' +
         '.usl-pay{width:auto!important;table-layout:auto;}' +
-        '.usl-pay td{padding:2px 14px 2px 0;white-space:nowrap;width:auto;}';
+        '.usl-pay td{padding:2px 14px 2px 0;white-space:nowrap;width:auto;}' +
+        '.usl-pay tr.usl-pay-return td,.usl-pay td.usl-pay-return-amt{color:#c62828;font-weight:600;}';
 
     var htmlDoc =
         '<!DOCTYPE html><html><head><meta charset="utf-8">' +

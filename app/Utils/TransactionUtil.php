@@ -1617,14 +1617,29 @@ class TransactionUtil extends Util
                 if (! empty($payments)) {
                     foreach ($payments as $value) {
                         $method = ! empty($payment_types[$value['method']]) ? $payment_types[$value['method']] : '';
+
+                        // Change return to customer — always "Return" (not "Cash ()(-)" when label empty)
+                        if (! empty($value['is_return']) && (int) $value['is_return'] === 1) {
+                            $return_label = ! empty($il->change_return_label) ? trim((string) $il->change_return_label) : '';
+                            if ($return_label === '') {
+                                $return_label = 'Return';
+                            }
+                            $output['payments'][] = [
+                                'method' => $return_label,
+                                'amount' => $this->num_f($value['amount'], $show_currency, $business_details),
+                                'date' => $this->format_date($value['paid_on'], false, $business_details),
+                                'is_return' => 1,
+                            ];
+
+                            continue;
+                        }
+
                         if ($value['method'] == 'cash') {
                             $output['payments'][] =
-                                ['method' => $method.($value['is_return'] == 1 ? ' ('.$il->change_return_label.')(-)' : ''),
+                                ['method' => $method,
                                     'amount' => $this->num_f($value['amount'], $show_currency, $business_details),
                                     'date' => $this->format_date($value['paid_on'], false, $business_details),
                                 ];
-                            if ($value['is_return'] == 1) {
-                            }
                         } elseif ($value['method'] == 'card') {
                             $output['payments'][] =
                                 ['method' => $method.(! empty($value['card_transaction_number']) ? (', Transaction Number:'.$value['card_transaction_number']) : ''),

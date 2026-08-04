@@ -129,14 +129,20 @@
 	</div>
 
 	@php
+		// Disable Express Checkout hides Card / Credit / Multiple — Pay CTA stays
+		$express_enabled = ($pos_settings['disable_express_checkout'] ?? 0) == 0;
 		$show_cash_pay = (!Gate::check('disable_express_checkout') || auth()->user()->can('superadmin') || auth()->user()->can('admin'))
-			&& ($pos_settings['disable_express_checkout'] ?? 0) == 0
+			&& $express_enabled
 			&& array_key_exists('cash', $payment_types ?? []);
-		$show_card_pay = (!Gate::check('disable_card') || auth()->user()->can('superadmin') || auth()->user()->can('admin'))
+		$show_card_pay = $express_enabled
+			&& (!Gate::check('disable_card') || auth()->user()->can('superadmin') || auth()->user()->can('admin'))
 			&& array_key_exists('card', $payment_types ?? []);
-		$show_credit_pay = (!Gate::check('disable_credit_sale') || auth()->user()->can('superadmin') || auth()->user()->can('admin'))
+		$show_credit_pay = $express_enabled
+			&& (!Gate::check('disable_credit_sale') || auth()->user()->can('superadmin') || auth()->user()->can('admin'))
 			&& empty($pos_settings['disable_credit_sale_button']);
-		$show_multi_pay = (!Gate::check('disable_pay_checkout') || auth()->user()->can('superadmin') || auth()->user()->can('admin'))
+		// Named "Multiple" button only (not the main Pay CTA)
+		$show_multi_pay = $express_enabled
+			&& (!Gate::check('disable_pay_checkout') || auth()->user()->can('superadmin') || auth()->user()->can('admin'))
 			&& ($pos_settings['disable_pay_checkout'] ?? 0) == 0;
 	@endphp
 
@@ -183,7 +189,7 @@
 			<span class="pos-pay-amount"><span class="pos_pay_cta_total display_currency" data-currency_symbol="true">0</span></span>
 		</button>
 	@else
-		{{-- Always show a pay CTA (create + edit / suspend) when cash express is off --}}
+		{{-- Main Pay button always available (opens multi-pay modal); not the "Multiple" chip --}}
 		<button type="button"
 			class="pos-pay-cta pos-finalize no-print"
 			title="@lang('lang_v1.tooltip_checkout_multi_pay')"

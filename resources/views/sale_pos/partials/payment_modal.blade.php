@@ -1,5 +1,5 @@
 <div class="modal fade" tabindex="-1" role="dialog" id="modal_payment">
-    <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-dialog modal-lg modal-payment-wide" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
@@ -7,26 +7,87 @@
                 <h4 class="modal-title">@lang('lang_v1.payment')</h4>
             </div>
             <div class="modal-body">
-                <div class="row">
-                    <div class="col-md-12 mb-12">
-                        <strong>@lang('lang_v1.advance_balance'):</strong> <span id="advance_balance_text"></span>
+                <div class="row payment-modal-top-bar">
+                    <div class="col-md-6 col-sm-6 payment-modal-customer-wrap">
+                        <strong>@lang('contact.customer'):</strong>
+                        <span id="payment_modal_customer_name" class="payment-modal-customer-name">—</span>
+                        <span id="payment_modal_customer_extra" class="payment-modal-customer-extra"></span>
+                    </div>
+                    <div class="col-md-6 col-sm-6 payment-modal-advance-wrap text-right">
+                        <strong>@lang('lang_v1.advance_balance'):</strong>
+                        <span id="advance_balance_text" class="payment-modal-advance-val"></span>
                         {!! Form::hidden('advance_balance', null, [
                             'id' => 'advance_balance',
                             'data-error-msg' => __('lang_v1.required_advance_balance_not_available'),
                         ]) !!}
                     </div>
-                    <div class="col-md-9">
+                </div>
+
+                    {{-- Left: Order details card (same style as right summary) --}}
+                    <div class="col-md-2 payment-modal-col-side">
+                        <div class="box box-solid bg-orange payment-order-details">
+                            <div class="box-body">
+                                <div class="col-md-12">
+                                    <strong>@lang('lang_v1.total_items'):</strong>
+                                    <br />
+                                    <span class="lead text-bold total_quantity">0</span>
+                                </div>
+                                <div class="col-md-12">
+                                    <hr>
+                                    <strong>@lang('sale.subtotal'):</strong>
+                                    <br />
+                                    <span class="lead text-bold price_total payment_od_subtotal">0</span>
+                                </div>
+                                <div class="col-md-12">
+                                    <hr>
+                                    <strong>@lang('lang_v1.item_discount')(-):</strong>
+                                    <br />
+                                    <span class="lead text-bold payment_od_item_discount">0</span>
+                                </div>
+                                <div class="col-md-12">
+                                    <hr>
+                                    <strong>@lang('sale.discount')(-):</strong>
+                                    <br />
+                                    <span class="lead text-bold payment_od_discount">0</span>
+                                </div>
+                                <div class="col-md-12">
+                                    <hr>
+                                    <strong>@lang('sale.order_tax')(+):</strong>
+                                    <br />
+                                    <span class="lead text-bold payment_od_tax">0</span>
+                                </div>
+                                <div class="col-md-12">
+                                    <hr>
+                                    <strong>@lang('sale.shipping')(+):</strong>
+                                    <br />
+                                    <span class="lead text-bold payment_od_shipping">0</span>
+                                </div>
+                                <div class="col-md-12 payment_od_packing_wrap hide">
+                                    <hr>
+                                    <strong>@lang('lang_v1.packing_charge')(+):</strong>
+                                    <br />
+                                    <span class="lead text-bold payment_od_packing">0</span>
+                                </div>
+                                <div class="col-md-12">
+                                    <hr>
+                                    <strong>@lang('sale.total_payable'):</strong>
+                                    <br />
+                                    <span class="lead text-bold total_payable_span payment_od_grand">0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-8 payment-modal-col-center">
                         <div class="row">
                             <div id="payment_rows_div">
                                 @php
                                     $pos_settings = !empty(session()->get('business.pos_settings')) ? json_decode(session()->get('business.pos_settings'), true) : [];
                                     $show_in_pos = '';
 
-
                                     if (isset($pos_settings['enable_cash_denomination_on']) && ($pos_settings['enable_cash_denomination_on'] == 'all_screens' || $pos_settings['enable_cash_denomination_on'] == 'pos_screen')) {
                                         $show_in_pos = true;
                                     }
-                                    
                                 @endphp
                                 @foreach ($payment_lines as $payment_line)
                                     @if ($payment_line['is_return'] == 1)
@@ -50,7 +111,7 @@
                         </div>
                         <div class="row">
                             <div class="col-md-12">
-                                <button type="button" class="tw-dw-btn tw-dw-btn-primary tw-text-white tw-dw-btn-sm tw-w-full"
+                                <button type="button" class="tw-dw-btn tw-dw-btn-primary tw-text-white tw-dw-btn-xs"
                                     id="add-payment-row">@lang('sale.add_payment_row')</button>
                             </div>
                         </div>
@@ -134,19 +195,12 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-3">
-                        <div class="box box-solid bg-orange">
+
+                    {{-- Right: Payment summary card --}}
+                    <div class="col-md-2 payment-modal-col-side">
+                        <div class="box box-solid bg-orange payment-summary-details">
                             <div class="box-body">
                                 <div class="col-md-12">
-                                    <strong>
-                                        @lang('lang_v1.total_items'):
-                                    </strong>
-                                    <br />
-                                    <span class="lead text-bold total_quantity">0</span>
-                                </div>
-
-                                <div class="col-md-12">
-                                    <hr>
                                     <strong>
                                         @lang('sale.total_payable'):
                                     </strong>
@@ -164,11 +218,9 @@
                                     <input type="hidden" id="total_paying_input">
                                 </div>
 
-                                <div class="col-md-12">
+                                <div class="col-md-12 payment-change-return-wrap">
                                     <hr>
-                                    <strong>
-                                        @lang('lang_v1.change_return'):
-                                    </strong>
+                                    <strong>Return:</strong>
                                     <br />
                                     <span class="lead text-bold change_return_span">0</span>
                                     {!! Form::hidden('change_return', $change_return['amount'], [
@@ -176,7 +228,6 @@
                                         'required',
                                         'id' => 'change_return',
                                     ]) !!}
-                                    <!-- <span class="lead text-bold total_quantity">0</span> -->
                                     @if (!empty($change_return['id']))
                                         <input type="hidden" name="change_return_id"
                                             value="{{ $change_return['id'] }}">
@@ -189,7 +240,7 @@
                                         @lang('lang_v1.customer_previous_due'):
                                     </strong>
                                     <br />
-                                    <span class="lead text-bold payment_customer_prev_due text-danger">0</span>
+                                    <span class="lead text-bold payment_customer_prev_due">0</span>
                                     <input type="hidden" id="payment_customer_prev_due" value="0">
                                 </div>
 
@@ -203,16 +254,33 @@
                                     <input type="hidden" id="in_balance_due" value="0">
                                     <p class="help-block tw-text-xs tw-mb-0" style="opacity:.7">@lang('lang_v1.payment_balance_due_help')</p>
                                 </div>
-
-
-
                             </div>
-                            <!-- /.box-body -->
                         </div>
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
+                @php
+                    $pos_settings_footer = !empty(session()->get('business.pos_settings'))
+                        ? json_decode(session()->get('business.pos_settings'), true)
+                        : [];
+                    $show_modal_credit_sale = empty($pos_settings_footer['disable_credit_sale_button'])
+                        && (
+                            !Gate::check('disable_credit_sale')
+                            || auth()->user()->can('superadmin')
+                            || auth()->user()->can('admin')
+                        );
+                @endphp
+                @if ($show_modal_credit_sale)
+                    <button type="button"
+                        class="tw-dw-btn tw-text-white pos-express-finalize payment-modal-credit-sale"
+                        data-pay_method="credit_sale"
+                        title="@lang('lang_v1.tooltip_credit_sale')"
+                        id="modal-payment-credit-sale">
+                        <i class="fas fa-check" aria-hidden="true"></i>
+                        @lang('lang_v1.credit_sale')
+                    </button>
+                @endif
                 <button type="button" class="tw-dw-btn tw-dw-btn-neutral tw-text-white" data-dismiss="modal">@lang('messages.close')</button>
                 <button type="submit" class="tw-dw-btn tw-dw-btn-primary tw-text-white" id="pos-save">@lang('sale.finalize_payment')</button>
             </div>

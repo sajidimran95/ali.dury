@@ -479,6 +479,11 @@
 	.usl-pay td:last-child {
 		padding-right: 0;
 	}
+	.usl-pay tr.usl-pay-return td,
+	.usl-pay td.usl-pay-return-amt {
+		color: #c62828;
+		font-weight: 600;
+	}
 	/* Totals — same thin bottom line on every row (no fat rule after Tax) */
 	.usl-tots {
 		width: 100%;
@@ -1118,9 +1123,12 @@
 		<div class="usl-pay-block">
 			<table class="usl-pay">
 				@foreach($receipt_details->payments as $payment)
-					<tr>
-						<td>{{ $payment['method'] }}</td>
-						<td>{{ $payment['amount'] }}</td>
+					@php
+						$isPayReturn = !empty($payment['is_return']) || (isset($payment['method']) && strcasecmp(trim((string) $payment['method']), 'Return') === 0);
+					@endphp
+					<tr class="@if($isPayReturn) usl-pay-return @endif">
+						<td>{{ $isPayReturn ? 'Return' : $payment['method'] }}</td>
+						<td class="@if($isPayReturn) usl-pay-return-amt @endif">{{ $payment['amount'] }}</td>
 						<td>{{ $payment['date'] }}</td>
 					</tr>
 				@endforeach
