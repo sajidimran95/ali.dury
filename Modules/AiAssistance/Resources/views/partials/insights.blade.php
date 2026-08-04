@@ -12,8 +12,15 @@
             <i class="fa fa-line-chart"></i>
         </div>
         <div class="ai-card__value">
-            {{ $symbol }}{{ number_format($sales['total'], 0) }}
-            @lang('aiassistance::lang.across_orders', ['count' => $sales['order_count']])
+            {{ $symbol }}{{ number_format($sales['today']['total'] ?? $sales['total'], 2) }}
+            <small style="display:block;font-size:12px;font-weight:500;opacity:.75;margin-top:4px;">
+                @lang('aiassistance::lang.today_sales')
+                · @lang('aiassistance::lang.across_orders', ['count' => $sales['today']['order_count'] ?? $sales['order_count']])
+            </small>
+            <small style="display:block;font-size:12px;font-weight:500;opacity:.65;margin-top:2px;">
+                @lang('aiassistance::lang.last_30_days'): {{ $symbol }}{{ number_format($sales['total'], 2) }}
+                (@lang('aiassistance::lang.across_orders', ['count' => $sales['order_count']]))
+            </small>
         </div>
         <ul>
             <li>@lang('aiassistance::lang.avg_order_value') {{ $symbol }}{{ number_format($sales['aov'], 0) }}</li>

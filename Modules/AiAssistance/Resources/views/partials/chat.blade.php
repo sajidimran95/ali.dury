@@ -8,7 +8,7 @@
 <div class="ai-chat">
     <div class="ai-chat__msgs" id="ai-chat-messages">
         <div class="ai-msg bot">
-            <div class="ai-avatar"><i class="fa fa-android"></i></div>
+            <div class="ai-avatar" title="JapsAI">@include('aiassistance::partials.japsai_icon', ['size' => 15])</div>
             <div class="ai-bubble">@lang('aiassistance::lang.chat_greeting')</div>
         </div>
 
@@ -23,14 +23,15 @@
                     <div class="ai-tool"><i class="fa fa-check"></i> {{ $msg['tool'] }}</div>
                 @endif
                 <div class="ai-msg bot">
-                    <div class="ai-avatar"><i class="fa fa-android"></i></div>
-                    <div class="ai-bubble">{{ $msg['content'] }}</div>
+                    <div class="ai-avatar" title="JapsAI">@include('aiassistance::partials.japsai_icon', ['size' => 15])</div>
+                    <div class="ai-bubble">{!! nl2br(e($msg['content'])) !!}</div>
                 </div>
             @endif
         @endforeach
     </div>
 
     <div class="ai-chips" id="ai-chips">
+        <button type="button" class="ai-chip" data-q="@lang('aiassistance::lang.chip_today_sales')">@lang('aiassistance::lang.chip_today_sales')</button>
         <button type="button" class="ai-chip" data-q="@lang('aiassistance::lang.chip_low_stock')">@lang('aiassistance::lang.chip_low_stock')</button>
         <button type="button" class="ai-chip" data-q="@lang('aiassistance::lang.chip_unpaid')">@lang('aiassistance::lang.chip_unpaid')</button>
         <button type="button" class="ai-chip" data-q="@lang('aiassistance::lang.chip_sales_week')">@lang('aiassistance::lang.chip_sales_week')</button>

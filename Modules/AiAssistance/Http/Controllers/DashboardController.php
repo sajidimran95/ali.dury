@@ -55,7 +55,8 @@ class DashboardController extends Controller
         }
 
         $insights = $this->insights->forBusiness($business_id);
-        $tab = request()->get('tab', 'insights');
+        // Default modal open to chat so users can type immediately
+        $tab = request()->get('tab', 'chat');
         $chat_history = session('ai_chat_history_'.$business_id, []);
         $has_api_key = ! empty($settings->resolveApiKey());
         $is_modal = true;

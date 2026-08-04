@@ -6,7 +6,7 @@
 <div class="ai-shell">
     <div class="ai-panel">
         <div class="ai-panel__head">
-            <div class="ai-panel__icon"><i class="fa fa-magic"></i></div>
+            <div class="ai-panel__icon" title="JapsAI">@include('aiassistance::partials.japsai_icon', ['size' => 20])</div>
             <div style="min-width:0;">
                 <h2 class="ai-panel__title">@lang('aiassistance::lang.ai_assistant')</h2>
                 <p class="ai-panel__sub">@lang('aiassistance::lang.subtitle')</p>

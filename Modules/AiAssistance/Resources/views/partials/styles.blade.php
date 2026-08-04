@@ -245,7 +245,19 @@
     font-size: 13px;
 }
 .ai-msg.user .ai-avatar { background: #2563eb; color: #fff; }
-.ai-msg.bot .ai-avatar { background: #eef2ff; color: var(--ai-purple); }
+.ai-msg.bot .ai-avatar {
+    background: linear-gradient(145deg, #7c3aed 0%, #5b21b6 100%);
+    color: #fff;
+    box-shadow: 0 2px 6px rgba(124, 58, 237, 0.35);
+}
+.ai-msg.bot .ai-avatar .japsai-icon {
+    display: block;
+    width: 15px;
+    height: 15px;
+}
+.ai-panel__icon .japsai-icon {
+    display: block;
+}
 .ai-bubble {
     max-width: 85%;
     padding: 10px 12px;
@@ -319,8 +331,35 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
 }
-.ai-send:disabled { opacity: .5; }
+.ai-send:disabled,
+.ai-send.is-busy,
+.ai-chip:disabled {
+    opacity: .55;
+    cursor: wait;
+    pointer-events: none;
+}
+.ai-chat__footer input:disabled {
+    opacity: .75;
+    cursor: wait;
+}
+/* While modal open, ensure chat input is never covered by leftover loaders */
+body.ai-modal-open .pace,
+body.ai-modal-open .pace-active {
+    pointer-events: none !important;
+}
+body.ai-modal-open #ai-modal,
+body.ai-modal-open #ai-modal .ai-chat__footer,
+body.ai-modal-open #ai-chat-input,
+body.ai-modal-open .ai-send {
+    pointer-events: auto !important;
+}
+.ai-modal,
+.ai-modal.open {
+    pointer-events: auto;
+}
 
 /* Modal overlay from FAB */
 .ai-modal-backdrop {

@@ -19,10 +19,7 @@
 @if($show_ai_fab && empty($pos_layout))
     <button type="button" class="ai-ask-fab" id="ai-ask-fab-btn" title="@lang('aiassistance::lang.boost_with_ai')">
         <span class="ai-ask-fab__icon" aria-hidden="true">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 3l1.4 4.2L18 8.6l-4.2 1.4L12 14.2l-1.4-4.2L6.4 8.6l4.2-1.4L12 3z" fill="currentColor"/>
-                <path d="M18.5 14.5l.7 2.1 2.1.7-2.1.7-.7 2.1-.7-2.1-2.1-.7 2.1-.7.7-2.1z" fill="currentColor" opacity=".85"/>
-            </svg>
+            @include('aiassistance::partials.japsai_icon', ['size' => 18])
         </span>
         <span class="ai-ask-fab__text">
             <span class="ai-ask-fab__title">@lang('aiassistance::lang.boost_with_ai')</span>
@@ -57,42 +54,92 @@
         }
         setTimeout(mountAiUi, 0);
 
+        var panelXhr = null;
+
         function openAiModal(tab) {
             var $modal = $('#ai-modal');
             var $backdrop = $('#ai-modal-backdrop');
             var $content = $('#ai-modal-content');
-            $content.html('<div style="padding:40px;text-align:center;color:#6b7280;">Loading…</div>');
-            $modal.addClass('open');
-            $backdrop.addClass('open');
-            $.get('{{ route('ai.panel') }}', { tab: tab || 'insights' }, function (html) {
-                $content.html(html);
-                bindAiModalTabs();
-                if (window.initAiChat) window.initAiChat();
-            }).fail(function () {
-                $content.html('<div style="padding:24px;" class="text-danger">Unable to load AI Assistant.</div>');
-            });
+
+            // Drop any stale overlay state
+            $modal.addClass('open').css({ display: 'block', 'pointer-events': 'auto' });
+            $backdrop.addClass('open').css({ display: 'block' });
+            $('body').addClass('ai-modal-open');
+
+            $content.html(
+                '<div style="padding:40px;text-align:center;color:#6b7280;">' +
+                    '<div class="japsai-icon" style="margin:0 auto 10px;width:28px;height:28px;color:#7c3aed;">…</div>' +
+                    'Loading JapsAI…</div>'
+            );
+
+            if (panelXhr && typeof panelXhr.abort === 'function') {
+                try { panelXhr.abort(); } catch (e) {}
+            }
+
+            panelXhr = $.get('{{ route('ai.panel') }}', { tab: tab || 'chat' })
+                .done(function (html) {
+                    $content.html(html);
+                    bindAiModalTabs();
+                    if (window.initAiChat) {
+                        window.initAiChat();
+                    }
+                })
+                .fail(function (xhr, status) {
+                    if (status === 'abort') return;
+                    $content.html(
+                        '<div style="padding:24px;text-align:center;">' +
+                            '<p class="text-danger" style="margin-bottom:12px;">Unable to load JapsAI. Please try again.</p>' +
+                            '<button type="button" class="btn btn-primary btn-sm" id="ai-retry-load">Retry</button> ' +
+                            '<button type="button" class="btn btn-default btn-sm" id="ai-fail-close">Close</button>' +
+                        '</div>'
+                    );
+                    $('#ai-retry-load').on('click', function () { openAiModal(tab || 'chat'); });
+                    $('#ai-fail-close').on('click', closeAiModal);
+                })
+                .always(function () {
+                    panelXhr = null;
+                });
         }
         function closeAiModal() {
-            $('#ai-modal').removeClass('open');
-            $('#ai-modal-backdrop').removeClass('open');
+            if (panelXhr && typeof panelXhr.abort === 'function') {
+                try { panelXhr.abort(); } catch (e) {}
+                panelXhr = null;
+            }
+            $('#ai-modal').removeClass('open').css('display', '');
+            $('#ai-modal-backdrop').removeClass('open').css('display', '');
+            $('body').removeClass('ai-modal-open');
+            // Clear any leftover full-screen blockers that left the UI “dead”
+            $('.ai-modal-backdrop').removeClass('open');
         }
         function bindAiModalTabs() {
-            $('#ai-modal .ai-tab-link').off('click').on('click', function (e) {
+            $('#ai-modal .ai-tab-link').off('click.aiTab').on('click.aiTab', function (e) {
                 e.preventDefault();
                 var tab = $(this).data('tab');
                 $('#ai-modal .ai-tab-link').removeClass('active');
                 $(this).addClass('active');
                 $('#ai-modal .ai-tab-pane').hide();
                 $('#ai-modal #ai-pane-' + tab).show();
-                if (tab === 'chat' && window.initAiChat) window.initAiChat();
+                if (tab === 'chat' && window.initAiChat) {
+                    window.initAiChat();
+                }
             });
-            $('#ai-modal-close').off('click').on('click', closeAiModal);
+            $('#ai-modal-close').off('click.aiClose').on('click.aiClose', closeAiModal);
         }
-        $(document).on('click', '#ai-ask-fab-btn', function () { openAiModal('insights'); });
-        $(document).on('click', '#ai-modal-backdrop', closeAiModal);
-        $(document).on('keydown', function (e) {
-            if (e.key === 'Escape') closeAiModal();
-        });
+        // Re-bind once with namespaced handlers so duplicate includes are safe
+        $(document)
+            .off('click.aiFab', '#ai-ask-fab-btn')
+            .on('click.aiFab', '#ai-ask-fab-btn', function (e) {
+                e.preventDefault();
+                openAiModal('chat');
+            })
+            .off('click.aiBackdrop', '#ai-modal-backdrop')
+            .on('click.aiBackdrop', '#ai-modal-backdrop', closeAiModal)
+            .off('keydown.aiEsc')
+            .on('keydown.aiEsc', function (e) {
+                if (e.key === 'Escape' && $('#ai-modal').hasClass('open')) {
+                    closeAiModal();
+                }
+            });
     })();
     </script>
     @include('aiassistance::partials.chat_js')
