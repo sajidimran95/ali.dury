@@ -6112,6 +6112,41 @@ body.lockscreen.pos-sale-theme #pos_pwa_install_btn:not(.tw-hidden) {
   cursor: not-allowed;
   transform: none !important;
 }
+/* Unselected cards dimmed so the active one is obvious */
+.pos-pay-method-cards .pos-pay-method-card:not(.is-active) {
+  opacity: 0.72 !important;
+  filter: saturate(0.85);
+}
+.pos-pay-method-cards .pos-pay-method-card.is-active {
+  opacity: 1 !important;
+  filter: none !important;
+  position: relative;
+  z-index: 2;
+  transform: scale(1.04) !important;
+  border-width: 2.5px !important;
+  box-shadow:
+    0 0 0 3px rgba(255, 255, 255, 0.95),
+    0 4px 14px rgba(0, 0, 0, 0.35) !important;
+}
+/* Check badge on selected method */
+.pos-pay-method-cards .pos-pay-method-card.is-active::after {
+  content: "\f00c";
+  font-family: "Font Awesome 5 Free";
+  font-weight: 900;
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  color: #16a34a;
+  font-size: 10px;
+  line-height: 18px;
+  text-align: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  z-index: 3;
+}
 .pos-pay-method-card__icon {
   width: 36px;
   height: 36px;
@@ -6147,114 +6182,113 @@ body.lockscreen.pos-sale-theme #pos_pwa_install_btn:not(.tw-hidden) {
   opacity: 0.45;
 }
 
-/* --- Per-method colors (idle) --- */
+/* --- Per-method colors (idle) — light pastel for visibility on dark modal --- */
 .pos-pay-method-card[data-method="cash"] {
-  background: linear-gradient(160deg, #1b3d2a 0%, #152820 100%) !important;
-  border-color: #2e7d4f !important;
-  color: #b8f0cf !important;
+  background: linear-gradient(160deg, #d1fae5 0%, #a7f3d0 100%) !important;
+  border-color: #34d399 !important;
+  color: #065f46 !important;
 }
 .pos-pay-method-card[data-method="cash"] .pos-pay-method-card__icon {
-  background: rgba(46, 180, 96, 0.22);
-  color: #4ade80 !important;
+  background: rgba(5, 150, 105, 0.18);
+  color: #047857 !important;
 }
 .pos-pay-method-card[data-method="cash"] .pos-pay-method-card__icon i,
 .pos-pay-method-card[data-method="cash"] .pos-pay-method-card__label {
-  color: #86efac !important;
+  color: #065f46 !important;
 }
 
 .pos-pay-method-card[data-method="card"] {
-  background: linear-gradient(160deg, #3d1f2e 0%, #2a1520 100%) !important;
-  border-color: #b8326a !important;
-  color: #fbcfe8 !important;
+  background: linear-gradient(160deg, #fce7f3 0%, #fbcfe8 100%) !important;
+  border-color: #f472b6 !important;
+  color: #9d174d !important;
 }
 .pos-pay-method-card[data-method="card"] .pos-pay-method-card__icon {
-  background: rgba(214, 27, 96, 0.22);
-  color: #f472b6 !important;
+  background: rgba(190, 24, 93, 0.15);
+  color: #be185d !important;
 }
 .pos-pay-method-card[data-method="card"] .pos-pay-method-card__icon i,
 .pos-pay-method-card[data-method="card"] .pos-pay-method-card__label {
-  color: #f9a8d4 !important;
+  color: #9d174d !important;
 }
 
 .pos-pay-method-card[data-method="cheque"] {
-  background: linear-gradient(160deg, #3d3218 0%, #2a2210 100%) !important;
-  border-color: #b8860b !important;
-  color: #fde68a !important;
+  background: linear-gradient(160deg, #fef9c3 0%, #fde68a 100%) !important;
+  border-color: #fbbf24 !important;
+  color: #854d0e !important;
 }
 .pos-pay-method-card[data-method="cheque"] .pos-pay-method-card__icon {
-  background: rgba(234, 179, 8, 0.2);
-  color: #fbbf24 !important;
+  background: rgba(202, 138, 4, 0.18);
+  color: #a16207 !important;
 }
 .pos-pay-method-card[data-method="cheque"] .pos-pay-method-card__icon i,
 .pos-pay-method-card[data-method="cheque"] .pos-pay-method-card__label {
-  color: #fcd34d !important;
+  color: #854d0e !important;
 }
 
 .pos-pay-method-card[data-method="bank_transfer"] {
-  background: linear-gradient(160deg, #1a2f4a 0%, #121f33 100%) !important;
-  border-color: #3b82f6 !important;
-  color: #bfdbfe !important;
+  background: linear-gradient(160deg, #dbeafe 0%, #bfdbfe 100%) !important;
+  border-color: #60a5fa !important;
+  color: #1e40af !important;
 }
 .pos-pay-method-card[data-method="bank_transfer"] .pos-pay-method-card__icon {
-  background: rgba(59, 130, 246, 0.22);
-  color: #60a5fa !important;
+  background: rgba(37, 99, 235, 0.15);
+  color: #1d4ed8 !important;
 }
 .pos-pay-method-card[data-method="bank_transfer"] .pos-pay-method-card__icon i,
 .pos-pay-method-card[data-method="bank_transfer"] .pos-pay-method-card__label {
-  color: #93c5fd !important;
+  color: #1e40af !important;
 }
 
 .pos-pay-method-card[data-method="other"] {
-  background: linear-gradient(160deg, #2a3340 0%, #1c222b 100%) !important;
-  border-color: #64748b !important;
-  color: #cbd5e1 !important;
+  background: linear-gradient(160deg, #f1f5f9 0%, #e2e8f0 100%) !important;
+  border-color: #94a3b8 !important;
+  color: #334155 !important;
 }
 .pos-pay-method-card[data-method="other"] .pos-pay-method-card__icon {
-  background: rgba(100, 116, 139, 0.28);
-  color: #94a3b8 !important;
+  background: rgba(71, 85, 105, 0.14);
+  color: #475569 !important;
 }
 .pos-pay-method-card[data-method="other"] .pos-pay-method-card__icon i,
 .pos-pay-method-card[data-method="other"] .pos-pay-method-card__label {
-  color: #e2e8f0 !important;
+  color: #334155 !important;
 }
 
 .pos-pay-method-card[data-method="advance"] {
-  background: linear-gradient(160deg, #2a2548 0%, #1c1833 100%) !important;
-  border-color: #7c6fd1 !important;
-  color: #ddd6fe !important;
+  background: linear-gradient(160deg, #ede9fe 0%, #ddd6fe 100%) !important;
+  border-color: #a78bfa !important;
+  color: #5b21b6 !important;
 }
 .pos-pay-method-card[data-method="advance"] .pos-pay-method-card__icon {
-  background: rgba(124, 111, 209, 0.28);
-  color: #a78bfa !important;
+  background: rgba(109, 40, 217, 0.14);
+  color: #6d28d9 !important;
 }
 .pos-pay-method-card[data-method="advance"] .pos-pay-method-card__icon i,
 .pos-pay-method-card[data-method="advance"] .pos-pay-method-card__label {
-  color: #c4b5fd !important;
+  color: #5b21b6 !important;
 }
 
 .pos-pay-method-card[data-method^="custom_pay_"] {
-  background: linear-gradient(160deg, #1e3a3a 0%, #152828 100%) !important;
-  border-color: #14b8a6 !important;
-  color: #99f6e4 !important;
+  background: linear-gradient(160deg, #ccfbf1 0%, #99f6e4 100%) !important;
+  border-color: #2dd4bf !important;
+  color: #115e59 !important;
 }
 .pos-pay-method-card[data-method^="custom_pay_"] .pos-pay-method-card__icon {
-  background: rgba(20, 184, 166, 0.22);
-  color: #2dd4bf !important;
+  background: rgba(13, 148, 136, 0.16);
+  color: #0f766e !important;
 }
 .pos-pay-method-card[data-method^="custom_pay_"] .pos-pay-method-card__icon i,
 .pos-pay-method-card[data-method^="custom_pay_"] .pos-pay-method-card__label {
-  color: #5eead4 !important;
+  color: #115e59 !important;
 }
 
-/* --- Active (selected) stronger fill --- */
+/* --- Active (selected) solid fill + white text --- */
 .pos-pay-method-card[data-method="cash"].is-active {
-  background: linear-gradient(160deg, #166534 0%, #14532d 100%) !important;
-  border-color: #4ade80 !important;
-  box-shadow: 0 0 0 2px rgba(74, 222, 128, 0.35) !important;
+  background: linear-gradient(160deg, #22c55e 0%, #16a34a 100%) !important;
+  border-color: #bbf7d0 !important;
   color: #fff !important;
 }
 .pos-pay-method-card[data-method="cash"].is-active .pos-pay-method-card__icon {
-  background: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.25);
 }
 .pos-pay-method-card[data-method="cash"].is-active .pos-pay-method-card__icon i,
 .pos-pay-method-card[data-method="cash"].is-active .pos-pay-method-card__label {
@@ -6262,13 +6296,12 @@ body.lockscreen.pos-sale-theme #pos_pwa_install_btn:not(.tw-hidden) {
 }
 
 .pos-pay-method-card[data-method="card"].is-active {
-  background: linear-gradient(160deg, #be185d 0%, #9d174d 100%) !important;
-  border-color: #f472b6 !important;
-  box-shadow: 0 0 0 2px rgba(244, 114, 182, 0.4) !important;
+  background: linear-gradient(160deg, #ec4899 0%, #db2777 100%) !important;
+  border-color: #fbcfe8 !important;
   color: #fff !important;
 }
 .pos-pay-method-card[data-method="card"].is-active .pos-pay-method-card__icon {
-  background: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.25);
 }
 .pos-pay-method-card[data-method="card"].is-active .pos-pay-method-card__icon i,
 .pos-pay-method-card[data-method="card"].is-active .pos-pay-method-card__label {
@@ -6276,13 +6309,12 @@ body.lockscreen.pos-sale-theme #pos_pwa_install_btn:not(.tw-hidden) {
 }
 
 .pos-pay-method-card[data-method="cheque"].is-active {
-  background: linear-gradient(160deg, #a16207 0%, #854d0e 100%) !important;
-  border-color: #fbbf24 !important;
-  box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.4) !important;
+  background: linear-gradient(160deg, #eab308 0%, #ca8a04 100%) !important;
+  border-color: #fef08a !important;
   color: #fff !important;
 }
 .pos-pay-method-card[data-method="cheque"].is-active .pos-pay-method-card__icon {
-  background: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.25);
 }
 .pos-pay-method-card[data-method="cheque"].is-active .pos-pay-method-card__icon i,
 .pos-pay-method-card[data-method="cheque"].is-active .pos-pay-method-card__label {
@@ -6290,13 +6322,12 @@ body.lockscreen.pos-sale-theme #pos_pwa_install_btn:not(.tw-hidden) {
 }
 
 .pos-pay-method-card[data-method="bank_transfer"].is-active {
-  background: linear-gradient(160deg, #1d4ed8 0%, #1e40af 100%) !important;
-  border-color: #60a5fa !important;
-  box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.4) !important;
+  background: linear-gradient(160deg, #3b82f6 0%, #2563eb 100%) !important;
+  border-color: #bfdbfe !important;
   color: #fff !important;
 }
 .pos-pay-method-card[data-method="bank_transfer"].is-active .pos-pay-method-card__icon {
-  background: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.25);
 }
 .pos-pay-method-card[data-method="bank_transfer"].is-active .pos-pay-method-card__icon i,
 .pos-pay-method-card[data-method="bank_transfer"].is-active .pos-pay-method-card__label {
@@ -6304,13 +6335,12 @@ body.lockscreen.pos-sale-theme #pos_pwa_install_btn:not(.tw-hidden) {
 }
 
 .pos-pay-method-card[data-method="other"].is-active {
-  background: linear-gradient(160deg, #475569 0%, #334155 100%) !important;
-  border-color: #94a3b8 !important;
-  box-shadow: 0 0 0 2px rgba(148, 163, 184, 0.4) !important;
+  background: linear-gradient(160deg, #64748b 0%, #475569 100%) !important;
+  border-color: #e2e8f0 !important;
   color: #fff !important;
 }
 .pos-pay-method-card[data-method="other"].is-active .pos-pay-method-card__icon {
-  background: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.25);
 }
 .pos-pay-method-card[data-method="other"].is-active .pos-pay-method-card__icon i,
 .pos-pay-method-card[data-method="other"].is-active .pos-pay-method-card__label {
@@ -6318,13 +6348,12 @@ body.lockscreen.pos-sale-theme #pos_pwa_install_btn:not(.tw-hidden) {
 }
 
 .pos-pay-method-card[data-method="advance"].is-active {
-  background: linear-gradient(160deg, #6d5bb8 0%, #5b4aa1 100%) !important;
-  border-color: #c4b5fd !important;
-  box-shadow: 0 0 0 2px rgba(167, 139, 250, 0.45) !important;
+  background: linear-gradient(160deg, #8b5cf6 0%, #7c3aed 100%) !important;
+  border-color: #ddd6fe !important;
   color: #fff !important;
 }
 .pos-pay-method-card[data-method="advance"].is-active .pos-pay-method-card__icon {
-  background: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.25);
 }
 .pos-pay-method-card[data-method="advance"].is-active .pos-pay-method-card__icon i,
 .pos-pay-method-card[data-method="advance"].is-active .pos-pay-method-card__label {
@@ -6332,13 +6361,12 @@ body.lockscreen.pos-sale-theme #pos_pwa_install_btn:not(.tw-hidden) {
 }
 
 .pos-pay-method-card[data-method^="custom_pay_"].is-active {
-  background: linear-gradient(160deg, #0f766e 0%, #115e59 100%) !important;
-  border-color: #2dd4bf !important;
-  box-shadow: 0 0 0 2px rgba(45, 212, 191, 0.4) !important;
+  background: linear-gradient(160deg, #14b8a6 0%, #0d9488 100%) !important;
+  border-color: #99f6e4 !important;
   color: #fff !important;
 }
 .pos-pay-method-card[data-method^="custom_pay_"].is-active .pos-pay-method-card__icon {
-  background: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.25);
 }
 .pos-pay-method-card[data-method^="custom_pay_"].is-active .pos-pay-method-card__icon i,
 .pos-pay-method-card[data-method^="custom_pay_"].is-active .pos-pay-method-card__label {
@@ -6381,15 +6409,15 @@ body.lockscreen.pos-sale-theme #modal_payment .pos-pay-method-card__label {
   }
 }
 
-/* Beat generic #modal_payment .modal-body span { color: #fff } white rule */
+/* Beat generic #modal_payment .modal-body span { color: #fff } white rule — light pastel + dark text */
 body.lockscreen.pos-sale-theme #modal_payment .modal-body .pos-pay-method-card[data-method="cash"],
 body.lockscreen.pos-sale-theme #modal_payment .modal-body .pos-pay-method-card[data-method="cash"] span,
 body.lockscreen.pos-sale-theme #modal_payment .modal-body .pos-pay-method-card[data-method="cash"] i {
-  color: #86efac !important;
+  color: #065f46 !important;
 }
 body.lockscreen.pos-sale-theme #modal_payment .modal-body .pos-pay-method-card[data-method="cash"] {
-  background: linear-gradient(160deg, #1b3d2a 0%, #152820 100%) !important;
-  border-color: #2e7d4f !important;
+  background: linear-gradient(160deg, #d1fae5 0%, #a7f3d0 100%) !important;
+  border-color: #34d399 !important;
 }
 body.lockscreen.pos-sale-theme #modal_payment .modal-body .pos-pay-method-card[data-method="cash"].is-active,
 body.lockscreen.pos-sale-theme #modal_payment .modal-body .pos-pay-method-card[data-method="cash"].is-active span,
@@ -6397,19 +6425,21 @@ body.lockscreen.pos-sale-theme #modal_payment .modal-body .pos-pay-method-card[d
   color: #ffffff !important;
 }
 body.lockscreen.pos-sale-theme #modal_payment .modal-body .pos-pay-method-card[data-method="cash"].is-active {
-  background: linear-gradient(160deg, #166534 0%, #14532d 100%) !important;
-  border-color: #4ade80 !important;
-  box-shadow: 0 0 0 2px rgba(74, 222, 128, 0.35) !important;
+  background: linear-gradient(160deg, #22c55e 0%, #16a34a 100%) !important;
+  border-color: #bbf7d0 !important;
+  box-shadow:
+    0 0 0 3px rgba(255, 255, 255, 0.95),
+    0 4px 14px rgba(0, 0, 0, 0.35) !important;
 }
 
 body.lockscreen.pos-sale-theme #modal_payment .modal-body .pos-pay-method-card[data-method="card"],
 body.lockscreen.pos-sale-theme #modal_payment .modal-body .pos-pay-method-card[data-method="card"] span,
 body.lockscreen.pos-sale-theme #modal_payment .modal-body .pos-pay-method-card[data-method="card"] i {
-  color: #f9a8d4 !important;
+  color: #9d174d !important;
 }
 body.lockscreen.pos-sale-theme #modal_payment .modal-body .pos-pay-method-card[data-method="card"] {
-  background: linear-gradient(160deg, #3d1f2e 0%, #2a1520 100%) !important;
-  border-color: #b8326a !important;
+  background: linear-gradient(160deg, #fce7f3 0%, #fbcfe8 100%) !important;
+  border-color: #f472b6 !important;
 }
 body.lockscreen.pos-sale-theme #modal_payment .modal-body .pos-pay-method-card[data-method="card"].is-active,
 body.lockscreen.pos-sale-theme #modal_payment .modal-body .pos-pay-method-card[data-method="card"].is-active span,
@@ -6417,19 +6447,21 @@ body.lockscreen.pos-sale-theme #modal_payment .modal-body .pos-pay-method-card[d
   color: #ffffff !important;
 }
 body.lockscreen.pos-sale-theme #modal_payment .modal-body .pos-pay-method-card[data-method="card"].is-active {
-  background: linear-gradient(160deg, #be185d 0%, #9d174d 100%) !important;
-  border-color: #f472b6 !important;
-  box-shadow: 0 0 0 2px rgba(244, 114, 182, 0.4) !important;
+  background: linear-gradient(160deg, #ec4899 0%, #db2777 100%) !important;
+  border-color: #fbcfe8 !important;
+  box-shadow:
+    0 0 0 3px rgba(255, 255, 255, 0.95),
+    0 4px 14px rgba(0, 0, 0, 0.35) !important;
 }
 
 body.lockscreen.pos-sale-theme #modal_payment .modal-body .pos-pay-method-card[data-method="cheque"],
 body.lockscreen.pos-sale-theme #modal_payment .modal-body .pos-pay-method-card[data-method="cheque"] span,
 body.lockscreen.pos-sale-theme #modal_payment .modal-body .pos-pay-method-card[data-method="cheque"] i {
-  color: #fcd34d !important;
+  color: #854d0e !important;
 }
 body.lockscreen.pos-sale-theme #modal_payment .modal-body .pos-pay-method-card[data-method="cheque"] {
-  background: linear-gradient(160deg, #3d3218 0%, #2a2210 100%) !important;
-  border-color: #b8860b !important;
+  background: linear-gradient(160deg, #fef9c3 0%, #fde68a 100%) !important;
+  border-color: #fbbf24 !important;
 }
 body.lockscreen.pos-sale-theme #modal_payment .modal-body .pos-pay-method-card[data-method="cheque"].is-active,
 body.lockscreen.pos-sale-theme #modal_payment .modal-body .pos-pay-method-card[data-method="cheque"].is-active span,
@@ -6437,19 +6469,21 @@ body.lockscreen.pos-sale-theme #modal_payment .modal-body .pos-pay-method-card[d
   color: #ffffff !important;
 }
 body.lockscreen.pos-sale-theme #modal_payment .modal-body .pos-pay-method-card[data-method="cheque"].is-active {
-  background: linear-gradient(160deg, #a16207 0%, #854d0e 100%) !important;
-  border-color: #fbbf24 !important;
-  box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.4) !important;
+  background: linear-gradient(160deg, #eab308 0%, #ca8a04 100%) !important;
+  border-color: #fef08a !important;
+  box-shadow:
+    0 0 0 3px rgba(255, 255, 255, 0.95),
+    0 4px 14px rgba(0, 0, 0, 0.35) !important;
 }
 
 body.lockscreen.pos-sale-theme #modal_payment .modal-body .pos-pay-method-card[data-method="bank_transfer"],
 body.lockscreen.pos-sale-theme #modal_payment .modal-body .pos-pay-method-card[data-method="bank_transfer"] span,
 body.lockscreen.pos-sale-theme #modal_payment .modal-body .pos-pay-method-card[data-method="bank_transfer"] i {
-  color: #93c5fd !important;
+  color: #1e40af !important;
 }
 body.lockscreen.pos-sale-theme #modal_payment .modal-body .pos-pay-method-card[data-method="bank_transfer"] {
-  background: linear-gradient(160deg, #1a2f4a 0%, #121f33 100%) !important;
-  border-color: #3b82f6 !important;
+  background: linear-gradient(160deg, #dbeafe 0%, #bfdbfe 100%) !important;
+  border-color: #60a5fa !important;
 }
 body.lockscreen.pos-sale-theme #modal_payment .modal-body .pos-pay-method-card[data-method="bank_transfer"].is-active,
 body.lockscreen.pos-sale-theme #modal_payment .modal-body .pos-pay-method-card[data-method="bank_transfer"].is-active span,
@@ -6457,19 +6491,21 @@ body.lockscreen.pos-sale-theme #modal_payment .modal-body .pos-pay-method-card[d
   color: #ffffff !important;
 }
 body.lockscreen.pos-sale-theme #modal_payment .modal-body .pos-pay-method-card[data-method="bank_transfer"].is-active {
-  background: linear-gradient(160deg, #1d4ed8 0%, #1e40af 100%) !important;
-  border-color: #60a5fa !important;
-  box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.4) !important;
+  background: linear-gradient(160deg, #3b82f6 0%, #2563eb 100%) !important;
+  border-color: #bfdbfe !important;
+  box-shadow:
+    0 0 0 3px rgba(255, 255, 255, 0.95),
+    0 4px 14px rgba(0, 0, 0, 0.35) !important;
 }
 
 body.lockscreen.pos-sale-theme #modal_payment .modal-body .pos-pay-method-card[data-method="other"],
 body.lockscreen.pos-sale-theme #modal_payment .modal-body .pos-pay-method-card[data-method="other"] span,
 body.lockscreen.pos-sale-theme #modal_payment .modal-body .pos-pay-method-card[data-method="other"] i {
-  color: #e2e8f0 !important;
+  color: #334155 !important;
 }
 body.lockscreen.pos-sale-theme #modal_payment .modal-body .pos-pay-method-card[data-method="other"] {
-  background: linear-gradient(160deg, #2a3340 0%, #1c222b 100%) !important;
-  border-color: #64748b !important;
+  background: linear-gradient(160deg, #f1f5f9 0%, #e2e8f0 100%) !important;
+  border-color: #94a3b8 !important;
 }
 body.lockscreen.pos-sale-theme #modal_payment .modal-body .pos-pay-method-card[data-method="other"].is-active,
 body.lockscreen.pos-sale-theme #modal_payment .modal-body .pos-pay-method-card[data-method="other"].is-active span,
@@ -6477,19 +6513,21 @@ body.lockscreen.pos-sale-theme #modal_payment .modal-body .pos-pay-method-card[d
   color: #ffffff !important;
 }
 body.lockscreen.pos-sale-theme #modal_payment .modal-body .pos-pay-method-card[data-method="other"].is-active {
-  background: linear-gradient(160deg, #475569 0%, #334155 100%) !important;
-  border-color: #94a3b8 !important;
-  box-shadow: 0 0 0 2px rgba(148, 163, 184, 0.4) !important;
+  background: linear-gradient(160deg, #64748b 0%, #475569 100%) !important;
+  border-color: #e2e8f0 !important;
+  box-shadow:
+    0 0 0 3px rgba(255, 255, 255, 0.95),
+    0 4px 14px rgba(0, 0, 0, 0.35) !important;
 }
 
 body.lockscreen.pos-sale-theme #modal_payment .modal-body .pos-pay-method-card[data-method="advance"],
 body.lockscreen.pos-sale-theme #modal_payment .modal-body .pos-pay-method-card[data-method="advance"] span,
 body.lockscreen.pos-sale-theme #modal_payment .modal-body .pos-pay-method-card[data-method="advance"] i {
-  color: #c4b5fd !important;
+  color: #5b21b6 !important;
 }
 body.lockscreen.pos-sale-theme #modal_payment .modal-body .pos-pay-method-card[data-method="advance"] {
-  background: linear-gradient(160deg, #2a2548 0%, #1c1833 100%) !important;
-  border-color: #7c6fd1 !important;
+  background: linear-gradient(160deg, #ede9fe 0%, #ddd6fe 100%) !important;
+  border-color: #a78bfa !important;
 }
 body.lockscreen.pos-sale-theme #modal_payment .modal-body .pos-pay-method-card[data-method="advance"].is-active,
 body.lockscreen.pos-sale-theme #modal_payment .modal-body .pos-pay-method-card[data-method="advance"].is-active span,
@@ -6497,19 +6535,21 @@ body.lockscreen.pos-sale-theme #modal_payment .modal-body .pos-pay-method-card[d
   color: #ffffff !important;
 }
 body.lockscreen.pos-sale-theme #modal_payment .modal-body .pos-pay-method-card[data-method="advance"].is-active {
-  background: linear-gradient(160deg, #6d5bb8 0%, #5b4aa1 100%) !important;
-  border-color: #c4b5fd !important;
-  box-shadow: 0 0 0 2px rgba(167, 139, 250, 0.45) !important;
+  background: linear-gradient(160deg, #8b5cf6 0%, #7c3aed 100%) !important;
+  border-color: #ddd6fe !important;
+  box-shadow:
+    0 0 0 3px rgba(255, 255, 255, 0.95),
+    0 4px 14px rgba(0, 0, 0, 0.35) !important;
 }
 
 body.lockscreen.pos-sale-theme #modal_payment .modal-body .pos-pay-method-card[data-method^="custom_pay_"],
 body.lockscreen.pos-sale-theme #modal_payment .modal-body .pos-pay-method-card[data-method^="custom_pay_"] span,
 body.lockscreen.pos-sale-theme #modal_payment .modal-body .pos-pay-method-card[data-method^="custom_pay_"] i {
-  color: #5eead4 !important;
+  color: #115e59 !important;
 }
 body.lockscreen.pos-sale-theme #modal_payment .modal-body .pos-pay-method-card[data-method^="custom_pay_"] {
-  background: linear-gradient(160deg, #1e3a3a 0%, #152828 100%) !important;
-  border-color: #14b8a6 !important;
+  background: linear-gradient(160deg, #ccfbf1 0%, #99f6e4 100%) !important;
+  border-color: #2dd4bf !important;
 }
 body.lockscreen.pos-sale-theme #modal_payment .modal-body .pos-pay-method-card[data-method^="custom_pay_"].is-active,
 body.lockscreen.pos-sale-theme #modal_payment .modal-body .pos-pay-method-card[data-method^="custom_pay_"].is-active span,
@@ -6517,9 +6557,11 @@ body.lockscreen.pos-sale-theme #modal_payment .modal-body .pos-pay-method-card[d
   color: #ffffff !important;
 }
 body.lockscreen.pos-sale-theme #modal_payment .modal-body .pos-pay-method-card[data-method^="custom_pay_"].is-active {
-  background: linear-gradient(160deg, #0f766e 0%, #115e59 100%) !important;
-  border-color: #2dd4bf !important;
-  box-shadow: 0 0 0 2px rgba(45, 212, 191, 0.4) !important;
+  background: linear-gradient(160deg, #14b8a6 0%, #0d9488 100%) !important;
+  border-color: #99f6e4 !important;
+  box-shadow:
+    0 0 0 3px rgba(255, 255, 255, 0.95),
+    0 4px 14px rgba(0, 0, 0, 0.35) !important;
 }
 
 /* Compact "Add Payment Row" (not full-width bar) */

@@ -1496,22 +1496,47 @@ $(document).ready(function() {
     });
 
     /**
- * Ensure Pay modal first amount = current total payable.
+ * Mark the correct payment method card from hidden select values.
+ */
+function pos_sync_pay_method_cards($scope) {
+    var $root = $scope && $scope.length ? $scope : $('#modal_payment');
+    $root.find('.payment_row').each(function () {
+        var $row = $(this);
+        // Prefer visible/hidden select inside this payment row only
+        var $select = $row.find('select.payment_types_dropdown').first();
+        if (!$select.length) {
+            $select = $row.find('.payment_types_dropdown').filter('select, input').first();
+        }
+        var method = $select.length ? $select.val() : null;
+        if (!method) {
+            // Fallback: first card marked server-side
+            method = $row.find('.pos-pay-method-card.is-active').data('method') ||
+                $row.find('.pos-pay-method-card').first().data('method');
+        }
+        if (!method) {
+            return;
+        }
+        $row.find('.pos-pay-method-card')
+            .removeClass('is-active')
+            .attr('aria-pressed', 'false');
+        $row.find('.pos-pay-method-card[data-method="' + method + '"]')
+            .addClass('is-active')
+            .attr('aria-pressed', 'true');
+    });
+}
+
+/**
+ * Ensure Pay modal first amount = current total payable (create + edit).
  * Extra payment rows / method switches can leave 0 after close → reopen.
  */
 function pos_sync_payment_modal_amount(cleanExtraRows) {
     cleanExtraRows = cleanExtraRows !== false;
+    var is_edit =
+        $('form#edit_pos_sell_form').length > 0 || $('form#edit_sell_form').length > 0;
 
-    // Edit sale: keep existing payment lines
-    if ($('form#edit_pos_sell_form').length > 0 || $('form#edit_sell_form').length > 0) {
-        if (typeof calculate_balance_due === 'function') {
-            calculate_balance_due();
-        }
-        return;
-    }
-
-    if (cleanExtraRows) {
-        // Remove dynamically added rows (leave the first permanent row)
+    // On create only: drop dynamically added rows so amount can reset cleanly.
+    // On edit, keep payment lines (existing payments) unless all amounts are empty.
+    if (cleanExtraRows && !is_edit) {
         $('#payment_rows_div')
             .find('.remove_payment_row')
             .each(function () {
@@ -1523,13 +1548,12 @@ function pos_sync_payment_modal_amount(cleanExtraRows) {
                 }
             });
         if ($('#payment_row_index').length) {
-            // Next added row index after only the first (index 0) remains
-            var remaining = $('#payment_rows_div').find('.payment_row').length;
-            $('#payment_row_index').val(Math.max(1, remaining));
+            var remaining_rows = $('#payment_rows_div').find('.payment_row').length;
+            $('#payment_row_index').val(Math.max(1, remaining_rows));
         }
     }
 
-    if ($('#is_credit_sale').length) {
+    if ($('#is_credit_sale').length && !is_edit) {
         $('#is_credit_sale').val(0);
     }
 
@@ -1539,12 +1563,49 @@ function pos_sync_payment_modal_amount(cleanExtraRows) {
     }
 
     var $amounts = $('#payment_rows_div').find('input.payment-amount');
-    if ($amounts.length) {
+    if (!$amounts.length) {
+        if (typeof calculate_balance_due === 'function') {
+            calculate_balance_due();
+        }
+        return;
+    }
+
+    var total_paying = 0;
+    $amounts.each(function () {
+        var amt = __read_number($(this));
+        if (!isNaN(amt) && amt > 0) {
+            total_paying += amt;
+        }
+    });
+
+    if (is_edit) {
+        // Same UX as create: if nothing paid in modal, fill first row with full payable.
+        // If partially filled, put remaining on the first zero row.
+        if (total_paying <= 0.009) {
+            var $firstEdit = $amounts.first();
+            $firstEdit.prop('readonly', false).removeAttr('readonly');
+            __write_number($firstEdit, total_payable);
+        } else {
+            var still_due = total_payable - total_paying;
+            if (still_due > 0.009) {
+                $amounts.each(function () {
+                    if (still_due <= 0.009) {
+                        return false;
+                    }
+                    var cur = __read_number($(this));
+                    if (isNaN(cur) || cur <= 0.009) {
+                        $(this).prop('readonly', false).removeAttr('readonly');
+                        __write_number($(this), still_due);
+                        still_due = 0;
+                        return false;
+                    }
+                });
+            }
+        }
+    } else {
         var $first = $amounts.first();
-        // Unlock in case a prior method left it readonly
         $first.prop('readonly', false).removeAttr('readonly');
         __write_number($first, total_payable);
-        // Any leftover extra rows: leave zero so total paying = payable
         $amounts.slice(1).each(function () {
             __write_number($(this), 0);
         });
@@ -1592,6 +1653,10 @@ function pos_sync_payment_modal_amount(cleanExtraRows) {
         // ALWAYS re-apply payable amount last (fixes 0 after method change / close / reopen)
         if (typeof pos_sync_payment_modal_amount === 'function') {
             pos_sync_payment_modal_amount(true);
+        }
+        // Keep selected method card in sync with dropdown (edit + create)
+        if (typeof pos_sync_pay_method_cards === 'function') {
+            pos_sync_pay_method_cards($(this));
         }
         if (typeof pos_update_add_payment_row_btn === 'function') {
             pos_update_add_payment_row_btn();
@@ -4025,11 +4090,19 @@ function calculate_billing_details(price_total) {
 
     $('span.total_payable_span').text(__currency_trans_from_en(total_payable_rounded, true));
 
-    //Check if edit form then don't update price.
-    if ($('form#edit_pos_sell_form').length == 0 && $('form#edit_sell_form').length == 0) {
-        var $firstPay = $('#payment_rows_div').find('.payment-amount').first();
-        if ($firstPay.length) {
+    // Create: always set first payment = total payable.
+    // Edit: only fill when empty/zero so Pay modal matches create UX.
+    var $firstPay = $('#payment_rows_div').find('.payment-amount').first();
+    if ($firstPay.length) {
+        var is_edit_form =
+            $('form#edit_pos_sell_form').length > 0 || $('form#edit_sell_form').length > 0;
+        if (!is_edit_form) {
             __write_number($firstPay, total_payable_rounded);
+        } else {
+            var cur_pay = __read_number($firstPay);
+            if (isNaN(cur_pay) || cur_pay <= 0) {
+                __write_number($firstPay, total_payable_rounded);
+            }
         }
     }
 
@@ -5098,13 +5171,22 @@ $(document).on('click', '.pos-pay-method-card:not(:disabled)', function (e) {
     if (!method) {
         return;
     }
+    // Scope to the method-card grid first (more reliable than .payment_row alone)
+    var $grid = $btn.closest('.pos-pay-method-cards');
     var $row = $btn.closest('.payment_row');
+    if (!$row.length) {
+        $row = $btn.closest('.box-body, .form-group').parent().closest('.col-md-12, .payment_row, .box');
+    }
     var $select = $row.find('select.payment_types_dropdown').first();
     if (!$select.length) {
-        $select = $row.find('.payment_types_dropdown').first();
+        $select = $btn.closest('.form-group').find('select.payment_types_dropdown, .payment_types_dropdown').first();
     }
-    $row.find('.pos-pay-method-card').removeClass('is-active');
-    $btn.addClass('is-active');
+    if ($grid.length) {
+        $grid.find('.pos-pay-method-card').removeClass('is-active').attr('aria-pressed', 'false');
+    } else if ($row.length) {
+        $row.find('.pos-pay-method-card').removeClass('is-active').attr('aria-pressed', 'false');
+    }
+    $btn.addClass('is-active').attr('aria-pressed', 'true');
 
     // Existing credit sale flag (same as express Credit button)
     if (method === 'credit_sale') {
@@ -5130,9 +5212,15 @@ $(document).on('change', '.payment_types_dropdown', function(e) {
     var payment_type = $(this).val();
     var payment_row = $(this).closest('.payment_row');
     // Sync card UI selection (Pay modal card-wise methods)
-    if (payment_row.length) {
-        payment_row.find('.pos-pay-method-card').removeClass('is-active');
-        payment_row.find('.pos-pay-method-card[data-method="' + payment_type + '"]').addClass('is-active');
+    var $cardsRoot = payment_row.length
+        ? payment_row
+        : $(this).closest('.form-group');
+    if ($cardsRoot.length && payment_type) {
+        $cardsRoot.find('.pos-pay-method-card').removeClass('is-active').attr('aria-pressed', 'false');
+        $cardsRoot
+            .find('.pos-pay-method-card[data-method="' + payment_type + '"]')
+            .addClass('is-active')
+            .attr('aria-pressed', 'true');
     }
     if (payment_type && payment_type != 'advance') {
         var default_account = (default_accounts && default_accounts[payment_type] && default_accounts[payment_type]['account'])

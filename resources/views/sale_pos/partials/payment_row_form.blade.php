@@ -66,6 +66,7 @@
 						class="pos-pay-method-card @if($is_active) is-active @endif"
 						data-method="{{ $pm_key }}"
 						title="{{ $pm_text }}"
+						aria-pressed="{{ $is_active ? 'true' : 'false' }}"
 						@if($readonly) disabled @endif>
 						<span class="pos-pay-method-card__icon"><i class="{{ $pm_icon }}" aria-hidden="true"></i></span>
 						<span class="pos-pay-method-card__label">{{ $pm_text }}</span>
