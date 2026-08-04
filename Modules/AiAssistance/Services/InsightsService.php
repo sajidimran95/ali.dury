@@ -16,9 +16,21 @@ class InsightsService
      * "today sale", week / month questions from real numbers.
      * Cached briefly so the panel does not lock the UI on every reopen.
      */
-    public function forBusiness(int $business_id): array
+    public function forBusiness(int $business_id, bool $fresh = false): array
     {
-        return Cache::remember('japsai_insights_'.$business_id, 30, function () use ($business_id) {
+        // Short TTL keeps reopens snappy; numbers stay accurate enough for chat.
+        // Chat replies themselves are NEVER stored as a long cache — only this DB snapshot.
+        $ttl = (int) config('aiassistance.snapshot_cache_seconds', 45);
+        if ($ttl < 0) {
+            $ttl = 0;
+        }
+        if ($fresh || $ttl === 0) {
+            $this->forgetCache($business_id);
+
+            return $this->buildForBusiness($business_id);
+        }
+
+        return Cache::remember('japsai_insights_'.$business_id, $ttl, function () use ($business_id) {
             return $this->buildForBusiness($business_id);
         });
     }
@@ -125,6 +137,16 @@ class InsightsService
             ->where('is_inactive', 0)
             ->count();
 
+        // Full POS report views (sales / purchases / expenses / payments / top SKUs)
+        $reports = $this->buildReportViews(
+            $business_id,
+            $todayStart,
+            $todayEnd,
+            $weekStart,
+            $monthStart,
+            $days30Start
+        );
+
         // Recent today invoices (for detail questions)
         $today_invoices = Transaction::where('business_id', $business_id)
             ->where('type', 'sell')
@@ -219,7 +241,103 @@ class InsightsService
                 'outstanding' => $outstanding,
                 'oldest' => $oldest,
             ],
+            'reports' => $reports,
+            'cache_policy' => [
+                'snapshot_ttl_seconds' => 45,
+                'note' => 'Numbers come from live DB queries, cached briefly for speed. Chat text replies are never long-term cached. Always check as_of timestamp.',
+            ],
             'actions' => $actions,
+        ];
+    }
+
+    /**
+     * Multi-view report pack for JapsAI (same truths as Reports menus).
+     */
+    protected function buildReportViews(
+        int $business_id,
+        Carbon $todayStart,
+        Carbon $todayEnd,
+        Carbon $weekStart,
+        Carbon $monthStart,
+        Carbon $days30Start
+    ): array {
+        $reportSvc = app(PosReportDataService::class);
+        $totals = $reportSvc->transactionTotals(
+            $business_id,
+            $todayStart,
+            $todayEnd,
+            $weekStart,
+            $monthStart,
+            $days30Start
+        );
+
+        $payments_today = $reportSvc->paymentsReceived($business_id, $todayStart, $todayEnd);
+        $payments_30 = $reportSvc->paymentsReceived($business_id, $days30Start, $todayEnd);
+        $top_today = $reportSvc->topProducts($business_id, $todayStart, $todayEnd, 8);
+        $top_30 = $reportSvc->topProducts($business_id, $days30Start, $todayEnd, 10);
+        $balances = $reportSvc->balances($business_id);
+        $stockVal = $reportSvc->stockValue($business_id);
+
+        // Simple P&L-ish view: sales - returns - purchases - expenses (directional, not full cost accounting)
+        $pl30 = $totals['last_30_days'];
+        $netView30 = (float) $pl30['sales']['total']
+            - (float) $pl30['sales_returns']['total']
+            - (float) $pl30['expenses']['total'];
+
+        return [
+            'views' => [
+                'sales' => [
+                    'today' => $totals['today']['sales'],
+                    'this_week' => $totals['this_week']['sales'],
+                    'this_month' => $totals['this_month']['sales'],
+                    'last_30_days' => $totals['last_30_days']['sales'],
+                ],
+                'purchases' => [
+                    'today' => $totals['today']['purchases'],
+                    'this_week' => $totals['this_week']['purchases'],
+                    'this_month' => $totals['this_month']['purchases'],
+                    'last_30_days' => $totals['last_30_days']['purchases'],
+                ],
+                'expenses' => [
+                    'today' => $totals['today']['expenses'],
+                    'this_week' => $totals['this_week']['expenses'],
+                    'this_month' => $totals['this_month']['expenses'],
+                    'last_30_days' => $totals['last_30_days']['expenses'],
+                ],
+                'sales_returns' => [
+                    'today' => $totals['today']['sales_returns'],
+                    'last_30_days' => $totals['last_30_days']['sales_returns'],
+                ],
+                'payments' => [
+                    'today' => $payments_today,
+                    'last_30_days' => $payments_30,
+                ],
+                'top_products' => [
+                    'today' => $top_today,
+                    'last_30_days' => $top_30,
+                ],
+                'receivables_payables' => $balances,
+                'stock' => $stockVal,
+                'profit_view_30d' => [
+                    'sales' => (float) $pl30['sales']['total'],
+                    'sales_returns' => (float) $pl30['sales_returns']['total'],
+                    'expenses' => (float) $pl30['expenses']['total'],
+                    'purchases' => (float) $pl30['purchases']['total'],
+                    'sales_minus_returns_minus_expenses' => $netView30,
+                    'note' => 'Directional KPI view from transaction totals — not full COGS/profit accounting.',
+                ],
+            ],
+            'available_report_questions' => [
+                'today sales report',
+                'purchase report this month',
+                'expense report last 30 days',
+                'payments by method today',
+                'top selling products',
+                'receivables / customer due',
+                'supplier payables',
+                'stock value',
+                'business overview / dashboard report',
+            ],
         ];
     }
 
@@ -270,6 +388,7 @@ class InsightsService
             'assistant_name' => 'JapsAI',
             'as_of' => $data['as_of'],
             'timezone' => $data['timezone'],
+            'cache_policy' => $data['cache_policy'] ?? null,
             'sales' => [
                 'today' => $data['sales']['today'],
                 'yesterday' => $data['sales']['yesterday'],
@@ -287,6 +406,7 @@ class InsightsService
                 'lowest_stock_items' => $data['inventory']['lowest'],
             ],
             'invoices' => $data['invoices'],
+            'reports' => $data['reports'] ?? null,
             'suggested_actions' => collect($data['actions'])->map(fn ($a) => [
                 'priority' => $a['priority'],
                 'title' => $a['title'],

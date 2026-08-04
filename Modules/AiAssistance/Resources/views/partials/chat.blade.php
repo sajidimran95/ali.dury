@@ -32,9 +32,12 @@
 
     <div class="ai-chips" id="ai-chips">
         <button type="button" class="ai-chip" data-q="@lang('aiassistance::lang.chip_today_sales')">@lang('aiassistance::lang.chip_today_sales')</button>
+        <button type="button" class="ai-chip" data-q="@lang('aiassistance::lang.chip_overview')">@lang('aiassistance::lang.chip_overview')</button>
+        <button type="button" class="ai-chip" data-q="@lang('aiassistance::lang.chip_top_products')">@lang('aiassistance::lang.chip_top_products')</button>
+        <button type="button" class="ai-chip" data-q="@lang('aiassistance::lang.chip_purchases')">@lang('aiassistance::lang.chip_purchases')</button>
+        <button type="button" class="ai-chip" data-q="@lang('aiassistance::lang.chip_payments')">@lang('aiassistance::lang.chip_payments')</button>
         <button type="button" class="ai-chip" data-q="@lang('aiassistance::lang.chip_low_stock')">@lang('aiassistance::lang.chip_low_stock')</button>
         <button type="button" class="ai-chip" data-q="@lang('aiassistance::lang.chip_unpaid')">@lang('aiassistance::lang.chip_unpaid')</button>
-        <button type="button" class="ai-chip" data-q="@lang('aiassistance::lang.chip_sales_week')">@lang('aiassistance::lang.chip_sales_week')</button>
         <button type="button" class="ai-chip" data-q="@lang('aiassistance::lang.chip_pipeline')">@lang('aiassistance::lang.chip_pipeline')</button>
     </div>
 
