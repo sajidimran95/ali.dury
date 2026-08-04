@@ -683,7 +683,8 @@ class BusinessController extends Controller
     }
 
     /**
-     * Wipe operational data and restore default POS setup while keeping business #1, location #1, and admin credentials.
+     * Wipe operational data and restore a blank POS while keeping business #1, location #1,
+     * admin credentials, business settings, and current invoice settings / selections.
      */
     public function resetDatabaseToFreshPos(Request $request)
     {

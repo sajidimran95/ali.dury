@@ -40,6 +40,7 @@
                     <ul class="text-muted">
                         <li>@lang('lang_v1.fresh_pos_reset_keeps_location')</li>
                         <li>@lang('lang_v1.fresh_pos_reset_keeps_admin')</li>
+                        <li>@lang('lang_v1.fresh_pos_reset_keeps_settings')</li>
                         <li>@lang('lang_v1.fresh_pos_reset_keeps_msa')</li>
                         <li>@lang('lang_v1.fresh_pos_reset_deletes_data')</li>
                     </ul>

@@ -4,9 +4,12 @@ namespace App\Utils;
 
 use App\Business;
 use App\BusinessLocation;
+use App\Contact;
 use App\InvoiceLayout;
 use App\InvoiceScheme;
+use App\NotificationTemplate;
 use App\Services\Msa\MsaSetupService;
+use App\Unit;
 use App\User;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
@@ -21,7 +24,7 @@ class DatabaseResetUtil
     public const PRESERVED_LOCATION_ID = 1;
 
     /**
-     * Tables that are never truncated (global / structural).
+     * Tables that are never truncated (global / structural / permanent config).
      */
     protected array $skipTables = [
         'migrations',
@@ -32,10 +35,23 @@ class DatabaseResetUtil
         'business',
         'business_locations',
         'users',
+        // Keep current invoice & printer configuration for the business
+        'invoice_schemes',
+        'invoice_layouts',
+        'printers',
     ];
 
     /**
-     * Reset operational data; keep business #1, location #1, and the business owner (admin).
+     * Config tables scoped by business_id: delete only other businesses, keep business #1.
+     */
+    protected array $businessScopedPreserveTables = [
+        'invoice_schemes',
+        'invoice_layouts',
+        'printers',
+    ];
+
+    /**
+     * Reset operational data; keep business #1, location #1, admin, business settings, and invoice settings.
      */
     public function resetToFreshPos(): void
     {
@@ -63,6 +79,9 @@ class DatabaseResetUtil
 
         $adminUserId = (int) $adminUser->id;
 
+        // Snapshot invoice picks on location (so selected layout/scheme stay after reset)
+        $locationInvoiceSettings = $this->snapshotLocationInvoiceSettings($location);
+
         ini_set('max_execution_time', 0);
         ini_set('memory_limit', '512M');
 
@@ -79,14 +98,22 @@ class DatabaseResetUtil
                 }
             }
 
+            // Remove other-business rows from preserved config tables (business #1 stays)
+            $this->purgeOtherBusinessConfigRows(self::PRESERVED_BUSINESS_ID);
+
             $this->purgeOtherBusinessesAndUsers($adminUserId);
             $this->purgeRolesAndPermissionsForBusiness(self::PRESERVED_BUSINESS_ID, $adminUserId);
             $this->ensureLocationPermission(self::PRESERVED_LOCATION_ID);
 
-            $businessUtil = new BusinessUtil();
-            $businessUtil->newBusinessDefaultResources(self::PRESERVED_BUSINESS_ID, $adminUserId);
+            // Roles, Walk-In, unit, notifications — do NOT recreate invoice defaults / overwrite business settings
+            $this->seedFreshPosRequiredResources(self::PRESERVED_BUSINESS_ID, $adminUserId);
 
-            $this->linkDefaultInvoiceSettingsToLocation(self::PRESERVED_BUSINESS_ID, self::PRESERVED_LOCATION_ID);
+            // Re-apply previously selected invoice scheme / layout on location #1
+            $this->restoreLocationInvoiceSettings(
+                self::PRESERVED_BUSINESS_ID,
+                self::PRESERVED_LOCATION_ID,
+                $locationInvoiceSettings
+            );
 
             $moduleUtil = new ModuleUtil();
             if (config('app.env') != 'demo') {
@@ -99,12 +126,234 @@ class DatabaseResetUtil
 
             // Safety: wipe any operational leftovers that setup hooks may have re-seeded.
             $this->ensureOperationalDataCleared();
+
+            // Location may have been touched by hooks — re-assert invoice picks
+            $this->restoreLocationInvoiceSettings(
+                self::PRESERVED_BUSINESS_ID,
+                self::PRESERVED_LOCATION_ID,
+                $locationInvoiceSettings
+            );
         } finally {
             DB::statement('SET FOREIGN_KEY_CHECKS=1');
         }
 
         Artisan::call('cache:clear');
         Artisan::call('view:clear');
+    }
+
+    /**
+     * Capture location's selected invoice scheme / layout IDs.
+     */
+    protected function snapshotLocationInvoiceSettings(BusinessLocation $location): array
+    {
+        $attrs = $location->getAttributes();
+
+        return [
+            'invoice_scheme_id' => $attrs['invoice_scheme_id'] ?? null,
+            'invoice_layout_id' => $attrs['invoice_layout_id'] ?? null,
+            'sale_invoice_layout_id' => $attrs['sale_invoice_layout_id'] ?? null,
+            'sale_invoice_scheme_id' => $attrs['sale_invoice_scheme_id'] ?? null,
+        ];
+    }
+
+    /**
+     * Delete config rows belonging to other businesses; keep rows for preserved business.
+     */
+    protected function purgeOtherBusinessConfigRows(int $businessId): void
+    {
+        foreach ($this->businessScopedPreserveTables as $table) {
+            if (! Schema::hasTable($table) || ! Schema::hasColumn($table, 'business_id')) {
+                continue;
+            }
+            DB::table($table)->where('business_id', '!=', $businessId)->delete();
+        }
+    }
+
+    /**
+     * Minimal resources needed for POS after wipe — without overwriting invoice/business settings.
+     */
+    protected function seedFreshPosRequiredResources(int $businessId, int $userId): void
+    {
+        $user = User::find($userId);
+        if (empty($user)) {
+            throw new \RuntimeException('Admin user not found while seeding fresh POS resources.');
+        }
+
+        // Admin role
+        $adminRoleName = 'Admin#'.$businessId;
+        $role = Role::where('name', $adminRoleName)->where('guard_name', 'web')->first();
+        if (empty($role)) {
+            $role = Role::create([
+                'name' => $adminRoleName,
+                'business_id' => $businessId,
+                'guard_name' => 'web',
+                'is_default' => 1,
+            ]);
+        }
+        if (! $user->hasRole($role->name)) {
+            $user->assignRole($role->name);
+        }
+
+        // Cashier role
+        $cashierRoleName = 'Cashier#'.$businessId;
+        $cashierRole = Role::where('name', $cashierRoleName)->where('guard_name', 'web')->first();
+        if (empty($cashierRole)) {
+            $cashierRole = Role::create([
+                'name' => $cashierRoleName,
+                'business_id' => $businessId,
+                'guard_name' => 'web',
+            ]);
+            $cashierRole->syncPermissions([
+                'sell.view',
+                'sell.create',
+                'sell.update',
+                'sell.delete',
+                'access_all_locations',
+                'view_cash_register',
+                'close_cash_register',
+            ]);
+        }
+
+        // Walk-In Customer
+        $walkIn = Contact::where('business_id', $businessId)
+            ->where('is_default', 1)
+            ->where('type', 'customer')
+            ->first();
+
+        if (empty($walkIn)) {
+            $businessUtil = new BusinessUtil();
+            $ref_count = $businessUtil->setAndGetReferenceCount('contacts', $businessId);
+            $contact_id = $businessUtil->generateReferenceNumber('contacts', $ref_count, $businessId);
+
+            Contact::create([
+                'business_id' => $businessId,
+                'type' => 'customer',
+                'name' => 'Walk-In Customer',
+                'created_by' => $userId,
+                'is_default' => 1,
+                'contact_id' => $contact_id,
+                'credit_limit' => null,
+            ]);
+        }
+
+        // Invoice scheme / layout: keep existing. Only create fallback if none remain.
+        if (! InvoiceScheme::where('business_id', $businessId)->exists()) {
+            InvoiceScheme::create([
+                'name' => 'Default',
+                'scheme_type' => 'blank',
+                'prefix' => '',
+                'start_number' => 1,
+                'total_digits' => 4,
+                'is_default' => 1,
+                'business_id' => $businessId,
+            ]);
+        }
+
+        if (! InvoiceLayout::where('business_id', $businessId)->exists()) {
+            InvoiceLayout::create([
+                'name' => 'Default',
+                'header_text' => null,
+                'invoice_no_prefix' => 'Invoice No.',
+                'invoice_heading' => 'Invoice',
+                'sub_total_label' => 'Subtotal',
+                'discount_label' => 'Discount',
+                'tax_label' => 'Tax',
+                'total_label' => 'Total',
+                'show_landmark' => 1,
+                'show_city' => 1,
+                'show_state' => 1,
+                'show_zip_code' => 1,
+                'show_country' => 1,
+                'highlight_color' => '#000000',
+                'footer_text' => '',
+                'is_default' => 1,
+                'business_id' => $businessId,
+                'invoice_heading_not_paid' => '',
+                'invoice_heading_paid' => '',
+                'total_due_label' => 'Due Amount',
+                'paid_label' => 'Total Paid',
+                'show_payments' => 1,
+                'show_customer' => 1,
+                'customer_label' => 'Customer',
+                'table_product_label' => 'Product',
+                'table_qty_label' => 'Quantity',
+                'table_unit_price_label' => 'Unit Price',
+                'table_subtotal_label' => 'Subtotal',
+                'date_label' => 'Date',
+            ]);
+        }
+
+        // Default unit if none left
+        if (! Unit::where('business_id', $businessId)->exists()) {
+            Unit::create([
+                'business_id' => $businessId,
+                'actual_name' => 'Pieces',
+                'short_name' => 'Pc(s)',
+                'allow_decimal' => 0,
+                'created_by' => $userId,
+            ]);
+        }
+
+        // Notification templates only if table empty for this business
+        if (! NotificationTemplate::where('business_id', $businessId)->exists()) {
+            $notification_templates = NotificationTemplate::defaultNotificationTemplates($businessId);
+            foreach ($notification_templates as $notification_template) {
+                NotificationTemplate::create($notification_template);
+            }
+        }
+    }
+
+    /**
+     * Keep the same invoice scheme/layout that was selected before reset.
+     * Falls back to is_default only if previous IDs no longer exist.
+     */
+    protected function restoreLocationInvoiceSettings(int $businessId, int $locationId, array $previous): void
+    {
+        $schemeId = $previous['invoice_scheme_id'] ?? null;
+        $layoutId = $previous['invoice_layout_id'] ?? null;
+        $saleLayoutId = $previous['sale_invoice_layout_id'] ?? null;
+        $saleSchemeId = $previous['sale_invoice_scheme_id'] ?? null;
+
+        if (empty($schemeId) || ! InvoiceScheme::where('business_id', $businessId)->where('id', $schemeId)->exists()) {
+            $schemeId = optional(
+                InvoiceScheme::where('business_id', $businessId)->where('is_default', 1)->first()
+            )->id
+                ?? optional(InvoiceScheme::where('business_id', $businessId)->orderBy('id')->first())->id;
+        }
+
+        if (empty($layoutId) || ! InvoiceLayout::where('business_id', $businessId)->where('id', $layoutId)->exists()) {
+            $layoutId = optional(
+                InvoiceLayout::where('business_id', $businessId)->where('is_default', 1)->first()
+            )->id
+                ?? optional(InvoiceLayout::where('business_id', $businessId)->orderBy('id')->first())->id;
+        }
+
+        if (empty($saleLayoutId) || ! InvoiceLayout::where('business_id', $businessId)->where('id', $saleLayoutId)->exists()) {
+            $saleLayoutId = $layoutId;
+        }
+
+        $update = [];
+        if (Schema::hasColumn('business_locations', 'invoice_scheme_id') && ! empty($schemeId)) {
+            $update['invoice_scheme_id'] = $schemeId;
+        }
+        if (Schema::hasColumn('business_locations', 'invoice_layout_id') && ! empty($layoutId)) {
+            $update['invoice_layout_id'] = $layoutId;
+        }
+        if (Schema::hasColumn('business_locations', 'sale_invoice_layout_id') && ! empty($saleLayoutId)) {
+            $update['sale_invoice_layout_id'] = $saleLayoutId;
+        }
+        if (Schema::hasColumn('business_locations', 'sale_invoice_scheme_id')) {
+            if (empty($saleSchemeId) || ! InvoiceScheme::where('business_id', $businessId)->where('id', $saleSchemeId)->exists()) {
+                $saleSchemeId = $schemeId;
+            }
+            if (! empty($saleSchemeId)) {
+                $update['sale_invoice_scheme_id'] = $saleSchemeId;
+            }
+        }
+
+        if (! empty($update)) {
+            BusinessLocation::where('id', $locationId)->update($update);
+        }
     }
 
     /**
@@ -220,22 +469,6 @@ class DatabaseResetUtil
         Permission::firstOrCreate([
             'name' => 'location.'.$locationId,
             'guard_name' => 'web',
-        ]);
-    }
-
-    protected function linkDefaultInvoiceSettingsToLocation(int $businessId, int $locationId): void
-    {
-        $scheme = InvoiceScheme::where('business_id', $businessId)->where('is_default', 1)->first();
-        $layout = InvoiceLayout::where('business_id', $businessId)->where('is_default', 1)->first();
-
-        if (empty($scheme) || empty($layout)) {
-            return;
-        }
-
-        BusinessLocation::where('id', $locationId)->update([
-            'invoice_scheme_id' => $scheme->id,
-            'invoice_layout_id' => $layout->id,
-            'sale_invoice_layout_id' => $layout->id,
         ]);
     }
 }
