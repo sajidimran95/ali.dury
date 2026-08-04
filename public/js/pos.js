@@ -16,6 +16,25 @@ function pos_sync_empty_state() {
 }
 
 /**
+ * Keep newest cart activity at the top (after empty-state placeholder if present).
+ * Used by create + edit POS whenever a line is added or re-scanned.
+ */
+function pos_bring_product_row_to_top($row) {
+    if (!$row || !$row.length) {
+        return $row;
+    }
+    $row = $($row);
+    var $tbody = $('table#pos_table tbody');
+    var $empty = $tbody.children('tr.pos-empty-state-row').first();
+    if ($empty.length) {
+        $empty.after($row);
+    } else {
+        $tbody.prepend($row);
+    }
+    return $row;
+}
+
+/**
  * Line-edit modals may be moved to body for stacking. Resolve row/modal fields so
  * price/tax/discount still work and form serialize includes them after close.
  */
@@ -694,14 +713,15 @@ $(document).ready(function() {
                                 // Multi-scan of same code: bump remaining qty
                                 if (times > 1 && data.row_data.variation_id) {
                                     var extra = times - 1;
-                                    var $row = $('#pos_table tbody tr').filter(function () {
+                                    var $row = $('#pos_table tbody tr.product_row').filter(function () {
                                         return String($(this).find('.row_variation_id').val()) === String(data.row_data.variation_id);
-                                    }).last();
+                                    }).first();
                                     if ($row.length) {
                                         var $qty = $row.find('.pos_quantity');
                                         var q = __read_number($qty);
                                         __write_number($qty, q + extra);
                                         $qty.change();
+                                        pos_bring_product_row_to_top($row);
                                     } else {
                                         posAddVariationQty(data.row_data.variation_id, extra);
                                     }
@@ -876,14 +896,15 @@ $(document).ready(function() {
                                     }
                                     pos_add_product_row_from_data(data.row_data);
                                     if (norm.times > 1 && data.row_data.variation_id) {
-                                        var $row = $('#pos_table tbody tr').filter(function () {
+                                        var $row = $('#pos_table tbody tr.product_row').filter(function () {
                                             return String($(this).find('.row_variation_id').val()) === String(data.row_data.variation_id);
-                                        }).last();
+                                        }).first();
                                         if ($row.length) {
                                             var $qty = $row.find('.pos_quantity');
                                             var q = __read_number($qty);
                                             __write_number($qty, q + (norm.times - 1));
                                             $qty.change();
+                                            pos_bring_product_row_to_top($row);
                                         }
                                     }
                                 } else {
@@ -2839,8 +2860,9 @@ function pos_sync_payment_modal_amount(cleanExtraRows) {
         if (key == 9) {
             // the tab key code
             e.preventDefault();
-            if ($('#pos_table tbody tr').length > 0) {
-                $('#pos_table tbody tr:last')
+            if ($('#pos_table tbody tr.product_row').length > 0) {
+                // Newest line is first after last scan
+                $('#pos_table tbody tr.product_row:first')
                     .find('input.pos_quantity')
                     .focus()
                     .select();
@@ -3537,15 +3559,20 @@ $(document).ready(function() {
 function pos_insert_product_row(result) {
     pos_play_success_sound();
     var product_row = $('input#product_row_count').val();
-    $('table#pos_table tbody')
-        .append(result.html_content)
-        .find('input.pos_quantity');
+    // Newest scanned/selected line stays in the first cart row (create + edit)
+    var $nodes = $(result.html_content);
+    var $newRows = $nodes.filter('tr');
+    if (!$newRows.length) {
+        $newRows = $nodes;
+    }
+    pos_bring_product_row_to_top($newRows);
     pos_sync_empty_state();
     //increment row count
     $('input#product_row_count').val(parseInt(product_row) + 1);
-    var this_row = $('table#pos_table tbody')
-        .find('tr')
-        .last();
+    var this_row = $newRows.filter('tr.product_row').first();
+    if (!this_row.length) {
+        this_row = $('table#pos_table tbody tr.product_row').first();
+    }
     pos_each_row(this_row);
 
     //For initial discount if present
@@ -3560,10 +3587,7 @@ function pos_insert_product_row(result) {
     }
 
     if (result.enable_sr_no == '1') {
-        var new_row = $('table#pos_table tbody')
-            .find('tr')
-            .last();
-        var $editModal = new_row.find('.row_edit_product_price_model');
+        var $editModal = this_row.find('.row_edit_product_price_model');
         if ($editModal.length) {
             pos_remember_row_edit_modal_parent($editModal);
             if ($editModal.parent()[0] !== document.body) {
@@ -3584,15 +3608,11 @@ function pos_insert_product_row(result) {
 
     //Used in restaurant module
     if (result.html_modifier) {
-        $('table#pos_table tbody')
-            .find('tr')
-            .last()
-            .find('td:first')
-            .append(result.html_modifier);
+        this_row.find('td:first').append(result.html_modifier);
     }
 
-    //scroll bottom of items list
-    $(".pos_product_div").animate({ scrollTop: $('.pos_product_div').prop("scrollHeight")}, 1000);
+    // Keep last-scanned line visible at top of cart
+    $(".pos_product_div").animate({ scrollTop: 0 }, 250);
 }
 
 // Helper function to add product row from server data
@@ -3638,6 +3658,9 @@ function pos_add_product_row_from_data(result) {
                         qty_element.change();
                         
                         round_row_to_iraqi_dinnar($(this));
+                        // Re-scan existing line → move to first row
+                        pos_bring_product_row_to_top($(this));
+                        $(".pos_product_div").animate({ scrollTop: 0 }, 250);
                         
                         if (!$('#__is_mobile').length) {
                             $('input#search_product')
@@ -3712,6 +3735,9 @@ function pos_product_row(variation_id = null, purchase_line_id = null, weighing_
                     qty_element.change();
 
                     round_row_to_iraqi_dinnar($(this));
+                    // Last touched line stays first in the cart
+                    pos_bring_product_row_to_top($(this));
+                    $(".pos_product_div").animate({ scrollTop: 0 }, 250);
 
                     if (!$('#__is_mobile').length) {
                         $('input#search_product')
@@ -4507,9 +4533,13 @@ function reset_pos_form(){
         $('#commission_agent').val('').trigger('change');
     } 
 
-    //reset contact due
+    // Reset contact due display, then reload for default/walk-in (set_default_customer ran earlier)
     $('.contact_due_text').find('span').text('');
     $('.contact_due_text').addClass('hide');
+    var due_cid = $('select#customer_id').val() || $('#default_customer_id').val();
+    if (due_cid && $('.contact_due_text').length && typeof get_contact_due === 'function') {
+        get_contact_due(due_cid);
+    }
 
     // Clear retrieved parked-sale binding
     var $addForm = $('#add_pos_sell_form');
@@ -4560,6 +4590,10 @@ function set_default_customer() {
         $('select#customer_id')
             .val(String(default_customer_id))
             .trigger('change');
+        // select2:select does not fire for programmatic default — load walk-in prev due on first paint
+        if ($('.contact_due_text').length && typeof get_contact_due === 'function') {
+            get_contact_due(default_customer_id);
+        }
     }
 
     // POS theme: keep walk-in / default customer name visible (selected)
