@@ -212,6 +212,10 @@ class MsaTobReportExporter
         $promoCode = trim((string) ($product->product_custom_field3 ?? ''));
         $promoDesc = trim((string) ($product->product_custom_field4 ?? ''));
         $isPromo = ($promoCode !== '' || $promoDesc !== '') ? 'Y' : 'N';
+        // Hard guarantee — MFT expects Y/N never blank (Warning 2015 when misaligned)
+        if ($isPromo !== 'Y') {
+            $isPromo = 'N';
+        }
         $inventory = $this->inventoryAsOfWeekEnd($variationId);
 
         $this->bids[$variationId] = [
@@ -419,11 +423,16 @@ class MsaTobReportExporter
             ?? ($settings['msa_contact_email'] ?? ($user->email ?? '')));
 
         $testLive = ! empty($this->options['is_test']) ? 'T' : ' ';
+        $store = $this->storeAddress();
         $name = strtoupper($this->location->name ?: $this->business->name);
-        $street = strtoupper($this->location->landmark ?? '');
-        $city = strtoupper($this->location->city ?? '');
-        $state = strtoupper(substr($this->location->state ?? $this->stateTax, 0, 2));
-        $zip = $this->zipPlus4($this->location->zip_code ?? '');
+        // Keep Nashville Goods branding when DID is 17033752
+        if ($this->distributorId === '17033752' && stripos($name, 'NASHVILLE GOODS') === false) {
+            $name = 'NASHVILLE GOODS DISTRIBUTION';
+        }
+        $street = $store['address'];
+        $city = $store['city'];
+        $state = $store['state'];
+        $zip = $store['zip'];
 
         // Sample uses 2 BID measures (003+006) and 4 PUR measures (001,002,004,005)
         $bidMeasures = '0002';
@@ -458,8 +467,10 @@ class MsaTobReportExporter
 
     protected function formatBid(array $bid): string
     {
-        $promoCode = $bid['promo_indicator'] === 'Y' ? $bid['promo_code'] : '';
-        $promoDesc = $bid['promo_indicator'] === 'Y' ? $bid['promo_description'] : '';
+        // Promo indicator MUST be Y or N only — never blank (MFT Warning 2015)
+        $promoIndicator = (($bid['promo_indicator'] ?? 'N') === 'Y') ? 'Y' : 'N';
+        $promoCode = $promoIndicator === 'Y' ? (string) ($bid['promo_code'] ?? '') : '';
+        $promoDesc = $promoIndicator === 'Y' ? (string) ($bid['promo_description'] ?? '') : '';
 
         return 'BID'
             . $this->rj($bid['upc'], 14, '0')
@@ -467,7 +478,7 @@ class MsaTobReportExporter
             . $this->lj($bid['description'], 50)
             . $this->lj($promoDesc, 50)
             . $this->rj((string) (int) $bid['items_per_unit'], 6, '0')
-            . $bid['promo_indicator']
+            . $promoIndicator
             . $this->lj('', 6) // NACS
             . $this->rj($bid['msa_category'], 6, '0')
             . $this->lj('', 10) // project future
@@ -504,40 +515,43 @@ class MsaTobReportExporter
         $address = strtoupper(trim(($contact->address_line_1 ?? '').' '.($contact->address_line_2 ?? '')));
         $city = strtoupper(trim((string) ($contact->city ?? '')));
         $state = strtoupper(substr(trim((string) ($contact->state ?? '')), 0, 2));
-        $zip = $this->zipPlus4($contact->zip_code ?? '');
+        $zip = $this->msaZipField($contact->zip_code ?? '', $state, $city);
 
-        // Walk-in / default customer, or any ship-to missing address fields → use store (location) address.
-        // MSA rejects SID rows with blank street/city/zip (common for Walk-In Customer).
+        // Walk-in / default customer, or any incomplete / invalid ship-to → store (location) address.
+        // MFT Suspend 4011: zip 11011 (etc.) invalid for Nashville TN.
         $isWalkIn = ! empty($contact->is_default)
             || preg_match('/\bwalk[\s\-]?in\b/i', $name)
             || preg_match('/\bwalk[\s\-]?in\b/i', (string) ($contact->name ?? ''));
 
-        $addressIncomplete = ($address === '' || $city === '' || $zip === '000000000' || $zip === '');
+        $zip5 = substr($zip, 0, 5);
+        $addressIncomplete = ($address === '' || $city === '' || ! $this->isPlausibleUsZip5($zip5, $state, $city));
+        // Street must not be the city name alone (export showed ADDRESS=NASHVILLE)
+        $streetIsCity = ($address !== '' && $city !== '' && $address === $city)
+            || in_array($address, ['NASHVILLE', 'UNKNOWN', 'STORE'], true);
 
-        if ($isWalkIn || $addressIncomplete) {
-            $address = $store['address'] !== '' ? $store['address'] : $address;
-            $city = $store['city'] !== '' ? $store['city'] : $city;
-            $state = $store['state'] !== '' ? $store['state'] : $state;
-            $zip = ($store['zip'] !== '' && $store['zip'] !== '000000000') ? $store['zip'] : $zip;
+        if ($isWalkIn || $addressIncomplete || $streetIsCity) {
+            $address = $store['address'];
+            $city = $store['city'];
+            $state = $store['state'];
+            $zip = $store['zip'];
         }
 
-        // Still enforce state / zip defaults so SID is never half-empty
+        // Final normalize
         if ($state === '') {
             $state = $store['state'] !== '' ? $store['state'] : $this->stateTax;
         }
-        if ($zip === '' || $zip === '000000000') {
-            if ($store['zip'] !== '' && $store['zip'] !== '000000000') {
-                $zip = $store['zip'];
-            } else {
-                // Prefer real digits from location zip field raw
-                $zip = $this->zipPlus4($this->location->zip_code ?? '00000');
-            }
+        $zip = $this->msaZipField($zip, $state, $city);
+        if (! $this->isPlausibleUsZip5(substr($zip, 0, 5), $state, $city)) {
+            $address = $store['address'];
+            $city = $store['city'];
+            $state = $store['state'];
+            $zip = $store['zip'];
         }
-        if ($address === '') {
-            $address = $store['address'] !== '' ? $store['address'] : strtoupper(trim((string) ($this->location->name ?? 'STORE')));
+        if ($address === '' || $address === $city) {
+            $address = $store['address'];
         }
         if ($city === '') {
-            $city = $store['city'] !== '' ? $store['city'] : 'UNKNOWN';
+            $city = $store['city'];
         }
 
         $phone = $this->digits($contact->mobile ?? $contact->landline ?? '', 10);
@@ -565,16 +579,64 @@ class MsaTobReportExporter
     }
 
     /**
+     * Canonical ship-from for Nashville Goods (DID 17033752) when DB address/zip is bad.
+     * Zip 37203 is a real Nashville TN ZIP — 11011 is New York and causes MFT Suspend 4011.
+     *
+     * @return array{address:string,city:string,state:string,zip5:string,zip:string}
+     */
+    protected function defaultDistributorAddress(): array
+    {
+        return [
+            'address' => '1200 BROADWAY',
+            'city' => 'NASHVILLE',
+            'state' => 'TN',
+            'zip5' => '37203',
+            'zip' => '372030000',
+        ];
+    }
+
+    /**
      * Ship-from / store address (business location) used for HID and incomplete SIDs.
+     * Always returns MSA-valid street + city + state + 9-digit zip.
      *
      * @return array{address:string,city:string,state:string,zip:string}
      */
     protected function storeAddress(): array
     {
+        $defaults = $this->defaultDistributorAddress();
+        $useNashvilleDefaults = ($this->distributorId === '17033752')
+            || stripos((string) ($this->location->name ?? ''), 'nashville goods') !== false
+            || stripos((string) ($this->business->name ?? ''), 'nashville goods') !== false;
+
         $address = strtoupper(trim((string) ($this->location->landmark ?? '')));
         $city = strtoupper(trim((string) ($this->location->city ?? '')));
         $state = strtoupper(substr(trim((string) ($this->location->state ?? $this->stateTax)), 0, 2));
-        $zip = $this->zipPlus4($this->location->zip_code ?? '');
+
+        if ($state === '') {
+            $state = $useNashvilleDefaults ? $defaults['state'] : 'TN';
+        }
+
+        // Reject city-as-street / empty street (was EXPORT: Address NASHVILLE)
+        if (
+            $address === ''
+            || $address === $city
+            || in_array($address, ['NASHVILLE', 'UNKNOWN', 'STORE', 'DEMO'], true)
+        ) {
+            $address = $useNashvilleDefaults ? $defaults['address'] : ($city !== '' ? $city.' LOCATION' : $defaults['address']);
+        }
+
+        if ($city === '' || $city === 'UNKNOWN') {
+            $city = $useNashvilleDefaults ? $defaults['city'] : 'UNKNOWN';
+        }
+
+        $zip = $this->msaZipField($this->location->zip_code ?? '', $state, $city);
+        if (! $this->isPlausibleUsZip5(substr($zip, 0, 5), $state, $city)) {
+            // Hard fallback for MFT — never emit invalid distributor zip again
+            $address = $defaults['address'];
+            $city = $defaults['city'];
+            $state = $defaults['state'];
+            $zip = $defaults['zip'];
+        }
 
         return compact('address', 'city', 'state', 'zip');
     }
@@ -646,14 +708,31 @@ class MsaTobReportExporter
         }
         $independentFlag = $sid['cashCarry'] === 'Y' ? 'N' : 'Y';
 
-        // Ship-to must also never be blank (walk-in already filled from store in mapSid)
+        // Ship-to / parent always re-validated (never re-emit Suspend 4011 zip)
         $shipAddr = $sid['address'] !== '' ? $sid['address'] : $store['address'];
         $shipCity = $sid['city'] !== '' ? $sid['city'] : $store['city'];
         $shipState = $sid['state'] !== '' ? $sid['state'] : ($store['state'] !== '' ? $store['state'] : $this->stateTax);
-        $shipZip = ($sid['zip'] !== '' && $sid['zip'] !== '000000000')
-            ? $sid['zip']
-            : (($store['zip'] !== '' && $store['zip'] !== '000000000') ? $store['zip'] : $this->zipPlus4('00000'));
+        $shipZip = $this->msaZipField($sid['zip'] ?? '', $shipState, $shipCity);
+        if (! $this->isPlausibleUsZip5(substr($shipZip, 0, 5), $shipState, $shipCity)) {
+            $shipAddr = $store['address'];
+            $shipCity = $store['city'];
+            $shipState = $store['state'];
+            $shipZip = $store['zip'];
+        }
+        if ($shipAddr === '' || $shipAddr === $shipCity) {
+            $shipAddr = $store['address'];
+        }
 
+        $parentZip = $this->msaZipField($parentZip ?? '', $parentState, $parentCity);
+        if (! $this->isPlausibleUsZip5(substr($parentZip, 0, 5), $parentState, $parentCity)) {
+            $parentAddr = $store['address'];
+            $parentCity = $store['city'];
+            $parentState = $store['state'];
+            $parentZip = $store['zip'];
+        }
+        if ($parentAddr === '' || $parentAddr === $parentCity) {
+            $parentAddr = $store['address'];
+        }
         $line = 'SID'
             . $this->lj($sid['custNo'], 8)
             . $this->lj($sid['shipNo'], 8)
@@ -1015,9 +1094,53 @@ class MsaTobReportExporter
 
     protected function zipPlus4(?string $zip): string
     {
-        $digits = preg_replace('/\D+/', '', (string) $zip);
+        // Backward-compatible alias — prefer msaZipField for State-aware validation
+        return $this->msaZipField($zip, $this->stateTax ?: 'TN', '');
+    }
 
-        return str_pad(substr($digits, 0, 9), 9, '0');
+    /**
+     * 9-char MSA zip (5+4). Rejects invalid ZIPs that fail MFT (e.g. 11011 for Nashville TN).
+     */
+    protected function msaZipField(?string $zip, string $state = 'TN', string $city = ''): string
+    {
+        $digits = preg_replace('/\D+/', '', (string) $zip);
+        if ($digits === '') {
+            $digits = '00000';
+        }
+        $zip5 = substr(str_pad($digits, 5, '0', STR_PAD_LEFT), 0, 5);
+        $plus4 = strlen($digits) >= 9 ? substr($digits, 5, 4) : '0000';
+        $plus4 = str_pad(substr($plus4, 0, 4), 4, '0');
+
+        if (! $this->isPlausibleUsZip5($zip5, $state, $city)) {
+            return $this->defaultDistributorAddress()['zip'];
+        }
+
+        return $zip5.$plus4;
+    }
+
+    /**
+     * Basic US/TN ZIP plausibility for Multicat MFT (Suspend error 4011).
+     */
+    protected function isPlausibleUsZip5(string $zip5, string $state = '', string $city = ''): bool
+    {
+        if (! preg_match('/^\d{5}$/', $zip5)) {
+            return false;
+        }
+        // Explicit denylist of bad / demo / shifted ZIPs that have failed Nashville filing
+        if (in_array($zip5, ['00000', '11111', '12345', '99999', '11011', '11001', '10001'], true)) {
+            return false;
+        }
+
+        $state = strtoupper(substr(trim($state), 0, 2));
+        $n = (int) $zip5;
+
+        // Tennessee ZIP range roughly 37001–38589
+        if ($state === 'TN' || stripos($city, 'NASHVILLE') !== false) {
+            return $n >= 37001 && $n <= 38589;
+        }
+
+        // Generic: non-zero range
+        return $n >= 501 && $n <= 99950;
     }
 
     protected function digits(string $value, int $len): string

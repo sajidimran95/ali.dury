@@ -362,11 +362,30 @@ class MsaSetupService
                 $location->state = 'TN';
                 $dirtyLoc = true;
             }
-            if (empty($location->zip_code)) {
+
+            // Force valid Nashville TN ZIP — 11011 (NY) caused MFT Suspend 4011
+            $zipDigits = preg_replace('/\D+/', '', (string) ($location->zip_code ?? ''));
+            $zip5 = substr(str_pad($zipDigits ?: '0', 5, '0', STR_PAD_LEFT), 0, 5);
+            $zipInvalid = empty($zipDigits)
+                || in_array($zip5, ['00000', '11011', '11111', '12345', '99999'], true)
+                || ((int) $zip5 < 37001 || (int) $zip5 > 38589);
+            if ($zipInvalid) {
                 $location->zip_code = '37203';
                 $dirtyLoc = true;
             }
-            if (empty($location->landmark) || stripos((string) $location->landmark, 'nashville') === false) {
+            // Always fix known-bad ZIP even when location already "set"
+            if (in_array($zip5, ['11011', '11111', '12345'], true)) {
+                $location->zip_code = '37203';
+                $dirtyLoc = true;
+            }
+
+            $landmark = trim((string) ($location->landmark ?? ''));
+            if (
+                $landmark === ''
+                || strcasecmp($landmark, 'Nashville') === 0
+                || strcasecmp($landmark, (string) $location->city) === 0
+                || stripos($landmark, 'awesome') !== false
+            ) {
                 $location->landmark = '1200 Broadway';
                 $dirtyLoc = true;
             }
