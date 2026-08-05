@@ -1,5 +1,10 @@
 @extends('layouts.app')
 @section('title', __( 'lang_v1.sales_order'))
+
+@section('css')
+    <link rel="stylesheet" href="{{ asset('css/product-list-metrics.css?v=' . ($asset_v ?? '') . '&plm=4') }}">
+@endsection
+
 @section('content')
 
 <!-- Content Header (Page header) -->
@@ -10,6 +15,9 @@
 
 <!-- Main content -->
 <section class="content no-print">
+    @if (!empty($so_stats))
+        @include('sales_order.partials.list_metrics')
+    @endif
     @component('components.filters', ['title' => __('report.filters')])
         <div class="col-md-3">
             <div class="form-group">
@@ -83,6 +91,9 @@
 @includeIf('sales_order.common_js')
 <script type="text/javascript">
 $(document).ready( function(){
+    if (typeof __currency_convert_recursively === 'function') {
+        __currency_convert_recursively($('#so_list_metrics'));
+    }
     $('#sell_list_filter_date_range').daterangepicker(
         dateRangeSettings,
         function (start, end) {

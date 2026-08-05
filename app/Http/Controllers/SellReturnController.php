@@ -299,7 +299,43 @@ class SellReturnController extends Controller
 
         $sales_representative = User::forDropdown($business_id, false, false, true);
 
-        return view('sell_return.index')->with(compact('business_locations', 'customers', 'sales_representative'));
+        $sell_return_stats = $this->getSellReturnListStats((int) $business_id);
+
+        return view('sell_return.index')->with(compact('business_locations', 'customers', 'sales_representative', 'sell_return_stats'));
+    }
+
+    /**
+     * KPI stats for sell return list cards only.
+     */
+    protected function getSellReturnListStats(int $businessId): array
+    {
+        $base = Transaction::where('business_id', $businessId)
+            ->where('type', 'sell_return')
+            ->where('status', 'final');
+
+        if (! auth()->user()->can('access_sell_return') && auth()->user()->can('access_own_sell_return')) {
+            $base->where('created_by', auth()->id());
+        }
+
+        $permitted = auth()->user()->permitted_locations();
+        if ($permitted != 'all') {
+            $base->whereIn('location_id', $permitted);
+        }
+
+        $total = (int) (clone $base)->count();
+        $paid = (int) (clone $base)->where('payment_status', 'paid')->count();
+        $due = (int) (clone $base)->where('payment_status', 'due')->count();
+        $partial = (int) (clone $base)->where('payment_status', 'partial')->count();
+        $today = (int) (clone $base)->whereDate('transaction_date', \Carbon\Carbon::today())->count();
+        $thisMonth = (int) (clone $base)
+            ->whereBetween('transaction_date', [
+                \Carbon\Carbon::now()->startOfMonth()->toDateTimeString(),
+                \Carbon\Carbon::now()->endOfMonth()->toDateTimeString(),
+            ])
+            ->count();
+        $totalAmount = (float) (clone $base)->sum('final_total');
+
+        return compact('total', 'paid', 'due', 'partial', 'today', 'thisMonth', 'totalAmount');
     }
 
     /**

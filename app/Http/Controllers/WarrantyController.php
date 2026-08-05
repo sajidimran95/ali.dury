@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Product;
 use App\Warranty;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
@@ -34,7 +35,34 @@ class WarrantyController extends Controller
                  ->make(true);
         }
 
-        return view('warranties.index');
+        $business_id = (int) $business_id;
+        $warranty_stats = $this->getWarrantyListStats($business_id);
+
+        return view('warranties.index')->with(compact('warranty_stats'));
+    }
+
+    /**
+     * KPI stats for warranties list cards.
+     */
+    protected function getWarrantyListStats(int $businessId): array
+    {
+        $total = (int) Warranty::where('business_id', $businessId)->count();
+        $days = (int) Warranty::where('business_id', $businessId)->where('duration_type', 'days')->count();
+        $months = (int) Warranty::where('business_id', $businessId)->where('duration_type', 'months')->count();
+        $years = (int) Warranty::where('business_id', $businessId)->where('duration_type', 'years')->count();
+        $productsWith = (int) Product::where('business_id', $businessId)
+            ->where('type', '!=', 'modifier')
+            ->whereNotNull('warranty_id')
+            ->where('warranty_id', '>', 0)
+            ->count();
+
+        return [
+            'total_warranties' => $total,
+            'duration_days' => $days,
+            'duration_months' => $months,
+            'duration_years' => $years,
+            'products_with_warranty' => $productsWith,
+        ];
     }
 
     /**

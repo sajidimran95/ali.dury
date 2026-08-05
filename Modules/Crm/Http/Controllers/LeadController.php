@@ -68,7 +68,48 @@ class LeadController extends Controller
                 ->make(true);
         }
 
-        return view('crm::leads.index');
+        $business_id = (int) $business_id;
+        $lead_stats = $this->getLeadListStats($business_id);
+
+        return view('crm::leads.index', compact('lead_stats'));
+    }
+
+    /**
+     * KPI stats for leads list cards.
+     */
+    protected function getLeadListStats(int $businessId): array
+    {
+        $base = CrmContact::where('business_id', $businessId)->leadsOnly();
+
+        $total = (int) (clone $base)->count();
+        $withStage = (int) (clone $base)
+            ->whereNotNull('crm_life_stage')
+            ->where('crm_life_stage', '!=', '')
+            ->count();
+        $noStage = max(0, $total - $withStage);
+        $assigned = (int) (clone $base)
+            ->whereExists(function ($q) {
+                $q->select(DB::raw(1))
+                    ->from('crm_lead_users')
+                    ->whereColumn('crm_lead_users.contact_id', 'contacts.id');
+            })
+            ->count();
+        $unassigned = max(0, $total - $assigned);
+        $thisMonth = (int) (clone $base)
+            ->whereBetween('created_at', [
+                \Carbon\Carbon::now()->startOfMonth()->toDateTimeString(),
+                \Carbon\Carbon::now()->endOfMonth()->toDateTimeString(),
+            ])
+            ->count();
+
+        return [
+            'total_leads' => $total,
+            'with_stage' => $withStage,
+            'no_stage' => $noStage,
+            'assigned' => $assigned,
+            'unassigned' => $unassigned,
+            'this_month' => $thisMonth,
+        ];
     }
 
     public function create()

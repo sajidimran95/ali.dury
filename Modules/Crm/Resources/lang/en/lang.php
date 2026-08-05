@@ -31,6 +31,8 @@ return [
     'open_follow_ups' => 'Open Follow-ups',
     'recent_leads' => 'Recent Leads',
     'pipeline_summary' => 'Pipeline Summary',
+    'with_stage' => 'With stage',
+    'this_month_leads' => 'New this month',
     'assigned_to' => 'Assigned To',
     'title' => 'Title',
     'status' => 'Status',

@@ -335,6 +335,33 @@ class ProductController extends Controller
 
         $is_admin = $this->productUtil->is_admin(auth()->user());
 
+        // Dashboard-style KPI cards (same source as inventory dashboard)
+        $permitted_locations = auth()->user()->permitted_locations();
+        $product_stats = app(InventoryDashboardController::class)->getStats(
+            (int) $business_id,
+            $permitted_locations,
+            null
+        );
+        $product_type_counts = Product::where('business_id', $business_id)
+            ->where('type', '!=', 'modifier')
+            ->where('is_inactive', 0)
+            ->selectRaw('type, COUNT(*) as c')
+            ->groupBy('type')
+            ->pluck('c', 'type')
+            ->toArray();
+        $product_stats['type_single'] = (int) ($product_type_counts['single'] ?? 0);
+        $product_stats['type_variable'] = (int) ($product_type_counts['variable'] ?? 0);
+        $product_stats['type_combo'] = (int) ($product_type_counts['combo'] ?? 0);
+        $product_stats['inactive'] = (int) Product::where('business_id', $business_id)
+            ->where('type', '!=', 'modifier')
+            ->where('is_inactive', 1)
+            ->count();
+        $product_stats['not_for_selling'] = (int) Product::where('business_id', $business_id)
+            ->where('type', '!=', 'modifier')
+            ->where('is_inactive', 0)
+            ->where('not_for_selling', 1)
+            ->count();
+
         return view('product.index')
             ->with(compact(
                 'rack_enabled',
@@ -346,7 +373,8 @@ class ProductController extends Controller
                 'show_manufacturing_data',
                 'pos_module_data',
                 'is_woocommerce',
-                'is_admin'
+                'is_admin',
+                'product_stats'
             ));
     }
 

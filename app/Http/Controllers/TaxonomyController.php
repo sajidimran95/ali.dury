@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Category;
+use App\Product;
 use App\Utils\ModuleUtil;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
@@ -102,8 +103,50 @@ class TaxonomyController extends Controller
             }
 
         $module_category_data = $this->moduleUtil->getTaxonomyData($category_type);
+        $business_id = (int) request()->session()->get('user.business_id');
+        $taxonomy_stats = $this->getTaxonomyListStats($business_id, $category_type);
 
-        return view('taxonomy.index')->with(compact('module_category_data', 'module_category_data'));
+        return view('taxonomy.index')->with(compact('module_category_data', 'taxonomy_stats'));
+    }
+
+    /**
+     * KPI stats for taxonomy / category list cards.
+     */
+    protected function getTaxonomyListStats(int $businessId, ?string $categoryType): array
+    {
+        $type = $categoryType ?: 'product';
+
+        $query = Category::where('business_id', $businessId)->where('category_type', $type);
+        $total = (int) (clone $query)->count();
+        $parents = (int) (clone $query)->where(function ($q) {
+            $q->whereNull('parent_id')->orWhere('parent_id', 0);
+        })->count();
+        $children = max(0, $total - $parents);
+
+        $productsInCat = 0;
+        $productsNoCat = 0;
+        if ($type === 'product') {
+            $productsInCat = (int) Product::where('business_id', $businessId)
+                ->where('type', '!=', 'modifier')
+                ->whereNotNull('category_id')
+                ->where('category_id', '>', 0)
+                ->count();
+            $productsNoCat = (int) Product::where('business_id', $businessId)
+                ->where('type', '!=', 'modifier')
+                ->where(function ($q) {
+                    $q->whereNull('category_id')->orWhere('category_id', 0);
+                })
+                ->count();
+        }
+
+        return [
+            'total' => $total,
+            'parents' => $parents,
+            'children' => $children,
+            'products_in_cat' => $productsInCat,
+            'products_no_cat' => $productsNoCat,
+            'category_type' => $type,
+        ];
     }
 
     /**

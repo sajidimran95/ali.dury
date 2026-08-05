@@ -1,21 +1,52 @@
 @extends('layouts.app')
 @section('title', __('sale.products'))
 
+@section('css')
+    <link rel="stylesheet" href="{{ asset('css/product-list-metrics.css?v=' . ($asset_v ?? '') . '&plm=2') }}">
+@endsection
+
 @section('content')
 
     <!-- Content Header (Page header) -->
-    <section class="content-header">
-        <h1 class="tw-text-xl md:tw-text-3xl tw-font-bold tw-text-black">@lang('sale.products')
-            <small class="tw-text-sm md:tw-text-base tw-text-gray-700 tw-font-semibold">@lang('lang_v1.manage_products')</small>
-        </h1>
-        <!-- <ol class="breadcrumb">
-                    <li><a href="#"><i class="fa fa-dashboard"></i> Level</a></li>
-                    <li class="active">Here</li>
-                </ol> -->
+    <section class="content-header product-list-header">
+        <div class="product-list-header__row">
+            <h1 class="tw-text-xl md:tw-text-3xl tw-font-bold tw-text-black product-list-header__title">
+                @lang('sale.products')
+                <small class="tw-text-sm md:tw-text-base tw-text-gray-700 tw-font-semibold">@lang('lang_v1.manage_products')</small>
+            </h1>
+            <div class="product-list-header__actions">
+                @if (!empty($is_admin))
+                    <a class="product-list-header__btn product-list-header__btn--secondary"
+                        href="{{ action([\App\Http\Controllers\ProductController::class, 'downloadExcel']) }}">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" />
+                            <path d="M7 11l5 5l5 -5" />
+                            <path d="M12 4l0 12" />
+                        </svg>
+                        @lang('lang_v1.download_excel')
+                    </a>
+                @endif
+                @can('product.create')
+                    <a class="product-list-header__btn product-list-header__btn--primary"
+                        href="{{ action([\App\Http\Controllers\ProductController::class, 'create']) }}">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M12 5l0 14" />
+                            <path d="M5 12l14 0" />
+                        </svg>
+                        @lang('messages.add')
+                    </a>
+                @endcan
+            </div>
+        </div>
     </section>
 
     <!-- Main content -->
     <section class="content">
+        @if (!empty($product_stats))
+            @include('product.partials.list_metrics')
+        @endif
         <div class="row">
             <div class="col-md-12">
                 @component('components.filters', ['title' => __('report.filters')])
@@ -158,35 +189,6 @@
 
                         <div class="tab-content">
                             <div class="tab-pane active " id="product_list_tab">
-                                @if ($is_admin)
-
-                                    <a class="tw-dw-btn tw-bg-gradient-to-r tw-from-indigo-600 tw-to-blue-500 tw-font-bold tw-text-white tw-border-none tw-rounded-full pull-right tw-m-2"
-                                        href="{{ action([\App\Http\Controllers\ProductController::class, 'downloadExcel']) }}">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                            stroke-linecap="round" stroke-linejoin="round"
-                                            class="icon icon-tabler icons-tabler-outline icon-tabler-download">
-                                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                            <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" />
-                                            <path d="M7 11l5 5l5 -5" />
-                                            <path d="M12 4l0 12" />
-                                        </svg> @lang('lang_v1.download_excel')
-                                    </a>
-                                @endif
-                                @can('product.create')
-
-                                    <a class="tw-dw-btn tw-bg-gradient-to-r tw-from-indigo-600 tw-to-blue-500 tw-font-bold tw-text-white tw-border-none tw-rounded-full pull-right tw-m-2"
-                                        href="{{ action([\App\Http\Controllers\ProductController::class, 'create']) }}">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-                                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                            stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-plus">
-                                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                            <path d="M12 5l0 14" />
-                                            <path d="M5 12l14 0" />
-                                        </svg> @lang('messages.add')
-                                    </a>
-                                    <br><br>
-                                @endcan
                                 @include('product.partials.product_list')
                             </div>
                             @can('stock_report.view')
@@ -227,6 +229,9 @@
     <script src="{{ asset('js/opening_stock.js?v=' . $asset_v) }}"></script>
     <script type="text/javascript">
         $(document).ready(function() {
+            if (typeof __currency_convert_recursively === 'function' && $('#product_list_metrics').length) {
+                __currency_convert_recursively($('#product_list_metrics'));
+            }
             product_table = $('#product_table').DataTable({
                 processing: true,
                 serverSide: true,

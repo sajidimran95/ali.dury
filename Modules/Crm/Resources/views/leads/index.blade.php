@@ -1,19 +1,38 @@
 @extends('layouts.app')
 @section('title', __('crm::lang.leads'))
+
+@section('css')
+    <link rel="stylesheet" href="{{ asset('css/product-list-metrics.css?v=' . ($asset_v ?? '') . '&plm=4') }}">
+@endsection
+
 @section('content')
-<section class="content-header">
-    <h1 class="tw-text-xl md:tw-text-3xl tw-font-bold">
-        @lang('crm::lang.leads')
-        @if(auth()->user()->can('crm.lead.create') || auth()->user()->can('crm.access') || auth()->user()->can('superadmin'))
-            <a href="{{ route('crm.leads.create') }}" class="tw-dw-btn tw-bg-gradient-to-r tw-from-indigo-600 tw-to-blue-500 tw-font-bold tw-text-white tw-border-none tw-rounded-full tw-dw-btn-sm">
-                @lang('crm::lang.add_lead')
-            </a>
-        @endif
-    </h1>
+<section class="content-header product-list-header">
+    <div class="product-list-header__row">
+        <h1 class="tw-text-xl md:tw-text-3xl tw-font-bold tw-text-black product-list-header__title">
+            @lang('crm::lang.leads')
+        </h1>
+        <div class="product-list-header__actions">
+            @if(auth()->user()->can('crm.lead.create') || auth()->user()->can('crm.access') || auth()->user()->can('superadmin'))
+                <a href="{{ route('crm.leads.create') }}" class="product-list-header__btn product-list-header__btn--primary">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M12 5l0 14" />
+                        <path d="M5 12l14 0" />
+                    </svg>
+                    @lang('crm::lang.add_lead')
+                </a>
+            @endif
+        </div>
+    </div>
 </section>
+
 <section class="content">
-    <div class="box box-solid">
-        <div class="box-body">
+    @if (!empty($lead_stats))
+        @include('crm::leads.partials.list_metrics')
+    @endif
+
+    @component('components.widget', ['class' => 'box-primary', 'title' => __('crm::lang.leads')])
+        <div class="table-responsive">
             <table class="table table-bordered table-striped" id="leads_table" style="width:100%">
                 <thead>
                     <tr>
@@ -23,12 +42,12 @@
                         <th>@lang('crm::lang.source')</th>
                         <th>@lang('crm::lang.life_stage')</th>
                         <th>@lang('crm::lang.assigned_to')</th>
-                        <th>@lang('crm::lang.actions')</th>
+                        <th class="not-export">@lang('crm::lang.actions')</th>
                     </tr>
                 </thead>
             </table>
         </div>
-    </div>
+    @endcomponent
 </section>
 @endsection
 

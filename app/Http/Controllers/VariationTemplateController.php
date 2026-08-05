@@ -49,7 +49,51 @@ class VariationTemplateController extends Controller
                 ->make(false);
         }
 
-        return view('variation.index');
+        $business_id = request()->session()->get('user.business_id');
+        $variation_stats = $this->getVariationListStats((int) $business_id);
+
+        return view('variation.index')->with(compact('variation_stats'));
+    }
+
+    /**
+     * KPI stats for variation templates list page cards.
+     */
+    protected function getVariationListStats(int $businessId): array
+    {
+        $totalTemplates = (int) VariationTemplate::where('business_id', $businessId)->count();
+
+        $totalValues = (int) VariationValueTemplate::query()
+            ->join('variation_templates as vt', 'variation_value_templates.variation_template_id', '=', 'vt.id')
+            ->where('vt.business_id', $businessId)
+            ->count();
+
+        $templatesInUse = (int) ProductVariation::query()
+            ->join('variation_templates as vt', 'product_variations.variation_template_id', '=', 'vt.id')
+            ->where('vt.business_id', $businessId)
+            ->whereNotNull('product_variations.variation_template_id')
+            ->distinct()
+            ->count(DB::raw('product_variations.variation_template_id'));
+
+        $unusedTemplates = max(0, $totalTemplates - $templatesInUse);
+        $avgValues = $totalTemplates > 0
+            ? round($totalValues / $totalTemplates, 1)
+            : 0;
+
+        $productsUsing = (int) ProductVariation::query()
+            ->join('variation_templates as vt', 'product_variations.variation_template_id', '=', 'vt.id')
+            ->where('vt.business_id', $businessId)
+            ->whereNotNull('product_variations.variation_template_id')
+            ->distinct()
+            ->count(DB::raw('product_variations.product_id'));
+
+        return [
+            'total_templates' => $totalTemplates,
+            'total_values' => $totalValues,
+            'templates_in_use' => $templatesInUse,
+            'unused_templates' => $unusedTemplates,
+            'avg_values' => $avgValues,
+            'products_using' => $productsUsing,
+        ];
     }
 
     /**

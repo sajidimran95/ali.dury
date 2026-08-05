@@ -1,6 +1,10 @@
 @extends('layouts.app')
 @section('title', __('lang_v1.sell_return'))
 
+@section('css')
+    <link rel="stylesheet" href="{{ asset('css/product-list-metrics.css?v=' . ($asset_v ?? '') . '&plm=4') }}">
+@endsection
+
 @section('content')
 
 <!-- Content Header (Page header) -->
@@ -11,6 +15,9 @@
 
 <!-- Main content -->
 <section class="content no-print">
+    @if (!empty($sell_return_stats))
+        @include('sell_return.partials.list_metrics')
+    @endif
     @component('components.filters', ['title' => __('report.filters')])
         <div class="col-md-3">
             <div class="form-group">
@@ -59,6 +66,9 @@
 <script src="{{ asset('js/payment.js?v=' . $asset_v) }}"></script>
 <script>
     $(document).ready(function(){
+        if (typeof __currency_convert_recursively === 'function') {
+            __currency_convert_recursively($('#sell_return_list_metrics'));
+        }
         $('#sell_list_filter_date_range').daterangepicker(
             dateRangeSettings,
             function (start, end) {

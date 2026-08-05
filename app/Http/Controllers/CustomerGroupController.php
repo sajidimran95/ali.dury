@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Contact;
 use App\CustomerGroup;
 use App\SellingPriceGroup;
 use App\Utils\Util;
@@ -59,7 +60,50 @@ class CustomerGroupController extends Controller
                     ->make(false);
         }
 
-        return view('customer_group.index');
+        $business_id = (int) request()->session()->get('user.business_id');
+        $customer_group_stats = $this->getCustomerGroupListStats($business_id);
+
+        return view('customer_group.index')->with(compact('customer_group_stats'));
+    }
+
+    /**
+     * KPI stats for customer groups list cards.
+     */
+    protected function getCustomerGroupListStats(int $businessId): array
+    {
+        $total = (int) CustomerGroup::where('business_id', $businessId)->count();
+        $percentage = (int) CustomerGroup::where('business_id', $businessId)
+            ->where('price_calculation_type', 'percentage')
+            ->count();
+        $priceGroup = (int) CustomerGroup::where('business_id', $businessId)
+            ->where('price_calculation_type', 'selling_price_group')
+            ->count();
+        $customersInGroup = (int) Contact::where('business_id', $businessId)
+            ->whereIn('type', ['customer', 'both'])
+            ->whereNotNull('customer_group_id')
+            ->where('customer_group_id', '>', 0)
+            ->count();
+        $customersNoGroup = (int) Contact::where('business_id', $businessId)
+            ->whereIn('type', ['customer', 'both'])
+            ->where(function ($q) {
+                $q->whereNull('customer_group_id')->orWhere('customer_group_id', 0);
+            })
+            ->count();
+        $groupsInUse = (int) Contact::where('business_id', $businessId)
+            ->whereIn('type', ['customer', 'both'])
+            ->whereNotNull('customer_group_id')
+            ->where('customer_group_id', '>', 0)
+            ->distinct()
+            ->count('customer_group_id');
+
+        return [
+            'total_groups' => $total,
+            'percentage_type' => $percentage,
+            'price_group_type' => $priceGroup,
+            'groups_in_use' => $groupsInUse,
+            'customers_in_group' => $customersInGroup,
+            'customers_no_group' => $customersNoGroup,
+        ];
     }
 
     /**

@@ -139,7 +139,49 @@ class StockAdjustmentController extends Controller
                 ->make(true);
         }
 
-        return view('stock_adjustment.index');
+        $business_id = (int) request()->session()->get('user.business_id');
+        $adjustment_stats = $this->getStockAdjustmentListStats($business_id);
+
+        return view('stock_adjustment.index')->with(compact('adjustment_stats'));
+    }
+
+    /**
+     * KPI stats for stock adjustments list cards.
+     */
+    protected function getStockAdjustmentListStats(int $businessId): array
+    {
+        $query = Transaction::where('business_id', $businessId)
+            ->where('type', 'stock_adjustment');
+
+        $permitted_locations = auth()->user()->permitted_locations();
+        if ($permitted_locations != 'all') {
+            $query->whereIn('location_id', $permitted_locations);
+        }
+
+        if (! auth()->user()->can('stock_adjustment.view') && auth()->user()->can('view_own_stock_adjustment')) {
+            $query->where('created_by', request()->session()->get('user.id'));
+        }
+
+        $total = (int) (clone $query)->count();
+        $normal = (int) (clone $query)->where('adjustment_type', 'normal')->count();
+        $abnormal = (int) (clone $query)->where('adjustment_type', 'abnormal')->count();
+        $thisMonth = (int) (clone $query)
+            ->whereBetween('transaction_date', [
+                \Carbon::now()->startOfMonth()->toDateTimeString(),
+                \Carbon::now()->endOfMonth()->toDateTimeString(),
+            ])
+            ->count();
+        $totalAmount = (float) (clone $query)->sum('final_total');
+        $recovered = (float) (clone $query)->sum('total_amount_recovered');
+
+        return [
+            'total_adjustments' => $total,
+            'normal' => $normal,
+            'abnormal' => $abnormal,
+            'this_month' => $thisMonth,
+            'total_amount' => $totalAmount,
+            'total_recovered' => $recovered,
+        ];
     }
 
     /**

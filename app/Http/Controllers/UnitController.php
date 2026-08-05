@@ -75,7 +75,33 @@ class UnitController extends Controller
                 ->make(true);
         }
 
-        return view('unit.index');
+        $business_id = (int) request()->session()->get('user.business_id');
+        $unit_stats = $this->getUnitListStats($business_id);
+
+        return view('unit.index')->with(compact('unit_stats'));
+    }
+
+    /**
+     * KPI stats for units list cards.
+     */
+    protected function getUnitListStats(int $businessId): array
+    {
+        $total = (int) Unit::where('business_id', $businessId)->count();
+        $baseUnits = (int) Unit::where('business_id', $businessId)->whereNull('base_unit_id')->count();
+        $subUnits = max(0, $total - $baseUnits);
+        $allowDecimal = (int) Unit::where('business_id', $businessId)->where('allow_decimal', 1)->count();
+        $productsUsing = (int) Product::where('business_id', $businessId)
+            ->where('type', '!=', 'modifier')
+            ->whereNotNull('unit_id')
+            ->count();
+
+        return [
+            'total_units' => $total,
+            'base_units' => $baseUnits,
+            'sub_units' => $subUnits,
+            'allow_decimal' => $allowDecimal,
+            'products_using' => $productsUsing,
+        ];
     }
 
     /**

@@ -152,7 +152,44 @@ class StockTransferController extends Controller
                 ->make(true);
         }
 
-        return view('stock_transfer.index')->with(compact('statuses'));
+        $business_id = (int) request()->session()->get('user.business_id');
+        $transfer_stats = $this->getStockTransferListStats($business_id);
+
+        return view('stock_transfer.index')->with(compact('statuses', 'transfer_stats'));
+    }
+
+    /**
+     * KPI stats for stock transfers list cards.
+     */
+    protected function getStockTransferListStats(int $businessId): array
+    {
+        $query = Transaction::where('business_id', $businessId)
+            ->where('type', 'sell_transfer');
+
+        if (! auth()->user()->can('stock_transfer.view') && auth()->user()->can('stock_transfer.view_own')) {
+            $query->where('created_by', request()->session()->get('user.id'));
+        }
+
+        $total = (int) (clone $query)->count();
+        $pending = (int) (clone $query)->where('status', 'pending')->count();
+        $inTransit = (int) (clone $query)->where('status', 'in_transit')->count();
+        $completed = (int) (clone $query)->whereIn('status', ['final', 'completed'])->count();
+        $thisMonth = (int) (clone $query)
+            ->whereBetween('transaction_date', [
+                \Carbon::now()->startOfMonth()->toDateTimeString(),
+                \Carbon::now()->endOfMonth()->toDateTimeString(),
+            ])
+            ->count();
+        $totalAmount = (float) (clone $query)->sum('final_total');
+
+        return [
+            'total_transfers' => $total,
+            'pending' => $pending,
+            'in_transit' => $inTransit,
+            'completed' => $completed,
+            'this_month' => $thisMonth,
+            'total_amount' => $totalAmount,
+        ];
     }
 
     /**

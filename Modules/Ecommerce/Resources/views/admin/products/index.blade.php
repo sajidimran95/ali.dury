@@ -1,5 +1,10 @@
 @extends('layouts.app')
 @section('title', __('ecommerce::lang.products'))
+
+@section('css')
+    <link rel="stylesheet" href="{{ asset('css/product-list-metrics.css?v=' . ($asset_v ?? '') . '&plm=4') }}">
+@endsection
+
 @section('content')
 <section class="content-header">
     <h1>@lang('ecommerce::lang.products')
@@ -7,6 +12,10 @@
     </h1>
 </section>
 <section class="content">
+    @if (!empty($product_stats))
+        @include('ecommerce::admin.products.partials.list_metrics')
+    @endif
+
 @if($products->isEmpty())
 <div class="alert alert-info">
     No online products yet. Edit a product and set <strong>Sales Channel</strong> to

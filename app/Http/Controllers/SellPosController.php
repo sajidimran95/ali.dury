@@ -147,7 +147,41 @@ class SellPosController extends Controller
 
         $shipping_statuses = $this->transactionUtil->shipping_statuses();
 
-        return view('sale_pos.index')->with(compact('business_locations', 'customers', 'sales_representative', 'is_cmsn_agent_enabled', 'commission_agents', 'service_staffs', 'is_tables_enabled', 'is_service_staff_enabled', 'is_types_service_enabled', 'shipping_statuses'));
+        $pos_stats = $this->getPosSellListStats((int) $business_id);
+
+        return view('sale_pos.index')->with(compact('business_locations', 'customers', 'sales_representative', 'is_cmsn_agent_enabled', 'commission_agents', 'service_staffs', 'is_tables_enabled', 'is_service_staff_enabled', 'is_types_service_enabled', 'shipping_statuses', 'pos_stats'));
+    }
+
+    /**
+     * KPI stats for POS sell list cards only.
+     */
+    protected function getPosSellListStats(int $businessId): array
+    {
+        $base = Transaction::where('business_id', $businessId)
+            ->where('type', 'sell')
+            ->where('status', 'final')
+            ->where('is_direct_sale', 0)
+            ->whereNull('sub_type');
+
+        $permitted = auth()->user()->permitted_locations();
+        if ($permitted != 'all') {
+            $base->whereIn('location_id', $permitted);
+        }
+
+        $total = (int) (clone $base)->count();
+        $paid = (int) (clone $base)->where('payment_status', 'paid')->count();
+        $due = (int) (clone $base)->where('payment_status', 'due')->count();
+        $partial = (int) (clone $base)->where('payment_status', 'partial')->count();
+        $today = (int) (clone $base)->whereDate('transaction_date', \Carbon\Carbon::today())->count();
+        $thisMonth = (int) (clone $base)
+            ->whereBetween('transaction_date', [
+                \Carbon\Carbon::now()->startOfMonth()->toDateTimeString(),
+                \Carbon\Carbon::now()->endOfMonth()->toDateTimeString(),
+            ])
+            ->count();
+        $totalAmount = (float) (clone $base)->sum('final_total');
+
+        return compact('total', 'paid', 'due', 'partial', 'today', 'thisMonth', 'totalAmount');
     }
 
     /**

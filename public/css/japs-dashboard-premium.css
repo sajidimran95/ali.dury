@@ -663,6 +663,7 @@ body.japs-dashboard-premium .inv-dash .inv-metric:hover {
 body.japs-dashboard-premium .inv-dash .inv-metric--blue { --m-accent: #2563eb; --m-soft: #eff6ff; }
 body.japs-dashboard-premium .inv-dash .inv-metric--amber { --m-accent: #d97706; --m-soft: #fffbeb; }
 body.japs-dashboard-premium .inv-dash .inv-metric--teal { --m-accent: #0d9488; --m-soft: #f0fdfa; }
+body.japs-dashboard-premium .inv-dash .inv-metric--violet { --m-accent: #7c3aed; --m-soft: #f5f3ff; }
 
 body.japs-dashboard-premium .inv-dash .inv-metric__icon {
   width: 44px;
@@ -963,6 +964,206 @@ body.japs-dashboard-premium .inv-dash .inv-panel__link:hover {
   color: #1d4ed8;
 }
 
+/* Shared inv-dash used by CRM (2-column bento + clickable rows/spotlight) */
+body.japs-dashboard-premium .inv-dash .inv-bento--two {
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+}
+
+body.japs-dashboard-premium .inv-dash a.inv-spotlight,
+body.japs-dashboard-premium .inv-dash a.inv-health {
+  text-decoration: none !important;
+  color: inherit;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+body.japs-dashboard-premium .inv-dash a.inv-spotlight {
+  display: block;
+}
+
+body.japs-dashboard-premium .inv-dash a.inv-health {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+body.japs-dashboard-premium .inv-dash a.inv-spotlight:hover,
+body.japs-dashboard-premium .inv-dash a.inv-health:hover {
+  transform: translateY(-2px);
+  border-color: #dbe3ee;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+  color: inherit;
+  text-decoration: none !important;
+}
+
+body.japs-dashboard-premium .inv-dash a.inv-row {
+  text-decoration: none !important;
+  color: inherit;
+  display: flex;
+}
+
+body.japs-dashboard-premium .inv-dash a.inv-row:hover {
+  color: inherit;
+  text-decoration: none !important;
+}
+
+/* Ecommerce dashboard — inv-dash skin helpers */
+body.japs-dashboard-premium .ecom-inv-dash .ecom-inv-alert {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 0 0 16px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  border: 1px solid #fde68a;
+  background: #fffbeb;
+  color: #92400e;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+body.japs-dashboard-premium .ecom-inv-dash .ecom-inv-metrics {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+body.japs-dashboard-premium .ecom-inv-dash .ecom-inv-bento {
+  margin-bottom: 16px;
+}
+
+body.japs-dashboard-premium .ecom-inv-dash .ecom-inv-panel--chart {
+  grid-column: span 1;
+}
+
+body.japs-dashboard-premium .ecom-inv-dash .ecom-inv-chart-body {
+  padding: 8px 16px 16px !important;
+}
+
+body.japs-dashboard-premium .ecom-inv-dash .ecom-inv-revenue-hero {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 8px;
+  padding: 0 4px;
+}
+
+body.japs-dashboard-premium .ecom-inv-dash .ecom-inv-revenue-hero__value {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--inv-ink);
+  letter-spacing: -0.03em;
+}
+
+body.japs-dashboard-premium .ecom-inv-dash .ecom-inv-revenue-hero__meta {
+  font-size: 12px;
+  color: var(--inv-hint);
+}
+
+body.japs-dashboard-premium .ecom-inv-dash .ecom-inv-chart {
+  width: 100%;
+  height: 280px;
+}
+
+body.japs-dashboard-premium .ecom-inv-dash .ecom-inv-chart--sm {
+  height: 200px;
+}
+
+body.japs-dashboard-premium .ecom-inv-dash .ecom-inv-overview {
+  margin-top: 4px;
+  padding-top: 10px;
+  border-top: 1px solid #f1f5f9;
+}
+
+body.japs-dashboard-premium .ecom-inv-dash .ecom-inv-overview__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--inv-muted);
+  padding: 4px 0;
+}
+
+body.japs-dashboard-premium .ecom-inv-dash .ecom-inv-overview__row strong {
+  color: var(--inv-ink);
+  font-weight: 800;
+}
+
+body.japs-dashboard-premium .ecom-inv-dash .ecom-inv-overview__row strong.is-warn {
+  color: #be123c;
+}
+
+body.japs-dashboard-premium .ecom-inv-dash .ecom-inv-recent {
+  min-height: 0;
+  margin-bottom: 8px;
+}
+
+body.japs-dashboard-premium .ecom-inv-dash .ecom-inv-table {
+  width: 100%;
+  margin: 0;
+  border: 0;
+}
+
+body.japs-dashboard-premium .ecom-inv-dash .ecom-inv-table > thead > tr > th {
+  border-bottom: 1px solid #e2e8f0 !important;
+  border-top: 0 !important;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--inv-muted);
+  background: transparent;
+  padding: 10px 12px;
+}
+
+body.japs-dashboard-premium .ecom-inv-dash .ecom-inv-table > tbody > tr > td {
+  border-top: 1px solid #f1f5f9 !important;
+  padding: 12px;
+  font-size: 13px;
+  color: var(--inv-ink);
+  vertical-align: middle;
+}
+
+body.japs-dashboard-premium .ecom-inv-dash .ecom-inv-table a {
+  font-weight: 700;
+  color: var(--inv-blue);
+  text-decoration: none !important;
+}
+
+body.japs-dashboard-premium .ecom-inv-dash .ecom-inv-table a:hover {
+  color: #1d4ed8;
+}
+
+body.japs-dashboard-premium .ecom-inv-dash .ecom-inv-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+body.japs-dashboard-premium .ecom-inv-dash .ecom-inv-pill--pending { background: #fff7ed; color: #c2410c; }
+body.japs-dashboard-premium .ecom-inv-dash .ecom-inv-pill--confirmed,
+body.japs-dashboard-premium .ecom-inv-dash .ecom-inv-pill--processing,
+body.japs-dashboard-premium .ecom-inv-dash .ecom-inv-pill--packed { background: #eff6ff; color: #1d4ed8; }
+body.japs-dashboard-premium .ecom-inv-dash .ecom-inv-pill--shipped { background: #f5f3ff; color: #6d28d9; }
+body.japs-dashboard-premium .ecom-inv-dash .ecom-inv-pill--delivered { background: #ecfdf5; color: #047857; }
+body.japs-dashboard-premium .ecom-inv-dash .ecom-inv-pill--cancelled,
+body.japs-dashboard-premium .ecom-inv-dash .ecom-inv-pill--returned { background: #fff1f2; color: #be123c; }
+
+@media (max-width: 1199px) {
+  body.japs-dashboard-premium .ecom-inv-dash .ecom-inv-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 767px) {
+  body.japs-dashboard-premium .ecom-inv-dash .ecom-inv-metrics {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 1199px) {
   body.japs-dashboard-premium .inv-dash {
     padding: 18px 16px 32px;
@@ -976,8 +1177,14 @@ body.japs-dashboard-premium .inv-dash .inv-panel__link:hover {
   body.japs-dashboard-premium .inv-dash .inv-bento {
     grid-template-columns: 1fr 1fr;
   }
+  body.japs-dashboard-premium .inv-dash .inv-bento--two {
+    grid-template-columns: 1fr 1fr;
+  }
   body.japs-dashboard-premium .inv-dash .inv-panel--cats {
     grid-column: 1 / -1;
+  }
+  body.japs-dashboard-premium .inv-dash .inv-bento--two .inv-panel--cats {
+    grid-column: auto;
   }
 }
 
@@ -1004,7 +1211,8 @@ body.japs-dashboard-premium .inv-dash .inv-panel__link:hover {
   }
   body.japs-dashboard-premium .inv-dash .inv-pulse__spotlight,
   body.japs-dashboard-premium .inv-dash .inv-metric-row,
-  body.japs-dashboard-premium .inv-dash .inv-bento {
+  body.japs-dashboard-premium .inv-dash .inv-bento,
+  body.japs-dashboard-premium .inv-dash .inv-bento--two {
     grid-template-columns: 1fr;
   }
   body.japs-dashboard-premium .inv-dash .inv-panel {

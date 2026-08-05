@@ -96,7 +96,40 @@ class DiscountController extends Controller
                 ->make(true);
         }
 
-        return view('discount.index');
+        $business_id = request()->session()->get('user.business_id');
+        $discount_stats = $this->getDiscountListStats((int) $business_id);
+
+        return view('discount.index')->with(compact('discount_stats'));
+    }
+
+    /**
+     * KPI stats for discount list cards only.
+     */
+    protected function getDiscountListStats(int $businessId): array
+    {
+        $base = Discount::where('business_id', $businessId);
+        $now = \Carbon\Carbon::now();
+
+        $total = (int) (clone $base)->count();
+        $active = (int) (clone $base)->where('is_active', 1)->count();
+        $inactive = (int) (clone $base)->where(function ($q) {
+            $q->where('is_active', '!=', 1)->orWhereNull('is_active');
+        })->count();
+        $running = (int) (clone $base)
+            ->where('is_active', 1)
+            ->where(function ($q) use ($now) {
+                $q->whereNull('starts_at')->orWhere('starts_at', '<=', $now);
+            })
+            ->where(function ($q) use ($now) {
+                $q->whereNull('ends_at')->orWhere('ends_at', '>=', $now);
+            })
+            ->count();
+        $expired = (int) (clone $base)
+            ->whereNotNull('ends_at')
+            ->where('ends_at', '<', $now)
+            ->count();
+
+        return compact('total', 'active', 'inactive', 'running', 'expired');
     }
 
     /**

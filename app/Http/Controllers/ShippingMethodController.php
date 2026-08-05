@@ -39,7 +39,49 @@ class ShippingMethodController extends Controller
                 ->make(true);
         }
 
-        return view('shipping_method.index');
+        $business_id = (int) request()->session()->get('user.business_id');
+        $shipping_stats = $this->getShippingMethodListStats($business_id);
+
+        return view('shipping_method.index')->with(compact('shipping_stats'));
+    }
+
+    /**
+     * KPI stats for shipping methods list cards.
+     */
+    protected function getShippingMethodListStats(int $businessId): array
+    {
+        $total = (int) ShippingMethod::where('business_id', $businessId)->count();
+        $active = (int) ShippingMethod::where('business_id', $businessId)->where('is_active', 1)->count();
+        $inactive = max(0, $total - $active);
+
+        $methodNames = ShippingMethod::where('business_id', $businessId)->pluck('name')->filter()->all();
+        $usedNames = [];
+        if (! empty($methodNames)) {
+            $usedNames = \App\Transaction::where('business_id', $businessId)
+                ->whereIn('type', ['sell', 'sales_order'])
+                ->whereIn('shipping_method', $methodNames)
+                ->distinct()
+                ->pluck('shipping_method')
+                ->filter()
+                ->all();
+        }
+        $inUse = count($usedNames);
+        $unused = max(0, $total - $inUse);
+        $salesUsing = empty($methodNames)
+            ? 0
+            : (int) \App\Transaction::where('business_id', $businessId)
+                ->whereIn('type', ['sell', 'sales_order'])
+                ->whereIn('shipping_method', $methodNames)
+                ->count();
+
+        return [
+            'total_methods' => $total,
+            'active_methods' => $active,
+            'inactive_methods' => $inactive,
+            'methods_in_use' => $inUse,
+            'unused_methods' => $unused,
+            'sales_using' => $salesUsing,
+        ];
     }
 
     public function create()

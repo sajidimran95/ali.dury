@@ -68,8 +68,41 @@ class SalesOrderController extends Controller
             $sales_order_statuses[$key] = $value['label'];
         }
 
+        $so_stats = $this->getSalesOrderListStats((int) $business_id);
+
         return view('sales_order.index')
-            ->with(compact('business_locations', 'customers', 'shipping_statuses', 'sales_order_statuses'));
+            ->with(compact('business_locations', 'customers', 'shipping_statuses', 'sales_order_statuses', 'so_stats'));
+    }
+
+    /**
+     * KPI stats for sales order list cards only.
+     */
+    protected function getSalesOrderListStats(int $businessId): array
+    {
+        $base = Transaction::where('business_id', $businessId)->where('type', 'sales_order');
+
+        if (! auth()->user()->can('so.view_all') && auth()->user()->can('so.view_own')) {
+            $base->where('created_by', auth()->id());
+        }
+
+        $permitted = auth()->user()->permitted_locations();
+        if ($permitted != 'all') {
+            $base->whereIn('location_id', $permitted);
+        }
+
+        $total = (int) (clone $base)->count();
+        $ordered = (int) (clone $base)->where('status', 'ordered')->count();
+        $partial = (int) (clone $base)->where('status', 'partial')->count();
+        $completed = (int) (clone $base)->where('status', 'completed')->count();
+        $thisMonth = (int) (clone $base)
+            ->whereBetween('transaction_date', [
+                \Carbon\Carbon::now()->startOfMonth()->toDateTimeString(),
+                \Carbon\Carbon::now()->endOfMonth()->toDateTimeString(),
+            ])
+            ->count();
+        $totalAmount = (float) (clone $base)->sum('final_total');
+
+        return compact('total', 'ordered', 'partial', 'completed', 'thisMonth', 'totalAmount');
     }
 
     public function getSalesOrders($customer_id)

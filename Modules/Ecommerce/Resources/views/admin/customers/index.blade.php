@@ -1,10 +1,19 @@
 @extends('layouts.app')
 @section('title', __('ecommerce::lang.customers'))
+
+@section('css')
+    <link rel="stylesheet" href="{{ asset('css/product-list-metrics.css?v=' . ($asset_v ?? '') . '&plm=4') }}">
+@endsection
+
 @section('content')
 <section class="content-header">
     <h1>@lang('ecommerce::lang.customers')</h1>
 </section>
 <section class="content">
+    @if (!empty($customer_stats))
+        @include('ecommerce::admin.customers.partials.list_metrics')
+    @endif
+
     <div class="box box-solid">
         <div class="box-header with-border">
             <form method="get" class="form-inline">

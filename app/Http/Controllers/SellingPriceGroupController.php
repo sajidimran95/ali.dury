@@ -62,7 +62,45 @@ class SellingPriceGroupController extends Controller
                 ->make(false);
         }
 
-        return view('selling_price_group.index');
+        $business_id = (int) request()->session()->get('user.business_id');
+        $spg_stats = $this->getSellingPriceGroupListStats($business_id);
+
+        return view('selling_price_group.index')->with(compact('spg_stats'));
+    }
+
+    /**
+     * KPI stats for selling price group list cards.
+     */
+    protected function getSellingPriceGroupListStats(int $businessId): array
+    {
+        $base = SellingPriceGroup::where('business_id', $businessId);
+        $total = (int) (clone $base)->count();
+        $active = (int) (clone $base)->where('is_active', 1)->count();
+        $inactive = max(0, $total - $active);
+
+        $groupIds = SellingPriceGroup::where('business_id', $businessId)->pluck('id');
+
+        $pricedRows = 0;
+        $productsWithPrices = 0;
+        if ($groupIds->isNotEmpty()) {
+            $pricedRows = (int) VariationGroupPrice::whereIn('price_group_id', $groupIds)->count();
+            $productsWithPrices = (int) VariationGroupPrice::query()
+                ->join('variations as v', 'variation_group_prices.variation_id', '=', 'v.id')
+                ->join('products as p', 'v.product_id', '=', 'p.id')
+                ->whereIn('variation_group_prices.price_group_id', $groupIds)
+                ->where('p.business_id', $businessId)
+                ->whereNull('v.deleted_at')
+                ->distinct()
+                ->count(DB::raw('p.id'));
+        }
+
+        return [
+            'total_groups' => $total,
+            'active_groups' => $active,
+            'inactive_groups' => $inactive,
+            'priced_rows' => $pricedRows,
+            'products_with_prices' => $productsWithPrices,
+        ];
     }
 
     /**

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Brands;
+use App\Product;
 use App\Utils\ModuleUtil;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
@@ -58,7 +59,43 @@ class BrandController extends Controller
                 ->make(false);
         }
 
-        return view('brand.index');
+        $business_id = (int) request()->session()->get('user.business_id');
+        $brand_stats = $this->getBrandListStats($business_id);
+
+        return view('brand.index')->with(compact('brand_stats'));
+    }
+
+    /**
+     * KPI stats for brands list cards.
+     */
+    protected function getBrandListStats(int $businessId): array
+    {
+        $total = (int) Brands::where('business_id', $businessId)->count();
+        $productsWithBrand = (int) Product::where('business_id', $businessId)
+            ->where('type', '!=', 'modifier')
+            ->whereNotNull('brand_id')
+            ->count();
+        $productsNoBrand = (int) Product::where('business_id', $businessId)
+            ->where('type', '!=', 'modifier')
+            ->where(function ($q) {
+                $q->whereNull('brand_id')->orWhere('brand_id', 0);
+            })
+            ->count();
+        $brandsInUse = (int) Product::where('business_id', $businessId)
+            ->where('type', '!=', 'modifier')
+            ->whereNotNull('brand_id')
+            ->where('brand_id', '>', 0)
+            ->distinct()
+            ->count('brand_id');
+        $unusedBrands = max(0, $total - $brandsInUse);
+
+        return [
+            'total_brands' => $total,
+            'brands_in_use' => $brandsInUse,
+            'unused_brands' => $unusedBrands,
+            'products_with_brand' => $productsWithBrand,
+            'products_no_brand' => $productsNoBrand,
+        ];
     }
 
     /**

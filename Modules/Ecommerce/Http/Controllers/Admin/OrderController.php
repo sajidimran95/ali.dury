@@ -65,7 +65,55 @@ class OrderController extends Controller
                 ->make(true);
         }
 
-        return view('ecommerce::admin.orders.index');
+        $business_id = (int) request()->session()->get('user.business_id');
+        $order_stats = $this->getEcommerceOrderListStats($business_id);
+
+        return view('ecommerce::admin.orders.index', compact('order_stats'));
+    }
+
+    /**
+     * KPI stats for ecommerce orders list cards.
+     */
+    protected function getEcommerceOrderListStats(int $businessId): array
+    {
+        $base = Transaction::where('business_id', $businessId)
+            ->where('type', 'sell')
+            ->where('source', 'ecommerce');
+
+        $total = (int) (clone $base)->count();
+        $today = (int) (clone $base)->whereDate('transaction_date', \Carbon\Carbon::today())->count();
+        $thisMonth = (int) (clone $base)
+            ->whereBetween('transaction_date', [
+                \Carbon\Carbon::now()->startOfMonth()->toDateTimeString(),
+                \Carbon\Carbon::now()->endOfMonth()->toDateTimeString(),
+            ])
+            ->count();
+
+        $orderIds = (clone $base)->pluck('id');
+        $metaCounts = $orderIds->isEmpty()
+            ? collect()
+            : EcomOrderMeta::whereIn('transaction_id', $orderIds)
+                ->selectRaw('fulfillment_status, COUNT(*) as c')
+                ->groupBy('fulfillment_status')
+                ->pluck('c', 'fulfillment_status');
+
+        $pending = (int) ($metaCounts['pending'] ?? 0) + (int) ($metaCounts['confirmed'] ?? 0);
+        $processing = (int) ($metaCounts['processing'] ?? 0) + (int) ($metaCounts['packed'] ?? 0);
+        $shipped = (int) ($metaCounts['shipped'] ?? 0);
+        $completed = (int) ($metaCounts['delivered'] ?? 0);
+
+        $salesTotal = (float) (clone $base)->where('status', 'final')->sum('final_total');
+
+        return [
+            'total' => $total,
+            'today' => $today,
+            'this_month' => $thisMonth,
+            'pending' => $pending,
+            'processing' => $processing,
+            'shipped' => $shipped,
+            'completed' => $completed,
+            'sales_total' => $salesTotal,
+        ];
     }
 
     public function show($id)

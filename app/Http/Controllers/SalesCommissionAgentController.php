@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Transaction;
 use App\User;
 use App\Utils\Util;
 use DataTables;
@@ -60,7 +61,55 @@ class SalesCommissionAgentController extends Controller
                 ->make(true);
         }
 
-        return view('sales_commission_agent.index');
+        $business_id = (int) request()->session()->get('user.business_id');
+        $agent_stats = $this->getSalesCommissionAgentListStats($business_id);
+
+        return view('sales_commission_agent.index')->with(compact('agent_stats'));
+    }
+
+    /**
+     * KPI stats for sales commission agents list cards.
+     */
+    protected function getSalesCommissionAgentListStats(int $businessId): array
+    {
+        $base = User::where('business_id', $businessId)->where('is_cmmsn_agnt', 1);
+
+        $total = (int) (clone $base)->count();
+        $avgPercent = (float) (clone $base)->avg('cmmsn_percent');
+        $withCommission = (int) (clone $base)->where('cmmsn_percent', '>', 0)->count();
+        $zeroCommission = max(0, $total - $withCommission);
+
+        $agentIds = (clone $base)->pluck('id');
+
+        $salesWithAgent = 0;
+        $agentsUsed = 0;
+        $salesThisMonth = 0;
+
+        if ($agentIds->isNotEmpty()) {
+            $salesQuery = Transaction::where('business_id', $businessId)
+                ->where('type', 'sell')
+                ->where('status', 'final')
+                ->whereIn('commission_agent', $agentIds);
+
+            $salesWithAgent = (int) (clone $salesQuery)->count();
+            $agentsUsed = (int) (clone $salesQuery)->distinct()->count('commission_agent');
+            $salesThisMonth = (int) (clone $salesQuery)
+                ->whereBetween('transaction_date', [
+                    \Carbon\Carbon::now()->startOfMonth()->toDateTimeString(),
+                    \Carbon\Carbon::now()->endOfMonth()->toDateTimeString(),
+                ])
+                ->count();
+        }
+
+        return [
+            'total_agents' => $total,
+            'avg_percent' => $avgPercent,
+            'with_commission' => $withCommission,
+            'zero_commission' => $zeroCommission,
+            'sales_with_agent' => $salesWithAgent,
+            'agents_used' => $agentsUsed,
+            'sales_this_month' => $salesThisMonth,
+        ];
     }
 
     /**

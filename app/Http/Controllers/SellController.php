@@ -557,9 +557,54 @@ class SellController extends Controller
 
         $payment_types = $this->transactionUtil->payment_types(null, true, $business_id);
 
+        $sell_stats = $this->getDirectSellListStats((int) $business_id);
 
         return view('sell.index')
-        ->with(compact('business_locations', 'customers', 'is_woocommerce', 'sales_representative', 'is_cmsn_agent_enabled', 'commission_agents', 'service_staffs', 'is_tables_enabled', 'is_service_staff_enabled', 'is_types_service_enabled', 'shipping_statuses', 'sources', 'payment_types'));
+        ->with(compact('business_locations', 'customers', 'is_woocommerce', 'sales_representative', 'is_cmsn_agent_enabled', 'commission_agents', 'service_staffs', 'is_tables_enabled', 'is_service_staff_enabled', 'is_types_service_enabled', 'shipping_statuses', 'sources', 'payment_types', 'sell_stats'));
+    }
+
+    /**
+     * KPI stats for direct sell (invoice) list cards only.
+     */
+    protected function getDirectSellListStats(int $businessId): array
+    {
+        return $this->getSellChannelListStats($businessId, true);
+    }
+
+    /**
+     * KPI stats for sell list by channel (direct sale vs POS).
+     */
+    protected function getSellChannelListStats(int $businessId, bool $isDirectSale): array
+    {
+        $base = Transaction::where('business_id', $businessId)
+            ->where('type', 'sell')
+            ->where('status', 'final');
+
+        if ($isDirectSale) {
+            $base->where('is_direct_sale', 1);
+        } else {
+            $base->where('is_direct_sale', 0)->whereNull('sub_type');
+        }
+
+        $permitted = auth()->user()->permitted_locations();
+        if ($permitted != 'all') {
+            $base->whereIn('location_id', $permitted);
+        }
+
+        $total = (int) (clone $base)->count();
+        $paid = (int) (clone $base)->where('payment_status', 'paid')->count();
+        $due = (int) (clone $base)->where('payment_status', 'due')->count();
+        $partial = (int) (clone $base)->where('payment_status', 'partial')->count();
+        $today = (int) (clone $base)->whereDate('transaction_date', \Carbon\Carbon::today())->count();
+        $thisMonth = (int) (clone $base)
+            ->whereBetween('transaction_date', [
+                \Carbon\Carbon::now()->startOfMonth()->toDateTimeString(),
+                \Carbon\Carbon::now()->endOfMonth()->toDateTimeString(),
+            ])
+            ->count();
+        $totalAmount = (float) (clone $base)->sum('final_total');
+
+        return compact('total', 'paid', 'due', 'partial', 'today', 'thisMonth', 'totalAmount');
     }
 
     /**
@@ -1157,8 +1202,46 @@ class SellController extends Controller
 
         $sales_representative = User::forDropdown($business_id, false, false, true);
 
+        $draft_stats = $this->getDraftListStats((int) $business_id);
+
         return view('sale_pos.draft')
-            ->with(compact('business_locations', 'customers', 'sales_representative'));
+            ->with(compact('business_locations', 'customers', 'sales_representative', 'draft_stats'));
+    }
+
+    /**
+     * KPI stats for sell drafts list cards only.
+     */
+    protected function getDraftListStats(int $businessId): array
+    {
+        $base = Transaction::where('business_id', $businessId)
+            ->where('type', 'sell')
+            ->where('status', 'draft')
+            ->where(function ($q) {
+                $q->whereNull('sub_status')->orWhere('sub_status', '!=', 'quotation');
+            });
+
+        if (! auth()->user()->can('draft.view_all') && auth()->user()->can('draft.view_own')) {
+            $base->where('created_by', auth()->id());
+        }
+
+        $permitted = auth()->user()->permitted_locations();
+        if ($permitted != 'all') {
+            $base->whereIn('location_id', $permitted);
+        }
+
+        $total = (int) (clone $base)->count();
+        $direct = (int) (clone $base)->where('is_direct_sale', 1)->count();
+        $pos = (int) (clone $base)->where('is_direct_sale', 0)->count();
+        $today = (int) (clone $base)->whereDate('transaction_date', \Carbon\Carbon::today())->count();
+        $thisMonth = (int) (clone $base)
+            ->whereBetween('transaction_date', [
+                \Carbon\Carbon::now()->startOfMonth()->toDateTimeString(),
+                \Carbon\Carbon::now()->endOfMonth()->toDateTimeString(),
+            ])
+            ->count();
+        $totalAmount = (float) (clone $base)->sum('final_total');
+
+        return compact('total', 'direct', 'pos', 'today', 'thisMonth', 'totalAmount');
     }
 
     /**
@@ -1179,8 +1262,44 @@ class SellController extends Controller
 
         $sales_representative = User::forDropdown($business_id, false, false, true);
 
+        $quotation_stats = $this->getQuotationListStats((int) $business_id);
+
         return view('sale_pos.quotations')
-                ->with(compact('business_locations', 'customers', 'sales_representative'));
+                ->with(compact('business_locations', 'customers', 'sales_representative', 'quotation_stats'));
+    }
+
+    /**
+     * KPI stats for quotations list cards only.
+     */
+    protected function getQuotationListStats(int $businessId): array
+    {
+        $base = Transaction::where('business_id', $businessId)
+            ->where('type', 'sell')
+            ->where('status', 'draft')
+            ->where('sub_status', 'quotation');
+
+        if (! auth()->user()->can('quotation.view_all') && auth()->user()->can('quotation.view_own')) {
+            $base->where('created_by', auth()->id());
+        }
+
+        $permitted = auth()->user()->permitted_locations();
+        if ($permitted != 'all') {
+            $base->whereIn('location_id', $permitted);
+        }
+
+        $total = (int) (clone $base)->count();
+        $direct = (int) (clone $base)->where('is_direct_sale', 1)->count();
+        $pos = (int) (clone $base)->where('is_direct_sale', 0)->count();
+        $today = (int) (clone $base)->whereDate('transaction_date', \Carbon\Carbon::today())->count();
+        $thisMonth = (int) (clone $base)
+            ->whereBetween('transaction_date', [
+                \Carbon\Carbon::now()->startOfMonth()->toDateTimeString(),
+                \Carbon\Carbon::now()->endOfMonth()->toDateTimeString(),
+            ])
+            ->count();
+        $totalAmount = (float) (clone $base)->sum('final_total');
+
+        return compact('total', 'direct', 'pos', 'today', 'thisMonth', 'totalAmount');
     }
 
     /**
@@ -1603,8 +1722,52 @@ class SellController extends Controller
 
         $delevery_person = User::forDropdown($business_id, false, false, true);
 
+        $shipment_stats = $this->getShipmentListStats((int) $business_id);
+
         return view('sell.shipments')->with(compact('shipping_statuses'))
-                ->with(compact('business_locations', 'customers', 'sales_representative', 'is_service_staff_enabled', 'service_staffs', 'delevery_person'));
+                ->with(compact('business_locations', 'customers', 'sales_representative', 'is_service_staff_enabled', 'service_staffs', 'delevery_person', 'shipment_stats'));
+    }
+
+    /**
+     * KPI stats for shipments list cards only.
+     */
+    protected function getShipmentListStats(int $businessId): array
+    {
+        $base = Transaction::where('business_id', $businessId)
+            ->where('type', 'sell')
+            ->where('status', 'final')
+            ->whereNotNull('shipping_status');
+
+        if (auth()->user()->hasAnyPermission(['access_pending_shipments_only'])) {
+            $base->where('shipping_status', '!=', 'delivered');
+        }
+
+        if (! auth()->user()->can('direct_sell.view') && ! $this->businessUtil->is_admin(auth()->user())) {
+            $base->where(function ($q) {
+                if (auth()->user()->hasAnyPermission(['view_own_sell_only', 'access_own_shipping'])) {
+                    $q->where('created_by', request()->session()->get('user.id'));
+                }
+
+                if (auth()->user()->hasAnyPermission(['view_commission_agent_sell', 'access_commission_agent_shipping'])) {
+                    $q->orWhere('commission_agent', request()->session()->get('user.id'));
+                }
+            });
+        }
+
+        $permitted = auth()->user()->permitted_locations();
+        if ($permitted != 'all') {
+            $base->whereIn('location_id', $permitted);
+        }
+
+        $total = (int) (clone $base)->count();
+        $ordered = (int) (clone $base)->where('shipping_status', 'ordered')->count();
+        $packed = (int) (clone $base)->where('shipping_status', 'packed')->count();
+        $shipped = (int) (clone $base)->where('shipping_status', 'shipped')->count();
+        $delivered = (int) (clone $base)->where('shipping_status', 'delivered')->count();
+        $today = (int) (clone $base)->whereDate('transaction_date', \Carbon\Carbon::today())->count();
+        $totalAmount = (float) (clone $base)->sum('final_total');
+
+        return compact('total', 'ordered', 'packed', 'shipped', 'delivered', 'today', 'totalAmount');
     }
 
     public function viewMedia($model_id)

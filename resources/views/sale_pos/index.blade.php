@@ -1,6 +1,10 @@
 @extends('layouts.app')
 @section('title', __( 'sale.list_pos'))
 
+@section('css')
+    <link rel="stylesheet" href="{{ asset('css/product-list-metrics.css?v=' . ($asset_v ?? '') . '&plm=4') }}">
+@endsection
+
 @section('content')
 
 <!-- Content Header (Page header) -->
@@ -11,6 +15,9 @@
 
 <!-- Main content -->
 <section class="content no-print">
+    @if (!empty($pos_stats))
+        @include('sale_pos.partials.list_metrics')
+    @endif
     @component('components.filters', ['title' => __('report.filters')])
         @include('sell.partials.sell_list_filters')
     @endcomponent
@@ -64,4 +71,11 @@
 @section('javascript')
 @include('sale_pos.partials.sale_table_javascript')
 <script src="{{ asset('js/payment.js?v=' . $asset_v) }}"></script>
+<script type="text/javascript">
+$(function () {
+    if (typeof __currency_convert_recursively === 'function') {
+        __currency_convert_recursively($('#pos_list_metrics'));
+    }
+});
+</script>
 @endsection

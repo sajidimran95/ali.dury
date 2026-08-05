@@ -1,5 +1,10 @@
 @extends('layouts.app')
 @section('title', __( 'lang_v1.quotation'))
+
+@section('css')
+    <link rel="stylesheet" href="{{ asset('css/product-list-metrics.css?v=' . ($asset_v ?? '') . '&plm=4') }}">
+@endsection
+
 @section('content')
 
 <!-- Content Header (Page header) -->
@@ -11,6 +16,9 @@
 
 <!-- Main content -->
 <section class="content no-print">
+    @if (!empty($quotation_stats))
+        @include('sale_pos.partials.quotation_list_metrics')
+    @endif
         @component('components.filters', ['title' => __('report.filters')])
         <div class="col-md-3">
             <div class="form-group">
@@ -78,6 +86,9 @@
 @section('javascript')
 <script type="text/javascript">
 $(document).ready( function(){
+    if (typeof __currency_convert_recursively === 'function') {
+        __currency_convert_recursively($('#quotation_list_metrics'));
+    }
     //Date range as a button
     $('#sell_list_filter_date_range').daterangepicker(
         dateRangeSettings,

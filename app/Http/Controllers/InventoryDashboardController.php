@@ -63,6 +63,14 @@ class InventoryDashboardController extends Controller
         ));
     }
 
+    /**
+     * Inventory KPI stats (shared by inventory dashboard + product list cards).
+     */
+    public function getStats(int $businessId, $permittedLocations, $locationId = null): array
+    {
+        return $this->getInventoryStats($businessId, $permittedLocations, $locationId);
+    }
+
     protected function getInventoryStats(int $businessId, $permittedLocations, $locationId = null): array
     {
         $productQuery = Product::where('business_id', $businessId)->where('is_inactive', 0);

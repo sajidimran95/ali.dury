@@ -1,6 +1,10 @@
 @extends('layouts.app')
 @section('title', __('sale.discount'))
 
+@section('css')
+    <link rel="stylesheet" href="{{ asset('css/product-list-metrics.css?v=' . ($asset_v ?? '') . '&plm=4') }}">
+@endsection
+
 @section('content')
 
     <!-- Content Header (Page header) -->
@@ -12,6 +16,9 @@
 
     <!-- Main content -->
     <section class="content">
+        @if (!empty($discount_stats))
+            @include('discount.partials.list_metrics')
+        @endif
         <div
             class=" tw-transition-all lg:tw-col-span-1 tw-duration-200 tw-bg-white tw-shadow-sm tw-rounded-xl tw-ring-1 hover:tw-shadow-md  tw-ring-gray-200">
             <div class="tw-p-4 sm:tw-p-5">
