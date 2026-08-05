@@ -4977,22 +4977,60 @@ function round_row_to_iraqi_dinnar(row) {
     }
 }
 
+function pos_print_copies_count(receipt) {
+    var fromReceipt = parseInt(receipt && receipt.print_copies, 10);
+    if ([1, 2, 3].indexOf(fromReceipt) !== -1) {
+        return fromReceipt;
+    }
+    var field = document.getElementById('pos_print_copies');
+    if (field) {
+        var fromField = parseInt(field.value, 10);
+        if ([1, 2, 3].indexOf(fromField) !== -1) {
+            return fromField;
+        }
+    }
+    try {
+        var fromStore = parseInt(localStorage.getItem('pos_print_copies') || '1', 10);
+        if ([1, 2, 3].indexOf(fromStore) !== -1) {
+            return fromStore;
+        }
+    } catch (e) {}
+    return 1;
+}
+
+function pos_print_send_thermal(content, copies) {
+    var remaining = Math.max(1, copies || 1);
+    var sendOnce = function () {
+        if (socket != null && socket.readyState == 1) {
+            socket.send(JSON.stringify(content));
+            remaining -= 1;
+            if (remaining > 0) {
+                setTimeout(sendOnce, 450);
+            }
+        } else {
+            initializeSocket();
+            setTimeout(function () {
+                if (socket != null && socket.readyState == 1) {
+                    sendOnce();
+                } else {
+                    try {
+                        socket.send(JSON.stringify(content));
+                    } catch (e) {}
+                }
+            }, 700);
+        }
+    };
+    sendOnce();
+}
+
 function pos_print(receipt) {
+    var copies = pos_print_copies_count(receipt);
+
     //If printer type then connect with websocket
     if (receipt.print_type == 'printer') {
         var content = receipt;
         content.type = 'print-receipt';
-
-        //Check if ready or not, then print.
-        if (socket != null && socket.readyState == 1) {
-            socket.send(JSON.stringify(content));
-        } else {
-            initializeSocket();
-            setTimeout(function() {
-                socket.send(JSON.stringify(content));
-            }, 700);
-        }
-
+        pos_print_send_thermal(content, copies);
     } else if (receipt.html_content != '') {
         // Do not set document.title to invoice no (removes top browser print header mark)
 
@@ -5004,13 +5042,30 @@ function pos_print(receipt) {
             $('#recent_transactions_modal').removeClass('in show').hide();
         } catch (e) {}
 
+        // Browser: repeat HTML with page breaks for Double / Triple
+        var html = receipt.html_content || '';
+        if (copies > 1 && html) {
+            var pieces = [];
+            for (var i = 0; i < copies; i++) {
+                var pageBreak = i < copies - 1
+                    ? ' style="page-break-after:always;break-after:page;"'
+                    : '';
+                pieces.push('<div class="pos-receipt-copy"' + pageBreak + '>' + html + '</div>');
+            }
+            html = pieces.join('');
+        }
+
         //If printer type browser then print content
-        $('#receipt_section').html(receipt.html_content);
+        $('#receipt_section').html(html);
         __currency_convert_recursively($('#receipt_section'));
         // PDF path removes browser HTML date/URL stamps (Chrome cannot hide those on web pages)
-        var pdfUrl = receipt.print_pdf_url || '';
-        if (!pdfUrl && receipt.transaction_id) {
-            pdfUrl = (window.base_path || '') + '/sells/' + receipt.transaction_id + '/print-pdf';
+        // Multi-copy uses HTML so each copy is a page; skip single-page PDF for N>1
+        var pdfUrl = '';
+        if (copies <= 1) {
+            pdfUrl = receipt.print_pdf_url || '';
+            if (!pdfUrl && receipt.transaction_id) {
+                pdfUrl = (window.base_path || '') + '/sells/' + receipt.transaction_id + '/print-pdf';
+            }
         }
         __print_receipt('receipt_section', pdfUrl);
     }

@@ -128,6 +128,12 @@
                     </a>
                 </li>
             @endif
+            <li>
+                <button type="button" id="pos_nav_print_toggle" data-toggle="modal" data-target="#pos_print_per_sale_modal">
+                    <i class="fas fa-print"></i>
+                    <span>Print Per Sale</span>
+                </button>
+            </li>
         </ul>
     </div>
 </aside>

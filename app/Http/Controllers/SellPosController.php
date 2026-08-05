@@ -54,6 +54,7 @@ use App\Utils\ProductUtil;
 use App\Utils\TransactionUtil;
 use App\Variation;
 use App\Warranty;
+use App\Printer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -296,6 +297,8 @@ class SellPosController extends Controller
         //Added check because $users is of no use if enable_contact_assign if false
         $users = config('constants.enable_contact_assign') ? User::forDropdown($business_id, false, false, false, true) : [];
 
+        $pos_printers = Printer::forDropdown($business_id, false);
+
         return view('sale_pos.create')
             ->with(compact(
                 'edit_discount',
@@ -329,6 +332,7 @@ class SellPosController extends Controller
                 'default_invoice_schemes',
                 'invoice_layouts',
                 'users',
+                'pos_printers',
             ));
     }
 
@@ -714,7 +718,19 @@ class SellPosController extends Controller
                 }
 
                 if ($print_invoice) {
-                    $receipt = $this->receiptContent($business_id, $input['location_id'], $transaction->id, null, false, true, $invoice_layout_id);
+                    $print_override = $this->resolvePosPrintOverride($request, $business_id, $input['location_id']);
+                    $receipt = $this->receiptContent(
+                        $business_id,
+                        $input['location_id'],
+                        $transaction->id,
+                        $print_override['printer_type'],
+                        false,
+                        true,
+                        $invoice_layout_id,
+                        false,
+                        $print_override['printer_id']
+                    );
+                    $receipt['print_copies'] = $print_override['copies'];
                 }
 
                 $output = ['success' => 1, 'msg' => $msg, 'receipt' => $receipt];
@@ -829,13 +845,15 @@ class SellPosController extends Controller
         $is_package_slip = false,
         $from_pos_screen = true,
         $invoice_layout_id = null,
-        $is_delivery_note = false
+        $is_delivery_note = false,
+        $printer_id_override = null
     ) {
         $output = ['is_enabled' => false,
             'print_type' => 'browser',
             'html_content' => null,
             'printer_config' => [],
             'data' => [],
+            'print_copies' => 1,
         ];
 
         $business_details = $this->businessUtil->getDetails($business_id);
@@ -880,7 +898,10 @@ class SellPosController extends Controller
         //If print type browser - return the content, printer - return printer config data, and invoice format config
         if ($receipt_printer_type == 'printer') {
             $output['print_type'] = 'printer';
-            $output['printer_config'] = $this->businessUtil->printerConfig($business_id, $location_details->printer_id);
+            $printer_id = ! empty($printer_id_override)
+                ? $printer_id_override
+                : $location_details->printer_id;
+            $output['printer_config'] = $this->businessUtil->printerConfig($business_id, $printer_id);
             $output['data'] = $receipt_details;
         } else {
             $layout = !empty($receipt_details->design) ? 'sale_pos.receipts.' . $receipt_details->design : 'sale_pos.receipts.classic';
@@ -891,6 +912,97 @@ class SellPosController extends Controller
         }
 
         return $output;
+    }
+
+    /**
+     * Save Print Per Sale preference to business table columns.
+     */
+    public function savePrintPerSaleSettings(Request $request)
+    {
+        if (! auth()->check()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $business_id = (int) $request->session()->get('user.business_id');
+        $copies = (int) $request->input('print_copies', 1);
+        if (! in_array($copies, [1, 2, 3], true)) {
+            $copies = 1;
+        }
+
+        $printer_id = $request->input('print_printer', null);
+        if ($printer_id === '' || $printer_id === null) {
+            $printer_id = null;
+        } elseif (ctype_digit((string) $printer_id)) {
+            $printer_id = (int) $printer_id;
+            $exists = Printer::where('business_id', $business_id)->where('id', $printer_id)->exists();
+            if (! $exists) {
+                $printer_id = null;
+            }
+        } else {
+            $printer_id = null;
+        }
+
+        $business = Business::where('id', $business_id)->firstOrFail();
+        $business->print_per_sale_copies = $copies;
+        $business->print_per_sale_printer_id = $printer_id;
+        $business->save();
+
+        // Keep browser session in sync
+        $session_business = $request->session()->get('business');
+        if (is_object($session_business)) {
+            $session_business->print_per_sale_copies = $copies;
+            $session_business->print_per_sale_printer_id = $printer_id;
+            $request->session()->put('business', $session_business);
+        } elseif (is_array($session_business)) {
+            $session_business['print_per_sale_copies'] = $copies;
+            $session_business['print_per_sale_printer_id'] = $printer_id;
+            $request->session()->put('business', $session_business);
+        }
+
+        return response()->json([
+            'success' => true,
+            'print_copies' => $copies,
+            'print_printer' => $printer_id !== null ? (string) $printer_id : '',
+        ]);
+    }
+
+    /**
+     * Resolve per-sale print copies + printer from POS form / business table columns.
+     */
+    protected function resolvePosPrintOverride(Request $request, $business_id, $location_id): array
+    {
+        $business = Business::find($business_id);
+
+        $copies = (int) $request->input('pos_print_copies', 0);
+        if (! in_array($copies, [1, 2, 3], true)) {
+            $copies = (int) ($business->print_per_sale_copies ?? 1);
+            if (! in_array($copies, [1, 2, 3], true)) {
+                $copies = 1;
+            }
+        }
+
+        $choice = (string) $request->input('pos_print_printer', '');
+        if ($choice === '') {
+            $saved_id = $business->print_per_sale_printer_id ?? null;
+            $choice = $saved_id !== null && $saved_id !== '' ? (string) $saved_id : '';
+        }
+
+        $printer_type = null;
+        $printer_id = null;
+
+        if ($choice !== '' && $choice !== 'default' && ctype_digit((string) $choice)) {
+            $exists = Printer::where('business_id', $business_id)->where('id', (int) $choice)->exists();
+            if ($exists) {
+                $printer_type = 'printer';
+                $printer_id = (int) $choice;
+            }
+        }
+
+        return [
+            'copies' => $copies,
+            'printer_type' => $printer_type,
+            'printer_id' => $printer_id,
+        ];
     }
 
     /**
@@ -1230,6 +1342,8 @@ class SellPosController extends Controller
         $price_groups = SellingPriceGroup::forDropdown($business_id);
         $default_price_group_id = !empty($default_location->selling_price_group_id) && array_key_exists($default_location->selling_price_group_id, $price_groups) ? $default_location->selling_price_group_id : null;
 
+        $pos_printers = Printer::forDropdown($business_id, false);
+
         return view('sale_pos.edit')
             ->with(compact('business_details', 'taxes', 'payment_types', 'walk_in_customer',
                 'sell_details', 'transaction', 'payment_lines', 'location_printer_type', 'shortcuts',
@@ -1237,7 +1351,8 @@ class SellPosController extends Controller
                 'brands', 'accounts', 'waiters', 'redeem_details', 'edit_price', 'edit_discount',
                 'shipping_statuses', 'warranties', 'sub_type', 'pos_module_data', 'invoice_schemes',
                 'default_invoice_schemes', 'invoice_layouts', 'featured_products', 'customer_due',
-                'users', 'only_payment', 'default_location', 'business_locations', 'price_groups', 'default_price_group_id'));
+                'users', 'only_payment', 'default_location', 'business_locations', 'price_groups', 'default_price_group_id',
+                'pos_printers'));
     }
 
     /**
@@ -1459,7 +1574,19 @@ class SellPosController extends Controller
                     $can_print_invoice = auth()->user()->can('print_invoice');
                     $invoice_layout_id = $request->input('invoice_layout_id');
 
-                    $receipt = $this->receiptContent($business_id, $input['location_id'], $transaction_before->id, null, false, true, $invoice_layout_id);
+                    $print_override = $this->resolvePosPrintOverride($request, $business_id, $input['location_id']);
+                    $receipt = $this->receiptContent(
+                        $business_id,
+                        $input['location_id'],
+                        $transaction_before->id,
+                        $print_override['printer_type'],
+                        false,
+                        true,
+                        $invoice_layout_id,
+                        false,
+                        $print_override['printer_id']
+                    );
+                    $receipt['print_copies'] = $print_override['copies'];
                     $msg = trans('purchase.payment_updated_success');
 
                     $output = ['success' => 1, 'msg' => $msg, 'receipt' => $receipt];
@@ -1625,7 +1752,19 @@ class SellPosController extends Controller
                 } elseif ($input['status'] == 'final') {
                     $msg = trans('sale.pos_sale_updated');
                     if (!$is_direct_sale && $can_print_invoice) {
-                        $receipt = $this->receiptContent($business_id, $input['location_id'], $transaction->id, null, false, true, $invoice_layout_id);
+                        $print_override = $this->resolvePosPrintOverride($request, $business_id, $input['location_id']);
+                        $receipt = $this->receiptContent(
+                            $business_id,
+                            $input['location_id'],
+                            $transaction->id,
+                            $print_override['printer_type'],
+                            false,
+                            true,
+                            $invoice_layout_id,
+                            false,
+                            $print_override['printer_id']
+                        );
+                        $receipt['print_copies'] = $print_override['copies'];
                     } else {
                         $receipt = '';
                     }

@@ -34,6 +34,9 @@
 						<div class="box-body pb-0">
 							{!! Form::hidden('location_id', $transaction->location_id, ['id' => 'location_id', 'data-receipt_printer_type' => !empty($location_printer_type) ? $location_printer_type : 'browser', 'data-default_payment_accounts' => $transaction->location->default_payment_accounts]); !!}
 							{!! Form::hidden('sub_type', isset($sub_type) ? $sub_type : null) !!}
+							<input type="hidden" name="pos_print_copies" id="pos_print_copies" value="{{ (int) ($business_details->print_per_sale_copies ?? 1) }}">
+							<input type="hidden" name="pos_print_printer" id="pos_print_printer" value="{{ $business_details->print_per_sale_printer_id ?? '' }}">
+							<input type="hidden" id="pos_print_settings_url" value="{{ url('/sells/pos/print-per-sale-settings') }}">
 							<input type="hidden" id="item_addition_method" value="{{$business_details->item_addition_method}}">
 							@include('sale_pos.partials.pos_cart_actions')
 							<div class="pos-cart-panel">
@@ -89,6 +92,8 @@
 
 @include('sale_pos.partials.recent_transactions_modal')
 
+@include('sale_pos.partials.print_per_sale_modal')
+
 @include('sale_pos.partials.customer_purchase_history_modal')
 
 @include('sale_pos.partials.weighing_scale_modal')
@@ -99,7 +104,7 @@
 @stop
 
 @section('javascript')
-	<script src="{{ asset('js/pos.js?v=' . $asset_v . '&ls=109') }}"></script>
+	<script src="{{ asset('js/pos.js?v=' . $asset_v . '&ls=110') }}"></script>
 	<script src="{{ asset('js/printer.js?v=' . $asset_v) }}"></script>
 	<script src="{{ asset('js/product.js?v=' . $asset_v) }}"></script>
 	<script src="{{ asset('js/opening_stock.js?v=' . $asset_v) }}"></script>
