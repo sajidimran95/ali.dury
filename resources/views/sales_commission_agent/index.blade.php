@@ -2,7 +2,7 @@
 @section('title', __('lang_v1.sales_commission_agents'))
 
 @section('css')
-    <link rel="stylesheet" href="{{ asset('css/product-list-metrics.css?v=' . ($asset_v ?? '') . '&plm=4') }}">
+    <link rel="stylesheet" href="{{ asset('css/product-list-metrics.css?v=' . ($asset_v ?? '') . '&plm=7') }}">
 @endsection
 
 @section('content')

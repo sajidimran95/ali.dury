@@ -88,13 +88,54 @@ class ContactController extends Controller
 
         $customer_groups = [];
         $customer_stats = null;
+        $supplier_stats = null;
         if ($type == 'customer') {
             $customer_groups = CustomerGroup::forDropdown($business_id);
             $customer_stats = $this->getCustomerListStats($business_id);
+        } elseif ($type == 'supplier') {
+            $supplier_stats = $this->getSupplierListStats($business_id);
         }
 
         return view('contact.index')
-            ->with(compact('type', 'reward_enabled', 'customer_groups', 'users', 'customer_stats'));
+            ->with(compact('type', 'reward_enabled', 'customer_groups', 'users', 'customer_stats', 'supplier_stats'));
+    }
+
+    /**
+     * KPI stats for suppliers list cards only.
+     */
+    private function getSupplierListStats(int $business_id): array
+    {
+        $base = Contact::where('contacts.business_id', $business_id)->onlySuppliers();
+
+        $total = (int) (clone $base)->count();
+        $active = (int) (clone $base)->where(function ($q) {
+            $q->where('contacts.contact_status', 'active')->orWhereNull('contacts.contact_status');
+        })->count();
+        $inactive = (int) (clone $base)->where('contacts.contact_status', 'inactive')->count();
+        $withAdvance = (int) (clone $base)->where('contacts.balance', '>', 0)->count();
+        $thisMonth = (int) (clone $base)
+            ->whereBetween('contacts.created_at', [
+                \Carbon\Carbon::now()->startOfMonth()->toDateTimeString(),
+                \Carbon\Carbon::now()->endOfMonth()->toDateTimeString(),
+            ])
+            ->count();
+
+        $balance_due = 0.0;
+        $with_due = 0;
+        try {
+            $due_rows = $this->contactUtil->getContactQuery($business_id, 'supplier')->get();
+            foreach ($due_rows as $row) {
+                $due = ($row->total_purchase ?? 0) - ($row->purchase_paid ?? 0) - ($row->total_ledger_discount ?? 0);
+                if ($due > 0) {
+                    $balance_due += $due;
+                    $with_due++;
+                }
+            }
+        } catch (\Throwable $e) {
+            // keep zeros if query differs
+        }
+
+        return compact('total', 'active', 'inactive', 'withAdvance', 'thisMonth', 'balance_due', 'with_due');
     }
 
     /**

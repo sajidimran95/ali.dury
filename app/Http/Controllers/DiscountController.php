@@ -91,8 +91,13 @@ class DiscountController extends Controller
 
                     return $ends_at;
                 })
-                ->editColumn('discount_amount', '{{@num_format($discount_amount)}} @if($discount_type == "percentage") % @endif')
-                ->rawColumns(['name', 'action', 'row_select', 'products'])
+                ->editColumn('discount_amount', function ($row) {
+                    $amount = $this->commonUtil->num_f($row->discount_amount);
+                    $suffix = $row->discount_type == 'percentage' ? ' %' : '';
+
+                    return '<span class="is-sum">'.$amount.$suffix.'</span>';
+                })
+                ->rawColumns(['name', 'action', 'row_select', 'products', 'discount_amount'])
                 ->make(true);
         }
 
@@ -128,8 +133,11 @@ class DiscountController extends Controller
             ->whereNotNull('ends_at')
             ->where('ends_at', '<', $now)
             ->count();
+        $avgAmount = (float) (clone $base)->avg('discount_amount');
+        $fixedSum = (float) (clone $base)->where('discount_type', 'fixed')->sum('discount_amount');
+        $avgPercent = (float) (clone $base)->where('discount_type', 'percentage')->avg('discount_amount');
 
-        return compact('total', 'active', 'inactive', 'running', 'expired');
+        return compact('total', 'active', 'inactive', 'running', 'expired', 'avgAmount', 'fixedSum', 'avgPercent');
     }
 
     /**

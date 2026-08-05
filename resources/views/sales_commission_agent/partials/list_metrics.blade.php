@@ -25,7 +25,7 @@
             </span>
             <div>
                 <div class="inv-metric__label">@lang('lang_v1.avg_commission')</div>
-                <div class="inv-metric__value">{{ @num_format($avgPercent) }}%</div>
+                <div class="inv-metric__value is-sum">{{ @num_format($avgPercent) }}%</div>
                 <div class="inv-metric__hint">@lang('lang_v1.cmmsn_percent')</div>
             </div>
         </div>

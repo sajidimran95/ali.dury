@@ -60,8 +60,9 @@
   --inv-muted: #64748b;
   --inv-hint: #94a3b8;
   --inv-line: #e2e8f0;
-  --inv-teal: #0d9488;
+  --inv-teal: #2d927b;
   --inv-amber: #d97706;
+  --inv-money: #2d927b;
   margin: 0 0 18px;
 }
 
@@ -101,7 +102,7 @@
 .product-list-dash .inv-metric--blue { --m-accent: #2563eb; --m-soft: #eff6ff; }
 .product-list-dash .inv-metric--violet { --m-accent: #7c3aed; --m-soft: #f5f3ff; }
 .product-list-dash .inv-metric--amber { --m-accent: #d97706; --m-soft: #fffbeb; }
-.product-list-dash .inv-metric--teal { --m-accent: #0d9488; --m-soft: #f0fdfa; }
+.product-list-dash .inv-metric--teal { --m-accent: #2d927b; --m-soft: #ecf8f4; }
 .product-list-dash .inv-metric--slate { --m-accent: #475569; --m-soft: #f1f5f9; }
 
 .product-list-dash .inv-metric__icon {
@@ -146,6 +147,15 @@
 
 .product-list-dash .inv-metric__value.is-warn {
   color: var(--inv-amber);
+}
+
+/* Only sum / money totals — same as dashboard profit color */
+.product-list-dash .inv-metric__value.is-sum,
+.product-list-dash .inv-metric__hint .is-sum,
+.product-list-dash .inv-metric__hint .display_currency,
+.is-sum {
+  color: #2d927b !important;
+  font-weight: 700;
 }
 
 .product-list-dash .inv-metric__hint {

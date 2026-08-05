@@ -3,24 +3,46 @@
 @php
     $api_key = env('GOOGLE_MAP_API_KEY');
 @endphp
-@if (!empty($api_key))
-    @section('css')
+@section('css')
+    <link rel="stylesheet" href="{{ asset('css/product-list-metrics.css?v=' . ($asset_v ?? '') . '&plm=8') }}">
+    @if (!empty($api_key))
         @include('contact.partials.google_map_styles')
-    @endsection
-@endif
+    @endif
+@endsection
 @section('content')
     @if ($type == 'customer')
         @include('contact.partials.customer_index')
     @else
     <!-- Content Header (Page header) -->
-    <section class="content-header">
-        <h1 class="tw-text-xl md:tw-text-3xl tw-font-bold tw-text-black"> @lang('lang_v1.' . $type . 's')
-            <small class="tw-text-sm md:tw-text-base tw-text-gray-700 tw-font-semibold">@lang('contact.manage_your_contact', ['contacts' => __('lang_v1.' . $type . 's')])</small>
-        </h1>
+    <section class="content-header product-list-header">
+        <div class="product-list-header__row">
+            <h1 class="tw-text-xl md:tw-text-3xl tw-font-bold tw-text-black product-list-header__title">
+                @lang('lang_v1.' . $type . 's')
+                <small class="tw-text-sm md:tw-text-base tw-text-gray-700 tw-font-semibold">@lang('contact.manage_your_contact', ['contacts' => __('lang_v1.' . $type . 's')])</small>
+            </h1>
+            <div class="product-list-header__actions">
+                @if (auth()->user()->can('supplier.create') || auth()->user()->can('supplier.view_own'))
+                    <a class="product-list-header__btn product-list-header__btn--primary btn-modal"
+                        data-href="{{ action([\App\Http\Controllers\ContactController::class, 'create'], ['type' => $type]) }}"
+                        data-container="#global_contact_modal"
+                        href="javascript:void(0);">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M12 5l0 14" />
+                            <path d="M5 12l14 0" />
+                        </svg>
+                        @lang('messages.add')
+                    </a>
+                @endif
+            </div>
+        </div>
     </section>
 
     <!-- Main content -->
     <section class="content">
+        @if (!empty($supplier_stats))
+            @include('contact.partials.supplier_list_metrics')
+        @endif
         @component('components.filters', ['title' => __('report.filters')])
             <div class="col-md-3">
                 <div class="form-group">
@@ -77,23 +99,6 @@
             'class' => 'box-primary',
             'title' => __('contact.all_your_contact', ['contacts' => __('lang_v1.' . $type . 's')]),
         ])
-            @if (auth()->user()->can('supplier.create') || auth()->user()->can('supplier.view_own'))
-                @slot('tool')
-                    <div class="box-tools">
-                        <a class="tw-dw-btn tw-bg-gradient-to-r tw-from-indigo-600 tw-to-blue-500 tw-font-bold tw-text-white tw-border-none tw-rounded-full btn-modal"
-                                data-href="{{ action([\App\Http\Controllers\ContactController::class, 'create'], ['type' => $type]) }}"
-                                data-container="#global_contact_modal">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                class="icon icon-tabler icons-tabler-outline icon-tabler-plus">
-                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                <path d="M12 5l0 14" />
-                                <path d="M5 12l14 0" />
-                                </svg> @lang('messages.add')
-                        </a>
-                    </div>
-                @endslot
-            @endif
             @if (auth()->user()->can('supplier.view') || auth()->user()->can('supplier.view_own'))
                 <div class="table-responsive">
                     <table class="table table-bordered table-striped" id="contact_table">
@@ -325,6 +330,14 @@
 
                 $(document).ready(wireCustomerUi);
             })();
+        </script>
+    @else
+        <script>
+            $(document).ready(function () {
+                if (typeof __currency_convert_recursively === 'function') {
+                    __currency_convert_recursively($('#supplier_list_metrics'));
+                }
+            });
         </script>
     @endif
     @if (!empty($api_key))

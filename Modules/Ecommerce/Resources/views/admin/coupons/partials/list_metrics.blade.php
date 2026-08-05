@@ -17,7 +17,7 @@
             </span>
             <div>
                 <div class="inv-metric__label">@lang('ecommerce::lang.times_applied')</div>
-                <div class="inv-metric__value">{{ @num_format($usedTimes) }}</div>
+                <div class="inv-metric__value is-sum">{{ @num_format($usedTimes) }}</div>
                 <div class="inv-metric__hint">@lang('ecommerce::lang.total_redemptions')</div>
             </div>
         </div>

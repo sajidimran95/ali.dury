@@ -184,7 +184,38 @@ class PurchaseReturnController extends Controller
 
         $business_locations = BusinessLocation::forDropdown($business_id);
 
-        return view('purchase_return.index')->with(compact('business_locations'));
+        $purchase_return_stats = $this->getPurchaseReturnListStats((int) $business_id);
+
+        return view('purchase_return.index')->with(compact('business_locations', 'purchase_return_stats'));
+    }
+
+    /**
+     * KPI stats for purchase return list cards only.
+     */
+    protected function getPurchaseReturnListStats(int $businessId): array
+    {
+        $base = Transaction::where('business_id', $businessId)
+            ->where('type', 'purchase_return');
+
+        $permitted = auth()->user()->permitted_locations();
+        if ($permitted != 'all') {
+            $base->whereIn('location_id', $permitted);
+        }
+
+        $total = (int) (clone $base)->count();
+        $paid = (int) (clone $base)->where('payment_status', 'paid')->count();
+        $due = (int) (clone $base)->where('payment_status', 'due')->count();
+        $partial = (int) (clone $base)->where('payment_status', 'partial')->count();
+        $today = (int) (clone $base)->whereDate('transaction_date', \Carbon\Carbon::today())->count();
+        $thisMonth = (int) (clone $base)
+            ->whereBetween('transaction_date', [
+                \Carbon\Carbon::now()->startOfMonth()->toDateTimeString(),
+                \Carbon\Carbon::now()->endOfMonth()->toDateTimeString(),
+            ])
+            ->count();
+        $totalAmount = (float) (clone $base)->sum('final_total');
+
+        return compact('total', 'paid', 'due', 'partial', 'today', 'thisMonth', 'totalAmount');
     }
 
     /**

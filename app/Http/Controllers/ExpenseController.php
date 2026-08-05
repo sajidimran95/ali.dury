@@ -296,8 +296,52 @@ class ExpenseController extends Controller
                         ->pluck('name', 'id')
                         ->toArray();
 
+        $expense_stats = $this->getExpenseListStats((int) $business_id);
+
         return view('expense.index')
-            ->with(compact('categories', 'business_locations', 'users', 'contacts', 'sub_categories'));
+            ->with(compact('categories', 'business_locations', 'users', 'contacts', 'sub_categories', 'expense_stats'));
+    }
+
+    /**
+     * KPI stats for expenses list cards only.
+     */
+    protected function getExpenseListStats(int $businessId): array
+    {
+        $base = Transaction::where('business_id', $businessId)
+            ->whereIn('type', ['expense', 'expense_refund']);
+
+        $is_admin = $this->moduleUtil->is_admin(auth()->user(), $businessId);
+        if (! $is_admin && ! auth()->user()->can('all_expense.access')) {
+            $user_id = auth()->id();
+            $base->where(function ($query) use ($user_id) {
+                $query->where('created_by', $user_id)
+                    ->orWhere('expense_for', $user_id);
+            });
+        }
+
+        $permitted = auth()->user()->permitted_locations();
+        if ($permitted != 'all') {
+            $base->whereIn('location_id', $permitted);
+        }
+
+        $total = (int) (clone $base)->count();
+        $paid = (int) (clone $base)->where('payment_status', 'paid')->count();
+        $due = (int) (clone $base)->where('payment_status', 'due')->count();
+        $partial = (int) (clone $base)->where('payment_status', 'partial')->count();
+        $today = (int) (clone $base)->whereDate('transaction_date', \Carbon\Carbon::today())->count();
+        $thisMonth = (int) (clone $base)
+            ->whereBetween('transaction_date', [
+                \Carbon\Carbon::now()->startOfMonth()->toDateTimeString(),
+                \Carbon\Carbon::now()->endOfMonth()->toDateTimeString(),
+            ])
+            ->count();
+
+        // Net amount: expenses positive, refunds subtract
+        $expenseSum = (float) (clone $base)->where('type', 'expense')->sum('final_total');
+        $refundSum = (float) (clone $base)->where('type', 'expense_refund')->sum('final_total');
+        $totalAmount = $expenseSum - $refundSum;
+
+        return compact('total', 'paid', 'due', 'partial', 'today', 'thisMonth', 'totalAmount');
     }
 
     /**

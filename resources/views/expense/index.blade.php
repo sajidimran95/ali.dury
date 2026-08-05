@@ -1,15 +1,49 @@
 @extends('layouts.app')
 @section('title', __('expense.expenses'))
 
+@section('css')
+    <link rel="stylesheet" href="{{ asset('css/product-list-metrics.css?v=' . ($asset_v ?? '') . '&plm=8') }}">
+@endsection
+
 @section('content')
 
 <!-- Content Header (Page header) -->
-<section class="content-header">
-    <h1 class="tw-text-xl md:tw-text-3xl tw-font-bold tw-text-black">@lang('expense.expenses')</h1>
+<section class="content-header product-list-header">
+    <div class="product-list-header__row">
+        <h1 class="tw-text-xl md:tw-text-3xl tw-font-bold tw-text-black product-list-header__title">
+            @lang('expense.expenses')
+        </h1>
+        <div class="product-list-header__actions">
+            @can('expense.add')
+                <a class="product-list-header__btn product-list-header__btn--secondary"
+                    href="{{ action([\App\Http\Controllers\ExpenseController::class, 'importExpense']) }}">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <polyline points="7 10 12 15 17 10" />
+                        <line x1="12" y1="15" x2="12" y2="3" />
+                    </svg>
+                    @lang('expense.import_expense')
+                </a>
+                <a class="product-list-header__btn product-list-header__btn--primary"
+                    href="{{ action([\App\Http\Controllers\ExpenseController::class, 'create']) }}">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M12 5l0 14" />
+                        <path d="M5 12l14 0" />
+                    </svg>
+                    @lang('messages.add')
+                </a>
+            @endcan
+        </div>
+    </div>
 </section>
 
 <!-- Main content -->
 <section class="content">
+    @if (!empty($expense_stats))
+        @include('expense.partials.list_metrics')
+    @endif
     <div class="row">
         <div class="col-md-12">
             @component('components.filters', ['title' => __('report.filters')])
@@ -76,34 +110,6 @@
     <div class="row">
         <div class="col-md-12">
             @component('components.widget', ['class' => 'box-primary', 'title' => __('expense.all_expenses')])
-                @can('expense.add')
-                    @slot('tool')
-                        <div class="box-tools">
-                            {{-- <a class="btn btn-block btn-primary" href="{{action([\App\Http\Controllers\ExpenseController::class, 'create'])}}">
-                            <i class="fa fa-plus"></i> @lang('messages.add')</a> --}}
-                            <a class="tw-dw-btn tw-bg-gradient-to-r tw-from-indigo-600 tw-to-blue-500 tw-font-bold tw-text-white tw-border-none tw-rounded-full pull-right tw-m-2"
-                                href="{{action([\App\Http\Controllers\ExpenseController::class, 'create'])}}">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                    class="icon icon-tabler icons-tabler-outline icon-tabler-plus">
-                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                    <path d="M12 5l0 14" />
-                                    <path d="M5 12l14 0" />
-                                </svg> @lang('messages.add')
-                            </a>
-                            <a class="tw-dw-btn tw-bg-gradient-to-r tw-from-indigo-600 tw-to-blue-500 tw-font-bold tw-text-white tw-border-none tw-rounded-full pull-right tw-m-2"
-                                href="{{action([\App\Http\Controllers\ExpenseController::class, 'importExpense'])}}">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                        class="icon icon-tabler icons-tabler-outline icon-tabler-plus">
-                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                        <path d="M12 5l0 14" />
-                                        <path d="M5 12l14 0" />
-                                </svg> @lang('expense.import_expense')
-                        </a>
-                        </div>
-                    @endslot
-                @endcan
                 <div class="table-responsive">
                     <table class="table table-bordered table-striped" id="expense_table">
                         <thead>
@@ -143,7 +149,6 @@
 
 </section>
 <!-- /.content -->
-<!-- /.content -->
 <div class="modal fade payment_modal" tabindex="-1" role="dialog" 
     aria-labelledby="gridSystemModalLabel">
 </div>
@@ -154,4 +159,11 @@
 @stop
 @section('javascript')
  <script src="{{ asset('js/payment.js?v=' . $asset_v) }}"></script>
+ <script>
+    $(document).ready(function () {
+        if (typeof __currency_convert_recursively === 'function') {
+            __currency_convert_recursively($('#expense_list_metrics'));
+        }
+    });
+ </script>
 @endsection

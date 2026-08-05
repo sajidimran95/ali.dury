@@ -1,16 +1,39 @@
 @extends('layouts.app')
 @section('title', __('lang_v1.purchase_return'))
 
+@section('css')
+    <link rel="stylesheet" href="{{ asset('css/product-list-metrics.css?v=' . ($asset_v ?? '') . '&plm=8') }}">
+@endsection
+
 @section('content')
 
     <!-- Content Header (Page header) -->
-    <section class="content-header no-print">
-        <h1 class="tw-text-xl md:tw-text-3xl tw-font-bold tw-text-black">@lang('lang_v1.purchase_return')
-        </h1>
+    <section class="content-header product-list-header no-print">
+        <div class="product-list-header__row">
+            <h1 class="tw-text-xl md:tw-text-3xl tw-font-bold tw-text-black product-list-header__title">
+                @lang('lang_v1.purchase_return')
+            </h1>
+            <div class="product-list-header__actions">
+                @can('purchase.update')
+                    <a class="product-list-header__btn product-list-header__btn--primary"
+                        href="{{ action([\App\Http\Controllers\CombinedPurchaseReturnController::class, 'create']) }}">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M12 5l0 14" />
+                            <path d="M5 12l14 0" />
+                        </svg>
+                        @lang('messages.add')
+                    </a>
+                @endcan
+            </div>
+        </div>
     </section>
 
     <!-- Main content -->
     <section class="content no-print">
+        @if (!empty($purchase_return_stats))
+            @include('purchase_return.partials.list_metrics')
+        @endif
         @component('components.filters', ['title' => __('report.filters')])
             <div class="col-md-3">
                 <div class="form-group">
@@ -34,24 +57,6 @@
             </div>
         @endcomponent
         @component('components.widget', ['class' => 'box-primary', 'title' => __('lang_v1.all_purchase_returns')])
-            @can('purchase.update')
-                @slot('tool')
-                    <div class="box-tools">
-                        {{-- <a class="btn btn-block btn-primary" href="{{action([\App\Http\Controllers\CombinedPurchaseReturnController::class, 'create'])}}">
-                    <i class="fa fa-plus"></i> @lang('messages.add')</a> --}}
-                        <a class="tw-dw-btn tw-bg-gradient-to-r tw-from-indigo-600 tw-to-blue-500 tw-font-bold tw-text-white tw-border-none tw-rounded-full pull-right"
-                            href="{{action([\App\Http\Controllers\CombinedPurchaseReturnController::class, 'create'])}}">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                class="icon icon-tabler icons-tabler-outline icon-tabler-plus">
-                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                <path d="M12 5l0 14" />
-                                <path d="M5 12l14 0" />
-                            </svg> @lang('messages.add')
-                        </a>
-                    </div>
-                @endslot
-            @endcan
             @can('purchase.view')
                 @include('purchase_return.partials.purchase_return_list')
             @endcan
@@ -71,6 +76,9 @@
     <script src="{{ asset('js/payment.js?v=' . $asset_v) }}"></script>
     <script>
         $(document).ready(function() {
+            if (typeof __currency_convert_recursively === 'function') {
+                __currency_convert_recursively($('#purchase_return_list_metrics'));
+            }
             $('#purchase_list_filter_date_range').daterangepicker(
                 dateRangeSettings,
                 function(start, end) {

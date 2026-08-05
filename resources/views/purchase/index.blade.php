@@ -1,21 +1,39 @@
 @extends('layouts.app')
 @section('title', __('purchase.purchases'))
 
+@section('css')
+    <link rel="stylesheet" href="{{ asset('css/product-list-metrics.css?v=' . ($asset_v ?? '') . '&plm=8') }}">
+@endsection
+
 @section('content')
 
     <!-- Content Header (Page header) -->
-    <section class="content-header no-print">
-        <h1 class="tw-text-xl md:tw-text-3xl tw-font-bold tw-text-black">@lang('purchase.purchases')
-            <small></small>
-        </h1>
-        <!-- <ol class="breadcrumb">
-            <li><a href="#"><i class="fa fa-dashboard"></i> Level</a></li>
-            <li class="active">Here</li>
-        </ol> -->
+    <section class="content-header product-list-header no-print">
+        <div class="product-list-header__row">
+            <h1 class="tw-text-xl md:tw-text-3xl tw-font-bold tw-text-black product-list-header__title">
+                @lang('purchase.purchases')
+            </h1>
+            <div class="product-list-header__actions">
+                @can('purchase.create')
+                    <a class="product-list-header__btn product-list-header__btn--primary"
+                        href="{{ action([\App\Http\Controllers\PurchaseController::class, 'create']) }}">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M12 5l0 14" />
+                            <path d="M5 12l14 0" />
+                        </svg>
+                        @lang('messages.add')
+                    </a>
+                @endcan
+            </div>
+        </div>
     </section>
 
     <!-- Main content -->
     <section class="content no-print">
+        @if (!empty($purchase_stats))
+            @include('purchase.partials.list_metrics')
+        @endif
         @component('components.filters', ['title' => __('report.filters')])
             <div class="col-md-3">
                 <div class="form-group">
@@ -76,24 +94,6 @@
         @endcomponent
 
         @component('components.widget', ['class' => 'box-primary', 'title' => __('purchase.all_purchases')])
-            @can('purchase.create')
-                @slot('tool')
-                    <div class="box-tools">
-                        {{-- <a class="btn btn-block btn-primary" href="{{action([\App\Http\Controllers\PurchaseController::class, 'create'])}}">
-                    <i class="fa fa-plus"></i> @lang('messages.add')</a> --}}
-                        <a class="tw-dw-btn tw-bg-gradient-to-r tw-from-indigo-600 tw-to-blue-500 tw-font-bold tw-text-white tw-border-none tw-rounded-full pull-right"
-                            href="{{action([\App\Http\Controllers\PurchaseController::class, 'create'])}}">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                class="icon icon-tabler icons-tabler-outline icon-tabler-plus">
-                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                <path d="M12 5l0 14" />
-                                <path d="M5 12l14 0" />
-                            </svg> @lang('messages.add')
-                        </a>
-                    </div>
-                @endslot
-            @endcan
             @include('purchase.partials.purchase_table')
         @endcomponent
 
@@ -130,6 +130,12 @@
     <script src="{{ asset('js/purchase.js?v=' . $asset_v) }}"></script>
     <script src="{{ asset('js/payment.js?v=' . $asset_v) }}"></script>
     <script>
+        $(document).ready(function () {
+            if (typeof __currency_convert_recursively === 'function') {
+                __currency_convert_recursively($('#purchase_list_metrics'));
+            }
+        });
+
         //Date range as a button
         $('#purchase_list_filter_date_range').daterangepicker(
             dateRangeSettings,

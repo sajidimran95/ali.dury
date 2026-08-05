@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\ExpenseCategory;
+use App\Transaction;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
 
@@ -45,7 +46,30 @@ class ExpenseCategoryController extends Controller
                 ->make(false);
         }
 
-        return view('expense_category.index');
+        $business_id = request()->session()->get('user.business_id');
+        $expense_category_stats = $this->getExpenseCategoryListStats((int) $business_id);
+
+        return view('expense_category.index')->with(compact('expense_category_stats'));
+    }
+
+    /**
+     * KPI stats for expense categories list cards only.
+     */
+    protected function getExpenseCategoryListStats(int $businessId): array
+    {
+        $base = ExpenseCategory::where('business_id', $businessId);
+
+        $total = (int) (clone $base)->count();
+        $parents = (int) (clone $base)->whereNull('parent_id')->count();
+        $subs = (int) (clone $base)->whereNotNull('parent_id')->count();
+        $withCode = (int) (clone $base)->whereNotNull('code')->where('code', '!=', '')->count();
+        $inUse = (int) Transaction::where('business_id', $businessId)
+            ->whereIn('type', ['expense', 'expense_refund'])
+            ->whereNotNull('expense_category_id')
+            ->distinct('expense_category_id')
+            ->count('expense_category_id');
+
+        return compact('total', 'parents', 'subs', 'withCode', 'inUse');
     }
 
     /**
