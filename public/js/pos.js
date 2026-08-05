@@ -1476,6 +1476,13 @@ $(document).ready(function() {
         if (formId) {
             $paymentModal.find('#pos-save').attr('form', formId);
         }
+        // Recalc full cart BEFORE show so 2nd open is not stuck on previous amount
+        if (typeof pos_total_row === 'function') {
+            pos_total_row();
+        }
+        if (typeof pos_sync_payment_modal_amount === 'function') {
+            pos_sync_payment_modal_amount(false);
+        }
         $paymentModal.modal('show');
         return false;
     });
@@ -1497,28 +1504,30 @@ $(document).ready(function() {
 
     /**
  * Mark the correct payment method card from hidden select values.
+ * Only real payment lines inside #payment_rows_div (not change-return).
  */
 function pos_sync_pay_method_cards($scope) {
     var $root = $scope && $scope.length ? $scope : $('#modal_payment');
-    $root.find('.payment_row').each(function () {
+    var $rows = $root.find('#payment_rows_div .payment_row');
+    if (!$rows.length) {
+        $rows = $('#payment_rows_div').find('.payment_row');
+    }
+    $rows.each(function () {
         var $row = $(this);
-        // Prefer visible/hidden select inside this payment row only
         var $select = $row.find('select.payment_types_dropdown').first();
         if (!$select.length) {
             $select = $row.find('.payment_types_dropdown').filter('select, input').first();
         }
         var method = $select.length ? $select.val() : null;
         if (!method) {
-            // Fallback: first card marked server-side
-            method = $row.find('.pos-pay-method-card.is-active').data('method') ||
+            method =
+                $row.find('.pos-pay-method-card.is-active').data('method') ||
                 $row.find('.pos-pay-method-card').first().data('method');
         }
         if (!method) {
             return;
         }
-        $row.find('.pos-pay-method-card')
-            .removeClass('is-active')
-            .attr('aria-pressed', 'false');
+        $row.find('.pos-pay-method-card').removeClass('is-active').attr('aria-pressed', 'false');
         $row.find('.pos-pay-method-card[data-method="' + method + '"]')
             .addClass('is-active')
             .attr('aria-pressed', 'true');
@@ -1526,16 +1535,127 @@ function pos_sync_pay_method_cards($scope) {
 }
 
 /**
- * Ensure Pay modal first amount = current total payable (create + edit).
- * Extra payment rows / method switches can leave 0 after close → reopen.
+ * Write payment amount (always unlock non-advance so updates actually apply).
+ * options.systemWrite = true → do not mark as user-locked (auto remainder/full fill)
+ * options.clearLock = true → force unlock user lock (fresh full pay on single empty row)
+ */
+function pos_write_payment_amount($field, value, options) {
+    options = options || {};
+    if (!$field || !$field.length) {
+        return;
+    }
+    var $row = $field.closest('.payment_row');
+    var method =
+        ($row.find('select.payment_types_dropdown').first().val() ||
+            $row.find('.payment_types_dropdown').first().val() ||
+            '') + '';
+    if (method === 'advance') {
+        return;
+    }
+    $field.prop('readonly', false).removeAttr('readonly').prop('disabled', false).removeAttr('disabled');
+    $field.data('pos-writing', 1);
+    __write_number($field, value);
+    if (options.clearLock) {
+        $field.removeAttr('data-pos-amt-locked');
+    }
+    // system writes are not "user locks" (except keepLock for re-write of same partial)
+    if (options.systemWrite && !options.keepLock) {
+        // leave lock as-is for earlier partial rows; for current field only clear if clearLock
+    }
+    try {
+        $field.trigger('change');
+    } catch (err) {}
+    setTimeout(function () {
+        $field.removeData('pos-writing');
+    }, 0);
+}
+
+/**
+ * Apply current cart payable to payment amount fields.
+ * - Unlocked single row → full payable (default)
+ * - User-locked amount (e.g. typed 10 of 20) → KEEP it so Add Row + balance due work
+ * - 2+ rows → keep earlier; set LAST to remaining
+ */
+function pos_apply_payable_to_payment_rows(total_payable) {
+    var precision = typeof __currency_precision !== 'undefined' ? __currency_precision : 2;
+    var factor = Math.pow(10, precision);
+    total_payable = Math.round((parseFloat(total_payable) || 0) * factor) / factor;
+    if (isNaN(total_payable) || total_payable < 0) {
+        total_payable = 0;
+    }
+
+    var $amounts = $('#payment_rows_div').find('input.payment-amount');
+    var n = $amounts.length;
+    if (!n) {
+        return;
+    }
+
+    // ---- Single payment row ----
+    if (n === 1) {
+        var $first = $amounts.eq(0);
+        var cur = __read_number($first);
+        if (isNaN(cur)) {
+            cur = 0;
+        }
+        cur = Math.round(cur * factor) / factor;
+        var locked = $first.attr('data-pos-amt-locked') === '1';
+
+        if (locked && cur > 0.009) {
+            // User set a fixed amount (e.g. 10) — never overwrite to full bill
+            if (cur > total_payable + 0.009) {
+                // Cart total got smaller than locked amount — clamp down
+                pos_write_payment_amount($first, total_payable, { systemWrite: true, keepLock: true });
+                $first.attr('data-pos-amt-locked', '1');
+            }
+            // Keep partial; balance due + Add Payment Row use remaining
+            return;
+        }
+
+        // Default / not locked: keep amount in sync with bill total
+        pos_write_payment_amount($first, total_payable, { systemWrite: true, clearLock: true });
+        return;
+    }
+
+    // ---- Multi rows: sum earlier (0..n-2); do not overwrite them ----
+    var sum_prev = 0;
+    for (var i = 0; i < n - 1; i++) {
+        var a = __read_number($amounts.eq(i));
+        if (!isNaN(a) && a > 0) {
+            sum_prev += a;
+        }
+        // Treat earlier rows as locked once multi-pay exists
+        $amounts.eq(i).attr('data-pos-amt-locked', '1');
+    }
+    sum_prev = Math.round(sum_prev * factor) / factor;
+
+    if (sum_prev <= 0) {
+        pos_write_payment_amount($amounts.eq(0), total_payable, { systemWrite: true, clearLock: true });
+        for (var j = 1; j < n; j++) {
+            pos_write_payment_amount($amounts.eq(j), 0, { systemWrite: true, clearLock: true });
+        }
+        return;
+    }
+
+    // Remainder on last row only (2nd when 2 rows) — always system-managed
+    var rem = Math.round((total_payable - sum_prev) * factor) / factor;
+    if (isNaN(rem) || rem < 0) {
+        rem = 0;
+    }
+    pos_write_payment_amount($amounts.eq(n - 1), rem, { systemWrite: true, clearLock: true });
+}
+
+/**
+ * Sync payment amounts to current cart total payable.
+ * Create: 1 row → full; multi-row → keep row 1+ earlier, update last row only.
+ * Edit: fill when empty / put remaining on zero rows.
+ * Does NOT remove payment rows or reset selected methods.
  */
 function pos_sync_payment_modal_amount(cleanExtraRows) {
-    cleanExtraRows = cleanExtraRows !== false;
+    // cleanExtraRows kept for API compat — only strip on explicit true + create
+    cleanExtraRows = cleanExtraRows === true;
     var is_edit =
         $('form#edit_pos_sell_form').length > 0 || $('form#edit_sell_form').length > 0;
 
-    // On create only: drop dynamically added rows so amount can reset cleanly.
-    // On edit, keep payment lines (existing payments) unless all amounts are empty.
     if (cleanExtraRows && !is_edit) {
         $('#payment_rows_div')
             .find('.remove_payment_row')
@@ -1553,10 +1673,6 @@ function pos_sync_payment_modal_amount(cleanExtraRows) {
         }
     }
 
-    if ($('#is_credit_sale').length && !is_edit) {
-        $('#is_credit_sale').val(0);
-    }
-
     var total_payable = __read_number($('input#final_total_input'));
     if (isNaN(total_payable)) {
         total_payable = 0;
@@ -1570,45 +1686,57 @@ function pos_sync_payment_modal_amount(cleanExtraRows) {
         return;
     }
 
-    var total_paying = 0;
-    $amounts.each(function () {
-        var amt = __read_number($(this));
-        if (!isNaN(amt) && amt > 0) {
-            total_paying += amt;
-        }
-    });
-
     if (is_edit) {
-        // Same UX as create: if nothing paid in modal, fill first row with full payable.
-        // If partially filled, put remaining on the first zero row.
+        var total_paying = 0;
+        $amounts.each(function () {
+            var amt = __read_number($(this));
+            if (!isNaN(amt) && amt > 0) {
+                total_paying += amt;
+            }
+        });
         if (total_paying <= 0.009) {
-            var $firstEdit = $amounts.first();
-            $firstEdit.prop('readonly', false).removeAttr('readonly');
-            __write_number($firstEdit, total_payable);
+            pos_write_payment_amount($amounts.first(), total_payable);
         } else {
             var still_due = total_payable - total_paying;
             if (still_due > 0.009) {
+                // Prefer empty rows, else last row residual
+                var applied = false;
                 $amounts.each(function () {
                     if (still_due <= 0.009) {
                         return false;
                     }
                     var cur = __read_number($(this));
                     if (isNaN(cur) || cur <= 0.009) {
-                        $(this).prop('readonly', false).removeAttr('readonly');
-                        __write_number($(this), still_due);
+                        pos_write_payment_amount($(this), still_due);
                         still_due = 0;
+                        applied = true;
                         return false;
                     }
                 });
+                if (!applied && $amounts.length > 1) {
+                    var sum_except_last = 0;
+                    $amounts.each(function (idx) {
+                        if (idx === $amounts.length - 1) {
+                            return;
+                        }
+                        var a = __read_number($(this));
+                        if (!isNaN(a) && a > 0) {
+                            sum_except_last += a;
+                        }
+                    });
+                    var last_val = total_payable - sum_except_last;
+                    if (last_val < 0) {
+                        last_val = 0;
+                    }
+                    pos_write_payment_amount($amounts.last(), last_val);
+                }
+            } else if (still_due < -0.009) {
+                pos_apply_payable_to_payment_rows(total_payable);
             }
         }
     } else {
-        var $first = $amounts.first();
-        $first.prop('readonly', false).removeAttr('readonly');
-        __write_number($first, total_payable);
-        $amounts.slice(1).each(function () {
-            __write_number($(this), 0);
-        });
+        // Create: 1 row full; multi = keep 1st amounts, update last only
+        pos_apply_payable_to_payment_rows(total_payable);
     }
 
     if (typeof calculate_balance_due === 'function') {
@@ -1616,7 +1744,55 @@ function pos_sync_payment_modal_amount(cleanExtraRows) {
     }
 }
 
-// Every time payment modal opens: refresh prev due + recompute balance + order details
+/**
+ * Full Pay modal refresh after cart changes / reopen.
+ * Recalc totals from ALL cart lines, sync amount, keep methods visible.
+ */
+function pos_refresh_payment_modal() {
+    // 1) Recalculate from every product currently in cart
+    if (typeof pos_total_row === 'function') {
+        pos_total_row();
+    }
+
+    // 2) Order-details panel (left) — force from live main POS values
+    $('#modal_payment .payment_od_discount').text($('span#total_discount').first().text() || '0');
+    if (typeof update_payment_od_item_discount === 'function') {
+        update_payment_od_item_discount();
+    }
+    $('#modal_payment .payment_od_tax').text($('span#order_tax').first().text() || '0');
+    $('#modal_payment .payment_od_shipping').text($('span#shipping_charges_amount').first().text() || '0');
+    var packTxt = $('#packing_charge_text').text();
+    if (packTxt && $.trim(packTxt) !== '' && $.trim(packTxt) !== '0') {
+        $('#modal_payment .payment_od_packing').text(packTxt);
+        $('#modal_payment .payment_od_packing_wrap').removeClass('hide');
+    } else {
+        $('#modal_payment .payment_od_packing').text('0');
+    }
+
+    // 3) Amounts = current payable (do not strip rows / do not reset methods)
+    if (typeof pos_sync_payment_modal_amount === 'function') {
+        pos_sync_payment_modal_amount(false);
+    }
+
+    // 4) Re-show payment-type detail fields for the already-selected method(s)
+    $('#payment_rows_div')
+        .find('select.payment_types_dropdown')
+        .each(function () {
+            try {
+                $(this).trigger('change');
+            } catch (err) {}
+        });
+
+    // 5) Highlight method cards last (after change handlers)
+    if (typeof pos_sync_pay_method_cards === 'function') {
+        pos_sync_pay_method_cards($('#modal_payment'));
+    }
+    if (typeof pos_update_add_payment_row_btn === 'function') {
+        pos_update_add_payment_row_btn();
+    }
+}
+
+// Every time payment modal opens: refresh FULL current cart + keep methods
     $('#modal_payment').on('shown.bs.modal', function() {
         if (typeof update_payment_modal_customer === 'function') {
             update_payment_modal_customer();
@@ -1627,51 +1803,41 @@ function pos_sync_payment_modal_amount(cleanExtraRows) {
         } else if (typeof set_payment_modal_prev_due === 'function') {
             set_payment_modal_prev_due(0, '');
         }
-        if (typeof pos_total_row === 'function') {
-            pos_total_row();
+
+        if (typeof pos_refresh_payment_modal === 'function') {
+            pos_refresh_payment_modal();
         }
-        // Sync order details panel from current cart totals
-        $('#modal_payment .payment_od_discount').text($('span#total_discount').first().text() || '0');
-        if (typeof update_payment_od_item_discount === 'function') {
-            update_payment_od_item_discount();
-        }
-        $('#modal_payment .payment_od_tax').text($('span#order_tax').first().text() || '0');
-        $('#modal_payment .payment_od_shipping').text($('span#shipping_charges_amount').first().text() || '0');
-        var packTxt = $('#packing_charge_text').text();
-        if (packTxt && $.trim(packTxt) !== '' && $.trim(packTxt) !== '0') {
-            $('#modal_payment .payment_od_packing').text(packTxt);
-            $('#modal_payment .payment_od_packing_wrap').removeClass('hide');
-        }
-        if ($('form#edit_pos_sell_form').length == 0) {
-            var $method = $(this).find('#method_0');
-            if ($method.length) {
-                try {
-                    $method.trigger('change');
-                } catch (err) {}
+
+        // After paint — force re-apply so 2nd open always has current cart amounts
+        var $modal = $(this);
+        setTimeout(function () {
+            if (typeof pos_total_row === 'function') {
+                pos_total_row();
             }
-        }
-        // ALWAYS re-apply payable amount last (fixes 0 after method change / close / reopen)
-        if (typeof pos_sync_payment_modal_amount === 'function') {
-            pos_sync_payment_modal_amount(true);
-        }
-        // Keep selected method card in sync with dropdown (edit + create)
-        if (typeof pos_sync_pay_method_cards === 'function') {
-            pos_sync_pay_method_cards($(this));
-        }
-        if (typeof pos_update_add_payment_row_btn === 'function') {
-            pos_update_add_payment_row_btn();
-        }
-        $('#modal_payment')
-            .find('input.payment-amount')
-            .filter(':visible:first')
-            .focus()
-            .select();
+            // Apply payable again AFTER total recalc (1st alone / last when multi)
+            var payable = __read_number($('input#final_total_input'));
+            if (typeof pos_apply_payable_to_payment_rows === 'function') {
+                pos_apply_payable_to_payment_rows(payable);
+            } else if (typeof pos_sync_payment_modal_amount === 'function') {
+                pos_sync_payment_modal_amount(false);
+            }
+            if (typeof calculate_balance_due === 'function') {
+                calculate_balance_due();
+            }
+            if (typeof pos_sync_pay_method_cards === 'function') {
+                pos_sync_pay_method_cards($modal);
+            }
+            // Focus the last amount (that's the one that changes on multi-row)
+            var $amt = $modal.find('#payment_rows_div input.payment-amount');
+            ($amt.length > 1 ? $amt.last() : $amt.first()).filter(':visible').first().focus().select();
+        }, 80);
     });
 
-    // On close: keep amounts in sync so next open isn't stale at $0
+    // On close: leave method + rows as-is; next open will resync amount from cart
     $('#modal_payment').on('hidden.bs.modal', function () {
-        if (typeof pos_sync_payment_modal_amount === 'function') {
-            pos_sync_payment_modal_amount(true);
+        // no-op strip / amount reset — avoids wiping user method on 2nd open
+        if (typeof calculate_balance_due === 'function') {
+            calculate_balance_due();
         }
     });
 
@@ -1991,8 +2157,12 @@ function pos_sync_payment_modal_amount(cleanExtraRows) {
                         return;
                     }
                     var $newAmount = $amounts.last();
-                    __write_number($newAmount, b_due);
-                    $newAmount.focus().select().trigger('change');
+                    // Keep cashier amounts on earlier rows (e.g. first typed 10)
+                    $amounts.slice(0, -1).each(function () {
+                        $(this).attr('data-pos-amt-locked', '1');
+                    });
+                    pos_write_payment_amount($newAmount, b_due, { systemWrite: true, clearLock: true });
+                    $newAmount.focus().select();
                     __select2($(appended).find('.select2'));
                     $(appended).find('#method_' + row_index).change();
                     $('#payment_row_index').val(parseInt(row_index) + 1);
@@ -2174,8 +2344,28 @@ function pos_sync_payment_modal_amount(cleanExtraRows) {
     });
 
     // Live recalculate when payment amounts change (typing + blur)
-    $(document).on('change input keyup', '#payment_rows_div .payment-amount', function() {
+    // Lock field when cashier types so auto-sync won't reset (e.g. 10 of bill 20)
+    $(document).on('input keyup', '#payment_rows_div .payment-amount', function () {
+        var $el = $(this);
+        if ($el.data('pos-writing')) {
+            calculate_balance_due();
+            return;
+        }
+        $el.attr('data-pos-amt-locked', '1');
         calculate_balance_due();
+        if (typeof pos_update_add_payment_row_btn === 'function') {
+            pos_update_add_payment_row_btn();
+        }
+    });
+    $(document).on('change', '#payment_rows_div .payment-amount', function () {
+        var $el = $(this);
+        if (!$el.data('pos-writing')) {
+            $el.attr('data-pos-amt-locked', '1');
+        }
+        calculate_balance_due();
+        if (typeof pos_update_add_payment_row_btn === 'function') {
+            pos_update_add_payment_row_btn();
+        }
     });
 
     // Optional: keep other screens that use .payment-amount (sell form)
@@ -4090,18 +4280,22 @@ function calculate_billing_details(price_total) {
 
     $('span.total_payable_span').text(__currency_trans_from_en(total_payable_rounded, true));
 
-    // Create: always set first payment = total payable.
-    // Edit: only fill when empty/zero so Pay modal matches create UX.
-    var $firstPay = $('#payment_rows_div').find('.payment-amount').first();
-    if ($firstPay.length) {
+    // Create: 1 row = full payable; multi-row keep 1st/earlier, update last only.
+    // Edit: fill first when empty/zero.
+    var $payAmounts = $('#payment_rows_div').find('.payment-amount');
+    if ($payAmounts.length) {
         var is_edit_form =
             $('form#edit_pos_sell_form').length > 0 || $('form#edit_sell_form').length > 0;
         if (!is_edit_form) {
-            __write_number($firstPay, total_payable_rounded);
+            if (typeof pos_apply_payable_to_payment_rows === 'function') {
+                pos_apply_payable_to_payment_rows(total_payable_rounded);
+            } else if ($payAmounts.length === 1) {
+                __write_number($payAmounts.first(), total_payable_rounded);
+            }
         } else {
-            var cur_pay = __read_number($firstPay);
+            var cur_pay = __read_number($payAmounts.first());
             if (isNaN(cur_pay) || cur_pay <= 0) {
-                __write_number($firstPay, total_payable_rounded);
+                __write_number($payAmounts.first(), total_payable_rounded);
             }
         }
     }
@@ -4518,6 +4712,8 @@ function reset_pos_form(){
 	$('#modal_payment').find('.remove_payment_row').each( function(){
 		$(this).closest('.payment_row').remove();
 	});
+	// Clear cashier-typed locks so next sale starts with auto full amount
+	$('#payment_rows_div').find('input.payment-amount').removeAttr('data-pos-amt-locked');
 
     if ($('#is_credit_sale').length) {
         $('#is_credit_sale').val(0);
