@@ -164,8 +164,10 @@ class BusinessUtil extends Util
 
         $business_details['default_profit_percent'] = 25;
 
-        //Add POS shortcuts
-        $business_details['keyboard_shortcuts'] = '{"pos":{"express_checkout":"shift+e","pay_n_ckeckout":"shift+p","draft":"shift+d","cancel":"shift+c","edit_discount":"shift+i","edit_order_tax":"shift+t","add_payment_row":"shift+r","finalize_payment":"shift+f","recent_product_quantity":"f2","add_new_product":"f4"}}';
+        //Add POS shortcuts (canonical defaults)
+        $business_details['keyboard_shortcuts'] = json_encode(PosSettingsDefaults::keyboardShortcuts());
+        $business_details['pos_settings'] = json_encode(PosSettingsDefaults::posSettings());
+        $business_details['weighing_scale_setting'] = PosSettingsDefaults::weighingScaleSetting();
 
         //Add prefixes
         $business_details['ref_no_prefixes'] = [
@@ -387,23 +389,7 @@ class BusinessUtil extends Util
      */
     public function defaultPosSettings()
     {
-        return [
-            'disable_pay_checkout' => 0,
-            'disable_draft' => 0,
-            'disable_express_checkout' => 0,
-            'hide_product_suggestion' => 0,
-            'hide_recent_trans' => 0,
-            'disable_discount' => 0,
-            'disable_order_tax' => 0,
-            'is_pos_subtotal_editable' => 0,
-            'enable_pwa' => 1,
-            'pwa_app_name' => '',
-            'pwa_short_name' => 'POS',
-            'pwa_description' => '',
-            'pwa_theme_color' => '#0f0f0f',
-            'pwa_background_color' => '#0f0f0f',
-            'pwa_icon' => null,
-        ];
+        return PosSettingsDefaults::posSettings();
     }
 
     /**
