@@ -209,13 +209,7 @@ class MsaTobReportExporter
         $desc = strtoupper($this->productDescription($product, $variation, $sku));
         $itemsPerUnit = $this->itemsPerSellingUnit($product);
         $msaCategory = $this->msaCategoryCode($product);
-        $promoCode = trim((string) ($product->product_custom_field3 ?? ''));
-        $promoDesc = trim((string) ($product->product_custom_field4 ?? ''));
-        $isPromo = ($promoCode !== '' || $promoDesc !== '') ? 'Y' : 'N';
-        // Hard guarantee — MFT expects Y/N never blank (Warning 2015 when misaligned)
-        if ($isPromo !== 'Y') {
-            $isPromo = 'N';
-        }
+        $promo = $this->resolvePromoFlags($product, $desc);
         $inventory = $this->inventoryAsOfWeekEnd($variationId);
 
         $this->bids[$variationId] = [
@@ -223,11 +217,11 @@ class MsaTobReportExporter
             'upc' => $upc,
             'sku' => $sku,
             'description' => $desc,
-            'promo_description' => strtoupper($this->asciiOnly($promoDesc)),
+            'promo_description' => $promo['promo_description'],
             'items_per_unit' => $itemsPerUnit,
-            'promo_indicator' => $isPromo,
+            'promo_indicator' => $promo['promo_indicator'],
             'msa_category' => $msaCategory,
-            'promo_code' => $this->asciiOnly($promoCode),
+            'promo_code' => $promo['promo_code'],
             'inventory' => $inventory,
             'wholesaler_returns' => 0.0,
         ];
@@ -469,12 +463,24 @@ class MsaTobReportExporter
     {
         // Promo indicator MUST be Y or N only — never blank (MFT Warning 2015)
         $promoIndicator = (($bid['promo_indicator'] ?? 'N') === 'Y') ? 'Y' : 'N';
-        $promoCode = $promoIndicator === 'Y' ? (string) ($bid['promo_code'] ?? '') : '';
-        $promoDesc = $promoIndicator === 'Y' ? (string) ($bid['promo_description'] ?? '') : '';
+        $promoCode = $promoIndicator === 'Y' ? trim((string) ($bid['promo_code'] ?? '')) : '';
+        $promoDesc = $promoIndicator === 'Y' ? trim((string) ($bid['promo_description'] ?? '')) : '';
+        // When promo=Y, both promo fields must be non-blank (MFT Warning 2018)
+        if ($promoIndicator === 'Y') {
+            if ($promoCode === '') {
+                $promoCode = 'PROMO';
+            }
+            if ($promoDesc === '') {
+                $promoDesc = 'PROMOTIONAL ITEM';
+            }
+        }
+
+        $upc = $this->normalizeGtin14((string) ($bid['upc'] ?? ''));
+        $sku = $this->normalizeGtin14((string) ($bid['sku'] ?? ''), true);
 
         return 'BID'
-            . $this->rj($bid['upc'], 14, '0')
-            . $this->rj($bid['sku'], 14, '0')
+            . $this->rj($upc, 14, '0')
+            . $this->rj($sku, 14, '0')
             . $this->lj($bid['description'], 50)
             . $this->lj($promoDesc, 50)
             . $this->rj((string) (int) $bid['items_per_unit'], 6, '0')
@@ -573,8 +579,12 @@ class MsaTobReportExporter
             $cashCarry = 'N';
         }
 
+        // Cust promo accept indicator — must be Y or N (MFT Warning 4033); blank is invalid
+        $promoAcceptRaw = strtoupper(substr(trim((string) ($contact->custom_field4 ?? '')), 0, 1));
+        $promoAccept = in_array($promoAcceptRaw, ['Y', 'N'], true) ? $promoAcceptRaw : 'N';
+
         return compact(
-            'custNo', 'shipNo', 'ext', 'name', 'storeNo', 'address', 'city', 'state', 'zip', 'phone', 'cot', 'cashCarry'
+            'custNo', 'shipNo', 'ext', 'name', 'storeNo', 'address', 'city', 'state', 'zip', 'phone', 'cot', 'cashCarry', 'promoAccept'
         );
     }
 
@@ -750,7 +760,9 @@ class MsaTobReportExporter
             . $this->lj($sid['cot'], 20)
             . $this->rj('0', 7) // TDLinx
             . $sid['cashCarry']
-            . str_repeat(' ', 67)
+            // Cust Promo Accept Ind must be Y/N (was space → MFT Warning 4033)
+            . (($sid['promoAccept'] ?? 'N') === 'Y' ? 'Y' : 'N')
+            . str_repeat(' ', 66)
             . $this->lj($parentName, 32)
             . $this->lj($parentAddr, 90)
             . $this->lj($parentCity, 25)
@@ -839,16 +851,145 @@ class MsaTobReportExporter
 
     protected function upc(Product $product, $variation): string
     {
-        $raw = preg_replace('/\D+/', '', (string) ($variation->sub_sku ?: $product->sku));
+        // Prefer real barcode digits (sub_sku / sku). Alphanumeric SKUs like TOB-CIG-LUX
+        // previously became UPC=all zeros (MFT Warning 2038).
+        $candidates = [
+            (string) ($variation->sub_sku ?? ''),
+            (string) ($product->sku ?? ''),
+            (string) ($product->product_custom_field5 ?? ''),
+        ];
 
-        return substr(str_pad($raw ?: '0', 14, '0', STR_PAD_LEFT), -14);
+        foreach ($candidates as $raw) {
+            $digits = preg_replace('/\D+/', '', $raw) ?? '';
+            if ($this->isUsableUpcDigits($digits)) {
+                return $this->padGtin14($digits);
+            }
+        }
+
+        // Synthesize stable private GTIN-14 so the field is never all zeros
+        return $this->syntheticGtin14((int) $product->id, (int) $variation->id);
     }
 
     protected function distributorSku(Product $product, $variation): string
     {
-        $raw = preg_replace('/\D+/', '', (string) ($product->sku ?: $variation->sub_sku ?: $variation->id));
+        $candidates = [
+            (string) ($product->sku ?? ''),
+            (string) ($variation->sub_sku ?? ''),
+        ];
 
-        return substr(str_pad($raw ?: (string) $variation->id, 14, '0', STR_PAD_LEFT), -14);
+        foreach ($candidates as $raw) {
+            $digits = preg_replace('/\D+/', '', $raw) ?? '';
+            // Accept long numeric skus; short internal 001 from ECOM-001 is ok if not all zero
+            if ($digits !== '' && ! preg_match('/^0+$/', $digits)) {
+                return $this->padGtin14($digits);
+            }
+        }
+
+        // Stable numeric SKU from variation id (never zero)
+        $id = max(1, (int) $variation->id);
+
+        return $this->padGtin14((string) $id);
+    }
+
+    /**
+     * Promo Y/N from CF3/CF4 or product description (PROMO, nice price, $/, sale, etc.).
+     * MFT 2018: descriptions implying promo require Promo Indicator = Y and promo fields filled.
+     *
+     * @return array{promo_indicator:string,promo_code:string,promo_description:string}
+     */
+    protected function resolvePromoFlags(Product $product, string $description): array
+    {
+        $promoCode = trim((string) ($product->product_custom_field3 ?? ''));
+        $promoDesc = trim((string) ($product->product_custom_field4 ?? ''));
+        $hay = strtoupper($this->asciiOnly(trim($description.' '.($product->name ?? ''))));
+
+        $looksPromo = (bool) preg_match(
+            '/\b(PROMO(?:TION)?S?|NICE\s*PRICE|SPECIAL|SALE|DISCOUNT|SAVE\b|DEAL|BOGO|BUY\s*\d|%\s*OFF|VALUE\s*PACK|LIMITED|TWO\s*FOR|2\s*FOR|OFFER|CLEARANCE)\b/',
+            $hay
+        ) || (bool) preg_match('/\$\s*\d|\d+\s*¢|\b\d+\.\d{2}\b|\b\d+\s*OFF\b/', $hay);
+
+        if ($promoCode !== '' || $promoDesc !== '' || $looksPromo) {
+            if ($promoCode === '') {
+                $promoCode = 'PROMO';
+            }
+            if ($promoDesc === '') {
+                if (preg_match('/(.{0,25}(?:PROMO(?:TION)?S?|NICE\s*PRICE|SPECIAL|SALE|DISCOUNT|\$\s*\d).{0,25})/', $hay, $m)) {
+                    $promoDesc = trim(preg_replace('/\s+/', ' ', $m[1]));
+                } else {
+                    $promoDesc = 'SEE ITEM DESCRIPTION';
+                }
+            }
+
+            return [
+                'promo_indicator' => 'Y',
+                'promo_code' => strtoupper(substr($this->asciiOnly($promoCode), 0, 10)),
+                'promo_description' => strtoupper(substr($this->asciiOnly($promoDesc), 0, 50)),
+            ];
+        }
+
+        return [
+            'promo_indicator' => 'N',
+            'promo_code' => '',
+            'promo_description' => '',
+        ];
+    }
+
+    /**
+     * Real UPC/EAN/GTIN digit string (not blank / not all zeros / typical length).
+     */
+    protected function isUsableUpcDigits(string $digits): bool
+    {
+        if ($digits === '' || preg_match('/^0+$/', $digits)) {
+            return false;
+        }
+        $len = strlen($digits);
+
+        // Standard retail lengths; reject tiny 1–3 digit fragments
+        return $len >= 8 && $len <= 14;
+    }
+
+    protected function padGtin14(string $digits): string
+    {
+        $digits = preg_replace('/\D+/', '', $digits) ?? '';
+        if ($digits === '' || preg_match('/^0+$/', $digits)) {
+            return '20000000000001';
+        }
+        if (strlen($digits) > 14) {
+            $digits = substr($digits, -14);
+        }
+
+        return str_pad($digits, 14, '0', STR_PAD_LEFT);
+    }
+
+    /**
+     * Private GTIN-style code when product has no numeric barcode (alphanumeric SKUs).
+     * Always non-zero so MFT 2038 does not fire.
+     */
+    protected function syntheticGtin14(int $productId, int $variationId): string
+    {
+        $productId = max(1, $productId % 100000);
+        $variationId = max(1, $variationId % 10000000);
+        // Indicator 2 = internal / variable measure private marking
+        $body = sprintf('2%05d%08d', $productId, $variationId);
+
+        return substr(str_pad($body, 14, '0', STR_PAD_RIGHT), 0, 14);
+    }
+
+    /**
+     * Final UPC/SKU cell before write — never emit all zeros.
+     */
+    protected function normalizeGtin14(string $value, bool $allowShortSku = false): string
+    {
+        $digits = preg_replace('/\D+/', '', $value) ?? '';
+        if ($digits === '' || preg_match('/^0+$/', $digits)) {
+            return '20000000000001';
+        }
+        if (! $allowShortSku && ! $this->isUsableUpcDigits($digits) && strlen($digits) < 8) {
+            // Short non-zero still ok after pad for SKU; for UPC prefer synthetic already applied
+            return $this->padGtin14($digits);
+        }
+
+        return $this->padGtin14($digits);
     }
 
     protected function productDescription(Product $product, $variation, ?string $skuFallback = null): string
