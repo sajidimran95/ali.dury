@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Aug 04, 2026 at 06:33 PM
+-- Generation Time: Aug 05, 2026 at 03:43 PM
 -- Server version: 8.4.3
 -- PHP Version: 8.4.2
 
@@ -251,7 +251,12 @@ INSERT INTO `activity_log` (`id`, `log_name`, `description`, `subject_id`, `subj
 (141, 'default', 'added', 124, 'App\\Transaction', NULL, 1, 1, 'App\\User', '{\"attributes\":{\"type\":\"sell\",\"status\":\"final\",\"payment_status\":\"paid\",\"final_total\":13.2}}', NULL, '2026-08-03 10:47:11', '2026-08-03 10:47:11'),
 (142, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-08-04 05:10:54', '2026-08-04 05:10:54'),
 (143, 'default', 'added', 125, 'App\\Transaction', NULL, 1, 1, 'App\\User', '{\"attributes\":{\"type\":\"sell\",\"status\":\"final\",\"payment_status\":\"paid\",\"final_total\":13.2}}', NULL, '2026-08-04 05:19:16', '2026-08-04 05:19:16'),
-(144, 'default', 'added', 126, 'App\\Transaction', NULL, 1, 1, 'App\\User', '{\"attributes\":{\"type\":\"sell\",\"status\":\"final\",\"payment_status\":\"paid\",\"final_total\":65.38}}', NULL, '2026-08-04 08:28:24', '2026-08-04 08:28:24');
+(144, 'default', 'added', 126, 'App\\Transaction', NULL, 1, 1, 'App\\User', '{\"attributes\":{\"type\":\"sell\",\"status\":\"final\",\"payment_status\":\"paid\",\"final_total\":65.38}}', NULL, '2026-08-04 08:28:24', '2026-08-04 08:28:24'),
+(145, 'default', 'payment_edited', 115, 'App\\Transaction', NULL, 1, 1, 'App\\User', '{\"attributes\":{\"type\":\"sell\",\"status\":\"final\",\"payment_status\":\"paid\",\"final_total\":\"13.2000\"},\"old\":{\"type\":\"sell\",\"status\":\"final\",\"payment_status\":\"due\",\"final_total\":\"13.2000\"}}', NULL, '2026-08-04 08:45:04', '2026-08-04 08:45:04'),
+(146, 'default', 'added', 127, 'App\\Transaction', NULL, 1, 1, 'App\\User', '{\"attributes\":{\"type\":\"sell\",\"status\":\"final\",\"payment_status\":\"paid\",\"final_total\":13.2}}', NULL, '2026-08-04 08:46:22', '2026-08-04 08:46:22'),
+(147, 'default', 'added', 128, 'App\\Transaction', NULL, 1, 1, 'App\\User', '{\"attributes\":{\"type\":\"sell\",\"status\":\"final\",\"payment_status\":\"paid\",\"final_total\":5.49}}', NULL, '2026-08-05 04:25:37', '2026-08-05 04:25:37'),
+(148, 'default', 'added', 129, 'App\\Transaction', NULL, 1, 1, 'App\\User', '{\"attributes\":{\"type\":\"sell\",\"status\":\"final\",\"payment_status\":\"paid\",\"final_total\":13.2}}', NULL, '2026-08-05 05:40:29', '2026-08-05 05:40:29'),
+(149, 'default', 'added', 130, 'App\\Transaction', NULL, 1, 1, 'App\\User', '{\"attributes\":{\"type\":\"sell\",\"status\":\"final\",\"payment_status\":\"paid\",\"final_total\":5.49}}', NULL, '2026-08-05 05:40:59', '2026-08-05 05:40:59');
 
 -- --------------------------------------------------------
 
@@ -649,7 +654,12 @@ INSERT INTO `cash_register_transactions` (`id`, `cash_register_id`, `amount`, `p
 (65, 2, -36.8000, 'card', 'credit', 'sell', 125, NULL, '2026-08-04 05:19:16', '2026-08-04 05:19:16'),
 (66, 2, 5.0000, 'cash', 'credit', 'sell', 126, NULL, '2026-08-04 08:28:24', '2026-08-04 08:28:24'),
 (67, 2, 30.0000, 'card', 'credit', 'sell', 126, NULL, '2026-08-04 08:28:24', '2026-08-04 08:28:24'),
-(68, 2, 30.3800, 'cheque', 'credit', 'sell', 126, NULL, '2026-08-04 08:28:24', '2026-08-04 08:28:24');
+(68, 2, 30.3800, 'cheque', 'credit', 'sell', 126, NULL, '2026-08-04 08:28:24', '2026-08-04 08:28:24'),
+(69, 2, 13.2000, 'cash', 'credit', 'advance_payment', NULL, 73, '2026-08-04 08:45:04', '2026-08-04 08:45:04'),
+(70, 2, 13.2000, 'cash', 'credit', 'sell', 127, NULL, '2026-08-04 08:46:22', '2026-08-04 08:46:22'),
+(71, 2, 5.4900, 'cash', 'credit', 'sell', 128, NULL, '2026-08-05 04:25:37', '2026-08-05 04:25:37'),
+(72, 2, 13.2000, 'cash', 'credit', 'sell', 129, NULL, '2026-08-05 05:40:29', '2026-08-05 05:40:29'),
+(73, 2, 5.4900, 'cash', 'credit', 'sell', 130, NULL, '2026-08-05 05:40:59', '2026-08-05 05:40:59');
 
 -- --------------------------------------------------------
 
@@ -1311,7 +1321,9 @@ INSERT INTO `ecom_carts` (`id`, `business_id`, `contact_id`, `session_id`, `coup
 (77, 1, NULL, 'kyUJj6srqOUC3xpmqcw1WVPHJmzAzXMSulXfT4Ro', NULL, '2026-08-03 15:31:28', '2026-08-03 15:31:28'),
 (78, 1, NULL, 'DUtOTqr4qYcQact0hQmALlb5D9dDe1lCsMOB6eBq', NULL, '2026-08-03 18:11:19', '2026-08-03 18:11:19'),
 (79, 1, NULL, 'bAYyVVJnNqrs2hzFjjhkpVdBV4IYAHviJ2gJiaFW', NULL, '2026-08-04 14:40:28', '2026-08-04 14:40:28'),
-(80, 1, NULL, 'sxvLd4w6ainMsum14MaNXzkSi2mXl9m0SK1ltSMN', NULL, '2026-08-04 16:13:30', '2026-08-04 16:13:30');
+(80, 1, NULL, 'sxvLd4w6ainMsum14MaNXzkSi2mXl9m0SK1ltSMN', NULL, '2026-08-04 16:13:30', '2026-08-04 16:13:30'),
+(81, 1, NULL, 'tpHdAbjtJmfJchovalXS2wdjlPeXNpQsXwS2kNd5', NULL, '2026-08-05 13:54:45', '2026-08-05 13:54:45'),
+(82, 1, NULL, 'w1pFjRCK8ScdnItikywzM37QOsOB3WsfFskCCSUv', NULL, '2026-08-05 13:54:46', '2026-08-05 13:54:46');
 
 -- --------------------------------------------------------
 
@@ -1787,7 +1799,7 @@ CREATE TABLE `invoice_layouts` (
 --
 
 INSERT INTO `invoice_layouts` (`id`, `name`, `header_text`, `invoice_no_prefix`, `quotation_no_prefix`, `invoice_heading`, `sub_heading_line1`, `sub_heading_line2`, `sub_heading_line3`, `sub_heading_line4`, `sub_heading_line5`, `invoice_heading_not_paid`, `invoice_heading_paid`, `quotation_heading`, `sub_total_label`, `discount_label`, `tax_label`, `total_label`, `round_off_label`, `total_due_label`, `paid_label`, `show_client_id`, `client_id_label`, `client_tax_label`, `date_label`, `date_time_format`, `show_time`, `show_brand`, `show_sku`, `show_cat_code`, `show_expiry`, `show_lot`, `show_image`, `show_sale_description`, `sales_person_label`, `show_sales_person`, `table_product_label`, `table_qty_label`, `table_unit_price_label`, `table_subtotal_label`, `cat_code_label`, `logo`, `show_logo`, `show_business_name`, `show_location_name`, `show_landmark`, `show_city`, `show_state`, `show_zip_code`, `show_country`, `show_mobile_number`, `show_alternate_number`, `show_email`, `show_tax_1`, `show_tax_2`, `show_barcode`, `show_payments`, `show_customer`, `customer_label`, `commission_agent_label`, `show_commission_agent`, `show_reward_point`, `highlight_color`, `footer_text`, `module_info`, `common_settings`, `is_default`, `business_id`, `show_letter_head`, `letter_head`, `show_qr_code`, `qr_code_fields`, `design`, `cn_heading`, `cn_no_label`, `cn_amount_label`, `table_tax_headings`, `show_previous_bal`, `prev_bal_label`, `show_previous_balance_due`, `previous_balance_due_label`, `change_return_label`, `product_custom_fields`, `contact_custom_fields`, `location_custom_fields`, `created_at`, `updated_at`) VALUES
-(1, 'Default', NULL, 'Invoice No.', NULL, 'Invoice', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Subtotal', 'Discount', 'Tax', 'Total', NULL, 'Total Due', 'Total Paid', 0, NULL, NULL, 'Date', NULL, 1, 0, 1, 1, 0, 0, 0, 0, NULL, 0, 'Product', 'Quantity', 'Unit Price', 'Subtotal', NULL, '1785782685_japspos.png', 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 1, 1, 1, 'Customer', NULL, 0, 0, '#000000', 'Thank You For Your Business!!!', NULL, '{\"proforma_heading\":null,\"sales_order_heading\":null,\"due_date_label\":null,\"show_due_date\":\"1\",\"total_quantity_label\":null,\"item_discount_label\":null,\"discounted_unit_price_label\":null,\"total_items_label\":null,\"show_total_in_words\":\"1\",\"num_to_word_format\":\"international\",\"tax_summary_label\":null,\"zatca_phase\":\"phase_1\"}', 1, 1, 0, NULL, 0, NULL, 'us_letter', NULL, NULL, NULL, NULL, 1, NULL, 1, NULL, NULL, NULL, NULL, NULL, '2026-07-18 18:56:53', '2026-08-03 08:44:45');
+(1, 'Default', NULL, 'Invoice No.', NULL, 'Invoice', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Subtotal', 'Discount', 'Tax', 'Total', NULL, 'Total Due', 'Total Paid', 0, NULL, NULL, 'Date', NULL, 1, 0, 1, 1, 0, 0, 0, 0, NULL, 1, 'Product', 'Quantity', 'Unit Price', 'Subtotal', NULL, '1785782685_japspos.png', 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 1, 1, 1, 'Customer', NULL, 0, 0, '#000000', 'Thank You For Your Business!!!', NULL, '{\"proforma_heading\":null,\"sales_order_heading\":null,\"due_date_label\":null,\"show_due_date\":\"1\",\"total_quantity_label\":null,\"item_discount_label\":null,\"discounted_unit_price_label\":null,\"total_items_label\":null,\"show_total_in_words\":\"1\",\"num_to_word_format\":\"international\",\"tax_summary_label\":null,\"zatca_phase\":\"phase_1\"}', 1, 1, 0, NULL, 0, NULL, 'us_letter', NULL, NULL, NULL, NULL, 1, NULL, 1, NULL, NULL, NULL, NULL, NULL, '2026-07-18 18:56:53', '2026-08-05 05:40:50');
 
 -- --------------------------------------------------------
 
@@ -1815,7 +1827,7 @@ CREATE TABLE `invoice_schemes` (
 --
 
 INSERT INTO `invoice_schemes` (`id`, `business_id`, `name`, `scheme_type`, `number_type`, `prefix`, `start_number`, `invoice_count`, `total_digits`, `is_default`, `created_at`, `updated_at`) VALUES
-(1, 1, 'Default', 'blank', 'sequential', NULL, 1, 81, 4, 1, '2026-07-18 18:56:53', '2026-08-04 08:28:24');
+(1, 1, 'Default', 'blank', 'sequential', NULL, 1, 85, 4, 1, '2026-07-18 18:56:53', '2026-08-05 05:40:59');
 
 -- --------------------------------------------------------
 
@@ -2746,12 +2758,12 @@ INSERT INTO `purchase_lines` (`id`, `transaction_id`, `product_id`, `variation_i
 (4, 4, 4, 4, 50.0000, 0.0000, 18.0000, 0.00, 18.0000, 19.7550, 1.7550, 5, NULL, NULL, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, NULL, NULL, NULL, NULL, '2026-07-18 19:00:29', '2026-07-18 19:00:29'),
 (5, 5, 5, 5, 50.0000, 0.0000, 14.0000, 0.00, 14.0000, 15.3650, 1.3650, 5, NULL, NULL, 1.0000, 0.0000, 0.0000, 0.0000, 0.0000, NULL, NULL, NULL, NULL, '2026-07-18 19:00:29', '2026-07-27 05:34:00'),
 (6, 6, 6, 6, 40.0000, 0.0000, 12.0000, 0.00, 12.0000, 13.1700, 1.1700, 5, NULL, NULL, 1.0000, 0.0000, 0.0000, 0.0000, 0.0000, NULL, NULL, NULL, NULL, '2026-07-18 19:00:29', '2026-07-27 09:42:01'),
-(7, 7, 7, 7, 40.0000, 0.0000, 8.0000, 0.00, 8.0000, 8.7800, 0.7800, 5, NULL, NULL, 26.0000, 0.0000, 0.0000, 0.0000, 0.0000, NULL, NULL, NULL, NULL, '2026-07-18 19:00:29', '2026-08-04 05:19:16'),
+(7, 7, 7, 7, 40.0000, 0.0000, 8.0000, 0.00, 8.0000, 8.7800, 0.7800, 5, NULL, NULL, 28.0000, 0.0000, 0.0000, 0.0000, 0.0000, NULL, NULL, NULL, NULL, '2026-07-18 19:00:29', '2026-08-05 05:40:29'),
 (8, 8, 8, 8, 30.0000, 0.0000, 7.0000, 0.00, 7.0000, 7.6825, 0.6825, 5, NULL, NULL, 4.0000, 0.0000, 0.0000, 0.0000, 0.0000, NULL, NULL, NULL, NULL, '2026-07-18 19:00:29', '2026-07-27 06:49:15'),
 (9, 22, 39, 39, 44.0000, 0.0000, 8.7800, 0.00, 8.7800, 8.7800, 0.0000, NULL, NULL, NULL, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, NULL, NULL, NULL, NULL, '2026-07-27 15:11:58', '2026-07-27 15:11:58'),
 (10, 23, 40, 40, 48.0000, 0.0000, 10.2000, 0.00, 10.2000, 10.2000, 0.0000, NULL, NULL, NULL, 1.0000, 0.0000, 0.0000, 0.0000, 0.0000, NULL, NULL, NULL, NULL, '2026-07-27 15:11:58', '2026-07-27 08:50:38'),
 (11, 24, 41, 41, 52.0000, 0.0000, 1.5000, 0.00, 1.5000, 1.5000, 0.0000, NULL, NULL, NULL, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, NULL, NULL, NULL, NULL, '2026-07-27 15:11:58', '2026-07-27 15:11:58'),
-(12, 25, 42, 42, 56.0000, 0.0000, 2.1000, 0.00, 2.1000, 2.1000, 0.0000, NULL, NULL, NULL, 17.0000, 0.0000, 0.0000, 0.0000, 0.0000, NULL, NULL, NULL, NULL, '2026-07-27 15:11:58', '2026-08-04 08:28:24'),
+(12, 25, 42, 42, 56.0000, 0.0000, 2.1000, 0.00, 2.1000, 2.1000, 0.0000, NULL, NULL, NULL, 19.0000, 0.0000, 0.0000, 0.0000, 0.0000, NULL, NULL, NULL, NULL, '2026-07-27 15:11:58', '2026-08-05 05:40:59'),
 (13, 26, 43, 43, 60.0000, 0.0000, 2.4000, 0.00, 2.4000, 2.4000, 0.0000, NULL, NULL, NULL, 60.0000, 0.0000, 0.0000, 0.0000, 0.0000, NULL, NULL, NULL, NULL, '2026-07-27 15:11:58', '2026-07-27 05:44:05'),
 (14, 27, 44, 44, 64.0000, 0.0000, 3.2000, 0.00, 3.2000, 3.2000, 0.0000, NULL, NULL, NULL, 1.0000, 0.0000, 0.0000, 0.0000, 0.0000, NULL, NULL, NULL, NULL, '2026-07-27 15:11:58', '2026-08-03 05:23:18'),
 (15, 28, 45, 45, 68.0000, 0.0000, 1.6000, 0.00, 1.6000, 1.6000, 0.0000, NULL, NULL, NULL, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, NULL, NULL, NULL, NULL, '2026-07-27 15:11:58', '2026-07-27 15:11:58'),
@@ -2790,7 +2802,7 @@ CREATE TABLE `reference_counts` (
 
 INSERT INTO `reference_counts` (`id`, `ref_type`, `ref_count`, `business_id`, `created_at`, `updated_at`) VALUES
 (1, 'contacts', 6, 1, '2026-07-18 18:56:53', '2026-07-23 07:27:00'),
-(4, 'sell_payment', 66, 1, '2026-07-24 10:13:56', '2026-08-04 08:28:24'),
+(4, 'sell_payment', 72, 1, '2026-07-24 10:13:56', '2026-08-05 05:40:59'),
 (5, 'draft', 9, 1, '2026-07-27 05:47:31', '2026-07-27 10:11:34');
 
 -- --------------------------------------------------------
@@ -3262,7 +3274,7 @@ INSERT INTO `transactions` (`id`, `business_id`, `location_id`, `is_kitchen_orde
 (112, 1, 1, 0, NULL, NULL, NULL, 'sell', NULL, 'final', NULL, 0, 'due', NULL, 2, 1, '0067', '', NULL, NULL, NULL, '2026-08-03 19:18:00', 4.9900, 1, 0.4990, 'percentage', 0.0000, 0, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, 5.4900, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 1.000, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL, 0, 1.0000, 'days', 0, NULL, NULL, NULL, NULL, NULL, 1, '2026-08-03 09:19:03', '2026-08-03 09:19:03'),
 (113, 1, 1, 0, NULL, NULL, NULL, 'sell', NULL, 'final', NULL, 0, 'paid', NULL, 1, 1, '0068', '', NULL, NULL, NULL, '2026-08-03 19:20:00', 4.9900, 1, 0.4990, 'percentage', 0.0000, 0, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, 5.4900, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 1.000, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL, 0, 1.0000, 'days', 0, NULL, NULL, NULL, NULL, NULL, 1, '2026-08-03 09:20:11', '2026-08-03 09:20:11'),
 (114, 1, 1, 0, NULL, NULL, NULL, 'sell', NULL, 'final', NULL, 0, 'due', NULL, 5, 2, '0069', '', NULL, NULL, NULL, '2026-08-03 19:27:00', 4.9900, 1, 0.4990, 'percentage', 0.0000, 0, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, 5.4900, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 1.000, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL, 0, 1.0000, 'days', 0, NULL, NULL, NULL, NULL, NULL, 1, '2026-08-03 09:27:47', '2026-08-03 09:27:47'),
-(115, 1, 1, 0, NULL, NULL, NULL, 'sell', NULL, 'final', NULL, 0, 'due', NULL, 1, 1, '0070', '', NULL, NULL, NULL, '2026-08-03 19:30:00', 12.0000, 1, 1.2000, 'percentage', 0.0000, 0, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, 13.2000, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 1.000, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL, 0, 1.0000, 'days', 0, NULL, NULL, NULL, NULL, NULL, 1, '2026-08-03 09:30:59', '2026-08-03 09:30:59'),
+(115, 1, 1, 0, NULL, NULL, NULL, 'sell', NULL, 'final', NULL, 0, 'paid', NULL, 1, 1, '0070', '', NULL, NULL, NULL, '2026-08-03 19:30:00', 12.0000, 1, 1.2000, 'percentage', 0.0000, 0, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, 13.2000, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 1.000, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL, 0, 1.0000, 'days', 0, NULL, NULL, NULL, NULL, NULL, 1, '2026-08-03 09:30:59', '2026-08-04 08:45:04'),
 (116, 1, 1, 0, NULL, NULL, NULL, 'sell', NULL, 'final', NULL, 0, 'paid', NULL, 1, 1, '0071', '', NULL, NULL, NULL, '2026-08-03 15:31:00', 19.6000, 1, 1.9600, 'percentage', 0.0000, 0, 0.0000, 'dd', 'Amazon Logistics', 'ddd', NULL, 'ordered', '2026-08-04 15:33:47', '33333,dddd', 3, 'ddd', 1, 50.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, 71.5600, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 1.000, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL, 0, 1.0000, 'days', 0, NULL, NULL, NULL, NULL, NULL, 1, '2026-08-03 09:33:47', '2026-08-03 09:33:47'),
 (117, 1, 1, 0, NULL, NULL, NULL, 'sell', NULL, 'final', NULL, 0, 'paid', NULL, 1, 1, '0072', '', NULL, NULL, NULL, '2026-08-03 19:38:00', 9.8000, 1, 0.9800, 'percentage', 0.0000, 0, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 10.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, 20.7800, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 1.000, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL, 0, 1.0000, 'days', 0, NULL, NULL, NULL, NULL, NULL, 1, '2026-08-03 09:39:11', '2026-08-03 09:39:11'),
 (118, 1, 1, 0, NULL, NULL, NULL, 'sell', NULL, 'final', NULL, 0, 'paid', NULL, 1, 1, '0073', '', NULL, NULL, NULL, '2026-08-03 15:39:00', 12.0000, 1, 1.2000, 'percentage', 0.0000, 0, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, 13.2000, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 1.000, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL, 0, 1.0000, 'days', 0, NULL, NULL, NULL, NULL, NULL, 1, '2026-08-03 09:39:32', '2026-08-03 09:39:32'),
@@ -3273,7 +3285,11 @@ INSERT INTO `transactions` (`id`, `business_id`, `location_id`, `is_kitchen_orde
 (123, 1, 1, 0, NULL, NULL, NULL, 'sell', NULL, 'final', NULL, 0, 'paid', NULL, 1, 1, '0078', '', NULL, NULL, NULL, '2026-08-03 16:35:00', 12.0000, 1, 1.2000, 'percentage', 0.0000, 0, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, 13.2000, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 1.000, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL, 0, 1.0000, 'days', 0, NULL, NULL, NULL, NULL, NULL, 1, '2026-08-03 10:45:50', '2026-08-03 10:45:50'),
 (124, 1, 1, 0, NULL, NULL, NULL, 'sell', NULL, 'final', NULL, 0, 'paid', NULL, 1, 1, '0079', '', NULL, NULL, NULL, '2026-08-03 16:45:00', 12.0000, 1, 1.2000, 'percentage', 0.0000, 0, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, 13.2000, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 1.000, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL, 0, 1.0000, 'days', 0, NULL, NULL, NULL, NULL, NULL, 1, '2026-08-03 10:47:11', '2026-08-03 10:47:11'),
 (125, 1, 1, 0, NULL, NULL, NULL, 'sell', NULL, 'final', NULL, 0, 'paid', NULL, 1, 1, '0080', '', NULL, NULL, NULL, '2026-08-04 15:11:00', 12.0000, 1, 1.2000, 'percentage', 0.0000, 0, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, 13.2000, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 1.000, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL, 0, 1.0000, 'days', 0, NULL, NULL, NULL, NULL, NULL, 1, '2026-08-04 05:19:16', '2026-08-04 05:19:16'),
-(126, 1, 1, 0, NULL, NULL, NULL, 'sell', NULL, 'final', NULL, 0, 'paid', NULL, 1, 1, '0081', '', NULL, NULL, NULL, '2026-08-04 18:25:00', 13.9800, 1, 1.3980, 'percentage', 0.0000, 0, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 50.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, 65.3800, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 1.000, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL, 0, 1.0000, 'days', 0, NULL, NULL, NULL, NULL, NULL, 1, '2026-08-04 08:28:24', '2026-08-04 08:28:24');
+(126, 1, 1, 0, NULL, NULL, NULL, 'sell', NULL, 'final', NULL, 0, 'paid', NULL, 1, 1, '0081', '', NULL, NULL, NULL, '2026-08-04 18:25:00', 13.9800, 1, 1.3980, 'percentage', 0.0000, 0, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 50.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, 65.3800, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 1.000, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL, 0, 1.0000, 'days', 0, NULL, NULL, NULL, NULL, NULL, 1, '2026-08-04 08:28:24', '2026-08-04 08:28:24'),
+(127, 1, 1, 0, NULL, NULL, NULL, 'sell', NULL, 'final', NULL, 0, 'paid', NULL, 1, 1, '0082', '', NULL, NULL, NULL, '2026-08-04 18:45:00', 12.0000, 1, 1.2000, 'percentage', 0.0000, 0, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, 13.2000, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 1.000, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL, 0, 1.0000, 'days', 0, NULL, NULL, NULL, NULL, NULL, 1, '2026-08-04 08:46:22', '2026-08-04 08:46:22'),
+(128, 1, 1, 0, NULL, NULL, NULL, 'sell', NULL, 'final', NULL, 0, 'paid', NULL, 1, 1, '0083', '', NULL, NULL, NULL, '2026-08-05 14:25:00', 4.9900, 1, 0.4990, 'percentage', 0.0000, 0, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, 5.4900, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 1.000, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL, 0, 1.0000, 'days', 0, NULL, NULL, NULL, NULL, NULL, 1, '2026-08-05 04:25:36', '2026-08-05 04:25:37'),
+(129, 1, 1, 0, NULL, NULL, NULL, 'sell', NULL, 'final', NULL, 0, 'paid', NULL, 1, 1, '0084', '', NULL, NULL, NULL, '2026-08-05 15:40:00', 12.0000, 1, 1.2000, 'percentage', 0.0000, 0, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, 13.2000, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 1.000, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL, 0, 1.0000, 'days', 0, NULL, NULL, NULL, NULL, NULL, 1, '2026-08-05 05:40:28', '2026-08-05 05:40:29'),
+(130, 1, 1, 0, NULL, NULL, NULL, 'sell', NULL, 'final', NULL, 0, 'paid', NULL, 1, 1, '0085', '', NULL, NULL, NULL, '2026-08-05 11:40:00', 4.9900, 1, 0.4990, 'percentage', 0.0000, 0, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, 5.4900, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 1.000, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL, 0, 1.0000, 'days', 0, NULL, NULL, NULL, NULL, NULL, 1, '2026-08-05 05:40:59', '2026-08-05 05:40:59');
 
 -- --------------------------------------------------------
 
@@ -3384,7 +3400,13 @@ INSERT INTO `transaction_payments` (`id`, `transaction_id`, `business_id`, `is_r
 (69, 125, 1, 1, 36.8000, 'card', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-04 11:19:16', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0063', NULL, '2026-08-04 05:19:16', '2026-08-04 05:19:16'),
 (70, 126, 1, 0, 5.0000, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-04 14:28:24', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0064', NULL, '2026-08-04 08:28:24', '2026-08-04 08:28:24'),
 (71, 126, 1, 0, 30.0000, 'card', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-04 14:28:24', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0065', NULL, '2026-08-04 08:28:24', '2026-08-04 08:28:24'),
-(72, 126, 1, 0, 30.3800, 'cheque', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-04 14:28:24', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0066', NULL, '2026-08-04 08:28:24', '2026-08-04 08:28:24');
+(72, 126, 1, 0, 30.3800, 'cheque', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-04 14:28:24', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0066', NULL, '2026-08-04 08:28:24', '2026-08-04 08:28:24'),
+(73, NULL, 1, 0, 13.2000, 'cash', 'credit', NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-04 18:45:00', 1, 0, NULL, 1, 1, NULL, NULL, NULL, 'SP2026/0067', NULL, '2026-08-04 08:45:04', '2026-08-04 08:45:04'),
+(74, 115, 1, 0, 13.2000, 'cash', NULL, 'cash', NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-04 18:45:00', 1, 0, NULL, 0, 1, 73, NULL, NULL, 'SP2026/0068', NULL, '2026-08-04 08:45:04', '2026-08-04 08:45:04'),
+(75, 127, 1, 0, 13.2000, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-04 14:46:22', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0069', NULL, '2026-08-04 08:46:22', '2026-08-04 08:46:22'),
+(76, 128, 1, 0, 5.4900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-05 10:25:37', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0070', NULL, '2026-08-05 04:25:37', '2026-08-05 04:25:37'),
+(77, 129, 1, 0, 13.2000, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-05 11:40:28', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0071', NULL, '2026-08-05 05:40:28', '2026-08-05 05:40:28'),
+(78, 130, 1, 0, 5.4900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-05 11:40:59', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0072', NULL, '2026-08-05 05:40:59', '2026-08-05 05:40:59');
 
 -- --------------------------------------------------------
 
@@ -3500,7 +3522,11 @@ INSERT INTO `transaction_sell_lines` (`id`, `transaction_id`, `product_id`, `var
 (99, 124, 7, 7, 1.0000, 0.0000, 0.0000, 10.9300, 10.9300, 'fixed', 0.0000, 12.0000, 1.0700, 5, NULL, NULL, '', NULL, 0.0000, NULL, NULL, NULL, '', NULL, '2026-08-03 10:47:11', '2026-08-03 10:47:11'),
 (100, 125, 7, 7, 1.0000, 0.0000, 0.0000, 10.9300, 10.9300, 'fixed', 0.0000, 12.0000, 1.0700, 5, NULL, NULL, '', NULL, 0.0000, NULL, NULL, NULL, '', NULL, '2026-08-04 05:19:16', '2026-08-04 05:19:16'),
 (101, 126, 42, 42, 1.0000, 0.0000, 0.0000, 4.9900, 4.9900, 'fixed', 0.0000, 4.9900, 0.0000, NULL, NULL, NULL, '', NULL, 0.0000, NULL, NULL, NULL, '', NULL, '2026-08-04 08:28:24', '2026-08-04 08:28:24'),
-(102, 126, 51, 51, 1.0000, 0.0000, 0.0000, 8.9900, 8.9900, 'fixed', 0.0000, 8.9900, 0.0000, NULL, NULL, NULL, '', NULL, 0.0000, NULL, NULL, NULL, '', NULL, '2026-08-04 08:28:24', '2026-08-04 08:28:24');
+(102, 126, 51, 51, 1.0000, 0.0000, 0.0000, 8.9900, 8.9900, 'fixed', 0.0000, 8.9900, 0.0000, NULL, NULL, NULL, '', NULL, 0.0000, NULL, NULL, NULL, '', NULL, '2026-08-04 08:28:24', '2026-08-04 08:28:24'),
+(103, 127, 7, 7, 1.0000, 0.0000, 0.0000, 10.9300, 10.9300, 'fixed', 0.0000, 12.0000, 1.0700, 5, NULL, NULL, '', NULL, 0.0000, NULL, NULL, NULL, '', NULL, '2026-08-04 08:46:22', '2026-08-04 08:46:22'),
+(104, 128, 42, 42, 1.0000, 0.0000, 0.0000, 4.9900, 4.9900, 'fixed', 0.0000, 4.9900, 0.0000, NULL, NULL, NULL, '', NULL, 0.0000, NULL, NULL, NULL, '', NULL, '2026-08-05 04:25:37', '2026-08-05 04:25:37'),
+(105, 129, 7, 7, 1.0000, 0.0000, 0.0000, 10.9300, 10.9300, 'fixed', 0.0000, 12.0000, 1.0700, 5, NULL, NULL, '', NULL, 0.0000, NULL, NULL, NULL, '', NULL, '2026-08-05 05:40:28', '2026-08-05 05:40:28'),
+(106, 130, 42, 42, 1.0000, 0.0000, 0.0000, 4.9900, 4.9900, 'fixed', 0.0000, 4.9900, 0.0000, NULL, NULL, NULL, '', NULL, 0.0000, NULL, NULL, NULL, '', NULL, '2026-08-05 05:40:59', '2026-08-05 05:40:59');
 
 -- --------------------------------------------------------
 
@@ -3597,7 +3623,11 @@ INSERT INTO `transaction_sell_lines_purchase_lines` (`id`, `sell_line_id`, `stoc
 (71, 99, NULL, 7, 1.0000, 0.0000, '2026-08-03 10:47:11', '2026-08-03 10:47:11'),
 (72, 100, NULL, 7, 1.0000, 0.0000, '2026-08-04 05:19:16', '2026-08-04 05:19:16'),
 (73, 101, NULL, 12, 1.0000, 0.0000, '2026-08-04 08:28:24', '2026-08-04 08:28:24'),
-(74, 102, NULL, 21, 1.0000, 0.0000, '2026-08-04 08:28:24', '2026-08-04 08:28:24');
+(74, 102, NULL, 21, 1.0000, 0.0000, '2026-08-04 08:28:24', '2026-08-04 08:28:24'),
+(75, 103, NULL, 7, 1.0000, 0.0000, '2026-08-04 08:46:22', '2026-08-04 08:46:22'),
+(76, 104, NULL, 12, 1.0000, 0.0000, '2026-08-05 04:25:37', '2026-08-05 04:25:37'),
+(77, 105, NULL, 7, 1.0000, 0.0000, '2026-08-05 05:40:29', '2026-08-05 05:40:29'),
+(78, 106, NULL, 12, 1.0000, 0.0000, '2026-08-05 05:40:59', '2026-08-05 05:40:59');
 
 -- --------------------------------------------------------
 
@@ -3850,12 +3880,12 @@ INSERT INTO `variation_location_details` (`id`, `product_id`, `product_variation
 (4, 4, 4, 4, 1, 50.0000, '2026-07-18 19:00:29', '2026-07-18 19:00:29'),
 (5, 5, 5, 5, 1, 50.0000, '2026-07-18 19:00:29', '2026-07-27 09:02:00'),
 (6, 6, 6, 6, 1, 39.0000, '2026-07-18 19:00:29', '2026-07-27 09:42:01'),
-(7, 7, 7, 7, 1, 23.0000, '2026-07-18 19:00:29', '2026-08-04 05:19:16'),
+(7, 7, 7, 7, 1, 21.0000, '2026-07-18 19:00:29', '2026-08-05 05:40:29'),
 (8, 8, 8, 8, 1, 28.0000, '2026-07-18 19:00:29', '2026-07-27 08:59:57'),
 (39, 39, 39, 39, 1, 44.0000, '2026-07-22 17:42:40', '2026-07-22 17:42:40'),
 (40, 40, 40, 40, 1, 47.0000, '2026-07-22 17:42:40', '2026-07-27 08:50:38'),
 (41, 41, 41, 41, 1, 52.0000, '2026-07-22 17:42:43', '2026-07-22 17:42:43'),
-(42, 42, 42, 42, 1, 44.0000, '2026-07-22 17:42:44', '2026-08-04 08:28:24'),
+(42, 42, 42, 42, 1, 42.0000, '2026-07-22 17:42:44', '2026-08-05 05:40:59'),
 (43, 43, 43, 43, 1, 0.0000, '2026-07-22 17:42:45', '2026-07-27 05:44:05'),
 (44, 44, 44, 44, 1, 63.0000, '2026-07-22 17:42:47', '2026-08-03 05:23:18'),
 (45, 45, 45, 45, 1, 68.0000, '2026-07-22 17:42:50', '2026-07-22 17:42:50'),
@@ -4716,7 +4746,7 @@ ALTER TABLE `account_types`
 -- AUTO_INCREMENT for table `activity_log`
 --
 ALTER TABLE `activity_log`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=145;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=150;
 
 --
 -- AUTO_INCREMENT for table `ai_assistance_settings`
@@ -4770,7 +4800,7 @@ ALTER TABLE `cash_registers`
 -- AUTO_INCREMENT for table `cash_register_transactions`
 --
 ALTER TABLE `cash_register_transactions`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=69;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=74;
 
 --
 -- AUTO_INCREMENT for table `categories`
@@ -4854,7 +4884,7 @@ ALTER TABLE `ecom_banners`
 -- AUTO_INCREMENT for table `ecom_carts`
 --
 ALTER TABLE `ecom_carts`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=81;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=83;
 
 --
 -- AUTO_INCREMENT for table `ecom_cart_items`
@@ -5076,25 +5106,25 @@ ALTER TABLE `tax_rates`
 -- AUTO_INCREMENT for table `transactions`
 --
 ALTER TABLE `transactions`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=127;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=131;
 
 --
 -- AUTO_INCREMENT for table `transaction_payments`
 --
 ALTER TABLE `transaction_payments`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=73;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=79;
 
 --
 -- AUTO_INCREMENT for table `transaction_sell_lines`
 --
 ALTER TABLE `transaction_sell_lines`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=103;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=107;
 
 --
 -- AUTO_INCREMENT for table `transaction_sell_lines_purchase_lines`
 --
 ALTER TABLE `transaction_sell_lines_purchase_lines`
-  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=75;
+  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=79;
 
 --
 -- AUTO_INCREMENT for table `types_of_services`

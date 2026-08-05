@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\BusinessLocation;
 use App\InvoiceLayout;
 use App\Utils\Util;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 use Validator;
 
 class InvoiceLayoutController extends Controller
@@ -14,6 +16,31 @@ class InvoiceLayoutController extends Controller
     public function __construct(Util $commonUtil)
     {
         $this->commonUtil = $commonUtil;
+    }
+
+    /**
+     * Mark layout as business default and point every location at it
+     * (invoice + sale invoice layouts).
+     */
+    protected function makeDefaultForAllLocations(int $businessId, int $layoutId): void
+    {
+        InvoiceLayout::where('business_id', $businessId)
+            ->where('id', '!=', $layoutId)
+            ->update(['is_default' => 0]);
+
+        InvoiceLayout::where('business_id', $businessId)
+            ->where('id', $layoutId)
+            ->update(['is_default' => 1]);
+
+        $locationUpdate = [
+            'invoice_layout_id' => $layoutId,
+        ];
+
+        if (Schema::hasColumn('business_locations', 'sale_invoice_layout_id')) {
+            $locationUpdate['sale_invoice_layout_id'] = $layoutId;
+        }
+
+        BusinessLocation::where('business_id', $businessId)->update($locationUpdate);
     }
 
     /**
@@ -92,13 +119,8 @@ class InvoiceLayoutController extends Controller
                 $input['letter_head'] = $letter_head;
             }
 
-            if (! empty($request->input('is_default'))) {
-                //get_default
-                $default = InvoiceLayout::where('business_id', $business_id)
-                                ->where('is_default', 1)
-                                ->update(['is_default' => 0]);
-                $input['is_default'] = 1;
-            }
+            $make_default = ! empty($request->input('is_default'));
+            $input['is_default'] = $make_default ? 1 : 0;
 
             //Module info
             if ($request->has('module_info')) {
@@ -112,9 +134,18 @@ class InvoiceLayoutController extends Controller
             $input['contact_custom_fields'] = ! empty($request->input('contact_custom_fields')) ? $request->input('contact_custom_fields') : null;
             $input['location_custom_fields'] = ! empty($request->input('location_custom_fields')) ? $request->input('location_custom_fields') : null;
 
-            InvoiceLayout::create($input);
+            $layout = InvoiceLayout::create($input);
+
+            // First layout, or explicit default → use on every location
+            $only_layout = InvoiceLayout::where('business_id', $business_id)->count() === 1;
+            if ($make_default || $only_layout) {
+                $this->makeDefaultForAllLocations((int) $business_id, (int) $layout->id);
+            }
+
             $output = ['success' => 1,
-                'msg' => __('invoice.layout_added_success'),
+                'msg' => $make_default || $only_layout
+                    ? __('invoice.layout_set_default_all_locations')
+                    : __('invoice.layout_added_success'),
             ];
         } catch (\Exception $e) {
             \Log::emergency('File:'.$e->getFile().'Line:'.$e->getLine().'Message:'.$e->getMessage());
@@ -210,11 +241,15 @@ class InvoiceLayoutController extends Controller
                 $input['letter_head'] = $letter_head;
             }
 
-            if (! empty($request->input('is_default'))) {
-                //get_default
-                $default = InvoiceLayout::where('business_id', $business_id)
-                                ->where('is_default', 1)
-                                ->update(['is_default' => 0]);
+            $existing = InvoiceLayout::where('id', $id)
+                ->where('business_id', $business_id)
+                ->firstOrFail();
+
+            // Already the default, or user checked “Set as default”
+            $make_default = ! empty($request->input('is_default')) || ! empty($existing->is_default);
+
+            // Do not strip default flag when the form omits the checkbox (already-default case)
+            if ($make_default) {
                 $input['is_default'] = 1;
             }
 
@@ -236,8 +271,16 @@ class InvoiceLayoutController extends Controller
             InvoiceLayout::where('id', $id)
                         ->where('business_id', $business_id)
                         ->update($input);
+
+            // Keep every location on this layout when it is (or becomes) the default
+            if ($make_default) {
+                $this->makeDefaultForAllLocations((int) $business_id, (int) $id);
+            }
+
             $output = ['success' => 1,
-                'msg' => __('invoice.layout_updated_success'),
+                'msg' => $make_default
+                    ? __('invoice.layout_set_default_all_locations')
+                    : __('invoice.layout_updated_success'),
             ];
         } catch (\Exception $e) {
             \Log::emergency('File:'.$e->getFile().'Line:'.$e->getLine().'Message:'.$e->getMessage());

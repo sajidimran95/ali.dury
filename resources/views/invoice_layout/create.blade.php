@@ -981,7 +981,8 @@
             <br>
             <div class="checkbox">
               <label>
-                {!! Form::checkbox('is_default', 1, false, ['class' => 'input-icheck']); !!} @lang('barcode.set_as_default')</label>
+                {!! Form::checkbox('is_default', 1, false, ['class' => 'input-icheck']); !!} @lang('invoice.set_default_for_all_locations')</label>
+              <p class="help-block">@lang('invoice.set_default_for_all_locations_help')</p>
             </div>
           </div>
         </div>

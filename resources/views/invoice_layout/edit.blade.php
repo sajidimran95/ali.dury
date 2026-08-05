@@ -967,17 +967,26 @@
               'placeholder' => __('invoice.footer_text'), 'rows' => 3]); !!}
           </div>
         </div>
-        @if(empty($invoice_layout->is_default))
-        <div class="col-sm-6">
+        <div class="col-sm-12">
           <div class="form-group">
             <br>
-            <div class="checkbox">
-              <label>
-                {!! Form::checkbox('is_default', 1, $invoice_layout->is_default, ['class' => 'input-icheck']); !!} @lang('barcode.set_as_default')</label>
-            </div>
+            @if(!empty($invoice_layout->is_default))
+              <div class="alert alert-info" style="margin-bottom: 8px;">
+                <i class="fa fa-check-circle"></i> @lang('invoice.layout_is_default_for_all')
+              </div>
+              {{-- Keep default flag on save (checkbox was previously hidden, so locations never re-applied) --}}
+              <input type="hidden" name="is_default" value="1">
+            @else
+              <div class="checkbox">
+                <label>
+                  {!! Form::checkbox('is_default', 1, false, ['class' => 'input-icheck']); !!}
+                  @lang('invoice.set_default_for_all_locations')
+                </label>
+              </div>
+              <p class="help-block">@lang('invoice.set_default_for_all_locations_help')</p>
+            @endif
           </div>
         </div>
-        @endif
         
       </div>
     </div>
