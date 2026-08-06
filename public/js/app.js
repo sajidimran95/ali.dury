@@ -146,12 +146,11 @@ $(document).ready(function() {
         serverSide: true,
         fixedHeader:false,
         ajax: '/brands',
-        columnDefs: [
-            {
-                targets: 2,
-                orderable: false,
-                searchable: false,
-            },
+        columns: [
+            { data: 'name', name: 'name' },
+            { data: 'description', name: 'description' },
+            { data: 'show_in_pos', name: 'show_in_pos', orderable: false, searchable: false },
+            { data: 'action', name: 'action', orderable: false, searchable: false },
         ],
     });
 

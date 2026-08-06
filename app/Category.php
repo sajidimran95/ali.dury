@@ -26,9 +26,10 @@ class Category extends Model
      * Combines Category and sub-category
      *
      * @param  int  $business_id
+     * @param  bool  $only_pos_visible  When true, hide categories with show_in_pos = 0 (POS screen)
      * @return array
      */
-    public static function catAndSubCategories($business_id)
+    public static function catAndSubCategories($business_id, $only_pos_visible = false)
     {
         $all_categories = Category::where('business_id', $business_id)
                                 ->where('category_type', 'product')
@@ -43,6 +44,9 @@ class Category extends Model
         $sub_categories = [];
 
         foreach ($all_categories as $category) {
+            if ($only_pos_visible && array_key_exists('show_in_pos', $category) && (int) $category['show_in_pos'] === 0) {
+                continue;
+            }
             if ($category['parent_id'] == 0) {
                 $categories[] = $category;
             } else {

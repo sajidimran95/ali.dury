@@ -34,6 +34,18 @@
         {!! Form::label('description', __( 'lang_v1.description' ) . ':') !!}
         {!! Form::textarea('description', $category->description, ['class' => 'form-control', 'placeholder' => __( 'lang_v1.description'), 'rows' => 3]); !!}
       </div>
+      @if(($category_type ?? $category->category_type ?? '') === 'product')
+      <div class="form-group">
+        <div class="checkbox">
+          <label>
+            <input type="hidden" name="show_in_pos" value="0">
+            {!! Form::checkbox('show_in_pos', 1, !isset($category->show_in_pos) || (int) $category->show_in_pos === 1); !!}
+            @lang('lang_v1.show_on_pos')
+          </label>
+        </div>
+        <p class="help-block">@lang('lang_v1.show_on_pos_help')</p>
+      </div>
+      @endif
       @if(!empty($parent_categories) && $enable_sub_category)
           <div class="form-group">
             <div class="checkbox">

@@ -45,6 +45,7 @@
                             <tr>
                                 <th>@lang('brand.brands')</th>
                                 <th>@lang('brand.note')</th>
+                                <th>@lang('lang_v1.show_on_pos')</th>
                                 <th class="not-export">@lang('messages.action')</th>
                             </tr>
                         </thead>

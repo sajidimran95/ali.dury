@@ -95,9 +95,19 @@ class TaxonomyController extends Controller
                     }
                     return $row->name;
                 })
+                ->addColumn('show_in_pos', function ($row) use ($category_type) {
+                    if ($category_type !== 'product') {
+                        return '';
+                    }
+                    $visible = ! isset($row->show_in_pos) || (int) $row->show_in_pos === 1;
+
+                    return $visible
+                        ? '<span class="label label-success">'.e(__('lang_v1.visible_on_pos')).'</span>'
+                        : '<span class="label label-default">'.e(__('lang_v1.hidden_on_pos')).'</span>';
+                })
                 ->removeColumn('id')
                 ->removeColumn('parent_id')
-                ->rawColumns(['action'])
+                ->rawColumns(['action', 'show_in_pos'])
                 ->make(true);
 
             }
@@ -203,6 +213,12 @@ class TaxonomyController extends Controller
             }
             $input['business_id'] = $request->session()->get('user.business_id');
             $input['created_by'] = $request->session()->get('user.id');
+            // Product categories: visible on POS by default when field not submitted
+            if ($category_type === 'product') {
+                $input['show_in_pos'] = $request->exists('show_in_pos')
+                    ? ((int) $request->input('show_in_pos') === 1 ? 1 : 0)
+                    : 1;
+            }
 
             $category = Category::create($input);
             $output = ['success' => true,
@@ -297,6 +313,9 @@ class TaxonomyController extends Controller
                     $category->parent_id = $request->input('parent_id');
                 } else {
                     $category->parent_id = 0;
+                }
+                if ($category->category_type === 'product' && $request->exists('show_in_pos')) {
+                    $category->show_in_pos = (int) $request->input('show_in_pos') === 1 ? 1 : 0;
                 }
                 $category->save();
 

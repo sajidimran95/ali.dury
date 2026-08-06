@@ -41,7 +41,7 @@ class BrandController extends Controller
             $business_id = request()->session()->get('user.business_id');
 
             $brands = Brands::where('business_id', $business_id)
-                        ->select(['name', 'description', 'id']);
+                        ->select(['name', 'description', 'show_in_pos', 'id']);
 
             return Datatables::of($brands)
                 ->addColumn(
@@ -54,9 +54,16 @@ class BrandController extends Controller
                         <button data-href="{{action(\'App\Http\Controllers\BrandController@destroy\', [$id])}}" class="tw-dw-btn tw-dw-btn-outline tw-dw-btn-xs tw-dw-btn-error delete_brand_button"><i class="glyphicon glyphicon-trash"></i> @lang("messages.delete")</button>
                     @endcan'
                 )
+                ->editColumn('show_in_pos', function ($row) {
+                    $visible = ! isset($row->show_in_pos) || (int) $row->show_in_pos === 1;
+
+                    return $visible
+                        ? '<span class="label label-success">'.e(__('lang_v1.visible_on_pos')).'</span>'
+                        : '<span class="label label-default">'.e(__('lang_v1.hidden_on_pos')).'</span>';
+                })
                 ->removeColumn('id')
-                ->rawColumns([2])
-                ->make(false);
+                ->rawColumns(['action', 'show_in_pos'])
+                ->make(true);
         }
 
         $business_id = (int) request()->session()->get('user.business_id');
@@ -137,6 +144,9 @@ class BrandController extends Controller
             $business_id = $request->session()->get('user.business_id');
             $input['business_id'] = $business_id;
             $input['created_by'] = $request->session()->get('user.id');
+            $input['show_in_pos'] = $request->exists('show_in_pos')
+                ? ((int) $request->input('show_in_pos') === 1 ? 1 : 0)
+                : 1;
 
             if ($this->moduleUtil->isModuleInstalled('Repair')) {
                 $input['use_for_repair'] = ! empty($request->input('use_for_repair')) ? 1 : 0;
@@ -213,6 +223,9 @@ class BrandController extends Controller
                 $brand = Brands::where('business_id', $business_id)->findOrFail($id);
                 $brand->name = $input['name'];
                 $brand->description = $input['description'];
+                if ($request->exists('show_in_pos')) {
+                    $brand->show_in_pos = (int) $request->input('show_in_pos') === 1 ? 1 : 0;
+                }
 
                 if ($this->moduleUtil->isModuleInstalled('Repair')) {
                     $brand->use_for_repair = ! empty($request->input('use_for_repair')) ? 1 : 0;

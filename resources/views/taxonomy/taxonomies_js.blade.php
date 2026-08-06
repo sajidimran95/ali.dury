@@ -30,6 +30,9 @@
                             { data: 'short_code', name: 'short_code', orderable: false, searchable: true },
                         @endif
                         { data: 'description', name: 'description', orderable: false, searchable: true },
+                        @if(request()->get('type') === 'product')
+                            { data: 'show_in_pos', name: 'show_in_pos', orderable: false, searchable: false },
+                        @endif
                         { data: 'action', name: 'action', orderable: false, searchable: false},
                     ],
                 });

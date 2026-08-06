@@ -27,14 +27,22 @@ class Brands extends Model
      *
      * @param  int  $business_id
      * @param  bool  $show_none = false
-     * @return array
+     * @param  bool  $filter_use_for_repair = false
+     * @param  bool  $only_pos_visible When true, hide brands with show_in_pos = 0
+     * @return \Illuminate\Support\Collection
      */
-    public static function forDropdown($business_id, $show_none = false, $filter_use_for_repair = false)
+    public static function forDropdown($business_id, $show_none = false, $filter_use_for_repair = false, $only_pos_visible = false)
     {
         $query = Brands::where('business_id', $business_id);
 
         if ($filter_use_for_repair) {
             $query->where('use_for_repair', 1);
+        }
+
+        if ($only_pos_visible) {
+            $query->where(function ($q) {
+                $q->where('show_in_pos', 1)->orWhereNull('show_in_pos');
+            });
         }
 
         $brands = $query->orderBy('name', 'asc')

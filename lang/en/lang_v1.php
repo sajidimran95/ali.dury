@@ -1769,4 +1769,9 @@ return [
     'shipping_method_deleted_success' => 'Shipping method deleted successfully',
     'sales_using_shipping' => 'Sales using shipping methods',
 
+    'show_on_pos' => 'Show on POS',
+    'show_on_pos_help' => 'If unchecked, this will not appear on the POS screen.',
+    'visible_on_pos' => 'Visible',
+    'hidden_on_pos' => 'Hidden',
+
 ];

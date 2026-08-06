@@ -19,6 +19,17 @@
           {!! Form::text('description', null, ['class' => 'form-control','placeholder' => __( 'brand.short_description' )]); !!}
       </div>
 
+      <div class="form-group">
+        <div class="checkbox">
+          <label>
+            <input type="hidden" name="show_in_pos" value="0">
+            {!! Form::checkbox('show_in_pos', 1, true); !!}
+            @lang('lang_v1.show_on_pos')
+          </label>
+        </div>
+        <p class="help-block">@lang('lang_v1.show_on_pos_help')</p>
+      </div>
+
         @if($is_repair_installed)
           <div class="form-group">
              <label>

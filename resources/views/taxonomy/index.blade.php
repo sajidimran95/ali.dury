@@ -77,6 +77,9 @@
                                 <th>{{ $module_category_data['taxonomy_code_label'] ?? __('category.code') }}</th>
                             @endif
                             <th>@lang('lang_v1.description')</th>
+                            @if (request()->get('type') === 'product')
+                                <th>@lang('lang_v1.show_on_pos')</th>
+                            @endif
                             <th class="not-export">@lang('messages.action')</th>
                         </tr>
                     </thead>

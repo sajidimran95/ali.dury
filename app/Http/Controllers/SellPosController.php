@@ -252,8 +252,8 @@ class SellPosController extends Controller
         }
 
         //If brands, category are enabled then send else false.
-        $categories = (request()->session()->get('business.enable_category') == 1) ? Category::catAndSubCategories($business_id) : false;
-        $brands = (request()->session()->get('business.enable_brand') == 1) ? Brands::forDropdown($business_id)
+        $categories = (request()->session()->get('business.enable_category') == 1) ? Category::catAndSubCategories($business_id, true) : false;
+        $brands = (request()->session()->get('business.enable_brand') == 1) ? Brands::forDropdown($business_id, false, false, true)
             ->prepend(__('lang_v1.all_brands'), 'all') : false;
 
         $change_return = $this->dummyPaymentLine;
@@ -1268,8 +1268,8 @@ class SellPosController extends Controller
         }
 
         //If brands, category are enabled then send else false.
-        $categories = (request()->session()->get('business.enable_category') == 1) ? Category::catAndSubCategories($business_id) : false;
-        $brands = (request()->session()->get('business.enable_brand') == 1) ? Brands::forDropdown($business_id)
+        $categories = (request()->session()->get('business.enable_category') == 1) ? Category::catAndSubCategories($business_id, true) : false;
+        $brands = (request()->session()->get('business.enable_brand') == 1) ? Brands::forDropdown($business_id, false, false, true)
             ->prepend(__('lang_v1.all_brands'), 'all') : false;
 
         $change_return = $this->dummyPaymentLine;
@@ -2252,6 +2252,48 @@ class SellPosController extends Controller
             }
             if (!empty($brand_id) && ($brand_id != 'all')) {
                 $products->where('p.brand_id', $brand_id);
+            }
+
+            // Products in categories/brands hidden from POS should not appear in POS grid
+            if (\Schema::hasColumn('categories', 'show_in_pos')) {
+                $products->where(function ($q) {
+                    $q->whereNull('p.category_id')
+                        ->orWhere('p.category_id', 0)
+                        ->orWhereIn('p.category_id', function ($sub) {
+                            $sub->select('id')
+                                ->from('categories')
+                                ->whereNull('deleted_at')
+                                ->where(function ($c) {
+                                    $c->where('show_in_pos', 1)->orWhereNull('show_in_pos');
+                                });
+                        });
+                });
+                $products->where(function ($q) {
+                    $q->whereNull('p.sub_category_id')
+                        ->orWhere('p.sub_category_id', 0)
+                        ->orWhereIn('p.sub_category_id', function ($sub) {
+                            $sub->select('id')
+                                ->from('categories')
+                                ->whereNull('deleted_at')
+                                ->where(function ($c) {
+                                    $c->where('show_in_pos', 1)->orWhereNull('show_in_pos');
+                                });
+                        });
+                });
+            }
+            if (\Schema::hasColumn('brands', 'show_in_pos')) {
+                $products->where(function ($q) {
+                    $q->whereNull('p.brand_id')
+                        ->orWhere('p.brand_id', 0)
+                        ->orWhereIn('p.brand_id', function ($sub) {
+                            $sub->select('id')
+                                ->from('brands')
+                                ->whereNull('deleted_at')
+                                ->where(function ($c) {
+                                    $c->where('show_in_pos', 1)->orWhereNull('show_in_pos');
+                                });
+                        });
+                });
             }
 
             if (!empty($request->get('is_enabled_stock'))) {
