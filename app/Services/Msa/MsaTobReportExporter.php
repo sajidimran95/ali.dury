@@ -760,7 +760,7 @@ class MsaTobReportExporter
             . $this->lj($sid['cot'], 20)
             . $this->rj('0', 7) // TDLinx
             . $sid['cashCarry']
-            // Cust Promo Accept Ind must be Y/N (was space → MFT Warning 4033)
+            // Col 240: cash & carry adjacent Promo Accept early field (must be Y/N, not blank)
             . (($sid['promoAccept'] ?? 'N') === 'Y' ? 'Y' : 'N')
             . str_repeat(' ', 66)
             . $this->lj($parentName, 32)
@@ -772,12 +772,34 @@ class MsaTobReportExporter
             . $this->lj('', 5)
             . $this->rj($parentPhone, 10)
             . $this->rj('0', 14, '0')
-            . $independentFlag
-            . str_repeat(' ', 42)
+            // MFT Warning 4033 / Altria test feedback (DID 17033752):
+            // "Promo Acceptance Indicator for SID needs to be a Y/N in column 498"
+            // but the Y/N was one column early at 497. Parent phone (10) + zeros (14)
+            // ends at col 496; insert one pad so the indicator lands on col 498.
+            // Trailing filler 42 → 41 keeps SID total length 551.
+            . ' ' // col 497 pad
+            . $independentFlag // col 498 — Y/N (MFT Promo Acceptance / independent indicator)
+            . str_repeat(' ', 41)
             . $this->rj('0', 11, '0');
 
         // Keep exact fixed width; do not rtrim padding spaces
-        return substr($this->lj($line, 551), 0, 551);
+        $line = substr($this->lj($line, 551), 0, 551);
+
+        return $line;
+    }
+
+    /**
+     * Assert SID Promo Acceptance / indicator is in column 498 (1-based).
+     * Used by tests / diagnostics.
+     */
+    public static function sidPromoColumnIsCorrect(string $sidLine): bool
+    {
+        if (strlen($sidLine) < 498 || ! str_starts_with($sidLine, 'SID')) {
+            return false;
+        }
+        $ch = $sidLine[497]; // 0-based index for column 498
+
+        return $ch === 'Y' || $ch === 'N';
     }
 
     protected function formatPur(array $sid, array $pur): string
