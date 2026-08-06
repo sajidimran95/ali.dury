@@ -170,7 +170,7 @@
         });
 
         $(document).on('change', '#variation_ids', function() {
-            if ($(this).val().length) {
+            if ($(this).val() && $(this).val().length) {
                 $('#brand_input').addClass('hide');
                 $('#category_input').addClass('hide');
             } else {
@@ -180,7 +180,9 @@
         });
 
         $(document).on('hidden.bs.modal', '.discount_modal', function() {
-            $("#variation_ids").select2('destroy');
+            if ($("#variation_ids").hasClass('select2-hidden-accessible')) {
+                try { $("#variation_ids").select2('destroy'); } catch (e) {}
+            }
         });
     </script>
 @endsection

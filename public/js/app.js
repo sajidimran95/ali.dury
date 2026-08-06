@@ -2277,43 +2277,69 @@ $('.quick_add_product_modal').on('shown.bs.modal', function() {
 });
 
 
-$('.discount_modal').on('shown.bs.modal', function() {
-    $('.discount_modal')
-        .find('.select2')
-        .each(function() {
-            var $p = $(this).parent();
-            $(this).select2({ dropdownParent: $p });
-        });
-    $('.discount_modal')
-        .find('input[type="checkbox"].input-icheck')
-        .each(function() {
-            $(this).iCheck({
+/**
+ * Discount modal: select2, icheck, and date calendar (original UltimatePOS pattern)
+ */
+$(document).on('shown.bs.modal', '.discount_modal', function () {
+    var $modal = $(this);
+
+    $modal.find('.select2').each(function () {
+        var $el = $(this);
+        var $p = $el.parent();
+        if ($el.hasClass('select2-hidden-accessible')) {
+            try {
+                $el.select2('destroy');
+            } catch (err) {}
+        }
+        $el.select2({ dropdownParent: $p });
+    });
+
+    $modal.find('input[type="checkbox"].input-icheck').each(function () {
+        var $cb = $(this);
+        if (!$cb.data('iCheck')) {
+            $cb.iCheck({
                 checkboxClass: 'icheckbox_square-blue',
                 radioClass: 'iradio_square-blue',
             });
-        });
-    //Datetime picker
-    $('.discount_modal .discount_date').datetimepicker({
-        format: moment_date_format + ' ' + moment_time_format,
-        ignoreReadonly: true,
+        }
     });
-    $('form#discount_form').validate();
+
+    // Simple datetimepicker on each starts_at / ends_at field
+    $modal.find('input.discount_date').each(function () {
+        var $input = $(this);
+        try {
+            if ($input.data('DateTimePicker')) {
+                $input.data('DateTimePicker').destroy();
+            }
+        } catch (err) {}
+        $input.removeData('DateTimePicker');
+        $input.datetimepicker({
+            format: moment_date_format + ' ' + moment_time_format,
+            ignoreReadonly: true,
+        });
+    });
+
+    if ($modal.find('form#discount_form').length && $.fn.validate) {
+        $modal.find('form#discount_form').validate();
+    }
 });
 
-$(document).on('submit', 'form#discount_form', function(e) {
+$(document).on('submit', 'form#discount_form', function (e) {
     e.preventDefault();
     var data = $(this).serialize();
 
     $.ajax({
-        method: $(this).attr('method'),
+        method: $(this).attr('method') || 'POST',
         url: $(this).attr('action'),
         dataType: 'json',
         data: data,
-        success: function(result) {
+        success: function (result) {
             if (result.success == true) {
                 $('div.discount_modal').modal('hide');
                 toastr.success(result.msg);
-                discounts_table.ajax.reload();
+                if (typeof discounts_table !== 'undefined') {
+                    discounts_table.ajax.reload();
+                }
             } else {
                 toastr.error(result.msg);
             }
