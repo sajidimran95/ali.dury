@@ -549,10 +549,11 @@ $(document).ready(function() {
 
     if ($('#search_product').length) {
         // ------------------------------------------------------------
-        // Barcode scan optimization
-        // Hardware scanners type fast and usually end with Enter.
-        // A long autocomplete delay + uncleared field was causing
-        // double scans to concatenate: ECOM-004 + ECOM-004 = ECOM-004ECOM-004
+        // Scan / Search mode + barcode scan optimization
+        // Scan: exact SKU only → auto-enter (no SKU-2 sibling list)
+        // Search: name / partial SKU autocomplete
+        // Scanners type fast and usually end with Enter; clearing the field
+        // prevents double scans concatenating codes.
         // ------------------------------------------------------------
         var posScan = {
             lastKeyAt: 0,
@@ -560,7 +561,61 @@ $(document).ready(function() {
             idleTimer: null,
             busy: false,
             queue: [],
+            mode: 'scan',
         };
+
+        function posGetSearchMode() {
+            try {
+                var m = localStorage.getItem('pos_product_search_mode');
+                if (m === 'search' || m === 'scan') {
+                    return m;
+                }
+            } catch (e) {}
+            return 'scan';
+        }
+
+        function posIsScanMode() {
+            return posGetSearchMode() === 'scan';
+        }
+
+        function posApplySearchMode(mode, focusInput) {
+            mode = mode === 'search' ? 'search' : 'scan';
+            posScan.mode = mode;
+            try {
+                localStorage.setItem('pos_product_search_mode', mode);
+            } catch (e) {}
+
+            $('.pos-search-mode-btn').removeClass('is-active');
+            $('.pos-search-mode-btn[data-pos-search-mode="' + mode + '"]').addClass('is-active');
+            $('.pos-product-search-wrap').attr('data-pos-mode', mode);
+            $('body').toggleClass('pos-entry-mode-scan', mode === 'scan')
+                .toggleClass('pos-entry-mode-search', mode === 'search');
+
+            var $inp = $('#search_product');
+            if ($inp.length) {
+                var ph = mode === 'scan'
+                    ? ($inp.data('placeholder-scan') || 'Enter SKU')
+                    : ($inp.data('placeholder-search') || $inp.attr('placeholder'));
+                $inp.attr('placeholder', ph);
+                try {
+                    if (mode === 'scan') {
+                        $inp.autocomplete('option', 'minLength', 1000);
+                        $inp.autocomplete('close');
+                    } else {
+                        $inp.autocomplete('option', 'minLength', 2);
+                    }
+                } catch (e2) {}
+                if (focusInput !== false && !$('#__is_mobile').length) {
+                    $inp.focus();
+                }
+            }
+        }
+
+        $(document).on('click', '.pos-search-mode-btn', function (e) {
+            e.preventDefault();
+            posApplySearchMode($(this).data('pos-search-mode') || 'scan', true);
+            $('#search_product').val('');
+        });
 
         /**
          * If the same code was scanned twice without a clear, fix:
@@ -601,9 +656,14 @@ $(document).ready(function() {
         function posGetSearchParams(term) {
             var price_group = '';
             var search_fields = [];
-            $('.search_fields:checked').each(function (i) {
-                search_fields[i] = $(this).val();
-            });
+            var mode = posGetSearchMode();
+            if (mode === 'scan') {
+                search_fields = ['sku'];
+            } else {
+                $('.search_fields:checked').each(function (i) {
+                    search_fields[i] = $(this).val();
+                });
+            }
             if ($('#price_group').length > 0) {
                 price_group = $('#price_group').val();
             }
@@ -635,6 +695,7 @@ $(document).ready(function() {
                 not_for_selling: 0,
                 search_fields: search_fields,
                 auto_add_single: true,
+                search_mode: mode,
                 product_row: $('input#product_row_count').val(),
                 customer_id: customer_id,
                 is_direct_sell: is_direct_sell,
@@ -735,16 +796,36 @@ $(document).ready(function() {
                                 toastr.error(data.row_data.msg || LANG.no_products_found);
                             }
                         } else {
-                            var products = (data && data.products) ? data.products : ($.isArray(data) ? data : []);
-                            if (products.length === 1 && products[0].variation_id) {
-                                posAddVariationQty(products[0].variation_id, times);
-                            } else if (products.length === 0) {
-                                toastr.error(LANG.no_products_found);
-                            } else {
-                                // Multiple matches — put term back for user to pick
-                                $inp.val(parsed.code);
-                                $inp.autocomplete('search', parsed.code);
-                            }
+                            // Multiple matches: prefer exact SKU/barcode match for auto-enter
+            // (scanner: 810150000000 should pick base, not SKU-2 / SKU-3)
+            var products = (data && data.products) ? data.products : ($.isArray(data) ? data : []);
+            if (products.length === 1 && products[0].variation_id) {
+                posAddVariationQty(products[0].variation_id, times);
+            } else if (products.length === 0) {
+                toastr.error(LANG.no_products_found);
+            } else {
+                var scanned = String(parsed.code || '').trim().toLowerCase();
+                var exact = null;
+                for (var i = 0; i < products.length; i++) {
+                    var p = products[i];
+                    var sub = String(p.sub_sku || '').trim().toLowerCase();
+                    var sku = String(p.sku || '').trim().toLowerCase();
+                    if (sub === scanned || (sku && sku === scanned)) {
+                        exact = p;
+                        break;
+                    }
+                }
+                if (exact && exact.variation_id) {
+                    posAddVariationQty(exact.variation_id, times);
+                } else if (posIsScanMode()) {
+                    toastr.error(LANG.no_products_found);
+                } else {
+                    $inp.val(parsed.code);
+                    try {
+                        $inp.autocomplete('search', parsed.code);
+                    } catch (e3) {}
+                }
+            }
                         }
                     } finally {
                         posScanFinish();
@@ -789,13 +870,16 @@ $(document).ready(function() {
             clearTimeout(posScan.idleTimer);
             // Scanners that do not send Enter: flush after brief silence during a rapid burst
             posScan.idleTimer = setTimeout(function () {
+                if (!posIsScanMode()) {
+                    posScan.rapidChars = 0;
+                    return;
+                }
                 var $s = $('#search_product');
                 var val = $s.val();
                 if (!val || String(val).trim().length < 3) {
                     posScan.rapidChars = 0;
                     return;
                 }
-                // Only auto-fire for scanner-like bursts (avoid interrupting normal typing searches)
                 if (posScan.rapidChars >= 4) {
                     posScan.rapidChars = 0;
                     posProcessBarcodeTerm(val);
@@ -809,56 +893,10 @@ $(document).ready(function() {
                 // Short delay: scanners finish in <50ms; long delays invite double-scan concat
                 delay: 180,
                 source: function(request, response) {
-                    // If a scan handler is already processing, ignore autocomplete noise
-                    if (posScan.busy) {
+                    // Scan mode: Enter/scanner path only — no live dropdown
+                    if (posIsScanMode() || posScan.busy) {
                         response([]);
                         return;
-                    }
-                    var price_group = '';
-                    var search_fields = [];
-                    $('.search_fields:checked').each(function(i){
-                      search_fields[i] = $(this).val();
-                    });
-
-                    if ($('#price_group').length > 0) {
-                        price_group = $('#price_group').val();
-                    }
-                    
-                    //If default price group present
-                    if ($('#default_price_group').length > 0 && price_group === '') {
-                        price_group = $('#default_price_group').val();
-                    }
-
-                    //If types of service selected give more priority
-                    if ($('#types_of_service_price_group').length > 0 && 
-                        $('#types_of_service_price_group').val()) {
-                        price_group = $('#types_of_service_price_group').val();
-                    }
-                    
-                    var customer_id = $('select#customer_id').val();
-                    var is_direct_sell = false;
-                    if ($('input[name="is_direct_sale"]').length > 0 &&
-                        $('input[name="is_direct_sale"]').val() == 1) {
-                        is_direct_sell = true;
-                    }
-                    
-                    var disable_qty_alert = false;
-                    if ($('#disable_qty_alert').length) {
-                        disable_qty_alert = true;
-                    }
-                    
-                    var is_sales_order = $('#sale_type').length && $('#sale_type').val() == 'sales_order' ? true : false;
-                    
-                    var is_draft = false;
-                    if($('#status') && ($('#status').val()=='quotation' || 
-                    $('#status').val()=='draft')) {
-                        is_draft = true;
-                    }
-                    
-                    var is_serial_no = false;
-                    if ($('input[name="is_serial_no"]').length > 0 &&
-                        $('input[name="is_serial_no"]').val() == 1) {
-                        is_serial_no = true;
                     }
 
                     // Fix accidental double barcode before searching autocomplete path
@@ -869,24 +907,11 @@ $(document).ready(function() {
                         request.term = term;
                         $('#search_product').val(term);
                     }
+                    var params = posGetSearchParams(term);
                     
                     $.getJSON(
                         '/products/list',
-                        {
-                            price_group: price_group,
-                            location_id: $('input#location_id').val(),
-                            term: term,
-                            not_for_selling: 0,
-                            search_fields: search_fields,
-                            auto_add_single: true,
-                            product_row: $('input#product_row_count').val(),
-                            customer_id: customer_id,
-                            is_direct_sell: is_direct_sell,
-                            is_serial_no: is_serial_no,
-                            is_sales_order: is_sales_order,
-                            disable_qty_alert: disable_qty_alert,
-                            is_draft: is_draft
-                        },
+                        params,
                         function(data) {
                             // Check if auto-add is enabled (single product found)
                             if (data.auto_add && data.row_data) {
@@ -1052,6 +1077,9 @@ $(document).ready(function() {
                     .appendTo(ul);
             }
         };
+
+        // Restore last Scan/Search mode (default Scan)
+        posApplySearchMode(posGetSearchMode(), false);
     }
 
     //Update line total and check for quantity not greater than max quantity

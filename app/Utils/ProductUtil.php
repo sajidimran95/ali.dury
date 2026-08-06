@@ -1803,6 +1803,7 @@ class ProductUtil extends Util
                 'products.name',
                 'products.type',
                 'products.enable_stock',
+                'products.sku',
                 'variations.id as variation_id',
                 'variations.name as variation',
                 'VLD.qty_available',
@@ -1829,11 +1830,14 @@ class ProductUtil extends Util
              ->orderBy('VLD.qty_available', 'desc')
              ->get();
 
-        // 🔐 Escape `name`, `variation`, `sub_sku`
+        // 🔐 Escape `name`, `variation`, `sub_sku`, `sku`
         $data->transform(function ($item) {
             $item->name = e($item->name);
             $item->variation = e($item->variation);
             $item->sub_sku = e($item->sub_sku);
+            if (isset($item->sku)) {
+                $item->sku = e($item->sku);
+            }
             return $item;
         });
 

@@ -1479,6 +1479,99 @@ body.lockscreen.pos-sale-theme .pos-product-search-wrap .input-group {
   box-sizing: border-box;
 }
 
+/* Scan / Search mode toggle (barcode vs name lookup) */
+body.lockscreen.pos-sale-theme .pos-search-mode-toggle {
+  display: inline-flex !important;
+  align-items: stretch !important;
+  flex: 0 0 auto !important;
+  margin: 0 0 0 4px !important;
+  padding: 3px !important;
+  gap: 2px;
+  background: #1f1f1f;
+  border-radius: 4px;
+  border: 1px solid #333;
+  align-self: center;
+  height: 34px;
+  box-sizing: border-box;
+}
+
+body.lockscreen.pos-sale-theme .pos-search-mode-btn {
+  appearance: none;
+  border: 0 !important;
+  background: transparent !important;
+  color: #aaa !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  line-height: 1 !important;
+  padding: 0 10px !important;
+  border-radius: 3px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 5px;
+  cursor: pointer;
+  height: 100%;
+  box-shadow: none !important;
+  white-space: nowrap;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+body.lockscreen.pos-sale-theme .pos-search-mode-btn i {
+  font-size: 12px !important;
+  line-height: 1 !important;
+  color: inherit !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-search-mode-btn:hover {
+  color: #ddd !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-search-mode-btn.is-active {
+  background: #3b8ddd !important;
+  color: #fff !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-search-mode-btn.is-active i {
+  color: #fff !important;
+}
+
+/* Non-theme POS (fallback) */
+.pos-search-mode-toggle {
+  display: inline-flex;
+  align-items: stretch;
+  margin-right: 4px;
+  padding: 2px;
+  gap: 2px;
+  background: #f0f0f0;
+  border-radius: 4px;
+  border: 1px solid #d0d0d0;
+  height: 34px;
+  box-sizing: border-box;
+  flex: 0 0 auto;
+}
+
+.pos-search-mode-btn {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: #666;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 0 10px;
+  border-radius: 3px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  height: 100%;
+}
+
+.pos-search-mode-btn.is-active {
+  background: #3b8ddd;
+  color: #fff;
+}
+
 body.lockscreen.pos-sale-theme .pos-product-search-wrap .input-group-btn {
   display: flex !important;
   align-items: center !important;

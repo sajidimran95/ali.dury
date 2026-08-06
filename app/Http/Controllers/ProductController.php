@@ -1291,7 +1291,7 @@ class ProductController extends Controller
     public function getProducts()
     {
         if (request()->ajax()) {
-            $search_term = request()->input('term', '');
+            $search_term = trim((string) request()->input('term', ''));
             $location_id = request()->input('location_id', null);
             $check_qty = request()->input('check_qty', false);
             $price_group_id = request()->input('price_group', null);
@@ -1305,10 +1305,64 @@ class ProductController extends Controller
                 $search_fields[] = 'sub_sku';
             }
 
-            $result = $this->productUtil->filterProduct($business_id, $search_term, $location_id, $not_for_selling, $price_group_id, $product_types, $search_fields, $check_qty);
+            $auto_add_single = (bool) request()->get('auto_add_single', false);
+            // scan = exact SKU/barcode only; search = partial name/SKU list
+            $search_mode = strtolower((string) request()->get('search_mode', ''));
+            $is_scan_mode = ($search_mode === 'scan');
+
+            if ($is_scan_mode) {
+                // Barcode scanners must match full SKU only (not SKU-2 when scanning SKU)
+                $search_fields = ['sku', 'sub_sku'];
+            }
+
+            $result = collect();
+            if ($search_term !== '' && ($auto_add_single || $is_scan_mode)) {
+                // Prefer exact SKU / sub_sku / barcode first so scanning
+                // 810150000000 auto-enters that product (not 810150000000-2 / -3 via LIKE).
+                $result = $this->productUtil->filterProduct(
+                    $business_id,
+                    $search_term,
+                    $location_id,
+                    $not_for_selling,
+                    $price_group_id,
+                    $product_types,
+                    $search_fields,
+                    $check_qty,
+                    'exact'
+                );
+            }
+
+            // Scan mode never falls back to LIKE (avoids multi-SKU sibling dropdown)
+            if ($result->isEmpty() && ! $is_scan_mode) {
+                $result = $this->productUtil->filterProduct(
+                    $business_id,
+                    $search_term,
+                    $location_id,
+                    $not_for_selling,
+                    $price_group_id,
+                    $product_types,
+                    $search_fields,
+                    $check_qty
+                );
+
+                // Prefer exact sku/sub_sku when LIKE returns siblings like SKU-2, SKU-3
+                if ($auto_add_single && $result->count() > 1 && $search_term !== '') {
+                    $exactOnly = $result->filter(function ($item) use ($search_term) {
+                        $sub = html_entity_decode((string) ($item->sub_sku ?? ''), ENT_QUOTES, 'UTF-8');
+                        $sku = html_entity_decode((string) ($item->sku ?? ''), ENT_QUOTES, 'UTF-8');
+
+                        return strcasecmp($sub, $search_term) === 0
+                            || ($sku !== '' && strcasecmp($sku, $search_term) === 0);
+                    })->values();
+
+                    if ($exactOnly->count() >= 1) {
+                        $result = $exactOnly;
+                    }
+                }
+            }
 
             // If only one result and location_id is provided (POS context), auto-fetch the product row
-            if (count($result) == 1 && !empty($location_id) && request()->get('auto_add_single', false)) {
+            if (count($result) == 1 && !empty($location_id) && $auto_add_single) {
                 
                 $variation_id = $result[0]->variation_id;
                         

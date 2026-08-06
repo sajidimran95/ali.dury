@@ -43,23 +43,12 @@
 		</div>
 	</div>
 	@if(!empty($pos_settings['hide_product_suggestion']))
-	<div class="col-md-8">
+	<div class="col-md-12">
 		<div class="form-group">
-			<div class="input-group">
-				<div class="input-group-btn">
-					<button type="button" class="btn btn-default bg-white btn-flat" data-toggle="modal" data-target="#configure_search_modal" title="{{__('lang_v1.configure_product_search')}}"><i class="fas fa-search-plus"></i></button>
-				</div>
-				{!! Form::text('search_product', null, ['class' => 'form-control', 'id' => 'search_product', 'placeholder' => __('lang_v1.search_product_placeholder'),
-				'autofocus' => true,
-				]); !!}
-				<span class="input-group-btn">
-					@if(isset($pos_settings['enable_weighing_scale']) && $pos_settings['enable_weighing_scale'] == 1)
-						<button type="button" class="btn btn-default bg-white btn-flat" id="weighing_scale_btn" data-toggle="modal" data-target="#weighing_scale_modal" 
-						title="@lang('lang_v1.weighing_scale')"><i class="fa fa-digital-tachograph text-primary fa-lg"></i></button>
-					@endif
-					<button type="button" class="btn btn-default bg-white btn-flat pos_add_quick_product" data-href="{{action([\App\Http\Controllers\ProductController::class, 'quickAdd'])}}" data-container=".quick_add_product_modal"><i class="fa fa-plus-circle text-primary fa-lg"></i></button>
-				</span>
-			</div>
+			@include('sale_pos.partials.pos_product_search_input', [
+				'search_disabled' => false,
+				'search_autofocus' => true,
+			])
 		</div>
 	</div>
 	@endif
