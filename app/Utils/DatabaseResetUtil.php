@@ -138,9 +138,12 @@ class DatabaseResetUtil
                 $locationInvoiceSettings
             );
 
-            // Always re-apply store branding after hooks / MSA (never force Nashville demo name)
+            // Always re-apply store branding after hooks / MSA
             $this->restoreBusinessIdentity(self::PRESERVED_BUSINESS_ID, $businessIdentity);
             $this->restoreLocationIdentity(self::PRESERVED_LOCATION_ID, $locationIdentity);
+
+            // Never leave demo "Nashville Goods Distribution" after reset — use Japs POS
+            $this->applyJapsPosLocationBranding(self::PRESERVED_LOCATION_ID, self::PRESERVED_BUSINESS_ID);
         } finally {
             DB::statement('SET FOREIGN_KEY_CHECKS=1');
         }
@@ -165,23 +168,18 @@ class DatabaseResetUtil
     }
 
     /**
-     * Capture business branding shown on Business Settings (do not snapshot MSA IDs).
-     */
-    protected function snapshotBusinessIdentity(Business $business): array
-    {
-        return [
-            'name' => $business->name,
-            'logo' => $business->logo,
-        ];
-    }
-
-    /**
      * Capture location branding/address so reset cannot swap in demo Nashville values.
      */
     protected function snapshotLocationIdentity(BusinessLocation $location): array
     {
+        $name = $location->name;
+        // Do not snapshot demo Nashville brand — reset must end as Japs POS
+        if ($this->isDemoNashvilleName((string) $name)) {
+            $name = 'Japs POS';
+        }
+
         return [
-            'name' => $location->name,
+            'name' => $name,
             'landmark' => $location->landmark,
             'country' => $location->country,
             'state' => $location->state,
@@ -195,11 +193,65 @@ class DatabaseResetUtil
         ];
     }
 
+    /**
+     * Capture business branding shown on Business Settings (do not snapshot MSA IDs).
+     */
+    protected function snapshotBusinessIdentity(Business $business): array
+    {
+        $name = $business->name;
+        if ($this->isDemoNashvilleName((string) $name)) {
+            $name = 'Japs POS';
+        }
+
+        return [
+            'name' => $name,
+            'logo' => $business->logo,
+        ];
+    }
+
+    /**
+     * Fresh POS location branding: always "Japs POS" (not Nashville demo seed).
+     */
+    protected function applyJapsPosLocationBranding(int $locationId, int $businessId): void
+    {
+        $brand = 'Japs POS';
+
+        BusinessLocation::where('id', $locationId)->update(['name' => $brand]);
+
+        $business = Business::find($businessId);
+        if ($business && (empty($business->name) || $this->isDemoNashvilleName((string) $business->name))) {
+            Business::where('id', $businessId)->update(['name' => $brand]);
+        }
+
+        // Strip leftover Altria demo landmark if present
+        $location = BusinessLocation::find($locationId);
+        if ($location && stripos((string) ($location->landmark ?? ''), '1200 Broadway') !== false) {
+            BusinessLocation::where('id', $locationId)->update(['landmark' => null]);
+        }
+    }
+
+    protected function isDemoNashvilleName(string $name): bool
+    {
+        $n = strtolower(trim($name));
+        if ($n === '') {
+            return false;
+        }
+
+        return str_contains($n, 'nashville goods')
+            || $n === 'nashville goods distribution'
+            || str_contains($n, 'awesome shop')
+            || $n === 'demo store';
+    }
+
     protected function restoreBusinessIdentity(int $businessId, array $identity): void
     {
         $update = [];
-        if (! empty($identity['name'])) {
-            $update['name'] = $identity['name'];
+        $name = $identity['name'] ?? null;
+        if ($this->isDemoNashvilleName((string) $name)) {
+            $name = 'Japs POS';
+        }
+        if (! empty($name)) {
+            $update['name'] = $name;
         }
         // logo may legitimately be null; only restore when a value was set
         if (array_key_exists('logo', $identity) && $identity['logo'] !== null) {
@@ -218,6 +270,10 @@ class DatabaseResetUtil
             if ($value !== null) {
                 $update[$key] = $value;
             }
+        }
+
+        if (isset($update['name']) && $this->isDemoNashvilleName((string) $update['name'])) {
+            $update['name'] = 'Japs POS';
         }
 
         if (! empty($update)) {
