@@ -30,13 +30,19 @@
 		@endphp
 
 		<div style="display:flex;align-items:flex-start;gap:6px;">
-			<img src="@if(count($product->media) > 0)
-							{{$product->media->first()->display_url}}
-						@elseif(!empty($product->product_image))
-							{{asset('/uploads/img/' . rawurlencode($product->product_image))}}
-						@else
-							{{asset('/img/default.png')}}
-						@endif" alt="product-img" loading="lazy" style="width:36px;height:36px;flex-shrink:0;border-radius:4px;object-fit:cover;align-self:flex-start;margin-top:1px;" onerror="this.style.display='none'">
+			@php
+				$pos_default_img = asset('/img/default.png');
+				$pos_row_img = $pos_default_img;
+				if (count($product->media) > 0 && !empty($product->media->first()->display_url)) {
+					$pos_row_img = $product->media->first()->display_url;
+				} elseif (!empty($product->product_image)) {
+					$_img_path = public_path('uploads/' . config('constants.product_img_path') . '/' . $product->product_image);
+					if (is_file($_img_path)) {
+						$pos_row_img = asset('/uploads/' . config('constants.product_img_path') . '/' . rawurlencode($product->product_image));
+					}
+				}
+			@endphp
+			<img src="{{ $pos_row_img }}" alt="" loading="lazy" style="width:36px;height:36px;flex-shrink:0;border-radius:4px;object-fit:cover;align-self:flex-start;margin-top:1px;" onerror="this.onerror=null;this.src='{{ $pos_default_img }}';">
 			<div style="min-width:0;flex:1;">
 				@if( ($edit_price || $edit_discount) && empty($is_direct_sell) )
 				<div title="@lang('lang_v1.pos_edit_product_price_help')">

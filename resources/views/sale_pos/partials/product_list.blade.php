@@ -1,10 +1,14 @@
 @forelse($products as $product)
 	@php
-		$tile_image = null;
+		$default_tile = asset('/img/default.png');
+		$tile_image = $default_tile;
 		if (count($product->media) > 0) {
-			$tile_image = $product->media->first()->display_url;
+			$tile_image = $product->media->first()->display_url ?: $default_tile;
 		} elseif (!empty($product->product_image)) {
-			$tile_image = asset('/uploads/img/' . rawurlencode($product->product_image));
+			$img_path = public_path('uploads/' . config('constants.product_img_path') . '/' . $product->product_image);
+			$tile_image = is_file($img_path)
+				? asset('/uploads/' . config('constants.product_img_path') . '/' . rawurlencode($product->product_image))
+				: $default_tile;
 		}
 		$qty_available = (float) ($product->qty_available ?? 0);
 		$is_out_of_stock = !empty($product->enable_stock) && $qty_available <= 0;
@@ -18,11 +22,9 @@
 			data-unit="{{ $unit_label }}"
 			title="{{$product->name}} @if($product->type == 'variable')- {{$product->variation}} @endif {{ '(' . $product->sub_sku . ')'}}@if($is_out_of_stock) — {{ __('lang_v1.item_out_of_stock') }}@endif">
 
-		<div class="image-container tw-mx-auto tw-w-full @if(empty($tile_image)) image-container--placeholder @endif">
-			@if(!empty($tile_image))
-				<img class="product_tile_img" src="{{ $tile_image }}" alt="" loading="lazy"
-					onerror="this.onerror=null;var p=this.parentElement;this.remove();if(p){p.classList.add('image-container--placeholder');}">
-			@endif
+		<div class="image-container tw-mx-auto tw-w-full">
+			<img class="product_tile_img" src="{{ $tile_image }}" alt="" loading="lazy"
+				onerror="this.onerror=null;this.src='{{ $default_tile }}';">
 		</div>
 
 		<div class="text_div">

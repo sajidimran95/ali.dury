@@ -62,12 +62,13 @@ class Product extends Model
     public function getImageUrlAttribute()
     {
         if (! empty($this->image)) {
-            $image_url = asset('/uploads/img/'.rawurlencode($this->image));
-        } else {
-            $image_url = asset('/img/default.png');
+            $image_path = public_path('uploads/'.config('constants.product_img_path').'/'.$this->image);
+            if (is_file($image_path)) {
+                return asset('/uploads/'.config('constants.product_img_path').'/'.rawurlencode($this->image));
+            }
         }
 
-        return $image_url;
+        return asset('/img/default.png');
     }
 
     /**
