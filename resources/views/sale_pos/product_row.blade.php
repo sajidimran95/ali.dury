@@ -108,7 +108,9 @@
   		@endphp
 
 		@if(!empty($discount))
-			{!! Form::hidden("products[$row_count][discount_id]", $discount->id); !!}
+			{!! Form::hidden("products[$row_count][discount_id]", $discount->id, ['class' => 'row_discount_id']); !!}
+		@else
+			{!! Form::hidden("products[$row_count][discount_id]", null, ['class' => 'row_discount_id']); !!}
 		@endif
 
 		@php

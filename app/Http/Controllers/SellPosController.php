@@ -1940,6 +1940,70 @@ class SellPosController extends Controller
     }
 
     /**
+     * Resolve catalog line discounts for products already in the POS cart
+     * (reapplied when customer or price group changes).
+     */
+    public function getProductLineDiscounts(Request $request)
+    {
+        if (! auth()->user()->can('sell.view') && ! auth()->user()->can('direct_sell.access') && ! auth()->user()->can('so.create') && ! auth()->user()->can('so.update')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $business_id = $request->session()->get('user.business_id');
+        $location_id = $request->input('location_id');
+        $customer_id = $request->input('customer_id');
+        $price_group = $request->input('price_group');
+        $variation_ids = $request->input('variation_ids', []);
+
+        if (! is_array($variation_ids)) {
+            $variation_ids = array_filter(explode(',', (string) $variation_ids));
+        }
+        $variation_ids = array_values(array_unique(array_filter($variation_ids)));
+
+        $cg = $this->contactUtil->getCustomerGroup($business_id, $customer_id);
+        $is_cg = ! empty($cg) && is_object($cg) && ! empty($cg->id);
+
+        if ($price_group === '' || $price_group === '0' || $price_group === 0) {
+            $price_group = null;
+        }
+
+        $discounts = [];
+        foreach ($variation_ids as $variation_id) {
+            try {
+                $product = $this->productUtil->getDetailsFromVariation($variation_id, $business_id, $location_id, false);
+                $discount = $this->productUtil->getProductDiscount(
+                    $product,
+                    $business_id,
+                    $location_id,
+                    $is_cg,
+                    $price_group,
+                    $variation_id
+                );
+
+                if (! empty($discount)) {
+                    $discounts[$variation_id] = [
+                        'discount_id' => $discount->id,
+                        'discount_type' => $discount->discount_type,
+                        'discount_amount' => (float) $discount->discount_amount,
+                        'name' => $discount->name,
+                        'formated_starts_at' => $discount->formated_starts_at ?? '',
+                        'formated_ends_at' => $discount->formated_ends_at ?? '',
+                    ];
+                } else {
+                    $discounts[$variation_id] = null;
+                }
+            } catch (\Exception $e) {
+                $discounts[$variation_id] = null;
+            }
+        }
+
+        return [
+            'success' => true,
+            'discounts' => $discounts,
+        ];
+    }
+
+    /**
      * Returns the HTML row for a payment in POS
      *
      * @param  \Illuminate\Http\Request  $request

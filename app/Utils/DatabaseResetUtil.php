@@ -82,6 +82,10 @@ class DatabaseResetUtil
         // Snapshot invoice picks on location (so selected layout/scheme stay after reset)
         $locationInvoiceSettings = $this->snapshotLocationInvoiceSettings($location);
 
+        // Keep live business / location branding (e.g. Japs POS) across reset + MSA restore
+        $businessIdentity = $this->snapshotBusinessIdentity($business);
+        $locationIdentity = $this->snapshotLocationIdentity($location);
+
         ini_set('max_execution_time', 0);
         ini_set('memory_limit', '512M');
 
@@ -133,6 +137,10 @@ class DatabaseResetUtil
                 self::PRESERVED_LOCATION_ID,
                 $locationInvoiceSettings
             );
+
+            // Always re-apply store branding after hooks / MSA (never force Nashville demo name)
+            $this->restoreBusinessIdentity(self::PRESERVED_BUSINESS_ID, $businessIdentity);
+            $this->restoreLocationIdentity(self::PRESERVED_LOCATION_ID, $locationIdentity);
         } finally {
             DB::statement('SET FOREIGN_KEY_CHECKS=1');
         }
@@ -154,6 +162,67 @@ class DatabaseResetUtil
             'sale_invoice_layout_id' => $attrs['sale_invoice_layout_id'] ?? null,
             'sale_invoice_scheme_id' => $attrs['sale_invoice_scheme_id'] ?? null,
         ];
+    }
+
+    /**
+     * Capture business branding shown on Business Settings (do not snapshot MSA IDs).
+     */
+    protected function snapshotBusinessIdentity(Business $business): array
+    {
+        return [
+            'name' => $business->name,
+            'logo' => $business->logo,
+        ];
+    }
+
+    /**
+     * Capture location branding/address so reset cannot swap in demo Nashville values.
+     */
+    protected function snapshotLocationIdentity(BusinessLocation $location): array
+    {
+        return [
+            'name' => $location->name,
+            'landmark' => $location->landmark,
+            'country' => $location->country,
+            'state' => $location->state,
+            'city' => $location->city,
+            'zip_code' => $location->zip_code,
+            'mobile' => $location->mobile,
+            'alternate_number' => $location->alternate_number,
+            'email' => $location->email,
+            'website' => $location->website,
+            'location_id' => $location->location_id ?? null,
+        ];
+    }
+
+    protected function restoreBusinessIdentity(int $businessId, array $identity): void
+    {
+        $update = [];
+        if (! empty($identity['name'])) {
+            $update['name'] = $identity['name'];
+        }
+        // logo may legitimately be null; only restore when a value was set
+        if (array_key_exists('logo', $identity) && $identity['logo'] !== null) {
+            $update['logo'] = $identity['logo'];
+        }
+
+        if (! empty($update)) {
+            Business::where('id', $businessId)->update($update);
+        }
+    }
+
+    protected function restoreLocationIdentity(int $locationId, array $identity): void
+    {
+        $update = [];
+        foreach ($identity as $key => $value) {
+            if ($value !== null) {
+                $update[$key] = $value;
+            }
+        }
+
+        if (! empty($update)) {
+            BusinessLocation::where('id', $locationId)->update($update);
+        }
     }
 
     /**

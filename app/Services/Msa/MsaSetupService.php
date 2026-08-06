@@ -35,7 +35,7 @@ class MsaSetupService
         $customerGroups = $this->ensureCustomerGroups((int) $business->id, $priceGroups);
         $taxRates = $this->ensureTaxRates($business);
         $this->ensureCustomLabels($business);
-        $this->ensureCommonSettings($business, $parentId, $priceGroups, $customerGroups);
+        $this->ensureCommonSettings($business, $parentId, $priceGroups, $customerGroups, $withDemoData);
         $this->ensureWalkInCustomer((int) $business->id, $customerGroups['retailer']);
 
         if ($withDemoData) {
@@ -301,7 +301,8 @@ class MsaSetupService
         Business $business,
         int $tobaccoCategoryId,
         array $priceGroups,
-        array $customerGroups
+        array $customerGroups,
+        bool $withDemoData = false
     ): void {
         $common = $business->common_settings ?? [];
         if (! is_array($common)) {
@@ -317,7 +318,7 @@ class MsaSetupService
         if (empty($common['msa_state_tax'])) {
             $common['msa_state_tax'] = 'TN';
         }
-        // Nashville Goods sample distributor id used with Altria MFT
+        // Nashville Goods sample distributor id used with Altria MFT (demo/seed only if empty)
         if (empty($common['msa_distributor_id'])) {
             $common['msa_distributor_id'] = '17033752';
         }
@@ -338,60 +339,67 @@ class MsaSetupService
         $business->common_settings = $common;
         $business->save();
 
-        // Align location 1 branding for Nashville Goods HID when still a generic name
+        // Never rewrite live store branding on system reset / non-demo MSA structure restore.
+        // Sample Nashville address is only for explicit demo seeding (msa:setup --sales).
+        if (! $withDemoData) {
+            return;
+        }
+
+        $this->applyDemoNashvilleLocationBranding($business);
+    }
+
+    /**
+     * Demo-only sample location for Altria MFT HID testing.
+     * Must not run on production system reset (keeps business/location name as-is, e.g. Japs POS).
+     */
+    protected function applyDemoNashvilleLocationBranding(Business $business): void
+    {
         $location = \App\BusinessLocation::where('business_id', $business->id)->orderBy('id')->first();
-        if ($location) {
-            $dirtyLoc = false;
-            $generic = empty($location->name)
-                || stripos($location->name, 'awesome') !== false
-                || stripos($location->name, 'demo') !== false
-                || stripos($location->name, 'japs pos') !== false
-                || strcasecmp(trim($location->name), trim((string) $business->name)) === 0;
-            // Sample MSA filing uses Nashville Goods Distribution + distributor 17033752
-            if ($generic || ($common['msa_distributor_id'] ?? '') === '17033752') {
-                if (stripos((string) $location->name, 'nashville goods') === false) {
-                    $location->name = 'Nashville Goods Distribution';
-                    $dirtyLoc = true;
-                }
-            }
-            if (empty($location->city) || stripos((string) $location->city, 'nashville') === false) {
-                $location->city = 'Nashville';
-                $dirtyLoc = true;
-            }
-            if (empty($location->state) || strlen(trim((string) $location->state)) < 2) {
-                $location->state = 'TN';
-                $dirtyLoc = true;
-            }
+        if (! $location) {
+            return;
+        }
 
-            // Force valid Nashville TN ZIP — 11011 (NY) caused MFT Suspend 4011
-            $zipDigits = preg_replace('/\D+/', '', (string) ($location->zip_code ?? ''));
-            $zip5 = substr(str_pad($zipDigits ?: '0', 5, '0', STR_PAD_LEFT), 0, 5);
-            $zipInvalid = empty($zipDigits)
-                || in_array($zip5, ['00000', '11011', '11111', '12345', '99999'], true)
-                || ((int) $zip5 < 37001 || (int) $zip5 > 38589);
-            if ($zipInvalid) {
-                $location->zip_code = '37203';
-                $dirtyLoc = true;
-            }
-            // Always fix known-bad ZIP even when location already "set"
-            if (in_array($zip5, ['11011', '11111', '12345'], true)) {
-                $location->zip_code = '37203';
-                $dirtyLoc = true;
-            }
+        $dirtyLoc = false;
+        $generic = empty($location->name)
+            || stripos((string) $location->name, 'awesome') !== false
+            || stripos((string) $location->name, 'demo') !== false;
 
-            $landmark = trim((string) ($location->landmark ?? ''));
-            if (
-                $landmark === ''
-                || strcasecmp($landmark, 'Nashville') === 0
-                || strcasecmp($landmark, (string) $location->city) === 0
-                || stripos($landmark, 'awesome') !== false
-            ) {
-                $location->landmark = '1200 Broadway';
-                $dirtyLoc = true;
-            }
-            if ($dirtyLoc) {
-                $location->save();
-            }
+        if ($generic && stripos((string) $location->name, 'nashville goods') === false) {
+            $location->name = 'Nashville Goods Distribution';
+            $dirtyLoc = true;
+        }
+        if (empty($location->city) || stripos((string) $location->city, 'nashville') === false) {
+            $location->city = 'Nashville';
+            $dirtyLoc = true;
+        }
+        if (empty($location->state) || strlen(trim((string) $location->state)) < 2) {
+            $location->state = 'TN';
+            $dirtyLoc = true;
+        }
+
+        // Valid Nashville TN ZIP for demo HID (invalid ZIPs caused MFT Suspend 4011)
+        $zipDigits = preg_replace('/\D+/', '', (string) ($location->zip_code ?? ''));
+        $zip5 = substr(str_pad($zipDigits ?: '0', 5, '0', STR_PAD_LEFT), 0, 5);
+        $zipInvalid = empty($zipDigits)
+            || in_array($zip5, ['00000', '11011', '11111', '12345', '99999'], true)
+            || ((int) $zip5 < 37001 || (int) $zip5 > 38589);
+        if ($zipInvalid || in_array($zip5, ['11011', '11111', '12345'], true)) {
+            $location->zip_code = '37203';
+            $dirtyLoc = true;
+        }
+
+        $landmark = trim((string) ($location->landmark ?? ''));
+        if (
+            $landmark === ''
+            || strcasecmp($landmark, 'Nashville') === 0
+            || strcasecmp($landmark, (string) $location->city) === 0
+            || stripos($landmark, 'awesome') !== false
+        ) {
+            $location->landmark = '1200 Broadway';
+            $dirtyLoc = true;
+        }
+        if ($dirtyLoc) {
+            $location->save();
         }
     }
 

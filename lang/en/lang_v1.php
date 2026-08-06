@@ -1774,4 +1774,12 @@ return [
     'visible_on_pos' => 'Visible',
     'hidden_on_pos' => 'Hidden',
 
+    'all_locations' => 'All locations',
+    'product_discount_scope_help' => 'Leave products empty and choose a brand and/or category for brand-wise or category-wise discounts. Leave all empty to apply to every product. Product selection overrides brand/category.',
+    'product_specific_discount_help' => 'Optional. Search and select specific products for this discount.',
+    'brand_discount_help' => 'Applies to all products under this brand (when products list is empty).',
+    'category_discount_help' => 'Applies to all products under this category or subcategory (when products list is empty).',
+    'discount_spg_help' => 'All = works for default price and every selling price group. Or limit to one price group.',
+    'applicable_in_cg_help' => 'When checked, this discount is for customer-group customers only. Leave unchecked for walk-in and all customers.',
+
 ];

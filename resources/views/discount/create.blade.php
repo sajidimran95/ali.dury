@@ -16,42 +16,50 @@
               {!! Form::text('name', null, ['class' => 'form-control', 'required', 'placeholder' => __( 'unit.name' ) ]); !!}
           </div>
         </div>
+
+        <div class="col-md-12">
+          <p class="help-block">@lang('lang_v1.product_discount_scope_help')</p>
+        </div>
+
         <div class="col-md-12">
           <div class="form-group">
             {!! Form::label('variation_ids', __('report.products') . ':') !!}
               {!! Form::select('variation_ids[]', [], null, ['id' => "variation_ids", 'class' => 'form-control', 'multiple']); !!}
+              <p class="help-block">@lang('lang_v1.product_specific_discount_help')</p>
           </div>
         </div>
         <div class="col-md-6" id="brand_input">
           <div class="form-group">
             {!! Form::label('brand_id', __('product.brand') . ':') !!}
-              {!! Form::select('brand_id', $brands, null, ['placeholder' => __('messages.please_select'), 'class' => 'form-control select2']); !!}
+              {!! Form::select('brand_id', $brands, null, ['placeholder' => __('lang_v1.all') , 'class' => 'form-control select2']); !!}
+              <p class="help-block">@lang('lang_v1.brand_discount_help')</p>
           </div>
         </div>
         <div class="col-sm-6" id="category_input">
           <div class="form-group">
             {!! Form::label('category_id', __('product.category') . ':') !!}
-              {!! Form::select('category_id', $categories, null, ['placeholder' => __('messages.please_select'), 'class' => 'form-control select2']); !!}
+              {!! Form::select('category_id', $categories, null, ['placeholder' => __('lang_v1.all'), 'class' => 'form-control select2']); !!}
+              <p class="help-block">@lang('lang_v1.category_discount_help')</p>
           </div>
         </div>
         <div class="clearfix"></div>
         <div class="col-sm-6">
           <div class="form-group">
-            {!! Form::label('location_id', __('sale.location') . ':*') !!}
-              {!! Form::select('location_id', $locations, null, ['placeholder' => __('messages.please_select'), 'class' => 'form-control select2', 'required']); !!}
+            {!! Form::label('location_id', __('sale.location') . ':') !!}
+              {!! Form::select('location_id', $locations, null, ['class' => 'form-control select2']); !!}
           </div>
         </div>
         <div class="col-md-6">
           <div class="form-group">
             {!! Form::label('priority', __( 'lang_v1.priority' ) . ':') !!} @show_tooltip(__('lang_v1.discount_priority_help'))
-              {!! Form::text('priority', null, ['class' => 'form-control input_number', 'required', 'placeholder' => __( 'lang_v1.priority' ) ]); !!}
+              {!! Form::text('priority', 1, ['class' => 'form-control input_number', 'required', 'placeholder' => __( 'lang_v1.priority' ) ]); !!}
           </div>
         </div>
         <div class="clearfix"></div>
         <div class="col-sm-6">
           <div class="form-group">
             {!! Form::label('discount_type', __('sale.discount_type') . ':*') !!}
-              {!! Form::select('discount_type', ['fixed' => __('lang_v1.fixed'), 'percentage' => __('lang_v1.percentage')], null, ['placeholder' => __('messages.please_select'), 'class' => 'form-control select2', 'required']); !!}
+              {!! Form::select('discount_type', ['fixed' => __('lang_v1.fixed'), 'percentage' => __('lang_v1.percentage')], 'percentage', ['placeholder' => __('messages.please_select'), 'class' => 'form-control select2', 'required']); !!}
           </div>
         </div>
         <div class="col-md-6">
@@ -63,14 +71,14 @@
         <div class="clearfix"></div>
         <div class="col-md-6">
           <div class="form-group">
-            {!! Form::label('starts_at', __( 'lang_v1.starts_at' ) . ':') !!}
-              {!! Form::text('starts_at', null, ['class' => 'form-control discount_date', 'required', 'placeholder' => __( 'lang_v1.starts_at' ), 'readonly' ]); !!}
+            {!! Form::label('starts_at', __( 'lang_v1.starts_at' ) . ':*') !!}
+              {!! Form::text('starts_at', $starts_at ?? null, ['class' => 'form-control discount_date', 'required', 'placeholder' => __( 'lang_v1.starts_at' ), 'readonly' ]); !!}
           </div>
         </div>
         <div class="col-md-6">
           <div class="form-group">
-            {!! Form::label('ends_at', __( 'lang_v1.ends_at' ) . ':') !!}
-              {!! Form::text('ends_at', null, ['class' => 'form-control discount_date', 'required', 'placeholder' => __( 'lang_v1.ends_at' ), 'readonly' ]); !!}
+            {!! Form::label('ends_at', __( 'lang_v1.ends_at' ) . ':*') !!}
+              {!! Form::text('ends_at', $ends_at ?? null, ['class' => 'form-control discount_date', 'required', 'placeholder' => __( 'lang_v1.ends_at' ), 'readonly' ]); !!}
           </div>
         </div>
         <div class="clearfix"></div>
@@ -83,6 +91,7 @@
                 <option value="{{$k}}">{{$v}}</option>
               @endforeach
             </select>
+            <p class="help-block">@lang('lang_v1.discount_spg_help')</p>
           </div>
         </div>
         <div class="clearfix"></div>
@@ -92,6 +101,7 @@
             <label>
               {!! Form::checkbox('applicable_in_cg', 1, false, ['class' => 'input-icheck']); !!} <strong>@lang('lang_v1.applicable_in_cg')</strong>
             </label>
+            <p class="help-block">@lang('lang_v1.applicable_in_cg_help')</p>
           </div>
         </div>
         <div class="col-sm-6">

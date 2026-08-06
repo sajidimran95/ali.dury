@@ -74,12 +74,23 @@ class DiscountController extends Controller
                         $products[] = $variation->full_name;
                     }
 
-                    return '<span class="label bg-primary">'.implode('</span>, <span class="label bg-primary">', $products).'</span>';
+                    return empty($products)
+                        ? '<span class="text-muted">—</span>'
+                        : '<span class="label bg-primary">'.implode('</span>, <span class="label bg-primary">', $products).'</span>';
                 })
                 ->editColumn('name', function ($row) {
                     $name = $row->is_active != 1 ? $row->name.' <span class="label bg-yellow">'.__('lang_v1.inactive').'</sapn>' : $row->name;
 
                     return $name;
+                })
+                ->editColumn('brand', function ($row) {
+                    return $row->brand ?: '—';
+                })
+                ->editColumn('category', function ($row) {
+                    return $row->category ?: '—';
+                })
+                ->editColumn('location', function ($row) {
+                    return $row->location ?: e(__('lang_v1.all_locations'));
                 })
                 ->editColumn('starts_at', function ($row) {
                     $starts_at = ! empty($row->starts_at) ? $this->commonUtil->format_date($row->starts_at->toDateTimeString(), true) : '';
@@ -153,18 +164,73 @@ class DiscountController extends Controller
 
         $business_id = request()->session()->get('user.business_id');
 
-        $categories = Category::where('business_id', $business_id)
-                            ->where('parent_id', 0)
-                            ->pluck('name', 'id');
+        $categories = $this->getProductCategoriesDropdown($business_id);
 
         $brands = Brands::forDropdown($business_id);
 
         $locations = BusinessLocation::forDropdown($business_id);
+        if ($locations instanceof \Illuminate\Support\Collection) {
+            $locations = $locations->toArray();
+        }
+        $locations = ['' => __('lang_v1.all_locations')] + $locations;
 
         $price_groups = SellingPriceGroup::forDropdown($business_id);
 
+        $starts_at = $this->commonUtil->format_date(\Carbon\Carbon::now()->toDateTimeString(), true);
+        $ends_at = $this->commonUtil->format_date(\Carbon\Carbon::now()->addMonths(1)->toDateTimeString(), true);
+
         return view('discount.create')
-                ->with(compact('categories', 'brands', 'locations', 'price_groups'));
+                ->with(compact('categories', 'brands', 'locations', 'price_groups', 'starts_at', 'ends_at'));
+    }
+
+    /**
+     * Parent + subcategory labels for product discounts.
+     */
+    protected function getProductCategoriesDropdown(int $businessId): array
+    {
+        $all = Category::where('business_id', $businessId)
+            ->where(function ($q) {
+                $q->where('category_type', 'product')->orWhereNull('category_type');
+            })
+            ->orderBy('name')
+            ->get(['id', 'name', 'parent_id']);
+
+        $byParent = $all->groupBy(function ($row) {
+            return (int) ($row->parent_id ?? 0);
+        });
+
+        $dropdown = [];
+        foreach ($byParent[0] ?? [] as $parent) {
+            $dropdown[$parent->id] = $parent->name;
+            foreach ($byParent[$parent->id] ?? [] as $child) {
+                $dropdown[$child->id] = $parent->name.' → '.$child->name;
+            }
+        }
+
+        // Orphans (parent missing)
+        foreach ($all as $cat) {
+            if (! isset($dropdown[$cat->id])) {
+                $dropdown[$cat->id] = $cat->name;
+            }
+        }
+
+        return $dropdown;
+    }
+
+    /**
+     * Normalize create/update payload for discounts.
+     */
+    protected function sanitizeDiscountInput(array $input, Request $request): array
+    {
+        $input['brand_id'] = ! empty($input['brand_id']) ? $input['brand_id'] : null;
+        $input['category_id'] = ! empty($input['category_id']) ? $input['category_id'] : null;
+        $input['location_id'] = ! empty($input['location_id']) ? $input['location_id'] : null;
+        $input['spg'] = (isset($input['spg']) && $input['spg'] !== '' && $input['spg'] !== null)
+            ? (string) $input['spg']
+            : null;
+        $input['priority'] = $input['priority'] ?? 0;
+
+        return $input;
     }
 
     /**
@@ -189,12 +255,14 @@ class DiscountController extends Controller
             $variation_ids = $request->input('variation_ids');
 
             if (! empty($variation_ids)) {
-                unset($input['brand_id']);
-                unset($input['category_id']);
+                $input['brand_id'] = null;
+                $input['category_id'] = null;
             }
 
-            $input['starts_at'] = $request->has('starts_at') ? $this->commonUtil->uf_date($request->input('starts_at'), true) : null;
-            $input['ends_at'] = $request->has('ends_at') ? $this->commonUtil->uf_date($request->input('ends_at'), true) : null;
+            $input = $this->sanitizeDiscountInput($input, $request);
+
+            $input['starts_at'] = $request->filled('starts_at') ? $this->commonUtil->uf_date($request->input('starts_at'), true) : null;
+            $input['ends_at'] = $request->filled('ends_at') ? $this->commonUtil->uf_date($request->input('ends_at'), true) : null;
             $checkboxes = ['is_active', 'applicable_in_cg'];
 
             foreach ($checkboxes as $checkbox) {
@@ -240,16 +308,22 @@ class DiscountController extends Controller
                             ->with(['variations', 'variations.product', 'variations.product_variation'])
                             ->find($id);
 
-            $starts_at = $this->commonUtil->format_date($discount->starts_at->toDateTimeString(), true);
-            $ends_at = $this->commonUtil->format_date($discount->ends_at->toDateTimeString(), true);
+            $starts_at = ! empty($discount->starts_at)
+                ? $this->commonUtil->format_date($discount->starts_at->toDateTimeString(), true)
+                : '';
+            $ends_at = ! empty($discount->ends_at)
+                ? $this->commonUtil->format_date($discount->ends_at->toDateTimeString(), true)
+                : '';
 
-            $categories = Category::where('business_id', $business_id)
-                            ->where('parent_id', 0)
-                            ->pluck('name', 'id');
+            $categories = $this->getProductCategoriesDropdown($business_id);
 
             $brands = Brands::forDropdown($business_id);
 
             $locations = BusinessLocation::forDropdown($business_id);
+            if ($locations instanceof \Illuminate\Support\Collection) {
+                $locations = $locations->toArray();
+            }
+            $locations = ['' => __('lang_v1.all_locations')] + $locations;
 
             $variations = [];
 
@@ -284,8 +358,8 @@ class DiscountController extends Controller
 
                 $business_id = $request->session()->get('user.business_id');
 
-                $input['starts_at'] = $request->has('starts_at') ? $this->commonUtil->uf_date($request->input('starts_at'), true) : null;
-                $input['ends_at'] = $request->has('ends_at') ? $this->commonUtil->uf_date($request->input('ends_at'), true) : null;
+                $input['starts_at'] = $request->filled('starts_at') ? $this->commonUtil->uf_date($request->input('starts_at'), true) : null;
+                $input['ends_at'] = $request->filled('ends_at') ? $this->commonUtil->uf_date($request->input('ends_at'), true) : null;
                 $checkboxes = ['is_active', 'applicable_in_cg'];
 
                 foreach ($checkboxes as $checkbox) {
@@ -295,16 +369,18 @@ class DiscountController extends Controller
                 $variation_ids = $request->input('variation_ids');
 
                 if (! empty($variation_ids)) {
-                    unset($input['brand_id']);
-                    unset($input['category_id']);
+                    $input['brand_id'] = null;
+                    $input['category_id'] = null;
                 }
+
+                $input = $this->sanitizeDiscountInput($input, $request);
 
                 $discount = Discount::where('business_id', $business_id)
                             ->find($id);
 
                 $discount->update($input);
 
-                $discount->variations()->sync($variation_ids);
+                $discount->variations()->sync($variation_ids ?: []);
 
                 $output = ['success' => true,
                     'msg' => __('lang_v1.updated_success'),

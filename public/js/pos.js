@@ -524,9 +524,14 @@ $(document).ready(function() {
         $('#advance_balance_text').text(__currency_trans_from_en(data.balance), true);
         $('#advance_balance').val(data.balance);
 
-        if (data.price_calculation_type == 'selling_price_group') {
+        if ($data.price_calculation_type == 'selling_price_group') {
             $('#price_group').val(data.selling_price_group_id);
             $('#price_group').change();
+        }
+
+        // Re-apply category / brand / product line discounts for current cart
+        if (typeof pos_refresh_line_discounts === 'function') {
+            pos_refresh_line_discounts();
         }
         //  else {
         //     $('#price_group').val(0);
@@ -3146,6 +3151,9 @@ function pos_refresh_payment_modal() {
 
     $('select#price_group').change(function() {
         $('input#hidden_price_group').val($(this).val());
+        if (typeof pos_refresh_line_discounts === 'function') {
+            pos_refresh_line_discounts();
+        }
     });
 
     //Quick add product
@@ -5085,6 +5093,140 @@ function calculate_discounted_unit_price(row) {
     }
 
     return row_discounted_unit_price;
+}
+
+/**
+ * Re-resolve brand / category / product discounts for all cart lines
+ * when customer or selling price group changes.
+ */
+function pos_refresh_line_discounts() {
+    var $rows = $('table#pos_table tbody tr.product_row');
+    if (!$rows.length) {
+        return;
+    }
+
+    var location_id = $('input#location_id').val() || $('select#select_location_id').val();
+    if (!location_id) {
+        return;
+    }
+
+    var variation_ids = [];
+    $rows.each(function () {
+        var vid = $(this).find('input.row_variation_id').first().val();
+        if (vid) {
+            variation_ids.push(vid);
+        }
+    });
+    if (!variation_ids.length) {
+        return;
+    }
+
+    var price_group = '';
+    if ($('#price_group').length > 0) {
+        price_group = $('#price_group').val();
+    }
+    if ($('#default_price_group').length > 0 && (price_group === '' || price_group === null || price_group === undefined)) {
+        price_group = $('#default_price_group').val();
+    }
+    if ($('#types_of_service_price_group').length > 0 && $('#types_of_service_price_group').val()) {
+        price_group = $('#types_of_service_price_group').val();
+    }
+
+    var customer_id = $('select#customer_id').val() || $('#default_customer_id').val() || '';
+
+    $.ajax({
+        method: 'POST',
+        url: (window.base_path || '') + '/sells/pos/get-product-line-discounts',
+        dataType: 'json',
+        data: {
+            location_id: location_id,
+            customer_id: customer_id,
+            price_group: price_group,
+            variation_ids: variation_ids,
+        },
+        success: function (result) {
+            if (!result || !result.success || !result.discounts) {
+                return;
+            }
+
+            $rows.each(function () {
+                var $row = $(this);
+                var vid = $row.find('input.row_variation_id').first().val();
+                if (!vid) {
+                    return;
+                }
+
+                var disc = result.discounts[vid];
+                var $type = pos_row_field($row, 'select.row_discount_type');
+                var $amount = pos_row_field($row, 'input.row_discount_amount');
+                var $discId = $row.find('input.row_discount_id');
+
+                if (disc) {
+                    if ($type.length) {
+                        $type.val(disc.discount_type);
+                    }
+                    if ($amount.length) {
+                        __write_number($amount, disc.discount_amount);
+                    }
+                    if ($discId.length) {
+                        $discId.val(disc.discount_id);
+                    } else {
+                        $row.append(
+                            '<input type="hidden" name="products[' +
+                                ($row.data('row_index') || '') +
+                                '][discount_id]" class="row_discount_id" value="' +
+                                disc.discount_id +
+                                '">'
+                        );
+                    }
+
+                    // Update help text in row price modal if present
+                    var $help = $row.find('.row_edit_product_price_model .help-block').first();
+                    if ($help.length && disc.name) {
+                        $help.html(
+                            'Discount: <i>' +
+                                $('<div>').text(disc.name).html() +
+                                '</i>' +
+                                (disc.formated_ends_at
+                                    ? ' applied (Ends at: <i>' +
+                                      $('<div>').text(disc.formated_ends_at).html() +
+                                      '</i>)'
+                                    : '')
+                        );
+                    }
+                } else {
+                    if ($type.length) {
+                        $type.val('fixed');
+                    }
+                    if ($amount.length) {
+                        __write_number($amount, 0);
+                    }
+                    if ($discId.length) {
+                        $discId.val('');
+                    }
+                }
+
+                // Recalc row totals
+                if (typeof calculate_discounted_unit_price === 'function') {
+                    var discounted_unit_price = calculate_discounted_unit_price($row);
+                    var tax_rate = pos_row_field($row, 'select.tax_id').find(':selected').data('rate') || 0;
+                    var quantity = __read_number($row.find('input.pos_quantity'));
+                    var unit_price_inc_tax = __add_percent(discounted_unit_price, tax_rate);
+                    var line_total = quantity * unit_price_inc_tax;
+                    __write_number($row.find('input.pos_unit_price_inc_tax'), unit_price_inc_tax);
+                    __write_number($row.find('input.pos_line_total'), line_total, false);
+                    $row.find('span.pos_line_total_text').text(__currency_trans_from_en(line_total, true));
+                    if (typeof pos_each_row === 'function') {
+                        pos_each_row($row);
+                    }
+                }
+            });
+
+            if (typeof pos_total_row === 'function') {
+                pos_total_row();
+            }
+        },
+    });
 }
 
 function get_unit_price_from_discounted_unit_price(row, discounted_unit_price) {
