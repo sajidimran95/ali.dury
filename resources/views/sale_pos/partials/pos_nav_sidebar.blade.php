@@ -134,12 +134,6 @@
                     <span>Print Per Sale</span>
                 </button>
             </li>
-            <li>
-                <button type="button" id="pos_nav_catalog_visibility" data-toggle="modal" data-target="#pos_catalog_visibility_modal">
-                    <i class="fas fa-th-large"></i>
-                    <span>@lang('lang_v1.pos_catalog_visibility')</span>
-                </button>
-            </li>
         </ul>
     </div>
 </aside>

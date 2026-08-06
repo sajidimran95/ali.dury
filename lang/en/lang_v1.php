@@ -1769,9 +1769,4 @@ return [
     'shipping_method_deleted_success' => 'Shipping method deleted successfully',
     'sales_using_shipping' => 'Sales using shipping methods',
 
-    'pos_catalog_visibility' => 'Categories & Brands',
-    'pos_catalog_visibility_help' => 'Choose which categories and brands appear on the POS. Default is show all.',
-    'pos_catalog_visibility_saved' => 'POS categories & brands updated',
-    'show_all' => 'Show all',
-
 ];
