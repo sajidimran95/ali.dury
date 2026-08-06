@@ -1305,7 +1305,7 @@ class ProductController extends Controller
                 $search_fields[] = 'sub_sku';
             }
 
-            $auto_add_single = (bool) request()->get('auto_add_single', false);
+            $auto_add_single = filter_var(request()->get('auto_add_single', false), FILTER_VALIDATE_BOOLEAN);
             // scan = exact SKU/barcode only; search = partial name/SKU list
             $search_mode = strtolower((string) request()->get('search_mode', ''));
             $is_scan_mode = ($search_mode === 'scan');
@@ -1316,9 +1316,8 @@ class ProductController extends Controller
             }
 
             $result = collect();
-            if ($search_term !== '' && ($auto_add_single || $is_scan_mode)) {
-                // Prefer exact SKU / sub_sku / barcode first so scanning
-                // 810150000000 auto-enters that product (not 810150000000-2 / -3 via LIKE).
+            if ($search_term !== '') {
+                // Always try exact SKU / sub_sku first (POS auto-enter + scan)
                 $result = $this->productUtil->filterProduct(
                     $business_id,
                     $search_term,
@@ -1330,23 +1329,10 @@ class ProductController extends Controller
                     $check_qty,
                     'exact'
                 );
-            }
 
-            // Scan mode never falls back to LIKE (avoids multi-SKU sibling dropdown)
-            if ($result->isEmpty() && ! $is_scan_mode) {
-                $result = $this->productUtil->filterProduct(
-                    $business_id,
-                    $search_term,
-                    $location_id,
-                    $not_for_selling,
-                    $price_group_id,
-                    $product_types,
-                    $search_fields,
-                    $check_qty
-                );
-
-                // Prefer exact sku/sub_sku when LIKE returns siblings like SKU-2, SKU-3
-                if ($auto_add_single && $result->count() > 1 && $search_term !== '') {
+                // If product SKU matched multiple variations, keep only rows whose
+                // variation sub_sku or product sku equals the scanned term.
+                if ($result->count() > 1) {
                     $exactOnly = $result->filter(function ($item) use ($search_term) {
                         $sub = html_entity_decode((string) ($item->sub_sku ?? ''), ENT_QUOTES, 'UTF-8');
                         $sku = html_entity_decode((string) ($item->sku ?? ''), ENT_QUOTES, 'UTF-8');
@@ -1355,14 +1341,57 @@ class ProductController extends Controller
                             || ($sku !== '' && strcasecmp($sku, $search_term) === 0);
                     })->values();
 
-                    if ($exactOnly->count() >= 1) {
+                    if ($exactOnly->isNotEmpty()) {
                         $result = $exactOnly;
                     }
                 }
             }
 
+            // Search mode (and scan fallback if exact found nothing): partial LIKE
+            // For scan, only keep results that still equal the barcode exactly
+            // (covers odd data where exact SQL missed but LIKE + equality finds the row)
+            if ($result->isEmpty() && $search_term !== '') {
+                $likeResult = $this->productUtil->filterProduct(
+                    $business_id,
+                    $search_term,
+                    $location_id,
+                    $not_for_selling,
+                    $price_group_id,
+                    $product_types,
+                    $search_fields,
+                    $check_qty,
+                    'like'
+                );
+
+                if ($is_scan_mode) {
+                    $result = $likeResult->filter(function ($item) use ($search_term) {
+                        $sub = html_entity_decode((string) ($item->sub_sku ?? ''), ENT_QUOTES, 'UTF-8');
+                        $sku = html_entity_decode((string) ($item->sku ?? ''), ENT_QUOTES, 'UTF-8');
+
+                        return strcasecmp($sub, $search_term) === 0
+                            || ($sku !== '' && strcasecmp($sku, $search_term) === 0);
+                    })->values();
+                } else {
+                    $result = $likeResult;
+
+                    if ($auto_add_single && $result->count() > 1) {
+                        $exactOnly = $result->filter(function ($item) use ($search_term) {
+                            $sub = html_entity_decode((string) ($item->sub_sku ?? ''), ENT_QUOTES, 'UTF-8');
+                            $sku = html_entity_decode((string) ($item->sku ?? ''), ENT_QUOTES, 'UTF-8');
+
+                            return strcasecmp($sub, $search_term) === 0
+                                || ($sku !== '' && strcasecmp($sku, $search_term) === 0);
+                        })->values();
+
+                        if ($exactOnly->count() >= 1) {
+                            $result = $exactOnly;
+                        }
+                    }
+                }
+            }
+
             // If only one result and location_id is provided (POS context), auto-fetch the product row
-            if (count($result) == 1 && !empty($location_id) && $auto_add_single) {
+            if (count($result) == 1 && ! empty($location_id) && $auto_add_single) {
                 
                 $variation_id = $result[0]->variation_id;
                         
@@ -1371,13 +1400,22 @@ class ProductController extends Controller
                 // Add variation_id to row_data for duplicate checking
                 $row_data['variation_id'] = $variation_id;
                 
-                return json_encode([
+                return response()->json([
                     'auto_add' => true,
                     'row_data' => $row_data
                 ]);
             }
 
-            return json_encode($result);
+            // POS auto_add requests always get a stable envelope
+            if ($auto_add_single) {
+                return response()->json([
+                    'auto_add' => false,
+                    'products' => $result->values()->all(),
+                ]);
+            }
+
+            // Other modules (stock transfer, etc.) expect a bare product array
+            return response()->json($result->values()->all());
         }
     }
     /**

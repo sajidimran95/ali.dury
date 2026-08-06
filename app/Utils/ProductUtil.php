@@ -1770,20 +1770,37 @@ class ProductUtil extends Util
             //Search with exact condition
             if ($search_type == 'exact') {
                 $query->where(function ($query) use ($search_term, $search_fields) {
+                    $has_condition = false;
+
                     if (in_array('name', $search_fields)) {
                         $query->where('products.name', $search_term);
+                        $has_condition = true;
                     }
 
                     if (in_array('sku', $search_fields)) {
-                        $query->orWhere('sku', $search_term);
+                        if ($has_condition) {
+                            $query->orWhere('products.sku', $search_term);
+                        } else {
+                            $query->where('products.sku', $search_term);
+                            $has_condition = true;
+                        }
                     }
 
                     if (in_array('sub_sku', $search_fields)) {
-                        $query->orWhere('sub_sku', $search_term);
+                        if ($has_condition) {
+                            $query->orWhere('variations.sub_sku', $search_term);
+                        } else {
+                            $query->where('variations.sub_sku', $search_term);
+                            $has_condition = true;
+                        }
                     }
 
                     if (in_array('lot', $search_fields)) {
-                        $query->orWhere('pl.lot_number', $search_term);
+                        if ($has_condition) {
+                            $query->orWhere('pl.lot_number', $search_term);
+                        } else {
+                            $query->where('pl.lot_number', $search_term);
+                        }
                     }
                 });
             }

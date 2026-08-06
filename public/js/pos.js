@@ -598,11 +598,11 @@ $(document).ready(function() {
                     : ($inp.data('placeholder-search') || $inp.attr('placeholder'));
                 $inp.attr('placeholder', ph);
                 try {
+                    // Keep minLength low so exact SKU still auto-adds via autocomplete
+                    // (same path Search uses when a single match is found)
+                    $inp.autocomplete('option', 'minLength', 2);
                     if (mode === 'scan') {
-                        $inp.autocomplete('option', 'minLength', 1000);
                         $inp.autocomplete('close');
-                    } else {
-                        $inp.autocomplete('option', 'minLength', 2);
                     }
                 } catch (e2) {}
                 if (focusInput !== false && !$('#__is_mobile').length) {
@@ -796,36 +796,42 @@ $(document).ready(function() {
                                 toastr.error(data.row_data.msg || LANG.no_products_found);
                             }
                         } else {
-                            // Multiple matches: prefer exact SKU/barcode match for auto-enter
-            // (scanner: 810150000000 should pick base, not SKU-2 / SKU-3)
-            var products = (data && data.products) ? data.products : ($.isArray(data) ? data : []);
-            if (products.length === 1 && products[0].variation_id) {
-                posAddVariationQty(products[0].variation_id, times);
-            } else if (products.length === 0) {
-                toastr.error(LANG.no_products_found);
-            } else {
-                var scanned = String(parsed.code || '').trim().toLowerCase();
-                var exact = null;
-                for (var i = 0; i < products.length; i++) {
-                    var p = products[i];
-                    var sub = String(p.sub_sku || '').trim().toLowerCase();
-                    var sku = String(p.sku || '').trim().toLowerCase();
-                    if (sub === scanned || (sku && sku === scanned)) {
-                        exact = p;
-                        break;
-                    }
-                }
-                if (exact && exact.variation_id) {
-                    posAddVariationQty(exact.variation_id, times);
-                } else if (posIsScanMode()) {
-                    toastr.error(LANG.no_products_found);
-                } else {
-                    $inp.val(parsed.code);
-                    try {
-                        $inp.autocomplete('search', parsed.code);
-                    } catch (e3) {}
-                }
-            }
+                            // No auto_add envelope — handle product list
+                            var products = (data && data.products) ? data.products : ($.isArray(data) ? data : []);
+                            if (products.length === 1 && products[0].variation_id) {
+                                posAddVariationQty(products[0].variation_id, times);
+                            } else if (products.length === 0) {
+                                toastr.error(LANG.no_products_found);
+                            } else {
+                                var scanned = String(parsed.code || '').trim().toLowerCase();
+                                var exact = null;
+                                for (var i = 0; i < products.length; i++) {
+                                    var p = products[i];
+                                    var sub = String(p.sub_sku || '').trim().toLowerCase();
+                                    // HTML entities may come from server escaping
+                                    try {
+                                        sub = $('<textarea/>').html(sub).text();
+                                        if (p.sku) {
+                                            p.sku = $('<textarea/>').html(String(p.sku)).text();
+                                        }
+                                    } catch (eDec) {}
+                                    var sku = String(p.sku || '').trim().toLowerCase();
+                                    if (sub === scanned || (sku && sku === scanned)) {
+                                        exact = p;
+                                        break;
+                                    }
+                                }
+                                if (exact && exact.variation_id) {
+                                    posAddVariationQty(exact.variation_id, times);
+                                } else if (posIsScanMode()) {
+                                    toastr.error(LANG.no_products_found);
+                                } else {
+                                    $inp.val(parsed.code);
+                                    try {
+                                        $inp.autocomplete('search', parsed.code);
+                                    } catch (e3) {}
+                                }
+                            }
                         }
                     } finally {
                         posScanFinish();
@@ -893,8 +899,7 @@ $(document).ready(function() {
                 // Short delay: scanners finish in <50ms; long delays invite double-scan concat
                 delay: 180,
                 source: function(request, response) {
-                    // Scan mode: Enter/scanner path only — no live dropdown
-                    if (posIsScanMode() || posScan.busy) {
+                    if (posScan.busy) {
                         response([]);
                         return;
                     }
@@ -914,7 +919,7 @@ $(document).ready(function() {
                         params,
                         function(data) {
                             // Check if auto-add is enabled (single product found)
-                            if (data.auto_add && data.row_data) {
+                            if (data && data.auto_add && data.row_data) {
                                 // Automatically add the product row
                                 if (data.row_data.success) {
                                     $('#search_product').val('');
@@ -943,8 +948,14 @@ $(document).ready(function() {
                                 // Return a special marker to indicate auto-add was handled
                                 response([{auto_added: true}]);
                             } else {
+                                // Scan mode: never show multi-SKU sibling lists
+                                if (posIsScanMode()) {
+                                    response([]);
+                                    return;
+                                }
                                 // Normal autocomplete response
-                                response(data.products || data);
+                                var list = (data && data.products) ? data.products : ($.isArray(data) ? data : []);
+                                response(list);
                             }
                         }
                     );
@@ -976,6 +987,11 @@ $(document).ready(function() {
                             $(this).autocomplete('close');
                         }
                     } else if (ui.content.length == 0) {
+                        // Scan: stay quiet until Enter / scanner flushes the code
+                        // (partial SKU while typing would otherwise spam "not found")
+                        if (posIsScanMode()) {
+                            return;
+                        }
                         toastr.error(LANG.no_products_found);
                         if (!$('#__is_mobile').length) {
                             $('input#search_product').select();
