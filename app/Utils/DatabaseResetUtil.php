@@ -178,12 +178,22 @@ class DatabaseResetUtil
             $name = 'Japs POS';
         }
 
+        $city = $location->city;
+        if ($this->isNashvilleCity((string) $city) || $city === null || trim((string) $city) === '') {
+            $city = 'New York';
+        }
+
+        $state = $location->state;
+        if ($this->isNashvilleState((string) $state)) {
+            $state = 'NY';
+        }
+
         return [
             'name' => $name,
             'landmark' => $location->landmark,
             'country' => $location->country,
-            'state' => $location->state,
-            'city' => $location->city,
+            'state' => $state,
+            'city' => $city,
             'zip_code' => $location->zip_code,
             'mobile' => $location->mobile,
             'alternate_number' => $location->alternate_number,
@@ -210,24 +220,38 @@ class DatabaseResetUtil
     }
 
     /**
-     * Fresh POS location branding: always "Japs POS" (not Nashville demo seed).
+     * Fresh POS location branding: Japs POS + New York (never Nashville demo seed).
      */
     protected function applyJapsPosLocationBranding(int $locationId, int $businessId): void
     {
         $brand = 'Japs POS';
-
-        BusinessLocation::where('id', $locationId)->update(['name' => $brand]);
 
         $business = Business::find($businessId);
         if ($business && (empty($business->name) || $this->isDemoNashvilleName((string) $business->name))) {
             Business::where('id', $businessId)->update(['name' => $brand]);
         }
 
-        // Strip leftover Altria demo landmark if present
         $location = BusinessLocation::find($locationId);
-        if ($location && stripos((string) ($location->landmark ?? ''), '1200 Broadway') !== false) {
-            BusinessLocation::where('id', $locationId)->update(['landmark' => null]);
+        if (! $location) {
+            return;
         }
+
+        $update = [
+            'name' => $brand,
+            'city' => 'New York',
+        ];
+
+        // Demo Nashville was TN — align state to NY for New York branding
+        if ($this->isNashvilleState((string) ($location->state ?? '')) || empty(trim((string) ($location->state ?? '')))) {
+            $update['state'] = 'NY';
+        }
+
+        if (stripos((string) ($location->landmark ?? ''), '1200 Broadway') !== false
+            || strcasecmp(trim((string) ($location->landmark ?? '')), 'Nashville') === 0) {
+            $update['landmark'] = null;
+        }
+
+        BusinessLocation::where('id', $locationId)->update($update);
     }
 
     protected function isDemoNashvilleName(string $name): bool
@@ -241,6 +265,18 @@ class DatabaseResetUtil
             || $n === 'nashville goods distribution'
             || str_contains($n, 'awesome shop')
             || $n === 'demo store';
+    }
+
+    protected function isNashvilleCity(string $city): bool
+    {
+        return strcasecmp(trim($city), 'Nashville') === 0;
+    }
+
+    protected function isNashvilleState(string $state): bool
+    {
+        $s = strtoupper(trim($state));
+
+        return $s === 'TN' || $s === 'TENNESSEE';
     }
 
     protected function restoreBusinessIdentity(int $businessId, array $identity): void
@@ -274,6 +310,12 @@ class DatabaseResetUtil
 
         if (isset($update['name']) && $this->isDemoNashvilleName((string) $update['name'])) {
             $update['name'] = 'Japs POS';
+        }
+        if (isset($update['city']) && $this->isNashvilleCity((string) $update['city'])) {
+            $update['city'] = 'New York';
+        }
+        if (isset($update['state']) && $this->isNashvilleState((string) $update['state'])) {
+            $update['state'] = 'NY';
         }
 
         if (! empty($update)) {
