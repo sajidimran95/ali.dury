@@ -291,6 +291,7 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::get('/revert-sale-import/{batch}', [ImportSalesController::class, 'revertSaleImport']);
 
     Route::post('/sells/pos/print-per-sale-settings', [SellPosController::class, 'savePrintPerSaleSettings']);
+    Route::post('/sells/pos/catalog-visibility', [SellPosController::class, 'savePosCatalogVisibility']);
     Route::get('/sells/pos/get_product_row/{variation_id}/{location_id}', [SellPosController::class, 'getProductRow']);
     Route::post('/sells/pos/get_payment_row', [SellPosController::class, 'getPaymentRow']);
     Route::post('/sells/pos/get-reward-details', [SellPosController::class, 'getRewardDetails']);

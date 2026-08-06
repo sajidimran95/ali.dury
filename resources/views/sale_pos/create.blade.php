@@ -104,6 +104,8 @@
 
     @include('sale_pos.partials.print_per_sale_modal')
 
+    @include('sale_pos.partials.pos_catalog_visibility_modal')
+
     @include('sale_pos.partials.customer_purchase_history_modal')
 
     @include('sale_pos.partials.weighing_scale_modal')

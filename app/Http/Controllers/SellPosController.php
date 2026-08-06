@@ -256,6 +256,12 @@ class SellPosController extends Controller
         $brands = (request()->session()->get('business.enable_brand') == 1) ? Brands::forDropdown($business_id)
             ->prepend(__('lang_v1.all_brands'), 'all') : false;
 
+        // Full lists for POS visibility config modal (before filter)
+        $pos_all_categories = $categories;
+        $pos_all_brands = $brands;
+        $categories = $this->filterPosCategories($categories, $pos_settings);
+        $brands = $this->filterPosBrands($brands, $pos_settings);
+
         $change_return = $this->dummyPaymentLine;
 
         $types = Contact::getContactTypes();
@@ -333,6 +339,8 @@ class SellPosController extends Controller
                 'invoice_layouts',
                 'users',
                 'pos_printers',
+                'pos_all_categories',
+                'pos_all_brands',
             ));
     }
 
@@ -967,6 +975,205 @@ class SellPosController extends Controller
     }
 
     /**
+     * Save which categories / brands appear on the POS product grid.
+     * Empty selection = show all (default).
+     */
+    public function savePosCatalogVisibility(Request $request)
+    {
+        if (! auth()->check()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $business_id = (int) $request->session()->get('user.business_id');
+        $business = Business::where('id', $business_id)->firstOrFail();
+
+        $show_all_categories = (int) $request->input('show_all_categories', 0) === 1;
+        $show_all_brands = (int) $request->input('show_all_brands', 0) === 1;
+
+        $category_ids = $request->input('category_ids', []);
+        $brand_ids = $request->input('brand_ids', []);
+        if (! is_array($category_ids)) {
+            $category_ids = [];
+        }
+        if (! is_array($brand_ids)) {
+            $brand_ids = [];
+        }
+
+        $category_ids = array_values(array_unique(array_filter(array_map('intval', $category_ids))));
+        $brand_ids = array_values(array_unique(array_filter(array_map('intval', $brand_ids))));
+
+        // Validate ids belong to this business
+        if (! empty($category_ids)) {
+            $valid_cats = Category::where('business_id', $business_id)
+                ->where('category_type', 'product')
+                ->whereIn('id', $category_ids)
+                ->pluck('id')
+                ->map(fn ($id) => (int) $id)
+                ->all();
+            $category_ids = array_values(array_intersect($category_ids, $valid_cats));
+        }
+        if (! empty($brand_ids)) {
+            $valid_brands = Brands::where('business_id', $business_id)
+                ->whereIn('id', $brand_ids)
+                ->pluck('id')
+                ->map(fn ($id) => (int) $id)
+                ->all();
+            $brand_ids = array_values(array_intersect($brand_ids, $valid_brands));
+        }
+
+        $pos_settings = empty($business->pos_settings)
+            ? $this->businessUtil->defaultPosSettings()
+            : (json_decode($business->pos_settings, true) ?: []);
+
+        // Empty array means show all
+        if ($show_all_categories || empty($category_ids)) {
+            $pos_settings['pos_visible_category_ids'] = [];
+        } else {
+            $pos_settings['pos_visible_category_ids'] = $category_ids;
+        }
+        if ($show_all_brands || empty($brand_ids)) {
+            $pos_settings['pos_visible_brand_ids'] = [];
+        } else {
+            $pos_settings['pos_visible_brand_ids'] = $brand_ids;
+        }
+
+        $business->pos_settings = json_encode($pos_settings);
+        $business->save();
+
+        // Keep browser session in sync
+        $session_business = $request->session()->get('business');
+        if (is_object($session_business)) {
+            $session_business->pos_settings = $business->pos_settings;
+            $request->session()->put('business', $session_business);
+        } elseif (is_array($session_business)) {
+            $session_business['pos_settings'] = $business->pos_settings;
+            $request->session()->put('business', $session_business);
+        }
+
+        return response()->json([
+            'success' => true,
+            'msg' => __('lang_v1.pos_catalog_visibility_saved'),
+            'pos_visible_category_ids' => $pos_settings['pos_visible_category_ids'],
+            'pos_visible_brand_ids' => $pos_settings['pos_visible_brand_ids'],
+        ]);
+    }
+
+    /**
+     * @param  array|false  $categories
+     * @return array|false
+     */
+    protected function filterPosCategories($categories, array $pos_settings)
+    {
+        if ($categories === false || empty($categories)) {
+            return $categories;
+        }
+
+        $allowed = $pos_settings['pos_visible_category_ids'] ?? null;
+        if (empty($allowed) || ! is_array($allowed)) {
+            return $categories;
+        }
+
+        $allowed = array_map('intval', $allowed);
+
+        return array_values(array_filter($categories, function ($cat) use ($allowed) {
+            return in_array((int) ($cat['id'] ?? 0), $allowed, true);
+        }));
+    }
+
+    /**
+     * @param  \Illuminate\Support\Collection|array|false  $brands
+     * @return \Illuminate\Support\Collection|array|false
+     */
+    protected function filterPosBrands($brands, array $pos_settings)
+    {
+        if ($brands === false || empty($brands)) {
+            return $brands;
+        }
+
+        $allowed = $pos_settings['pos_visible_brand_ids'] ?? null;
+        if (empty($allowed) || ! is_array($allowed)) {
+            return $brands;
+        }
+
+        $allowed = array_map('strval', array_map('intval', $allowed));
+
+        if ($brands instanceof \Illuminate\Support\Collection) {
+            return $brands->filter(function ($name, $key) use ($allowed) {
+                if ((string) $key === 'all' || $key === '' || $key === null) {
+                    return true;
+                }
+
+                return in_array((string) (int) $key, $allowed, true);
+            });
+        }
+
+        $out = [];
+        foreach ($brands as $key => $name) {
+            if ((string) $key === 'all' || $key === '' || $key === null) {
+                $out[$key] = $name;
+                continue;
+            }
+            if (in_array((string) (int) $key, $allowed, true)) {
+                $out[$key] = $name;
+            }
+        }
+
+        return $out;
+    }
+
+    /**
+     * Limit product grid query when POS catalog visibility is restricted.
+     */
+    protected function applyPosCatalogVisibility($query, array $pos_settings, $business_id, $category_id, $brand_id): void
+    {
+        $allowedCats = $pos_settings['pos_visible_category_ids'] ?? null;
+        $allowedBrands = $pos_settings['pos_visible_brand_ids'] ?? null;
+
+        if (! empty($allowedCats) && is_array($allowedCats)) {
+            $expanded = $this->expandPosCategoryIds(array_map('intval', $allowedCats), $business_id);
+            if (! empty($expanded)) {
+                // When browsing "all", only products in visible categories
+                if (empty($category_id) || $category_id === 'all') {
+                    $query->where(function ($q) use ($expanded) {
+                        $q->whereIn('p.category_id', $expanded)
+                            ->orWhereIn('p.sub_category_id', $expanded);
+                    });
+                }
+            }
+        }
+
+        if (! empty($allowedBrands) && is_array($allowedBrands)) {
+            $brandIds = array_map('intval', $allowedBrands);
+            if (! empty($brandIds) && (empty($brand_id) || $brand_id === 'all')) {
+                $query->whereIn('p.brand_id', $brandIds);
+            }
+        }
+    }
+
+    /**
+     * Parent category IDs + their sub-category IDs.
+     *
+     * @param  int[]  $categoryIds
+     * @return int[]
+     */
+    protected function expandPosCategoryIds(array $categoryIds, int $business_id): array
+    {
+        $categoryIds = array_values(array_unique(array_filter(array_map('intval', $categoryIds))));
+        if (empty($categoryIds)) {
+            return [];
+        }
+
+        $children = Category::where('business_id', $business_id)
+            ->where('category_type', 'product')
+            ->whereIn('parent_id', $categoryIds)
+            ->pluck('id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
+
+        return array_values(array_unique(array_merge($categoryIds, $children)));
+    }
+
+    /**
      * Resolve per-sale print copies + printer from POS form / business table columns.
      */
     protected function resolvePosPrintOverride(Request $request, $business_id, $location_id): array
@@ -1272,6 +1479,11 @@ class SellPosController extends Controller
         $brands = (request()->session()->get('business.enable_brand') == 1) ? Brands::forDropdown($business_id)
             ->prepend(__('lang_v1.all_brands'), 'all') : false;
 
+        $pos_all_categories = $categories;
+        $pos_all_brands = $brands;
+        $categories = $this->filterPosCategories($categories, $pos_settings);
+        $brands = $this->filterPosBrands($brands, $pos_settings);
+
         $change_return = $this->dummyPaymentLine;
 
         $types = [];
@@ -1352,7 +1564,7 @@ class SellPosController extends Controller
                 'shipping_statuses', 'warranties', 'sub_type', 'pos_module_data', 'invoice_schemes',
                 'default_invoice_schemes', 'invoice_layouts', 'featured_products', 'customer_due',
                 'users', 'only_payment', 'default_location', 'business_locations', 'price_groups', 'default_price_group_id',
-                'pos_printers'));
+                'pos_printers', 'pos_all_categories', 'pos_all_brands'));
     }
 
     /**
@@ -2253,6 +2465,9 @@ class SellPosController extends Controller
             if (!empty($brand_id) && ($brand_id != 'all')) {
                 $products->where('p.brand_id', $brand_id);
             }
+
+            // Respect POS catalog visibility (hide unselected categories/brands from grid)
+            $this->applyPosCatalogVisibility($products, $pos_settings, $business_id, $category_id, $brand_id);
 
             if (!empty($request->get('is_enabled_stock'))) {
                 $is_enabled_stock = 0;
