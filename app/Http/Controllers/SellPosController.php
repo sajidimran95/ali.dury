@@ -991,7 +991,7 @@ class SellPosController extends Controller
         return response()->json([
             'success' => true,
             'layout' => (string) ($business->pos_screen_layout ?? $layout),
-            'msg' => 'Layout saved',
+            'msg' => 'Success',
         ]);
     }
 

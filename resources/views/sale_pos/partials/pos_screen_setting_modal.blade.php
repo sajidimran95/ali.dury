@@ -167,7 +167,7 @@
                 if (!data || !data.success) throw new Error('save failed');
                 var layout = data.layout === 'rtl' ? 'rtl' : 'ltr';
                 setLayoutUI(layout);
-                setStatus('Saved to database', false);
+                setStatus('Success', false);
                 setTimeout(function () { setStatus('', false); }, 1600);
             })
             .catch(function () {

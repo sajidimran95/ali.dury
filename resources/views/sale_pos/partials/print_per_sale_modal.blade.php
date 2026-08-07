@@ -210,7 +210,7 @@
                     modalEl.setAttribute('data-saved-printer', String(data.print_printer || ''));
                 }
                 syncFields(data.print_copies, data.print_printer || '');
-                setStatus('Saved to database', false);
+                setStatus('Success', false);
                 setTimeout(function () { setStatus('', false); }, 1600);
             })
             .catch(function () {
