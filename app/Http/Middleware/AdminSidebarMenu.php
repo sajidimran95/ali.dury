@@ -997,7 +997,10 @@ class AdminSidebarMenu
                 auth()->user()->can('tax_rate.create') ||
                 auth()->user()->can('access_package_subscriptions') ||
                 auth()->user()->can('user.view') ||
-                auth()->user()->can('roles.view')) {
+                auth()->user()->can('roles.view') ||
+                auth()->user()->can('ai.access') ||
+                auth()->user()->can('ai.chat') ||
+                auth()->user()->can('ai.settings')) {
                 $menu->dropdown(
                     __('business.settings'),
                     function ($sub) use ($enabled_modules) {

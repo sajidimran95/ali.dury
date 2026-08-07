@@ -33,15 +33,23 @@ class DataController
             return;
         }
 
+        // Under Settings sidebar dropdown (not a top-level menu item)
         Menu::modify('admin-sidebar-menu', function ($menu) {
-            $menu->url(
-                route('ai.dashboard'),
-                __('aiassistance::lang.ai_assistant'),
-                [
-                    'icon' => '<svg aria-hidden="true" class="tw-size-5 tw-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>',
-                    'active' => request()->segment(1) == 'ai',
-                ]
-            )->order(21);
+            $settingsTitle = __('business.settings');
+            $menu->whereTitle($settingsTitle, function ($settingsMenu) {
+                if (empty($settingsMenu)) {
+                    return;
+                }
+
+                $settingsMenu->url(
+                    route('ai.dashboard'),
+                    __('aiassistance::lang.ai_assistant'),
+                    [
+                        'icon' => '',
+                        'active' => request()->segment(1) == 'ai',
+                    ]
+                );
+            });
         });
     }
 
