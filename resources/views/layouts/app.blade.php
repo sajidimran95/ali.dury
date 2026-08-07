@@ -82,7 +82,18 @@
 
 </head>
 <body
-    class="tw-font-sans tw-antialiased tw-text-gray-900 zoho-theme @if ($pos_layout) hold-transition lockscreen pos-sale-theme @elseif(!empty($dashboard_home)) hold-transition japs-dashboard-home japs-dashboard-premium sidebar-mini @elseif(!empty($dashboard_premium)) hold-transition japs-dashboard-premium sidebar-mini @else hold-transition skin-@if (!empty(session('business.theme_color'))){{ session('business.theme_color') }}@else{{ 'blue-light' }} @endif sidebar-mini @endif" >
+    class="tw-font-sans tw-antialiased tw-text-gray-900 zoho-theme @if ($pos_layout) hold-transition lockscreen pos-sale-theme @php
+        $__pos_screen_layout = 'ltr';
+        // Prefer fresh controller model, then session business
+        if (isset($business_details) && !empty($business_details->pos_screen_layout)) {
+            $__pos_screen_layout = strtolower((string) $business_details->pos_screen_layout) === 'rtl' ? 'rtl' : 'ltr';
+        } else {
+            $__biz_sess = session('business');
+            if (is_object($__biz_sess) && !empty($__biz_sess->pos_screen_layout)) {
+                $__pos_screen_layout = strtolower((string) $__biz_sess->pos_screen_layout) === 'rtl' ? 'rtl' : 'ltr';
+            }
+        }
+    @endphp pos-layout-{{ $__pos_screen_layout }} @elseif(!empty($dashboard_home)) hold-transition japs-dashboard-home japs-dashboard-premium sidebar-mini @elseif(!empty($dashboard_premium)) hold-transition japs-dashboard-premium sidebar-mini @else hold-transition skin-@if (!empty(session('business.theme_color'))){{ session('business.theme_color') }}@else{{ 'blue-light' }} @endif sidebar-mini @endif" >
     <div class="tw-flex thetop">
         <script type="text/javascript">
             if (localStorage.getItem("upos_sidebar_collapse") == 'true') {

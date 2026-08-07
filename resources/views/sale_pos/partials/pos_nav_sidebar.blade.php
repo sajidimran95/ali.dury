@@ -134,6 +134,12 @@
                     <span>Print Per Sale</span>
                 </button>
             </li>
+            <li>
+                <button type="button" id="pos_nav_screen_setting" data-toggle="modal" data-target="#pos_screen_setting_modal">
+                    <i class="fas fa-columns"></i>
+                    <span>POS Screen Setting</span>
+                </button>
+            </li>
         </ul>
     </div>
 </aside>

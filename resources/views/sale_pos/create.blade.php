@@ -16,7 +16,7 @@
             $is_discount_enabled = $pos_settings['disable_discount'] != 1 ? true : false;
             $is_rp_enabled = session('business.enable_rp') == 1 ? true : false;
         @endphp
-        <div class="pos-sale-shell">
+        <div class="pos-sale-shell @if(strtolower((string) ($business_details->pos_screen_layout ?? 'ltr')) === 'rtl') pos-layout-rtl @else pos-layout-ltr @endif">
             @include('sale_pos.partials.pos_nav_sidebar')
             <div class="pos-sale-main">
         {!! Form::open([
@@ -48,6 +48,8 @@
                                     <input type="hidden" name="pos_print_copies" id="pos_print_copies" value="{{ (int) ($business_details->print_per_sale_copies ?? 1) }}">
                                     <input type="hidden" name="pos_print_printer" id="pos_print_printer" value="{{ $business_details->print_per_sale_printer_id ?? '' }}">
                                     <input type="hidden" id="pos_print_settings_url" value="{{ url('/sells/pos/print-per-sale-settings') }}">
+                                    <input type="hidden" id="pos_screen_settings_url" value="{{ url('/sells/pos/screen-settings') }}">
+                                    <input type="hidden" id="pos_screen_layout" value="{{ strtolower((string) ($business_details->pos_screen_layout ?? 'ltr')) === 'rtl' ? 'rtl' : 'ltr' }}">
                                     <input type="hidden" id="item_addition_method"
                                         value="{{ $business_details->item_addition_method }}">
                                     @include('sale_pos.partials.pos_form')
@@ -103,6 +105,8 @@
     @include('sale_pos.partials.recent_transactions_modal')
 
     @include('sale_pos.partials.print_per_sale_modal')
+
+    @include('sale_pos.partials.pos_screen_setting_modal')
 
     @include('sale_pos.partials.customer_purchase_history_modal')
 

@@ -207,11 +207,11 @@ body.lockscreen.pos-sale-theme #pos_sidebar_wrap {
   overflow: hidden;
 }
 
-/* Cart column ? slightly wider than before, not full screen */
+/* Cart column — wider for cart lines / pay area */
 body.lockscreen.pos-sale-theme #pos_checkout_wrap {
-  flex: 0 0 430px !important;
-  max-width: 430px !important;
-  width: 430px !important;
+  flex: 0 0 520px !important;
+  max-width: 520px !important;
+  width: 520px !important;
   order: 2 !important;
   padding: 0 !important;
   background: transparent !important;
@@ -366,9 +366,9 @@ body.lockscreen.pos-sale-theme #product_list_body {
     max-width: none !important;
   }
   body.lockscreen.pos-sale-theme #pos_checkout_wrap {
-    flex: 0 0 400px !important;
-    max-width: 400px !important;
-    width: 400px !important;
+    flex: 0 0 480px !important;
+    max-width: 480px !important;
+    width: 480px !important;
   }
 }
 
@@ -773,6 +773,54 @@ body.lockscreen.pos-sale-theme .pos-print-sale-modal__status.is-error {
 }
 body.lockscreen.pos-sale-theme .pos-print-sale-modal__status.is-ok {
   color: #5ecfbe;
+}
+
+/*
+ * POS Screen Setting — swap product grid ↔ cart on desktop.
+ * LTR (default): products left (order 1), cart right (order 2)
+ * RTL: cart left (order 1), products right (order 2)
+ */
+@media (min-width: 1024px) {
+  body.lockscreen.pos-sale-theme.pos-layout-rtl .pos-checkout-row #pos_sidebar_wrap,
+  body.lockscreen.pos-sale-theme .pos-sale-shell.pos-layout-rtl .pos-checkout-row #pos_sidebar_wrap {
+    order: 2 !important;
+  }
+  body.lockscreen.pos-sale-theme.pos-layout-rtl .pos-checkout-row #pos_checkout_wrap,
+  body.lockscreen.pos-sale-theme .pos-sale-shell.pos-layout-rtl .pos-checkout-row #pos_checkout_wrap {
+    order: 1 !important;
+  }
+  body.lockscreen.pos-sale-theme.pos-layout-ltr .pos-checkout-row #pos_sidebar_wrap {
+    order: 1 !important;
+  }
+  body.lockscreen.pos-sale-theme.pos-layout-ltr .pos-checkout-row #pos_checkout_wrap {
+    order: 2 !important;
+  }
+}
+
+/* Mini layout previews in modal */
+body.lockscreen.pos-sale-theme .pos-screen-layout-preview {
+  display: flex;
+  gap: 3px;
+  flex-shrink: 0;
+  width: 52px;
+  height: 34px;
+  padding: 4px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+body.lockscreen.pos-sale-theme .pos-screen-layout-preview__prod {
+  flex: 1.2;
+  border-radius: 3px;
+  background: rgba(59, 141, 221, 0.45);
+}
+body.lockscreen.pos-sale-theme .pos-screen-layout-preview__cart {
+  flex: 0.8;
+  border-radius: 3px;
+  background: rgba(45, 159, 143, 0.55);
+}
+body.lockscreen.pos-sale-theme .pos-print-sale-modal__option.is-active .pos-screen-layout-preview {
+  border-color: rgba(45, 159, 143, 0.5);
 }
 
 /* Inline category tiles ? MUST be block/100% wide (flex parent was crushing cols into thin strips) */

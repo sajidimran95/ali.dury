@@ -967,6 +967,35 @@ class SellPosController extends Controller
     }
 
     /**
+     * Save POS screen layout (ltr / rtl panel positions) to business table column pos_screen_layout.
+     */
+    public function savePosScreenSettings(Request $request)
+    {
+        if (! auth()->check()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $business_id = (int) $request->session()->get('user.business_id');
+        $layout = strtolower((string) $request->input('layout', 'ltr'));
+        if (! in_array($layout, ['ltr', 'rtl'], true)) {
+            $layout = 'ltr';
+        }
+
+        Business::where('id', $business_id)->update([
+            'pos_screen_layout' => $layout,
+        ]);
+
+        $business = Business::findOrFail($business_id);
+        $request->session()->put('business', $business);
+
+        return response()->json([
+            'success' => true,
+            'layout' => (string) ($business->pos_screen_layout ?? $layout),
+            'msg' => 'Layout saved',
+        ]);
+    }
+
+    /**
      * Resolve per-sale print copies + printer from POS form / business table columns.
      */
     protected function resolvePosPrintOverride(Request $request, $business_id, $location_id): array
