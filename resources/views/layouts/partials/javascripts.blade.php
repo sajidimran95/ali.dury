@@ -41,6 +41,7 @@
     $__needs_fullcalendar = ! $__is_pos && (
         ($__seg1 === 'home' && $__seg2 === 'calendar')
         || $__seg1 === 'bookings'
+        || $__seg1 === 'attendance'
         || request()->is('restaurant/booking*')
         || !empty($__force_fullcalendar)
     );

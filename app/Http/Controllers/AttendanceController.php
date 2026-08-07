@@ -268,10 +268,10 @@ class AttendanceController extends Controller
         }
 
         $business_id = $request->session()->get('user.business_id');
-        $can_view_all = auth()->user()->can('attendance.view_all')
-            || $this->businessUtil->is_admin(auth()->user(), $business_id);
+        $can_view_all = $this->canViewAll($business_id);
+        $can_edit = $this->canEdit($business_id);
 
-        if ($request->ajax()) {
+        if ($request->ajax() && $request->input('format') !== 'calendar') {
             $query = EmployeeAttendance::with(['user', 'breaks'])
                 ->where('business_id', $business_id);
 
@@ -291,8 +291,12 @@ class AttendanceController extends Controller
 
             return DataTables::of($query)
                 ->addColumn('employee', function ($row) {
-                    return optional($row->user)->user_full_name
-                        ?: trim((optional($row->user)->first_name ?? '').' '.(optional($row->user)->last_name ?? ''));
+                    return $this->employeeName($row);
+                })
+                ->addColumn('color_swatch', function ($row) {
+                    $color = EmployeeAttendance::colorForUserId((int) $row->user_id);
+
+                    return '<span class="att-color-dot" style="background:'.$color.'" title="'.e($this->employeeName($row)).'"></span>';
                 })
                 ->editColumn('clock_in_at', function ($row) {
                     return $row->clock_in_at ? $this->formatDateTime($row->clock_in_at) : '—';
@@ -316,20 +320,367 @@ class AttendanceController extends Controller
 
                     return '<span class="pl-status '.$meta['class'].'"><span class="pl-status-dot"></span>'.$meta['label'].'</span>';
                 })
-                ->rawColumns(['status'])
+                ->addColumn('action', function ($row) use ($can_edit) {
+                    if (! $can_edit) {
+                        return '';
+                    }
+
+                    return '<button type="button" class="tw-dw-btn tw-dw-btn-xs tw-dw-btn-outline att-edit-btn" data-id="'.$row->id.'"><i class="fa fa-edit"></i> '.__('messages.edit').'</button>';
+                })
+                ->rawColumns(['status', 'color_swatch', 'action'])
                 ->make(true);
         }
 
         $users = [];
+        $user_colors = [];
         if ($can_view_all) {
-            $users = User::where('business_id', $business_id)
+            $userModels = User::where('business_id', $business_id)
                 ->select('id', 'first_name', 'last_name', 'username')
                 ->orderBy('first_name')
-                ->get()
-                ->pluck('user_full_name', 'id');
+                ->get();
+            $users = $userModels->pluck('user_full_name', 'id');
+            foreach ($userModels as $u) {
+                $user_colors[$u->id] = EmployeeAttendance::colorForUserId((int) $u->id);
+            }
+        } else {
+            $uid = auth()->user()->id;
+            $user_colors[$uid] = EmployeeAttendance::colorForUserId((int) $uid);
         }
 
-        return view('attendance.report', compact('users', 'can_view_all'));
+        return view('attendance.report', compact('users', 'can_view_all', 'can_edit', 'user_colors'));
+    }
+
+    /**
+     * FullCalendar event feed (time clocks colored per employee).
+     */
+    public function calendarEvents(Request $request)
+    {
+        if (! auth()->user()->can('attendance.view') && ! auth()->user()->can('attendance.view_all')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $business_id = $request->session()->get('user.business_id');
+        $can_view_all = $this->canViewAll($business_id);
+        $tz = $this->businessTimezone();
+
+        $start = $request->filled('start')
+            ? Carbon::parse($request->input('start'), $tz)->startOfDay()
+            : Carbon::now($tz)->startOfMonth();
+        $end = $request->filled('end')
+            ? Carbon::parse($request->input('end'), $tz)->endOfDay()
+            : Carbon::now($tz)->endOfMonth();
+
+        // Convert range to app/store timestamps for DB comparison
+        $startUtc = $start->copy()->setTimezone(config('app.timezone'));
+        $endUtc = $end->copy()->setTimezone(config('app.timezone'));
+
+        $query = EmployeeAttendance::with(['user', 'breaks'])
+            ->where('business_id', $business_id)
+            ->where('clock_in_at', '<=', $endUtc)
+            ->where(function ($q) use ($startUtc) {
+                $q->whereNull('clock_out_at')
+                    ->orWhere('clock_out_at', '>=', $startUtc);
+            });
+
+        if (! $can_view_all) {
+            $query->where('user_id', auth()->user()->id);
+        } elseif ($request->filled('user_id')) {
+            $query->where('user_id', $request->input('user_id'));
+        }
+
+        $rows = $query->orderBy('clock_in_at')->get();
+        $events = [];
+        $now = Carbon::now();
+
+        foreach ($rows as $row) {
+            $name = $this->employeeName($row);
+            $color = EmployeeAttendance::colorForUserId((int) $row->user_id);
+            $breakColor = EmployeeAttendance::breakColorForUserId((int) $row->user_id);
+            $in = $row->clock_in_at;
+            $out = $row->clock_out_at ?: $now;
+
+            if (! $in) {
+                continue;
+            }
+
+            $events[] = [
+                'id' => 'work_'.$row->id,
+                'attendance_id' => $row->id,
+                'user_id' => $row->user_id,
+                'type' => 'work',
+                'title' => $name,
+                'start' => $in->toIso8601String(),
+                'end' => $out->toIso8601String(),
+                'backgroundColor' => $color,
+                'borderColor' => $color,
+                'textColor' => '#ffffff',
+                'className' => 'att-fc-work',
+                'editable' => false,
+                'extendedProps' => [
+                    'kind' => 'work',
+                    'status' => $row->status,
+                    'worked' => EmployeeAttendance::formatDuration($row->workedSeconds($out)),
+                    'notes' => $row->notes,
+                ],
+            ];
+
+            foreach ($row->breaks as $break) {
+                if (! $break->break_start_at) {
+                    continue;
+                }
+                $bEnd = $break->break_end_at ?: $now;
+                $events[] = [
+                    'id' => 'break_'.$break->id,
+                    'attendance_id' => $row->id,
+                    'user_id' => $row->user_id,
+                    'type' => 'break',
+                    'title' => $name.' · '.__('attendance.break_time'),
+                    'start' => $break->break_start_at->toIso8601String(),
+                    'end' => $bEnd->toIso8601String(),
+                    'backgroundColor' => $breakColor,
+                    'borderColor' => $color,
+                    'textColor' => '#1e293b',
+                    'className' => 'att-fc-break',
+                    'editable' => false,
+                    'extendedProps' => [
+                        'kind' => 'break',
+                        'status' => 'break',
+                    ],
+                ];
+            }
+        }
+
+        return response()->json($events);
+    }
+
+    /**
+     * Single attendance record for edit modal.
+     */
+    public function show(Request $request, $id)
+    {
+        $business_id = $request->session()->get('user.business_id');
+        if (! $this->canEdit($business_id)) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $attendance = EmployeeAttendance::with(['user', 'breaks'])
+            ->where('business_id', $business_id)
+            ->findOrFail($id);
+
+        if (! $this->canAccessRecord($attendance, $business_id)) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $this->attendanceToFormArray($attendance),
+        ]);
+    }
+
+    /**
+     * Create a time clock entry (manager).
+     */
+    public function store(Request $request)
+    {
+        $business_id = $request->session()->get('user.business_id');
+        if (! $this->canEdit($business_id)) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $request->validate([
+            'user_id' => 'required|integer',
+            'clock_in_at' => 'required|string',
+            'clock_out_at' => 'nullable|string',
+            'notes' => 'nullable|string|max:1000',
+        ]);
+
+        try {
+            $userId = (int) $request->input('user_id');
+            if (! $this->canViewAll($business_id) && $userId !== (int) auth()->user()->id) {
+                abort(403, 'Unauthorized action.');
+            }
+
+            $userOk = User::where('business_id', $business_id)->where('id', $userId)->exists();
+            if (! $userOk) {
+                return ['success' => false, 'msg' => __('messages.something_went_wrong')];
+            }
+
+            $clockIn = $this->parseBusinessDateTime($request->input('clock_in_at'));
+            $clockOut = $request->filled('clock_out_at')
+                ? $this->parseBusinessDateTime($request->input('clock_out_at'))
+                : null;
+
+            if ($clockOut && $clockOut->lt($clockIn)) {
+                return ['success' => false, 'msg' => __('attendance.clock_out_before_in')];
+            }
+
+            DB::beginTransaction();
+
+            $attendance = EmployeeAttendance::create([
+                'business_id' => $business_id,
+                'user_id' => $userId,
+                'clock_in_at' => $clockIn,
+                'clock_out_at' => $clockOut,
+                'status' => $clockOut ? 'clocked_out' : 'clocked_in',
+                'notes' => $request->input('notes'),
+            ]);
+
+            $this->syncBreaksFromRequest($attendance, $request->input('breaks', []), $clockIn, $clockOut);
+
+            if (! $clockOut && $attendance->breaks()->whereNull('break_end_at')->exists()) {
+                $attendance->status = 'on_break';
+                $attendance->save();
+            }
+
+            DB::commit();
+
+            return [
+                'success' => true,
+                'msg' => __('attendance.entry_saved'),
+                'data' => $this->attendanceToFormArray($attendance->fresh(['user', 'breaks'])),
+            ];
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::emergency('File:'.$e->getFile().' Line:'.$e->getLine().' Message:'.$e->getMessage());
+
+            return [
+                'success' => false,
+                'msg' => __('messages.something_went_wrong'),
+            ];
+        }
+    }
+
+    /**
+     * Update a time clock entry (manager).
+     */
+    public function update(Request $request, $id)
+    {
+        $business_id = $request->session()->get('user.business_id');
+        if (! $this->canEdit($business_id)) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $request->validate([
+            'clock_in_at' => 'required|string',
+            'clock_out_at' => 'nullable|string',
+            'notes' => 'nullable|string|max:1000',
+        ]);
+
+        try {
+            $attendance = EmployeeAttendance::with('breaks')
+                ->where('business_id', $business_id)
+                ->findOrFail($id);
+
+            if (! $this->canAccessRecord($attendance, $business_id)) {
+                abort(403, 'Unauthorized action.');
+            }
+
+            $clockIn = $this->parseBusinessDateTime($request->input('clock_in_at'));
+            $clockOut = $request->filled('clock_out_at')
+                ? $this->parseBusinessDateTime($request->input('clock_out_at'))
+                : null;
+
+            if ($clockOut && $clockOut->lt($clockIn)) {
+                return ['success' => false, 'msg' => __('attendance.clock_out_before_in')];
+            }
+
+            DB::beginTransaction();
+
+            $attendance->clock_in_at = $clockIn;
+            $attendance->clock_out_at = $clockOut;
+            $attendance->notes = $request->input('notes');
+            $attendance->status = $clockOut ? 'clocked_out' : 'clocked_in';
+            $attendance->save();
+
+            $this->syncBreaksFromRequest($attendance, $request->input('breaks', []), $clockIn, $clockOut);
+
+            if (! $clockOut && $attendance->breaks()->whereNull('break_end_at')->exists()) {
+                $attendance->status = 'on_break';
+                $attendance->save();
+            }
+
+            DB::commit();
+
+            return [
+                'success' => true,
+                'msg' => __('attendance.entry_updated'),
+                'data' => $this->attendanceToFormArray($attendance->fresh(['user', 'breaks'])),
+            ];
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::emergency('File:'.$e->getFile().' Line:'.$e->getLine().' Message:'.$e->getMessage());
+
+            return [
+                'success' => false,
+                'msg' => __('messages.something_went_wrong'),
+            ];
+        }
+    }
+
+    /**
+     * Delete a time clock entry.
+     */
+    public function destroy(Request $request, $id)
+    {
+        $business_id = $request->session()->get('user.business_id');
+        if (! $this->canEdit($business_id)) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        try {
+            $attendance = EmployeeAttendance::where('business_id', $business_id)->findOrFail($id);
+
+            if (! $this->canAccessRecord($attendance, $business_id)) {
+                abort(403, 'Unauthorized action.');
+            }
+
+            $attendance->breaks()->delete();
+            $attendance->delete();
+
+            return [
+                'success' => true,
+                'msg' => __('attendance.entry_deleted'),
+            ];
+        } catch (\Exception $e) {
+            \Log::emergency('File:'.$e->getFile().' Line:'.$e->getLine().' Message:'.$e->getMessage());
+
+            return [
+                'success' => false,
+                'msg' => __('messages.something_went_wrong'),
+            ];
+        }
+    }
+
+    protected function canViewAll($business_id): bool
+    {
+        return auth()->user()->can('attendance.view_all')
+            || $this->businessUtil->is_admin(auth()->user(), $business_id);
+    }
+
+    protected function canEdit($business_id): bool
+    {
+        return auth()->user()->can('attendance.edit')
+            || $this->businessUtil->is_admin(auth()->user(), $business_id);
+    }
+
+    protected function canAccessRecord(EmployeeAttendance $attendance, $business_id): bool
+    {
+        if ($this->canViewAll($business_id) || $this->businessUtil->is_admin(auth()->user(), $business_id)) {
+            return true;
+        }
+
+        return (int) $attendance->user_id === (int) auth()->user()->id;
+    }
+
+    protected function employeeName(EmployeeAttendance $row): string
+    {
+        return optional($row->user)->user_full_name
+            ?: trim((optional($row->user)->first_name ?? '').' '.(optional($row->user)->last_name ?? ''));
+    }
+
+    protected function businessTimezone(): string
+    {
+        return session('business.time_zone', config('app.timezone'));
     }
 
     protected function statusPayload(int $user_id): array
@@ -371,9 +722,134 @@ class AttendanceController extends Controller
 
     protected function formatDateTime($datetime): string
     {
-        $tz = session('business.time_zone', config('app.timezone'));
+        $tz = $this->businessTimezone();
         $format = session('business.date_format', 'm/d/Y').' '.session('business.time_format', 'H:i');
 
         return Carbon::parse($datetime)->setTimezone($tz)->format($format);
+    }
+
+    /**
+     * Format for datetimepicker inputs (business tz).
+     */
+    protected function formatForInput($datetime): ?string
+    {
+        if (! $datetime) {
+            return null;
+        }
+        $tz = $this->businessTimezone();
+        $dateFormat = session('business.date_format', 'm/d/Y');
+        $timeFormat = session('business.time_format', 'H:i');
+        if ($timeFormat === '12') {
+            $timeFormat = 'h:i A';
+        }
+
+        return Carbon::parse($datetime)->setTimezone($tz)->format($dateFormat.' '.$timeFormat);
+    }
+
+    protected function parseBusinessDateTime(string $value): Carbon
+    {
+        $tz = $this->businessTimezone();
+        $dateFormat = session('business.date_format', 'm/d/Y');
+        $timeFormat = session('business.time_format', 'H:i');
+        if ($timeFormat === '12') {
+            $timeFormat = 'h:i A';
+        }
+
+        $formats = [
+            $dateFormat.' '.$timeFormat,
+            $dateFormat.' H:i',
+            $dateFormat.' h:i A',
+            'Y-m-d H:i:s',
+            'Y-m-d H:i',
+            'Y-m-d\TH:i',
+            'Y-m-d\TH:i:s',
+        ];
+
+        foreach ($formats as $fmt) {
+            try {
+                return Carbon::createFromFormat($fmt, trim($value), $tz)
+                    ->setTimezone(config('app.timezone'));
+            } catch (\Exception $e) {
+                // try next
+            }
+        }
+
+        return Carbon::parse($value, $tz)->setTimezone(config('app.timezone'));
+    }
+
+    protected function attendanceToFormArray(EmployeeAttendance $attendance): array
+    {
+        $breaks = [];
+        foreach ($attendance->breaks as $b) {
+            $breaks[] = [
+                'id' => $b->id,
+                'break_start_at' => $this->formatForInput($b->break_start_at),
+                'break_end_at' => $this->formatForInput($b->break_end_at),
+                'reason' => $b->reason,
+            ];
+        }
+
+        return [
+            'id' => $attendance->id,
+            'user_id' => $attendance->user_id,
+            'employee' => $this->employeeName($attendance),
+            'color' => EmployeeAttendance::colorForUserId((int) $attendance->user_id),
+            'clock_in_at' => $this->formatForInput($attendance->clock_in_at),
+            'clock_out_at' => $this->formatForInput($attendance->clock_out_at),
+            'status' => $attendance->status,
+            'notes' => $attendance->notes,
+            'breaks' => $breaks,
+            'worked_time' => EmployeeAttendance::formatDuration($attendance->workedSeconds()),
+            'break_time' => EmployeeAttendance::formatDuration($attendance->totalBreakSeconds()),
+        ];
+    }
+
+    protected function syncBreaksFromRequest(EmployeeAttendance $attendance, $breaks, Carbon $clockIn, ?Carbon $clockOut): void
+    {
+        $attendance->breaks()->delete();
+
+        if (! is_array($breaks)) {
+            return;
+        }
+
+        foreach ($breaks as $row) {
+            if (empty($row['break_start_at'])) {
+                continue;
+            }
+            try {
+                $bStart = $this->parseBusinessDateTime($row['break_start_at']);
+            } catch (\Exception $e) {
+                continue;
+            }
+            $bEnd = null;
+            if (! empty($row['break_end_at'])) {
+                try {
+                    $bEnd = $this->parseBusinessDateTime($row['break_end_at']);
+                } catch (\Exception $e) {
+                    $bEnd = null;
+                }
+            }
+
+            // Keep break within shift bounds when possible
+            if ($bStart->lt($clockIn)) {
+                $bStart = $clockIn->copy();
+            }
+            if ($clockOut && $bStart->gt($clockOut)) {
+                continue;
+            }
+            if ($bEnd && $clockOut && $bEnd->gt($clockOut)) {
+                $bEnd = $clockOut->copy();
+            }
+            if ($bEnd && $bEnd->lt($bStart)) {
+                $bEnd = $bStart->copy();
+            }
+
+            EmployeeAttendanceBreak::create([
+                'attendance_id' => $attendance->id,
+                'break_start_at' => $bStart,
+                'break_end_at' => $bEnd,
+                'reason' => $row['reason'] ?? null,
+            ]);
+        }
     }
 }

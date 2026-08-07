@@ -1300,6 +1300,14 @@
               </label>
             </div>
           </div>
+          <div class="col-md-12">
+            <div class="checkbox">
+              <label>
+                {!! Form::checkbox('permissions[]', 'attendance.edit', in_array('attendance.edit', $role_permissions), ['class' => 'input-icheck']); !!}
+                @lang('attendance.permission_edit')
+              </label>
+            </div>
+          </div>
         </div>
         </div>
         

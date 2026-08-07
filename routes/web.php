@@ -170,13 +170,18 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::get('/inventory', [\App\Http\Controllers\InventoryDashboardController::class, 'index'])->name('inventory.dashboard');
     Route::get('/inventory/dashboard', [\App\Http\Controllers\InventoryDashboardController::class, 'index']);
 
-    // Employee attendance (clock in / out / break)
+    // Employee attendance (clock in / out / break / report / manage)
     Route::get('/attendance/status', [AttendanceController::class, 'status']);
     Route::post('/attendance/clock-in', [AttendanceController::class, 'clockIn']);
     Route::post('/attendance/start-break', [AttendanceController::class, 'startBreak']);
     Route::post('/attendance/end-break', [AttendanceController::class, 'endBreak']);
     Route::post('/attendance/clock-out', [AttendanceController::class, 'clockOut']);
     Route::get('/attendance/report', [AttendanceController::class, 'report']);
+    Route::get('/attendance/calendar-events', [AttendanceController::class, 'calendarEvents']);
+    Route::get('/attendance/{id}', [AttendanceController::class, 'show'])->where('id', '[0-9]+');
+    Route::post('/attendance', [AttendanceController::class, 'store']);
+    Route::put('/attendance/{id}', [AttendanceController::class, 'update'])->where('id', '[0-9]+');
+    Route::delete('/attendance/{id}', [AttendanceController::class, 'destroy'])->where('id', '[0-9]+');
 
     Route::post('/test-email', [BusinessController::class, 'testEmailConfiguration']);
     Route::post('/test-sms', [BusinessController::class, 'testSmsConfiguration']);
