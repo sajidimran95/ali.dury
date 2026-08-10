@@ -28,6 +28,13 @@
 		</div>
 
 		<div class="text_div">
+			@php
+				$tile_name = $product->name;
+				if ($product->type == 'variable' && !empty($product->variation)) {
+					$tile_name .= ' - ' . $product->variation;
+				}
+			@endphp
+			<span class="product_name">{{ $tile_name }}</span>
 			@if(!empty($product->sub_sku))
 				<span class="product_sku">({{ $product->sub_sku }})</span>
 			@endif

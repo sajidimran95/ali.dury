@@ -29,6 +29,7 @@
 		</div>
 
 		<div class="text_div">
+			<span class="product_name">{{ $variation->full_name }}</span>
 			@if(!empty($variation->sub_sku))
 				<span class="product_sku">({{ $variation->sub_sku }})</span>
 			@endif
