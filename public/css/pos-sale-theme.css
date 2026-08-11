@@ -2,6 +2,11 @@
  * POS Sale Theme ? Lightspeed-inspired dark UI
  * Design-only overlay for /pos/create (and edit). Keeps all existing IDs/classes for JS.
  */
+html:has(body.lockscreen.pos-sale-theme) {
+  height: 100% !important;
+  overflow: hidden !important;
+}
+
 html:has(body.lockscreen.pos-sale-theme),
 body.lockscreen.pos-sale-theme {
   overflow-x: hidden !important;
@@ -20,9 +25,14 @@ body.lockscreen.pos-sale-theme {
   --pos-tile: #252525;
   --pos-tile-hover: #2f2f2f;
   --pos-danger: #ef5350;
+  --pos-header-h: 48px;
+  --pos-footer-h: 0px;
   background: var(--pos-bg) !important;
   color: var(--pos-text);
   max-width: 100vw !important;
+  height: 100% !important;
+  min-height: 100dvh !important;
+  overflow: hidden !important;
 }
 
 body.lockscreen.pos-sale-theme .wrapper,
@@ -38,7 +48,8 @@ body.lockscreen.pos-sale-theme .content {
   margin: 0 !important;
 }
 
-/* ?? Shell: full width ? left nav pinned, only product+cart centered ?? */
+/* Full-viewport shell — no content max-width on laptop/desktop */
+body.lockscreen.pos-sale-theme .thetop,
 body.lockscreen.pos-sale-theme .wrapper,
 body.lockscreen.pos-sale-theme .zoho-app-body,
 body.lockscreen.pos-sale-theme .zoho-main-column,
@@ -48,11 +59,45 @@ body.lockscreen.pos-sale-theme .pos-sale-shell {
   margin: 0 !important;
   max-width: 100% !important;
   width: 100% !important;
-  overflow-x: hidden !important;
   box-sizing: border-box !important;
 }
 
+body.lockscreen.pos-sale-theme .thetop,
+body.lockscreen.pos-sale-theme .zoho-app-body {
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+}
+
+body.lockscreen.pos-sale-theme .thetop {
+  min-height: 100dvh !important;
+  height: 100dvh !important;
+  max-height: 100dvh !important;
+}
+
+body.lockscreen.pos-sale-theme .zoho-app-body {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  height: auto !important;
+  max-height: none !important;
+}
+
+body.lockscreen.pos-sale-theme .zoho-main-column {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  height: auto !important;
+  max-height: none !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+}
+
 body.lockscreen.pos-sale-theme #scrollable-container {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  height: auto !important;
+  max-height: none !important;
+  overflow: hidden !important;
   overflow-x: hidden !important;
   background: var(--pos-bg) !important;
 }
@@ -61,6 +106,11 @@ body.lockscreen.pos-sale-theme .content {
   padding: 0 !important;
   margin: 0 !important;
   background: var(--pos-bg) !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
 }
 
 body.lockscreen.pos-sale-theme .pos-sale-shell {
@@ -68,7 +118,10 @@ body.lockscreen.pos-sale-theme .pos-sale-shell {
   flex-direction: row;
   align-items: stretch;
   justify-content: flex-start;
-  min-height: calc(100vh - 48px);
+  flex: 1 1 auto;
+  min-height: 0 !important;
+  height: 100% !important;
+  max-height: none !important;
   max-width: none !important;
   width: 100% !important;
   margin: 0 !important;
@@ -77,9 +130,10 @@ body.lockscreen.pos-sale-theme .pos-sale-shell {
   position: relative;
   background: var(--pos-bg);
   border: 0;
+  overflow: hidden;
 }
 
-/* Left nav ? icon rail + register menu (Sell / Open-Close / History / Cash / Status) */
+/* Left nav — full available height beside header */
 body.lockscreen.pos-sale-theme .pos-nav-sidebar {
   flex: 0 0 268px;
   width: 268px;
@@ -93,8 +147,10 @@ body.lockscreen.pos-sale-theme .pos-nav-sidebar {
   position: sticky;
   top: 0;
   left: 0;
-  align-self: flex-start;
-  height: calc(100vh - 48px);
+  align-self: stretch;
+  height: auto !important;
+  min-height: 0;
+  max-height: none !important;
   overflow: hidden;
   z-index: 40;
   order: 0;
@@ -133,81 +189,93 @@ body.lockscreen.pos-sale-theme.pos-nav-collapsed .pos-nav-sidebar {
   max-width: 64px;
 }
 
-/* Main: remaining space ? center only product + cart */
+/* Main area fills remaining width + height */
 body.lockscreen.pos-sale-theme .pos-sale-main {
   flex: 1 1 auto;
   min-width: 0;
   width: auto;
-  max-width: 100%;
+  max-width: none !important;
   margin: 0 !important;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
   justify-content: flex-start;
   order: 1;
   background: var(--pos-bg);
-  padding: 12px 28px 64px;
+  padding: 8px 12px 10px;
   box-sizing: border-box;
-  overflow-x: hidden;
+  overflow: hidden;
+  min-height: 0;
+  height: 100%;
 }
 
 body.lockscreen.pos-sale-theme .pos-sale-main > form#add_pos_sell_form,
 body.lockscreen.pos-sale-theme .pos-sale-main > form#edit_pos_sell_form {
-  width: 100%;
-  max-width: 1280px;
-  margin: 0 auto;
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
   display: flex;
   flex-direction: column;
   flex: 1 1 auto;
   min-height: 0;
+  height: 100%;
 }
 
 body.lockscreen.pos-sale-theme .pos-sale-main > form > .row {
   width: 100%;
   margin: 0 !important;
   flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 body.lockscreen.pos-sale-theme .pos-sale-main > form > .row > .col-md-12 {
   padding: 0 !important;
   float: none;
   width: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 body.lockscreen.pos-sale-theme .pos-checkout-row {
   display: flex !important;
   flex-direction: row !important;
   align-items: stretch;
-  justify-content: center;
-  gap: 22px !important;
-  margin: 0 auto !important;
-  width: 100%;
-  max-width: 1280px;
-  flex: 1;
-  min-height: 0;
-  height: calc(100vh - 72px);
-  max-height: calc(100vh - 72px);
+  justify-content: flex-start;
+  gap: 12px !important;
+  margin: 0 !important;
+  width: 100% !important;
+  max-width: none !important;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  height: 100% !important;
+  max-height: none !important;
 }
 
-/* Product column */
+/* Product column fills remaining space on all large screens */
 body.lockscreen.pos-sale-theme #pos_sidebar_wrap {
   flex: 1 1 auto !important;
-  max-width: 760px !important;
+  max-width: none !important;
   width: auto !important;
   order: 1 !important;
   padding: 0 !important;
   min-width: 0;
-  min-height: 0;
+  min-height: 0 !important;
   background: transparent;
   border-right: 0 !important;
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 72px);
-  max-height: calc(100vh - 72px);
+  height: 100% !important;
+  max-height: none !important;
   overflow: hidden;
 }
 
-/* Cart column — previous width */
+/* Cart column — fixed previous width, full height */
 body.lockscreen.pos-sale-theme #pos_checkout_wrap {
   flex: 0 0 430px !important;
   max-width: 430px !important;
@@ -217,12 +285,28 @@ body.lockscreen.pos-sale-theme #pos_checkout_wrap {
   background: transparent !important;
   display: flex;
   flex-direction: column;
-  min-height: 0;
-  height: calc(100vh - 72px);
-  max-height: calc(100vh - 72px);
+  min-height: 0 !important;
+  height: 100% !important;
+  max-height: none !important;
   position: relative;
   z-index: 30;
   overflow: visible !important;
+}
+
+/* Override zoho-theme % width so POS can go full screen */
+@media (min-width: 1024px) {
+  body.zoho-theme.lockscreen.pos-sale-theme .pos-checkout-row #pos_sidebar_wrap,
+  body.lockscreen.pos-sale-theme .pos-checkout-row #pos_sidebar_wrap {
+    flex: 1 1 auto !important;
+    max-width: none !important;
+    width: auto !important;
+  }
+  body.zoho-theme.lockscreen.pos-sale-theme .pos-checkout-row #pos_checkout_wrap,
+  body.lockscreen.pos-sale-theme .pos-checkout-row #pos_checkout_wrap {
+    flex: 0 0 430px !important;
+    max-width: 430px !important;
+    width: 430px !important;
+  }
 }
 
 body.lockscreen.pos-sale-theme #pos_checkout_wrap > div {
@@ -355,12 +439,13 @@ body.lockscreen.pos-sale-theme #product_list_body {
 
 @media (max-width: 1199px) {
   body.lockscreen.pos-sale-theme .pos-sale-main {
-    padding: 8px 14px 64px;
+    padding: 6px 10px 10px;
   }
   body.lockscreen.pos-sale-theme .pos-sale-main > form#add_pos_sell_form,
   body.lockscreen.pos-sale-theme .pos-sale-main > form#edit_pos_sell_form,
   body.lockscreen.pos-sale-theme .pos-checkout-row {
-    max-width: 100%;
+    max-width: none !important;
+    width: 100% !important;
   }
   body.lockscreen.pos-sale-theme #pos_sidebar_wrap {
     max-width: none !important;
@@ -1084,20 +1169,40 @@ body.lockscreen.pos-sale-theme .pos_form_totals .pos_totals_left {
 }
 
 @media (max-width: 991px) {
+  body.lockscreen.pos-sale-theme,
+  body.lockscreen.pos-sale-theme .thetop,
+  body.lockscreen.pos-sale-theme .zoho-app-body,
+  body.lockscreen.pos-sale-theme #scrollable-container {
+    height: auto !important;
+    max-height: none !important;
+    min-height: 100dvh !important;
+    overflow-y: auto !important;
+  }
   body.lockscreen.pos-sale-theme .pos-sale-main {
     padding: 8px 12px 80px;
     align-items: stretch;
+    height: auto !important;
+    overflow: visible !important;
+  }
+  body.lockscreen.pos-sale-theme .pos-sale-shell {
+    height: auto !important;
+    min-height: calc(100dvh - var(--pos-header-h, 48px)) !important;
+    overflow: visible !important;
   }
   body.lockscreen.pos-sale-theme .pos-checkout-row {
     flex-direction: column !important;
     gap: 12px !important;
-    max-width: 100% !important;
+    max-width: none !important;
+    width: 100% !important;
+    height: auto !important;
   }
   body.lockscreen.pos-sale-theme #pos_sidebar_wrap,
   body.lockscreen.pos-sale-theme #pos_checkout_wrap {
     flex: 1 1 auto !important;
     max-width: 100% !important;
     width: 100% !important;
+    height: auto !important;
+    min-height: 42vh !important;
   }
   body.lockscreen.pos-sale-theme #pos_checkout_wrap {
     order: 1 !important;
@@ -1810,7 +1915,14 @@ body.lockscreen.pos-sale-theme .pos-card.is-active.brand {
   background: rgba(59, 141, 221, 0.15) !important;
 }
 
-/* Product tiles ? small square cards with image, name, price */
+/*
+ * Product tiles — screen-width columns (viewport):
+ *   small           → 2
+ *   tablet ~991     → 3
+ *   laptop ~1199    → 4
+ *   ~1400 desktop   → 5
+ *   ≥2100 big screen → 6
+ */
 body.lockscreen.pos-sale-theme #product_list_items,
 body.lockscreen.pos-sale-theme #featured_products_box {
   display: flex !important;
@@ -1824,6 +1936,7 @@ body.lockscreen.pos-sale-theme #featured_products_box {
   overflow-x: hidden;
 }
 
+/* Base (default desktop / ~1400 range): 5 per row */
 body.lockscreen.pos-sale-theme #product_list_items > [class*="col-"],
 body.lockscreen.pos-sale-theme #featured_products_box > [class*="col-"] {
   float: none !important;
@@ -1833,31 +1946,44 @@ body.lockscreen.pos-sale-theme #featured_products_box > [class*="col-"] {
   padding: 5px !important;
   height: auto !important;
   align-self: flex-start !important;
-  box-sizing: border-box;
+  box-sizing: border-box !important;
 }
 
-@media (max-width: 1400px) {
+/* Big desktop / 4K-ish: 6 per row */
+@media (min-width: 2100px) {
   body.lockscreen.pos-sale-theme #product_list_items > [class*="col-"],
   body.lockscreen.pos-sale-theme #featured_products_box > [class*="col-"] {
-    flex-basis: 25% !important;
+    flex: 0 0 16.6667% !important;
+    max-width: 16.6667% !important;
+    width: 16.6667% !important;
+  }
+}
+
+/* Laptop */
+@media (max-width: 1199px) {
+  body.lockscreen.pos-sale-theme #product_list_items > [class*="col-"],
+  body.lockscreen.pos-sale-theme #featured_products_box > [class*="col-"] {
+    flex: 0 0 25% !important;
     max-width: 25% !important;
     width: 25% !important;
   }
 }
 
-@media (max-width: 1100px) {
+/* Tablet */
+@media (max-width: 991px) {
   body.lockscreen.pos-sale-theme #product_list_items > [class*="col-"],
   body.lockscreen.pos-sale-theme #featured_products_box > [class*="col-"] {
-    flex-basis: 33.333% !important;
-    max-width: 33.333% !important;
-    width: 33.333% !important;
+    flex: 0 0 33.3333% !important;
+    max-width: 33.3333% !important;
+    width: 33.3333% !important;
   }
 }
 
+/* Small phone — unchanged */
 @media (max-width: 575px) {
   body.lockscreen.pos-sale-theme #product_list_items > [class*="col-"],
   body.lockscreen.pos-sale-theme #featured_products_box > [class*="col-"] {
-    flex-basis: 50% !important;
+    flex: 0 0 50% !important;
     max-width: 50% !important;
     width: 50% !important;
   }
