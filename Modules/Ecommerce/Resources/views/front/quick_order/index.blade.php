@@ -1,10 +1,12 @@
 @extends('ecommerce::front.layouts.store')
 @section('title', 'Quick Order')
 @section('content')
-<div class="max-w-[1100px] mx-auto px-4 py-10">
-    <p class="text-[11px] uppercase tracking-[0.18em] text-black/40 font-bold mb-2">Wholesale</p>
-    <h1 class="text-3xl md:text-4xl font-extrabold mb-2">Quick Order</h1>
-    <p class="text-sm text-black/55 mb-8 max-w-2xl">Enter SKUs and quantities to add multiple items at once. Paste lines as <code class="text-xs bg-mist px-1 rounded">SKU, qty</code> or fill the table below.</p>
+<div class="ecom-acc max-w-[1100px] mx-auto px-4 py-10">
+    @include('ecommerce::front.account.partials.mobile_topbar', ['title' => 'Quick Order'])
+    <p class="text-[11px] uppercase tracking-[0.18em] text-black/40 font-bold mb-2 ecom-acc-desktop-only">Wholesale</p>
+    <h1 class="text-3xl md:text-4xl font-extrabold mb-2 ecom-acc-desktop-only">Quick Order</h1>
+    <p class="text-sm text-black/55 mb-8 max-w-2xl ecom-acc-desktop-only">Enter SKUs and quantities to add multiple items at once. Paste lines as <code class="text-xs bg-mist px-1 rounded">SKU, qty</code> or fill the table below.</p>
+    <p class="text-sm text-black/55 mb-4 px-1 ecom-acc-mobile-only">Enter SKUs and quantities. Paste as <code class="text-xs bg-mist px-1 rounded">SKU, qty</code> or use the table.</p>
 
     <form method="post" action="{{ route('ecommerce.quick_order.submit', absolute: false) }}" class="space-y-6">
         @csrf

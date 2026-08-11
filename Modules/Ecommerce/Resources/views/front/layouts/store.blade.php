@@ -6,8 +6,14 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="theme-color" content="#e85d04">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="{{ $ecom_settings->store_name ?? 'Store' }}">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="mobile-web-app-capable" content="yes">
+    <link rel="manifest" href="{{ url('/ecom-pwa/manifest.webmanifest') }}">
+    <link rel="icon" type="image/png" sizes="192x192" href="{{ asset('pwa/ecom-icon-192.png') }}">
+    <link rel="icon" type="image/png" sizes="512x512" href="{{ asset('pwa/ecom-icon-512.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('pwa/ecom-apple-touch-icon.png') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('pwa/ecom-apple-touch-icon.png') }}">
     <title>@yield('title', $ecom_settings->seo_title ?? $ecom_settings->store_name ?? 'Wholesale Store')</title>
     <meta name="description" content="@yield('meta_description', $ecom_settings->seo_description ?? '')">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -81,7 +87,7 @@
 
         /* App-like mobile shell */
         .app-bottom-nav {
-            position: fixed; left: 0; right: 0; bottom: 0; z-index: 80;
+            position: fixed; left: 0; right: 0; bottom: 0; z-index: 90;
             background: rgba(255,255,255,.94);
             backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
             border-top: 1px solid #e8e8e8;
@@ -127,21 +133,286 @@
             width: 40px; height: 4px; border-radius: 999px; background: #d4d4d4;
             margin: 10px auto 6px;
         }
+        /* Ecommerce install bar — fixed on all devices until installed */
+        .ecom-pwa-install-bar {
+            position: fixed !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 20px;
+            z-index: 100;
+            width: 100%;
+            max-width: 100%;
+            margin: 0;
+            padding: 0 16px;
+            box-sizing: border-box;
+            pointer-events: none;
+            display: flex;
+            justify-content: center;
+            /* Keep fixed layer stable on iOS Safari */
+            -webkit-transform: translate3d(0, 0, 0);
+            transform: translate3d(0, 0, 0);
+            backface-visibility: hidden;
+        }
+        .ecom-pwa-install-bar[hidden] { display: none !important; }
+        .ecom-pwa-install-bar:not([hidden]) { display: flex !important; }
+        .ecom-pwa-install-bar__inner {
+            pointer-events: auto;
+            display: flex; align-items: center; gap: 14px;
+            width: 100%;
+            max-width: 560px;
+            background: #1a1a1a; color: #fff;
+            border-radius: 16px;
+            padding: 16px 18px;
+            box-shadow: 0 12px 36px rgba(0,0,0,.32);
+            min-height: 72px;
+            box-sizing: border-box;
+        }
+        .ecom-pwa-install-bar__logo {
+            flex-shrink: 0;
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            object-fit: cover;
+            background: #e85d04;
+            display: block;
+        }
+        .ecom-pwa-install-bar__text { flex: 1; min-width: 0; }
+        .ecom-pwa-install-bar__text strong {
+            display: block; font-size: 16px; font-weight: 800; line-height: 1.25;
+            letter-spacing: -0.01em;
+        }
+        .ecom-pwa-install-bar__text span {
+            display: block; font-size: 13px; color: rgba(255,255,255,.78); margin-top: 4px; line-height: 1.35;
+        }
+        .ecom-pwa-install-bar__btn {
+            flex-shrink: 0; background: #e85d04; color: #fff; border: 0;
+            border-radius: 10px;
+            padding: 12px 18px;
+            font-size: 14px; font-weight: 800;
+            cursor: pointer;
+            min-height: 46px;
+            line-height: 1.2;
+        }
+        .ecom-pwa-install-bar__close {
+            flex-shrink: 0;
+            width: 40px; height: 40px; border: 0; border-radius: 999px;
+            background: rgba(255,255,255,.12); color: #fff;
+            font-size: 22px; line-height: 1; cursor: pointer;
+        }
+        body.ecom-pwa-standalone .ecom-pwa-install-bar { display: none !important; }
+        body.ecom-pwa-bar-visible main {
+            padding-bottom: calc(100px + env(safe-area-inset-bottom, 0));
+        }
+
         @media (max-width: 1023px) {
             body.app-mobile { overscroll-behavior-y: none; }
             body.app-mobile main { padding-bottom: calc(72px + env(safe-area-inset-bottom, 0)); }
+            body.app-mobile.ecom-pwa-bar-visible main {
+                padding-bottom: calc(72px + 78px + env(safe-area-inset-bottom, 0));
+            }
             body.app-mobile .desktop-footer { display: none; }
             .product-card:hover { transform: none; box-shadow: none; }
+
+            /* Mobile: sit above bottom tabs and stay fixed while scrolling */
+            .ecom-pwa-install-bar {
+                position: fixed !important;
+                left: 0 !important;
+                right: 0 !important;
+                bottom: calc(64px + env(safe-area-inset-bottom, 0px)) !important;
+                width: 100% !important;
+                max-width: 100vw !important;
+                padding: 0 10px 8px !important;
+                z-index: 100 !important;
+            }
+            .ecom-pwa-install-bar__inner {
+                max-width: none;
+                min-height: 0;
+                gap: 8px;
+                padding: 8px 10px;
+                border-radius: 10px;
+                box-shadow: 0 6px 18px rgba(0,0,0,.28);
+            }
+            .ecom-pwa-install-bar__logo {
+                width: 36px;
+                height: 36px;
+                border-radius: 9px;
+            }
+            .ecom-pwa-install-bar__text strong {
+                font-size: 12px;
+                font-weight: 700;
+                line-height: 1.2;
+            }
+            .ecom-pwa-install-bar__text span {
+                font-size: 10px;
+                margin-top: 1px;
+                line-height: 1.25;
+            }
+            .ecom-pwa-install-bar__btn {
+                border-radius: 7px;
+                padding: 7px 10px;
+                font-size: 11px;
+                font-weight: 700;
+                min-height: 32px;
+            }
+            .ecom-pwa-install-bar__close {
+                width: 28px;
+                height: 28px;
+                font-size: 16px;
+            }
+
+            /* Customer account panel — app layout (mobile only) */
+            body.ecom-account-panel .ecom-acc {
+                padding: 0;
+                max-width: none;
+                margin: 0;
+            }
+            body.ecom-account-panel .ecom-acc-top {
+                position: sticky;
+                top: calc(3.5rem + env(safe-area-inset-top, 0px));
+                z-index: 35;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                min-height: 48px;
+                padding: 8px 12px;
+                background: rgba(255,255,255,.96);
+                backdrop-filter: blur(12px);
+                -webkit-backdrop-filter: blur(12px);
+                border-bottom: 1px solid #e8e8e8;
+            }
+            body.ecom-account-panel .ecom-acc-top__back {
+                width: 40px; height: 40px; border-radius: 999px;
+                display: inline-flex; align-items: center; justify-content: center;
+                background: #f0f0f0; color: #1a1a1a; text-decoration: none; flex-shrink: 0;
+                font-size: 18px; line-height: 1; border: 0;
+            }
+            body.ecom-account-panel .ecom-acc-top__title {
+                flex: 1; min-width: 0;
+                font-size: 16px; font-weight: 800; letter-spacing: -0.02em;
+                white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            }
+            body.ecom-account-panel .ecom-acc-hero {
+                padding: 16px 16px 12px;
+                background: linear-gradient(180deg, #fff 0%, #f7f7f7 100%);
+            }
+            body.ecom-account-panel .ecom-acc-hero__name {
+                font-size: 22px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.2;
+            }
+            body.ecom-account-panel .ecom-acc-hero__meta {
+                margin-top: 6px; font-size: 13px; color: #6b6b6b;
+            }
+            body.ecom-account-panel .ecom-acc-list {
+                margin: 0 12px 12px;
+                background: #fff;
+                border: 1px solid #e8e8e8;
+                border-radius: 14px;
+                overflow: hidden;
+            }
+            body.ecom-account-panel .ecom-acc-list a,
+            body.ecom-account-panel .ecom-acc-list button {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                width: 100%;
+                text-align: left;
+                padding: 14px 14px;
+                border: 0;
+                background: #fff;
+                border-bottom: 1px solid #f0f0f0;
+                font-size: 15px;
+                font-weight: 600;
+                color: #1a1a1a;
+                text-decoration: none;
+                cursor: pointer;
+                -webkit-tap-highlight-color: transparent;
+            }
+            body.ecom-account-panel .ecom-acc-list a:last-child,
+            body.ecom-account-panel .ecom-acc-list form:last-child button {
+                border-bottom: 0;
+            }
+            body.ecom-account-panel .ecom-acc-list a:active,
+            body.ecom-account-panel .ecom-acc-list button:active {
+                background: #f5f5f5;
+            }
+            body.ecom-account-panel .ecom-acc-list__icon {
+                width: 34px; height: 34px; border-radius: 10px;
+                display: inline-flex; align-items: center; justify-content: center;
+                background: #fff4ec; color: #e85d04; flex-shrink: 0;
+                font-size: 14px;
+            }
+            body.ecom-account-panel .ecom-acc-list__chev {
+                margin-left: auto; color: #c0c0c0; font-weight: 400; font-size: 18px;
+            }
+            body.ecom-account-panel .ecom-acc-list__danger .ecom-acc-list__icon {
+                background: #fdecec; color: #c0392b;
+            }
+            body.ecom-account-panel .ecom-acc-section {
+                padding: 4px 16px 8px;
+                font-size: 12px;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: .08em;
+                color: #8a8a8a;
+            }
+            body.ecom-account-panel .ecom-acc-card {
+                margin: 0 12px 12px;
+                background: #fff;
+                border: 1px solid #e8e8e8;
+                border-radius: 14px;
+                padding: 14px;
+            }
+            body.ecom-account-panel .ecom-acc-order {
+                display: flex;
+                flex-direction: column;
+                gap: 4px;
+                padding: 12px 14px;
+                border-bottom: 1px solid #f0f0f0;
+            }
+            body.ecom-account-panel .ecom-acc-order:last-child { border-bottom: 0; }
+            body.ecom-account-panel .ecom-acc-order__row {
+                display: flex; justify-content: space-between; gap: 8px; align-items: center;
+            }
+            body.ecom-account-panel .ecom-acc-form .input-w,
+            body.ecom-account-panel .ecom-acc-form input,
+            body.ecom-account-panel .ecom-acc-form select,
+            body.ecom-account-panel .ecom-acc-form textarea {
+                border-radius: 12px !important;
+                min-height: 46px;
+                font-size: 15px;
+            }
+            body.ecom-account-panel .ecom-acc-form .btn-brand,
+            body.ecom-account-panel .ecom-acc-form button[type=submit] {
+                min-height: 48px;
+                border-radius: 12px;
+                width: 100%;
+                font-weight: 700;
+            }
+            body.ecom-account-panel .ecom-acc-table-wrap {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            body.ecom-account-panel .ecom-acc-banner {
+                margin: 0 12px 12px;
+                border-radius: 12px;
+                padding: 12px 14px;
+                font-size: 13px;
+                line-height: 1.4;
+            }
         }
         @media (min-width: 1024px) {
             .app-mobile-only { display: none !important; }
             .app-bottom-nav { display: none !important; }
             .app-sheet { display: none !important; }
+            body.ecom-account-panel .ecom-acc-top { display: none; }
+            body.ecom-account-panel .ecom-acc-mobile-only { display: none !important; }
+            body.ecom-account-panel .ecom-acc-desktop-only { display: block; }
+        }
+        @media (max-width: 1023px) {
+            body.ecom-account-panel .ecom-acc-desktop-only { display: none !important; }
         }
     </style>
     @stack('head')
 </head>
-<body class="antialiased app-mobile">
 @php
     $nav_categories = $nav_categories ?? collect();
     $store = $ecom_settings->store_name ?? 'Japs Wholesale';
@@ -151,6 +422,8 @@
     $isCart = $routeName === 'ecommerce.cart' || $routeName === 'ecommerce.checkout';
     $isAccount = str_starts_with((string) $routeName, 'ecommerce.account')
         || in_array($routeName, ['ecommerce.login', 'ecommerce.register', 'ecommerce.wishlist'], true);
+    $isAccountPanel = str_starts_with((string) $routeName, 'ecommerce.account')
+        || in_array($routeName, ['ecommerce.wishlist', 'ecommerce.quick_order'], true);
 
     $storeLogoUrl = null;
     $storeLogoCandidates = [];
@@ -175,6 +448,7 @@
         }
     }
 @endphp
+<body class="antialiased app-mobile{{ ! empty($isAccountPanel) ? ' ecom-account-panel' : '' }}">
 
 {{-- Desktop promo bars --}}
 <div class="hidden lg:block bg-brand text-white text-[11px] sm:text-xs tracking-wide">
@@ -204,12 +478,7 @@
                        class="flex-1 bg-transparent border-0 outline-none text-[13px] px-2 min-w-0">
             </div>
         </form>
-        <a href="{{ route('ecommerce.cart') }}" class="relative shrink-0 h-10 w-10 inline-flex items-center justify-center rounded-full bg-mist" aria-label="Cart">
-            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 4h12l-1 9H4L3 4z"/><path d="M7 7V4a2 2 0 014 0v3"/></svg>
-            @if(($cart_totals['count'] ?? 0) > 0)
-                <span class="absolute top-0.5 right-0.5 bg-brand text-white text-[10px] font-bold rounded-full min-w-[16px] h-[16px] inline-flex items-center justify-center px-1">{{ $cart_totals['count'] }}</span>
-            @endif
-        </a>
+        {{-- Cart only in bottom nav on mobile (no header cart icon) --}}
     </div>
     @if($nav_categories->count())
         <div class="app-chip-scroll">
@@ -452,6 +721,19 @@
     </div>
 </nav>
 
+{{-- Download app bar last in DOM so it paints above tabs (fixed on mobile + desktop) --}}
+<div id="ecom_pwa_install_bar" class="ecom-pwa-install-bar" hidden aria-hidden="true" role="region" aria-label="Install app">
+    <div class="ecom-pwa-install-bar__inner">
+        <img src="{{ asset('pwa/ecom-icon-192.png') }}" alt="" class="ecom-pwa-install-bar__logo" width="48" height="48">
+        <div class="ecom-pwa-install-bar__text">
+            <strong>Download this app</strong>
+            <span>Install for a faster mobile experience</span>
+        </div>
+        <button type="button" id="ecom_pwa_install_btn" class="ecom-pwa-install-bar__btn">Download</button>
+        <button type="button" id="ecom_pwa_dismiss_btn" class="ecom-pwa-install-bar__close" aria-label="Dismiss">×</button>
+    </div>
+</div>
+
 {{-- Mobile menu sheet --}}
 <div id="catSheet" class="app-sheet app-mobile-only" aria-hidden="true">
     <div class="app-sheet__backdrop" data-close-sheet></div>
@@ -543,5 +825,14 @@ document.querySelectorAll('.product-card-form').forEach(form => {
 });
 </script>
 @stack('scripts')
+<script>
+window.__ECOM_PWA__ = {
+    swUrl: @json(url('/ecom-pwa/sw.js')),
+    manifestUrl: @json(url('/ecom-pwa/manifest.webmanifest')),
+    iosHint: 'On iPhone/iPad: tap Share → Add to Home Screen.',
+    installHint: 'Use your browser menu → Install app / Add to Home Screen.'
+};
+</script>
+<script src="{{ asset('js/ecom-pwa.js') }}?v={{ config('app.asset_version', config('constants.asset_version', '1')) }}" defer></script>
 </body>
 </html>

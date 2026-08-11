@@ -13,9 +13,15 @@
 
 {{-- Hero banner grid --}}
 <section class="max-w-[1400px] mx-auto px-3 sm:px-4 py-3 md:py-6">
+    @php
+        $leftBanner = $side->get(0);
+        $rightBanners = $side->skip(1)->take(2)->values();
+        // Mobile under main: 2 side banners (left + first right, or first two sides)
+        $mobileSideBanners = $side->take(2)->values();
+    @endphp
     <div class="grid lg:grid-cols-12 gap-3 md:gap-4">
+        {{-- Left side (desktop only) --}}
         <div class="lg:col-span-3 hidden lg:block">
-            @php $leftBanner = $side->get(0); @endphp
             @if($leftBanner)
                 <a href="{{ $leftBanner->button_link ?: route('ecommerce.shop') }}" class="block relative rounded-xl overflow-hidden aspect-[3/4] bg-ink group h-full min-h-[420px]">
                     @if($leftBanner->image)
@@ -36,6 +42,7 @@
             @endif
         </div>
 
+        {{-- Main / top banner --}}
         <div class="lg:col-span-6">
             <a href="{{ ($hero->button_link ?? null) ?: route('ecommerce.shop') }}" class="block relative rounded-2xl lg:rounded-xl overflow-hidden min-h-[220px] sm:min-h-[280px] md:min-h-[420px] bg-slatebar text-white group">
                 @if($hero && $hero->image)
@@ -55,10 +62,38 @@
                     <span class="inline-flex self-start btn-brand text-sm">{{ $hero->button_text ?? 'Shop now' }}</span>
                 </div>
             </a>
+
+            {{-- Mobile only: 2 side banners under main --}}
+            <div class="grid grid-cols-2 gap-2.5 mt-3 lg:hidden">
+                @forelse($mobileSideBanners as $banner)
+                    <a href="{{ $banner->button_link ?: route('ecommerce.shop') }}" class="relative rounded-xl overflow-hidden min-h-[120px] group">
+                        @if($banner->image)
+                            <img src="{{ asset('uploads/img/'.$banner->image) }}" alt="" class="absolute inset-0 w-full h-full object-cover">
+                        @endif
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/75 to-transparent"></div>
+                        <div class="absolute bottom-0 p-3 text-white">
+                            <div class="font-bold text-sm leading-tight">{{ $banner->title }}</div>
+                            @if($banner->button_text)
+                                <div class="text-[10px] text-white/75 mt-0.5">{{ $banner->button_text }} →</div>
+                            @endif
+                        </div>
+                    </a>
+                @empty
+                    @foreach($categories->take(2) as $cat)
+                        @php $thumb = isset($covers[$cat->id]) ? asset('uploads/img/'.$covers[$cat->id]) : null; @endphp
+                        <a href="{{ route('ecommerce.category', $cat->id) }}" class="relative rounded-xl overflow-hidden min-h-[120px] bg-mist">
+                            @if($thumb)<img src="{{ $thumb }}" class="absolute inset-0 w-full h-full object-cover" alt="">@endif
+                            <div class="absolute inset-0 bg-black/40"></div>
+                            <div class="absolute bottom-0 p-3 text-white font-bold text-sm">{{ $cat->name }}</div>
+                        </a>
+                    @endforeach
+                @endforelse
+            </div>
         </div>
 
-        <div class="lg:col-span-3 grid grid-cols-2 lg:grid-cols-1 gap-3">
-            @forelse($side->skip(1)->take(2) as $banner)
+        {{-- Right side stack (desktop only) --}}
+        <div class="hidden lg:grid lg:col-span-3 grid-cols-1 gap-3">
+            @forelse($rightBanners as $banner)
                 <a href="{{ $banner->button_link ?: route('ecommerce.shop') }}" class="relative rounded-xl overflow-hidden min-h-[130px] md:min-h-[200px] group">
                     @if($banner->image)
                         <img src="{{ asset('uploads/img/'.$banner->image) }}" alt="" class="absolute inset-0 w-full h-full object-cover transition group-hover:scale-105">

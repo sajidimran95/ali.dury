@@ -21,8 +21,17 @@ use Modules\Ecommerce\Http\Controllers\Front\ContactPageController;
 use Modules\Ecommerce\Http\Controllers\Front\HomeController;
 use Modules\Ecommerce\Http\Controllers\Front\ProductDetailController;
 use Modules\Ecommerce\Http\Controllers\Front\QuickOrderController;
+use Modules\Ecommerce\Http\Controllers\Front\EcomPwaController;
 use Modules\Ecommerce\Http\Controllers\Front\ShopController;
 use Modules\Ecommerce\Http\Controllers\InstallController;
+
+// Ecommerce storefront PWA (public — customers only; not admin panel)
+Route::get('/ecom-pwa/manifest.webmanifest', [EcomPwaController::class, 'manifest'])
+    ->name('ecommerce.pwa.manifest');
+Route::get('/ecom-pwa/sw.js', [EcomPwaController::class, 'serviceWorker'])
+    ->name('ecommerce.pwa.sw');
+Route::get('/ecom-pwa/offline', [EcomPwaController::class, 'offline'])
+    ->name('ecommerce.pwa.offline');
 
 Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 'AdminSidebarMenu', 'CheckUserLogin'])
     ->prefix('ecommerce')
