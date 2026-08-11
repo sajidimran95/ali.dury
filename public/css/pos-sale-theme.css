@@ -2394,11 +2394,14 @@ body.lockscreen.pos-sale-theme .pos-customer-bar {
   max-width: 100% !important;
 }
 
-/* Customer row + date/price row ? same left/right align (create + edit) */
+/* Customer row + date/price row — same left/right edges on all devices */
 body.lockscreen.pos-sale-theme .pos-cart-panel > .row.pos-cart-customer,
 body.lockscreen.pos-sale-theme .pos-cart-panel > .row:has(.pos-customer-bar),
 body.lockscreen.pos-sale-theme .pos-cart-panel > .row.pos-cart-meta {
-  margin: 0 !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
   padding-left: 12px !important;
   padding-right: 12px !important;
   width: 100% !important;
@@ -2418,7 +2421,21 @@ body.lockscreen.pos-sale-theme .pos-cart-panel > .row.pos-cart-customer > [class
   max-width: 100% !important;
   float: none !important;
   padding: 0 !important;
+  margin: 0 !important;
   display: block !important;
+  box-sizing: border-box !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-customer-bar {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+}
+
+body.lockscreen.pos-sale-theme .pos-customer-bar .form-group,
+body.lockscreen.pos-sale-theme .pos-customer-bar.form-group {
+  margin-bottom: 0 !important;
+  width: 100% !important;
 }
 
 body.lockscreen.pos-sale-theme .pos-customer-bar .input-group {
@@ -2432,6 +2449,7 @@ body.lockscreen.pos-sale-theme .pos-customer-bar .input-group {
   width: 100% !important;
   max-width: 100% !important;
   min-height: 42px;
+  box-sizing: border-box !important;
 }
 
 body.lockscreen.pos-sale-theme .pos-customer-bar .input-group-addon {
@@ -3170,48 +3188,62 @@ body.lockscreen.pos-sale-theme #pos_table > thead > tr > th {
   border-color: #2a2a2a !important;
 }
 
-/* Cart meta under customer ? date + retail on one equal line, same width as customer */
+/* Cart meta under customer — date | retail equal 50/50, outer edges match customer */
 body.lockscreen.pos-sale-theme .pos-cart-panel > .row.pos-cart-meta {
-  display: flex !important;
-  flex-wrap: nowrap !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+  grid-auto-flow: row !important;
   align-items: stretch !important;
-  gap: 8px;
+  column-gap: 8px !important;
+  row-gap: 8px !important;
   margin: 0 !important;
   padding-top: 8px !important;
   padding-bottom: 8px !important;
+  padding-left: 12px !important;
+  padding-right: 12px !important;
   border-bottom: 1px solid #2a2a2a;
   width: 100% !important;
   max-width: 100% !important;
   box-sizing: border-box !important;
 }
 
+/* Only date + retail are grid items — hiddens/extras off-grid so 50/50 matches customer edges */
+body.lockscreen.pos-sale-theme .pos-cart-meta > *:not(.pos-cart-meta-date):not(.pos-cart-meta-price) {
+  display: none !important;
+}
+
 body.lockscreen.pos-sale-theme .pos-cart-meta > [class*="col-"] {
   float: none !important;
-  width: auto !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
   padding: 0 !important;
   margin: 0 !important;
+  box-sizing: border-box !important;
 }
 
 body.lockscreen.pos-sale-theme .pos-cart-meta-date,
 body.lockscreen.pos-sale-theme .pos-cart-meta-price {
-  flex: 1 1 0 !important;
-  max-width: none !important;
+  grid-column: auto !important;
+  width: 100% !important;
+  max-width: 100% !important;
   min-width: 0 !important;
-  width: 50% !important;
   display: flex !important;
   flex-direction: column !important;
 }
 
-/* Single meta field ? full width like customer row */
-body.lockscreen.pos-sale-theme .pos-cart-panel > .row.pos-cart-meta:not(:has(.pos-cart-meta-price)) .pos-cart-meta-date,
-body.lockscreen.pos-sale-theme .pos-cart-panel > .row.pos-cart-meta:not(:has(.pos-cart-meta-date)) .pos-cart-meta-price {
-  width: 100% !important;
-  flex: 1 1 100% !important;
+body.lockscreen.pos-sale-theme .pos-cart-meta-date {
+  order: 1;
 }
 
-body.lockscreen.pos-sale-theme .pos-cart-meta-extra,
-body.lockscreen.pos-sale-theme .pos-cart-meta > .col-md-4:not(.pos-cart-meta-date):not(.pos-cart-meta-price) {
-  display: none !important;
+body.lockscreen.pos-sale-theme .pos-cart-meta-price {
+  order: 2;
+}
+
+/* One of date/price only: full width under customer */
+body.lockscreen.pos-sale-theme .pos-cart-panel > .row.pos-cart-meta:not(:has(.pos-cart-meta-price)),
+body.lockscreen.pos-sale-theme .pos-cart-panel > .row.pos-cart-meta:not(:has(.pos-cart-meta-date)) {
+  grid-template-columns: minmax(0, 1fr) !important;
 }
 
 body.lockscreen.pos-sale-theme .pos-cart-meta-label {
@@ -3220,9 +3252,12 @@ body.lockscreen.pos-sale-theme .pos-cart-meta-label {
 
 body.lockscreen.pos-sale-theme .pos-cart-meta .form-group {
   margin: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
   height: 100%;
   display: flex;
   flex-direction: column;
+  box-sizing: border-box !important;
 }
 
 body.lockscreen.pos-sale-theme .pos-cart-meta .input-group {
@@ -3234,6 +3269,7 @@ body.lockscreen.pos-sale-theme .pos-cart-meta .input-group {
   flex-direction: row !important;
   align-items: center !important;
   width: 100% !important;
+  max-width: 100% !important;
   height: 42px !important;
   min-height: 42px !important;
   max-height: 42px !important;
@@ -3244,9 +3280,10 @@ body.lockscreen.pos-sale-theme .pos-cart-meta .input-group-addon {
   background: transparent !important;
   border: 0 !important;
   color: #8a8a8a !important;
-  padding: 0 12px !important;
-  flex: 0 0 42px !important;
-  width: 42px !important;
+  padding: 0 10px !important;
+  flex: 0 0 auto !important;
+  width: auto !important;
+  min-width: 36px !important;
   height: 42px !important;
   line-height: 42px !important;
   text-align: center;
@@ -3255,7 +3292,7 @@ body.lockscreen.pos-sale-theme .pos-cart-meta .input-group-addon {
   justify-content: center !important;
 }
 
-/* Hide help tooltip icon so both fields match */
+/* Hide help tooltip icon so both fields match width */
 body.lockscreen.pos-sale-theme .pos-cart-meta .input-group-addon:has(.hover-q),
 body.lockscreen.pos-sale-theme .pos-cart-meta .input-group-addon:has(.fa-info-circle) {
   display: none !important;
@@ -3273,13 +3310,16 @@ body.lockscreen.pos-sale-theme .pos-cart-meta input[name="price_group_text"] {
   padding: 0 8px 0 0 !important;
   box-shadow: none !important;
   min-width: 0 !important;
+  width: auto !important;
   flex: 1 1 auto !important;
   font-size: 13px !important;
+  box-sizing: border-box !important;
 }
 
 body.lockscreen.pos-sale-theme .pos-cart-meta #price_group + .select2-container,
 body.lockscreen.pos-sale-theme .pos-cart-meta .select2-container {
   width: 100% !important;
+  max-width: 100% !important;
   flex: 1 1 auto !important;
   min-width: 0 !important;
   height: 42px !important;
@@ -3293,6 +3333,8 @@ body.lockscreen.pos-sale-theme .pos-cart-meta .select2-container--default .selec
   border-radius: 0 !important;
   display: flex !important;
   align-items: center !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
 }
 
 body.lockscreen.pos-sale-theme .pos-cart-meta .select2-container--default .select2-selection--single .select2-selection__rendered {
@@ -3301,6 +3343,8 @@ body.lockscreen.pos-sale-theme .pos-cart-meta .select2-container--default .selec
   padding-left: 0 !important;
   padding-right: 24px !important;
   font-size: 13px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
 }
 
 body.lockscreen.pos-sale-theme .pos-cart-meta .select2-container--default .select2-selection--single .select2-selection__arrow {
@@ -3317,6 +3361,15 @@ body.lockscreen.pos-sale-theme .pos-cart-meta .select2-container--default .selec
 body.lockscreen.pos-sale-theme .pos-cart-meta .fa-info-circle,
 body.lockscreen.pos-sale-theme .pos-cart-meta .input-group-addon .fa {
   color: #8a8a8a !important;
+}
+
+/* contact due line stays under customer, same horizontal box */
+body.lockscreen.pos-sale-theme .pos-customer-bar .contact_due_text {
+  display: block;
+  width: 100%;
+  margin: 6px 0 0 0 !important;
+  padding: 0 !important;
+  box-sizing: border-box;
 }
 
 body.lockscreen.pos-sale-theme #pos_table.pos-has-rows thead {
