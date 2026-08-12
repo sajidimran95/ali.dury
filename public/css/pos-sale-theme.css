@@ -3805,18 +3805,31 @@ body.lockscreen.pos-sale-theme #pos_table > tbody > tr.product_row.is-selected {
 
 /* Cart line: name | qty | price | delete */
 body.lockscreen.pos-sale-theme #pos_table > tbody > tr.product_row > td:first-child {
-  width: 42% !important;
+  width: 36% !important;
   padding-left: 8px !important;
 }
 
 body.lockscreen.pos-sale-theme #pos_table > tbody > tr.product_row > td:nth-child(2) {
-  width: 28% !important;
+  width: 22% !important;
   text-align: center !important;
+}
+
+body.lockscreen.pos-sale-theme #pos_table > tbody > tr.product_row > td.pos-line-price-td {
+  width: 16% !important;
+  text-align: right !important;
+  white-space: nowrap;
+  display: table-cell !important;
+  visibility: visible !important;
+}
+
+body.lockscreen.pos-sale-theme #pos_table thead th.pos-th-price {
+  display: table-cell !important;
+  visibility: visible !important;
 }
 
 body.lockscreen.pos-sale-theme #pos_table > tbody > tr.product_row > td.pos_line_total_td,
 body.lockscreen.pos-sale-theme #pos_table > tbody > tr.product_row > td:nth-last-child(2) {
-  width: 18% !important;
+  width: 16% !important;
   text-align: right !important;
   white-space: nowrap;
 }
@@ -3852,6 +3865,88 @@ body.lockscreen.pos-sale-theme #pos_table .tw-text-\[11px\] {
 
 body.lockscreen.pos-sale-theme #pos_table .pos-unit-label {
   display: none !important;
+}
+
+/* Unit price label + editable field on one line */
+body.lockscreen.pos-sale-theme #pos_table .pos-line-price-td {
+  min-width: 140px !important;
+  width: 22% !important;
+  vertical-align: middle !important;
+}
+body.lockscreen.pos-sale-theme #pos_table .pos-line-price-inline {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 8px !important;
+  width: 100%;
+  white-space: nowrap;
+}
+body.lockscreen.pos-sale-theme #pos_table .pos-line-price-inline__label {
+  display: inline-block !important;
+  color: rgba(255, 255, 255, 0.7) !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  line-height: 1.2 !important;
+  flex: 0 0 auto;
+}
+body.lockscreen.pos-sale-theme #pos_table .pos-line-price-inline .pos_unit_price_inc_tax {
+  display: inline-block !important;
+  width: 88px !important;
+  min-width: 72px !important;
+  max-width: 110px !important;
+  flex: 0 0 auto;
+  background: #2a2a2a !important;
+  border: 1px solid #444 !important;
+  border-radius: 4px !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  text-align: right !important;
+  font-weight: 700 !important;
+  font-size: 13px !important;
+  padding: 4px 8px !important;
+  height: 32px !important;
+  box-shadow: none !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+body.lockscreen.pos-sale-theme #pos_table .pos-line-price-inline .pos_unit_price_inc_tax[readonly] {
+  background: #252525 !important;
+  cursor: text;
+}
+
+/* Edit-price modal: full “Unit Price” label + field on one line */
+body.lockscreen.pos-sale-theme .row_edit_product_price_model .pos-unit-price-inline-row {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 12px !important;
+  width: 100% !important;
+}
+body.lockscreen.pos-sale-theme .row_edit_product_price_model .pos-unit-price-inline-row__label {
+  display: inline-block !important;
+  flex: 0 0 auto !important;
+  min-width: 88px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  color: #f2f2f2 !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  white-space: nowrap !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+body.lockscreen.pos-sale-theme .row_edit_product_price_model .pos-unit-price-inline-row .pos_unit_price,
+body.lockscreen.pos-sale-theme .row_edit_product_price_model .pos-unit-price-inline-row .form-control {
+  flex: 1 1 auto !important;
+  width: auto !important;
+  min-width: 0 !important;
+  background: #222 !important;
+  border: 1px solid #444 !important;
+  color: #fff !important;
+  -webkit-text-fill-color: #fff !important;
 }
 
 body.lockscreen.pos-sale-theme #pos_table .pos_remove_row {

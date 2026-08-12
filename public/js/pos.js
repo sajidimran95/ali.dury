@@ -1119,6 +1119,7 @@ $(document).ready(function() {
 
         __write_number(tr.find('input.pos_line_total'), line_total, false);
         tr.find('span.pos_line_total_text').text(__currency_trans_from_en(line_total, true));
+        tr.find('span.pos_line_unit_price_text').text(__currency_trans_from_en(unit_price_inc_tax, true));
 
         //Change modifier quantity
         tr.find('.modifier_qty_text').each( function(){
@@ -1156,6 +1157,7 @@ $(document).ready(function() {
         __write_number(tr.find('input.pos_unit_price_inc_tax'), unit_price_inc_tax);
         __write_number(tr.find('input.pos_line_total'), line_total);
         tr.find('span.pos_line_total_text').text(__currency_trans_from_en(line_total, true));
+        tr.find('span.pos_line_unit_price_text').text(__currency_trans_from_en(unit_price_inc_tax, true));
         pos_each_row(tr);
         pos_total_row();
         round_row_to_iraqi_dinnar(tr);
@@ -1202,6 +1204,7 @@ $(document).ready(function() {
         __write_number(pos_row_field(tr, 'input.pos_unit_price'), unit_price);
         __write_number(tr.find('input.pos_line_total'), line_total, false);
         tr.find('span.pos_line_total_text').text(__currency_trans_from_en(line_total, true));
+        tr.find('span.pos_line_unit_price_text').text(__currency_trans_from_en(unit_price_inc_tax, true));
 
         pos_each_row(tr);
         pos_total_row();
@@ -1294,6 +1297,7 @@ $(document).ready(function() {
             __write_number(tr.find('input.pos_unit_price_inc_tax'), unit_price_inc_tax);
             __write_number(tr.find('input.pos_line_total'), line_total, false);
             tr.find('span.pos_line_total_text').text(__currency_trans_from_en(line_total, true));
+            tr.find('span.pos_line_unit_price_text').text(__currency_trans_from_en(unit_price_inc_tax, true));
             pos_each_row(tr);
             pos_total_row();
             round_row_to_iraqi_dinnar(tr);
@@ -4176,6 +4180,7 @@ function pos_each_row(row_obj) {
     var line_total = qty * unit_price_inc_tax;
     __write_number(row_obj.find('input.pos_line_total'), line_total);
     row_obj.find('span.pos_line_total_text').text(__currency_trans_from_en(line_total, true));
+    row_obj.find('span.pos_line_unit_price_text').text(__currency_trans_from_en(unit_price_inc_tax, true));
 
     __write_number(pos_row_field(row_obj, 'input.item_tax'), unit_price_inc_tax - discounted_unit_price);
 }
@@ -5279,6 +5284,7 @@ function pos_refresh_line_discounts() {
                     __write_number($row.find('input.pos_unit_price_inc_tax'), unit_price_inc_tax);
                     __write_number($row.find('input.pos_line_total'), line_total, false);
                     $row.find('span.pos_line_total_text').text(__currency_trans_from_en(line_total, true));
+                    $row.find('span.pos_line_unit_price_text').text(__currency_trans_from_en(unit_price_inc_tax, true));
                     if (typeof pos_each_row === 'function') {
                         pos_each_row($row);
                     }
