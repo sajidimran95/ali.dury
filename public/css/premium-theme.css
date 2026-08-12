@@ -1,5 +1,5 @@
 /**
- * Japstech POS ? Premium SaaS theme
+ * Japs POS ? Premium SaaS theme
  * Final visual layer: light Salezy-style navigation, white surfaces, soft canvas.
  * Scoped to body.zoho-theme / .japs-auth-body so vendor/legacy CSS stays intact beneath.
  */
@@ -4437,7 +4437,7 @@ body.zoho-theme:not(.pos-sale-theme) #purchase_entry_table .form-control {
     }
 }
 
-/* Product create/edit image upload — full image fill + aligned buttons */
+/* Product create/edit image upload ï¿½ full image fill + aligned buttons */
 body.zoho-theme:not(.pos-sale-theme) .product-image-upload .file-input {
 	width: 100% !important;
 	max-width: 100%;

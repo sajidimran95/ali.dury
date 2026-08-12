@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Modules\AiAssistance\Http\Controllers\ChatController;
 use Modules\AiAssistance\Http\Controllers\DashboardController;
 use Modules\AiAssistance\Http\Controllers\InstallController;
+use Modules\AiAssistance\Http\Controllers\InvoiceExtractionController;
 use Modules\AiAssistance\Http\Controllers\SettingsController;
 
 Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 'AdminSidebarMenu', 'CheckUserLogin'])
@@ -20,4 +21,7 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
 
         Route::get('settings', [SettingsController::class, 'index'])->name('settings');
         Route::post('settings', [SettingsController::class, 'update'])->name('settings.update');
+
+        Route::post('invoice/extract', [InvoiceExtractionController::class, 'extract'])->name('invoice.extract');
+        Route::get('invoice/result/{token}', [InvoiceExtractionController::class, 'result'])->name('invoice.result');
     });

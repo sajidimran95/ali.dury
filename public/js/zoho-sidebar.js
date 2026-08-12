@@ -1,5 +1,5 @@
 /**
- * Japstech POS — Zoho-style sidebar collapse (mini + flyout)
+ * Japs POS — Zoho-style sidebar collapse (mini + flyout)
  */
 (function (window, document) {
     'use strict';

@@ -15,6 +15,11 @@
             </h1>
             <div class="product-list-header__actions">
                 @can('purchase.create')
+                    <a class="product-list-header__btn"
+                        href="{{ action([\App\Http\Controllers\PurchaseController::class, 'create']) }}?open_ai_invoice=1">
+                        <i class="fa fa-magic" aria-hidden="true"></i>
+                        @lang('aiassistance::lang.upload_invoice')
+                    </a>
                     <a class="product-list-header__btn product-list-header__btn--primary"
                         href="{{ action([\App\Http\Controllers\PurchaseController::class, 'create']) }}">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"

@@ -51,7 +51,7 @@
 @endsection
 
 @section('auth-subtitle')
-    @lang('lang_v1.login_to_your') {{ config('app.name', 'Japstech POS') }}
+    @lang('lang_v1.login_to_your') {{ config('app.name', 'Japs POS') }}
 @endsection
 
 @section('auth-content')

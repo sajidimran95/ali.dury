@@ -10,6 +10,11 @@
 <section class="content-header">
     <div class="tw-flex tw-justify-between tw-items-center">
         <h1 class="tw-text-xl md:tw-text-3xl tw-font-bold tw-text-black use_ai_btn">@lang('purchase.add_purchase') <i class="fa fa-keyboard hover-q text-muted" aria-hidden="true" data-container="body" data-toggle="popover" data-placement="bottom" data-content="@include('purchase.partials.keyboard_shortcuts_details')" data-html="true" data-trigger="hover" data-original-title="" title=""></i></h1>
+        @can('purchase.create')
+            <button type="button" class="tw-dw-btn tw-dw-btn-outline tw-dw-btn-primary tw-dw-btn-sm open_ai_invoice_modal">
+                <i class="fa fa-magic"></i> @lang('aiassistance::lang.upload_invoice')
+            </button>
+        @endcan
     </div>
 </section>
 
@@ -583,12 +588,89 @@
 </div>
 
 @include('purchase.partials.import_purchase_products_modal')
+
+<div class="modal fade" tabindex="-1" role="dialog" id="ai_invoice_modal">
+	<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close no-print" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+				<h4 class="modal-title"><i class="fa fa-magic"></i> @lang('aiassistance::lang.upload_invoice')</h4>
+			</div>
+			<div class="modal-body">
+				<p class="text-muted">@lang('aiassistance::lang.upload_invoice_desc')</p>
+				<div class="row">
+					<div class="col-md-6">
+						<div class="form-group">
+							<label>@lang('aiassistance::lang.invoice_choose_file')</label>
+							<input type="file" id="ai_invoice_file" accept="image/jpeg,image/jpg,image/png,image/webp,application/pdf,.pdf" class="form-control">
+							<p class="help-block">@lang('aiassistance::lang.upload_invoice_help')</p>
+						</div>
+						<img id="ai_invoice_preview_img" src="" style="display:none;max-width:100%;border:1px solid #ddd;border-radius:4px;">
+						<div id="ai_invoice_preview_pdf" style="display:none;padding:10px;border:1px solid #ddd;border-radius:4px;">
+							<i class="fa fa-file-pdf-o"></i> <span id="ai_invoice_preview_pdf_name"></span>
+						</div>
+					</div>
+					<div class="col-md-6">
+						<button type="button" id="ai_invoice_extract_btn" class="tw-dw-btn tw-dw-btn-primary tw-text-white" disabled>
+							<i class="fa fa-magic"></i> @lang('aiassistance::lang.invoice_extract_btn')
+						</button>
+						<span id="ai_invoice_status" class="text-muted" style="margin-left:8px;"></span>
+
+						<div id="ai_invoice_header_block" style="display:none;margin-top:15px;">
+							<table class="table table-condensed">
+								<tr><th>@lang('aiassistance::lang.invoice_detected_supplier')</th><td id="ai_invoice_header_supplier"></td></tr>
+								<tr><th>@lang('aiassistance::lang.invoice_detected_ref')</th><td id="ai_invoice_header_ref"></td></tr>
+								<tr><th>@lang('aiassistance::lang.invoice_detected_date')</th><td id="ai_invoice_header_date"></td></tr>
+							</table>
+						</div>
+					</div>
+				</div>
+				<div class="row" id="ai_invoice_review_table" style="display:none;margin-top:10px;">
+					<div class="col-md-12">
+						<div class="table-responsive">
+							<table class="table table-bordered table-condensed">
+								<thead>
+									<tr>
+										<th>@lang('product.product_name')</th>
+										<th style="width:110px;">@lang('purchase.purchase_quantity')</th>
+										<th style="width:130px;">@lang('lang_v1.unit_cost_before_discount')</th>
+										<th>@lang('aiassistance::lang.invoice_line_matched')</th>
+									</tr>
+								</thead>
+								<tbody id="ai_invoice_review_body"></tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" id="ai_invoice_insert_btn" class="tw-dw-btn tw-dw-btn-success tw-text-white" style="display:none;" disabled>
+					<i class="fa fa-check"></i> @lang('aiassistance::lang.invoice_insert_btn')
+				</button>
+				<button type="button" class="tw-dw-btn tw-dw-btn-neutral tw-text-white no-print" data-dismiss="modal">@lang('messages.close')</button>
+			</div>
+		</div>
+	</div>
+</div>
 <!-- /.content -->
 @endsection
 
 @section('javascript')
 	<script src="{{ asset('js/purchase.js?v=' . $asset_v) }}"></script>
 	<script src="{{ asset('js/product.js?v=' . $asset_v) }}"></script>
+	@can('purchase.create')
+		<script>
+			window.AI_INVOICE_EXTRACT_URL = "{{ route('ai.invoice.extract') }}";
+			window.AI_INVOICE_RESULT_URL_BASE = "{{ url('/ai/invoice/result') }}";
+			window.AI_INVOICE_LANG = {
+				invoice_reading: "{{ __('aiassistance::lang.invoice_reading') }}",
+				invoice_not_detected: "{{ __('aiassistance::lang.invoice_not_detected') }}",
+				invoice_needs_review: "{{ __('aiassistance::lang.invoice_needs_review') }}",
+				invoice_line_no_match: "{{ __('aiassistance::lang.invoice_line_no_match') }}",
+			};
+		</script>
+		<script src="{{ asset('js/ai_invoice.js?v=' . $asset_v) }}"></script>
+	@endcan
 	<script type="text/javascript">
 		$(document).ready( function(){
       		__page_leave_confirmation('#add_purchase_form');

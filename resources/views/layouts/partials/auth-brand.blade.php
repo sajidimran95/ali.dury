@@ -1,7 +1,7 @@
 <aside class="japs-auth-brand">
     <div class="japs-auth-brand-inner">
-        <h2>{{ $brand_title ?? config('app.name', 'Japstech POS') }}</h2>
-        <p>{{ $brand_subtitle ?? __('lang_v1.login_to_your') . ' ' . config('app.name', 'Japstech POS') }}</p>
+        <h2>{{ $brand_title ?? config('app.name', 'Japs POS') }}</h2>
+        <p>{{ $brand_subtitle ?? __('lang_v1.login_to_your') . ' ' . config('app.name', 'Japs POS') }}</p>
         @if (!empty($brand_items))
             <ul class="japs-auth-brand-features">
                 @foreach ($brand_items as $item)

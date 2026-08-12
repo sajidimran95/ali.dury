@@ -43,6 +43,12 @@
 
     <form id="ai-chat-form" class="ai-chat__footer">
         @csrf
+        @can('purchase.create')
+            <label class="ai-attach-btn" title="@lang('aiassistance::lang.invoice_attach_chat')" style="cursor:pointer;display:inline-flex;align-items:center;padding:0 6px;">
+                <input type="file" id="ai-invoice-attach" accept="image/jpeg,image/jpg,image/png,image/webp,application/pdf,.pdf" style="display:none;">
+                <i class="fa fa-paperclip"></i>
+            </label>
+        @endcan
         <input type="text" id="ai-chat-input" placeholder="@lang('aiassistance::lang.chat_placeholder')" autocomplete="off">
         <button type="submit" class="ai-send" title="@lang('aiassistance::lang.send')"><i class="fa fa-paper-plane"></i></button>
         <a href="{{ route('ai.dashboard') }}" class="ai-panel__link" title="@lang('aiassistance::lang.open_full')"><i class="fa fa-external-link"></i></a>

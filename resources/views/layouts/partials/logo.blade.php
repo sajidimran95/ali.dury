@@ -10,6 +10,6 @@
 			<img src="{{ $logo_src }}" class="img-rounded" alt="Logo" width="150" style="margin-bottom: 30px;">
 		</div>
 	@else
-    	<h1 class="text-center page-header">{{ config('app.name', 'Japstech POS') }}</h1>
+    	<h1 class="text-center page-header">{{ config('app.name', 'Japs POS') }}</h1>
     @endif
 </div>

@@ -138,8 +138,75 @@
             });
     };
 
+    function appendBotHtml($box, html) {
+        var $row = $('<div class="ai-msg bot"><div class="ai-avatar" title="JapsAI">' + JAPSAI_ICON + '</div><div class="ai-bubble"></div></div>');
+        $row.find('.ai-bubble').html(html);
+        $box.append($row);
+    }
+
+    window.sendAiInvoiceFile = function (file) {
+        if (!file || sending) return;
+        var $box = $chatBox();
+        if (!$box.length) return;
+
+        appendUser($box, '📎 ' + (file.name || 'invoice image'));
+        $box.scrollTop($box[0].scrollHeight);
+
+        var $pending = $('<div class="ai-pending" style="margin:0 0 10px 38px;color:#6b7280;">{{ __('aiassistance::lang.invoice_reading') }}</div>');
+        $box.append($pending);
+        setBusy(true);
+
+        var fd = new FormData();
+        fd.append('invoice_file', file);
+        fd.append('_token', '{{ csrf_token() }}');
+
+        $.ajax({
+            url: '{{ route('ai.invoice.extract') }}',
+            method: 'POST',
+            data: fd,
+            processData: false,
+            contentType: false,
+            timeout: 120000,
+        })
+            .done(function (res) {
+                if (res && res.success) {
+                    var d = res.data || {};
+                    var count = (d.lines || []).length;
+                    var summary = 'Read ' + count + ' item(s)'
+                        + (d.supplier_name ? ' from ' + $('<div>').text(d.supplier_name).html() : '')
+                        + (d.total ? ', total ' + d.total : '') + '.';
+                    var link = '{{ url('/purchases/create') }}?ai_invoice_token=' + encodeURIComponent(res.token);
+                    appendBotHtml($box, summary + '<br><a href="' + link + '" class="tw-dw-btn tw-dw-btn-sm tw-dw-btn-primary tw-text-white" style="margin-top:6px;display:inline-block;"><i class="fa fa-check"></i> {{ __('aiassistance::lang.invoice_review_link') }}</a>');
+                } else {
+                    toastr.error((res && res.msg) || '{{ __('aiassistance::lang.chat_error') }}');
+                    appendBot($box, (res && res.msg) || '{{ __('aiassistance::lang.chat_error') }}');
+                }
+            })
+            .fail(function (xhr, status) {
+                var err = (xhr.responseJSON && xhr.responseJSON.msg)
+                    || (status === 'timeout' ? 'Request timed out. Try a smaller image.' : '{{ __('aiassistance::lang.chat_error') }}');
+                toastr.error(err);
+                appendBot($box, err);
+            })
+            .always(function () {
+                $pending.remove();
+                setBusy(false);
+                if ($box.length && $box[0]) {
+                    $box.scrollTop($box[0].scrollHeight);
+                }
+            });
+    };
+
     // Delegated events — work even if modal HTML is replaced many times
     $(document)
+        .off('change.ai', '#ai-invoice-attach')
+        .on('change.ai', '#ai-invoice-attach', function () {
+            var file = this.files && this.files[0];
+            if (file) {
+                window.sendAiInvoiceFile(file);
+            }
+            $(this).val('');
+        })
         .off('submit.ai', '#ai-chat-form')
         .on('submit.ai', '#ai-chat-form', function (e) {
             e.preventDefault();
