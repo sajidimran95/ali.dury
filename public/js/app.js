@@ -2278,7 +2278,7 @@ $('.quick_add_product_modal').on('shown.bs.modal', function() {
 
 
 /**
- * Discount modal: select2, icheck, and date calendar (original UltimatePOS pattern)
+ * Discount modal: select2, icheck, and date calendar
  */
 $(document).on('shown.bs.modal', '.discount_modal', function () {
     var $modal = $(this);

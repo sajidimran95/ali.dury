@@ -51,11 +51,6 @@ class PosReportDataService
             $q->where('status', $status);
         }
 
-        // Expense / returns sometimes have status final or null — don't over-filter
-        if ($type === 'expense') {
-            // most Ultimate POS expenses are type=expense
-        }
-
         $row = $q->selectRaw('COUNT(*) as cnt, COALESCE(SUM(final_total), 0) as total')->first();
 
         return [
