@@ -1639,6 +1639,12 @@ class ProductController extends Controller
 
         $product_name = ! empty(request()->input('product_name')) ? request()->input('product_name') : '';
 
+        // Carried over from JapsAI invoice extraction when an unmatched line item is
+        // sent to "Add new product" — pre-fills the barcode/SKU printed on the invoice
+        // and its unit price so the user isn't retyping what the invoice already shows.
+        $product_sku = ! empty(request()->input('sku')) ? request()->input('sku') : null;
+        $product_purchase_price = is_numeric(request()->input('purchase_price')) ? request()->input('purchase_price') : null;
+
         $product_for = ! empty(request()->input('product_for')) ? request()->input('product_for') : null;
 
         $business_id = request()->session()->get('user.business_id');
@@ -1668,7 +1674,7 @@ class ProductController extends Controller
         $warranties = Warranty::forDropdown($business_id);
 
         return view('product.partials.quick_add_product')
-                ->with(compact('categories', 'brands', 'units', 'taxes', 'barcode_types', 'default_profit_percent', 'tax_attributes', 'product_name', 'locations', 'product_for', 'enable_expiry', 'enable_lot', 'module_form_parts', 'business_locations', 'common_settings', 'warranties'));
+                ->with(compact('categories', 'brands', 'units', 'taxes', 'barcode_types', 'default_profit_percent', 'tax_attributes', 'product_name', 'product_sku', 'product_purchase_price', 'locations', 'product_for', 'enable_expiry', 'enable_lot', 'module_form_parts', 'business_locations', 'common_settings', 'warranties'));
     }
 
     /**

@@ -20,7 +20,7 @@
         <div class="col-sm-4">
           <div class="form-group">
             {!! Form::label('sku', __('product.sku') . ':') !!} @show_tooltip(__('tooltip.sku'))
-            {!! Form::text('sku', null, ['class' => 'form-control',
+            {!! Form::text('sku', $product_sku ?? null, ['class' => 'form-control',
               'placeholder' => __('product.sku')]); !!}
           </div>
         </div>
@@ -235,7 +235,7 @@
       </div>
       <div class="row">
         <div class="form-group col-sm-12">
-          @include('product.partials.single_product_form_part', ['profit_percent' => $default_profit_percent, 'quick_add' => true ])
+          @include('product.partials.single_product_form_part', ['profit_percent' => $default_profit_percent, 'quick_add' => true, 'purchase_price' => $product_purchase_price ?? null ])
         </div>
       </div>
       @if(!empty($product_for) && $product_for == 'pos')

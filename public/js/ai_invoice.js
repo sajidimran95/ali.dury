@@ -265,11 +265,27 @@
         state.pendingQuickAddIdx = idx;
         var line = state.lines[idx];
         var container = $('.quick_add_product_modal');
+
+        // Carry the invoice's own SKU/barcode + unit price into the quick-add form so
+        // the new product isn't retyped from scratch — user still reviews before saving.
+        var qs = 'product_name=' + encodeURIComponent(line.name || '');
+        if (line.sku) {
+            qs += '&sku=' + encodeURIComponent(line.sku);
+        }
+        if (line.unit_price > 0) {
+            qs += '&purchase_price=' + encodeURIComponent(line.unit_price);
+        }
+
         $.ajax({
-            url: '/products/quick_add?product_name=' + encodeURIComponent(line.name || ''),
+            url: '/products/quick_add?' + qs,
             dataType: 'html',
             success: function (result) {
                 $(container).html(result).modal('show');
+                if (line.unit_price > 0) {
+                    // Field is pre-filled server-side; trigger the existing product.js
+                    // listener so profit_percent -> selling price recalculates too.
+                    $('#single_dpp').trigger('change');
+                }
             },
         });
     });

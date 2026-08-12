@@ -3383,6 +3383,47 @@ body.zoho-theme:not(.pos-sale-theme) #global_contact_modal .modal-body {
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
     min-height: 0 !important;
+    /* See #ai_invoice_modal's overscroll-behavior comment below — same nested-modal
+       exposure (e.g. quick-add-product opening on top of this one). */
+    overscroll-behavior: contain;
+}
+
+/* JapsAI invoice-extraction modal: header/footer stay fixed, body scrolls
+   once the extracted line-items table grows past the viewport height. */
+body.zoho-theme:not(.pos-sale-theme) #ai_invoice_modal .modal-dialog {
+    margin: 20px auto !important;
+    max-height: calc(100vh - 40px);
+    height: calc(100vh - 40px);
+    display: flex;
+    flex-direction: column;
+}
+
+body.zoho-theme:not(.pos-sale-theme) #ai_invoice_modal .modal-content {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    height: 100%;
+    max-height: 100%;
+    overflow: hidden !important;
+}
+
+body.zoho-theme:not(.pos-sale-theme) #ai_invoice_modal .modal-header,
+body.zoho-theme:not(.pos-sale-theme) #ai_invoice_modal .modal-footer {
+    flex: 0 0 auto !important;
+}
+
+body.zoho-theme:not(.pos-sale-theme) #ai_invoice_modal .modal-body {
+    flex: 1 1 auto !important;
+    overflow-y: auto !important;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    min-height: 0 !important;
+    /* Stacking the "Add new product" modal on top and closing it disturbs Bootstrap 3's
+       body-level scroll-lock bookkeeping (it's not designed for nested modals). Without
+       this, the browser can hand wheel/trackpad scroll input to the page behind the modal
+       instead of this scroll box once that bookkeeping is off — the modal then looks stuck
+       even though it's still technically overflow:auto. Keep the scroll self-contained. */
+    overscroll-behavior: contain;
 }
 
 /* Customer list: hide raw amounts until currency JS converts */

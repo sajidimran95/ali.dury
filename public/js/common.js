@@ -1,4 +1,50 @@
 //This file contains all common functionality for the application
+
+// Bootstrap 3 wasn't built for stacked/nested modals: closing ANY modal unconditionally
+// tears down state that's shared across ALL modal instances, even ones still open behind
+// it — the `modal-open` class on <body>, the document-level focus-trap handler, and the
+// window resize handler that keeps a modal's layout in sync. None of that gets restored
+// for the modal left open (e.g. JapsAI's invoice-extraction modal, after its "Add new
+// product" popup closes), which is what breaks its scrolling. Put it back.
+$(document).on('hidden.bs.modal', '.modal', function () {
+    var $stillOpen = $('.modal.in');
+    if (!$stillOpen.length) {
+        return;
+    }
+    $('body').addClass('modal-open');
+    $stillOpen.each(function () {
+        var modal = $(this).data('bs.modal');
+        if (modal && modal.isShown) {
+            if (typeof modal.enforceFocus === 'function') {
+                modal.enforceFocus();
+            }
+            if (typeof modal.resize === 'function') {
+                modal.resize();
+            }
+        }
+    });
+});
+
+// Stacked modals (e.g. JapsAI's invoice modal with "Add new product" opened on top of
+// it for an unmatched line) need the later-opened one to paint above the earlier one.
+// The theme CSS pins every `.modal` to the same `z-index: 1100 !important`, so with two
+// modals tied on z-index the browser falls back to DOM/markup order — and in this app's
+// markup the invoice modal happens to be declared AFTER the quick-add-product modal, so
+// it was winning that tie-break even while a modal opened *after* it was supposed to be
+// on top. That's what made the product-add modal (and scrolling into it) unusable: input
+// was landing on the invoice modal sitting above it. Assign each modal a z-index based on
+// how many modals are already open when it shows, so open order — not markup order —
+// decides the stack; `setProperty(..., 'important')` is required to outrank the theme's
+// `!important` rule.
+$(document).on('show.bs.modal', '.modal', function () {
+    var depth = $('.modal.in').length;
+    this.style.setProperty('z-index', 1100 + depth * 20, 'important');
+});
+$(document).on('shown.bs.modal', '.modal', function () {
+    var zIndex = parseInt(this.style.zIndex, 10) || 1100;
+    $('.modal-backdrop').last().css('z-index', zIndex - 1);
+});
+
 $(document).on('submit', 'form', function (e) {
     if (!__is_online()) {
         e.preventDefault();
