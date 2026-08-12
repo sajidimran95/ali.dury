@@ -28,6 +28,10 @@
                     </a>
                 @endif
                 @can('product.create')
+                    <button type="button" class="product-list-header__btn product-list-header__btn--secondary open_ai_product_scan_modal">
+                        <i class="fa fa-magic" aria-hidden="true"></i>
+                        @lang('aiassistance::lang.scan_products_btn')
+                    </button>
                     <a class="product-list-header__btn product-list-header__btn--primary"
                         href="{{ action([\App\Http\Controllers\ProductController::class, 'create']) }}">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
@@ -206,6 +210,9 @@
         <div class="modal fade product_modal" tabindex="-1" role="dialog" aria-labelledby="gridSystemModalLabel">
         </div>
 
+        <div class="modal fade quick_add_product_modal" tabindex="-1" role="dialog" aria-labelledby="modalTitle">
+        </div>
+
         <div class="modal fade" id="view_product_modal" tabindex="-1" role="dialog"
             aria-labelledby="gridSystemModalLabel">
         </div>
@@ -219,6 +226,60 @@
         @endif
         @include('product.partials.edit_product_location_modal')
 
+        @can('product.create')
+            <div class="modal fade" tabindex="-1" role="dialog" id="ai_product_scan_modal">
+                <div class="modal-dialog modal-lg" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close no-print" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                            <h4 class="modal-title"><i class="fa fa-magic"></i> @lang('aiassistance::lang.scan_products_title')</h4>
+                        </div>
+                        <div class="modal-body">
+                            <p class="text-muted">@lang('aiassistance::lang.scan_products_desc')</p>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>@lang('aiassistance::lang.scan_products_choose_file')</label>
+                                        <input type="file" id="ai_scan_file" accept="image/jpeg,image/jpg,image/png,image/webp,application/pdf,.pdf" class="form-control">
+                                        <p class="help-block">@lang('aiassistance::lang.upload_invoice_help')</p>
+                                    </div>
+                                    <img id="ai_scan_preview_img" src="" style="display:none;max-width:100%;border:1px solid #ddd;border-radius:4px;">
+                                    <div id="ai_scan_preview_pdf" style="display:none;padding:10px;border:1px solid #ddd;border-radius:4px;">
+                                        <i class="fa fa-file-pdf-o"></i> <span id="ai_scan_preview_pdf_name"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <button type="button" id="ai_scan_extract_btn" class="tw-dw-btn tw-dw-btn-primary tw-text-white" disabled>
+                                        <i class="fa fa-magic"></i> @lang('aiassistance::lang.scan_products_extract_btn')
+                                    </button>
+                                    <span id="ai_scan_status" class="text-muted" style="margin-left:8px;"></span>
+                                </div>
+                            </div>
+                            <div class="row" id="ai_scan_review_table" style="display:none;margin-top:10px;">
+                                <div class="col-md-12">
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered table-condensed">
+                                            <thead>
+                                                <tr>
+                                                    <th>@lang('product.product_name')</th>
+                                                    <th style="width:130px;">@lang('lang_v1.unit_cost_before_discount')</th>
+                                                    <th>@lang('sale.status')</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="ai_scan_review_body"></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="tw-dw-btn tw-dw-btn-neutral tw-text-white no-print" data-dismiss="modal">@lang('aiassistance::lang.scan_products_done_btn')</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endcan
+
     </section>
     <!-- /.content -->
 
@@ -227,6 +288,19 @@
 @section('javascript')
     <script src="{{ asset('js/product.js?v=' . $asset_v) }}"></script>
     <script src="{{ asset('js/opening_stock.js?v=' . $asset_v) }}"></script>
+    @can('product.create')
+        <script>
+            window.AI_PRODUCT_SCAN_EXTRACT_URL = "{{ route('ai.invoice.extract') }}";
+            window.AI_PRODUCT_SCAN_LANG = {
+                scan_products_reading: "{{ __('aiassistance::lang.scan_products_reading') }}",
+                scan_products_no_lines: "{{ __('aiassistance::lang.scan_products_no_lines') }}",
+                scan_product_exists: "{{ __('aiassistance::lang.scan_product_exists') }}",
+                scan_product_added: "{{ __('aiassistance::lang.scan_product_added') }}",
+                invoice_not_detected: "{{ __('aiassistance::lang.invoice_not_detected') }}",
+            };
+        </script>
+        <script src="{{ asset('js/ai_product_scan.js?v=' . $asset_v) }}"></script>
+    @endcan
     <script type="text/javascript">
         $(document).ready(function() {
             if (typeof __currency_convert_recursively === 'function' && $('#product_list_metrics').length) {

@@ -21,7 +21,9 @@ class InvoiceExtractionController extends Controller
      */
     public function extract(Request $request, TransactionUtil $transactionUtil)
     {
-        if (! auth()->user()->can('purchase.create')) {
+        // Used by both the Add Purchase invoice modal and the standalone Products page
+        // "Scan with JapsAI" modal — either permission is enough to read a document.
+        if (! auth()->user()->can('purchase.create') && ! auth()->user()->can('product.create')) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -73,7 +75,9 @@ class InvoiceExtractionController extends Controller
      */
     public function result(Request $request, string $token)
     {
-        if (! auth()->user()->can('purchase.create')) {
+        // Used by both the Add Purchase invoice modal and the standalone Products page
+        // "Scan with JapsAI" modal — either permission is enough to read a document.
+        if (! auth()->user()->can('purchase.create') && ! auth()->user()->can('product.create')) {
             abort(403, 'Unauthorized action.');
         }
 

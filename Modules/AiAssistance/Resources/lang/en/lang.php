@@ -93,4 +93,16 @@ return [
     'invoice_line_no_match' => 'No match — search or add product',
     'invoice_attach_chat' => 'Attach invoice',
     'invoice_review_link' => 'Review & create purchase',
+
+    // Standalone "scan to add products" (Products page) — no purchase involved.
+    'scan_products_btn' => 'Scan with JapsAI',
+    'scan_products_title' => 'Scan Document (JapsAI)',
+    'scan_products_desc' => 'Upload a supplier invoice, price list, or catalog photo/PDF. JapsAI reads the items and tells you which ones aren\'t in your product list yet, so you can add them in a couple of clicks.',
+    'scan_products_choose_file' => 'Choose file to scan',
+    'scan_products_extract_btn' => 'Scan with JapsAI',
+    'scan_products_reading' => 'JapsAI is reading the document...',
+    'scan_products_no_lines' => 'No items detected in this document.',
+    'scan_product_exists' => 'Already in your catalog',
+    'scan_product_added' => 'Added',
+    'scan_products_done_btn' => 'Done',
 ];

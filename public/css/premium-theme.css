@@ -3388,9 +3388,11 @@ body.zoho-theme:not(.pos-sale-theme) #global_contact_modal .modal-body {
     overscroll-behavior: contain;
 }
 
-/* JapsAI invoice-extraction modal: header/footer stay fixed, body scrolls
-   once the extracted line-items table grows past the viewport height. */
-body.zoho-theme:not(.pos-sale-theme) #ai_invoice_modal .modal-dialog {
+/* JapsAI invoice-extraction modal (Add Purchase) and the standalone product-scan modal
+   (Products page): header/footer stay fixed, body scrolls once the detected line-items
+   table grows past the viewport height. */
+body.zoho-theme:not(.pos-sale-theme) #ai_invoice_modal .modal-dialog,
+body.zoho-theme:not(.pos-sale-theme) #ai_product_scan_modal .modal-dialog {
     margin: 20px auto !important;
     max-height: calc(100vh - 40px);
     height: calc(100vh - 40px);
@@ -3398,7 +3400,8 @@ body.zoho-theme:not(.pos-sale-theme) #ai_invoice_modal .modal-dialog {
     flex-direction: column;
 }
 
-body.zoho-theme:not(.pos-sale-theme) #ai_invoice_modal .modal-content {
+body.zoho-theme:not(.pos-sale-theme) #ai_invoice_modal .modal-content,
+body.zoho-theme:not(.pos-sale-theme) #ai_product_scan_modal .modal-content {
     display: flex;
     flex-direction: column;
     flex: 1 1 auto;
@@ -3408,11 +3411,14 @@ body.zoho-theme:not(.pos-sale-theme) #ai_invoice_modal .modal-content {
 }
 
 body.zoho-theme:not(.pos-sale-theme) #ai_invoice_modal .modal-header,
-body.zoho-theme:not(.pos-sale-theme) #ai_invoice_modal .modal-footer {
+body.zoho-theme:not(.pos-sale-theme) #ai_invoice_modal .modal-footer,
+body.zoho-theme:not(.pos-sale-theme) #ai_product_scan_modal .modal-header,
+body.zoho-theme:not(.pos-sale-theme) #ai_product_scan_modal .modal-footer {
     flex: 0 0 auto !important;
 }
 
-body.zoho-theme:not(.pos-sale-theme) #ai_invoice_modal .modal-body {
+body.zoho-theme:not(.pos-sale-theme) #ai_invoice_modal .modal-body,
+body.zoho-theme:not(.pos-sale-theme) #ai_product_scan_modal .modal-body {
     flex: 1 1 auto !important;
     overflow-y: auto !important;
     overflow-x: hidden;
