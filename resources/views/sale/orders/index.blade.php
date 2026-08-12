@@ -56,6 +56,8 @@
 </div>
 
 @if($orders->hasPages())
-    <div class="mt-4">{{ $orders->links() }}</div>
+    <div class="mt-4">
+        {{ $orders->onEachSide(1)->links('sale.partials.pagination') }}
+    </div>
 @endif
 @endsection

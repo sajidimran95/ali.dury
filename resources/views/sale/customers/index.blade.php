@@ -55,6 +55,8 @@
 </div>
 
 @if($canList && $customers->hasPages())
-    <div class="mt-4">{{ $customers->links() }}</div>
+    <div class="mt-4">
+        {{ $customers->onEachSide(1)->links('sale.partials.pagination') }}
+    </div>
 @endif
 @endsection

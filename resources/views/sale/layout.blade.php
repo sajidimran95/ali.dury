@@ -130,6 +130,58 @@
             padding: 6px 12px; font-size: 12px; font-weight: 700; color: #475569;
         }
 
+        /* App pagination (no Bootstrap) */
+        .sale-pager {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 10px 12px;
+        }
+        .sale-pager__meta {
+            font-size: 12px;
+            font-weight: 600;
+            color: #64748b;
+        }
+        .sale-pager__btns {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 6px;
+        }
+        .sale-pager__btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 36px;
+            height: 36px;
+            padding: 0 10px;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+            background: #fff;
+            color: #0f766e;
+            font-size: 13px;
+            font-weight: 700;
+            text-decoration: none;
+            box-sizing: border-box;
+        }
+        .sale-pager__btn:hover { background: #f0fdfa; }
+        .sale-pager__btn--active {
+            background: #0f766e;
+            border-color: #0f766e;
+            color: #fff;
+        }
+        .sale-pager__btn--disabled {
+            color: #94a3b8;
+            border-color: #f1f5f9;
+            background: #f8fafc;
+            pointer-events: none;
+        }
+
         /* —— Mobile app chrome —— */
         .sale-bottom-nav {
             position: fixed; left: 0; right: 0; bottom: 0; z-index: 80;
