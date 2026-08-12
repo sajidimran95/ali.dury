@@ -15,6 +15,10 @@ class Authenticate extends Middleware
     protected function redirectTo($request)
     {
         if (! $request->expectsJson()) {
+            if ($request->is('sale') || $request->is('sale/*')) {
+                return route('sale.login');
+            }
+
             if ($request->is(config('ecommerce.route_prefix', 'shop').'/*') || $request->is(config('ecommerce.route_prefix', 'shop'))) {
                 return route('ecommerce.login');
             }

@@ -23,6 +23,10 @@ class RedirectIfAuthenticated
 
         foreach ($guards as $guard) {
             if (Auth::guard($guard)->check()) {
+                if ($request->is('sale/login') || $request->is('sale/login/*')) {
+                    return redirect()->route('sale.home');
+                }
+
                 return redirect(RouteServiceProvider::HOME);
             }
         }

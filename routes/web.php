@@ -140,6 +140,56 @@ Route::middleware(['setData'])->group(function () {
         ->name('pos.pwa.offline');
 });
 
+/*
+|--------------------------------------------------------------------------
+| Sales Representative app (/sale) — mobile PWA portal
+| Staff users with sell permissions. Orders = same transactions table for admin.
+| Does not change POS or admin routes.
+|--------------------------------------------------------------------------
+*/
+use App\Http\Controllers\Sale\SaleAuthController;
+use App\Http\Controllers\Sale\SalePortalController;
+use App\Http\Controllers\Sale\SalePwaController;
+
+Route::prefix('sale')->name('sale.')->middleware(['setData'])->group(function () {
+    // PWA assets (public — no auth / timezone session required)
+    Route::get('/pwa/manifest.webmanifest', [SalePwaController::class, 'manifest'])->name('pwa.manifest');
+    Route::get('/pwa/sw.js', [SalePwaController::class, 'serviceWorker'])->name('pwa.sw');
+    Route::get('/pwa/offline', [SalePwaController::class, 'offline'])->name('pwa.offline');
+
+    // Auth (guest — avoid timezone middleware before business session exists)
+    Route::middleware(['guest', 'language'])->group(function () {
+        Route::get('/login', [SaleAuthController::class, 'showLoginForm'])->name('login');
+        Route::post('/login', [SaleAuthController::class, 'login'])->name('login.post');
+    });
+    Route::post('/logout', [SaleAuthController::class, 'logout'])->name('logout')->middleware('auth');
+
+    // Portal (authenticated sales users — SetSessionData before timezone)
+    Route::middleware(['auth', 'SetSessionData', 'language', 'timezone', 'CheckUserLogin', 'sale.rep'])->group(function () {
+        Route::get('/', [SalePortalController::class, 'home'])->name('home');
+        Route::get('/orders', [SalePortalController::class, 'orders'])->name('orders');
+        Route::get('/orders/create', [SalePortalController::class, 'create'])->name('orders.create');
+        Route::post('/orders', [SalePortalController::class, 'store'])->name('orders.store');
+        Route::get('/orders/{id}', [SalePortalController::class, 'show'])->name('orders.show');
+        Route::get('/account', [SalePortalController::class, 'account'])->name('account');
+        Route::get('/customers', [SalePortalController::class, 'customers'])->name('customers');
+        Route::get('/customers/create', [SalePortalController::class, 'createCustomer'])->name('customers.create');
+        Route::post('/customers', [SalePortalController::class, 'storeCustomer'])->name('customers.store');
+        Route::get('/api/customers', [SalePortalController::class, 'searchCustomers'])->name('api.customers');
+        Route::get('/api/products', [SalePortalController::class, 'searchProducts'])->name('api.products');
+    });
+});
+
+// Alias: /sales → /sale (common typo)
+Route::any('/sales/{any?}', function ($any = null) {
+    $target = '/sale'.($any ? '/'.$any : '');
+    $qs = request()->getQueryString();
+    if ($qs) {
+        $target .= '?'.$qs;
+    }
+
+    return redirect($target, 301);
+})->where('any', '.*');
 //Routes for authenticated users only
 Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 'AdminSidebarMenu', 'CheckUserLogin'])->group(function () {
     Route::get('pos/payment/{id}', [SellPosController::class, 'edit'])->name('edit-pos-payment');

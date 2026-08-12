@@ -4,6 +4,7 @@ use App\Http\Middleware\AdminSidebarMenu;
 use App\Http\Middleware\Authenticate;
 use App\Http\Middleware\CheckUserLogin;
 use App\Http\Middleware\EcomApi;
+use App\Http\Middleware\EnsureSaleRepAccess;
 use App\Http\Middleware\IsInstalled;
 use App\Http\Middleware\Language;
 use App\Http\Middleware\RedirectIfAuthenticated;
@@ -73,6 +74,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'AdminSidebarMenu' => AdminSidebarMenu::class,
             'superadmin' => Superadmin::class,
             'CheckUserLogin' => CheckUserLogin::class,
+            'sale.rep' => EnsureSaleRepAccess::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
