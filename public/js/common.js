@@ -1,13 +1,22 @@
 //This file contains all common functionality for the application
 
-// Bootstrap 3 wasn't built for stacked/nested modals: closing ANY modal unconditionally
-// tears down state that's shared across ALL modal instances, even ones still open behind
-// it — the `modal-open` class on <body>, the document-level focus-trap handler, and the
-// window resize handler that keeps a modal's layout in sync. None of that gets restored
-// for the modal left open (e.g. JapsAI's invoice-extraction modal, after its "Add new
-// product" popup closes), which is what breaks its scrolling. Put it back.
-$(document).on('hidden.bs.modal', '.modal', function () {
-    var $stillOpen = $('.modal.in');
+// Bootstrap 3 wasn't built for stacked/nested modals — it shares state across ALL modal
+// instances instead of scoping it per-instance. The fixes below patch that, but ONLY for
+// the specific modal pairs in this app that are actually opened stacked (JapsAI's two
+// scan modals + the quick-add-product popup they can open on top of themselves, and the
+// contact modal with the same exposure). Do NOT widen this to a bare '.modal' selector —
+// that previously also touched single, non-stacked modals elsewhere (e.g. POS's payment
+// modal) and could leave a backdrop mis-stacked above a modal that was never nested to
+// begin with, making it look open but unclickable.
+var STACKED_MODALS_SELECTOR = '#ai_invoice_modal, #ai_product_scan_modal, .quick_add_product_modal, .contact_modal, #global_contact_modal';
+
+// Closing ANY of the above unconditionally tears down state shared across all modal
+// instances — the `modal-open` class on <body>, the document-level focus-trap handler,
+// and the window resize handler that keeps a modal's layout in sync. None of that gets
+// restored for a modal from this set left open behind it, which is what breaks its
+// scrolling. Put it back.
+$(document).on('hidden.bs.modal', STACKED_MODALS_SELECTOR, function () {
+    var $stillOpen = $(STACKED_MODALS_SELECTOR).filter('.in');
     if (!$stillOpen.length) {
         return;
     }
@@ -25,22 +34,22 @@ $(document).on('hidden.bs.modal', '.modal', function () {
     });
 });
 
-// Stacked modals (e.g. JapsAI's invoice modal with "Add new product" opened on top of
-// it for an unmatched line) need the later-opened one to paint above the earlier one.
-// The theme CSS pins every `.modal` to the same `z-index: 1100 !important`, so with two
-// modals tied on z-index the browser falls back to DOM/markup order — and in this app's
-// markup the invoice modal happens to be declared AFTER the quick-add-product modal, so
-// it was winning that tie-break even while a modal opened *after* it was supposed to be
-// on top. That's what made the product-add modal (and scrolling into it) unusable: input
-// was landing on the invoice modal sitting above it. Assign each modal a z-index based on
-// how many modals are already open when it shows, so open order — not markup order —
-// decides the stack; `setProperty(..., 'important')` is required to outrank the theme's
-// `!important` rule.
-$(document).on('show.bs.modal', '.modal', function () {
-    var depth = $('.modal.in').length;
+// These modals can be opened stacked (e.g. JapsAI's scan modal with "Add new product"
+// opened on top of it for a missing item) and need the later-opened one to paint above
+// the earlier one. The theme CSS pins every `.modal` to the same `z-index: 1100
+// !important`, so with two tied on z-index the browser falls back to DOM/markup order —
+// and in this app's markup the scan modals happen to be declared after the quick-add
+// modal, so they were winning that tie-break even while opened *before* it. That made the
+// product-add popup (and scrolling into it) unusable: input was landing on the modal
+// sitting above it. Assign a z-index based on how many of these are already open when one
+// shows, so open order decides the stack; `setProperty(..., 'important')` is required to
+// outrank the theme's `!important` rule. Scoped to this specific set so it can't touch
+// any other modal's normal (non-stacked) z-index.
+$(document).on('show.bs.modal', STACKED_MODALS_SELECTOR, function () {
+    var depth = $(STACKED_MODALS_SELECTOR).filter('.in').length;
     this.style.setProperty('z-index', 1100 + depth * 20, 'important');
 });
-$(document).on('shown.bs.modal', '.modal', function () {
+$(document).on('shown.bs.modal', STACKED_MODALS_SELECTOR, function () {
     var zIndex = parseInt(this.style.zIndex, 10) || 1100;
     $('.modal-backdrop').last().css('z-index', zIndex - 1);
 });
