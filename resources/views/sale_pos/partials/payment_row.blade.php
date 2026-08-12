@@ -21,7 +21,8 @@
                 'row_index' => $row_index,
                 'payment_line' => $payment_line,
                 'show_denomination' => true,
-				'show_in_pos' => $show_in_pos
+				'show_in_pos' => $show_in_pos,
+				'use_pos_method_cards' => true,
             ])
         </div>
     </div>

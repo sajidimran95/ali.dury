@@ -44,6 +44,7 @@
         $('#ai_scan_preview_pdf').hide();
         $('#ai_scan_review_body').empty();
         $('#ai_scan_review_table').hide();
+        $('#ai_scan_select_all').prop('checked', true);
         $('#ai_scan_status').text('');
         $('#ai_scan_extract_btn').prop('disabled', true).show();
     }
@@ -148,6 +149,7 @@
     function buildReviewRow(line) {
         return $(
             '<tr>' +
+                '<td><input type="checkbox" class="ai_line_include" checked></td>' +
                 '<td class="ai-line-name">' + escapeHtml(line.name) +
                     (line.sku ? ' <small class="text-muted">[' + escapeHtml(line.sku) + ']</small>' : '') +
                 '</td>' +
@@ -185,21 +187,53 @@
     }
 
     function renderMatchCell(idx, candidates) {
-        var $cell = rowFor(idx).find('.ai-line-match');
         var line = state.lines[idx];
 
         if (candidates.length > 0) {
             line.status = 'exists';
-            $cell.html('<span class="label label-success"><i class="fa fa-check"></i> '
+            rowFor(idx).find('.ai-line-match').html('<span class="label label-success"><i class="fa fa-check"></i> '
                 + escapeHtml(t('scan_product_exists', 'Already in your catalog')) + '</span>');
             return;
         }
 
         line.status = 'missing';
+        renderMissingAction(idx);
+    }
+
+    // Missing-line action button, shown only while its checkbox is checked — unchecking
+    // a line means "not interested in this one", so hide the invitation to create it.
+    function renderMissingAction(idx) {
+        var line = state.lines[idx];
+        if (!line || line.status !== 'missing') {
+            return;
+        }
+        var $cell = rowFor(idx).find('.ai-line-match');
+        if (!isLineIncluded(idx)) {
+            $cell.html('<span class="text-muted">' + escapeHtml(t('scan_product_skipped', 'Skipped')) + '</span>');
+            return;
+        }
         var $btn = $('<button type="button" class="btn btn-primary btn-xs ai_line_quick_add"><i class="fa fa-plus"></i> '
             + escapeHtml('Add new product') + '</button>');
         $cell.empty().append($btn);
     }
+
+    function isLineIncluded(idx) {
+        return rowFor(idx).find('.ai_line_include').is(':checked');
+    }
+
+    // "Select all" header checkbox toggles every line's own checkbox.
+    $(document).on('change', '#ai_scan_select_all', function () {
+        $('#ai_scan_review_body .ai_line_include').prop('checked', $(this).is(':checked')).trigger('change');
+    });
+
+    // Keep the header checkbox in sync (and re-render the missing-line action) whenever
+    // a line is toggled individually.
+    $(document).on('change', '#ai_scan_review_body .ai_line_include', function () {
+        var idx = $(this).closest('tr').index();
+        renderMissingAction(idx);
+        var $all = $('#ai_scan_review_body .ai_line_include');
+        $('#ai_scan_select_all').prop('checked', $all.length > 0 && $all.length === $all.filter(':checked').length);
+    });
 
     $(document).on('click', '.ai_line_quick_add', function () {
         var idx = $(this).closest('tr').index();

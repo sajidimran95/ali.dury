@@ -261,6 +261,7 @@
                                         <table class="table table-bordered table-condensed">
                                             <thead>
                                                 <tr>
+                                                    <th style="width:32px;"><input type="checkbox" id="ai_scan_select_all" checked title="@lang('lang_v1.select_all')"></th>
                                                     <th>@lang('product.product_name')</th>
                                                     <th style="width:130px;">@lang('lang_v1.unit_cost_before_discount')</th>
                                                     <th>@lang('sale.status')</th>
@@ -296,6 +297,7 @@
                 scan_products_no_lines: "{{ __('aiassistance::lang.scan_products_no_lines') }}",
                 scan_product_exists: "{{ __('aiassistance::lang.scan_product_exists') }}",
                 scan_product_added: "{{ __('aiassistance::lang.scan_product_added') }}",
+                scan_product_skipped: "{{ __('aiassistance::lang.scan_product_skipped') }}",
                 invoice_not_detected: "{{ __('aiassistance::lang.invoice_not_detected') }}",
             };
         </script>

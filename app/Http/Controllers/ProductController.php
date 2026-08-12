@@ -1651,6 +1651,10 @@ class ProductController extends Controller
         $categories = Category::forDropdown($business_id, 'product');
         $brands = Brands::forDropdown($business_id);
         $units = Unit::forDropdown($business_id, true);
+        // Quick-add is a fast path (used from JapsAI's missing-product flows, among others) —
+        // don't force picking a unit every time. Default to the business's first-defined
+        // unit; the field stays editable in case it's the wrong one for this product.
+        $default_unit_id = $units->except([''])->keys()->first();
 
         $tax_dropdown = TaxRate::forBusinessDropdown($business_id, true, true);
         $taxes = $tax_dropdown['tax_rates'];
@@ -1674,7 +1678,7 @@ class ProductController extends Controller
         $warranties = Warranty::forDropdown($business_id);
 
         return view('product.partials.quick_add_product')
-                ->with(compact('categories', 'brands', 'units', 'taxes', 'barcode_types', 'default_profit_percent', 'tax_attributes', 'product_name', 'product_sku', 'product_purchase_price', 'locations', 'product_for', 'enable_expiry', 'enable_lot', 'module_form_parts', 'business_locations', 'common_settings', 'warranties'));
+                ->with(compact('categories', 'brands', 'units', 'default_unit_id', 'taxes', 'barcode_types', 'default_profit_percent', 'tax_attributes', 'product_name', 'product_sku', 'product_purchase_price', 'locations', 'product_for', 'enable_expiry', 'enable_lot', 'module_form_parts', 'business_locations', 'common_settings', 'warranties'));
     }
 
     /**

@@ -1533,7 +1533,26 @@ $(document).ready(function() {
             pos_sync_payment_modal_amount(false);
         }
         $paymentModal.modal('show');
+        // Ensure footer actions never look/stay stuck disabled when modal opens
+        $paymentModal.find('.modal-footer button, #pos-save, #modal-payment-credit-sale')
+            .prop('disabled', false)
+            .removeAttr('disabled')
+            .removeClass('disabled is-disabled');
+        if (typeof enable_pos_form_actions === 'function') {
+            enable_pos_form_actions();
+        }
         return false;
+    });
+
+    $(document).on('shown.bs.modal', '#modal_payment', function () {
+        var $m = $(this);
+        $m.find('.modal-footer button, #pos-save, #modal-payment-credit-sale')
+            .prop('disabled', false)
+            .removeAttr('disabled')
+            .removeClass('disabled is-disabled');
+        if (typeof enable_pos_form_actions === 'function') {
+            enable_pos_form_actions();
+        }
     });
 
     // Finalize Payment: always submit POS form (modal may be outside the form)

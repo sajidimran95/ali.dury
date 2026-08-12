@@ -49,6 +49,7 @@
         $('#ai_invoice_header_block').hide();
         $('#ai_invoice_review_body').empty();
         $('#ai_invoice_review_table').hide();
+        $('#ai_invoice_select_all').prop('checked', true);
         $('#ai_invoice_status').text('');
         $('#ai_invoice_extract_btn').prop('disabled', true).show();
         $('#ai_invoice_insert_btn').prop('disabled', true).hide();
@@ -168,6 +169,7 @@
     function buildReviewRow(line) {
         return $(
             '<tr>' +
+                '<td><input type="checkbox" class="ai_line_include" checked></td>' +
                 '<td class="ai-line-name">' + escapeHtml(line.name) +
                     (line.sku ? ' <small class="text-muted">[' + escapeHtml(line.sku) + ']</small>' : '') +
                 '</td>' +
@@ -415,13 +417,28 @@
         }
     }
 
+    // "Select all" header checkbox toggles every line's own checkbox.
+    $(document).on('change', '#ai_invoice_select_all', function () {
+        $('#ai_invoice_review_body .ai_line_include').prop('checked', $(this).is(':checked'));
+    });
+
+    // Keep the header checkbox in sync when lines are toggled individually.
+    $(document).on('change', '#ai_invoice_review_body .ai_line_include', function () {
+        var $all = $('#ai_invoice_review_body .ai_line_include');
+        $('#ai_invoice_select_all').prop('checked', $all.length > 0 && $all.length === $all.filter(':checked').length);
+    });
+
+    function isLineIncluded(idx) {
+        return rowFor(idx).find('.ai_line_include').is(':checked');
+    }
+
     $(document).on('click', '#ai_invoice_insert_btn', function () {
         syncEditsFromReviewTable();
         var $btn = $(this).prop('disabled', true);
 
         var matchedIdx = [];
         state.lines.forEach(function (line, idx) {
-            if (line.status === 'matched') {
+            if (line.status === 'matched' && isLineIncluded(idx)) {
                 matchedIdx.push(idx);
             }
         });
@@ -437,8 +454,10 @@
             attachOriginalDocument();
             $btn.prop('disabled', false);
 
-            var stillNeedsReview = state.lines.some(function (line) {
-                return line.status === 'review';
+            // Only nag about lines the user actually wants inserted — an unchecked
+            // "needs review" line is one they've deliberately chosen to skip.
+            var stillNeedsReview = state.lines.some(function (line, idx) {
+                return line.status === 'review' && isLineIncluded(idx);
             });
             if (stillNeedsReview) {
                 toastr.warning(t('invoice_needs_review', 'Some items need your review before you can insert them.'));

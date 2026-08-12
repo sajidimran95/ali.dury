@@ -31,27 +31,29 @@
 		</div>
 	</div>
 	@endif
-	<div class="col-md-12">
+	@php
+		$_payment_method = empty($payment_line['method']) && array_key_exists('cash', $payment_types) ? 'cash' : $payment_line['method'];
+		$use_pos_method_cards = !empty($use_pos_method_cards);
+		$pay_method_icons = [
+			'cash' => 'fas fa-money-bill-alt',
+			'card' => 'fas fa-credit-card',
+			'cheque' => 'fas fa-money-check',
+			'bank_transfer' => 'fas fa-university',
+			'other' => 'fas fa-coins',
+			'advance' => 'fas fa-wallet',
+			'custom_pay_1' => 'fas fa-wallet',
+			'custom_pay_2' => 'fas fa-wallet',
+			'custom_pay_3' => 'fas fa-wallet',
+			'custom_pay_4' => 'fas fa-wallet',
+			'custom_pay_5' => 'fas fa-wallet',
+			'custom_pay_6' => 'fas fa-wallet',
+			'custom_pay_7' => 'fas fa-wallet',
+		];
+	@endphp
+	<div class="@if($use_pos_method_cards) col-md-12 @else {{ $col_class }} @endif">
 		<div class="form-group">
 			{!! Form::label("method_$row_index" , __('lang_v1.payment_method') . ':*') !!}
-			@php
-				$_payment_method = empty($payment_line['method']) && array_key_exists('cash', $payment_types) ? 'cash' : $payment_line['method'];
-				$pay_method_icons = [
-					'cash' => 'fas fa-money-bill-alt',
-					'card' => 'fas fa-credit-card',
-					'cheque' => 'fas fa-money-check',
-					'bank_transfer' => 'fas fa-university',
-					'other' => 'fas fa-coins',
-					'advance' => 'fas fa-wallet',
-					'custom_pay_1' => 'fas fa-wallet',
-					'custom_pay_2' => 'fas fa-wallet',
-					'custom_pay_3' => 'fas fa-wallet',
-					'custom_pay_4' => 'fas fa-wallet',
-					'custom_pay_5' => 'fas fa-wallet',
-					'custom_pay_6' => 'fas fa-wallet',
-					'custom_pay_7' => 'fas fa-wallet',
-				];
-			@endphp
+			@if($use_pos_method_cards)
 			<div class="pos-pay-method-cards @if($readonly) is-readonly @endif" role="group" aria-label="@lang('lang_v1.payment_method')">
 				@foreach($payment_types as $pm_key => $pm_label)
 					@php
@@ -80,6 +82,17 @@
 					{!! Form::hidden("payment[$row_index][method]", $payment_line['method'], ['class' => 'payment_types_dropdown', 'required', 'id' => "method_$row_index"]); !!}
 				@endif
 			</div>
+			@else
+			<div class="input-group">
+				<span class="input-group-addon">
+					<i class="fas fa-money-bill-alt"></i>
+				</span>
+				{!! Form::select("payment[$row_index][method]", $payment_types, $_payment_method, ['class' => 'form-control payment_types_dropdown', 'required', 'id' => !$readonly ? "method_$row_index" : "method_advance_$row_index", 'style' => 'width:100%;', 'disabled' => $readonly]); !!}
+			</div>
+			@if($readonly)
+				{!! Form::hidden("payment[$row_index][method]", $payment_line['method'], ['class' => 'payment_types_dropdown', 'required', 'id' => "method_$row_index"]); !!}
+			@endif
+			@endif
 		</div>
 	</div>
 	@php

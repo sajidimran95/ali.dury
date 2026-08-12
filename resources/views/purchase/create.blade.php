@@ -631,6 +631,7 @@
 							<table class="table table-bordered table-condensed">
 								<thead>
 									<tr>
+										<th style="width:32px;"><input type="checkbox" id="ai_invoice_select_all" checked title="@lang('lang_v1.select_all')"></th>
 										<th>@lang('product.product_name')</th>
 										<th style="width:110px;">@lang('purchase.purchase_quantity')</th>
 										<th style="width:130px;">@lang('lang_v1.unit_cost_before_discount')</th>

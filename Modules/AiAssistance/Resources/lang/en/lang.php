@@ -104,5 +104,6 @@ return [
     'scan_products_no_lines' => 'No items detected in this document.',
     'scan_product_exists' => 'Already in your catalog',
     'scan_product_added' => 'Added',
+    'scan_product_skipped' => 'Skipped',
     'scan_products_done_btn' => 'Done',
 ];
