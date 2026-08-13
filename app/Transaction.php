@@ -360,6 +360,26 @@ class Transaction extends Model
                     ->whereRaw("IF(transactions.pay_term_type='days', DATE_ADD(transactions.transaction_date, INTERVAL transactions.pay_term_number DAY) < CURDATE(), DATE_ADD(transactions.transaction_date, INTERVAL transactions.pay_term_number MONTH) < CURDATE())");
     }
 
+    /**
+     * Ecommerce storefront orders (saved as sales orders).
+     */
+    public function scopeEcommerceOrders($query)
+    {
+        return $query->where('transactions.source', 'ecommerce')
+            ->whereIn('transactions.type', ['sales_order', 'sell']);
+    }
+
+    /**
+     * Exclude ecommerce storefront orders from POS/direct sales counts.
+     */
+    public function scopeNotEcommerce($query)
+    {
+        return $query->where(function ($q) {
+            $q->whereNull('transactions.source')
+                ->orWhere('transactions.source', '!=', 'ecommerce');
+        });
+    }
+
     public static function sell_statuses()
     {
         return [

@@ -97,8 +97,8 @@ class CheckoutService
             ];
 
             $input = [
-                'type' => 'sell',
-                'status' => 'final',
+                'type' => 'sales_order',
+                'status' => 'ordered',
                 'location_id' => $location_id,
                 'contact_id' => $contact_id,
                 'transaction_date' => Carbon::now()->toDateTimeString(),
@@ -123,17 +123,6 @@ class CheckoutService
 
             $transaction = $this->transactionUtil->createSellTransaction($business_id, $input, $invoice_total, $user_id, false);
             $this->transactionUtil->createOrUpdateSellLines($transaction, $products, $location_id, false, null, [], false);
-
-            foreach ($cart->items as $item) {
-                if (! empty($item->product->enable_stock)) {
-                    $this->productUtil->decreaseProductQuantity(
-                        $item->product_id,
-                        $item->variation_id,
-                        $location_id,
-                        $item->quantity
-                    );
-                }
-            }
 
             $payment_status = $payment_method === 'cod' ? 'due' : 'due';
             $transaction->payment_status = $payment_status;

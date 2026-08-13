@@ -578,7 +578,8 @@ class SellController extends Controller
     {
         $base = Transaction::where('business_id', $businessId)
             ->where('type', 'sell')
-            ->where('status', 'final');
+            ->where('status', 'final')
+            ->notEcommerce();
 
         if ($isDirectSale) {
             $base->where('is_direct_sale', 1);
@@ -1817,6 +1818,7 @@ class SellController extends Controller
                 $q->where('transactions.sub_type', '!=', 'project_invoice')
                   ->orWhereNull('transactions.sub_type');
             });
+            $query->notEcommerce();
         }
 
         // Location permissions

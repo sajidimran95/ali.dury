@@ -319,8 +319,7 @@ class HomeController extends Controller
 
             // Online / ecommerce orders in selected period
             $onlineOrdersQuery = \App\Transaction::where('business_id', $business_id)
-                ->where('type', 'sell')
-                ->where('source', 'ecommerce')
+                ->ecommerceOrders()
                 ->whereBetween(\DB::raw('date(transaction_date)'), [$start, $end]);
 
             if (! empty($location_id)) {
@@ -332,7 +331,6 @@ class HomeController extends Controller
 
             $output['online_orders'] = (int) (clone $onlineOrdersQuery)->count();
             $output['online_orders_amount'] = (float) (clone $onlineOrdersQuery)
-                ->where('status', 'final')
                 ->sum('final_total');
 
             // Period-over-period change for dashboard KPI deltas
@@ -626,6 +624,7 @@ class HomeController extends Controller
                 Transaction::where('transactions.business_id', $business_id)
                     ->where('transactions.type', 'sell')
                     ->where('transactions.status', 'final')
+                    ->notEcommerce()
                     ->whereIn('transactions.payment_status', ['due', 'partial'])
             )->count();
 
@@ -639,6 +638,7 @@ class HomeController extends Controller
                 Transaction::where('transactions.business_id', $business_id)
                     ->where('transactions.type', 'sell')
                     ->where('transactions.status', 'final')
+                    ->notEcommerce()
                     ->whereNotNull('transactions.shipping_status')
                     ->whereNotIn('transactions.shipping_status', ['delivered', 'cancelled'])
             )->count();
@@ -781,6 +781,9 @@ class HomeController extends Controller
             ->whereNull('transaction_payments.parent_id')
             ->where('t.type', 'sell')
             ->where('t.status', 'final')
+            ->where(function ($q) {
+                $q->whereNull('t.source')->orWhere('t.source', '!=', 'ecommerce');
+            })
             ->whereBetween(\DB::raw('date(t.transaction_date)'), [$start, $end]);
 
         if ($permitted_locations != 'all') {
@@ -815,6 +818,7 @@ class HomeController extends Controller
         $creditQuery = \App\Transaction::where('business_id', $business_id)
             ->where('type', 'sell')
             ->where('status', 'final')
+            ->notEcommerce()
             ->whereIn('payment_status', ['due', 'partial'])
             ->whereBetween(\DB::raw('date(transaction_date)'), [$start, $end]);
 

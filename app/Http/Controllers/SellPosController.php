@@ -162,7 +162,8 @@ class SellPosController extends Controller
             ->where('type', 'sell')
             ->where('status', 'final')
             ->where('is_direct_sale', 0)
-            ->whereNull('sub_type');
+            ->whereNull('sub_type')
+            ->notEcommerce();
 
         $permitted = auth()->user()->permitted_locations();
         if ($permitted != 'all') {

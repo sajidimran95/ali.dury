@@ -13,9 +13,7 @@ class ReportController extends Controller
     {
         $business_id = session('user.business_id');
         $base = Transaction::where('business_id', $business_id)
-            ->where('source', 'ecommerce')
-            ->where('type', 'sell')
-            ->where('status', 'final');
+            ->ecommerceOrders();
 
         $summary = [
             'orders' => (int) (clone $base)->count(),
@@ -42,8 +40,7 @@ class ReportController extends Controller
             ->join('products as p', 'p.id', '=', 'tsl.product_id')
             ->where('t.business_id', $business_id)
             ->where('t.source', 'ecommerce')
-            ->where('t.type', 'sell')
-            ->where('t.status', 'final')
+            ->whereIn('t.type', ['sales_order', 'sell'])
             ->selectRaw('p.name, SUM(tsl.quantity) as qty, SUM(tsl.quantity * tsl.unit_price_inc_tax) as revenue')
             ->groupBy('p.name')
             ->orderByDesc('qty')

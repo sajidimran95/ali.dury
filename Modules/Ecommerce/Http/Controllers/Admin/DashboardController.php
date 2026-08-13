@@ -26,10 +26,9 @@ class DashboardController extends Controller
         $start7 = Carbon::now()->subDays(6)->startOfDay();
 
         $base = Transaction::where('business_id', $business_id)
-            ->where('type', 'sell')
-            ->where('source', 'ecommerce');
+            ->ecommerceOrders();
 
-        $final = (clone $base)->where('status', 'final');
+        $final = clone $base;
 
         $order_ids = (clone $base)->pluck('id');
         $meta_counts = EcomOrderMeta::whereIn('transaction_id', $order_ids)
@@ -129,8 +128,7 @@ class DashboardController extends Controller
             ->join('products as p', 'p.id', '=', 'tsl.product_id')
             ->where('t.business_id', $business_id)
             ->where('t.source', 'ecommerce')
-            ->where('t.type', 'sell')
-            ->where('t.status', 'final')
+            ->whereIn('t.type', ['sales_order', 'sell'])
             ->where('t.transaction_date', '>=', $start30)
             ->selectRaw('p.id, p.name, SUM(tsl.quantity) as qty, SUM(tsl.quantity * tsl.unit_price_inc_tax) as revenue')
             ->groupBy('p.id', 'p.name')
@@ -139,8 +137,7 @@ class DashboardController extends Controller
             ->get();
 
         $recent_orders = Transaction::where('business_id', $business_id)
-            ->where('type', 'sell')
-            ->where('source', 'ecommerce')
+            ->ecommerceOrders()
             ->with(['contact'])
             ->orderByDesc('id')
             ->limit(10)

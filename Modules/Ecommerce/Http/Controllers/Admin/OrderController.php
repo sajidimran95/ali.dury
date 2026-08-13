@@ -28,8 +28,7 @@ class OrderController extends Controller
 
         if (request()->ajax()) {
             $orders = Transaction::where('transactions.business_id', $business_id)
-                ->where('transactions.type', 'sell')
-                ->where('transactions.source', 'ecommerce')
+                ->ecommerceOrders()
                 ->leftJoin('contacts', 'transactions.contact_id', '=', 'contacts.id')
                 ->leftJoin('ecom_order_meta', 'transactions.id', '=', 'ecom_order_meta.transaction_id')
                 ->select(
@@ -77,8 +76,7 @@ class OrderController extends Controller
     protected function getEcommerceOrderListStats(int $businessId): array
     {
         $base = Transaction::where('business_id', $businessId)
-            ->where('type', 'sell')
-            ->where('source', 'ecommerce');
+            ->ecommerceOrders();
 
         $total = (int) (clone $base)->count();
         $today = (int) (clone $base)->whereDate('transaction_date', \Carbon\Carbon::today())->count();
@@ -102,7 +100,7 @@ class OrderController extends Controller
         $shipped = (int) ($metaCounts['shipped'] ?? 0);
         $completed = (int) ($metaCounts['delivered'] ?? 0);
 
-        $salesTotal = (float) (clone $base)->where('status', 'final')->sum('final_total');
+        $salesTotal = (float) (clone $base)->sum('final_total');
 
         return [
             'total' => $total,
