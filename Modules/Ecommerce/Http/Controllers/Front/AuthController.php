@@ -12,8 +12,10 @@ use Modules\Ecommerce\Entities\EcomCustomerLicense;
 
 class AuthController extends Controller
 {
-    public function showLogin()
+    public function showLogin(Request $request)
     {
+        $this->forgetNonShopIntended($request);
+
         return view('ecommerce::front.auth.login');
     }
 
@@ -38,7 +40,11 @@ class AuthController extends Controller
 
         Auth::guard('customer')->login($contact, $request->boolean('remember'));
 
-        return redirect()->intended(route('ecommerce.account'))->with('success', __('ecommerce::lang.welcome_back'));
+        // Never send storefront customers to admin/POS intended URLs
+        // (same browser session may still hold url.intended from /login).
+        $target = $this->shopIntendedUrl($request) ?: route('ecommerce.account');
+
+        return redirect()->to($target)->with('success', __('ecommerce::lang.welcome_back'));
     }
 
     public function showRegister()
@@ -194,11 +200,54 @@ class AuthController extends Controller
         }
     }
 
-    public function logout()
+    public function logout(Request $request)
     {
         Auth::guard('customer')->logout();
+        $this->forgetNonShopIntended($request);
 
         return redirect()->to('/');
+    }
+
+    /**
+     * Shop path prefix, e.g. "/shop".
+     */
+    protected function shopPrefix(): string
+    {
+        return '/'.trim((string) config('ecommerce.route_prefix', 'shop'), '/');
+    }
+
+    /**
+     * Only allow redirects back into the storefront (never /login, /home, /pos, etc.).
+     */
+    protected function isShopUrl(?string $url): bool
+    {
+        if (empty($url)) {
+            return false;
+        }
+
+        $path = parse_url($url, PHP_URL_PATH);
+        if (! is_string($path) || $path === '') {
+            return false;
+        }
+
+        $prefix = $this->shopPrefix();
+
+        return $path === $prefix || str_starts_with($path, $prefix.'/');
+    }
+
+    protected function forgetNonShopIntended(Request $request): void
+    {
+        $intended = $request->session()->get('url.intended');
+        if ($intended && ! $this->isShopUrl($intended)) {
+            $request->session()->forget('url.intended');
+        }
+    }
+
+    protected function shopIntendedUrl(Request $request): ?string
+    {
+        $intended = $request->session()->pull('url.intended');
+
+        return $this->isShopUrl($intended) ? $intended : null;
     }
 
     protected function usStates(): array

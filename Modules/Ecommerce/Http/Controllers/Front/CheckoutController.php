@@ -19,7 +19,7 @@ class CheckoutController extends Controller
     public function index(CartService $cartService, ShippingCalculator $shipping, TaxCalculator $tax, CouponService $coupons)
     {
         if (! auth('customer')->check()) {
-            return redirect()->route('ecommerce.login')
+            return redirect()->guest(route('ecommerce.login'))
                 ->with('error', 'Sign in with your wholesale account to checkout.');
         }
 
