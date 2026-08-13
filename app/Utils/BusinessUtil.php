@@ -14,6 +14,7 @@ use App\Printer;
 use App\Unit;
 use App\User;
 use Illuminate\Support\Facades\DB;
+use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use App\VariationLocationDetails;
 
@@ -44,6 +45,9 @@ class BusinessUtil extends Util
             'guard_name' => 'web',
         ]);
         $cashier_role->syncPermissions(['sell.view', 'sell.create', 'sell.update', 'sell.delete', 'access_all_locations', 'view_cash_register', 'close_cash_register']);
+
+        // Create Sales Representative role (Sale App) — same system style as Cashier
+        $this->createDefaultSalesRole((int) $business_id, true);
 
         $business = Business::findOrFail($business_id);
 
@@ -106,6 +110,63 @@ class BusinessUtil extends Util
         }
 
         return true;
+    }
+
+    /**
+     * Default Sales Representative role (Sale App) — created like Cashier for each business.
+     * Product + customer + sales order + sell invoice access.
+     *
+     * @param  bool  $syncPermissions  When true, reset permissions to defaults (new business / DB reset).
+     */
+    public function createDefaultSalesRole(int $business_id, bool $syncPermissions = false): Role
+    {
+        $roleName = 'Sales Representative#'.$business_id;
+        $role = Role::where('name', $roleName)->where('guard_name', 'web')->first();
+        $created = false;
+
+        // Migrate old short name Sales#{id} if present
+        if (empty($role)) {
+            $legacy = Role::where('name', 'Sales#'.$business_id)->where('guard_name', 'web')->first();
+            if (! empty($legacy)) {
+                $legacy->name = $roleName;
+                $legacy->save();
+                $role = $legacy;
+                $syncPermissions = true;
+            }
+        }
+
+        if (empty($role)) {
+            $role = Role::create([
+                'name' => $roleName,
+                'business_id' => $business_id,
+                'guard_name' => 'web',
+            ]);
+            $created = true;
+            $syncPermissions = true;
+        }
+
+        if ($syncPermissions || $created) {
+            $permissions = [
+                'sell.view',
+                'sell.create',
+                'product.view',
+                'customer.view',
+                'customer.create',
+                'so.view_own',
+                'so.create',
+                'so.delete',
+                'print_invoice',
+                'access_all_locations',
+            ];
+
+            foreach ($permissions as $permission) {
+                Permission::findOrCreate($permission, 'web');
+            }
+
+            $role->syncPermissions($permissions);
+        }
+
+        return $role;
     }
 
     /**

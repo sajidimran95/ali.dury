@@ -381,6 +381,9 @@ class DatabaseResetUtil
             ]);
         }
 
+        // Sales Representative role (Sale App) — same system style as Cashier
+        (new BusinessUtil())->createDefaultSalesRole($businessId, true);
+
         // Walk-In Customer
         $walkIn = Contact::where('business_id', $businessId)
             ->where('is_default', 1)

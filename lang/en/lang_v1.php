@@ -137,6 +137,8 @@ return [
     'my_profile' => 'My Profile',
     'Admin' => 'Admin',
     'Cashier' => 'Cashier',
+    'Sales' => 'Sales',
+    'Sales Representative' => 'Sales Representative',
     'both_supplier_customer' => 'Both (Supplier & Customer)',
     'months' => 'Months',
     'days' => 'Days',

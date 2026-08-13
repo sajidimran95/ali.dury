@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\SellingPriceGroup;
+use App\Utils\BusinessUtil;
 use App\Utils\ModuleUtil;
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Permission;
@@ -38,15 +39,18 @@ class RoleController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
-        if (request()->ajax()) {
-            $business_id = request()->session()->get('user.business_id');
+        $business_id = (int) request()->session()->get('user.business_id');
+        // Keep system Sales Representative role (like Cashier) after DB reset / accidental delete
+        (new BusinessUtil())->createDefaultSalesRole($business_id);
 
+        if (request()->ajax()) {
             $roles = Role::where('business_id', $business_id)
                         ->select(['name', 'id', 'is_default', 'business_id']);
 
             return DataTables::of($roles)
                 ->addColumn('action', function ($row) {
-                    if (! $row->is_default || $row->name == 'Cashier#'.$row->business_id) {
+                    $systemStaffRoles = ['Cashier#'.$row->business_id, 'Sales Representative#'.$row->business_id, 'Sales#'.$row->business_id];
+                    if (! $row->is_default || in_array($row->name, $systemStaffRoles, true)) {
                         $action = '';
                         if (auth()->user()->can('roles.update')) {
                             $action .= '<a href="'.action([\App\Http\Controllers\RoleController::class, 'edit'], [$row->id]).'" class="tw-dw-btn tw-dw-btn-xs tw-dw-btn-outline tw-dw-btn-primary"><i class="glyphicon glyphicon-edit"></i> '.__('messages.edit').'</a>';
@@ -63,7 +67,7 @@ class RoleController extends Controller
                 })
                 ->editColumn('name', function ($row) use ($business_id) {
                     $role_name = str_replace('#'.$business_id, '', $row->name);
-                    if (in_array($role_name, ['Admin', 'Cashier'])) {
+                    if (in_array($role_name, ['Admin', 'Cashier', 'Sales', 'Sales Representative'], true)) {
                         $role_name = __('lang_v1.'.$role_name);
                     }
 
@@ -248,8 +252,9 @@ class RoleController extends Controller
             if ($count == 0) {
                 $role = Role::findOrFail($id);
 
-                if (! $role->is_default || $role->name == 'Cashier#'.$business_id) {
-                    if ($role->name == 'Cashier#'.$business_id) {
+                $systemStaffRoles = ['Cashier#'.$business_id, 'Sales Representative#'.$business_id, 'Sales#'.$business_id];
+                if (! $role->is_default || in_array($role->name, $systemStaffRoles, true)) {
+                    if (in_array($role->name, $systemStaffRoles, true)) {
                         $role->is_default = 0;
                     }
 
@@ -324,7 +329,8 @@ class RoleController extends Controller
 
                 $role = Role::where('business_id', $business_id)->find($id);
 
-                if (! $role->is_default || $role->name == 'Cashier#'.$business_id) {
+                $systemStaffRoles = ['Cashier#'.$business_id, 'Sales Representative#'.$business_id, 'Sales#'.$business_id];
+                if (! $role->is_default || in_array($role->name, $systemStaffRoles, true)) {
                     $role->delete();
                     $output = ['success' => true,
                         'msg' => __('user.role_deleted'),

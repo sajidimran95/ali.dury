@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Aug 13, 2026 at 05:25 PM
+-- Generation Time: Aug 13, 2026 at 05:41 PM
 -- Server version: 8.4.3
--- PHP Version: 8.4.2
+-- PHP Version: 8.4.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -18,7 +18,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `japspos`
+-- Database: `japs_pos`
 --
 
 -- --------------------------------------------------------
@@ -292,7 +292,10 @@ INSERT INTO `activity_log` (`id`, `log_name`, `description`, `subject_id`, `subj
 (182, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-08-13 07:16:34', '2026-08-13 07:16:34'),
 (183, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-08-13 07:20:36', '2026-08-13 07:20:36'),
 (184, 'default', 'so_deleted', 142, 'App\\Transaction', NULL, 1, 1, 'App\\User', '{\"id\":142,\"invoice_no\":\"2026\\/0001\"}', NULL, '2026-08-13 07:24:05', '2026-08-13 07:24:05'),
-(185, 'default', 'so_deleted', 10, 'App\\Transaction', NULL, 1, 1, 'App\\User', '{\"id\":10,\"invoice_no\":\"0002\"}', NULL, '2026-08-13 07:24:28', '2026-08-13 07:24:28');
+(185, 'default', 'so_deleted', 10, 'App\\Transaction', NULL, 1, 1, 'App\\User', '{\"id\":10,\"invoice_no\":\"0002\"}', NULL, '2026-08-13 07:24:28', '2026-08-13 07:24:28'),
+(186, 'default', 'added', 3, 'App\\User', NULL, 1, 1, 'App\\User', '{\"name\":\"mr Sales Man\"}', NULL, '2026-08-13 07:40:09', '2026-08-13 07:40:09'),
+(187, 'default', 'logout', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-08-13 07:40:17', '2026-08-13 07:40:17'),
+(188, 'default', 'login', 3, 'App\\User', NULL, 1, 3, 'App\\User', '[]', NULL, '2026-08-13 07:40:31', '2026-08-13 07:40:31');
 
 -- --------------------------------------------------------
 
@@ -2281,6 +2284,13 @@ CREATE TABLE `model_has_permissions` (
   `model_id` bigint UNSIGNED NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Dumping data for table `model_has_permissions`
+--
+
+INSERT INTO `model_has_permissions` (`permission_id`, `model_type`, `model_id`) VALUES
+(80, 'App\\User', 3);
+
 -- --------------------------------------------------------
 
 --
@@ -2298,7 +2308,8 @@ CREATE TABLE `model_has_roles` (
 --
 
 INSERT INTO `model_has_roles` (`role_id`, `model_type`, `model_id`) VALUES
-(1, 'App\\User', 1);
+(1, 'App\\User', 1),
+(3, 'App\\User', 3);
 
 -- --------------------------------------------------------
 
@@ -2569,7 +2580,10 @@ INSERT INTO `permissions` (`id`, `name`, `guard_name`, `created_at`, `updated_at
 (89, 'shipping_method.create', 'web', '2026-08-03 17:12:41', '2026-08-03 17:12:41'),
 (90, 'shipping_method.update', 'web', '2026-08-03 17:12:41', '2026-08-03 17:12:41'),
 (91, 'shipping_method.delete', 'web', '2026-08-03 17:12:41', '2026-08-03 17:12:41'),
-(92, 'attendance.edit', 'web', '2026-08-12 13:15:41', '2026-08-12 13:15:41');
+(92, 'attendance.edit', 'web', '2026-08-12 13:15:41', '2026-08-12 13:15:41'),
+(93, 'so.view_own', 'web', '2026-08-13 17:03:25', '2026-08-13 17:03:25'),
+(94, 'so.create', 'web', '2026-08-13 17:03:25', '2026-08-13 17:03:25'),
+(95, 'so.delete', 'web', '2026-08-13 17:03:25', '2026-08-13 17:03:25');
 
 -- --------------------------------------------------------
 
@@ -2956,7 +2970,8 @@ CREATE TABLE `roles` (
 
 INSERT INTO `roles` (`id`, `name`, `guard_name`, `business_id`, `is_default`, `is_service_staff`, `created_at`, `updated_at`) VALUES
 (1, 'Admin#1', 'web', 1, 1, 0, '2026-07-18 18:56:53', '2026-07-18 18:56:53'),
-(2, 'Cashier#1', 'web', 1, 0, 0, '2026-07-18 18:56:53', '2026-07-18 18:56:53');
+(2, 'Cashier#1', 'web', 1, 0, 0, '2026-07-18 18:56:53', '2026-07-18 18:56:53'),
+(3, 'Sales Representative#1', 'web', 1, 0, 0, '2026-08-13 17:03:25', '2026-08-13 17:03:25');
 
 -- --------------------------------------------------------
 
@@ -2992,7 +3007,16 @@ INSERT INTO `role_has_permissions` (`permission_id`, `role_id`) VALUES
 (51, 2),
 (80, 2),
 (85, 2),
-(86, 2);
+(86, 2),
+(27, 3),
+(36, 3),
+(37, 3),
+(40, 3),
+(48, 3),
+(49, 3),
+(93, 3),
+(94, 3),
+(95, 3);
 
 -- --------------------------------------------------------
 
@@ -3905,7 +3929,8 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `user_type`, `surname`, `first_name`, `last_name`, `username`, `email`, `password`, `language`, `contact_no`, `address`, `remember_token`, `business_id`, `available_at`, `paused_at`, `max_sales_discount_percent`, `allow_login`, `status`, `is_enable_service_staff_pin`, `service_staff_pin`, `crm_contact_id`, `is_cmmsn_agnt`, `cmmsn_percent`, `selected_contacts`, `dob`, `gender`, `marital_status`, `blood_group`, `contact_number`, `alt_number`, `family_number`, `fb_link`, `twitter_link`, `social_media_1`, `social_media_2`, `permanent_address`, `current_address`, `guardian_name`, `custom_field_1`, `custom_field_2`, `custom_field_3`, `custom_field_4`, `bank_details`, `id_proof_name`, `id_proof_number`, `deleted_at`, `created_at`, `updated_at`) VALUES
-(1, 'user', NULL, 'Japs', 'POS', 'japspos', 'japspos@gmail.com', '$2y$10$LH3D2XH/82k.Av8HfGb3GOfKM3F7Qi7I86iZLyxhJFtjajS8pKHpK', 'en', NULL, NULL, 'G6D4AQfN7JitywAKEVsE9ZrCeqC3FOZkJwouGCBSniBczOjJOg90CYDAnnMw', 1, NULL, NULL, NULL, 1, 'active', 0, NULL, NULL, 0, 0.00, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '{\"account_holder_name\":null,\"account_number\":null,\"bank_name\":null,\"bank_code\":null,\"branch\":null,\"tax_payer_id\":null}', NULL, NULL, NULL, '2026-06-04 16:29:53', '2026-07-20 06:42:21');
+(1, 'user', NULL, 'Japs', 'POS', 'japspos', 'japspos@gmail.com', '$2y$10$LH3D2XH/82k.Av8HfGb3GOfKM3F7Qi7I86iZLyxhJFtjajS8pKHpK', 'en', NULL, NULL, 'SyP9LQsIpbXbGOSaVXyzifBMd7K5lOaUoKToYhP6v3NlRJLu3vrYbOJo6SHx', 1, NULL, NULL, NULL, 1, 'active', 0, NULL, NULL, 0, 0.00, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '{\"account_holder_name\":null,\"account_number\":null,\"bank_name\":null,\"bank_code\":null,\"branch\":null,\"tax_payer_id\":null}', NULL, NULL, NULL, '2026-06-04 16:29:53', '2026-07-20 06:42:21'),
+(3, 'user', 'mr', 'Sales', 'Man', 'sales', 'sales@gmail.com', '$2y$10$OzGObq/ceIZ3APtS0cuaQ.7NuE.ATg5eQkOcMUcxdlz1qVAFMKpd6', 'en', NULL, NULL, NULL, 1, NULL, NULL, NULL, 1, 'active', 0, NULL, NULL, 0, 0.00, 0, NULL, 'male', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '{\"account_holder_name\":null,\"account_number\":null,\"bank_name\":null,\"bank_code\":null,\"branch\":null,\"tax_payer_id\":null}', NULL, NULL, NULL, '2026-08-13 07:40:09', '2026-08-13 07:40:09');
 
 -- --------------------------------------------------------
 
@@ -4922,7 +4947,7 @@ ALTER TABLE `account_types`
 -- AUTO_INCREMENT for table `activity_log`
 --
 ALTER TABLE `activity_log`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=186;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=189;
 
 --
 -- AUTO_INCREMENT for table `ai_assistance_settings`
@@ -5198,7 +5223,7 @@ ALTER TABLE `oauth_personal_access_clients`
 -- AUTO_INCREMENT for table `permissions`
 --
 ALTER TABLE `permissions`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=93;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=96;
 
 --
 -- AUTO_INCREMENT for table `printers`
@@ -5246,7 +5271,7 @@ ALTER TABLE `res_tables`
 -- AUTO_INCREMENT for table `roles`
 --
 ALTER TABLE `roles`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `selling_price_groups`
@@ -5318,7 +5343,7 @@ ALTER TABLE `units`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `user_contact_access`
