@@ -615,7 +615,10 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::get('get-purchase-order-lines/{purchase_order_id}', [PurchaseController::class, 'getPurchaseOrderLines']);
     Route::get('edit-purchase-orders/{id}/status', [PurchaseOrderController::class, 'getEditPurchaseOrderStatus']);
     Route::put('update-purchase-orders/{id}/status', [PurchaseOrderController::class, 'postEditPurchaseOrderStatus']);
-    Route::resource('sales-order', SalesOrderController::class)->only(['index']);
+    Route::resource('sales-order', SalesOrderController::class)->only(['index', 'show']);
+    Route::post('sales-order/{id}/status', [SalesOrderController::class, 'updateStatus'])->name('sales-order.status');
+    Route::post('sales-order/{id}/shipping', [SalesOrderController::class, 'updateShipping'])->name('sales-order.shipping');
+    Route::post('sales-order/{id}/fulfillment', [SalesOrderController::class, 'updateFulfillment'])->name('sales-order.fulfillment');
     Route::get('get-sales-orders/{customer_id}', [SalesOrderController::class, 'getSalesOrders']);
     Route::get('get-sales-order-lines', [SellPosController::class, 'getSalesOrderLines']);
     Route::get('edit-sales-orders/{id}/status', [SalesOrderController::class, 'getEditSalesOrderStatus']);
