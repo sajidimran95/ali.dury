@@ -51,6 +51,7 @@ use App\Utils\ContactUtil;
 use App\Utils\ModuleUtil;
 use App\Utils\NotificationUtil;
 use App\Utils\ProductUtil;
+use App\Utils\SalesOrderPermission;
 use App\Utils\TransactionUtil;
 use App\Variation;
 use App\Warranty;
@@ -1409,7 +1410,7 @@ class SellPosController extends Controller
     public function update(Request $request, $id)
     {
         if (!auth()->user()->can('sell.update') && !auth()->user()->can('direct_sell.access') &&
-            !auth()->user()->can('so.update') && !auth()->user()->can('edit_pos_payment')) {
+            !SalesOrderPermission::canUpdateAny(auth()->user()) && !auth()->user()->can('edit_pos_payment')) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -1911,13 +1912,26 @@ class SellPosController extends Controller
      */
     public function destroy($id)
     {
-        if (!auth()->user()->can('sell.delete') && !auth()->user()->can('direct_sell.delete') && !auth()->user()->can('so.delete')) {
+        if (
+            ! auth()->user()->can('sell.delete')
+            && ! auth()->user()->can('direct_sell.delete')
+            && ! SalesOrderPermission::canDeleteAny(auth()->user())
+        ) {
             abort(403, 'Unauthorized action.');
         }
 
         if (request()->ajax()) {
             try {
                 $business_id = request()->session()->get('user.business_id');
+
+                $transaction = Transaction::where('business_id', $business_id)->findOrFail($id);
+                if ($transaction->type === 'sales_order' && ! SalesOrderPermission::canDelete(auth()->user(), $transaction)) {
+                    return [
+                        'success' => false,
+                        'msg' => __('messages.something_went_wrong'),
+                    ];
+                }
+
                 //Begin transaction
                 DB::beginTransaction();
 
@@ -1988,7 +2002,7 @@ class SellPosController extends Controller
      */
     public function getProductLineDiscounts(Request $request)
     {
-        if (! auth()->user()->can('sell.view') && ! auth()->user()->can('direct_sell.access') && ! auth()->user()->can('so.create') && ! auth()->user()->can('so.update')) {
+        if (! auth()->user()->can('sell.view') && ! auth()->user()->can('direct_sell.access') && ! auth()->user()->can('so.create') && ! SalesOrderPermission::canUpdateAny(auth()->user())) {
             abort(403, 'Unauthorized action.');
         }
 

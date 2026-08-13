@@ -1086,8 +1086,24 @@
             <div class="col-md-12">
               <div class="checkbox">
                 <label>
+                  {!! Form::checkbox('permissions[]', 'so.update_own', false, 
+                  [ 'class' => 'input-icheck']); !!} {{ __( 'lang_v1.edit_own_so' ) }}
+                </label>
+              </div>
+            </div>
+            <div class="col-md-12">
+              <div class="checkbox">
+                <label>
                   {!! Form::checkbox('permissions[]', 'so.delete', false, 
                   [ 'class' => 'input-icheck']); !!} {{ __( 'lang_v1.delete_so' ) }}
+                </label>
+              </div>
+            </div>
+            <div class="col-md-12">
+              <div class="checkbox">
+                <label>
+                  {!! Form::checkbox('permissions[]', 'so.delete_own', false, 
+                  [ 'class' => 'input-icheck']); !!} {{ __( 'lang_v1.delete_own_so' ) }}
                 </label>
               </div>
             </div>

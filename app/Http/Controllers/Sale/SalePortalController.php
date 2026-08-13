@@ -11,6 +11,7 @@ use App\Transaction;
 use App\Utils\BusinessUtil;
 use App\Utils\ContactUtil;
 use App\Utils\ProductUtil;
+use App\Utils\SalesOrderPermission;
 use App\Utils\TransactionUtil;
 use App\Variation;
 use Carbon\Carbon;
@@ -245,6 +246,11 @@ class SalePortalController extends Controller
     public function destroy(Request $request, $id)
     {
         $order = $this->findOwnOrder($id);
+
+        if (! SalesOrderPermission::canDelete(auth()->user(), $order)) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $business_id = $request->session()->get('user.business_id');
 
         try {

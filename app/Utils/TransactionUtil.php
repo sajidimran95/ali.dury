@@ -5268,6 +5268,7 @@ class TransactionUtil extends Util
                     'contacts.supplier_business_name',
                     'transactions.status',
                     'transactions.payment_status',
+                    'transactions.created_by',
                     'transactions.final_total',
                     'transactions.tax_amount',
                     'transactions.discount_amount',
