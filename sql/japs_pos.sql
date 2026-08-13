@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Aug 13, 2026 at 05:41 PM
+-- Generation Time: Aug 13, 2026 at 06:12 PM
 -- Server version: 8.4.3
 -- PHP Version: 8.4.12
 
@@ -295,7 +295,16 @@ INSERT INTO `activity_log` (`id`, `log_name`, `description`, `subject_id`, `subj
 (185, 'default', 'so_deleted', 10, 'App\\Transaction', NULL, 1, 1, 'App\\User', '{\"id\":10,\"invoice_no\":\"0002\"}', NULL, '2026-08-13 07:24:28', '2026-08-13 07:24:28'),
 (186, 'default', 'added', 3, 'App\\User', NULL, 1, 1, 'App\\User', '{\"name\":\"mr Sales Man\"}', NULL, '2026-08-13 07:40:09', '2026-08-13 07:40:09'),
 (187, 'default', 'logout', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-08-13 07:40:17', '2026-08-13 07:40:17'),
-(188, 'default', 'login', 3, 'App\\User', NULL, 1, 3, 'App\\User', '[]', NULL, '2026-08-13 07:40:31', '2026-08-13 07:40:31');
+(188, 'default', 'login', 3, 'App\\User', NULL, 1, 3, 'App\\User', '[]', NULL, '2026-08-13 07:40:31', '2026-08-13 07:40:31'),
+(189, 'default', 'logout', 3, 'App\\User', NULL, 1, 3, 'App\\User', '[]', NULL, '2026-08-13 07:45:57', '2026-08-13 07:45:57'),
+(190, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-08-13 07:46:00', '2026-08-13 07:46:00'),
+(191, 'default', 'logout', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-08-13 08:01:21', '2026-08-13 08:01:21'),
+(192, 'default', 'login', 3, 'App\\User', NULL, 1, 3, 'App\\User', '[]', NULL, '2026-08-13 08:01:34', '2026-08-13 08:01:34'),
+(193, 'default', 'logout', 3, 'App\\User', NULL, 1, 3, 'App\\User', '[]', NULL, '2026-08-13 08:04:17', '2026-08-13 08:04:17'),
+(194, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-08-13 08:04:26', '2026-08-13 08:04:26'),
+(195, 'default', 'logout', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-08-13 08:05:33', '2026-08-13 08:05:33'),
+(196, 'default', 'login', 3, 'App\\User', NULL, 1, 3, 'App\\User', '[]', NULL, '2026-08-13 08:05:45', '2026-08-13 08:05:45'),
+(197, 'default', 'so_deleted', 148, 'App\\Transaction', NULL, 1, 3, 'App\\User', '{\"id\":148,\"invoice_no\":\"2026\\/0004\"}', NULL, '2026-08-13 08:06:08', '2026-08-13 08:06:08');
 
 -- --------------------------------------------------------
 
@@ -2583,7 +2592,10 @@ INSERT INTO `permissions` (`id`, `name`, `guard_name`, `created_at`, `updated_at
 (92, 'attendance.edit', 'web', '2026-08-12 13:15:41', '2026-08-12 13:15:41'),
 (93, 'so.view_own', 'web', '2026-08-13 17:03:25', '2026-08-13 17:03:25'),
 (94, 'so.create', 'web', '2026-08-13 17:03:25', '2026-08-13 17:03:25'),
-(95, 'so.delete', 'web', '2026-08-13 17:03:25', '2026-08-13 17:03:25');
+(95, 'so.delete', 'web', '2026-08-13 17:03:25', '2026-08-13 17:03:25'),
+(96, 'so.update', 'web', '2026-08-13 17:26:01', '2026-08-13 17:26:01'),
+(97, 'so.update_own', 'web', '2026-08-13 17:28:37', '2026-08-13 17:28:37'),
+(98, 'so.delete_own', 'web', '2026-08-13 17:28:37', '2026-08-13 17:28:37');
 
 -- --------------------------------------------------------
 
@@ -2916,7 +2928,7 @@ INSERT INTO `reference_counts` (`id`, `ref_type`, `ref_count`, `business_id`, `c
 (1, 'contacts', 6, 1, '2026-07-18 18:56:53', '2026-07-23 07:27:00'),
 (4, 'sell_payment', 86, 1, '2026-07-24 10:13:56', '2026-08-13 06:41:27'),
 (5, 'draft', 9, 1, '2026-07-27 05:47:31', '2026-07-27 10:11:34'),
-(6, 'sales_order', 3, 1, '2026-08-13 15:20:58', '2026-08-13 16:00:56');
+(6, 'sales_order', 4, 1, '2026-08-13 15:20:58', '2026-08-13 08:03:49');
 
 -- --------------------------------------------------------
 
@@ -3008,15 +3020,13 @@ INSERT INTO `role_has_permissions` (`permission_id`, `role_id`) VALUES
 (80, 2),
 (85, 2),
 (86, 2),
-(27, 3),
 (36, 3),
-(37, 3),
 (40, 3),
-(48, 3),
-(49, 3),
+(80, 3),
 (93, 3),
 (94, 3),
-(95, 3);
+(97, 3),
+(98, 3);
 
 -- --------------------------------------------------------
 
@@ -3929,7 +3939,7 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `user_type`, `surname`, `first_name`, `last_name`, `username`, `email`, `password`, `language`, `contact_no`, `address`, `remember_token`, `business_id`, `available_at`, `paused_at`, `max_sales_discount_percent`, `allow_login`, `status`, `is_enable_service_staff_pin`, `service_staff_pin`, `crm_contact_id`, `is_cmmsn_agnt`, `cmmsn_percent`, `selected_contacts`, `dob`, `gender`, `marital_status`, `blood_group`, `contact_number`, `alt_number`, `family_number`, `fb_link`, `twitter_link`, `social_media_1`, `social_media_2`, `permanent_address`, `current_address`, `guardian_name`, `custom_field_1`, `custom_field_2`, `custom_field_3`, `custom_field_4`, `bank_details`, `id_proof_name`, `id_proof_number`, `deleted_at`, `created_at`, `updated_at`) VALUES
-(1, 'user', NULL, 'Japs', 'POS', 'japspos', 'japspos@gmail.com', '$2y$10$LH3D2XH/82k.Av8HfGb3GOfKM3F7Qi7I86iZLyxhJFtjajS8pKHpK', 'en', NULL, NULL, 'SyP9LQsIpbXbGOSaVXyzifBMd7K5lOaUoKToYhP6v3NlRJLu3vrYbOJo6SHx', 1, NULL, NULL, NULL, 1, 'active', 0, NULL, NULL, 0, 0.00, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '{\"account_holder_name\":null,\"account_number\":null,\"bank_name\":null,\"bank_code\":null,\"branch\":null,\"tax_payer_id\":null}', NULL, NULL, NULL, '2026-06-04 16:29:53', '2026-07-20 06:42:21'),
+(1, 'user', NULL, 'Japs', 'POS', 'japspos', 'japspos@gmail.com', '$2y$10$LH3D2XH/82k.Av8HfGb3GOfKM3F7Qi7I86iZLyxhJFtjajS8pKHpK', 'en', NULL, NULL, 'VUjPRRXqxkiwwQSl9RoyGmnyt7mQlPpo2Zq3ZgbyqXTVmLZ5JxKw3u47CqIj', 1, NULL, NULL, NULL, 1, 'active', 0, NULL, NULL, 0, 0.00, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '{\"account_holder_name\":null,\"account_number\":null,\"bank_name\":null,\"bank_code\":null,\"branch\":null,\"tax_payer_id\":null}', NULL, NULL, NULL, '2026-06-04 16:29:53', '2026-07-20 06:42:21'),
 (3, 'user', 'mr', 'Sales', 'Man', 'sales', 'sales@gmail.com', '$2y$10$OzGObq/ceIZ3APtS0cuaQ.7NuE.ATg5eQkOcMUcxdlz1qVAFMKpd6', 'en', NULL, NULL, NULL, 1, NULL, NULL, NULL, 1, 'active', 0, NULL, NULL, 0, 0.00, 0, NULL, 'male', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '{\"account_holder_name\":null,\"account_number\":null,\"bank_name\":null,\"bank_code\":null,\"branch\":null,\"tax_payer_id\":null}', NULL, NULL, NULL, '2026-08-13 07:40:09', '2026-08-13 07:40:09');
 
 -- --------------------------------------------------------
@@ -4100,7 +4110,7 @@ INSERT INTO `variation_location_details` (`id`, `product_id`, `product_variation
 (55, 55, 55, 55, 1, 106.0000, '2026-07-22 17:43:00', '2026-08-03 05:23:18'),
 (56, 56, 56, 56, 1, 112.0000, '2026-07-22 17:43:02', '2026-07-22 17:43:02'),
 (57, 57, 57, 57, 1, 116.0000, '2026-07-22 17:43:03', '2026-07-22 17:43:03'),
-(58, 58, 58, 58, 1, -4.0000, '2026-08-12 06:35:18', '2026-08-12 07:13:57'),
+(58, 58, 58, 58, 1, -3.0000, '2026-08-12 06:35:18', '2026-08-13 08:06:08'),
 (59, 59, 59, 59, 1, -1.0000, '2026-08-13 06:29:51', '2026-08-13 06:29:51');
 
 -- --------------------------------------------------------
@@ -4947,7 +4957,7 @@ ALTER TABLE `account_types`
 -- AUTO_INCREMENT for table `activity_log`
 --
 ALTER TABLE `activity_log`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=189;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=198;
 
 --
 -- AUTO_INCREMENT for table `ai_assistance_settings`
@@ -5223,7 +5233,7 @@ ALTER TABLE `oauth_personal_access_clients`
 -- AUTO_INCREMENT for table `permissions`
 --
 ALTER TABLE `permissions`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=96;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=99;
 
 --
 -- AUTO_INCREMENT for table `printers`
@@ -5307,7 +5317,7 @@ ALTER TABLE `tax_rates`
 -- AUTO_INCREMENT for table `transactions`
 --
 ALTER TABLE `transactions`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=148;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=149;
 
 --
 -- AUTO_INCREMENT for table `transaction_payments`
@@ -5319,7 +5329,7 @@ ALTER TABLE `transaction_payments`
 -- AUTO_INCREMENT for table `transaction_sell_lines`
 --
 ALTER TABLE `transaction_sell_lines`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=129;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=130;
 
 --
 -- AUTO_INCREMENT for table `transaction_sell_lines_purchase_lines`

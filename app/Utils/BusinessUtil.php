@@ -114,7 +114,7 @@ class BusinessUtil extends Util
 
     /**
      * Default Sales Representative role (Sale App) — created like Cashier for each business.
-     * Product + customer + sales order + sell invoice access.
+     * Own sales orders only — no POS / other sells.
      *
      * @param  bool  $syncPermissions  When true, reset permissions to defaults (new business / DB reset).
      */
@@ -147,15 +147,12 @@ class BusinessUtil extends Util
 
         if ($syncPermissions || $created) {
             $permissions = [
-                'sell.view',
-                'sell.create',
                 'product.view',
                 'customer.view',
-                'customer.create',
                 'so.view_own',
                 'so.create',
-                'so.delete',
-                'print_invoice',
+                'so.update_own',
+                'so.delete_own',
                 'access_all_locations',
             ];
 

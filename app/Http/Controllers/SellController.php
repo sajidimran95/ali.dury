@@ -20,6 +20,7 @@ use App\Utils\BusinessUtil;
 use App\Utils\ContactUtil;
 use App\Utils\ModuleUtil;
 use App\Utils\ProductUtil;
+use App\Utils\SalesOrderPermission;
 use App\Utils\TransactionUtil;
 use App\Variation;
 use App\Warranty;
@@ -267,7 +268,7 @@ class SellController extends Controller
                         }
                         if (! $only_shipments) {
                             if ($row->type == 'sales_order') {
-                                if (auth()->user()->can('so.update')) {
+                                if (SalesOrderPermission::canUpdate(auth()->user(), $row)) {
                                     $html .= '<li><a target="_blank" href="'.action([\App\Http\Controllers\SellController::class, 'edit'], [$row->id]).'"><i class="fas fa-edit"></i> '.__('messages.edit').'</a></li>';
                                 }
                                 if (in_array($row->status, ['ordered', 'partial'], true) && (auth()->user()->can('sell.create') || auth()->user()->can('direct_sell.access'))) {
@@ -292,7 +293,7 @@ class SellController extends Controller
 
                             $delete_link = '<li><a href="'.action([\App\Http\Controllers\SellPosController::class, 'destroy'], [$row->id]).'" class="delete-sale"><i class="fas fa-trash"></i> '.__('messages.delete').'</a></li>';
                             if ($row->type == 'sales_order') {
-                                if (auth()->user()->can('so.delete')) {
+                                if (SalesOrderPermission::canDelete(auth()->user(), $row)) {
                                     $html .= $delete_link;
                                 }
                             } elseif ($row->is_direct_sale == 0) {
@@ -915,7 +916,7 @@ class SellController extends Controller
      */
     public function edit($id)
     {
-        if (! auth()->user()->can('direct_sell.update') && ! auth()->user()->can('so.update')) {
+        if (! auth()->user()->can('direct_sell.update') && ! SalesOrderPermission::canUpdateAny(auth()->user())) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -958,7 +959,7 @@ class SellController extends Controller
             }
         }
 
-        if ($transaction->type == 'sales_order' && ! auth()->user()->can('so.update')) {
+        if ($transaction->type == 'sales_order' && ! SalesOrderPermission::canUpdate(auth()->user(), $transaction)) {
             abort(403, 'Unauthorized action.');
         }
 

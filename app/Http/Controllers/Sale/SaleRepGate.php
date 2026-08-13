@@ -16,20 +16,27 @@ class SaleRepGate
         return method_exists($user, 'hasRole') && $user->hasRole('Admin#'.$user->business_id);
     }
 
+    /**
+     * Sale App access: sales-order permissions (preferred) or legacy sell flags.
+     * Does not require POS sell.create.
+     */
     public static function hasSellAccess($user): bool
     {
         if (! $user) {
             return false;
         }
 
-        return $user->can('sell.create')
+        return $user->can('so.create')
+            || $user->can('so.view_own')
+            || $user->can('so.view_all')
+            || $user->can('sell.create')
             || $user->can('direct_sell.access')
             || $user->can('direct_sell.view')
             || $user->can('view_own_sell_only');
     }
 
     /**
-     * Sales App login allowed: active staff user, sell permission, not Admin.
+     * Sales App login allowed: active staff user, sales-order/sell access, not Admin.
      */
     public static function allows($user): bool
     {
@@ -67,7 +74,7 @@ class SaleRepGate
         }
 
         if (! self::hasSellAccess($user)) {
-            return 'Your account does not have sales access. Ask admin to enable sell permissions on your role.';
+            return 'Your account does not have sales access. Ask admin to enable Sales Order permissions on your Sales Representative role.';
         }
 
         return 'Access denied.';

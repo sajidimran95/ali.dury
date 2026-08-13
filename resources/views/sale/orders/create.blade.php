@@ -63,7 +63,6 @@
             </div>
             <div class="sale-cart-pay">
                 <input type="hidden" name="payment_type" value="due">
-                <p class="text-xs text-slate-500 m-0 leading-snug">Creates a <strong>sales order</strong> (not an invoice). Same as admin Sales Orders.</p>
             </div>
             <button type="button" class="sale-btn !w-full inline-flex items-center justify-center gap-2" id="goShippingBtn">
                 Order
