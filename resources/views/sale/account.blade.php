@@ -36,6 +36,32 @@
     </div>
 </div>
 
+<div class="sale-card mb-3">
+    <div class="sale-sec-title !mb-3">
+        <span class="sale-sec-title__ico">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 21s7-4.5 7-11a7 7 0 1 0-14 0c0 6.5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>
+        </span>
+        Default location
+    </div>
+    <p class="text-xs text-slate-500 mb-3">Used as default when creating a new order. Only locations you can access are listed.</p>
+    @if(count($locations))
+        <form method="POST" action="{{ route('sale.account.location') }}" class="space-y-3">
+            @csrf
+            <select name="location_id" class="sale-input" required>
+                @foreach($locations as $id => $name)
+                    <option value="{{ $id }}" @selected((string) $current_location_id === (string) $id)>{{ $name }}</option>
+                @endforeach
+            </select>
+            <button type="submit" class="sale-btn !w-full inline-flex items-center justify-center gap-2">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 21s7-4.5 7-11a7 7 0 1 0-14 0c0 6.5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>
+                Save location
+            </button>
+        </form>
+    @else
+        <p class="text-sm text-rose-600 font-semibold">No location assigned. Ask admin to give location access.</p>
+    @endif
+</div>
+
 <div class="sale-card !py-1 mb-3">
     <a href="{{ route('sale.home') }}" class="sale-menu-row">
         <span class="sale-menu-row__ico">

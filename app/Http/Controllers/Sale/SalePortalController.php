@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Sale;
 
 use App\BusinessLocation;
+use App\Category;
 use App\Contact;
 use App\Http\Controllers\Controller;
 use App\Product;
@@ -18,7 +19,8 @@ use Illuminate\Support\Facades\DB;
 
 /**
  * Mobile sales-rep portal: list own orders, create order for customer.
- * Writes same transactions as Add Sale (is_direct_sale=1) for admin management.
+ * Creates Sales Orders (type=sales_order, status=ordered) — same as admin Sales Orders.
+ * Source = sale_app. Admin converts SO → invoice as usual (no admin code changes).
  */
 class SalePortalController extends Controller
 {
@@ -47,10 +49,22 @@ class SalePortalController extends Controller
         $business_id = $request->session()->get('user.business_id');
         $user_id = auth()->id();
 
+        $locations = BusinessLocation::forDropdown($business_id, false);
+        $locationIds = array_map('strval', array_keys($locations->toArray()));
+        $current_location_id = $request->session()->get('user.default_location_id');
+        if (empty($current_location_id) || ! in_array((string) $current_location_id, $locationIds, true)) {
+            $current_location_id = count($locations) ? array_key_first($locations->toArray()) : null;
+            if ($current_location_id) {
+                $request->session()->put('user.default_location_id', $current_location_id);
+            }
+        }
+        $current_location_name = $current_location_id
+            ? ($locations[$current_location_id] ?? $locations[(string) $current_location_id] ?? '—')
+            : 'No location';
+
         $base = Transaction::where('business_id', $business_id)
-            ->where('type', 'sell')
-            ->where('created_by', $user_id)
-            ->where('status', 'final');
+            ->where('type', 'sales_order')
+            ->where('created_by', $user_id);
 
         $todayStart = Carbon::now()->startOfDay();
         $monthStart = Carbon::now()->startOfMonth();
@@ -61,8 +75,8 @@ class SalePortalController extends Controller
             'today_total' => (float) (clone $base)->where('transaction_date', '>=', $todayStart)->sum('final_total'),
             'month_orders' => (clone $base)->where('transaction_date', '>=', $monthStart)->count(),
             'month_total' => (float) (clone $base)->where('transaction_date', '>=', $monthStart)->sum('final_total'),
-            'paid_orders' => (clone $base)->where('payment_status', 'paid')->count(),
-            'due_orders' => (clone $base)->whereIn('payment_status', ['due', 'partial'])->count(),
+            'paid_orders' => (clone $base)->where('status', 'completed')->count(),
+            'due_orders' => (clone $base)->whereIn('status', ['ordered', 'partial'])->count(),
         ];
 
         $recent = (clone $base)
@@ -71,7 +85,75 @@ class SalePortalController extends Controller
             ->limit(8)
             ->get();
 
-        return view('sale.dashboard', compact('stats', 'recent'));
+        // Newest products
+        $newProducts = Product::where('business_id', $business_id)
+            ->where('type', '!=', 'modifier')
+            ->where('is_inactive', 0)
+            ->where(function ($q) {
+                $q->whereNull('not_for_selling')->orWhere('not_for_selling', 0);
+            })
+            ->with(['variations' => function ($q) {
+                $q->whereNull('deleted_at')->orderBy('id');
+            }])
+            ->orderByDesc('id')
+            ->limit(6)
+            ->get()
+            ->map(function ($p) {
+                $v = $p->variations->first();
+                $price = $v ? (float) ($v->sell_price_inc_tax ?: $v->default_sell_price ?: 0) : 0;
+                $img = $this->saleProductImage($p->image);
+
+                return [
+                    'id' => $p->id,
+                    'variation_id' => $v ? $v->id : null,
+                    'name' => $p->name,
+                    'sku' => $p->sku,
+                    'price' => $price,
+                    'image' => $img['url'],
+                    'has_image' => $img['has_image'],
+                ];
+            });
+
+        // Top products by qty sold by this rep
+        $topProducts = DB::table('transaction_sell_lines as tsl')
+            ->join('transactions as t', 't.id', '=', 'tsl.transaction_id')
+            ->join('products as p', 'p.id', '=', 'tsl.product_id')
+            ->leftJoin('variations as v', 'v.id', '=', 'tsl.variation_id')
+            ->where('t.business_id', $business_id)
+            ->where('t.type', 'sell')
+            ->where('t.status', 'final')
+            ->where('t.created_by', $user_id)
+            ->whereNull('tsl.parent_sell_line_id')
+            ->select(
+                'p.id as product_id',
+                'p.name',
+                'p.sku',
+                'p.image',
+                DB::raw('MAX(tsl.variation_id) as variation_id'),
+                DB::raw('SUM(tsl.quantity) as qty_sold'),
+                DB::raw('MAX(COALESCE(v.sell_price_inc_tax, v.default_sell_price, tsl.unit_price_inc_tax, 0)) as price')
+            )
+            ->groupBy('p.id', 'p.name', 'p.sku', 'p.image')
+            ->orderByDesc('qty_sold')
+            ->limit(6)
+            ->get()
+            ->map(function ($row) {
+                $img = $this->saleProductImage($row->image);
+                $row->image_url = $img['url'];
+                $row->has_image = $img['has_image'];
+
+                return $row;
+            });
+
+        return view('sale.dashboard', compact(
+            'stats',
+            'recent',
+            'locations',
+            'current_location_id',
+            'current_location_name',
+            'newProducts',
+            'topProducts'
+        ));
     }
 
     public function orders(Request $request)
@@ -80,7 +162,7 @@ class SalePortalController extends Controller
         $user_id = auth()->id();
 
         $orders = Transaction::where('business_id', $business_id)
-            ->where('type', 'sell')
+            ->where('type', 'sales_order')
             ->where('created_by', $user_id)
             ->with(['contact:id,name,mobile,supplier_business_name'])
             ->orderByDesc('id')
@@ -91,15 +173,110 @@ class SalePortalController extends Controller
 
     public function show(Request $request, $id)
     {
-        $business_id = $request->session()->get('user.business_id');
-
-        $order = Transaction::where('business_id', $business_id)
-            ->where('type', 'sell')
-            ->where('created_by', auth()->id())
-            ->with(['contact', 'sell_lines.product', 'sell_lines.variations', 'payment_lines'])
-            ->findOrFail($id);
+        $order = $this->findOwnOrder($id);
+        $order->load(['contact', 'sell_lines.product', 'sell_lines.variations', 'payment_lines']);
 
         return view('sale.orders.show', compact('order'));
+    }
+
+    /**
+     * Show the same invoice HTML as admin Sales Order → Print Invoice.
+     */
+    public function downloadInvoice(Request $request, $id)
+    {
+        $order = $this->findOwnOrder($id);
+        $business_id = $request->session()->get('user.business_id');
+
+        try {
+            $order->loadMissing('location');
+            $location = $order->location;
+            if (empty($location)) {
+                throw new \RuntimeException('Order location not found.');
+            }
+
+            $business_details = $this->businessUtil->getDetails($business_id);
+            // Same layout selection as SellPosController::printInvoice / printInvoicePdf
+            $invoice_layout_id = ! empty($order->is_direct_sale)
+                ? ($location->sale_invoice_layout_id ?: $location->invoice_layout_id)
+                : $location->invoice_layout_id;
+            $invoice_layout = $this->businessUtil->invoiceLayout($business_id, $invoice_layout_id);
+
+            $receipt_details = $this->transactionUtil->getReceiptDetails(
+                $order->id,
+                $order->location_id,
+                $invoice_layout,
+                $business_details,
+                $location,
+                'browser'
+            );
+            $receipt_details->currency = [
+                'symbol' => $business_details->currency_symbol,
+                'thousand_separator' => $business_details->thousand_separator,
+                'decimal_separator' => $business_details->decimal_separator,
+            ];
+
+            // Sale App always uses US Letter invoice design
+            $receipt_details->design = 'us_letter';
+            $layout = 'sale_pos.receipts.us_letter';
+            if (! view()->exists($layout)) {
+                $layout = 'sale_pos.receipts.classic';
+            }
+
+            $html = view($layout, compact('receipt_details'))->render();
+            $title = $receipt_details->invoice_no ?? $order->invoice_no;
+            $orderId = $order->id;
+
+            return response()->view('sale.orders.invoice', compact('html', 'title', 'orderId'));
+        } catch (\Throwable $e) {
+            \Log::error('Sale app invoice show failed: '.$e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return back()->with('status', [
+                'success' => 0,
+                'msg' => 'Could not open invoice.',
+            ]);
+        }
+    }
+
+    /**
+     * Delete own sale (same stock/mapping cleanup as admin).
+     */
+    public function destroy(Request $request, $id)
+    {
+        $order = $this->findOwnOrder($id);
+        $business_id = $request->session()->get('user.business_id');
+
+        try {
+            DB::beginTransaction();
+            $output = $this->transactionUtil->deleteSale($business_id, $order->id);
+            DB::commit();
+
+            $ok = ! empty($output['success']);
+            $msg = $output['msg'] ?? ($ok ? 'Order deleted.' : 'Could not delete order.');
+
+            return redirect()
+                ->route('sale.orders')
+                ->with('status', ['success' => $ok ? 1 : 0, 'msg' => $msg]);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            \Log::error('Sale app order delete failed: '.$e->getMessage());
+
+            return redirect()
+                ->route('sale.orders')
+                ->with('status', ['success' => 0, 'msg' => 'Could not delete order.']);
+        }
+    }
+
+    /**
+     * Own sales order only (created by logged-in sales rep).
+     */
+    protected function findOwnOrder($id): Transaction
+    {
+        return Transaction::where('business_id', session('user.business_id'))
+            ->where('type', 'sales_order')
+            ->where('created_by', auth()->id())
+            ->findOrFail($id);
     }
 
     public function create(Request $request)
@@ -115,7 +292,34 @@ class SalePortalController extends Controller
             $default_location = array_key_first($locations->toArray());
         }
 
-        return view('sale.orders.create', compact('locations', 'default_location'));
+        $default_customer = null;
+        $oldContactId = old('contact_id');
+        if (! empty($oldContactId)) {
+            $c = Contact::where('business_id', $business_id)
+                ->onlyCustomers()
+                ->find($oldContactId);
+            if ($c) {
+                $default_customer = [
+                    'id' => $c->id,
+                    'text' => trim(($c->supplier_business_name ? $c->supplier_business_name.' — ' : '').$c->name.
+                        ($c->mobile ? ' ('.$c->mobile.')' : '')),
+                    'shipping_address' => $c->shipping_address,
+                ];
+            }
+        }
+        if (empty($default_customer)) {
+            $walkIn = $this->contactUtil->getWalkInCustomer($business_id, false);
+            if ($walkIn) {
+                $default_customer = [
+                    'id' => $walkIn->id,
+                    'text' => trim(($walkIn->supplier_business_name ? $walkIn->supplier_business_name.' — ' : '').$walkIn->name.
+                        ($walkIn->mobile ? ' ('.$walkIn->mobile.')' : '')),
+                    'shipping_address' => $walkIn->shipping_address,
+                ];
+            }
+        }
+
+        return view('sale.orders.create', compact('locations', 'default_location', 'default_customer'));
     }
 
     public function searchCustomers(Request $request)
@@ -137,7 +341,7 @@ class SalePortalController extends Controller
             });
         }
 
-        $rows = $query->orderBy('name')->limit(25)->get(['id', 'name', 'mobile', 'supplier_business_name']);
+        $rows = $query->orderBy('name')->limit(25)->get(['id', 'name', 'mobile', 'supplier_business_name', 'shipping_address']);
 
         return response()->json($rows->map(function ($c) {
             return [
@@ -146,6 +350,7 @@ class SalePortalController extends Controller
                     ($c->mobile ? ' ('.$c->mobile.')' : '')),
                 'name' => $c->name,
                 'mobile' => $c->mobile,
+                'shipping_address' => $c->shipping_address,
             ];
         }));
     }
@@ -155,6 +360,10 @@ class SalePortalController extends Controller
         $business_id = $request->session()->get('user.business_id');
         $location_id = (int) $request->get('location_id');
         $term = trim((string) $request->get('q', ''));
+        $category_id = (int) $request->get('category_id', 0);
+        $sub_category_id = (int) $request->get('sub_category_id', 0);
+        $variation_id = (int) $request->get('variation_id', 0);
+        $limit = min(100, max(1, (int) $request->get('limit', 30)));
 
         if (empty($location_id)) {
             return response()->json([]);
@@ -173,6 +382,10 @@ class SalePortalController extends Controller
                 $q->whereNull('p.not_for_selling')->orWhere('p.not_for_selling', 0);
             });
 
+        if ($variation_id > 0) {
+            $query->where('variations.id', $variation_id);
+        }
+
         if ($term !== '') {
             $query->where(function ($q) use ($term) {
                 $q->where('p.name', 'like', "%{$term}%")
@@ -180,6 +393,12 @@ class SalePortalController extends Controller
                     ->orWhere('variations.sub_sku', 'like', "%{$term}%")
                     ->orWhere('variations.name', 'like', "%{$term}%");
             });
+        }
+
+        if ($sub_category_id > 0) {
+            $query->where('p.sub_category_id', $sub_category_id);
+        } elseif ($category_id > 0) {
+            $query->where('p.category_id', $category_id);
         }
 
         $rows = $query->select(
@@ -193,10 +412,13 @@ class SalePortalController extends Controller
             'p.type as product_type',
             'p.enable_stock',
             'p.tax as tax_id',
+            'p.category_id',
+            'p.sub_category_id',
+            'p.image as product_image',
             DB::raw('COALESCE(vld.qty_available, 0) as stock')
         )
             ->orderBy('p.name')
-            ->limit(30)
+            ->limit($limit)
             ->get();
 
         return response()->json($rows->map(function ($r) {
@@ -209,6 +431,7 @@ class SalePortalController extends Controller
             }
 
             $price = (float) ($r->sell_price_inc_tax ?: $r->default_sell_price ?: 0);
+            $img = $this->saleProductImage($r->product_image);
 
             return [
                 'product_id' => (int) $r->product_id,
@@ -220,8 +443,63 @@ class SalePortalController extends Controller
                 'enable_stock' => (int) $r->enable_stock,
                 'product_type' => $r->product_type,
                 'tax_id' => $r->tax_id,
+                'category_id' => (int) $r->category_id,
+                'sub_category_id' => (int) $r->sub_category_id,
+                'image' => $img['url'],
+                'has_image' => $img['has_image'],
             ];
         }));
+    }
+
+    /**
+     * Category → subcategory tree for catalog / filters.
+     */
+    public function categoriesTree(Request $request)
+    {
+        $business_id = $request->session()->get('user.business_id');
+        $tree = Category::catAndSubCategories($business_id, false);
+
+        return response()->json(collect($tree)->map(function ($cat) {
+            return [
+                'id' => (int) $cat['id'],
+                'name' => $cat['name'],
+                'sub_categories' => collect($cat['sub_categories'] ?? [])->map(function ($sub) {
+                    return [
+                        'id' => (int) $sub['id'],
+                        'name' => $sub['name'],
+                    ];
+                })->values(),
+            ];
+        })->values());
+    }
+
+    /**
+     * Browse all products with category filters (Sales App Products tab).
+     */
+    public function products(Request $request)
+    {
+        $business_id = $request->session()->get('user.business_id');
+        $locations = BusinessLocation::forDropdown($business_id, false);
+        $locationIds = array_map('strval', array_keys($locations->toArray()));
+        $default_location = $request->session()->get('user.default_location_id');
+        if (empty($default_location) || ! in_array((string) $default_location, $locationIds, true)) {
+            $default_location = count($locations) ? array_key_first($locations->toArray()) : null;
+        }
+        $categories = Category::catAndSubCategories($business_id, false);
+        $categoriesJson = collect($categories)->map(function ($c) {
+            return [
+                'id' => (int) $c['id'],
+                'name' => $c['name'],
+                'sub_categories' => collect($c['sub_categories'] ?? [])->map(function ($s) {
+                    return [
+                        'id' => (int) $s['id'],
+                        'name' => $s['name'],
+                    ];
+                })->values(),
+            ];
+        })->values();
+
+        return view('sale.products.index', compact('locations', 'default_location', 'categories', 'categoriesJson'));
     }
 
     public function store(Request $request)
@@ -239,6 +517,9 @@ class SalePortalController extends Controller
             'products.*.unit_price' => 'required|numeric|min:0',
             'payment_type' => 'required|in:cash,due',
             'sale_note' => 'nullable|string|max:500',
+            'shipping_details' => 'required|string|max:1000',
+            'shipping_address' => 'required|string|max:1000',
+            'shipping_status' => 'nullable|in:ordered,packed,shipped,delivered,cancelled',
         ]);
 
         // Verify customer belongs to business
@@ -281,16 +562,19 @@ class SalePortalController extends Controller
                     throw new \RuntimeException('Could not calculate total.');
                 }
 
+                $shipping_charges = 0;
+                $final_total = (float) $invoice_total['final_total'] + $shipping_charges;
+
                 $cg = $this->contactUtil->getCustomerGroup($business_id, $contact->id);
 
                 $input = [
-                    'type' => 'sell',
-                    'status' => 'final',
+                    'type' => 'sales_order',
+                    'status' => 'ordered',
                     'contact_id' => $contact->id,
                     'customer_group_id' => (empty($cg) || empty($cg->id)) ? null : $cg->id,
                     'transaction_date' => Carbon::now(),
                     'location_id' => $data['location_id'],
-                    'final_total' => $invoice_total['final_total'],
+                    'final_total' => $final_total,
                     'discount_type' => 'fixed',
                     'discount_amount' => 0,
                     'tax_rate_id' => null,
@@ -300,6 +584,10 @@ class SalePortalController extends Controller
                     'commission_agent' => null,
                     'exchange_rate' => 1,
                     'products' => $products,
+                    'shipping_details' => $data['shipping_details'] ?? null,
+                    'shipping_address' => $data['shipping_address'],
+                    'shipping_status' => $data['shipping_status'] ?? 'ordered',
+                    'shipping_charges' => 0,
                 ];
 
                 $cmsn = $request->session()->get('business.sales_cmsn_agnt');
@@ -310,7 +598,7 @@ class SalePortalController extends Controller
                 $transaction = $this->transactionUtil->createSellTransaction(
                     $business_id,
                     $input,
-                    $invoice_total,
+                    array_merge($invoice_total, ['final_total' => $final_total]),
                     $user_id,
                     false
                 );
@@ -325,50 +613,17 @@ class SalePortalController extends Controller
                     false
                 );
 
-                // Stock decrease
-                foreach ($products as $product) {
-                    if (! empty($product['enable_stock'])) {
-                        $this->productUtil->decreaseProductQuantity(
-                            $product['product_id'],
-                            $product['variation_id'],
-                            $data['location_id'],
-                            $product['quantity']
-                        );
-                    }
-                }
-
-                // Map FIFO / average cost
-                $business_details = $this->businessUtil->getDetails($business_id);
-                $business = [
-                    'id' => $business_id,
-                    'accounting_method' => $request->session()->get('business.accounting_method'),
-                    'location_id' => $data['location_id'],
-                    'pos_settings' => ! empty($business_details->pos_settings)
-                        ? json_decode($business_details->pos_settings, true)
-                        : [],
-                ];
-                $this->transactionUtil->mapPurchaseSell($business, $transaction->sell_lines, 'purchase');
-
-                // Payment: cash full or leave due
-                if ($data['payment_type'] === 'cash') {
-                    $this->transactionUtil->createOrUpdatePaymentLines($transaction, [
-                        [
-                            'amount' => $invoice_total['final_total'],
-                            'method' => 'cash',
-                            'paid_on' => Carbon::now()->toDateTimeString(),
-                            'note' => 'Sale app payment',
-                        ],
-                    ], $business_id, $user_id, false);
-                }
-
-                $this->transactionUtil->updatePaymentStatus($transaction->id, $transaction->final_total);
+                // Sales order: no stock decrease / payment until admin invoices it
 
                 return $transaction;
             });
 
             return redirect()
-                ->route('sale.orders.show', $transaction->id)
-                ->with('status', ['success' => 1, 'msg' => 'Order created: '.$transaction->invoice_no]);
+                ->route('sale.orders')
+                ->with('status', [
+                    'success' => 1,
+                    'msg' => 'Sales order created: '.$transaction->invoice_no,
+                ]);
         } catch (\Throwable $e) {
             \Log::error('Sale portal create failed: '.$e->getMessage(), ['trace' => $e->getTraceAsString()]);
 
@@ -379,11 +634,47 @@ class SalePortalController extends Controller
         }
     }
 
-    public function account()
+    public function account(Request $request)
     {
         $user = auth()->user();
+        $business_id = $request->session()->get('user.business_id');
+        $locations = BusinessLocation::forDropdown($business_id, false);
+        $locationIds = array_map('strval', array_keys($locations->toArray()));
 
-        return view('sale.account', compact('user'));
+        $current_location_id = $request->session()->get('user.default_location_id');
+        if (empty($current_location_id) || ! in_array((string) $current_location_id, $locationIds, true)) {
+            $current_location_id = count($locations) ? array_key_first($locations->toArray()) : null;
+            if ($current_location_id) {
+                $request->session()->put('user.default_location_id', $current_location_id);
+            }
+        }
+
+        return view('sale.account', compact('user', 'locations', 'current_location_id'));
+    }
+
+    /**
+     * Change default business location for Sales App (used on Create order).
+     */
+    public function updateLocation(Request $request)
+    {
+        $business_id = $request->session()->get('user.business_id');
+        $data = $request->validate([
+            'location_id' => 'required|integer',
+        ]);
+
+        $locations = BusinessLocation::forDropdown($business_id, false)->toArray();
+        $locationId = (int) $data['location_id'];
+        if (! isset($locations[$locationId]) && ! isset($locations[(string) $locationId])) {
+            return back()->with('status', ['success' => 0, 'msg' => 'Invalid location.']);
+        }
+
+        $request->session()->put('user.default_location_id', $locationId);
+        $label = $locations[$locationId] ?? $locations[(string) $locationId];
+
+        return back()->with('status', [
+            'success' => 1,
+            'msg' => 'Location updated: '.$label,
+        ]);
     }
 
     /**
@@ -513,5 +804,28 @@ class SalePortalController extends Controller
                 'msg' => 'Could not add customer. '.$e->getMessage(),
             ]);
         }
+    }
+
+    /**
+     * Product image for Sale App grids (real image or placeholder flag).
+     *
+     * @return array{url: string, has_image: bool}
+     */
+    protected function saleProductImage(?string $image): array
+    {
+        $default = asset('/img/default.png');
+        if (empty($image)) {
+            return ['url' => $default, 'has_image' => false];
+        }
+
+        $path = public_path('uploads/'.config('constants.product_img_path').'/'.$image);
+        if (! is_file($path)) {
+            return ['url' => $default, 'has_image' => false];
+        }
+
+        return [
+            'url' => asset('/uploads/'.config('constants.product_img_path').'/'.rawurlencode($image)),
+            'has_image' => true,
+        ];
     }
 }

@@ -2,12 +2,12 @@
 
 namespace App\Http\Middleware;
 
+use App\Http\Controllers\Sale\SaleRepGate;
 use Closure;
 use Illuminate\Http\Request;
 
 /**
- * Restricts /sale portal to staff users who can create sales.
- * Does not alter admin or POS behaviour.
+ * Restricts /sale portal to sales representatives only (not Admin / other staff without sell access).
  */
 class EnsureSaleRepAccess
 {
@@ -19,24 +19,21 @@ class EnsureSaleRepAccess
             return redirect()->guest(route('sale.login'));
         }
 
-        if ($user->user_type !== 'user' || empty($user->allow_login) || $user->status !== 'active') {
+        if (! SaleRepGate::allows($user)) {
+            $msg = SaleRepGate::denyMessage($user);
+
+            // Admin already using main system — don't kill their session
+            if (SaleRepGate::isAdmin($user)) {
+                return redirect('/home')
+                    ->with('status', ['success' => 0, 'msg' => $msg]);
+            }
+
             auth()->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
 
             return redirect()->route('sale.login')
-                ->with('status', ['success' => 0, 'msg' => __('lang_v1.login_not_allowed')]);
-        }
-
-        // Same sell permissions as the main system (role-based)
-        $canSell = $user->can('sell.create')
-            || $user->can('direct_sell.access')
-            || $user->can('direct_sell.view')
-            || $user->can('view_own_sell_only');
-
-        if (! $canSell) {
-            auth()->logout();
-
-            return redirect()->route('sale.login')
-                ->with('status', ['success' => 0, 'msg' => 'Your account does not have sales access.']);
+                ->with('status', ['success' => 0, 'msg' => $msg]);
         }
 
         return $next($request);

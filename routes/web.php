@@ -171,12 +171,17 @@ Route::prefix('sale')->name('sale.')->middleware(['setData'])->group(function ()
         Route::get('/orders/create', [SalePortalController::class, 'create'])->name('orders.create');
         Route::post('/orders', [SalePortalController::class, 'store'])->name('orders.store');
         Route::get('/orders/{id}', [SalePortalController::class, 'show'])->name('orders.show');
+        Route::get('/orders/{id}/invoice', [SalePortalController::class, 'downloadInvoice'])->name('orders.invoice');
+        Route::delete('/orders/{id}', [SalePortalController::class, 'destroy'])->name('orders.destroy');
         Route::get('/account', [SalePortalController::class, 'account'])->name('account');
+        Route::post('/account/location', [SalePortalController::class, 'updateLocation'])->name('account.location');
+        Route::get('/products', [SalePortalController::class, 'products'])->name('products');
         Route::get('/customers', [SalePortalController::class, 'customers'])->name('customers');
         Route::get('/customers/create', [SalePortalController::class, 'createCustomer'])->name('customers.create');
         Route::post('/customers', [SalePortalController::class, 'storeCustomer'])->name('customers.store');
         Route::get('/api/customers', [SalePortalController::class, 'searchCustomers'])->name('api.customers');
         Route::get('/api/products', [SalePortalController::class, 'searchProducts'])->name('api.products');
+        Route::get('/api/categories', [SalePortalController::class, 'categoriesTree'])->name('api.categories');
     });
 });
 

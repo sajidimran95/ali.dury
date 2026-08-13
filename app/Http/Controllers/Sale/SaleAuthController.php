@@ -60,16 +60,14 @@ class SaleAuthController extends Controller
                 ->with('status', ['success' => 0, 'msg' => __('lang_v1.login_not_allowed')]);
         }
 
-        $canSell = $user->can('sell.create')
-            || $user->can('direct_sell.access')
-            || $user->can('direct_sell.view')
-            || $user->can('view_own_sell_only');
-
-        if (! $canSell) {
+        // Sales App: sales reps only — block Admin and users without sell access
+        if (! SaleRepGate::allows($user)) {
             Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
 
             return redirect()->route('sale.login')
-                ->with('status', ['success' => 0, 'msg' => 'Your account does not have sales access.']);
+                ->with('status', ['success' => 0, 'msg' => SaleRepGate::denyMessage($user)]);
         }
 
         // Same business timezone as admin system (Business Settings → Time zone)

@@ -8,11 +8,12 @@
 </a>
 
 @php
-    $badge = match($order->payment_status) {
-        'paid' => 'sale-badge--paid',
+    $badge = match($order->status) {
+        'completed' => 'sale-badge--completed',
         'partial' => 'sale-badge--partial',
-        default => 'sale-badge--due',
+        default => 'sale-badge--ordered',
     };
+    $badgeLabel = ucfirst($order->status ?? 'ordered');
 @endphp
 
 <div class="sale-layout-2 space-y-3 lg:space-y-0">
@@ -24,7 +25,7 @@
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg>
                     </span>
                     <div class="min-w-0">
-                        <div class="text-xs font-bold uppercase tracking-wide text-slate-400">Invoice</div>
+                        <div class="text-xs font-bold uppercase tracking-wide text-slate-400">Sales order</div>
                         <div class="text-xl lg:text-2xl font-extrabold truncate">{{ $order->invoice_no }}</div>
                         <div class="text-sm text-slate-500 mt-1 flex items-center gap-1.5">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
@@ -32,7 +33,7 @@
                         </div>
                     </div>
                 </div>
-                <span class="sale-badge {{ $badge }} shrink-0">{{ ucfirst($order->payment_status ?? 'due') }}</span>
+                <span class="sale-badge {{ $badge }} shrink-0">{{ $badgeLabel }}</span>
             </div>
         </div>
 
@@ -76,6 +77,29 @@
                 <div class="text-sm text-slate-600">{{ $order->additional_notes }}</div>
             </div>
         @endif
+
+        @if($order->shipping_address || $order->shipping_details || $order->shipping_status)
+            <div class="sale-card">
+                <div class="sale-sec-title !mb-2">
+                    <span class="sale-sec-title__ico">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 21s7-4.5 7-11a7 7 0 1 0-14 0c0 6.5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>
+                    </span>
+                    Shipping
+                </div>
+                @if($order->shipping_status)
+                    <div class="text-xs font-bold uppercase tracking-wide text-slate-400 mb-1">Status</div>
+                    <div class="text-sm font-bold mb-3">{{ ucfirst($order->shipping_status) }}</div>
+                @endif
+                @if($order->shipping_address)
+                    <div class="text-xs font-bold uppercase tracking-wide text-slate-400 mb-1">Address</div>
+                    <div class="text-sm text-slate-700 whitespace-pre-line mb-3">{{ $order->shipping_address }}</div>
+                @endif
+                @if($order->shipping_details)
+                    <div class="text-xs font-bold uppercase tracking-wide text-slate-400 mb-1">Details</div>
+                    <div class="text-sm text-slate-700 mb-3">{{ $order->shipping_details }}</div>
+                @endif
+            </div>
+        @endif
     </div>
 
     <div class="sale-stack">
@@ -96,8 +120,22 @@
             @if(optional($order->contact)->email)
                 <div class="text-sm text-slate-500 mt-1">{{ $order->contact->email }}</div>
             @endif
+
+            <div class="sale-order-actions !mt-4 !flex-col !items-stretch !mb-2">
+                <a href="{{ route('sale.orders.invoice', $order->id) }}" target="_blank" class="sale-btn !w-full inline-flex items-center justify-center gap-2">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg>
+                    Invoice
+                </a>
+                <form method="POST" action="{{ route('sale.orders.destroy', $order->id) }}" class="mt-2" onsubmit="return confirm('Delete order {{ $order->invoice_no }}?');">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="sale-btn-ghost !w-full !text-rose-600 !border-rose-200">Delete order</button>
+                </form>
+            </div>
         </div>
-        <p class="text-xs text-slate-400 px-1">This order is in admin Sales for management.</p>
+        <p class="text-xs text-slate-400 px-1">
+            Sales order — same as admin Sales Orders. Admin converts it to invoice when ready.
+        </p>
     </div>
 </div>
 @endsection
