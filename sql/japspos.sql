@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Aug 13, 2026 at 06:26 PM
+-- Generation Time: Aug 13, 2026 at 06:48 PM
 -- Server version: 8.4.3
 -- PHP Version: 8.4.2
 
@@ -292,7 +292,8 @@ INSERT INTO `activity_log` (`id`, `log_name`, `description`, `subject_id`, `subj
 (182, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-08-13 07:16:34', '2026-08-13 07:16:34'),
 (183, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-08-13 07:20:36', '2026-08-13 07:20:36'),
 (184, 'default', 'so_deleted', 142, 'App\\Transaction', NULL, 1, 1, 'App\\User', '{\"id\":142,\"invoice_no\":\"2026\\/0001\"}', NULL, '2026-08-13 07:24:05', '2026-08-13 07:24:05'),
-(185, 'default', 'so_deleted', 10, 'App\\Transaction', NULL, 1, 1, 'App\\User', '{\"id\":10,\"invoice_no\":\"0002\"}', NULL, '2026-08-13 07:24:28', '2026-08-13 07:24:28');
+(185, 'default', 'so_deleted', 10, 'App\\Transaction', NULL, 1, 1, 'App\\User', '{\"id\":10,\"invoice_no\":\"0002\"}', NULL, '2026-08-13 07:24:28', '2026-08-13 07:24:28'),
+(186, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-08-13 08:32:13', '2026-08-13 08:32:13');
 
 -- --------------------------------------------------------
 
@@ -1404,7 +1405,8 @@ INSERT INTO `ecom_carts` (`id`, `business_id`, `contact_id`, `session_id`, `coup
 (102, 1, NULL, '8vyuG4kYsRanYiRHwgrhBdOLoO8k99wFNy2MVeSp', NULL, '2026-08-13 16:44:54', '2026-08-13 16:44:54'),
 (103, 1, NULL, 'l2R5atskK7fxHGdryBxKjIZd2SCegUXxY9FSHbtH', NULL, '2026-08-13 16:45:21', '2026-08-13 16:45:21'),
 (104, 1, NULL, 'v14FxVTC1yGCyf1ofi93iH4dcOVbMVSKmexArc6T', NULL, '2026-08-13 16:47:18', '2026-08-13 16:47:18'),
-(105, 1, NULL, 'x9UpC8IuapG6rhTytxKGaHx0pQf7FHVdZSkfW6Sq', NULL, '2026-08-13 16:51:32', '2026-08-13 16:51:32');
+(105, 1, NULL, 'x9UpC8IuapG6rhTytxKGaHx0pQf7FHVdZSkfW6Sq', NULL, '2026-08-13 16:51:32', '2026-08-13 16:51:32'),
+(106, 1, NULL, 'jLMMiHo7vBBQmXQftJr9xynHhICbnqUYgOQ1FhO0', NULL, '2026-08-13 18:02:02', '2026-08-13 18:02:02');
 
 -- --------------------------------------------------------
 
@@ -2572,7 +2574,9 @@ INSERT INTO `permissions` (`id`, `name`, `guard_name`, `created_at`, `updated_at
 (92, 'attendance.edit', 'web', '2026-08-12 13:15:41', '2026-08-12 13:15:41'),
 (93, 'so.view_own', 'web', '2026-08-13 07:45:15', '2026-08-13 07:45:15'),
 (94, 'so.create', 'web', '2026-08-13 07:45:15', '2026-08-13 07:45:15'),
-(95, 'so.delete', 'web', '2026-08-13 07:45:15', '2026-08-13 07:45:15');
+(95, 'so.delete', 'web', '2026-08-13 07:45:15', '2026-08-13 07:45:15'),
+(96, 'so.update_own', 'web', '2026-08-13 18:17:03', '2026-08-13 18:17:03'),
+(97, 'so.delete_own', 'web', '2026-08-13 18:17:03', '2026-08-13 18:17:03');
 
 -- --------------------------------------------------------
 
@@ -3000,13 +3004,11 @@ INSERT INTO `role_has_permissions` (`permission_id`, `role_id`) VALUES
 (27, 3),
 (36, 3),
 (37, 3),
-(40, 3),
-(48, 3),
-(49, 3),
 (80, 3),
 (93, 3),
 (94, 3),
-(95, 3);
+(96, 3),
+(97, 3);
 
 -- --------------------------------------------------------
 
@@ -4936,7 +4938,7 @@ ALTER TABLE `account_types`
 -- AUTO_INCREMENT for table `activity_log`
 --
 ALTER TABLE `activity_log`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=186;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=187;
 
 --
 -- AUTO_INCREMENT for table `ai_assistance_settings`
@@ -5074,7 +5076,7 @@ ALTER TABLE `ecom_banners`
 -- AUTO_INCREMENT for table `ecom_carts`
 --
 ALTER TABLE `ecom_carts`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=106;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=107;
 
 --
 -- AUTO_INCREMENT for table `ecom_cart_items`
@@ -5212,7 +5214,7 @@ ALTER TABLE `oauth_personal_access_clients`
 -- AUTO_INCREMENT for table `permissions`
 --
 ALTER TABLE `permissions`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=96;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=98;
 
 --
 -- AUTO_INCREMENT for table `printers`
