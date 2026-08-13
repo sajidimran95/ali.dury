@@ -55,12 +55,12 @@
                             <i class="fas fa-external-link-alt"></i> @lang('sale.invoice_no') {{ $converted_invoice->invoice_no }}
                         </a>
                     @endforeach
-                    @can('so.update')
+                    @if($can_edit_order)
                         <a href="{{ action([\App\Http\Controllers\SellController::class, 'edit'], [$order->id]) }}"
                            class="tw-dw-btn tw-dw-btn-outline tw-dw-btn-info tw-dw-btn-sm">
                             <i class="fas fa-edit"></i> @lang('messages.edit')
                         </a>
-                    @endcan
+                    @endif
                     <a href="#" class="print-invoice tw-dw-btn tw-dw-btn-success tw-text-white tw-dw-btn-sm"
                        data-href="{{ route('sell.printInvoice', [$order->id]) }}?package_slip=true">
                         <i class="fas fa-file-alt"></i> @lang('lang_v1.packing_slip')
@@ -373,7 +373,7 @@
                 @endcomponent
             @endif
 
-            @if($meta && (auth()->user()->can('so.update') || $can_update_status))
+            @if($meta && $can_update_status)
                 @component('components.widget', ['class' => 'box-warning', 'title' => __('ecommerce::lang.fulfillment_status')])
                     {!! Form::open(['url' => route('sales-order.fulfillment', $order->id), 'method' => 'post']) !!}
                         <div class="form-group">

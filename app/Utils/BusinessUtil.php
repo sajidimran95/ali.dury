@@ -146,13 +146,15 @@ class BusinessUtil extends Util
         }
 
         if ($syncPermissions || $created) {
+            // Sales Representative defaults: own SO + customers + print. No POS/sell, no all-SO edit/delete.
             $permissions = [
-                'product.view',
                 'customer.view',
+                'customer.create',
                 'so.view_own',
                 'so.create',
                 'so.update_own',
                 'so.delete_own',
+                'print_invoice',
                 'access_all_locations',
             ];
 

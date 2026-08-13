@@ -128,7 +128,8 @@ class SalesOrderController extends Controller
         $can_update_shipping = $is_admin || auth()->user()->hasAnyPermission([
             'access_shipping', 'access_own_shipping', 'access_commission_agent_shipping',
         ]);
-        $can_update_status = $is_admin || auth()->user()->can('so.update');
+        $can_update_status = $is_admin || \App\Utils\SalesOrderPermission::canUpdateAny(auth()->user());
+        $can_edit_order = $is_admin || \App\Utils\SalesOrderPermission::canUpdate(auth()->user(), $order);
 
         return view('sales_order.show', compact(
             'order',
@@ -140,7 +141,8 @@ class SalesOrderController extends Controller
             'converted_invoice_html',
             'users',
             'can_update_shipping',
-            'can_update_status'
+            'can_update_status',
+            'can_edit_order'
         ));
     }
 
@@ -150,7 +152,7 @@ class SalesOrderController extends Controller
     public function updateStatus(Request $request, $id)
     {
         $is_admin = $this->businessUtil->is_admin(auth()->user());
-        if (! $is_admin && ! auth()->user()->can('so.update')) {
+        if (! $is_admin && ! \App\Utils\SalesOrderPermission::canUpdateAny(auth()->user())) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -227,7 +229,7 @@ class SalesOrderController extends Controller
      */
     public function updateFulfillment(Request $request, $id)
     {
-        if (! auth()->user()->can('so.update') && ! $this->businessUtil->is_admin(auth()->user())) {
+        if (! auth()->user()->can('so.update') && ! \App\Utils\SalesOrderPermission::canUpdateAny(auth()->user()) && ! $this->businessUtil->is_admin(auth()->user())) {
             abort(403, 'Unauthorized action.');
         }
 
