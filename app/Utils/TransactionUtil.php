@@ -6535,7 +6535,72 @@ class TransactionUtil extends Util
             }
             $sales_order->status = $status;
             $sales_order->save();
+
+            $this->syncEcommerceTrackingAfterInvoice($sales_order);
         }
+    }
+
+    /**
+     * Push invoice-conversion events onto ecommerce order tracking timeline.
+     */
+    protected function syncEcommerceTrackingAfterInvoice(Transaction $sales_order): void
+    {
+        if (($sales_order->source ?? null) !== 'ecommerce') {
+            return;
+        }
+
+        if (! class_exists(\Modules\Ecommerce\Entities\EcomOrderMeta::class)) {
+            return;
+        }
+
+        $meta = \Modules\Ecommerce\Entities\EcomOrderMeta::where('transaction_id', $sales_order->id)->first();
+        if (empty($meta)) {
+            return;
+        }
+
+        $invoices = Transaction::invoicesBySalesOrderId((int) $sales_order->business_id)[(int) $sales_order->id] ?? [];
+        if (empty($invoices)) {
+            return;
+        }
+
+        $timeline = is_array($meta->timeline) ? $meta->timeline : [];
+        $existingInvoiceNos = [];
+        foreach ($timeline as $step) {
+            if (! empty($step['invoice_no'])) {
+                $existingInvoiceNos[] = (string) $step['invoice_no'];
+            }
+        }
+
+        $added = false;
+        foreach ($invoices as $invoice) {
+            $invoiceNo = (string) ($invoice->invoice_no ?? '');
+            if ($invoiceNo === '' || in_array($invoiceNo, $existingInvoiceNos, true)) {
+                continue;
+            }
+
+            $timeline[] = [
+                'status' => 'invoiced',
+                'label' => __('ecommerce::lang.converted_to_invoice_label', ['invoice_no' => $invoiceNo]),
+                'invoice_no' => $invoiceNo,
+                'invoice_id' => $invoice->id,
+                'at' => now()->toDateTimeString(),
+            ];
+            $existingInvoiceNos[] = $invoiceNo;
+            $added = true;
+        }
+
+        if (! $added) {
+            return;
+        }
+
+        $meta->timeline = $timeline;
+
+        // Keep fulfillment progressing when order is invoiced
+        if (in_array($meta->fulfillment_status, [null, '', 'pending'], true)) {
+            $meta->fulfillment_status = 'confirmed';
+        }
+
+        $meta->save();
     }
 
     public function getUserTotalSales($business_id, $user_id, $start_date, $end_date)

@@ -119,14 +119,38 @@ class CheckoutController extends Controller
         $token = $request->get('token');
         $meta = null;
         $order = null;
+        $converted_invoices = [];
+        $timeline = [];
+
         if ($token) {
             $meta = EcomOrderMeta::where('tracking_token', $token)->first();
             if ($meta) {
                 $order = \App\Transaction::with(['sell_lines.product'])->find($meta->transaction_id);
+                if ($order) {
+                    $converted_invoices = \App\Transaction::invoicesBySalesOrderId((int) $order->business_id)[(int) $order->id] ?? [];
+
+                    // Backfill timeline once for older conversions that predate this feature
+                    $timelineHasInvoice = collect($meta->timeline ?? [])->contains(function ($step) {
+                        return ($step['status'] ?? '') === 'invoiced' || ! empty($step['invoice_no']);
+                    });
+
+                    if (
+                        ! empty($converted_invoices)
+                        && ! $timelineHasInvoice
+                        && ($order->source ?? null) === 'ecommerce'
+                        && $order->type === 'sales_order'
+                    ) {
+                        app(\App\Utils\TransactionUtil::class)->updateSalesOrderStatus([$order->id]);
+                        $meta->refresh();
+                        $order->refresh();
+                    }
+                }
+
+                $timeline = is_array($meta->timeline) ? $meta->timeline : [];
             }
         }
 
-        return view('ecommerce::front.account.track', compact('meta', 'order', 'token'));
+        return view('ecommerce::front.account.track', compact('meta', 'order', 'token', 'converted_invoices', 'timeline'));
     }
 
     protected function usStates(): array

@@ -396,7 +396,7 @@ class Transaction extends Model
             ->where('type', 'sell')
             ->where('status', 'final')
             ->whereNotNull('sales_order_ids')
-            ->get(['id', 'invoice_no', 'is_direct_sale', 'sales_order_ids']);
+            ->get(['id', 'invoice_no', 'is_direct_sale', 'sales_order_ids', 'transaction_date', 'created_at']);
 
         $map = [];
         foreach ($sells as $sell) {
