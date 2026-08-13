@@ -31,6 +31,10 @@
 @if(!empty($pos_settings['allow_overselling']))
 	<input type="hidden" id="is_overselling_allowed">
 @endif
+@if(!empty($convert_sales_order))
+	<input type="hidden" id="convert_sales_order_id" value="{{ $convert_sales_order->id }}">
+	<input type="hidden" id="convert_sales_order_no" value="{{ $convert_sales_order->invoice_no }}">
+@endif
 @if(session('business.enable_rp') == 1)
     <input type="hidden" id="reward_point_enabled">
 @endif
@@ -336,7 +340,7 @@
 	            </div>
 		        <div class="clearfix"></div>
 
-		        @if((!empty($pos_settings['enable_sales_order']) && $sale_type != 'sales_order') || $is_order_request_enabled)
+		        @if(((!empty($pos_settings['enable_sales_order']) || !empty($convert_sales_order)) && $sale_type != 'sales_order') || $is_order_request_enabled)
 					<div class="col-sm-3">
 						<div class="form-group">
 							{!! Form::label('sales_order_ids', __('lang_v1.sales_order').':') !!}
@@ -998,6 +1002,30 @@
 			if($('.payment_types_dropdown').length){
 				$('.payment_types_dropdown').change();
 			}
+
+			if ($('#status').length && !$('#status').val()) {
+				$('#status').val('final').trigger('change');
+			}
+
+			setTimeout(function () {
+				var convertId = $('#convert_sales_order_id').val();
+				if (!convertId || !$('#sales_order_ids').length) {
+					return;
+				}
+				if ($('table#pos_table tbody tr.product_row').length) {
+					return;
+				}
+				var label = $('#convert_sales_order_no').val() || convertId;
+				if ($('#sales_order_ids option[value="' + convertId + '"]').length === 0) {
+					$('#sales_order_ids').append(new Option(label, convertId, true, true));
+				}
+				$('#sales_order_ids').val([String(convertId)]).trigger('change');
+				$('#sales_order_ids').trigger({
+					type: 'select2:select',
+					params: { data: { id: convertId } }
+				});
+				$('#convert_sales_order_id').val('');
+			}, 1500);
 
     	});
     </script>

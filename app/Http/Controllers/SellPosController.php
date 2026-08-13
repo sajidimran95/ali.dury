@@ -1056,6 +1056,19 @@ class SellPosController extends Controller
     {
         $business_id = request()->session()->get('user.business_id');
 
+        $existing = Transaction::where('business_id', $business_id)
+            ->whereIn('type', ['sell', 'sales_order'])
+            ->select('id', 'type')
+            ->find($id);
+
+        if (empty($existing)) {
+            abort(404);
+        }
+
+        if ($existing->type == 'sales_order') {
+            return redirect()->action([\App\Http\Controllers\SellController::class, 'edit'], [$id]);
+        }
+
         if (!(auth()->user()->can('superadmin') || auth()->user()->can('sell.update')
             || auth()->user()->can('edit_pos_payment')
             || ($this->moduleUtil->hasThePermissionInSubscription($business_id, 'repair_module') &&

@@ -266,13 +266,16 @@ class SellController extends Controller
                             $html .= '<li><a href="#" data-href="'.action([\App\Http\Controllers\SellController::class, 'show'], [$row->id]).'" class="btn-modal" data-container=".view_modal"><i class="fas fa-eye" aria-hidden="true"></i> '.__('messages.view').'</a></li>';
                         }
                         if (! $only_shipments) {
-                            if ($row->is_direct_sale == 0) {
-                                if (auth()->user()->can('sell.update')) {
-                                    $html .= '<li><a target="_blank" href="'.route('pos.edit', ['po' => $row->id]).'"><i class="fas fa-edit"></i> '.__('messages.edit').'</a></li>';
-                                }
-                            } elseif ($row->type == 'sales_order') {
+                            if ($row->type == 'sales_order') {
                                 if (auth()->user()->can('so.update')) {
                                     $html .= '<li><a target="_blank" href="'.action([\App\Http\Controllers\SellController::class, 'edit'], [$row->id]).'"><i class="fas fa-edit"></i> '.__('messages.edit').'</a></li>';
+                                }
+                                if (in_array($row->status, ['ordered', 'partial'], true) && (auth()->user()->can('sell.create') || auth()->user()->can('direct_sell.access'))) {
+                                    $html .= '<li><a href="'.action([\App\Http\Controllers\SellController::class, 'create']).'?sales_order_id='.$row->id.'"><i class="fas fa-file-invoice"></i> '.__('lang_v1.convert_to_invoice').'</a></li>';
+                                }
+                            } elseif ($row->is_direct_sale == 0) {
+                                if (auth()->user()->can('sell.update')) {
+                                    $html .= '<li><a target="_blank" href="'.route('pos.edit', ['po' => $row->id]).'"><i class="fas fa-edit"></i> '.__('messages.edit').'</a></li>';
                                 }
                             } else {
                                 if (auth()->user()->can('direct_sell.update')) {
@@ -281,12 +284,12 @@ class SellController extends Controller
                             }
 
                             $delete_link = '<li><a href="'.action([\App\Http\Controllers\SellPosController::class, 'destroy'], [$row->id]).'" class="delete-sale"><i class="fas fa-trash"></i> '.__('messages.delete').'</a></li>';
-                            if ($row->is_direct_sale == 0) {
-                                if (auth()->user()->can('sell.delete')) {
+                            if ($row->type == 'sales_order') {
+                                if (auth()->user()->can('so.delete')) {
                                     $html .= $delete_link;
                                 }
-                            } elseif ($row->type == 'sales_order') {
-                                if (auth()->user()->can('so.delete')) {
+                            } elseif ($row->is_direct_sale == 0) {
+                                if (auth()->user()->can('sell.delete')) {
                                     $html .= $delete_link;
                                 }
                             } else {
@@ -638,6 +641,26 @@ class SellController extends Controller
 
         $walk_in_customer = $this->contactUtil->getWalkInCustomer($business_id);
 
+        $convert_sales_order = null;
+        if ($sale_type != 'sales_order' && ! empty(request()->input('sales_order_id'))) {
+            $convert_sales_order = Transaction::where('business_id', $business_id)
+                ->where('type', 'sales_order')
+                ->whereIn('status', ['ordered', 'partial'])
+                ->find(request()->input('sales_order_id'));
+
+            if (! empty($convert_sales_order)) {
+                $so_contact = Contact::where('business_id', $business_id)
+                    ->find($convert_sales_order->contact_id);
+                if (! empty($so_contact)) {
+                    $walk_in_customer = $so_contact->toArray();
+                    $walk_in_customer['name'] = $so_contact->name;
+                    $walk_in_customer['balance'] = $so_contact->balance ?? 0;
+                    $walk_in_customer['shipping_address'] = $so_contact->shipping_address;
+                    $walk_in_customer['contact_address'] = $so_contact->contact_address ?? '';
+                }
+            }
+        }
+
         $business_details = $this->businessUtil->getDetails($business_id);
         $taxes = TaxRate::forBusinessDropdown($business_id, true, true);
 
@@ -649,6 +672,13 @@ class SellController extends Controller
         foreach ($business_locations as $id => $name) {
             $default_location = BusinessLocation::findOrFail($id);
             break;
+        }
+
+        if (! empty($convert_sales_order)) {
+            $so_location = BusinessLocation::find($convert_sales_order->location_id);
+            if (! empty($so_location) && array_key_exists($so_location->id, $business_locations)) {
+                $default_location = $so_location;
+            }
         }
 
         $commsn_agnt_setting = $business_details->sales_cmsn_agnt;
@@ -755,7 +785,8 @@ class SellController extends Controller
                 'is_order_request_enabled',
                 'users',
                 'default_price_group_id',
-                'change_return'
+                'change_return',
+                'convert_sales_order'
             ));
     }
 

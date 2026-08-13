@@ -5924,6 +5924,28 @@ function get_sales_orders() {
                     }
                 });
                 pos_total_row();
+
+                var convertId = $('#convert_sales_order_id').val();
+                if (convertId && $('#sales_order_ids').length) {
+                    var hasOption = false;
+                    $.each(data || [], function (i, row) {
+                        if (String(row.id) === String(convertId)) {
+                            hasOption = true;
+                            return false;
+                        }
+                    });
+                    if (!hasOption) {
+                        var label = $('#convert_sales_order_no').val() || convertId;
+                        data = (data || []).concat([{ id: convertId, text: label }]);
+                        $('#sales_order_ids').select2('destroy').empty().select2({data: data});
+                    }
+                    $('#sales_order_ids').val([String(convertId)]).trigger('change');
+                    $('#sales_order_ids').trigger({
+                        type: 'select2:select',
+                        params: { data: { id: convertId } }
+                    });
+                    $('#convert_sales_order_id').val('');
+                }
             },
         });
     }

@@ -39,6 +39,23 @@
                     <i class="fas fa-arrow-left"></i> @lang('ecommerce::lang.back_to_orders')
                 </a>
                 <div class="tw-flex tw-flex-wrap tw-gap-2">
+                    @if($order->type === 'sales_order' && in_array($order->status, ['ordered', 'partial'], true) && (auth()->user()->can('sell.create') || auth()->user()->can('direct_sell.access')))
+                        <a href="{{ action([\App\Http\Controllers\SellController::class, 'create']) }}?sales_order_id={{ $order->id }}"
+                           class="tw-dw-btn tw-dw-btn-warning tw-text-white tw-dw-btn-sm"
+                           title="@lang('ecommerce::lang.convert_to_sale_help')">
+                            <i class="fas fa-file-invoice"></i> @lang('ecommerce::lang.convert_to_sale')
+                        </a>
+                    @elseif($order->type === 'sales_order' && $order->status === 'completed')
+                        <span class="tw-dw-btn tw-dw-btn-outline tw-dw-btn-neutral tw-dw-btn-sm tw-pointer-events-none">
+                            <i class="fas fa-check"></i> @lang('ecommerce::lang.already_converted')
+                        </span>
+                    @endif
+                    @if($order->type === 'sales_order' && auth()->user()->can('so.update'))
+                        <a href="{{ action([\App\Http\Controllers\SellController::class, 'edit'], [$order->id]) }}"
+                           class="tw-dw-btn tw-dw-btn-outline tw-dw-btn-info tw-dw-btn-sm">
+                            <i class="fas fa-edit"></i> @lang('ecommerce::lang.edit_sales_order')
+                        </a>
+                    @endif
                     <a href="#" class="print-invoice tw-dw-btn tw-dw-btn-success tw-text-white tw-dw-btn-sm"
                        data-href="{{ route('sell.printInvoice', [$order->id]) }}?package_slip=true">
                         <i class="fas fa-file-alt"></i> @lang('lang_v1.packing_slip')
@@ -64,6 +81,12 @@
                 <div class="row">
                     <div class="col-sm-4">
                         <p class="tw-mb-1"><b>@lang('sale.invoice_no'):</b> #{{ $order->invoice_no }}</p>
+                        @if($order->type === 'sales_order')
+                            <p class="tw-mb-1">
+                                <b>@lang('lang_v1.sales_order'):</b>
+                                <span class="label bg-info">{{ ucfirst($order->status) }}</span>
+                            </p>
+                        @endif
                         <p class="tw-mb-1"><b>@lang('messages.date'):</b> {{ @format_datetime($order->transaction_date) }}</p>
                         <p class="tw-mb-1">
                             <b>@lang('sale.payment_status'):</b>
