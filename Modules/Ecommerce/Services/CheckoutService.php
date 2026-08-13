@@ -123,6 +123,10 @@ class CheckoutService
 
             $transaction = $this->transactionUtil->createSellTransaction($business_id, $input, $invoice_total, $user_id, false);
             $this->transactionUtil->createOrUpdateSellLines($transaction, $products, $location_id, false, null, [], false);
+            $transaction->load('sell_lines');
+            if ($transaction->sell_lines->isEmpty()) {
+                throw new \RuntimeException(__('ecommerce::lang.order_items_missing'));
+            }
 
             $payment_status = $payment_method === 'cod' ? 'due' : 'due';
             $transaction->payment_status = $payment_status;

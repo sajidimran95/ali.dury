@@ -5907,6 +5907,9 @@ function update_shipping_address(data) {
 
 function get_sales_orders() {
     if ($('#sales_order_ids').length) {
+        if ($('#sale_type').val() === 'sales_order') {
+            return false;
+        }
         if ($('#sales_order_ids').hasClass('not_loaded')) {
             $('#sales_order_ids').removeClass('not_loaded');
             return false;

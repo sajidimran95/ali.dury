@@ -20,6 +20,7 @@ return [
     'convert_to_sale_help' => 'Opens Add Sale with this order loaded. Set status to Final and save to count it as a sale.',
     'already_converted' => 'Already converted',
     'edit_sales_order' => 'Edit sales order',
+    'order_items_missing' => 'Order could not be saved because no products were stored.',
     'customer_info' => 'Customer',
     'shipping_info' => 'Shipping',
     'billing_info' => 'Billing',

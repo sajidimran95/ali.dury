@@ -1275,6 +1275,7 @@ return [
     'convert_to_invoice' => 'Convert to invoice',
     'converted_to_invoice' => 'Converted',
     'not_converted' => 'Not converted',
+    'no_order_items' => 'This order has no products. Add items below and save.',
     'converted_to_invoice_successfully' => 'Converted to invoice :invoice_no successfully',
     'proforma' => 'Proforma',
     'proforma_invoice' => 'Proforma invoice',
