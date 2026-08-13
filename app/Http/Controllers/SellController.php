@@ -225,7 +225,7 @@ class SellController extends Controller
             $datatable = Datatables::of($sells)
                 ->addColumn(
                     'action',
-                    function ($row) use ($only_shipments, $is_admin, $sale_type, $is_zatca) {
+                    function ($row) use ($only_shipments, $is_admin, $sale_type, $is_zatca, $business_id) {
 
                         // this action button for zatca module
                         if ($is_zatca) {
@@ -272,6 +272,13 @@ class SellController extends Controller
                                 }
                                 if (in_array($row->status, ['ordered', 'partial'], true) && (auth()->user()->can('sell.create') || auth()->user()->can('direct_sell.access'))) {
                                     $html .= '<li><a href="'.action([\App\Http\Controllers\SellController::class, 'create']).'?sales_order_id='.$row->id.'"><i class="fas fa-file-invoice"></i> '.__('lang_v1.convert_to_invoice').'</a></li>';
+                                }
+                                $linked_invoices = \App\Transaction::invoicesBySalesOrderId((int) $business_id)[(int) $row->id] ?? [];
+                                foreach ($linked_invoices as $linked_invoice) {
+                                    $invoice_url = ! empty($linked_invoice->is_direct_sale)
+                                        ? action([\App\Http\Controllers\SellController::class, 'edit'], [$linked_invoice->id])
+                                        : route('pos.edit', ['po' => $linked_invoice->id]);
+                                    $html .= '<li><a target="_blank" href="'.$invoice_url.'"><i class="fas fa-external-link-alt"></i> '.__('sale.invoice_no').': '.$linked_invoice->invoice_no.'</a></li>';
                                 }
                             } elseif ($row->is_direct_sale == 0) {
                                 if (auth()->user()->can('sell.update')) {
@@ -396,6 +403,13 @@ class SellController extends Controller
                     }
                 )
                 ->editColumn('transaction_date', '{{@format_datetime($transaction_date)}}')
+                ->addColumn('converted_invoice', function ($row) use ($business_id, $sale_type) {
+                    if ($sale_type != 'sales_order') {
+                        return '';
+                    }
+
+                    return $this->transactionUtil->salesOrderConvertedInvoiceHtml((int) $business_id, (int) $row->id);
+                })
                 ->editColumn(
                     'payment_status',
                     function ($row) {
@@ -526,7 +540,7 @@ class SellController extends Controller
                         }
                     }, ]);
 
-            $rawColumns = ['final_total', 'action', 'total_paid', 'total_remaining', 'payment_status', 'invoice_no', 'discount_amount', 'tax_amount', 'total_before_tax', 'shipping_status', 'types_of_service_name', 'payment_methods', 'return_due', 'conatct_name', 'status', 'zatca_status'];
+            $rawColumns = ['final_total', 'action', 'total_paid', 'total_remaining', 'payment_status', 'invoice_no', 'discount_amount', 'tax_amount', 'total_before_tax', 'shipping_status', 'types_of_service_name', 'payment_methods', 'return_due', 'conatct_name', 'status', 'zatca_status', 'converted_invoice'];
 
             return $datatable->rawColumns($rawColumns)
                       ->skipTotalRecords()
@@ -676,7 +690,7 @@ class SellController extends Controller
 
         if (! empty($convert_sales_order)) {
             $so_location = BusinessLocation::find($convert_sales_order->location_id);
-            if (! empty($so_location) && array_key_exists($so_location->id, $business_locations)) {
+            if (! empty($so_location) && isset($business_locations[$so_location->id])) {
                 $default_location = $so_location;
             }
         }

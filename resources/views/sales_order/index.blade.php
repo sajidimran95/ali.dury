@@ -85,6 +85,7 @@
                         <th>@lang('lang_v1.shipping_status')</th>
                         <th>@lang('lang_v1.quantity_remaining')</th>
                         <th>@lang('lang_v1.added_by')</th>
+                        <th>@lang('sale.invoice_no')</th>
                     </tr>
                 </thead>
             </table>
@@ -161,6 +162,7 @@ $(document).ready( function(){
             { data: 'shipping_status', name: 'shipping_status'},
             { data: 'so_qty_remaining', name: 'so_qty_remaining', "searchable": false},
             { data: 'added_by', name: 'u.first_name'},
+            { data: 'converted_invoice', name: 'converted_invoice', orderable: false, searchable: false},
         ]
     });
     $(document).on('change', '#sell_list_filter_location_id, #sell_list_filter_customer_id, #created_by, #so_list_filter_status, #so_list_shipping_status',  function() {

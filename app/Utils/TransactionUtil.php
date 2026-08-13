@@ -6497,6 +6497,27 @@ class TransactionUtil extends Util
         return $mpdf;
     }
 
+    /**
+     * Status + invoice links for a sales order that was converted to a sale.
+     */
+    public function salesOrderConvertedInvoiceHtml(int $businessId, int $salesOrderId): string
+    {
+        $invoices = Transaction::invoicesBySalesOrderId($businessId)[$salesOrderId] ?? [];
+        if (empty($invoices)) {
+            return '<span class="label bg-gray">'.e(__('lang_v1.not_converted')).'</span>';
+        }
+
+        $html = '<span class="label bg-green">'.e(__('lang_v1.converted_to_invoice')).'</span>';
+        foreach ($invoices as $invoice) {
+            $url = ! empty($invoice->is_direct_sale)
+                ? action([\App\Http\Controllers\SellController::class, 'edit'], [$invoice->id])
+                : route('pos.edit', ['po' => $invoice->id]);
+            $html .= ' <a href="'.e($url).'" target="_blank">'.e($invoice->invoice_no).'</a>';
+        }
+
+        return $html;
+    }
+
     public function updateSalesOrderStatus($sales_order_ids = [])
     {
         foreach ($sales_order_ids as $sales_order_id) {

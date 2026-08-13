@@ -380,6 +380,36 @@ class Transaction extends Model
         });
     }
 
+    /**
+     * Final invoices created from sales orders, keyed by sales order id.
+     *
+     * @return array<int, array<int, self>>
+     */
+    public static function invoicesBySalesOrderId(int $businessId): array
+    {
+        static $cache = [];
+        if (isset($cache[$businessId])) {
+            return $cache[$businessId];
+        }
+
+        $sells = static::where('business_id', $businessId)
+            ->where('type', 'sell')
+            ->where('status', 'final')
+            ->whereNotNull('sales_order_ids')
+            ->get(['id', 'invoice_no', 'is_direct_sale', 'sales_order_ids']);
+
+        $map = [];
+        foreach ($sells as $sell) {
+            foreach ((array) $sell->sales_order_ids as $soId) {
+                $map[(int) $soId][] = $sell;
+            }
+        }
+
+        $cache[$businessId] = $map;
+
+        return $map;
+    }
+
     public static function sell_statuses()
     {
         return [

@@ -45,11 +45,17 @@
                            title="@lang('ecommerce::lang.convert_to_sale_help')">
                             <i class="fas fa-file-invoice"></i> @lang('ecommerce::lang.convert_to_sale')
                         </a>
-                    @elseif($order->type === 'sales_order' && $order->status === 'completed')
-                        <span class="tw-dw-btn tw-dw-btn-outline tw-dw-btn-neutral tw-dw-btn-sm tw-pointer-events-none">
-                            <i class="fas fa-check"></i> @lang('ecommerce::lang.already_converted')
-                        </span>
                     @endif
+                    @foreach($converted_invoices ?? [] as $converted_invoice)
+                        @php
+                            $converted_url = !empty($converted_invoice->is_direct_sale)
+                                ? action([\App\Http\Controllers\SellController::class, 'edit'], [$converted_invoice->id])
+                                : route('pos.edit', ['po' => $converted_invoice->id]);
+                        @endphp
+                        <a href="{{ $converted_url }}" target="_blank" class="tw-dw-btn tw-dw-btn-success tw-text-white tw-dw-btn-sm">
+                            <i class="fas fa-external-link-alt"></i> @lang('sale.invoice_no') {{ $converted_invoice->invoice_no }}
+                        </a>
+                    @endforeach
                     @if($order->type === 'sales_order' && auth()->user()->can('so.update'))
                         <a href="{{ action([\App\Http\Controllers\SellController::class, 'edit'], [$order->id]) }}"
                            class="tw-dw-btn tw-dw-btn-outline tw-dw-btn-info tw-dw-btn-sm">
@@ -86,6 +92,7 @@
                                 <b>@lang('lang_v1.sales_order'):</b>
                                 <span class="label bg-info">{{ ucfirst($order->status) }}</span>
                             </p>
+                            <p class="tw-mb-1">{!! $converted_invoice_html !!}</p>
                         @endif
                         <p class="tw-mb-1"><b>@lang('messages.date'):</b> {{ @format_datetime($order->transaction_date) }}</p>
                         <p class="tw-mb-1">

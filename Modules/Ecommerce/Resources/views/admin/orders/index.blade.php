@@ -25,6 +25,7 @@
                     <th>@lang('sale.payment_status')</th>
                     <th>@lang('ecommerce::lang.fulfillment')</th>
                     <th>@lang('messages.date')</th>
+                    <th>@lang('sale.invoice_no')</th>
                 </tr>
             </thead>
         </table>
@@ -47,7 +48,8 @@
                 { data: 'final_total', name: 'transactions.final_total' },
                 { data: 'payment_status', name: 'transactions.payment_status' },
                 { data: 'fulfillment_status', name: 'ecom_order_meta.fulfillment_status' },
-                { data: 'transaction_date', name: 'transactions.transaction_date' }
+                { data: 'transaction_date', name: 'transactions.transaction_date' },
+                { data: 'converted_invoice', name: 'converted_invoice', orderable: false, searchable: false }
             ],
             fnDrawCallback: function () {
                 __currency_convert_recursively($('#ecom_orders_table'));

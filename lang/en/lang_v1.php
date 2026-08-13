@@ -1273,6 +1273,8 @@ return [
     'labels_for_sale_shipping_custom_fields' => 'Labels for sale shipping custom fields',
     'is_required' => 'Is required',
     'convert_to_invoice' => 'Convert to invoice',
+    'converted_to_invoice' => 'Converted',
+    'not_converted' => 'Not converted',
     'converted_to_invoice_successfully' => 'Converted to invoice :invoice_no successfully',
     'proforma' => 'Proforma',
     'proforma_invoice' => 'Proforma invoice',

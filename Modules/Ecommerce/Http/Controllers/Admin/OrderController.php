@@ -34,6 +34,7 @@ class OrderController extends Controller
                 ->select(
                     'transactions.id',
                     'transactions.invoice_no',
+                    'transactions.status',
                     'contacts.name as customer_name',
                     'transactions.final_total',
                     'transactions.payment_status',
@@ -60,7 +61,10 @@ class OrderController extends Controller
                     return $row->fulfillment_status ? ucfirst($row->fulfillment_status) : '-';
                 })
                 ->editColumn('transaction_date', '{{@format_datetime($transaction_date)}}')
-                ->rawColumns(['invoice_no', 'final_total'])
+                ->addColumn('converted_invoice', function ($row) use ($business_id) {
+                    return $this->transactionUtil->salesOrderConvertedInvoiceHtml((int) $business_id, (int) $row->id);
+                })
+                ->rawColumns(['invoice_no', 'final_total', 'converted_invoice'])
                 ->make(true);
         }
 
@@ -132,8 +136,10 @@ class OrderController extends Controller
         $meta = EcomOrderMeta::where('transaction_id', $order->id)->first();
         $payment_types = $this->commonUtil->payment_types(null, true, $business_id);
         $shipping_statuses = $this->commonUtil->shipping_statuses();
+        $converted_invoices = Transaction::invoicesBySalesOrderId((int) $business_id)[(int) $order->id] ?? [];
+        $converted_invoice_html = $this->transactionUtil->salesOrderConvertedInvoiceHtml((int) $business_id, (int) $order->id);
 
-        return view('ecommerce::admin.orders.show', compact('order', 'meta', 'payment_types', 'shipping_statuses'));
+        return view('ecommerce::admin.orders.show', compact('order', 'meta', 'payment_types', 'shipping_statuses', 'converted_invoices', 'converted_invoice_html'));
     }
 
     public function downloadPdf($id)
