@@ -4120,7 +4120,12 @@ class ReportController extends Controller
             $week_ending = \Carbon::now()->format('m/d/Y');
         }
 
-        $default_category_id = $common_settings['msa_tobacco_category_id'] ?? null;
+        $default_category_ids = [];
+        if (! empty($common_settings['msa_tobacco_category_ids']) && is_array($common_settings['msa_tobacco_category_ids'])) {
+            $default_category_ids = array_values(array_filter(array_map('intval', $common_settings['msa_tobacco_category_ids'])));
+        } elseif (! empty($common_settings['msa_tobacco_category_id'])) {
+            $default_category_ids = [(int) $common_settings['msa_tobacco_category_id']];
+        }
 
         return view('report.msa_report')->with(compact(
             'business_locations',
@@ -4128,7 +4133,7 @@ class ReportController extends Controller
             'common_settings',
             'week_ending',
             'business',
-            'default_category_id'
+            'default_category_ids'
         ));
     }
 
@@ -4168,12 +4173,24 @@ class ReportController extends Controller
 
         // Persist distributor settings for next export
         $common = $business->common_settings ?? [];
+        $selectedCategoryIds = $request->input('category_id', []);
+        if (! is_array($selectedCategoryIds)) {
+            $selectedCategoryIds = $selectedCategoryIds !== null && $selectedCategoryIds !== ''
+                ? [$selectedCategoryIds]
+                : [];
+        }
+        $selectedCategoryIds = array_values(array_unique(array_filter(array_map('intval', $selectedCategoryIds))));
+
         $common['msa_distributor_id'] = preg_replace('/\D+/', '', (string) $request->input('distributor_id'));
         $common['msa_contact_last'] = $request->input('contact_last');
         $common['msa_contact_first'] = $request->input('contact_first');
         $common['msa_contact_phone'] = $request->input('contact_phone');
         $common['msa_contact_email'] = $request->input('contact_email');
         $common['msa_state_tax'] = strtoupper(substr((string) $request->input('state_tax', $location->state), 0, 2));
+        $common['msa_tobacco_category_ids'] = $selectedCategoryIds;
+        if (count($selectedCategoryIds) === 1) {
+            $common['msa_tobacco_category_id'] = $selectedCategoryIds[0];
+        }
         $business->common_settings = $common;
         $business->save();
 
@@ -4185,7 +4202,7 @@ class ReportController extends Controller
             'contact_phone' => $common['msa_contact_phone'],
             'contact_email' => $common['msa_contact_email'],
             'state_tax' => $common['msa_state_tax'],
-            'category_id' => $request->input('category_id') ?: null,
+            'category_id' => $selectedCategoryIds,
             'is_test' => $request->boolean('is_test'),
         ]);
 

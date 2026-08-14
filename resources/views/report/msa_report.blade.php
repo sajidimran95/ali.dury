@@ -54,10 +54,12 @@
                         <div class="col-md-3">
                             <div class="form-group">
                                 {!! Form::label('category_id', __('category.category') . ':') !!}
-                                {!! Form::select('category_id', $categories, $default_category_id ?? null, [
+                                {!! Form::select('category_id[]', $categories, $default_category_ids ?? [], [
                                     'class' => 'form-control select2',
+                                    'id' => 'msa_category_id',
+                                    'multiple' => 'multiple',
                                     'style' => 'width:100%',
-                                    'placeholder' => __('lang_v1.all'),
+                                    'data-placeholder' => __('report.msa_category_placeholder'),
                                 ]) !!}
                                 <p class="help-block">@lang('report.msa_category_help')</p>
                             </div>
@@ -171,6 +173,14 @@
             daysOfWeekDisabled: [0,1,2,3,4,5],
             endDate: '0d'
         });
+
+        if ($('#msa_category_id').length) {
+            $('#msa_category_id').select2({
+                width: '100%',
+                allowClear: true,
+                placeholder: @json(__('report.msa_category_placeholder'))
+            });
+        }
     });
 </script>
 @endsection

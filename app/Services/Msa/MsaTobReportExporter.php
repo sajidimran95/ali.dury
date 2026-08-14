@@ -861,14 +861,19 @@ class MsaTobReportExporter
             return [];
         }
 
-        $ids = [(int) $categoryId];
+        $selected = is_array($categoryId) ? $categoryId : [$categoryId];
+        $selected = array_values(array_unique(array_filter(array_map('intval', $selected))));
+        if (empty($selected)) {
+            return [];
+        }
+
         $childIds = Category::where('business_id', $this->business->id)
-            ->where('parent_id', $categoryId)
+            ->whereIn('parent_id', $selected)
             ->pluck('id')
             ->map(fn ($id) => (int) $id)
             ->all();
 
-        return array_values(array_unique(array_merge($ids, $childIds)));
+        return array_values(array_unique(array_merge($selected, $childIds)));
     }
 
     protected function upc(Product $product, $variation): string
