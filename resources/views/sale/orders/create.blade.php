@@ -1,9 +1,12 @@
 @extends('sale.layout')
-@section('title', 'Create order')
-@section('header', 'Create order')
+@section('title', !empty($edit_order) ? 'Edit order' : 'Create order')
+@section('header', !empty($edit_order) ? 'Edit order' : 'Create order')
 @section('content')
-<form method="POST" action="{{ route('sale.orders.store') }}" id="saleOrderForm" class="sale-create-form">
+<form method="POST" action="{{ !empty($edit_order) ? route('sale.orders.update', $edit_order->id) : route('sale.orders.store') }}" id="saleOrderForm" class="sale-create-form">
     @csrf
+    @if(!empty($edit_order))
+        @method('PUT')
+    @endif
     <input type="hidden" name="contact_id" id="contact_id" value="{{ old('contact_id', $default_customer['id'] ?? '') }}" required>
     <input type="hidden" name="location_id" id="location_id" value="{{ old('location_id', $default_location) }}" required>
     <input type="hidden" name="shipping_status" value="ordered">
@@ -91,27 +94,29 @@
             </div>
             <div>
                 <label class="text-xs font-bold text-slate-500 mb-1.5 block">Shipping details:*</label>
-                <textarea name="shipping_details" id="shipping_details" rows="4" class="sale-input" required placeholder="Shipping details">{{ old('shipping_details') }}</textarea>
+                <textarea name="shipping_details" id="shipping_details" rows="4" class="sale-input" required placeholder="Shipping details">{{ old('shipping_details', $edit_order->shipping_details ?? '') }}</textarea>
             </div>
             <div>
                 <label class="text-xs font-bold text-slate-500 mb-1.5 block">Shipping address:</label>
-                <textarea name="shipping_address" id="shipping_address" rows="4" class="sale-input" required placeholder="Shipping address">{{ old('shipping_address') }}</textarea>
+                <textarea name="shipping_address" id="shipping_address" rows="4" class="sale-input" required placeholder="Shipping address">{{ old('shipping_address', $edit_order->shipping_address ?? '') }}</textarea>
             </div>
             <div>
                 <label class="text-xs font-bold text-slate-500 mb-1.5 block">Note (optional)</label>
-                <textarea name="sale_note" rows="2" class="sale-input" placeholder="Order note">{{ old('sale_note') }}</textarea>
+                <textarea name="sale_note" rows="2" class="sale-input" placeholder="Order note">{{ old('sale_note', $edit_order->additional_notes ?? '') }}</textarea>
             </div>
         </div>
 
         <div class="sale-create-bar">
             <button type="submit" class="sale-btn !w-full inline-flex items-center justify-center gap-2" id="submitOrderBtn">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-                Create order
+                {{ !empty($edit_order) ? 'Save order' : 'Create order' }}
             </button>
         </div>
     </div>
 </form>
+@endsection
 
+@push('scripts')
 <div id="catalogModal" class="sale-catalog" hidden>
     <div class="sale-catalog__panel">
         <div class="sale-catalog__head">
@@ -122,9 +127,6 @@
         <div id="catalogBody" class="sale-catalog__body"></div>
     </div>
 </div>
-@endsection
-
-@push('scripts')
 <script>
 (function () {
     const cart = [];
@@ -164,23 +166,49 @@
         return cart.reduce((s, l) => s + (l.quantity * l.unit_price), 0);
     }
 
-    function addToCart(r) {
-        const existingIdx = cart.findIndex(c => c.variation_id === r.variation_id);
+    function addToCart(r, silent) {
+        if (!r || !r.variation_id) return;
+        const vid = Number(r.variation_id);
+        const existingIdx = cart.findIndex(c => Number(c.variation_id) === vid);
         if (existingIdx >= 0) {
-            cart[existingIdx].quantity = +cart[existingIdx].quantity + 1;
+            cart[existingIdx].quantity = +cart[existingIdx].quantity + (Number(r.quantity) || 1);
+            if (r.transaction_sell_lines_id && !cart[existingIdx].transaction_sell_lines_id) {
+                cart[existingIdx].transaction_sell_lines_id = r.transaction_sell_lines_id;
+            }
             cart.unshift(cart.splice(existingIdx, 1)[0]);
         } else {
             cart.unshift({
-                product_id: r.product_id,
-                variation_id: r.variation_id,
+                product_id: Number(r.product_id),
+                variation_id: vid,
+                transaction_sell_lines_id: r.transaction_sell_lines_id || null,
                 name: r.name,
-                unit_price: r.price,
-                quantity: 1,
+                unit_price: Number(r.price) || 0,
+                quantity: Number(r.quantity) || 1,
                 enable_stock: r.enable_stock,
                 product_type: r.product_type,
             });
         }
         renderCart();
+        if (!silent) showAddedMsg();
+    }
+
+    function showAddedMsg() {
+        let el = document.getElementById('saleAddedMsg');
+        if (!el) {
+            el = document.createElement('div');
+            el.id = 'saleAddedMsg';
+            el.className = 'sale-added-msg';
+            document.body.appendChild(el);
+        }
+        el.textContent = 'Added';
+        el.hidden = false;
+        clearTimeout(showAddedMsg._t);
+        showAddedMsg._t = setTimeout(() => { el.hidden = true; }, 1400);
+    }
+
+    function cartQty(variationId) {
+        const line = cart.find(c => Number(c.variation_id) === Number(variationId));
+        return line ? Number(line.quantity) : 0;
     }
 
     function setCustomer(id, text, shipAddr) {
@@ -279,7 +307,8 @@
 
     async function fetchJson(url) {
         const res = await fetch(url, { headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' } });
-        return res.json();
+        const data = await res.json();
+        return Array.isArray(data) ? data : [];
     }
 
     customerSearch.addEventListener('input', () => {
@@ -433,8 +462,15 @@
             const b = document.createElement('button');
             b.type = 'button';
             b.className = 'sale-catalog__row sale-catalog__prod';
-            b.innerHTML = `<div class="min-w-0"><div class="font-bold text-sm truncate">${r.name}</div><div class="text-xs text-slate-500">${money(r.price)} · Stock ${r.stock}</div></div><span class="sale-catalog__add">+</span>`;
-            b.onclick = () => { addToCart(r); };
+            const qty = cartQty(r.variation_id);
+            b.innerHTML = `<div class="min-w-0"><div class="font-bold text-sm truncate">${r.name}</div><div class="text-xs text-slate-500">${money(r.price)} · Stock ${r.stock}</div></div><span class="sale-catalog__add">${qty || '+'}</span>`;
+            b.onclick = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                addToCart(r);
+                const addEl = b.querySelector('.sale-catalog__add');
+                if (addEl) addEl.textContent = String(cartQty(r.variation_id) || '+');
+            };
             catalogBody.appendChild(b);
         });
     }
@@ -453,7 +489,8 @@
         if (!shippingAddress.value.trim()) { e.preventDefault(); alert('Enter shipping address'); return; }
         productsJson.innerHTML = '';
         cart.forEach((line, i) => {
-            ['product_id', 'variation_id', 'quantity', 'unit_price'].forEach(k => {
+            ['product_id', 'variation_id', 'quantity', 'unit_price', 'transaction_sell_lines_id'].forEach(k => {
+                if (k === 'transaction_sell_lines_id' && !line[k]) return;
                 const inp = document.createElement('input');
                 inp.type = 'hidden';
                 inp.name = `products[${i}][${k}]`;
@@ -464,6 +501,11 @@
     });
 
     (async function prefillFromQuery() {
+        const editLines = @json($edit_lines ?? []);
+        if (editLines.length) {
+            editLines.forEach(r => addToCart(r, true));
+            return;
+        }
         const params = new URLSearchParams(window.location.search);
         const vid = params.get('add');
         if (!vid || !locationId.value) return;

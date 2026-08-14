@@ -85,7 +85,7 @@
         }
         .sale-sec-title__ico svg { width: 18px; height: 18px; }
         .sale-order-row {
-            display: flex; align-items: center; gap: 12px;
+            display: flex; align-items: center; flex-wrap: wrap; gap: 12px;
             background: #fff; border: 1px solid #e2e8f0; border-radius: 16px;
             padding: 12px 14px; text-decoration: none; color: inherit;
             box-shadow: 0 1px 2px rgba(15,23,42,.03);
@@ -730,19 +730,60 @@
         .sale-layout-fields { display: block; width: 100%; }
 
         .sale-order-actions {
-            display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end;
-            margin-top: 8px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            width: 100%;
+            margin-top: 2px;
         }
+        .sale-order-actions form { display: block; margin: 0; min-width: 0; }
         .sale-act {
             display: inline-flex; align-items: center; justify-content: center;
-            font-size: 11px; font-weight: 800; border-radius: 8px;
-            padding: 5px 8px; text-decoration: none; border: 1px solid transparent;
+            width: 100%; box-sizing: border-box;
+            font-size: 12px; font-weight: 800; border-radius: 8px;
+            padding: 8px 8px; text-decoration: none; border: 1px solid transparent;
             cursor: pointer; background: #f1f5f9; color: #334155; line-height: 1.2;
         }
         .sale-act--view { background: #f0fdfa; color: #0f766e; border-color: #99f6e4; }
+        .sale-act--edit { background: #fff7ed; color: #c2410c; border-color: #fed7aa; }
         .sale-act--dl { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
         .sale-act--del { background: #fff1f2; color: #e11d48; border-color: #fecdd3; }
+        .sale-act.is-disabled,
+        .sale-btn.is-disabled {
+            opacity: .42;
+            cursor: not-allowed;
+            pointer-events: none;
+            filter: grayscale(.25);
+            box-shadow: none;
+        }
         button.sale-act { font-family: inherit; }
+        @media (min-width: 1024px) {
+            .sale-order-row {
+                display: grid;
+                grid-template-columns: auto minmax(0, 1fr) auto;
+                grid-template-rows: auto auto;
+                align-items: center;
+                flex-wrap: nowrap;
+            }
+            .sale-order-row__ico { grid-column: 1; grid-row: 1 / span 2; }
+            .sale-order-row__body { grid-column: 2; grid-row: 1 / span 2; }
+            .sale-order-row__meta { grid-column: 3; grid-row: 1; }
+            .sale-order-actions {
+                grid-column: 3;
+                grid-row: 2;
+                width: auto;
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: flex-end;
+                margin-top: 8px;
+            }
+            .sale-order-actions form { display: inline; }
+            .sale-act {
+                width: auto;
+                font-size: 11px;
+                padding: 5px 8px;
+            }
+        }
 
         /* Dashboard product grids */
         .sale-loc-pill {
@@ -1059,7 +1100,7 @@
         .sale-chip {
             flex-shrink: 0; border: 1px solid #e2e8f0; background: #fff; color: #475569;
             border-radius: 999px; padding: 7px 14px; font-size: 12px; font-weight: 700;
-            cursor: pointer; white-space: nowrap;
+            cursor: pointer; white-space: nowrap; text-decoration: none;
         }
         .sale-chip.active {
             background: #0f766e; border-color: #0f766e; color: #fff;
@@ -1115,9 +1156,22 @@
             .sale-prod-app__toolbar { top: 0; }
         }
 
-        /* Catalog modal */
+        .sale-added-msg {
+            position: fixed; left: 50%; bottom: calc(88px + env(safe-area-inset-bottom, 0));
+            transform: translateX(-50%);
+            z-index: 140;
+            background: #0f766e; color: #fff;
+            font-size: 13px; font-weight: 800;
+            padding: 10px 18px; border-radius: 999px;
+            box-shadow: 0 8px 24px rgba(15,118,110,.35);
+            pointer-events: none;
+        }
+        .sale-added-msg[hidden] { display: none !important; }
+        @media (min-width: 1024px) {
+            .sale-added-msg { bottom: 32px; }
+        }
         .sale-catalog {
-            position: fixed; inset: 0; z-index: 90;
+            position: fixed; inset: 0; z-index: 120;
             background: rgba(15, 23, 42, .45);
             display: flex; align-items: flex-end; justify-content: center;
             padding: 0;
@@ -1142,7 +1196,7 @@
             color: #334155; cursor: pointer; line-height: 1; flex-shrink: 0;
         }
         .sale-catalog__back.hidden { visibility: hidden; }
-        .sale-catalog__body { overflow: auto; padding: 4px 0 20px; -webkit-overflow-scrolling: touch; flex: 1; }
+        .sale-catalog__body { overflow: auto; padding: 4px 0 calc(24px + env(safe-area-inset-bottom, 0)); -webkit-overflow-scrolling: touch; flex: 1; }
         .sale-catalog__row {
             width: 100%; display: flex; align-items: center; justify-content: space-between;
             gap: 10px; text-align: left; padding: 14px 16px;
@@ -1208,12 +1262,12 @@
     </style>
     @stack('head')
 </head>
-<body class="antialiased {{ auth()->check() ? 'sale-authed' : 'sale-guest' }} {{ (optional(request()->route())->getName() === 'sale.orders.create') ? 'sale-page-create' : '' }} {{ (optional(request()->route())->getName() === 'sale.products') ? 'sale-page-products' : '' }} {{ (optional(request()->route())->getName() === 'sale.orders.show') ? 'sale-page-order-show' : '' }}">
+<body class="antialiased {{ auth()->check() ? 'sale-authed' : 'sale-guest' }} {{ in_array(optional(request()->route())->getName(), ['sale.orders.create', 'sale.orders.edit'], true) ? 'sale-page-create' : '' }} {{ (optional(request()->route())->getName() === 'sale.products') ? 'sale-page-products' : '' }} {{ (optional(request()->route())->getName() === 'sale.orders.show') ? 'sale-page-order-show' : '' }}">
 @php
     $routeName = optional(request()->route())->getName();
     $isHome = $routeName === 'sale.home';
     $isOrders = in_array($routeName, ['sale.orders', 'sale.orders.show'], true);
-    $isCreate = $routeName === 'sale.orders.create';
+    $isCreate = in_array($routeName, ['sale.orders.create', 'sale.orders.edit'], true);
     $isProducts = $routeName === 'sale.products';
     $isCustomers = in_array($routeName, ['sale.customers', 'sale.customers.create'], true);
     $isAccount = $routeName === 'sale.account' || $routeName === 'sale.account.location';

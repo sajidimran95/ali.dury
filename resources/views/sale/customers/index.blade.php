@@ -3,9 +3,8 @@
 @section('header', 'Customers')
 @section('content')
 <div class="sale-page-tool">
-    <form method="GET" action="{{ route('sale.customers') }}" class="flex-1 flex gap-2 min-w-0">
-        <input type="search" name="q" value="{{ $term }}" class="sale-input !py-2.5" placeholder="Search name / mobile">
-        <button type="submit" class="sale-btn-sm shrink-0">Search</button>
+    <form method="GET" action="{{ route('sale.customers') }}" id="saleCustomerSearchForm" class="flex-1 flex gap-2 min-w-0">
+        <input type="search" name="q" id="saleCustomerSearch" value="{{ $term }}" class="sale-input !py-2.5" placeholder="Search name / mobile" autocomplete="off">
     </form>
     @if($canCreate)
         <a href="{{ route('sale.customers.create') }}" class="sale-btn-sm shrink-0">
@@ -15,6 +14,7 @@
     @endif
 </div>
 
+<div id="saleCustomerResults">
 <div class="space-y-2">
     @forelse($customers as $customer)
         <div class="sale-order-row">
@@ -59,4 +59,56 @@
         {{ $customers->onEachSide(1)->links('sale.partials.pagination') }}
     </div>
 @endif
+</div>
 @endsection
+
+@push('scripts')
+<script>
+(function () {
+    const form = document.getElementById('saleCustomerSearchForm');
+    const input = document.getElementById('saleCustomerSearch');
+    if (!form || !input) return;
+
+    let timer = null;
+    let abort = null;
+
+    function urlFromForm() {
+        const q = (input.value || '').trim();
+        const url = new URL(form.action, window.location.origin);
+        if (q) url.searchParams.set('q', q);
+        else url.searchParams.delete('q');
+        return url.toString();
+    }
+
+    function liveSearch() {
+        const url = urlFromForm();
+        if (abort) abort.abort();
+        abort = new AbortController();
+        history.replaceState({}, '', url);
+        fetch(url, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'text/html' },
+            signal: abort.signal
+        }).then(function (res) { return res.text(); }).then(function (html) {
+            const doc = new DOMParser().parseFromString(html, 'text/html');
+            const next = doc.getElementById('saleCustomerResults');
+            const results = document.getElementById('saleCustomerResults');
+            if (results && next) results.innerHTML = next.innerHTML;
+        }).catch(function (err) {
+            if (err.name !== 'AbortError') {
+                window.location.href = url;
+            }
+        });
+    }
+
+    input.addEventListener('input', function () {
+        clearTimeout(timer);
+        timer = setTimeout(liveSearch, 250);
+    });
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        clearTimeout(timer);
+        liveSearch();
+    });
+})();
+</script>
+@endpush

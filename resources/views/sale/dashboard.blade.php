@@ -146,12 +146,9 @@
     <div class="space-y-2">
         @forelse($recent as $order)
             @php
-                $badge = match($order->status) {
-                    'completed' => 'sale-badge--completed',
-                    'partial' => 'sale-badge--partial',
-                    default => 'sale-badge--ordered',
-                };
-                $badgeLabel = ucfirst($order->status ?? 'ordered');
+                $displayStatus = $order->sale_status ?? 'sale';
+                $badge = $displayStatus === 'invoiced' ? 'sale-badge--completed' : 'sale-badge--ordered';
+                $badgeLabel = $displayStatus === 'invoiced' ? 'Invoiced' : 'Sale';
             @endphp
             <a href="{{ route('sale.orders.show', $order->id) }}" class="sale-order-row">
                 <span class="sale-order-row__ico">
@@ -159,6 +156,9 @@
                 </span>
                 <div class="sale-order-row__body">
                     <div class="font-extrabold text-[15px] truncate">{{ $order->invoice_no }}</div>
+                    @if(!empty($order->converted_invoice_no))
+                        <div class="text-xs font-bold text-sale mt-0.5">Invoice {{ $order->converted_invoice_no }}</div>
+                    @endif
                     <div class="text-sm text-slate-500 truncate mt-0.5">
                         {{ optional($order->contact)->supplier_business_name ?: optional($order->contact)->name ?: 'Customer' }}
                     </div>
@@ -167,7 +167,7 @@
                     </div>
                 </div>
                 <div class="sale-order-row__meta">
-                    <div class="font-extrabold tabular-nums">${{ number_format($order->final_total, 2) }}</div>
+                    <div class="font-extrabold tabular-nums">${{ number_format($order->sale_display_total ?? $order->final_total, 2) }}</div>
                     <span class="sale-badge {{ $badge }} mt-1">{{ $badgeLabel }}</span>
                 </div>
             </a>

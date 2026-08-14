@@ -8,12 +8,9 @@
 </a>
 
 @php
-    $badge = match($order->status) {
-        'completed' => 'sale-badge--completed',
-        'partial' => 'sale-badge--partial',
-        default => 'sale-badge--ordered',
-    };
-    $badgeLabel = ucfirst($order->status ?? 'ordered');
+    $displayStatus = $order->sale_status ?? 'sale';
+    $badge = $displayStatus === 'invoiced' ? 'sale-badge--completed' : 'sale-badge--ordered';
+    $badgeLabel = $displayStatus === 'invoiced' ? 'Invoiced' : 'Sale';
 @endphp
 
 <div class="sale-layout-2 space-y-3 lg:space-y-0">
@@ -27,6 +24,9 @@
                     <div class="min-w-0">
                         <div class="text-xs font-bold uppercase tracking-wide text-slate-400">Sales order</div>
                         <div class="text-xl lg:text-2xl font-extrabold truncate">{{ $order->invoice_no }}</div>
+                        @if(!empty($order->converted_invoice_no))
+                            <div class="text-sm font-bold text-sale mt-1">Invoice {{ $order->converted_invoice_no }}</div>
+                        @endif
                         <div class="text-sm text-slate-500 mt-1 flex items-center gap-1.5">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
                             {{ \Carbon\Carbon::parse($order->transaction_date)->format('M j, Y g:i A') }}
@@ -46,6 +46,12 @@
             </div>
             <div class="divide-y divide-slate-100">
                 @foreach($order->sell_lines as $line)
+                    @php
+                        $lineQty = (float) $line->quantity;
+                        $linePrice = (float) $line->unit_price_inc_tax;
+                        $lineTax = (float) ($line->item_tax ?? 0);
+                        $lineDisc = (float) ($line->line_discount_amount ?? 0);
+                    @endphp
                     <div class="py-3 flex justify-between gap-3 text-sm">
                         <div class="min-w-0 flex items-start gap-2">
                             <span class="mt-0.5 w-8 h-8 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center shrink-0">
@@ -53,16 +59,67 @@
                             </span>
                             <div class="min-w-0">
                                 <div class="font-semibold">{{ optional($line->product)->name }}</div>
-                                <div class="text-xs text-slate-400">Qty {{ number_format($line->quantity, 2) }} × ${{ number_format($line->unit_price_inc_tax, 2) }}</div>
+                                <div class="text-xs text-slate-400">Qty {{ number_format($lineQty, 2) }} × ${{ number_format($linePrice, 2) }}</div>
+                                @if($lineDisc > 0)
+                                    <div class="text-xs text-slate-400">Item discount ${{ number_format($lineDisc, 2) }}</div>
+                                @endif
+                                @if($lineTax > 0)
+                                    <div class="text-xs text-slate-400">Item tax ${{ number_format($lineTax * $lineQty, 2) }}</div>
+                                @endif
                             </div>
                         </div>
-                        <div class="font-bold tabular-nums shrink-0">${{ number_format($line->quantity * $line->unit_price_inc_tax, 2) }}</div>
+                        <div class="font-bold tabular-nums shrink-0">${{ number_format($lineQty * $linePrice, 2) }}</div>
                     </div>
                 @endforeach
             </div>
-            <div class="border-t border-slate-100 mt-1 pt-3 flex justify-between font-extrabold text-base lg:text-lg">
-                <span>Total</span>
-                <span class="tabular-nums text-sale">${{ number_format($order->final_total, 2) }}</span>
+            @php $a = $amounts ?? []; @endphp
+            <div class="border-t border-slate-100 mt-1 pt-3 space-y-1.5 text-sm">
+                <div class="flex justify-between gap-3">
+                    <span class="text-slate-500">Subtotal</span>
+                    <span class="tabular-nums font-semibold">${{ number_format($a['subtotal'] ?? 0, 2) }}</span>
+                </div>
+                <div class="flex justify-between gap-3">
+                    <span class="text-slate-500">{{ $a['discount_label'] ?? 'Discount' }}</span>
+                    <span class="tabular-nums font-semibold">−${{ number_format($a['discount'] ?? 0, 2) }}</span>
+                </div>
+                <div class="flex justify-between gap-3">
+                    <span class="text-slate-500">Tax</span>
+                    <span class="tabular-nums font-semibold">${{ number_format($a['tax'] ?? 0, 2) }}</span>
+                </div>
+                <div class="flex justify-between gap-3">
+                    <span class="text-slate-500">Shipping charge</span>
+                    <span class="tabular-nums font-semibold">${{ number_format($a['shipping'] ?? 0, 2) }}</span>
+                </div>
+                <div class="flex justify-between gap-3">
+                    <span class="text-slate-500">{{ $a['packing_label'] ?? 'Packing charge' }}</span>
+                    <span class="tabular-nums font-semibold">${{ number_format($a['packing'] ?? 0, 2) }}</span>
+                </div>
+                @foreach(($a['extras'] ?? []) as $extra)
+                    <div class="flex justify-between gap-3">
+                        <span class="text-slate-500">{{ $extra['label'] }}</span>
+                        <span class="tabular-nums font-semibold">${{ number_format($extra['amount'] ?? 0, 2) }}</span>
+                    </div>
+                @endforeach
+                @if(!empty($a['round_off']))
+                    <div class="flex justify-between gap-3">
+                        <span class="text-slate-500">Round off</span>
+                        <span class="tabular-nums font-semibold">${{ number_format($a['round_off'], 2) }}</span>
+                    </div>
+                @endif
+                <div class="flex justify-between gap-3 font-extrabold text-base lg:text-lg pt-2 border-t border-slate-100">
+                    <span>Total</span>
+                    <span class="tabular-nums text-sale">${{ number_format($a['total'] ?? ($order->sale_display_total ?? $order->final_total), 2) }}</span>
+                </div>
+                @if(!empty($a['show_paid']))
+                    <div class="flex justify-between gap-3 pt-1">
+                        <span class="text-slate-500">Paid</span>
+                        <span class="tabular-nums font-semibold">${{ number_format($a['paid'] ?? 0, 2) }}</span>
+                    </div>
+                    <div class="flex justify-between gap-3">
+                        <span class="text-slate-500">Due</span>
+                        <span class="tabular-nums font-semibold">${{ number_format($a['due'] ?? 0, 2) }}</span>
+                    </div>
+                @endif
             </div>
         </div>
 
@@ -122,7 +179,18 @@
             @endif
 
             <div class="sale-order-actions !mt-4 !flex-col !items-stretch !mb-2">
-                <a href="{{ route('sale.orders.invoice', $order->id) }}" target="_blank" class="sale-btn !w-full inline-flex items-center justify-center gap-2">
+                @if(!empty($order->can_show_edit) || !empty($order->can_edit))
+                    @if(!empty($order->can_edit))
+                        <a href="{{ route('sale.orders.edit', $order->id) }}" class="sale-btn !w-full inline-flex items-center justify-center gap-2">
+                            Edit order
+                        </a>
+                    @else
+                        <span class="sale-btn is-disabled !w-full inline-flex items-center justify-center gap-2" title="Invoiced — cannot edit" aria-disabled="true">
+                            Edit order
+                        </span>
+                    @endif
+                @endif
+                <a href="{{ route('sale.orders.invoice', $order->id) }}" target="_blank" class="sale-btn !w-full inline-flex items-center justify-center gap-2 {{ (!empty($order->can_show_edit) || !empty($order->can_edit)) ? 'mt-2' : '' }}">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg>
                     Invoice
                 </a>

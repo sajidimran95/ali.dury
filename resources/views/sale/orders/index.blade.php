@@ -3,7 +3,7 @@
 @section('header', 'Order list')
 @section('content')
 <div class="sale-page-tool">
-    <span class="sale-chip">
+    <span class="sale-chip" id="saleOrderCount">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
         {{ $orders->total() }} order(s)
     </span>
@@ -12,17 +12,25 @@
         Create
     </a>
 </div>
-<p class="text-xs text-slate-400 mb-3">Sales orders you created — same list as admin Sales Orders.</p>
 
+<form method="GET" action="{{ route('sale.orders') }}" id="saleOrderSearchForm" class="sale-card !p-3 mb-3 space-y-2">
+    <input type="hidden" name="status" value="{{ $status ?? '' }}">
+    <input type="search" name="q" id="saleOrderSearch" value="{{ $q ?? '' }}" class="sale-input" placeholder="Search customer / order / invoice no" autocomplete="off">
+    <div class="sale-prod-app__chips" id="saleOrderChips">
+        @php $curStatus = $status ?? ''; @endphp
+        <a href="{{ route('sale.orders', array_filter(['q' => $q ?? ''])) }}" class="sale-chip {{ $curStatus === '' ? 'active' : '' }}">All</a>
+        <a href="{{ route('sale.orders', array_filter(['q' => $q ?? '', 'status' => 'sale'])) }}" class="sale-chip {{ $curStatus === 'sale' ? 'active' : '' }}">Sale</a>
+        <a href="{{ route('sale.orders', array_filter(['q' => $q ?? '', 'status' => 'invoiced'])) }}" class="sale-chip {{ $curStatus === 'invoiced' ? 'active' : '' }}">Invoiced</a>
+    </div>
+</form>
+
+<div id="saleOrderResults">
 <div class="space-y-2">
     @forelse($orders as $order)
         @php
-            $badge = match($order->status) {
-                'completed' => 'sale-badge--completed',
-                'partial' => 'sale-badge--partial',
-                default => 'sale-badge--ordered',
-            };
-            $badgeLabel = ucfirst($order->status ?? 'ordered');
+            $displayStatus = $order->sale_status ?? 'sale';
+            $badge = $displayStatus === 'invoiced' ? 'sale-badge--completed' : 'sale-badge--ordered';
+            $badgeLabel = $displayStatus === 'invoiced' ? 'Invoiced' : 'Sale';
         @endphp
         <div class="sale-order-row !items-stretch">
             <a href="{{ route('sale.orders.show', $order->id) }}" class="sale-order-row__ico shrink-0 self-center">
@@ -30,6 +38,9 @@
             </a>
             <a href="{{ route('sale.orders.show', $order->id) }}" class="sale-order-row__body min-w-0 flex-1 no-underline text-inherit">
                 <div class="font-extrabold text-[15px] truncate">{{ $order->invoice_no }}</div>
+                @if(!empty($order->converted_invoice_no))
+                    <div class="text-xs font-bold text-sale mt-0.5">Invoice {{ $order->converted_invoice_no }}</div>
+                @endif
                 <div class="text-sm text-slate-500 truncate mt-0.5">
                     {{ optional($order->contact)->supplier_business_name ?: optional($order->contact)->name ?: 'Customer' }}
                 </div>
@@ -41,17 +52,24 @@
                 </div>
             </a>
             <div class="sale-order-row__meta shrink-0">
-                <div class="font-extrabold tabular-nums">${{ number_format($order->final_total, 2) }}</div>
+                <div class="font-extrabold tabular-nums">${{ number_format($order->sale_display_total ?? $order->final_total, 2) }}</div>
                 <span class="sale-badge {{ $badge }} mt-1">{{ $badgeLabel }}</span>
-                <div class="sale-order-actions">
-                    <a href="{{ route('sale.orders.show', $order->id) }}" class="sale-act sale-act--view" title="View">View</a>
-                    <a href="{{ route('sale.orders.invoice', $order->id) }}" target="_blank" class="sale-act sale-act--dl" title="Invoice">Invoice</a>
-                    <form method="POST" action="{{ route('sale.orders.destroy', $order->id) }}" class="inline" onsubmit="return confirm('Delete order {{ $order->invoice_no }}?');">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="sale-act sale-act--del" title="Delete">Delete</button>
-                    </form>
-                </div>
+            </div>
+            <div class="sale-order-actions">
+                <a href="{{ route('sale.orders.show', $order->id) }}" class="sale-act sale-act--view" title="View">View</a>
+                @if(!empty($order->can_show_edit) || !empty($order->can_edit))
+                    @if(!empty($order->can_edit))
+                        <a href="{{ route('sale.orders.edit', $order->id) }}" class="sale-act sale-act--edit" title="Edit">Edit</a>
+                    @else
+                        <span class="sale-act sale-act--edit is-disabled" title="Invoiced — cannot edit" aria-disabled="true">Edit</span>
+                    @endif
+                @endif
+                <a href="{{ route('sale.orders.invoice', $order->id) }}" target="_blank" class="sale-act sale-act--dl" title="Invoice">Invoice</a>
+                <form method="POST" action="{{ route('sale.orders.destroy', $order->id) }}" onsubmit="return confirm('Delete order {{ $order->invoice_no }}?');">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="sale-act sale-act--del" title="Delete">Delete</button>
+                </form>
             </div>
         </div>
     @empty
@@ -70,4 +88,66 @@
         {{ $orders->onEachSide(1)->links('sale.partials.pagination') }}
     </div>
 @endif
+</div>
 @endsection
+
+@push('scripts')
+<script>
+(function () {
+    const form = document.getElementById('saleOrderSearchForm');
+    const input = document.getElementById('saleOrderSearch');
+    if (!form || !input) return;
+
+    let timer = null;
+    let abort = null;
+
+    function urlFromForm() {
+        const data = new FormData(form);
+        const params = new URLSearchParams();
+        data.forEach(function (value, key) {
+            if (String(value).trim() !== '') {
+                params.set(key, String(value).trim());
+            }
+        });
+        const qs = params.toString();
+        return form.action + (qs ? ('?' + qs) : '');
+    }
+
+    function liveSearch() {
+        const url = urlFromForm();
+        if (abort) abort.abort();
+        abort = new AbortController();
+        history.replaceState({}, '', url);
+        fetch(url, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'text/html' },
+            signal: abort.signal
+        }).then(function (res) { return res.text(); }).then(function (html) {
+            const doc = new DOMParser().parseFromString(html, 'text/html');
+            const nextResults = doc.getElementById('saleOrderResults');
+            const nextCount = doc.getElementById('saleOrderCount');
+            const nextChips = doc.getElementById('saleOrderChips');
+            const results = document.getElementById('saleOrderResults');
+            const count = document.getElementById('saleOrderCount');
+            const chips = document.getElementById('saleOrderChips');
+            if (results && nextResults) results.innerHTML = nextResults.innerHTML;
+            if (count && nextCount) count.innerHTML = nextCount.innerHTML;
+            if (chips && nextChips) chips.innerHTML = nextChips.innerHTML;
+        }).catch(function (err) {
+            if (err.name !== 'AbortError') {
+                window.location.href = url;
+            }
+        });
+    }
+
+    input.addEventListener('input', function () {
+        clearTimeout(timer);
+        timer = setTimeout(liveSearch, 250);
+    });
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        clearTimeout(timer);
+        liveSearch();
+    });
+})();
+</script>
+@endpush

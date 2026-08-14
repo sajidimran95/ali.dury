@@ -70,14 +70,28 @@ class SalePortalController extends Controller
         $todayStart = Carbon::now()->startOfDay();
         $monthStart = Carbon::now()->startOfMonth();
 
+        $invoiceMap = $this->saleAppInvoiceMap((int) $business_id);
+        $convertedIds = array_keys($invoiceMap);
+        $invoiceTotals = $this->saleAppInvoiceTotals($invoiceMap);
+
+        $todayRows = (clone $base)->where('transaction_date', '>=', $todayStart)->get(['id', 'final_total']);
+        $monthRows = (clone $base)->where('transaction_date', '>=', $monthStart)->get(['id', 'final_total']);
+
         $stats = [
             'total_orders' => (clone $base)->count(),
-            'today_orders' => (clone $base)->where('transaction_date', '>=', $todayStart)->count(),
-            'today_total' => (float) (clone $base)->where('transaction_date', '>=', $todayStart)->sum('final_total'),
-            'month_orders' => (clone $base)->where('transaction_date', '>=', $monthStart)->count(),
-            'month_total' => (float) (clone $base)->where('transaction_date', '>=', $monthStart)->sum('final_total'),
-            'paid_orders' => (clone $base)->where('status', 'completed')->count(),
-            'due_orders' => (clone $base)->whereIn('status', ['ordered', 'partial'])->count(),
+            'today_orders' => $todayRows->count(),
+            'today_total' => $this->saleAppSumDisplayTotals($todayRows, $invoiceMap, $invoiceTotals),
+            'month_orders' => $monthRows->count(),
+            'month_total' => $this->saleAppSumDisplayTotals($monthRows, $invoiceMap, $invoiceTotals),
+            'paid_orders' => (clone $base)->where('status', 'completed')
+                ->when($convertedIds !== [], fn ($q) => $q->whereIn('id', $convertedIds), fn ($q) => $q->whereRaw('1 = 0'))
+                ->count(),
+            'due_orders' => (clone $base)->where(function ($q) use ($convertedIds) {
+                $q->where('status', '!=', 'completed');
+                if ($convertedIds !== []) {
+                    $q->orWhereNotIn('id', $convertedIds);
+                }
+            })->count(),
         ];
 
         $recent = (clone $base)
@@ -85,6 +99,7 @@ class SalePortalController extends Controller
             ->orderByDesc('id')
             ->limit(8)
             ->get();
+        $this->applySaleAppOrderStatus($recent, $invoiceMap, $invoiceTotals);
 
         // Newest products
         $newProducts = Product::where('business_id', $business_id)
@@ -161,23 +176,69 @@ class SalePortalController extends Controller
     {
         $business_id = $request->session()->get('user.business_id');
         $user_id = auth()->id();
+        $q = trim((string) $request->get('q', ''));
+        $status = (string) $request->get('status', '');
+
+        $invoiceMap = $this->saleAppInvoiceMap((int) $business_id);
+        $convertedIds = array_keys($invoiceMap);
 
         $orders = Transaction::where('business_id', $business_id)
             ->where('type', 'sales_order')
             ->where('created_by', $user_id)
             ->with(['contact:id,name,mobile,supplier_business_name'])
+            ->when($q !== '', function ($query) use ($q, $invoiceMap) {
+                $term = '%'.$q.'%';
+                $matchedSoIds = [];
+                foreach ($invoiceMap as $soId => $invoices) {
+                    foreach ($invoices as $inv) {
+                        if (stripos((string) ($inv->invoice_no ?? ''), $q) !== false) {
+                            $matchedSoIds[] = (int) $soId;
+                            break;
+                        }
+                    }
+                }
+                $query->where(function ($inner) use ($term, $matchedSoIds) {
+                    $inner->where('invoice_no', 'like', $term)
+                        ->orWhereHas('contact', function ($c) use ($term) {
+                            $c->where('name', 'like', $term)
+                                ->orWhere('mobile', 'like', $term)
+                                ->orWhere('supplier_business_name', 'like', $term);
+                        });
+                    if ($matchedSoIds !== []) {
+                        $inner->orWhereIn('id', $matchedSoIds);
+                    }
+                });
+            })
+            ->when($status === 'sale', function ($query) use ($convertedIds) {
+                if ($convertedIds !== []) {
+                    $query->whereNotIn('id', $convertedIds);
+                }
+            })
+            ->when($status === 'invoiced', function ($query) use ($convertedIds) {
+                if ($convertedIds === []) {
+                    $query->whereRaw('1 = 0');
+                } else {
+                    $query->whereIn('id', $convertedIds);
+                }
+            })
             ->orderByDesc('id')
-            ->paginate(20);
+            ->paginate(20)
+            ->withQueryString();
 
-        return view('sale.orders.index', compact('orders'));
+        $this->applySaleAppOrderStatus($orders->getCollection(), $invoiceMap);
+
+        return view('sale.orders.index', compact('orders', 'q', 'status'));
     }
 
     public function show(Request $request, $id)
     {
         $order = $this->findOwnOrder($id);
         $order->load(['contact', 'sell_lines.product', 'sell_lines.variations', 'payment_lines']);
+        $invoiceMap = $this->saleAppInvoiceMap((int) $order->business_id);
+        $this->applySaleAppInvoiceSnapshot($order, $invoiceMap);
+        $amounts = $this->saleAppAmountBreakdown($order);
 
-        return view('sale.orders.show', compact('order'));
+        return view('sale.orders.show', compact('order', 'amounts'));
     }
 
     /**
@@ -189,22 +250,24 @@ class SalePortalController extends Controller
         $business_id = $request->session()->get('user.business_id');
 
         try {
-            $order->loadMissing('location');
-            $location = $order->location;
+            $invoiceMap = $this->saleAppInvoiceMap((int) $order->business_id);
+            $printTx = $this->saleAppPrintTransaction($order, $invoiceMap);
+            $printTx->loadMissing('location');
+            $location = $printTx->location;
             if (empty($location)) {
                 throw new \RuntimeException('Order location not found.');
             }
 
             $business_details = $this->businessUtil->getDetails($business_id);
             // Same layout selection as SellPosController::printInvoice / printInvoicePdf
-            $invoice_layout_id = ! empty($order->is_direct_sale)
+            $invoice_layout_id = ! empty($printTx->is_direct_sale)
                 ? ($location->sale_invoice_layout_id ?: $location->invoice_layout_id)
                 : $location->invoice_layout_id;
             $invoice_layout = $this->businessUtil->invoiceLayout($business_id, $invoice_layout_id);
 
             $receipt_details = $this->transactionUtil->getReceiptDetails(
-                $order->id,
-                $order->location_id,
+                $printTx->id,
+                $printTx->location_id,
                 $invoice_layout,
                 $business_details,
                 $location,
@@ -216,6 +279,19 @@ class SalePortalController extends Controller
                 'decimal_separator' => $business_details->decimal_separator,
             ];
 
+            // Keep the sales-order number (same series as admin Sales Orders).
+            $receipt_details->invoice_no = $order->invoice_no;
+            if ((int) $printTx->id !== (int) $order->id) {
+                $soHeading = data_get($invoice_layout->common_settings, 'sales_order_heading');
+                $receipt_details->invoice_heading = ! empty($soHeading) ? $soHeading : __('lang_v1.sales_order');
+                if (! empty($invoice_layout->quotation_no_prefix)) {
+                    $receipt_details->invoice_no_prefix = $invoice_layout->quotation_no_prefix;
+                }
+                if (! empty($receipt_details->barcode)) {
+                    $receipt_details->barcode = $order->invoice_no;
+                }
+            }
+
             // Sale App always uses US Letter invoice design
             $receipt_details->design = 'us_letter';
             $layout = 'sale_pos.receipts.us_letter';
@@ -224,7 +300,7 @@ class SalePortalController extends Controller
             }
 
             $html = view($layout, compact('receipt_details'))->render();
-            $title = $receipt_details->invoice_no ?? $order->invoice_no;
+            $title = $order->invoice_no;
             $orderId = $order->id;
 
             return response()->view('sale.orders.invoice', compact('html', 'title', 'orderId'));
@@ -640,6 +716,191 @@ class SalePortalController extends Controller
         }
     }
 
+    public function edit(Request $request, $id)
+    {
+        $order = $this->findOwnOrder($id);
+        $order->load(['contact', 'sell_lines.product', 'sell_lines.variations']);
+
+        if (! $this->saleAppCanEdit($order)) {
+            return redirect()
+                ->route('sale.orders')
+                ->with('status', ['success' => 0, 'msg' => 'This order is invoiced and cannot be edited.']);
+        }
+
+        $business_id = $request->session()->get('user.business_id');
+        $locations = BusinessLocation::forDropdown($business_id, false);
+        $default_location = $order->location_id;
+
+        $c = $order->contact;
+        $default_customer = $c ? [
+            'id' => $c->id,
+            'text' => trim(($c->supplier_business_name ? $c->supplier_business_name.' — ' : '').$c->name.
+                ($c->mobile ? ' ('.$c->mobile.')' : '')),
+            'shipping_address' => $order->shipping_address ?: $c->shipping_address,
+        ] : null;
+
+        $edit_lines = $order->sell_lines
+            ->whereNull('parent_sell_line_id')
+            ->values()
+            ->map(function ($line) {
+                $name = optional($line->product)->name ?: 'Item';
+                $vname = optional($line->variations)->name;
+                if (! empty($vname) && $vname !== 'DUMMY') {
+                    $name .= ' - '.$vname;
+                }
+
+                return [
+                    'product_id' => (int) $line->product_id,
+                    'variation_id' => (int) $line->variation_id,
+                    'transaction_sell_lines_id' => (int) $line->id,
+                    'name' => $name,
+                    'price' => (float) $line->unit_price_inc_tax,
+                    'quantity' => (float) $line->quantity,
+                    'enable_stock' => (int) optional($line->product)->enable_stock,
+                    'product_type' => optional($line->product)->type,
+                ];
+            });
+
+        $edit_order = $order;
+
+        return view('sale.orders.create', compact(
+            'locations',
+            'default_location',
+            'default_customer',
+            'edit_order',
+            'edit_lines'
+        ));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $order = $this->findOwnOrder($id);
+
+        if (! $this->saleAppCanEdit($order)) {
+            return redirect()
+                ->route('sale.orders')
+                ->with('status', ['success' => 0, 'msg' => 'This order is invoiced and cannot be edited.']);
+        }
+
+        $business_id = $request->session()->get('user.business_id');
+        $user_id = auth()->id();
+
+        $data = $request->validate([
+            'contact_id' => 'required|integer',
+            'location_id' => 'required|integer',
+            'products' => 'required|array|min:1',
+            'products.*.product_id' => 'required|integer',
+            'products.*.variation_id' => 'required|integer',
+            'products.*.quantity' => 'required|numeric|min:0.0001',
+            'products.*.unit_price' => 'required|numeric|min:0',
+            'products.*.transaction_sell_lines_id' => 'nullable|integer',
+            'payment_type' => 'required|in:cash,due',
+            'sale_note' => 'nullable|string|max:500',
+            'shipping_details' => 'required|string|max:1000',
+            'shipping_address' => 'required|string|max:1000',
+            'shipping_status' => 'nullable|in:ordered,packed,shipped,delivered,cancelled',
+        ]);
+
+        $contact = Contact::where('business_id', $business_id)
+            ->onlyCustomers()
+            ->findOrFail($data['contact_id']);
+
+        $locations = BusinessLocation::forDropdown($business_id, false)->toArray();
+        if (! array_key_exists($data['location_id'], $locations)) {
+            return back()->withInput()->with('status', ['success' => 0, 'msg' => 'Invalid location.']);
+        }
+
+        try {
+            DB::transaction(function () use ($data, $business_id, $user_id, $contact, $order) {
+                $products = [];
+                foreach ($data['products'] as $line) {
+                    $product = Product::where('business_id', $business_id)->findOrFail($line['product_id']);
+                    $variation = Variation::where('product_id', $product->id)->findOrFail($line['variation_id']);
+                    $price = (float) $line['unit_price'];
+                    $qty = (float) $line['quantity'];
+
+                    $row = [
+                        'product_id' => $product->id,
+                        'variation_id' => $variation->id,
+                        'quantity' => $qty,
+                        'unit_price' => $price,
+                        'unit_price_inc_tax' => $price,
+                        'item_tax' => 0,
+                        'tax_id' => null,
+                        'enable_stock' => $product->enable_stock,
+                        'product_type' => $product->type,
+                        'line_discount_type' => 'fixed',
+                        'line_discount_amount' => 0,
+                    ];
+                    if (! empty($line['transaction_sell_lines_id'])) {
+                        $row['transaction_sell_lines_id'] = (int) $line['transaction_sell_lines_id'];
+                    }
+                    $products[] = $row;
+                }
+
+                $invoice_total = $this->productUtil->calculateInvoiceTotal($products, null, null, false);
+                if ($invoice_total === false) {
+                    throw new \RuntimeException('Could not calculate total.');
+                }
+
+                $final_total = (float) $invoice_total['final_total'];
+                $cg = $this->contactUtil->getCustomerGroup($business_id, $contact->id);
+
+                $input = [
+                    'status' => $order->status ?: 'ordered',
+                    'contact_id' => $contact->id,
+                    'customer_group_id' => (empty($cg) || empty($cg->id)) ? null : $cg->id,
+                    'final_total' => $final_total,
+                    'discount_type' => $order->discount_type ?: 'fixed',
+                    'discount_amount' => $order->discount_amount ?: 0,
+                    'tax_rate_id' => $order->tax_id,
+                    'sale_note' => $data['sale_note'] ?? null,
+                    'commission_agent' => $order->commission_agent,
+                    'exchange_rate' => $order->exchange_rate ?: 1,
+                    'shipping_details' => $data['shipping_details'] ?? null,
+                    'shipping_address' => $data['shipping_address'],
+                    'shipping_status' => $data['shipping_status'] ?? ($order->shipping_status ?: 'ordered'),
+                    'shipping_charges' => $order->shipping_charges ?: 0,
+                    'source' => $order->source ?: 'sale_app',
+                ];
+
+                $this->transactionUtil->updateSellTransaction(
+                    $order,
+                    $business_id,
+                    $input,
+                    array_merge($invoice_total, ['final_total' => $final_total]),
+                    $user_id,
+                    false,
+                    false
+                );
+
+                $this->transactionUtil->createOrUpdateSellLines(
+                    $order->fresh(),
+                    $products,
+                    $data['location_id'],
+                    false,
+                    'draft',
+                    [],
+                    false
+                );
+            });
+
+            return redirect()
+                ->route('sale.orders')
+                ->with('status', [
+                    'success' => 1,
+                    'msg' => 'Sales order updated: '.$order->invoice_no,
+                ]);
+        } catch (\Throwable $e) {
+            \Log::error('Sale portal update failed: '.$e->getMessage(), ['trace' => $e->getTraceAsString()]);
+
+            return back()->withInput()->with('status', [
+                'success' => 0,
+                'msg' => 'Could not update order. '.$e->getMessage(),
+            ]);
+        }
+    }
+
     public function account(Request $request)
     {
         $user = auth()->user();
@@ -810,6 +1071,244 @@ class SalePortalController extends Controller
                 'msg' => 'Could not add customer. '.$e->getMessage(),
             ]);
         }
+    }
+
+    /**
+     * Invoices created from sales orders (Sale App display only).
+     */
+    protected function saleAppInvoiceMap(int $businessId): array
+    {
+        return Transaction::invoicesBySalesOrderId($businessId);
+    }
+
+    /**
+     * @return array<int, float>
+     */
+    protected function saleAppInvoiceTotals(array $invoiceMap): array
+    {
+        $ids = [];
+        foreach ($invoiceMap as $invoices) {
+            foreach ($invoices as $inv) {
+                $ids[] = (int) $inv->id;
+            }
+        }
+        $ids = array_values(array_unique(array_filter($ids)));
+        if ($ids === []) {
+            return [];
+        }
+
+        return Transaction::whereIn('id', $ids)->pluck('final_total', 'id')->all();
+    }
+
+    protected function saleAppDisplayTotal(Transaction $order, array $invoiceMap, array $invoiceTotals): float
+    {
+        $invoices = $invoiceMap[(int) $order->id] ?? [];
+        if ($invoices === []) {
+            return (float) $order->final_total;
+        }
+
+        $sum = 0.0;
+        foreach ($invoices as $inv) {
+            $sum += (float) ($invoiceTotals[(int) $inv->id] ?? 0);
+        }
+
+        return $sum;
+    }
+
+    protected function saleAppSumDisplayTotals($orders, array $invoiceMap, array $invoiceTotals): float
+    {
+        $sum = 0.0;
+        foreach ($orders as $order) {
+            $sum += $this->saleAppDisplayTotal($order, $invoiceMap, $invoiceTotals);
+        }
+
+        return $sum;
+    }
+
+    /**
+     * Completed only if this sales order was converted to an invoice.
+     */
+    protected function saleAppDisplayStatus(Transaction $order, array $invoiceMap): string
+    {
+        $converted = ! empty($invoiceMap[(int) $order->id]);
+
+        return $converted ? 'invoiced' : 'sale';
+    }
+
+    protected function saleAppHasEditPermission(Transaction $order): bool
+    {
+        if ((int) $order->created_by !== (int) auth()->id()) {
+            return false;
+        }
+
+        $user = auth()->user();
+
+        return $user && ($user->can('so.update_own') || $user->can('so.update'));
+    }
+
+    protected function saleAppCanEdit(Transaction $order, ?array $invoiceMap = null): bool
+    {
+        if (! $this->saleAppHasEditPermission($order)) {
+            return false;
+        }
+
+        $map = $invoiceMap ?? $this->saleAppInvoiceMap((int) $order->business_id);
+
+        return empty($map[(int) $order->id]);
+    }
+
+    protected function applySaleAppOrderStatus($orders, array $invoiceMap, ?array $invoiceTotals = null): void
+    {
+        $invoiceTotals = $invoiceTotals ?? $this->saleAppInvoiceTotals($invoiceMap);
+        foreach ($orders as $order) {
+            $order->sale_status = $this->saleAppDisplayStatus($order, $invoiceMap);
+            $order->can_show_edit = $this->saleAppHasEditPermission($order);
+            $order->can_edit = $this->saleAppCanEdit($order, $invoiceMap);
+            $order->sale_display_total = $this->saleAppDisplayTotal($order, $invoiceMap, $invoiceTotals);
+            $invoices = $invoiceMap[(int) $order->id] ?? [];
+            $order->converted_invoice_no = ! empty($invoices)
+                ? ($invoices[count($invoices) - 1]->invoice_no ?? null)
+                : null;
+        }
+    }
+
+    /**
+     * After admin converts (and may change price/qty), Sale App shows the invoice snapshot.
+     */
+    protected function applySaleAppInvoiceSnapshot(Transaction $order, array $invoiceMap): void
+    {
+        $this->applySaleAppOrderStatus(collect([$order]), $invoiceMap);
+
+        $stubs = $invoiceMap[(int) $order->id] ?? [];
+        if ($stubs === []) {
+            return;
+        }
+
+        $ids = array_values(array_unique(array_map(fn ($inv) => (int) $inv->id, $stubs)));
+        $invoices = Transaction::with(['contact', 'sell_lines.product', 'sell_lines.variations', 'payment_lines'])
+            ->whereIn('id', $ids)
+            ->orderBy('id')
+            ->get();
+        if ($invoices->isEmpty()) {
+            return;
+        }
+
+        $lines = $invoices->flatMap(function ($invoice) {
+            return $invoice->sell_lines->whereNull('parent_sell_line_id')->values();
+        })->values();
+        $order->setRelation('sell_lines', $lines);
+
+        $latest = $invoices->last();
+        $order->sale_display_total = (float) $invoices->sum('final_total');
+        $order->total_before_tax = (float) $invoices->sum('total_before_tax');
+        $order->discount_amount = (float) $invoices->sum('discount_amount');
+        $order->discount_type = $latest->discount_type;
+        $order->tax_amount = (float) $invoices->sum('tax_amount');
+        $order->shipping_charges = (float) $invoices->sum('shipping_charges');
+        $order->packing_charge = (float) $invoices->sum('packing_charge');
+        $order->packing_charge_type = $latest->packing_charge_type;
+        $order->round_off_amount = (float) $invoices->sum('round_off_amount');
+        $order->additional_notes = $latest->additional_notes;
+        $order->shipping_address = $latest->shipping_address;
+        $order->shipping_details = $latest->shipping_details;
+        $order->shipping_status = $latest->shipping_status;
+        $order->converted_invoice_no = $latest->invoice_no;
+        for ($i = 1; $i <= 4; $i++) {
+            $order->{'additional_expense_key_'.$i} = $latest->{'additional_expense_key_'.$i};
+            $order->{'additional_expense_value_'.$i} = (float) $invoices->sum('additional_expense_value_'.$i);
+        }
+        if ($latest->relationLoaded('contact') && $latest->contact) {
+            $order->setRelation('contact', $latest->contact);
+        }
+        $payments = $invoices->flatMap(function ($invoice) {
+            return $invoice->payment_lines ?? collect();
+        })->values();
+        $order->setRelation('payment_lines', $payments);
+    }
+
+    /**
+     * Subtotal, discount, tax, shipping, extras, total (Sale App display).
+     */
+    protected function saleAppAmountBreakdown(Transaction $order): array
+    {
+        $subtotal = (float) ($order->total_before_tax ?? 0);
+        if ($subtotal <= 0) {
+            $subtotal = 0.0;
+            foreach ($order->sell_lines ?? [] as $line) {
+                if (! empty($line->parent_sell_line_id)) {
+                    continue;
+                }
+                $subtotal += (float) $line->quantity * (float) $line->unit_price_inc_tax;
+            }
+        }
+
+        $discountRaw = (float) ($order->discount_amount ?? 0);
+        $discountType = $order->discount_type ?: 'fixed';
+        $discountMoney = $discountType === 'percentage'
+            ? round($subtotal * $discountRaw / 100, 2)
+            : $discountRaw;
+
+        $packRaw = (float) ($order->packing_charge ?? 0);
+        $packType = $order->packing_charge_type;
+        $packMoney = $packType === 'percent'
+            ? round($subtotal * $packRaw / 100, 2)
+            : $packRaw;
+
+        $extras = [];
+        for ($i = 1; $i <= 4; $i++) {
+            $key = trim((string) ($order->{'additional_expense_key_'.$i} ?? ''));
+            $val = (float) ($order->{'additional_expense_value_'.$i} ?? 0);
+            if ($key !== '' || $val != 0.0) {
+                $extras[] = [
+                    'label' => $key !== '' ? $key : ('Extra charge '.$i),
+                    'amount' => $val,
+                ];
+            }
+        }
+
+        $total = (float) ($order->sale_display_total ?? $order->final_total ?? 0);
+        $paid = 0.0;
+        foreach ($order->payment_lines ?? [] as $pay) {
+            $amt = (float) ($pay->amount ?? 0);
+            $paid += ! empty($pay->is_return) ? -$amt : $amt;
+        }
+
+        return [
+            'subtotal' => $subtotal,
+            'discount' => $discountMoney,
+            'discount_label' => $discountType === 'percentage' && $discountRaw > 0
+                ? 'Discount ('.rtrim(rtrim(number_format($discountRaw, 2), '0'), '.').'%)'
+                : 'Discount',
+            'tax' => (float) ($order->tax_amount ?? 0),
+            'shipping' => (float) ($order->shipping_charges ?? 0),
+            'packing' => $packMoney,
+            'packing_label' => $packType === 'percent' && $packRaw > 0
+                ? 'Packing ('.rtrim(rtrim(number_format($packRaw, 2), '0'), '.').'%)'
+                : 'Packing charge',
+            'round_off' => (float) ($order->round_off_amount ?? 0),
+            'extras' => $extras,
+            'total' => $total,
+            'paid' => $paid,
+            'due' => round($total - $paid, 2),
+            'show_paid' => ($order->sale_status ?? '') === 'invoiced',
+        ];
+    }
+
+    protected function saleAppPrintTransaction(Transaction $order, array $invoiceMap): Transaction
+    {
+        $stubs = $invoiceMap[(int) $order->id] ?? [];
+        if ($stubs === []) {
+            return $order;
+        }
+
+        $invoiceId = (int) ($stubs[count($stubs) - 1]->id ?? 0);
+        if ($invoiceId < 1) {
+            return $order;
+        }
+
+        $invoice = Transaction::find($invoiceId);
+
+        return $invoice ?: $order;
     }
 
     /**

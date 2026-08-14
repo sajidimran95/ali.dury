@@ -170,6 +170,8 @@ Route::prefix('sale')->name('sale.')->middleware(['setData'])->group(function ()
         Route::get('/orders', [SalePortalController::class, 'orders'])->name('orders');
         Route::get('/orders/create', [SalePortalController::class, 'create'])->name('orders.create');
         Route::post('/orders', [SalePortalController::class, 'store'])->name('orders.store');
+        Route::get('/orders/{id}/edit', [SalePortalController::class, 'edit'])->name('orders.edit');
+        Route::put('/orders/{id}', [SalePortalController::class, 'update'])->name('orders.update');
         Route::get('/orders/{id}', [SalePortalController::class, 'show'])->name('orders.show');
         Route::get('/orders/{id}/invoice', [SalePortalController::class, 'downloadInvoice'])->name('orders.invoice');
         Route::delete('/orders/{id}', [SalePortalController::class, 'destroy'])->name('orders.destroy');
