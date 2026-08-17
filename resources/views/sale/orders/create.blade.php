@@ -172,6 +172,9 @@
         const existingIdx = cart.findIndex(c => Number(c.variation_id) === vid);
         if (existingIdx >= 0) {
             cart[existingIdx].quantity = +cart[existingIdx].quantity + (Number(r.quantity) || 1);
+            if (typeof r.allow_decimal !== 'undefined') {
+                cart[existingIdx].allow_decimal = !!Number(r.allow_decimal);
+            }
             if (r.transaction_sell_lines_id && !cart[existingIdx].transaction_sell_lines_id) {
                 cart[existingIdx].transaction_sell_lines_id = r.transaction_sell_lines_id;
             }
@@ -186,6 +189,7 @@
                 quantity: Number(r.quantity) || 1,
                 enable_stock: r.enable_stock,
                 product_type: r.product_type,
+                allow_decimal: !!Number(r.allow_decimal),
             });
         }
         renderCart();
@@ -208,7 +212,47 @@
 
     function cartQty(variationId) {
         const line = cart.find(c => Number(c.variation_id) === Number(variationId));
-        return line ? Number(line.quantity) : 0;
+        if (!line) return 0;
+        return formatQty(line);
+    }
+
+    function formatQty(line) {
+        const q = Number(line.quantity) || 0;
+        if (line.allow_decimal) {
+            return String(Math.round(q * 100) / 100);
+        }
+        return String(Math.max(0, Math.round(q)));
+    }
+
+    function changeQty(i, delta) {
+        const line = cart[i];
+        if (!line) return;
+        if (delta < 0 && Number(line.quantity) <= 1) return;
+        let next = Number(line.quantity) + delta;
+        if (!line.allow_decimal) {
+            next = Math.round(next);
+            if (next < 1) return;
+        } else {
+            next = Math.round(next * 100) / 100;
+            if (next < 1) return;
+        }
+        line.quantity = next;
+        renderCart();
+    }
+
+    function setQtyFromInput(i, raw) {
+        const line = cart[i];
+        if (!line) return;
+        let q = parseFloat(String(raw).replace(',', '.'));
+        if (!isFinite(q)) q = 1;
+        if (!line.allow_decimal) {
+            q = Math.round(q);
+        } else {
+            q = Math.round(q * 100) / 100;
+        }
+        if (q < 1) q = 1;
+        line.quantity = q;
+        renderCart();
     }
 
     function setCustomer(id, text, shipAddr) {
@@ -282,8 +326,8 @@
                     <button type="button" data-rm="${idx}" class="sale-cart-item__rm" aria-label="Remove">×</button>
                 </div>
                 <div class="sale-cart-item__qty">
-                    <button type="button" data-dec="${idx}" class="sale-qty-btn">−</button>
-                    <input type="number" min="0.01" step="0.01" value="${line.quantity}" data-qty="${idx}" class="sale-qty-input">
+                    <button type="button" data-dec="${idx}" class="sale-qty-btn"${Number(line.quantity) <= 1 ? ' disabled' : ''}>−</button>
+                    <input type="text" inputmode="${line.allow_decimal ? 'decimal' : 'numeric'}" pattern="${line.allow_decimal ? '[0-9]*[.,]?[0-9]*' : '[0-9]*'}" value="${formatQty(line)}" data-qty="${idx}" class="sale-qty-input" autocomplete="off">
                     <button type="button" data-inc="${idx}" class="sale-qty-btn">+</button>
                     <span class="ml-auto font-extrabold tabular-nums text-sm text-sale">${money(lineTot)}</span>
                 </div>`;
@@ -293,15 +337,17 @@
         shipTotal.textContent = money(total);
 
         cartLines.querySelectorAll('[data-rm]').forEach(b => b.onclick = () => { cart.splice(+b.dataset.rm, 1); renderCart(); });
-        cartLines.querySelectorAll('[data-inc]').forEach(b => b.onclick = () => { cart[+b.dataset.inc].quantity = +(cart[+b.dataset.inc].quantity) + 1; renderCart(); });
-        cartLines.querySelectorAll('[data-dec]').forEach(b => b.onclick = () => {
-            const i = +b.dataset.dec;
-            cart[i].quantity = Math.max(0.01, +(cart[i].quantity) - 1);
-            renderCart();
-        });
-        cartLines.querySelectorAll('[data-qty]').forEach(inp => inp.onchange = () => {
-            cart[+inp.dataset.qty].quantity = Math.max(0.01, parseFloat(inp.value) || 1);
-            renderCart();
+        cartLines.querySelectorAll('[data-inc]').forEach(b => b.onclick = () => changeQty(+b.dataset.inc, 1));
+        cartLines.querySelectorAll('[data-dec]').forEach(b => b.onclick = () => changeQty(+b.dataset.dec, -1));
+        cartLines.querySelectorAll('[data-qty]').forEach(inp => {
+            inp.addEventListener('focus', () => inp.select());
+            inp.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    inp.blur();
+                }
+            });
+            inp.addEventListener('blur', () => setQtyFromInput(+inp.dataset.qty, inp.value));
         });
     }
 

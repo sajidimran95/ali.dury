@@ -989,9 +989,20 @@
             width: 34px; height: 34px; border-radius: 8px;
             border: 1px solid #e2e8f0; background: #fff; font-weight: 800; cursor: pointer;
         }
+        .sale-qty-btn:disabled {
+            opacity: .35;
+            cursor: not-allowed;
+        }
         .sale-qty-input {
             width: 64px; text-align: center; font-weight: 800;
             border: 1px solid #e2e8f0; border-radius: 8px; padding: 6px; background: #fff;
+            -moz-appearance: textfield;
+            appearance: textfield;
+        }
+        .sale-qty-input::-webkit-outer-spin-button,
+        .sale-qty-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
         }
         .sale-cart-total {
             display: flex; justify-content: space-between; align-items: center;

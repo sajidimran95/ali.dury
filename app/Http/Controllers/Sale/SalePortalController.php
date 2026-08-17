@@ -456,6 +456,7 @@ class SalePortalController extends Controller
                 $join->on('variations.id', '=', 'vld.variation_id')
                     ->where('vld.location_id', '=', $location_id);
             })
+            ->leftJoin('units as u', 'p.unit_id', '=', 'u.id')
             ->where('p.business_id', $business_id)
             ->where('p.type', '!=', 'modifier')
             ->where('p.is_inactive', 0)
@@ -497,6 +498,7 @@ class SalePortalController extends Controller
             'p.category_id',
             'p.sub_category_id',
             'p.image as product_image',
+            'u.allow_decimal as allow_decimal',
             DB::raw('COALESCE(vld.qty_available, 0) as stock')
         )
             ->orderBy('p.name')
@@ -524,6 +526,7 @@ class SalePortalController extends Controller
                 'stock' => (float) $r->stock,
                 'enable_stock' => (int) $r->enable_stock,
                 'product_type' => $r->product_type,
+                'allow_decimal' => (int) $r->allow_decimal,
                 'tax_id' => $r->tax_id,
                 'category_id' => (int) $r->category_id,
                 'sub_category_id' => (int) $r->sub_category_id,
@@ -719,7 +722,7 @@ class SalePortalController extends Controller
     public function edit(Request $request, $id)
     {
         $order = $this->findOwnOrder($id);
-        $order->load(['contact', 'sell_lines.product', 'sell_lines.variations']);
+        $order->load(['contact', 'sell_lines.product.unit', 'sell_lines.variations']);
 
         if (! $this->saleAppCanEdit($order)) {
             return redirect()
@@ -758,6 +761,7 @@ class SalePortalController extends Controller
                     'quantity' => (float) $line->quantity,
                     'enable_stock' => (int) optional($line->product)->enable_stock,
                     'product_type' => optional($line->product)->type,
+                    'allow_decimal' => (int) optional(optional($line->product)->unit)->allow_decimal,
                 ];
             });
 
