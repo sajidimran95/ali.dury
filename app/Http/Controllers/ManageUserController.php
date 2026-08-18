@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\BusinessLocation;
 use App\User;
+use App\Utils\BusinessUtil;
 use App\Utils\ModuleUtil;
 use DB;
 use Illuminate\Http\Request;
@@ -441,6 +442,9 @@ class ManageUserController extends Controller
      */
     private function getRolesArray($business_id)
     {
+        $business_id = request()->session()->get('user.business_id');
+        (new BusinessUtil())->createDefaultSalesRole((int) $business_id);
+
         $roles_array = Role::where('business_id', $business_id)->get()->pluck('name', 'id');
         $roles = [];
 

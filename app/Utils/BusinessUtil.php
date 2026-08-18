@@ -115,25 +115,28 @@ class BusinessUtil extends Util
     /**
      * Default Sales Representative role (Sale App) — created like Cashier for each business.
      * Own sales orders only — no POS / other sells.
+     * Safe to call on cloned sites / POS reset: creates the role if missing, normalizes name.
      *
      * @param  bool  $syncPermissions  When true, reset permissions to defaults (new business / DB reset).
      */
     public function createDefaultSalesRole(int $business_id, bool $syncPermissions = false): Role
     {
         $roleName = 'Sales Representative#'.$business_id;
-        $role = Role::where('name', $roleName)->where('guard_name', 'web')->first();
+        $role = Role::where('guard_name', 'web')
+            ->where(function ($q) use ($roleName, $business_id) {
+                $q->where('name', $roleName)
+                    ->orWhere(function ($inner) use ($business_id) {
+                        $inner->where('business_id', $business_id)
+                            ->whereIn('name', [
+                                'Sales Representative',
+                                'Sales Representative#'.$business_id,
+                                'Sales#'.$business_id,
+                                'Sales',
+                            ]);
+                    });
+            })
+            ->first();
         $created = false;
-
-        // Migrate old short name Sales#{id} if present
-        if (empty($role)) {
-            $legacy = Role::where('name', 'Sales#'.$business_id)->where('guard_name', 'web')->first();
-            if (! empty($legacy)) {
-                $legacy->name = $roleName;
-                $legacy->save();
-                $role = $legacy;
-                $syncPermissions = true;
-            }
-        }
 
         if (empty($role)) {
             $role = Role::create([
@@ -143,6 +146,19 @@ class BusinessUtil extends Util
             ]);
             $created = true;
             $syncPermissions = true;
+        }
+
+        $dirty = false;
+        if ($role->name !== $roleName) {
+            $role->name = $roleName;
+            $dirty = true;
+        }
+        if ((int) $role->business_id !== $business_id) {
+            $role->business_id = $business_id;
+            $dirty = true;
+        }
+        if ($dirty) {
+            $role->save();
         }
 
         if ($syncPermissions || $created) {
@@ -166,6 +182,17 @@ class BusinessUtil extends Util
         }
 
         return $role;
+    }
+
+    /**
+     * Ensure every business has the default Sales Representative role (cloned sites / existing DBs).
+     */
+    public function ensureDefaultSalesRolesForAllBusinesses(bool $syncPermissions = false): void
+    {
+        $businessIds = Business::query()->pluck('id');
+        foreach ($businessIds as $id) {
+            $this->createDefaultSalesRole((int) $id, $syncPermissions);
+        }
     }
 
     /**

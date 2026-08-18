@@ -74,6 +74,9 @@ class HomeController extends Controller
 
         $is_admin = $this->businessUtil->is_admin(auth()->user());
 
+        // Cloned / reset sites: always keep Sales Representative in the role list
+        $this->businessUtil->createDefaultSalesRole((int) $business_id);
+
         if (! auth()->user()->can('dashboard.data')) {
             return view('home.index');
         }
