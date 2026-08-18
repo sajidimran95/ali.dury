@@ -704,6 +704,7 @@ class DemoOperationalDataSeeder
             'is_direct_sale' => $isDirectSale ? 1 : 0,
             'exchange_rate' => 1,
             'shipping_status' => $type === 'sales_order' ? 'ordered' : null,
+            'source' => $type === 'sales_order' ? 'web' : null,
         ]);
 
         foreach ($lines as $line) {

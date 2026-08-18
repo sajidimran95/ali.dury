@@ -471,6 +471,15 @@ class SellController extends Controller
 
                     return $invoice_no;
                 })
+                ->addColumn('order_source', function ($row) {
+                    if ($row->type != 'sales_order') {
+                        return '';
+                    }
+
+                    $meta = Transaction::orderSourceMeta($row->source ?? null);
+
+                    return '<span class="label '.$meta['class'].'">'.e($meta['label']).'</span>';
+                })
                 ->editColumn('shipping_status', function ($row) use ($shipping_statuses) {
                     $status_color = ! empty($this->shipping_status_colors[$row->shipping_status]) ? $this->shipping_status_colors[$row->shipping_status] : 'bg-gray';
                     $status = ! empty($row->shipping_status) ? '<a href="#" class="btn-modal" data-href="'.action([\App\Http\Controllers\SellController::class, 'editShipping'], [$row->id]).'" data-container=".view_modal"><span class="label '.$status_color.'">'.$shipping_statuses[$row->shipping_status].'</span></a>' : '';
@@ -548,7 +557,7 @@ class SellController extends Controller
                         }
                     }, ]);
 
-            $rawColumns = ['final_total', 'action', 'total_paid', 'total_remaining', 'payment_status', 'invoice_no', 'discount_amount', 'tax_amount', 'total_before_tax', 'shipping_status', 'types_of_service_name', 'payment_methods', 'return_due', 'conatct_name', 'status', 'zatca_status', 'converted_invoice'];
+            $rawColumns = ['final_total', 'action', 'total_paid', 'total_remaining', 'payment_status', 'invoice_no', 'order_source', 'discount_amount', 'tax_amount', 'total_before_tax', 'shipping_status', 'types_of_service_name', 'payment_methods', 'return_due', 'conatct_name', 'status', 'zatca_status', 'converted_invoice'];
 
             return $datatable->rawColumns($rawColumns)
                       ->skipTotalRecords()
@@ -2007,6 +2016,12 @@ class SellController extends Controller
         if (! empty(request()->input('source'))) {
             if (request()->input('source') == 'woocommerce') {
                 $query->whereNotNull('transactions.woocommerce_order_id');
+            } elseif (request()->input('source') == 'web') {
+                $query->where(function ($q) {
+                    $q->whereNull('transactions.source')
+                        ->orWhere('transactions.source', '')
+                        ->orWhere('transactions.source', 'web');
+                });
             } else {
                 $query->where('transactions.source', request()->input('source'));
             }

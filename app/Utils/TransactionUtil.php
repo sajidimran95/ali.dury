@@ -67,7 +67,9 @@ class TransactionUtil extends Util
             'customer_group_id' => ! empty($input['customer_group_id']) ? $input['customer_group_id'] : null,
             'invoice_no' => $invoice_no,
             'ref_no' => '',
-            'source' => ! empty($input['source']) ? $input['source'] : null,
+            'source' => ! empty($input['source'])
+                ? $input['source']
+                : ($sale_type === 'sales_order' ? 'web' : null),
             'total_before_tax' => $invoice_total['total_before_tax'],
             'transaction_date' => $input['transaction_date'],
             'tax_id' => ! empty($input['tax_rate_id']) ? $input['tax_rate_id'] : null,
@@ -207,7 +209,7 @@ class TransactionUtil extends Util
             'tax_amount' => $invoice_total['tax'],
             'final_total' => $final_total,
             'document' => isset($input['document']) ? $input['document'] : $transaction->document,
-            'source' => isset($input['source']) ? $input['source'] : $transaction->source,
+            'source' => ! empty($input['source']) ? $input['source'] : $transaction->source,
             'additional_notes' => ! empty($input['sale_note']) ? $input['sale_note'] : null,
             'staff_note' => ! empty($input['staff_note']) ? $input['staff_note'] : null,
             'custom_field_1' => ! empty($input['custom_field_1']) ? $input['custom_field_1'] : null,
@@ -5262,6 +5264,7 @@ class TransactionUtil extends Util
                     'transactions.is_direct_sale',
                     'transactions.invoice_no',
                     'transactions.invoice_no as invoice_no_text',
+                    'transactions.source',
                     'contacts.name',
                     'contacts.mobile',
                     'contacts.contact_id',

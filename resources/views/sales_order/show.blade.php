@@ -104,9 +104,15 @@
                                 <span class="label {{ $fulfillment_colors[$fulfillment] ?? 'bg-gray' }}">{{ ucfirst($fulfillment) }}</span>
                             </p>
                         @endif
-                        @if(($order->source ?? null) === 'ecommerce')
-                            <p class="tw-mb-1"><b>@lang('lang_v1.source'):</b> Ecommerce</p>
-                        @endif
+                        @php
+                            $order_source = \App\Transaction::orderSourceMeta(
+                                !empty($order->source) ? $order->source : ((!empty($meta) ? 'ecommerce' : 'web'))
+                            );
+                        @endphp
+                        <p class="tw-mb-1">
+                            <b>@lang('lang_v1.source'):</b>
+                            <span class="label {{ $order_source['class'] }}">{{ $order_source['label'] }}</span>
+                        </p>
                     </div>
 
                     <div class="col-sm-4">

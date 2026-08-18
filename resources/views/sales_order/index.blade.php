@@ -54,6 +54,12 @@
                 {!! Form::select('so_list_filter_status', $sales_order_statuses, null, ['class' => 'form-control select2', 'style' => 'width:100%', 'placeholder' => __('lang_v1.all')]); !!}
             </div>
         </div>
+        <div class="col-md-3">
+            <div class="form-group">
+                {!! Form::label('so_list_filter_source',  __('lang_v1.source') . ':') !!}
+                {!! Form::select('so_list_filter_source', $sources, null, ['class' => 'form-control select2', 'style' => 'width:100%', 'placeholder' => __('lang_v1.all')]); !!}
+            </div>
+        </div>
         @if(!empty($shipping_statuses))
             <div class="col-md-3">
                 <div class="form-group">
@@ -78,6 +84,7 @@
                         <th class="not-export">@lang('messages.action')</th>
                         <th>@lang('messages.date')</th>
                         <th>@lang('restaurant.order_no')</th>
+                        <th>@lang('lang_v1.source')</th>
                         <th>@lang('sale.customer_name')</th>
                         <th>@lang('lang_v1.contact_no')</th>
                         <th>@lang('sale.location')</th>
@@ -140,6 +147,9 @@ $(document).ready( function(){
                 if ($('#so_list_shipping_status').length) {
                     d.shipping_status = $('#so_list_shipping_status').val();
                 }
+                if ($('#so_list_filter_source').length) {
+                    d.source = $('#so_list_filter_source').val();
+                }
 
                 if($('#created_by').length) {
                     d.created_by = $('#created_by').val();
@@ -147,7 +157,7 @@ $(document).ready( function(){
             }
         },
         columnDefs: [ {
-            "targets": 7,
+            "targets": 8,
             "orderable": false,
             "searchable": false
         } ],
@@ -155,6 +165,7 @@ $(document).ready( function(){
             { data: 'action', name: 'action'},
             { data: 'transaction_date', name: 'transaction_date'  },
             { data: 'invoice_no', name: 'invoice_no'},
+            { data: 'order_source', name: 'transactions.source', orderable: false, searchable: false},
             { data: 'conatct_name', name: 'conatct_name'},
             { data: 'mobile', name: 'contacts.mobile'},
             { data: 'business_location', name: 'bl.name'},
@@ -165,7 +176,7 @@ $(document).ready( function(){
             { data: 'converted_invoice', name: 'converted_invoice', orderable: false, searchable: false},
         ]
     });
-    $(document).on('change', '#sell_list_filter_location_id, #sell_list_filter_customer_id, #created_by, #so_list_filter_status, #so_list_shipping_status',  function() {
+    $(document).on('change', '#sell_list_filter_location_id, #sell_list_filter_customer_id, #created_by, #so_list_filter_status, #so_list_shipping_status, #so_list_filter_source',  function() {
         sell_table.ajax.reload();
     });
 });

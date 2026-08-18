@@ -459,6 +459,47 @@ class Transaction extends Model
         return $sales_orders;
     }
 
+    /**
+     * Known sales-order origins (shop vs sales-order app vs back office).
+     */
+    public static function salesOrderSourceOptions(): array
+    {
+        return [
+            'ecommerce' => __('lang_v1.source_ecommerce'),
+            'sale_app' => __('lang_v1.source_sale_app'),
+            'web' => __('lang_v1.source_web'),
+        ];
+    }
+
+    /**
+     * Label + badge class for a sales-order source.
+     * Empty/null is treated as back-office (desktop Sales Order form).
+     */
+    public static function orderSourceMeta(?string $source): array
+    {
+        $key = $source ?: 'web';
+        $options = self::salesOrderSourceOptions();
+        $classes = [
+            'ecommerce' => 'bg-purple',
+            'sale_app' => 'bg-aqua',
+            'web' => 'bg-gray',
+        ];
+
+        if (isset($options[$key])) {
+            return [
+                'key' => $key,
+                'label' => $options[$key],
+                'class' => $classes[$key] ?? 'bg-gray',
+            ];
+        }
+
+        return [
+            'key' => $key,
+            'label' => ucfirst(str_replace('_', ' ', $key)),
+            'class' => 'bg-gray',
+        ];
+    }
+
     public function expenseCategory()
     {
         return $this->belongsTo(\App\ExpenseCategory::class, 'expense_category_id');

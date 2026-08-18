@@ -72,9 +72,10 @@ class SalesOrderController extends Controller
         }
 
         $so_stats = $this->getSalesOrderListStats((int) $business_id);
+        $sources = Transaction::salesOrderSourceOptions();
 
         return view('sales_order.index')
-            ->with(compact('business_locations', 'customers', 'shipping_statuses', 'sales_order_statuses', 'so_stats'));
+            ->with(compact('business_locations', 'customers', 'shipping_statuses', 'sales_order_statuses', 'so_stats', 'sources'));
     }
 
     /**
