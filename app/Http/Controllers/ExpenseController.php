@@ -186,6 +186,8 @@ class ExpenseController extends Controller
                                 </span>
                         </button>
                     <ul class="dropdown-menu dropdown-menu-left" role="menu">
+                    <li><a href="#" data-href="{{action([\App\Http\Controllers\ExpenseController::class, \'show\'], [$id])}}" class="btn-modal" data-container=".view_modal"><i class="fas fa-eye" aria-hidden="true"></i> @lang("messages.view")</a></li>
+                    <li><a href="#" class="print-invoice" data-href="{{action([\App\Http\Controllers\ExpenseController::class, \'printInvoice\'], [$id])}}"><i class="fas fa-print" aria-hidden="true"></i> @lang("messages.print")</a></li>
                     @if(auth()->user()->can("expense.edit"))
                         <li><a href="{{action(\'App\Http\Controllers\ExpenseController@edit\', [$id])}}"><i class="glyphicon glyphicon-edit"></i> @lang("messages.edit")</a></li>
                     @endif
@@ -466,7 +468,92 @@ class ExpenseController extends Controller
      */
     public function show($id)
     {
-        //
+        $data = $this->getExpensePrintData($id);
+
+        return view('expense.show')
+            ->with($data);
+    }
+
+    /**
+     * Print expense invoice / voucher.
+     *
+     * @param  int  $id
+     * @return array
+     */
+    public function printInvoice($id)
+    {
+        try {
+            $data = $this->getExpensePrintData($id);
+            $data['for_print'] = true;
+
+            $output = ['success' => 1, 'receipt' => [], 'print_title' => $data['expense']->ref_no];
+            $output['receipt']['html_content'] = view('expense.partials.show_details', $data)->render();
+        } catch (\Exception $e) {
+            \Log::emergency('File:'.$e->getFile().'Line:'.$e->getLine().'Message:'.$e->getMessage());
+
+            $output = ['success' => 0,
+                'msg' => __('messages.something_went_wrong'),
+            ];
+        }
+
+        return $output;
+    }
+
+    /**
+     * Load an expense with relations for view / print.
+     *
+     * @param  int  $id
+     * @return array
+     */
+    private function getExpensePrintData($id)
+    {
+        if (! auth()->user()->can('all_expense.access') && ! auth()->user()->can('view_own_expense')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $business_id = request()->session()->get('user.business_id');
+
+        $expense = Transaction::where('business_id', $business_id)
+            ->where('id', $id)
+            ->whereIn('type', ['expense', 'expense_refund'])
+            ->with([
+                'contact',
+                'location',
+                'business',
+                'payment_lines',
+                'tax',
+                'expenseCategory',
+                'expenseSubCategory',
+                'expenseFor',
+                'sales_person',
+            ])
+            ->firstOrFail();
+
+        $is_admin = $this->moduleUtil->is_admin(auth()->user(), $business_id);
+        if (! $is_admin && ! auth()->user()->can('all_expense.access')) {
+            $user_id = auth()->user()->id;
+            if ((int) $expense->created_by !== (int) $user_id && (int) $expense->expense_for !== (int) $user_id) {
+                abort(403, 'Unauthorized action.');
+            }
+        }
+
+        $payment_methods = $this->transactionUtil->payment_types($expense->location_id, true, $business_id);
+
+        $expense_taxes = [];
+        if (! empty($expense->tax) && ! empty($expense->tax_amount)) {
+            if ($expense->tax->is_tax_group) {
+                $expense_taxes = $this->transactionUtil->sumGroupTaxDetails(
+                    $this->transactionUtil->groupTaxDetails($expense->tax, $expense->tax_amount)
+                );
+            } else {
+                $expense_taxes[$expense->tax->name] = $expense->tax_amount;
+            }
+        }
+
+        $amount_paid = $expense->payment_lines->sum('amount');
+        $payment_due = $expense->final_total - $amount_paid;
+
+        return compact('expense', 'payment_methods', 'expense_taxes', 'amount_paid', 'payment_due');
     }
 
     /**

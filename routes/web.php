@@ -454,6 +454,7 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::resource('expense-categories', ExpenseCategoryController::class);
 
     //Expenses...
+    Route::get('expenses/print/{id}', [ExpenseController::class, 'printInvoice']);
     Route::resource('expenses', ExpenseController::class);
     Route::get('import-expense', [ExpenseController::class, 'importExpense']);
     Route::post('store-import-expense', [ExpenseController::class, 'storeExpenseImport']);

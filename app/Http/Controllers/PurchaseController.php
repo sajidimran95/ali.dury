@@ -1395,8 +1395,17 @@ class PurchaseController extends Controller
                 $purchase_order_dates = implode(', ', $order_dates);
             }
 
+            $for_print = true;
             $output = ['success' => 1, 'receipt' => [], 'print_title' => $purchase->ref_no];
-            $output['receipt']['html_content'] = view('purchase.partials.show_details', compact('taxes', 'purchase', 'payment_methods', 'purchase_order_nos', 'purchase_order_dates', 'purchase_taxes'))->render();
+            $output['receipt']['html_content'] = view('purchase.partials.show_details', compact(
+                'taxes',
+                'purchase',
+                'payment_methods',
+                'purchase_order_nos',
+                'purchase_order_dates',
+                'purchase_taxes',
+                'for_print'
+            ))->render();
         } catch (\Exception $e) {
             \Log::emergency('File:'.$e->getFile().'Line:'.$e->getLine().'Message:'.$e->getMessage());
 

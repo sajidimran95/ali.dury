@@ -459,5 +459,18 @@ class Transaction extends Model
         return $sales_orders;
     }
 
-   
+    public function expenseCategory()
+    {
+        return $this->belongsTo(\App\ExpenseCategory::class, 'expense_category_id');
+    }
+
+    public function expenseSubCategory()
+    {
+        return $this->belongsTo(\App\ExpenseCategory::class, 'expense_sub_category_id');
+    }
+
+    public function expenseFor()
+    {
+        return $this->belongsTo(\App\User::class, 'expense_for');
+    }
 }
