@@ -173,12 +173,10 @@ class PosPwaController extends Controller
     {
         $version = config('app.asset_version', config('constants.asset_version', '1'));
         $offline_url = url('/pos-pwa/offline');
-        $cache_name = 'japspos-pwa-v'.preg_replace('/[^a-zA-Z0-9._-]/', '', (string) $version);
+        $cache_name = 'japspos-pwa-v'.preg_replace('/[^a-zA-Z0-9._-]/', '', (string) $version).'-live';
 
         $shell = [
-            url('/pos/create'),
             $offline_url,
-            asset('css/pos-sale-theme.css'),
             asset('pwa/icon-192.png'),
             asset('pwa/icon-512.png'),
         ];
@@ -205,44 +203,53 @@ self.addEventListener('activate', (event) => {
   );
 });
 
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
+
+function shouldBypass(url) {
+  const p = url.pathname;
+  if (p.indexOf('/sw.js') !== -1 || p.indexOf('/pos-pwa/sw.js') !== -1) return true;
+  if (p.indexOf('/products/') === 0) return true;
+  if (p.indexOf('/sells/') === 0) return true;
+  if (p.indexOf('/pos/') === 0) return true;
+  if (p.indexOf('/api/') === 0) return true;
+  if (p.indexOf('/livewire') !== -1) return true;
+  return false;
+}
+
 self.addEventListener('fetch', (event) => {
   const req = event.request;
   if (req.method !== 'GET') return;
 
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;
+  if (shouldBypass(url)) return;
 
-  // Never cache API / mutating POS endpoints aggressively — network first
-  const isDoc = req.mode === 'navigate' || (req.headers.get('accept') || '').includes('text/html');
-  const isStatic = /\\.(?:css|js|woff2?|ttf|png|jpe?g|gif|svg|webp|ico|mp3|ogg)(?:\\?|$)/i.test(url.pathname);
-
-  if (isDoc) {
+  if (req.mode === 'navigate') {
     event.respondWith(
-      fetch(req)
-        .then((res) => {
-          const copy = res.clone();
-          caches.open(CACHE_NAME).then((c) => c.put(req, copy)).catch(() => {});
-          return res;
-        })
-        .catch(() => caches.match(req).then((r) => r || caches.match(OFFLINE_URL)))
+      fetch(req).catch(() => caches.match(OFFLINE_URL))
     );
     return;
   }
 
-  if (isStatic) {
-    event.respondWith(
-      caches.match(req).then((cached) => {
-        const network = fetch(req).then((res) => {
-          if (res && res.ok) {
-            const copy = res.clone();
-            caches.open(CACHE_NAME).then((c) => c.put(req, copy)).catch(() => {});
-          }
-          return res;
-        }).catch(() => cached);
-        return cached || network;
-      })
-    );
-  }
+  const isAsset = /\\.(?:woff2?|ttf|png|jpe?g|gif|svg|webp|ico)(?:\\?|$)/i.test(url.pathname);
+  if (!isAsset) return;
+
+  event.respondWith(
+    caches.match(req).then((cached) => {
+      const network = fetch(req).then((res) => {
+        if (res && res.ok) {
+          const copy = res.clone();
+          caches.open(CACHE_NAME).then((c) => c.put(req, copy)).catch(() => {});
+        }
+        return res;
+      }).catch(() => cached);
+      return cached || network;
+    })
+  );
 });
 JS;
 

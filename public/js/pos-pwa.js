@@ -1,5 +1,6 @@
 /**
  * POS Progressive Web App — register SW + native install prompt.
+ * Forces already-installed clients to pick up a new worker (barcode/live POS data).
  */
 (function () {
   'use strict';
@@ -29,14 +30,54 @@
     }
   }
 
+  function skipWaiting(worker) {
+    if (!worker) return;
+    try {
+      worker.postMessage({ type: 'SKIP_WAITING' });
+    } catch (e) {}
+  }
+
   function registerSw() {
     var swUrl = cfg.swUrl || '/pos-pwa/sw.js';
     navigator.serviceWorker.register(swUrl, { scope: '/' })
+      .then(function (reg) {
+        if (reg.waiting) {
+          skipWaiting(reg.waiting);
+        }
+        reg.addEventListener('updatefound', function () {
+          var nw = reg.installing;
+          if (!nw) return;
+          nw.addEventListener('statechange', function () {
+            if (nw.state === 'installed' && navigator.serviceWorker.controller) {
+              skipWaiting(nw);
+            }
+          });
+        });
+        if (typeof reg.update === 'function') {
+          reg.update();
+        }
+      })
       .catch(function (err) {
         if (window.console && console.warn) {
           console.warn('POS PWA SW registration failed', err);
         }
       });
+
+    var reloaded = false;
+    try {
+      reloaded = sessionStorage.getItem('pos_pwa_reloaded') === '1';
+      if (reloaded) {
+        sessionStorage.removeItem('pos_pwa_reloaded');
+      }
+    } catch (e) {}
+
+    navigator.serviceWorker.addEventListener('controllerchange', function () {
+      if (reloaded) return;
+      try {
+        sessionStorage.setItem('pos_pwa_reloaded', '1');
+      } catch (e2) {}
+      window.location.reload();
+    });
   }
 
   window.addEventListener('beforeinstallprompt', function (e) {
@@ -64,7 +105,6 @@
       return;
     }
 
-    // iOS / browsers without beforeinstallprompt
     var tip = cfg.iosHint || 'On iPhone/iPad: tap Share → Add to Home Screen.';
     if (/iphone|ipad|ipod/i.test(navigator.userAgent)) {
       alert(tip);
@@ -83,7 +123,6 @@
         document.body && document.body.classList.add('pos-pwa-standalone');
         setInstallVisibility(false);
       } else if (/iphone|ipad|ipod/i.test(navigator.userAgent)) {
-        // Show install tip button on iOS (no beforeinstallprompt)
         setInstallVisibility(true);
       }
     });

@@ -1292,6 +1292,8 @@ class ProductController extends Controller
     {
         if (request()->ajax()) {
             $search_term = trim((string) request()->input('term', ''));
+            $search_term = preg_replace('/[\x00-\x1F\x7F]/', '', $search_term);
+            $search_term = trim((string) $search_term);
             $location_id = request()->input('location_id', null);
             $check_qty = request()->input('check_qty', false);
             $price_group_id = request()->input('price_group', null);
@@ -1316,11 +1318,14 @@ class ProductController extends Controller
             }
 
             $result = collect();
-            if ($search_term !== '') {
-                // Always try exact SKU / sub_sku first (POS auto-enter + scan)
+            $scan_terms = $is_scan_mode
+                ? $this->barcodeScanCandidates($search_term)
+                : ($search_term !== '' ? [$search_term] : []);
+
+            foreach ($scan_terms as $term) {
                 $result = $this->productUtil->filterProduct(
                     $business_id,
-                    $search_term,
+                    $term,
                     $location_id,
                     $not_for_selling,
                     $price_group_id,
@@ -1330,65 +1335,73 @@ class ProductController extends Controller
                     'exact'
                 );
 
-                // If product SKU matched multiple variations, keep only rows whose
-                // variation sub_sku or product sku equals the scanned term.
                 if ($result->count() > 1) {
-                    $exactOnly = $result->filter(function ($item) use ($search_term) {
+                    $exactOnly = $result->filter(function ($item) use ($term) {
                         $sub = html_entity_decode((string) ($item->sub_sku ?? ''), ENT_QUOTES, 'UTF-8');
                         $sku = html_entity_decode((string) ($item->sku ?? ''), ENT_QUOTES, 'UTF-8');
 
-                        return strcasecmp($sub, $search_term) === 0
-                            || ($sku !== '' && strcasecmp($sku, $search_term) === 0);
+                        return strcasecmp(trim($sub), $term) === 0
+                            || ($sku !== '' && strcasecmp(trim($sku), $term) === 0);
                     })->values();
 
                     if ($exactOnly->isNotEmpty()) {
                         $result = $exactOnly;
                     }
                 }
+
+                if ($result->isNotEmpty()) {
+                    break;
+                }
             }
 
             // Search mode (and scan fallback if exact found nothing): partial LIKE
-            // For scan, only keep results that still equal the barcode exactly
-            // (covers odd data where exact SQL missed but LIKE + equality finds the row)
             if ($result->isEmpty() && $search_term !== '') {
-                $likeResult = $this->productUtil->filterProduct(
-                    $business_id,
-                    $search_term,
-                    $location_id,
-                    $not_for_selling,
-                    $price_group_id,
-                    $product_types,
-                    $search_fields,
-                    $check_qty,
-                    'like'
-                );
+                foreach ($scan_terms as $term) {
+                    $likeResult = $this->productUtil->filterProduct(
+                        $business_id,
+                        $term,
+                        $location_id,
+                        $not_for_selling,
+                        $price_group_id,
+                        $product_types,
+                        $search_fields,
+                        $check_qty,
+                        'like'
+                    );
 
-                if ($is_scan_mode) {
-                    $result = $likeResult->filter(function ($item) use ($search_term) {
-                        $sub = html_entity_decode((string) ($item->sub_sku ?? ''), ENT_QUOTES, 'UTF-8');
-                        $sku = html_entity_decode((string) ($item->sku ?? ''), ENT_QUOTES, 'UTF-8');
-
-                        return strcasecmp($sub, $search_term) === 0
-                            || ($sku !== '' && strcasecmp($sku, $search_term) === 0);
-                    })->values();
-                } else {
-                    $result = $likeResult;
-
-                    if ($auto_add_single && $result->count() > 1) {
-                        $exactOnly = $result->filter(function ($item) use ($search_term) {
+                    if ($is_scan_mode) {
+                        $result = $likeResult->filter(function ($item) use ($term) {
                             $sub = html_entity_decode((string) ($item->sub_sku ?? ''), ENT_QUOTES, 'UTF-8');
                             $sku = html_entity_decode((string) ($item->sku ?? ''), ENT_QUOTES, 'UTF-8');
 
-                            return strcasecmp($sub, $search_term) === 0
-                                || ($sku !== '' && strcasecmp($sku, $search_term) === 0);
+                            return strcasecmp(trim($sub), $term) === 0
+                                || ($sku !== '' && strcasecmp(trim($sku), $term) === 0);
                         })->values();
+                    } else {
+                        $result = $likeResult;
 
-                        if ($exactOnly->count() >= 1) {
-                            $result = $exactOnly;
+                        if ($auto_add_single && $result->count() > 1) {
+                            $exactOnly = $result->filter(function ($item) use ($term) {
+                                $sub = html_entity_decode((string) ($item->sub_sku ?? ''), ENT_QUOTES, 'UTF-8');
+                                $sku = html_entity_decode((string) ($item->sku ?? ''), ENT_QUOTES, 'UTF-8');
+
+                                return strcasecmp(trim($sub), $term) === 0
+                                    || ($sku !== '' && strcasecmp(trim($sku), $term) === 0);
+                            })->values();
+
+                            if ($exactOnly->count() >= 1) {
+                                $result = $exactOnly;
+                            }
                         }
+                    }
+
+                    if ($result->isNotEmpty()) {
+                        break;
                     }
                 }
             }
+
+            $noStore = ['Cache-Control' => 'no-store, no-cache, must-revalidate'];
 
             // If only one result and location_id is provided (POS context), auto-fetch the product row
             if (count($result) == 1 && ! empty($location_id) && $auto_add_single) {
@@ -1403,7 +1416,7 @@ class ProductController extends Controller
                 return response()->json([
                     'auto_add' => true,
                     'row_data' => $row_data
-                ]);
+                ], 200, $noStore);
             }
 
             // POS auto_add requests always get a stable envelope
@@ -1411,11 +1424,11 @@ class ProductController extends Controller
                 return response()->json([
                     'auto_add' => false,
                     'products' => $result->values()->all(),
-                ]);
+                ], 200, $noStore);
             }
 
             // Other modules (stock transfer, etc.) expect a bare product array
-            return response()->json($result->values()->all());
+            return response()->json($result->values()->all(), 200, $noStore);
         }
     }
     /**
@@ -2657,5 +2670,49 @@ class ProductController extends Controller
         $filename = 'products-export-'.\Carbon::now()->format('Y-m-d').'.xlsx';
 
         return Excel::download(new ProductsExport, $filename);
+    }
+
+    /**
+     * Barcode scanners often send UPC/EAN variants (leading zeros, check digit, AIM prefix).
+     * Search-by-name still works; exact SKU scan would otherwise miss after stock/label updates.
+     *
+     * @return array<int, string>
+     */
+    private function barcodeScanCandidates(string $term): array
+    {
+        $term = preg_replace('/[\x00-\x1F\x7F]/', '', $term);
+        $term = trim((string) $term);
+        if ($term === '') {
+            return [];
+        }
+        if (preg_match('/^\][A-Za-z0-9]{2}/', $term)) {
+            $term = substr($term, 3);
+        }
+
+        $candidates = [$term];
+        if (preg_match('/^\d+$/', $term)) {
+            $stripped = ltrim($term, '0');
+            if ($stripped !== '' && $stripped !== $term) {
+                $candidates[] = $stripped;
+            }
+            $len = strlen($term);
+            if ($len === 12) {
+                $candidates[] = '0'.$term;
+            }
+            if ($len === 13 && $term[0] === '0') {
+                $candidates[] = substr($term, 1);
+            }
+            if ($len >= 12) {
+                $candidates[] = substr($term, 0, -1);
+            }
+            if ($stripped !== '') {
+                $candidates[] = str_pad($stripped, 12, '0', STR_PAD_LEFT);
+                $candidates[] = str_pad($stripped, 13, '0', STR_PAD_LEFT);
+            }
+        }
+
+        return array_values(array_unique(array_filter($candidates, function ($v) {
+            return $v !== '';
+        })));
     }
 }

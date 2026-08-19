@@ -621,8 +621,16 @@ $(document).ready(function() {
          * If the same code was scanned twice without a clear, fix:
          * "ECOM-004ECOM-004" → { code: "ECOM-004", times: 2 }
          */
+        function posSanitizeBarcode(term) {
+            term = (term || '').toString().replace(/[\x00-\x1F\x7F]/g, '').replace(/[\r\n\t]+/g, '').trim();
+            if (/^\][A-Za-z0-9]{2}/.test(term)) {
+                term = term.substring(3);
+            }
+            return term;
+        }
+
         function posNormalizeScanTerm(term) {
-            term = (term || '').toString().replace(/[\r\n\t]+/g, '').trim();
+            term = posSanitizeBarcode(term);
             if (!term) {
                 return { code: '', times: 1 };
             }
@@ -730,7 +738,9 @@ $(document).ready(function() {
         /**
          * Process a barcode/SKU immediately (clear field first so next scan cannot append).
          */
-        function posProcessBarcodeTerm(rawTerm, forcedTimes) {
+        function posProcessBarcodeTerm(rawTerm, forcedTimes, opts) {
+            opts = opts || {};
+            var silentIfMiss = opts.silentIfMiss === true;
             var parsed = posNormalizeScanTerm(rawTerm);
             if (!parsed.code) {
                 return;
@@ -801,7 +811,11 @@ $(document).ready(function() {
                             if (products.length === 1 && products[0].variation_id) {
                                 posAddVariationQty(products[0].variation_id, times);
                             } else if (products.length === 0) {
-                                toastr.error(LANG.no_products_found);
+                                if (silentIfMiss) {
+                                    $inp.val(parsed.code);
+                                } else {
+                                    toastr.error(LANG.no_products_found);
+                                }
                             } else {
                                 var scanned = String(parsed.code || '').trim().toLowerCase();
                                 var exact = null;
@@ -824,7 +838,11 @@ $(document).ready(function() {
                                 if (exact && exact.variation_id) {
                                     posAddVariationQty(exact.variation_id, times);
                                 } else if (posIsScanMode()) {
-                                    toastr.error(LANG.no_products_found);
+                                    if (silentIfMiss) {
+                                        $inp.val(parsed.code);
+                                    } else {
+                                        toastr.error(LANG.no_products_found);
+                                    }
                                 } else {
                                     $inp.val(parsed.code);
                                     try {
@@ -882,15 +900,16 @@ $(document).ready(function() {
                 }
                 var $s = $('#search_product');
                 var val = $s.val();
-                if (!val || String(val).trim().length < 3) {
+                if (!val || String(val).trim().length < 8) {
                     posScan.rapidChars = 0;
                     return;
                 }
-                if (posScan.rapidChars >= 4) {
+                if (posScan.rapidChars >= 6) {
                     posScan.rapidChars = 0;
-                    posProcessBarcodeTerm(val);
+                    // Incomplete bluetooth/PWA scans: try quietly; Enter still shows "not found"
+                    posProcessBarcodeTerm(val, null, { silentIfMiss: true });
                 }
-            }, 90);
+            }, 350);
         });
 
         //Add Product
