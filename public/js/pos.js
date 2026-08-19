@@ -661,10 +661,10 @@ $(document).ready(function() {
             return best;
         }
 
-        function posGetSearchParams(term) {
+        function posGetSearchParams(term, forceMode) {
             var price_group = '';
             var search_fields = [];
-            var mode = posGetSearchMode();
+            var mode = forceMode || posGetSearchMode();
             if (mode === 'scan') {
                 search_fields = ['sku'];
             } else {
@@ -777,7 +777,8 @@ $(document).ready(function() {
                 return;
             }
 
-            $.getJSON('/products/list', posGetSearchParams(parsed.code))
+            // Scanner path always uses scan mode so leading-zero SKU variants match
+            $.getJSON('/products/list', posGetSearchParams(parsed.code, 'scan'))
                 .done(function (data) {
                     try {
                         if (data && data.auto_add && data.row_data) {

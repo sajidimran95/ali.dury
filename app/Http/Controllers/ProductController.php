@@ -1311,6 +1311,11 @@ class ProductController extends Controller
             // scan = exact SKU/barcode only; search = partial name/SKU list
             $search_mode = strtolower((string) request()->get('search_mode', ''));
             $is_scan_mode = ($search_mode === 'scan');
+            // Hardware scanners always send a full code; treat numeric barcodes as scan
+            // so leading-zero UPC/EAN variants match even if the UI toggle was on Search.
+            if (! $is_scan_mode && $auto_add_single && $search_term !== '' && preg_match('/^\d{8,14}$/', $search_term)) {
+                $is_scan_mode = true;
+            }
 
             if ($is_scan_mode) {
                 // Barcode scanners must match full SKU only (not SKU-2 when scanning SKU)
