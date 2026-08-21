@@ -234,6 +234,9 @@ class ProductController extends Controller
                         if (auth()->user()->can('product.view')) {
                             $html .=
                             '<li><a href="'.action([\App\Http\Controllers\ProductController::class, 'productStockHistory'], [$row->id]).'"><i class="fas fa-history"></i> '.__('lang_v1.product_stock_history').'</a></li>';
+
+                            $html .=
+                            '<li><a href="'.action([\App\Http\Controllers\ProductController::class, 'inventoryTimeline'], [$row->id]).'"><i class="fas fa-stream"></i> '.__('lang_v1.inventory_timeline').'</a></li>';
                         }
 
                         if (auth()->user()->can('product.create')) {
@@ -2620,6 +2623,40 @@ class ProductController extends Controller
         $business_locations = BusinessLocation::forDropdown($business_id);
 
         return view('product.stock_history')
+                ->with(compact('product', 'business_locations'));
+    }
+
+    /**
+     * Shows the inventory movements of a product as a visual timeline.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Contracts\View\View
+     */
+    public function inventoryTimeline($id)
+    {
+        if (! auth()->user()->can('product.view')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $business_id = request()->session()->get('user.business_id');
+
+        if (request()->ajax()) {
+            //for ajax call $id is variation id else it is product id
+            $stock_details = $this->productUtil->getVariationStockDetails($business_id, $id, request()->input('location_id'));
+            $stock_history = $this->productUtil->getVariationStockHistory($business_id, $id, request()->input('location_id'));
+
+            return view('product.inventory_timeline_details')
+                ->with(compact('stock_details', 'stock_history'));
+        }
+
+        $product = Product::where('business_id', $business_id)
+                            ->with(['variations', 'variations.product_variation'])
+                            ->findOrFail($id);
+
+        //Get all business locations
+        $business_locations = BusinessLocation::forDropdown($business_id);
+
+        return view('product.inventory_timeline')
                 ->with(compact('product', 'business_locations'));
     }
 

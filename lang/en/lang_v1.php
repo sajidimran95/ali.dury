@@ -1263,6 +1263,7 @@ return [
     'deactivate' => 'Deactivate',
     'add_quotation' => 'Add Quotation',
     'product_stock_history' => 'Product stock history',
+    'inventory_timeline' => 'Inventory Timeline',
     'quantities_in' => 'Quantities In',
     'quantities_out' => 'Quantities Out',
     'in' => 'In',
