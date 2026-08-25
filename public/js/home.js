@@ -1,10 +1,10 @@
 $(document).ready(function() {
     if ($('#dashboard_date_filter').length == 1) {
-        dateRangeSettings.startDate = moment();
+        dateRangeSettings.startDate = moment().subtract(29, 'days');
         dateRangeSettings.endDate = moment();
         $('#dashboard_date_filter').daterangepicker(dateRangeSettings, function(start, end) {
-            $('#dashboard_date_filter span').html(
-                start.format(moment_date_format) + ' ~ ' + end.format(moment_date_format)
+            $('#dashboard_date_filter_label').html(
+                start.format('MMM D') + ' – ' + end.format('MMM D, YYYY')
             );
             // Filter by date → only the 4 KPI cards (not Revenue / Sales Overview)
             update_statistics(start.format('YYYY-MM-DD'), end.format('YYYY-MM-DD'));
@@ -13,7 +13,10 @@ $(document).ready(function() {
             }
         });
 
-        update_statistics(moment().format('YYYY-MM-DD'), moment().format('YYYY-MM-DD'));
+        update_statistics(
+            moment().subtract(29, 'days').format('YYYY-MM-DD'),
+            moment().format('YYYY-MM-DD')
+        );
         // Charts load once with their own periods (not date filter)
         japsLoadDashboardCharts();
     }
@@ -182,23 +185,25 @@ $(document).ready(function() {
     }
 });
 
-function japsFormatDelta(pct) {
+function japsFormatDelta(pct, invert) {
     var num = parseFloat(pct);
     if (isNaN(num)) {
         return { text: '—', cls: '' };
     }
     var arrow = num >= 0 ? '↑' : '↓';
+    // invert = true for metrics where a decrease is the good outcome (e.g. time-to-payment)
+    var good = invert ? (num <= 0) : (num >= 0);
     return {
         text: arrow + ' ' + Math.abs(num) + '%',
-        cls: num >= 0 ? 'is-up' : 'is-down'
+        cls: good ? 'is-up' : 'is-down'
     };
 }
 
-function japsApplyDelta($el, pct) {
+function japsApplyDelta($el, pct, invert) {
     if (!$el || !$el.length) {
         return;
     }
-    var delta = japsFormatDelta(pct);
+    var delta = japsFormatDelta(pct, invert);
     $el.text(delta.text).removeClass('is-up is-down');
     if (delta.cls) {
         $el.addClass(delta.cls);
@@ -222,6 +227,9 @@ function update_statistics(start, end) {
     $('.total_sell_return').html(loader);
     $('.net').html(loader);
     $('.online_orders').html(loader);
+    $('.total_orders').html(loader);
+    $('.avg_order_value').html(loader);
+    $('.avg_payment_hours').html(loader);
     $.ajax({
         method: 'get',
         url: '/home/get-totals',
@@ -249,11 +257,23 @@ function update_statistics(start, end) {
             var onlineOrders = typeof data.online_orders !== 'undefined' ? data.online_orders : 0;
             $('.online_orders').html(onlineOrders);
 
+            // Orders / AOV / avg time-to-payment KPI cards
+            $('.total_orders').html(typeof data.total_orders !== 'undefined' ? data.total_orders : 0);
+            $('.avg_order_value').html(__currency_trans_from_en(data.avg_order_value || 0, true));
+            $('.avg_payment_hours').html(typeof data.avg_payment_hours !== 'undefined' ? data.avg_payment_hours : 0);
+
             if (data.change_pct) {
                 japsApplyDelta($('[data-kpi="total_sell"]'), data.change_pct.total_sell);
                 japsApplyDelta($('[data-kpi="net"]'), data.change_pct.net);
                 japsApplyDelta($('[data-kpi="invoice_due"]'), data.change_pct.invoice_due);
                 japsApplyDelta($('[data-kpi="total_purchase"]'), data.change_pct.total_purchase);
+                japsApplyDelta($('[data-kpi="total_orders"]'), data.change_pct.total_orders);
+                japsApplyDelta($('[data-kpi="avg_order_value"]'), data.change_pct.avg_order_value);
+                // invert=true: a lower avg payment time is the good direction
+                japsApplyDelta($('[data-kpi="avg_payment_hours"]'), data.change_pct.avg_payment_hours, true);
+            }
+            if (data.prev_period_label) {
+                $('.japs-dash-kpi-card__period').text('vs ' + data.prev_period_label);
             }
 
             // assign tooltip total_sell_return 
@@ -277,7 +297,7 @@ function update_statistics(start, end) {
             // Revenue Insights + Sales Overview are NOT updated by Filter by date
         },
         error: function () {
-            $('.total_purchase, .purchase_due, .total_sell, .invoice_due, .total_expense, .total_purchase_return, .total_sell_return, .net').html('—');
+            $('.total_purchase, .purchase_due, .total_sell, .invoice_due, .total_expense, .total_purchase_return, .total_sell_return, .net, .total_orders, .avg_order_value, .avg_payment_hours').html('—');
             $('.online_orders').html('0');
         },
     });
@@ -291,6 +311,9 @@ window.japsLoadDashboardCharts = function() {
     }
     if (typeof window.japsLoadRevenueInsights === 'function') {
         window.japsLoadRevenueInsights(null, null, location_id);
+    }
+    if (typeof window.japsLoadOrdersByStatusWeekly === 'function') {
+        window.japsLoadOrdersByStatusWeekly(location_id);
     }
 };
 

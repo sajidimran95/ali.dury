@@ -137,28 +137,33 @@ class HomeController extends Controller
             ['currency' => $currency->code]
         ));
 
-        // Sales chart: vertical column (bar) chart
-        $sells_chart_1_options['chart']['type'] = 'column';
+        // Sales chart: soft blue area trend (matches analytics mock)
+        $sells_chart_1_options['chart']['type'] = 'areaspline';
         $sells_chart_1_options['colors'] = ['#3b82f6'];
         $sells_chart_1_options['yAxis']['title']['text'] = null;
-        $sells_chart_1_options['yAxis']['gridLineColor'] = '#e5e7eb';
+        $sells_chart_1_options['yAxis']['gridLineColor'] = '#eef2f7';
         $sells_chart_1_options['yAxis']['gridLineDashStyle'] = 'Solid';
         $sells_chart_1_options['yAxis']['gridLineWidth'] = 1;
         $sells_chart_1_options['yAxis']['min'] = 0;
-        $sells_chart_1_options['xAxis']['labels']['rotation'] = -45;
+        $sells_chart_1_options['xAxis']['labels']['rotation'] = -30;
         $sells_chart_1_options['legend']['enabled'] = false;
         $sells_chart_1_options['plotOptions'] = [
-            'column' => [
-                'borderWidth' => 0,
-                'borderRadius' => 14,
-                'color' => '#3b82f6',
-                'pointPadding' => 0.01,
-                'groupPadding' => 0.02,
-                'maxPointWidth' => 58,
+            'areaspline' => [
+                'fillOpacity' => 0.22,
+                'lineWidth' => 2.75,
+                'marker' => ['enabled' => false, 'radius' => 3, 'states' => ['hover' => ['enabled' => true]]],
             ],
             'series' => [
-                'type' => 'column',
+                'type' => 'areaspline',
                 'borderWidth' => 0,
+                'color' => '#3b82f6',
+                'fillColor' => [
+                    'linearGradient' => ['x1' => 0, 'y1' => 0, 'x2' => 0, 'y2' => 1],
+                    'stops' => [
+                        [0, 'rgba(59, 130, 246, 0.28)'],
+                        [1, 'rgba(59, 130, 246, 0.02)'],
+                    ],
+                ],
             ],
         ];
 
@@ -172,7 +177,7 @@ class HomeController extends Controller
                         ->options($sells_chart_1_options);
 
         // Single combined sales series (column)
-        $sells_chart_1->dataset(__('home.total_sell'), 'column', $all_sell_values);
+        $sells_chart_1->dataset(__('home.total_sell'), 'areaspline', $all_sell_values);
 
         $labels = [];
         $values = [];
@@ -245,6 +250,189 @@ class HomeController extends Controller
                     ->options($sells_chart_2_options);
         $sells_chart_2->dataset(__('home.total_sell'), 'column', $values);
 
+        //── Orders / Fulfillment analytics widgets (fixed last-30-days window) ──
+        $permitted_locations = auth()->user()->permitted_locations();
+        $widgets_start = \Carbon::now()->subDays(29)->format('Y-m-d');
+        $widgets_end = \Carbon::now()->format('Y-m-d');
+
+        $orders_by_loc_cache_key = 'home_orders_by_loc_'.$business_id.'_'.auth()->id().'_'.$widgets_start.'_'.$widgets_end;
+        $orders_rows = Cache::remember($orders_by_loc_cache_key, 180, function () use ($business_id, $widgets_start, $widgets_end, $permitted_locations) {
+            return $this->getOrdersCountByLocation($business_id, $widgets_start, $widgets_end, $permitted_locations);
+        });
+
+        // Orders Over Time — daily order count per location, last 30 days
+        $orders_dates = [];
+        for ($i = 29; $i >= 0; $i--) {
+            $orders_dates[] = \Carbon::now()->subDays($i)->format('Y-m-d');
+        }
+
+        $orders_series_by_loc = [];
+        foreach ($all_locations as $loc_id => $loc_name) {
+            $loc_total = (int) $orders_rows->where('location_id', $loc_id)->sum('total_orders');
+            if ($loc_total <= 0) {
+                continue;
+            }
+            $values = [];
+            foreach ($orders_dates as $date) {
+                $values[] = (int) $orders_rows->where('location_id', $loc_id)->where('date', $date)->sum('total_orders');
+            }
+            $orders_series_by_loc[$loc_id] = ['label' => $loc_name, 'values' => $values, 'total' => $loc_total];
+        }
+
+        $orders_short_labels = array_map(function ($d) {
+            return date('M j', strtotime($d));
+        }, $orders_dates);
+
+        $orders_chart = new CommonChart;
+        $orders_chart_options = $this->__chartOptions(null);
+        $orders_chart_options['chart']['type'] = 'areaspline';
+        $orders_chart_options['yAxis']['title']['text'] = null;
+        $orders_chart_options['yAxis']['gridLineColor'] = '#eef2f7';
+        $orders_chart_options['yAxis']['min'] = 0;
+        $orders_chart_options['xAxis']['labels']['rotation'] = 0;
+        $orders_chart_options['xAxis']['tickInterval'] = 7;
+        $orders_chart_options['legend']['enabled'] = true;
+        $orders_chart_options['legend']['align'] = 'left';
+        $orders_chart_options['legend']['verticalAlign'] = 'top';
+        $orders_chart_options['legend']['symbolRadius'] = 6;
+        $orders_chart_options['plotOptions'] = [
+            'areaspline' => [
+                'fillOpacity' => 0.08,
+                'lineWidth' => 2.5,
+                'marker' => [
+                    'enabled' => true,
+                    'radius' => 3.5,
+                    'symbol' => 'circle',
+                    'lineWidth' => 2,
+                    'lineColor' => '#ffffff',
+                    'states' => ['hover' => ['enabled' => true, 'radius' => 5]],
+                ],
+            ],
+            'series' => ['borderWidth' => 0, 'animation' => false],
+        ];
+        $orders_chart->height(260);
+        $orders_chart->labels($orders_short_labels)->options($orders_chart_options);
+        $line_palette = ['#3b82f6', '#8b5cf6', '#14b8a6', '#f97316', '#f59e0b', '#22c55e'];
+        $fill_palette = [
+            'rgba(59,130,246,0.12)',
+            'rgba(139,92,246,0.12)',
+            'rgba(20,184,166,0.12)',
+            'rgba(249,115,22,0.12)',
+            'rgba(245,158,11,0.12)',
+            'rgba(34,197,94,0.12)',
+        ];
+        if (! empty($orders_series_by_loc)) {
+            $si = 0;
+            foreach ($orders_series_by_loc as $series) {
+                $c = $line_palette[$si % count($line_palette)];
+                $orders_chart->dataset($series['label'], 'areaspline', $series['values'])
+                    ->options([
+                        'color' => $c,
+                        'fillColor' => $fill_palette[$si % count($fill_palette)],
+                        'marker' => ['fillColor' => $c],
+                    ]);
+                $si++;
+            }
+        } else {
+            $orders_chart->dataset(__('home.total_orders'), 'areaspline', array_fill(0, 30, 0))
+                ->options(['color' => '#3b82f6', 'fillColor' => 'rgba(59,130,246,0.12)']);
+        }
+
+        // Orders by Location (donut)
+        $orders_by_location = [];
+        $orders_by_location_total = 0;
+        foreach ($all_locations as $loc_id => $loc_name) {
+            $loc_total = (int) $orders_rows->where('location_id', $loc_id)->sum('total_orders');
+            if ($loc_total <= 0) {
+                continue;
+            }
+            $orders_by_location[] = ['label' => $loc_name, 'count' => $loc_total];
+            $orders_by_location_total += $loc_total;
+        }
+        usort($orders_by_location, function ($a, $b) {
+            return $b['count'] <=> $a['count'];
+        });
+        $dash_palette = ['#3b82f6', '#8b5cf6', '#14b8a6', '#f97316', '#f59e0b', '#22c55e'];
+        foreach ($orders_by_location as $idx => &$loc_row) {
+            $loc_row['pct'] = $orders_by_location_total > 0 ? round(($loc_row['count'] / $orders_by_location_total) * 100, 1) : 0;
+            $loc_row['color'] = $dash_palette[$idx % count($dash_palette)];
+        }
+        unset($loc_row);
+
+        $location_donut = new CommonChart;
+        $location_donut_options = $this->__chartOptions(null);
+        $location_donut_options['chart']['type'] = 'pie';
+        $location_donut_options['chart']['spacing'] = [4, 4, 4, 4];
+        $location_donut_options['chart']['margin'] = [0, 0, 0, 0];
+        $location_donut_options['legend']['enabled'] = false;
+        $location_donut_options['plotOptions'] = [
+            'pie' => [
+                'size' => '100%',
+                'innerSize' => '70%',
+                'borderWidth' => 2,
+                'borderColor' => '#ffffff',
+                'dataLabels' => ['enabled' => false],
+                'states' => ['hover' => ['brightness' => 0.06]],
+                'slicedOffset' => 0,
+            ],
+        ];
+        $location_donut->height(168);
+        $location_donut->options($location_donut_options);
+        if (! empty($orders_by_location)) {
+            // The package's pie/donut dataset always assigns each point a color — if we don't
+            // pass one explicitly it falls back to its own default (#22292F, near-black) instead
+            // of cycling the chart's `colors` palette. Pass our computed per-location colors.
+            $location_donut->labels(array_column($orders_by_location, 'label'))
+                ->dataset(__('home.total_orders'), 'pie', array_column($orders_by_location, 'count'))
+                ->options(['color' => array_column($orders_by_location, 'color')]);
+        } else {
+            $location_donut->labels([__('lang_v1.no_data')])
+                ->dataset(__('home.total_orders'), 'pie', [1])
+                ->options(['color' => ['#e5e7eb']]);
+        }
+
+        // Fulfillment Pipeline (last 30 days snapshot)
+        $fulfillment_pipeline = $this->buildFulfillmentPipeline($business_id, $permitted_locations, $widgets_start, $widgets_end);
+        $fulfillment_pipeline_max = max(1, max($fulfillment_pipeline));
+
+        // Top Products (last 30 days)
+        $top_products = $this->productUtil->getTrendingProducts($business_id, [
+            'limit' => 8,
+            'start_date' => $widgets_start,
+            'end_date' => $widgets_end,
+        ]);
+        $top_products_max = $top_products->max('total_unit_sold') ?: 1;
+
+        // Location Performance mini stats (last 30 days)
+        $location_performance = $this->buildLocationPerformance($business_id, $permitted_locations, $all_locations, $widgets_start, $widgets_end);
+
+        // KPI sparklines (last 14 days, business-wide trend indicator)
+        $spark_start = \Carbon::now()->subDays(13)->format('Y-m-d');
+        $spark_end = \Carbon::now()->format('Y-m-d');
+        $daily_orders_revenue = $this->getDailyOrdersAndRevenue($business_id, $spark_start, $spark_end, $permitted_locations);
+        $daily_payment_hours = $this->getDailyAvgPaymentHours($business_id, $spark_start, $spark_end, $permitted_locations);
+
+        $spark_orders = [];
+        $spark_revenue = [];
+        $spark_aov = [];
+        $spark_payment_hours = [];
+        for ($i = 13; $i >= 0; $i--) {
+            $date = \Carbon::now()->subDays($i)->format('Y-m-d');
+            $row = $daily_orders_revenue->get($date);
+            $orders_cnt = $row ? (int) $row->orders_count : 0;
+            $revenue_val = $row ? (float) $row->revenue : 0.0;
+            $spark_orders[] = $orders_cnt;
+            $spark_revenue[] = $revenue_val;
+            $spark_aov[] = $orders_cnt > 0 ? round($revenue_val / $orders_cnt, 2) : 0;
+            $payment_row = $daily_payment_hours->get($date);
+            $spark_payment_hours[] = $payment_row ? round(((float) $payment_row->avg_minutes) / 60, 1) : 0;
+        }
+
+        $kpi_sparkline_orders = $this->buildSparkline($spark_orders, '#3b82f6');
+        $kpi_sparkline_revenue = $this->buildSparkline($spark_revenue, '#8b5cf6');
+        $kpi_sparkline_aov = $this->buildSparkline($spark_aov, '#14b8a6');
+        $kpi_sparkline_payment_hours = $this->buildSparkline($spark_payment_hours, '#f97316');
+
         //Get Dashboard widgets from module
         $module_widgets = $this->moduleUtil->getModuleData('dashboard_widget');
 
@@ -259,7 +447,26 @@ class HomeController extends Controller
         $common_settings = ! empty(session('business.common_settings')) ? session('business.common_settings') : [];
 
 
-        return view('home.index', compact('sells_chart_1', 'sells_chart_2', 'widgets', 'all_locations', 'common_settings', 'is_admin'));
+        return view('home.index', compact(
+            'sells_chart_1',
+            'sells_chart_2',
+            'widgets',
+            'all_locations',
+            'common_settings',
+            'is_admin',
+            'orders_chart',
+            'location_donut',
+            'orders_by_location',
+            'fulfillment_pipeline',
+            'fulfillment_pipeline_max',
+            'top_products',
+            'top_products_max',
+            'location_performance',
+            'kpi_sparkline_orders',
+            'kpi_sparkline_revenue',
+            'kpi_sparkline_aov',
+            'kpi_sparkline_payment_hours'
+        ));
     }
 
     /**
@@ -320,6 +527,13 @@ class HomeController extends Controller
             //NET = TOTAL SALES - INVOICE DUE - EXPENSE
             $output['net'] = $output['total_sell'] - $output['invoice_due'] - $output['total_expense'];
 
+            // Orders / AOV / avg time-to-payment KPIs
+            $permitted_locations = auth()->user()->permitted_locations();
+            $total_orders = $this->getOrdersCount($business_id, $start, $end, $location_id, $created_by, $permitted_locations);
+            $output['total_orders'] = $total_orders;
+            $output['avg_order_value'] = $total_orders > 0 ? round($output['total_sell'] / $total_orders, 2) : 0;
+            $output['avg_payment_hours'] = $this->getAvgPaymentHours($business_id, $start, $end, $location_id, $permitted_locations);
+
             // Online / ecommerce orders in selected period
             $onlineOrdersQuery = \App\Transaction::where('business_id', $business_id)
                 ->ecommerceOrders()
@@ -352,12 +566,20 @@ class HomeController extends Controller
             $prev_total_purchase = (float) ($prev_purchase['total_purchase_inc_tax'] ?? 0);
             $prev_net = $prev_total_sell - $prev_invoice_due - (float) ($prev_txn['total_expense'] ?? 0);
 
+            $prev_total_orders = $this->getOrdersCount($business_id, $prev_start, $prev_end_str, $location_id, $created_by, $permitted_locations);
+            $prev_avg_order_value = $prev_total_orders > 0 ? $prev_total_sell / $prev_total_orders : 0;
+            $prev_avg_payment_hours = $this->getAvgPaymentHours($business_id, $prev_start, $prev_end_str, $location_id, $permitted_locations);
+
             $output['change_pct'] = [
                 'total_sell' => $this->percentChange($output['total_sell'], $prev_total_sell),
                 'total_purchase' => $this->percentChange($output['total_purchase'], $prev_total_purchase),
                 'invoice_due' => $this->percentChange($output['invoice_due'], $prev_invoice_due),
                 'net' => $this->percentChange($output['net'], $prev_net),
+                'total_orders' => $this->percentChange($output['total_orders'], $prev_total_orders),
+                'avg_order_value' => $this->percentChange($output['avg_order_value'], $prev_avg_order_value),
+                'avg_payment_hours' => $this->percentChange($output['avg_payment_hours'], $prev_avg_payment_hours),
             ];
+            $output['prev_period_label'] = \Carbon::parse($prev_start)->format('M j').' – '.\Carbon::parse($prev_end_str)->format('M j');
 
             return $output;
         }
@@ -945,6 +1167,122 @@ class HomeController extends Controller
         ]);
     }
 
+    /**
+     * Orders by Status: this-calendar-week vs last-calendar-week counts,
+     * bucketed into the same 6 pipeline stages as buildFulfillmentPipeline().
+     */
+    public function getOrdersByStatusWeekly()
+    {
+        if (! request()->ajax()) {
+            abort(404);
+        }
+
+        $business_id = request()->session()->get('user.business_id');
+        $location_id = request()->input('location_id');
+        $permitted_locations = auth()->user()->permitted_locations();
+
+        $this_week_start = \Carbon::now()->startOfWeek()->format('Y-m-d');
+        $this_week_end = \Carbon::now()->endOfWeek()->format('Y-m-d');
+        $last_week_start = \Carbon::now()->subWeek()->startOfWeek()->format('Y-m-d');
+        $last_week_end = \Carbon::now()->subWeek()->endOfWeek()->format('Y-m-d');
+
+        $this_week = $this->buildFulfillmentPipeline($business_id, $permitted_locations, $this_week_start, $this_week_end, $location_id);
+        $last_week = $this->buildFulfillmentPipeline($business_id, $permitted_locations, $last_week_start, $last_week_end, $location_id);
+
+        $stage_labels = [
+            'draft' => __('sale.draft'),
+            'quotation' => __('lang_v1.quotation'),
+            'proforma' => __('lang_v1.proforma'),
+            'final_due' => __('lang_v1.due'),
+            'final_partial' => __('lang_v1.partial'),
+            'final_paid' => __('lang_v1.paid'),
+        ];
+
+        $this_week_values = array_values($this_week);
+        $last_week_values = array_values($last_week);
+
+        return response()->json([
+            'categories' => array_values($stage_labels),
+            'this_week' => $this_week_values,
+            'last_week' => $last_week_values,
+            'has_data' => array_sum($this_week_values) + array_sum($last_week_values) > 0,
+        ]);
+    }
+
+    /**
+     * Recent Orders widget for the dashboard — dedicated lightweight datatable
+     * (does not touch SellController::index(), which also powers the main Sales list).
+     */
+    public function getRecentOrders()
+    {
+        if (! request()->ajax()) {
+            abort(404);
+        }
+
+        $business_id = request()->session()->get('user.business_id');
+        $location_id = request()->input('location_id');
+        $permitted_locations = auth()->user()->permitted_locations();
+
+        $sells = $this->transactionUtil->getListSells($business_id, 'sell')
+            ->where('transactions.status', 'final');
+
+        if ($permitted_locations != 'all') {
+            $sells->whereIn('transactions.location_id', $permitted_locations);
+        }
+        if (! empty($location_id)) {
+            $sells->where('transactions.location_id', $location_id);
+        }
+
+        $sells->groupBy('transactions.id')->orderBy('transactions.transaction_date', 'desc');
+
+        return Datatables::of($sells)
+            ->addColumn('action', function ($row) {
+                if (auth()->user()->can('sell.view')) {
+                    return '<a href="#" data-href="'.action([\App\Http\Controllers\SellController::class, 'show'], [$row->id]).'" class="tw-dw-btn tw-dw-btn-xs tw-dw-btn-outline btn-modal" data-container=".view_modal" title="'.e(__('messages.view')).'"><i class="fas fa-eye"></i></a>';
+                }
+
+                return '';
+            })
+            ->editColumn('invoice_no', function ($row) {
+                if (auth()->user()->can('sell.view')) {
+                    return '<a href="#" data-href="'.action([\App\Http\Controllers\SellController::class, 'show'], [$row->id]).'" class="btn-modal" data-container=".view_modal">'.e($row->invoice_no).'</a>';
+                }
+
+                return $row->invoice_no;
+            })
+            ->editColumn('name', function ($row) {
+                $name = ! empty($row->supplier_business_name) ? $row->supplier_business_name.', '.$row->name : $row->name;
+
+                return e($name);
+            })
+            ->addColumn('business_location_badge', function ($row) {
+                return '<span class="japs-dash-source-badge">'.e($row->business_location).'</span>';
+            })
+            ->editColumn('payment_status', function ($row) {
+                $payment_status = Transaction::getPaymentStatus($row);
+                $cls = 'is-due';
+                if ($payment_status === 'paid') {
+                    $cls = 'is-paid';
+                } elseif (strpos((string) $payment_status, 'partial') !== false) {
+                    $cls = 'is-partial';
+                }
+                $label = trans('lang_v1.'.$payment_status);
+                if ($label === 'lang_v1.'.$payment_status) {
+                    $label = ucfirst(str_replace('-', ' ', (string) $payment_status));
+                }
+
+                return '<span class="japs-dash-status-pill '.$cls.'">'.e($label).'</span>';
+            })
+            ->editColumn('final_total', function ($row) {
+                return '<span class="display_currency" data-currency_symbol="true">'.$row->final_total.'</span>';
+            })
+            ->editColumn('transaction_date', function ($row) {
+                return $this->commonUtil->format_date($row->transaction_date, true);
+            })
+            ->rawColumns(['action', 'invoice_no', 'business_location_badge', 'payment_status', 'final_total'])
+            ->make(true);
+    }
+
     public function loadMoreNotifications()
     {
         $notifications = auth()->user()->notifications()->orderBy('created_at', 'DESC')->paginate(10);
@@ -1001,9 +1339,367 @@ class HomeController extends Controller
         return round((($current - $previous) / abs($previous)) * 100, 1);
     }
 
+    /**
+     * Count of finalized, non-ecommerce sells in a date range — companion to
+     * TransactionUtil::getSellTotals() (same population, used for Average Order Value).
+     */
+    private function getOrdersCount($business_id, $start, $end, $location_id = null, $created_by = null, $permitted_locations = null)
+    {
+        $query = Transaction::where('business_id', $business_id)
+            ->where('type', 'sell')
+            ->where('status', 'final')
+            ->notEcommerce();
+
+        if (! empty($start) && ! empty($end)) {
+            $query->whereBetween('transaction_date', [$start.' 00:00:00', $end.' 23:59:59']);
+        }
+        if (! empty($permitted_locations) && $permitted_locations != 'all') {
+            $query->whereIn('location_id', $permitted_locations);
+        }
+        if (! empty($location_id)) {
+            $query->where('location_id', $location_id);
+        }
+        if (! empty($created_by)) {
+            $query->where('created_by', $created_by);
+        }
+
+        return (int) $query->count();
+    }
+
+    /**
+     * Average hours from sale date to the last payment, for fully-paid sells in range.
+     * No existing helper for this in TransactionUtil — new query.
+     */
+    private function getAvgPaymentHours($business_id, $start, $end, $location_id = null, $permitted_locations = null)
+    {
+        $sub = DB::table('transaction_payments')
+            ->select('transaction_id', DB::raw('MAX(paid_on) as last_paid_on'))
+            ->whereNull('parent_id')
+            ->groupBy('transaction_id');
+
+        $query = Transaction::query()
+            ->joinSub($sub, 'tp_last', function ($join) {
+                $join->on('tp_last.transaction_id', '=', 'transactions.id');
+            })
+            ->where('transactions.business_id', $business_id)
+            ->where('transactions.type', 'sell')
+            ->where('transactions.status', 'final')
+            ->where('transactions.payment_status', 'paid')
+            ->notEcommerce()
+            ->whereNotNull('tp_last.last_paid_on');
+
+        if (! empty($start) && ! empty($end)) {
+            $query->whereBetween('transactions.transaction_date', [$start.' 00:00:00', $end.' 23:59:59']);
+        }
+        if (! empty($permitted_locations) && $permitted_locations != 'all') {
+            $query->whereIn('transactions.location_id', $permitted_locations);
+        }
+        if (! empty($location_id)) {
+            $query->where('transactions.location_id', $location_id);
+        }
+
+        $avg_minutes = (float) $query
+            ->selectRaw('AVG(GREATEST(TIMESTAMPDIFF(MINUTE, transactions.transaction_date, tp_last.last_paid_on), 0)) as avg_minutes')
+            ->value('avg_minutes');
+
+        return $avg_minutes > 0 ? round($avg_minutes / 60, 1) : 0.0;
+    }
+
+    /**
+     * Daily order count per location — mirrors TransactionUtil::getSellsCurrentFy()'s
+     * grouping (COUNT instead of SUM), for the Orders Over Time / Orders by Location widgets.
+     */
+    private function getOrdersCountByLocation($business_id, $start, $end, $permitted_locations = null)
+    {
+        $query = Transaction::where('business_id', $business_id)
+            ->where('type', 'sell')
+            ->where('status', 'final')
+            ->notEcommerce()
+            ->whereBetween('transaction_date', [$start.' 00:00:00', $end.' 23:59:59']);
+
+        if (! empty($permitted_locations) && $permitted_locations != 'all') {
+            $query->whereIn('location_id', $permitted_locations);
+        }
+
+        return $query->select(
+            DB::raw('DATE(transaction_date) as date'),
+            'location_id',
+            DB::raw('COUNT(*) as total_orders')
+        )
+            ->groupBy('location_id')
+            ->groupBy(DB::raw('date(transaction_date)'))
+            ->get();
+    }
+
+    /**
+     * Daily order count + revenue (business-wide) — feeds the KPI sparklines.
+     */
+    private function getDailyOrdersAndRevenue($business_id, $start, $end, $permitted_locations = null)
+    {
+        $query = Transaction::where('business_id', $business_id)
+            ->where('type', 'sell')
+            ->where('status', 'final')
+            ->notEcommerce()
+            ->whereBetween('transaction_date', [$start.' 00:00:00', $end.' 23:59:59']);
+
+        if (! empty($permitted_locations) && $permitted_locations != 'all') {
+            $query->whereIn('location_id', $permitted_locations);
+        }
+
+        return $query->select(
+            DB::raw('DATE(transaction_date) as date'),
+            DB::raw('COUNT(*) as orders_count'),
+            DB::raw('SUM(final_total) as revenue')
+        )
+            ->groupBy(DB::raw('date(transaction_date)'))
+            ->get()
+            ->keyBy('date');
+    }
+
+    /**
+     * Daily avg time-to-payment (business-wide) — feeds the Avg. Time to Payment sparkline.
+     */
+    private function getDailyAvgPaymentHours($business_id, $start, $end, $permitted_locations = null)
+    {
+        $sub = DB::table('transaction_payments')
+            ->select('transaction_id', DB::raw('MAX(paid_on) as last_paid_on'))
+            ->whereNull('parent_id')
+            ->groupBy('transaction_id');
+
+        $query = Transaction::query()
+            ->joinSub($sub, 'tp_last', function ($join) {
+                $join->on('tp_last.transaction_id', '=', 'transactions.id');
+            })
+            ->where('transactions.business_id', $business_id)
+            ->where('transactions.type', 'sell')
+            ->where('transactions.status', 'final')
+            ->where('transactions.payment_status', 'paid')
+            ->notEcommerce()
+            ->whereNotNull('tp_last.last_paid_on')
+            ->whereBetween('transactions.transaction_date', [$start.' 00:00:00', $end.' 23:59:59']);
+
+        if (! empty($permitted_locations) && $permitted_locations != 'all') {
+            $query->whereIn('transactions.location_id', $permitted_locations);
+        }
+
+        return $query->select(
+            DB::raw('DATE(transactions.transaction_date) as date'),
+            DB::raw('AVG(GREATEST(TIMESTAMPDIFF(MINUTE, transactions.transaction_date, tp_last.last_paid_on), 0)) as avg_minutes')
+        )
+            ->groupBy(DB::raw('date(transactions.transaction_date)'))
+            ->get()
+            ->keyBy('date');
+    }
+
+    /**
+     * Snapshot count of sells per pipeline stage (draft/quotation/proforma/final×payment_status)
+     * within a date range. Shared by the Fulfillment Pipeline widget and the
+     * Orders by Status week-over-week comparison.
+     */
+    private function buildFulfillmentPipeline($business_id, $permitted_locations, $start, $end, $location_id = null)
+    {
+        $query = Transaction::where('business_id', $business_id)
+            ->where('type', 'sell')
+            ->whereBetween('transaction_date', [$start.' 00:00:00', $end.' 23:59:59']);
+
+        if (! empty($permitted_locations) && $permitted_locations != 'all') {
+            $query->whereIn('location_id', $permitted_locations);
+        }
+        if (! empty($location_id)) {
+            $query->where('location_id', $location_id);
+        }
+
+        $rows = $query->select('status', 'payment_status', DB::raw('COUNT(*) as cnt'))
+            ->groupBy('status', 'payment_status')
+            ->get();
+
+        $stages = [
+            'draft' => 0,
+            'quotation' => 0,
+            'proforma' => 0,
+            'final_due' => 0,
+            'final_partial' => 0,
+            'final_paid' => 0,
+        ];
+
+        foreach ($rows as $row) {
+            if ($row->status === 'final') {
+                if ($row->payment_status === 'paid') {
+                    $stages['final_paid'] += (int) $row->cnt;
+                } elseif ($row->payment_status === 'partial') {
+                    $stages['final_partial'] += (int) $row->cnt;
+                } else {
+                    $stages['final_due'] += (int) $row->cnt;
+                }
+            } elseif (array_key_exists($row->status, $stages)) {
+                $stages[$row->status] += (int) $row->cnt;
+            }
+        }
+
+        return $stages;
+    }
+
+    /**
+     * 4 Location Performance mini-stats (last-30-days window, "Sales Today" excepted).
+     */
+    private function buildLocationPerformance($business_id, $permitted_locations, $all_locations, $start, $end)
+    {
+        $has_restriction = ! empty($permitted_locations) && $permitted_locations != 'all';
+
+        $active_locations = (int) Transaction::where('business_id', $business_id)
+            ->where('type', 'sell')->where('status', 'final')->notEcommerce()
+            ->whereBetween('transaction_date', [$start.' 00:00:00', $end.' 23:59:59'])
+            ->when($has_restriction, function ($query) use ($permitted_locations) {
+                $query->whereIn('location_id', $permitted_locations);
+            })
+            ->distinct('location_id')->count('location_id');
+
+        $today = \Carbon::now()->format('Y-m-d');
+        $sales_today = (int) Transaction::where('business_id', $business_id)
+            ->where('type', 'sell')->where('status', 'final')->notEcommerce()
+            ->whereBetween('transaction_date', [$today.' 00:00:00', $today.' 23:59:59'])
+            ->when($has_restriction, function ($query) use ($permitted_locations) {
+                $query->whereIn('location_id', $permitted_locations);
+            })
+            ->count();
+
+        $avg_payment_hours = $this->getAvgPaymentHours($business_id, $start, $end, null, $permitted_locations);
+
+        $sums = Transaction::where('business_id', $business_id)
+            ->where('type', 'sell')->where('status', 'final')->notEcommerce()
+            ->whereBetween('transaction_date', [$start.' 00:00:00', $end.' 23:59:59'])
+            ->when($has_restriction, function ($query) use ($permitted_locations) {
+                $query->whereIn('location_id', $permitted_locations);
+            })
+            ->selectRaw('SUM(final_total) as total_final, SUM(final_total - (SELECT COALESCE(SUM(IF(tp.is_return = 1, -1*tp.amount, tp.amount)), 0) FROM transaction_payments tp WHERE tp.transaction_id = transactions.id)) as total_due')
+            ->first();
+
+        $total_final = (float) ($sums->total_final ?? 0);
+        $total_due = (float) ($sums->total_due ?? 0);
+        $total_paid = $total_final - $total_due;
+        $collection_rate = $total_final > 0 ? round(($total_paid / $total_final) * 100, 1) : 0.0;
+
+        // Prior-window deltas for warehouse-style trend lines under each tile
+        $start_c = \Carbon::parse($start);
+        $end_c = \Carbon::parse($end);
+        $days = max(1, $start_c->diffInDays($end_c) + 1);
+        $prev_end = $start_c->copy()->subDay();
+        $prev_start = $prev_end->copy()->subDays($days - 1)->format('Y-m-d');
+        $prev_end_str = $prev_end->format('Y-m-d');
+
+        $prev_active = (int) Transaction::where('business_id', $business_id)
+            ->where('type', 'sell')->where('status', 'final')->notEcommerce()
+            ->whereBetween('transaction_date', [$prev_start.' 00:00:00', $prev_end_str.' 23:59:59'])
+            ->when($has_restriction, function ($query) use ($permitted_locations) {
+                $query->whereIn('location_id', $permitted_locations);
+            })
+            ->distinct('location_id')->count('location_id');
+
+        $yesterday = \Carbon::now()->subDay()->format('Y-m-d');
+        $sales_yesterday = (int) Transaction::where('business_id', $business_id)
+            ->where('type', 'sell')->where('status', 'final')->notEcommerce()
+            ->whereBetween('transaction_date', [$yesterday.' 00:00:00', $yesterday.' 23:59:59'])
+            ->when($has_restriction, function ($query) use ($permitted_locations) {
+                $query->whereIn('location_id', $permitted_locations);
+            })
+            ->count();
+
+        $prev_avg_payment = $this->getAvgPaymentHours($business_id, $prev_start, $prev_end_str, null, $permitted_locations);
+
+        $prev_sums = Transaction::where('business_id', $business_id)
+            ->where('type', 'sell')->where('status', 'final')->notEcommerce()
+            ->whereBetween('transaction_date', [$prev_start.' 00:00:00', $prev_end_str.' 23:59:59'])
+            ->when($has_restriction, function ($query) use ($permitted_locations) {
+                $query->whereIn('location_id', $permitted_locations);
+            })
+            ->selectRaw('SUM(final_total) as total_final, SUM(final_total - (SELECT COALESCE(SUM(IF(tp.is_return = 1, -1*tp.amount, tp.amount)), 0) FROM transaction_payments tp WHERE tp.transaction_id = transactions.id)) as total_due')
+            ->first();
+        $prev_final = (float) ($prev_sums->total_final ?? 0);
+        $prev_due = (float) ($prev_sums->total_due ?? 0);
+        $prev_collection = $prev_final > 0 ? round((($prev_final - $prev_due) / $prev_final) * 100, 1) : 0.0;
+
+        return [
+            'active_locations' => $active_locations,
+            'total_locations' => count($all_locations),
+            'sales_today' => $sales_today,
+            'avg_payment_hours' => $avg_payment_hours,
+            'collection_rate' => $collection_rate,
+            'change_pct' => [
+                'active_locations' => $this->percentChange($active_locations, $prev_active),
+                'sales_today' => $this->percentChange($sales_today, $sales_yesterday),
+                'avg_payment_hours' => $this->percentChange($avg_payment_hours, $prev_avg_payment),
+                'collection_rate' => $this->percentChange($collection_rate, $prev_collection),
+            ],
+        ];
+    }
+
+    /**
+     * Soft filled area sparkline for KPI cards (matches analytics mock).
+     */
+    private function buildSparkline($values, $color)
+    {
+        $chart = new CommonChart;
+        // Package defaults height:400px (inline !important) — must match CSS mount height.
+        $chart->height(44);
+
+        // Soft pastel fill under the line (mock style)
+        $fill_map = [
+            '#3b82f6' => 'rgba(59, 130, 246, 0.22)',
+            '#8b5cf6' => 'rgba(139, 92, 246, 0.22)',
+            '#14b8a6' => 'rgba(20, 184, 166, 0.22)',
+            '#f97316' => 'rgba(249, 115, 22, 0.22)',
+        ];
+        $fill = $fill_map[$color] ?? 'rgba(59, 130, 246, 0.22)';
+
+        $options = [
+            'chart' => [
+                'type' => 'areaspline',
+                'backgroundColor' => 'transparent',
+                'margin' => [4, 4, 2, 4],
+                'spacing' => [0, 0, 0, 0],
+            ],
+            'credits' => ['enabled' => false],
+            'exporting' => ['enabled' => false],
+            'title' => ['text' => null],
+            'legend' => ['enabled' => false],
+            'xAxis' => ['visible' => false, 'minPadding' => 0, 'maxPadding' => 0],
+            'yAxis' => ['visible' => false, 'min' => 0, 'startOnTick' => false, 'endOnTick' => false],
+            'tooltip' => ['enabled' => false],
+            'plotOptions' => [
+                'areaspline' => [
+                    'fillOpacity' => 0.35,
+                    'lineWidth' => 2.25,
+                    'marker' => ['enabled' => false],
+                ],
+                'series' => [
+                    'animation' => false,
+                    'enableMouseTracking' => false,
+                    'states' => ['hover' => ['enabled' => false]],
+                ],
+            ],
+        ];
+        $chart->options($options, true);
+        $chart->dataset('', 'areaspline', $values)->options([
+            'color' => $color,
+            'fillColor' => [
+                'linearGradient' => ['x1' => 0, 'y1' => 0, 'x2' => 0, 'y2' => 1],
+                'stops' => [
+                    [0, $fill],
+                    [1, 'rgba(255,255,255,0)'],
+                ],
+            ],
+        ]);
+
+        return $chart;
+    }
+
     private function __chartOptions($title)
     {
         return [
+            // Highcharts' built-in export/hamburger button renders unstyled (and, in tightly
+            // clipped cards, visibly broken) — every chart on this dashboard is chrome-free,
+            // matching the reference design.
+            'exporting' => ['enabled' => false],
             'chart' => [
                 'backgroundColor' => 'transparent',
                 'spacingTop' => 20,
@@ -1015,12 +1711,12 @@ class HomeController extends Controller
                 ],
             ],
             'colors' => [
-                '#4f8fce',
-                '#4db39e',
-                '#d5aa35',
-                '#d9597b',
-                '#7c72c9',
-                '#4b9ab3',
+                '#3b82f6',
+                '#8b5cf6',
+                '#14b8a6',
+                '#f97316',
+                '#f59e0b',
+                '#22c55e',
             ],
             'title' => [
                 'text' => null,
