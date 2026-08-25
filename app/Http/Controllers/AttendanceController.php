@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\BusinessLocation;
 use App\EmployeeAttendance;
 use App\EmployeeAttendanceBreak;
+use App\TeamMemberColor;
 use App\User;
 use App\Utils\BusinessUtil;
 use Carbon\Carbon;
@@ -45,6 +47,13 @@ class AttendanceController extends Controller
             $business_id = $request->session()->get('user.business_id');
             $user_id = auth()->user()->id;
 
+            $geo = $this->assertClockGeofence($request, $business_id);
+            if ($geo !== null) {
+                $geo['status'] = $this->statusPayload($user_id);
+
+                return $geo;
+            }
+
             $open = EmployeeAttendance::where('business_id', $business_id)
                 ->where('user_id', $user_id)
                 ->whereIn('status', ['clocked_in', 'on_break'])
@@ -58,12 +67,17 @@ class AttendanceController extends Controller
                 ];
             }
 
+            $coords = $this->extractClockCoords($request);
+
             EmployeeAttendance::create([
                 'business_id' => $business_id,
                 'user_id' => $user_id,
                 'clock_in_at' => Carbon::now(),
                 'status' => 'clocked_in',
                 'notes' => $request->input('notes'),
+                'clock_latitude' => $coords['latitude'],
+                'clock_longitude' => $coords['longitude'],
+                'clock_source' => $coords['source'],
             ]);
 
             return [
@@ -208,6 +222,13 @@ class AttendanceController extends Controller
             $business_id = $request->session()->get('user.business_id');
             $user_id = auth()->user()->id;
 
+            $geo = $this->assertClockGeofence($request, $business_id);
+            if ($geo !== null) {
+                $geo['status'] = $this->statusPayload($user_id);
+
+                return $geo;
+            }
+
             $attendance = EmployeeAttendance::where('business_id', $business_id)
                 ->where('user_id', $user_id)
                 ->whereIn('status', ['clocked_in', 'on_break'])
@@ -233,10 +254,17 @@ class AttendanceController extends Controller
                 $openBreak->save();
             }
 
+            $coords = $this->extractClockCoords($request);
+
             $attendance->clock_out_at = Carbon::now();
             $attendance->status = 'clocked_out';
             if ($request->filled('notes')) {
                 $attendance->notes = $request->input('notes');
+            }
+            if ($coords['latitude'] !== null) {
+                $attendance->clock_latitude = $coords['latitude'];
+                $attendance->clock_longitude = $coords['longitude'];
+                $attendance->clock_source = $coords['source'];
             }
             $attendance->save();
 
@@ -293,8 +321,8 @@ class AttendanceController extends Controller
                 ->addColumn('employee', function ($row) {
                     return $this->employeeName($row);
                 })
-                ->addColumn('color_swatch', function ($row) {
-                    $color = EmployeeAttendance::colorForUserId((int) $row->user_id);
+                ->addColumn('color_swatch', function ($row) use ($business_id) {
+                    $color = TeamMemberColor::colorFor((int) $business_id, (int) $row->user_id);
 
                     return '<span class="att-color-dot" style="background:'.$color.'" title="'.e($this->employeeName($row)).'"></span>';
                 })
@@ -305,7 +333,22 @@ class AttendanceController extends Controller
                     return $row->clock_out_at ? $this->formatDateTime($row->clock_out_at) : '—';
                 })
                 ->addColumn('break_time', function ($row) {
-                    return EmployeeAttendance::formatDuration($row->totalBreakSeconds());
+                    $duration = EmployeeAttendance::formatDuration($row->totalBreakSeconds());
+                    $details = [];
+                    foreach ($row->breaks as $b) {
+                        if (! $b->break_start_at) {
+                            continue;
+                        }
+                        $start = $this->formatTimeOnly($b->break_start_at);
+                        $end = $b->break_end_at ? $this->formatTimeOnly($b->break_end_at) : '…';
+                        $details[] = e($start).' – '.e($end);
+                    }
+                    if (empty($details)) {
+                        return e($duration);
+                    }
+
+                    return '<div>'.e($duration).'</div><div class="text-muted" style="font-size:11px;line-height:1.4;">'
+                        .implode('<br>', $details).'</div>';
                 })
                 ->addColumn('worked_time', function ($row) {
                     return EmployeeAttendance::formatDuration($row->workedSeconds());
@@ -327,7 +370,7 @@ class AttendanceController extends Controller
 
                     return '<button type="button" class="tw-dw-btn tw-dw-btn-xs tw-dw-btn-outline att-edit-btn" data-id="'.$row->id.'"><i class="fa fa-edit"></i> '.__('messages.edit').'</button>';
                 })
-                ->rawColumns(['status', 'color_swatch', 'action'])
+                ->rawColumns(['status', 'color_swatch', 'action', 'break_time'])
                 ->make(true);
         }
 
@@ -340,11 +383,11 @@ class AttendanceController extends Controller
                 ->get();
             $users = $userModels->pluck('user_full_name', 'id');
             foreach ($userModels as $u) {
-                $user_colors[$u->id] = EmployeeAttendance::colorForUserId((int) $u->id);
+                $user_colors[$u->id] = TeamMemberColor::colorFor((int) $business_id, (int) $u->id);
             }
         } else {
             $uid = auth()->user()->id;
-            $user_colors[$uid] = EmployeeAttendance::colorForUserId((int) $uid);
+            $user_colors[$uid] = TeamMemberColor::colorFor((int) $business_id, (int) $uid);
         }
 
         return view('attendance.report', compact('users', 'can_view_all', 'can_edit', 'user_colors'));
@@ -394,8 +437,8 @@ class AttendanceController extends Controller
 
         foreach ($rows as $row) {
             $name = $this->employeeName($row);
-            $color = EmployeeAttendance::colorForUserId((int) $row->user_id);
-            $breakColor = EmployeeAttendance::breakColorForUserId((int) $row->user_id);
+            $color = TeamMemberColor::colorFor((int) $business_id, (int) $row->user_id);
+            $breakColor = TeamMemberColor::softColorFor((int) $business_id, (int) $row->user_id);
             $in = $row->clock_in_at;
             $out = $row->clock_out_at ?: $now;
 
@@ -723,9 +766,17 @@ class AttendanceController extends Controller
     protected function formatDateTime($datetime): string
     {
         $tz = $this->businessTimezone();
-        $format = session('business.date_format', 'm/d/Y').' '.session('business.time_format', 'H:i');
+        $dateFormat = session('business.date_format', 'm/d/Y');
+        $timeFormat = session('business.time_format', 'H:i');
+        if ($timeFormat === '12') {
+            $timeFormat = 'h:i A';
+        }
+        // Always include minutes even if business time setting omits them
+        if (strpos($timeFormat, 'i') === false) {
+            $timeFormat .= ':i';
+        }
 
-        return Carbon::parse($datetime)->setTimezone($tz)->format($format);
+        return Carbon::parse($datetime)->setTimezone($tz)->format($dateFormat.' '.$timeFormat);
     }
 
     /**
@@ -741,6 +792,9 @@ class AttendanceController extends Controller
         $timeFormat = session('business.time_format', 'H:i');
         if ($timeFormat === '12') {
             $timeFormat = 'h:i A';
+        }
+        if (strpos($timeFormat, 'i') === false) {
+            $timeFormat .= ':i';
         }
 
         return Carbon::parse($datetime)->setTimezone($tz)->format($dateFormat.' '.$timeFormat);
@@ -793,7 +847,7 @@ class AttendanceController extends Controller
             'id' => $attendance->id,
             'user_id' => $attendance->user_id,
             'employee' => $this->employeeName($attendance),
-            'color' => EmployeeAttendance::colorForUserId((int) $attendance->user_id),
+            'color' => TeamMemberColor::colorFor((int) $attendance->business_id, (int) $attendance->user_id),
             'clock_in_at' => $this->formatForInput($attendance->clock_in_at),
             'clock_out_at' => $this->formatForInput($attendance->clock_out_at),
             'status' => $attendance->status,
@@ -802,6 +856,120 @@ class AttendanceController extends Controller
             'worked_time' => EmployeeAttendance::formatDuration($attendance->workedSeconds()),
             'break_time' => EmployeeAttendance::formatDuration($attendance->totalBreakSeconds()),
         ];
+    }
+
+    /**
+     * Enforce on-site geofence when the selected location has coordinates.
+     * Users with attendance.clock_offsite (or admins) may bypass.
+     *
+     * @return array|null Error payload, or null if allowed
+     */
+    protected function assertClockGeofence(Request $request, $business_id): ?array
+    {
+        if (
+            auth()->user()->can('attendance.clock_offsite')
+            || $this->businessUtil->is_admin(auth()->user(), $business_id)
+        ) {
+            return null;
+        }
+
+        $location = $this->resolveClockLocation($request, $business_id);
+        if (
+            ! $location
+            || $location->latitude === null
+            || $location->longitude === null
+            || $location->latitude === ''
+            || $location->longitude === ''
+        ) {
+            return null;
+        }
+
+        $lat = $request->input('latitude');
+        $lng = $request->input('longitude');
+        if ($lat === null || $lng === null || $lat === '' || $lng === '') {
+            return [
+                'success' => false,
+                'msg' => __('attendance.location_required'),
+            ];
+        }
+
+        $radius = (int) ($location->clock_radius_meters ?: 200);
+        $distance = $this->haversineMeters(
+            (float) $location->latitude,
+            (float) $location->longitude,
+            (float) $lat,
+            (float) $lng
+        );
+
+        if ($distance > $radius) {
+            return [
+                'success' => false,
+                'msg' => __('attendance.outside_geofence'),
+            ];
+        }
+
+        return null;
+    }
+
+    protected function resolveClockLocation(Request $request, $business_id): ?BusinessLocation
+    {
+        $locationId = $request->input('location_id')
+            ?: $request->session()->get('user.default_location_id');
+
+        if ($locationId) {
+            $loc = BusinessLocation::where('business_id', $business_id)->find($locationId);
+            if ($loc) {
+                return $loc;
+            }
+        }
+
+        return BusinessLocation::where('business_id', $business_id)
+            ->whereNotNull('latitude')
+            ->whereNotNull('longitude')
+            ->orderBy('id')
+            ->first();
+    }
+
+    protected function extractClockCoords(Request $request): array
+    {
+        $lat = $request->input('latitude');
+        $lng = $request->input('longitude');
+        $has = $lat !== null && $lat !== '' && $lng !== null && $lng !== '';
+
+        $business_id = $request->session()->get('user.business_id');
+        $offsite = auth()->user()->can('attendance.clock_offsite')
+            || $this->businessUtil->is_admin(auth()->user(), $business_id);
+
+        return [
+            'latitude' => $has ? (float) $lat : null,
+            'longitude' => $has ? (float) $lng : null,
+            'source' => $has ? ($offsite ? 'offsite' : 'web') : null,
+        ];
+    }
+
+    protected function haversineMeters(float $lat1, float $lon1, float $lat2, float $lon2): float
+    {
+        $earth = 6371000;
+        $dLat = deg2rad($lat2 - $lat1);
+        $dLon = deg2rad($lon2 - $lon1);
+        $a = sin($dLat / 2) ** 2
+            + cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * sin($dLon / 2) ** 2;
+
+        return 2 * $earth * asin(min(1, sqrt($a)));
+    }
+
+    protected function formatTimeOnly($datetime): string
+    {
+        $tz = $this->businessTimezone();
+        $timeFormat = session('business.time_format', 'H:i');
+        if ($timeFormat === '12') {
+            $timeFormat = 'h:i A';
+        }
+        if (strpos($timeFormat, 'i') === false) {
+            $timeFormat .= ':i';
+        }
+
+        return Carbon::parse($datetime)->setTimezone($tz)->format($timeFormat);
     }
 
     protected function syncBreaksFromRequest(EmployeeAttendance $attendance, $breaks, Carbon $clockIn, ?Carbon $clockOut): void

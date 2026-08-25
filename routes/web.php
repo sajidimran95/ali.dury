@@ -62,6 +62,8 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\VariationTemplateController;
 use App\Http\Controllers\WarrantyController;
 use App\Http\Controllers\AttendanceController;
+use App\Http\Controllers\TeamScheduleController;
+use App\Http\Controllers\TimeOffController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -241,6 +243,21 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::post('/attendance', [AttendanceController::class, 'store']);
     Route::put('/attendance/{id}', [AttendanceController::class, 'update'])->where('id', '[0-9]+');
     Route::delete('/attendance/{id}', [AttendanceController::class, 'destroy'])->where('id', '[0-9]+');
+
+    // Team Schedule hub
+    Route::get('/team-schedule/calendar', [TeamScheduleController::class, 'calendar']);
+    Route::get('/team-schedule/calendar-events', [TeamScheduleController::class, 'calendarEvents']);
+    Route::get('/team-schedule/shifts', [TeamScheduleController::class, 'shifts']);
+    Route::post('/team-schedule/shifts', [TeamScheduleController::class, 'storeShift']);
+    Route::get('/team-schedule/shifts/{id}', [TeamScheduleController::class, 'showShift'])->where('id', '[0-9]+');
+    Route::put('/team-schedule/shifts/{id}', [TeamScheduleController::class, 'updateShift'])->where('id', '[0-9]+');
+    Route::delete('/team-schedule/shifts/{id}', [TeamScheduleController::class, 'destroyShift'])->where('id', '[0-9]+');
+    Route::get('/team-schedule/colors', [TeamScheduleController::class, 'colors']);
+    Route::post('/team-schedule/colors', [TeamScheduleController::class, 'saveColors']);
+    Route::get('/team-schedule/time-off', [TimeOffController::class, 'index']);
+    Route::post('/team-schedule/time-off', [TimeOffController::class, 'store']);
+    Route::post('/team-schedule/time-off/{id}/review', [TimeOffController::class, 'review'])->where('id', '[0-9]+');
+    Route::post('/team-schedule/time-off/{id}/cancel', [TimeOffController::class, 'cancel'])->where('id', '[0-9]+');
 
     Route::post('/test-email', [BusinessController::class, 'testEmailConfiguration']);
     Route::post('/test-sms', [BusinessController::class, 'testSmsConfiguration']);

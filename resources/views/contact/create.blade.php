@@ -95,25 +95,26 @@
 
             <div class="clearfix"></div>
 
-            <div class="col-md-3 individual" style="display: none;">
+            <div class="col-md-3 contact_person" style="display: none;">
                 <div class="form-group">
                     {!! Form::label('prefix', __( 'business.prefix' ) . ':') !!}
                     {!! Form::text('prefix', null, ['class' => 'form-control', 'placeholder' => __( 'business.prefix_placeholder' ) ]); !!}
                 </div>
             </div>
-            <div class="col-md-3 individual" style="display: none;">
+            <div class="col-md-3 contact_person" style="display: none;">
                 <div class="form-group">
                     {!! Form::label('first_name', __( 'business.first_name' ) . ':*') !!}
+                    <small class="text-muted contact_person_hint" style="display:none;">(@lang('team_schedule.contact_person'))</small>
                     {!! Form::text('first_name', null, ['class' => 'form-control', 'required', 'placeholder' => __( 'business.first_name' ) ]); !!}
                 </div>
             </div>
-            <div class="col-md-3 individual" style="display: none;">
+            <div class="col-md-3 contact_person" style="display: none;">
                 <div class="form-group">
                     {!! Form::label('middle_name', __( 'lang_v1.middle_name' ) . ':') !!}
                     {!! Form::text('middle_name', null, ['class' => 'form-control', 'placeholder' => __( 'lang_v1.middle_name' ) ]); !!}
                 </div>
             </div>
-            <div class="col-md-3 individual" style="display: none;">
+            <div class="col-md-3 contact_person" style="display: none;">
                 <div class="form-group">
                     {!! Form::label('last_name', __( 'business.last_name' ) . ':') !!}
                     {!! Form::text('last_name', null, ['class' => 'form-control', 'placeholder' => __( 'business.last_name' ) ]); !!}

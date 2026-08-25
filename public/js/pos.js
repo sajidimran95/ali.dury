@@ -2638,6 +2638,8 @@ function pos_refresh_payment_modal() {
                 $indiv.prop('checked', true);
             }
             $modal.find('div.individual').show();
+            $modal.find('div.contact_person').show();
+            $modal.find('.contact_person_hint').hide();
             $modal.find('div.business').hide();
         }
         $modal.modal('show');

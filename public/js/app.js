@@ -649,12 +649,22 @@ $(document).ready(function() {
             .on('change.contactTypeRadio', 'input[type=radio][name="contact_type_radio"]', function() {
                 if (this.value == 'individual') {
                     $root.find('div.individual').show();
+                    $root.find('div.contact_person').show();
+                    $root.find('.contact_person_hint').hide();
                     $root.find('div.business').hide();
                 } else if (this.value == 'business') {
                     $root.find('div.individual').hide();
+                    $root.find('div.contact_person').show();
+                    $root.find('.contact_person_hint').show();
                     $root.find('div.business').show();
                 }
             });
+
+        // Apply current radio selection (create default / edit existing)
+        var $checkedType = $root.find('input[type=radio][name="contact_type_radio"]:checked');
+        if ($checkedType.length) {
+            $checkedType.trigger('change.contactTypeRadio');
+        }
 
         $root.off('change.customerExport', '#is_customer_export')
             .on('change.customerExport', '#is_customer_export', function () {

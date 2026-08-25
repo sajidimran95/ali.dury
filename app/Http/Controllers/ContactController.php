@@ -660,7 +660,19 @@ class ContactController extends Controller
                 if ($initials === '') {
                     $initials = '?';
                 }
-                $sub = e($row->contact_id ?: ($row->email ?: ''));
+
+                $personName = trim((string) ($row->name ?? ''));
+                $businessName = trim((string) ($row->supplier_business_name ?? ''));
+                $subParts = [];
+                if ($businessName !== '' && $personName !== '' && strcasecmp($businessName, $personName) !== 0) {
+                    $subParts[] = $personName;
+                }
+                if (! empty($row->contact_id)) {
+                    $subParts[] = $row->contact_id;
+                } elseif (! empty($row->email) && ! in_array($row->email, $subParts, true)) {
+                    $subParts[] = $row->email;
+                }
+                $sub = e(implode(' · ', $subParts));
 
                 $html = '<div class="cust-name-cell tw-flex tw-items-center tw-gap-3">
                     <span class="cust-avatar tw-inline-flex tw-items-center tw-justify-center tw-rounded-full tw-bg-slate-100 tw-text-slate-600 tw-text-xs tw-font-semibold tw-shrink-0" style="width:36px;height:36px;">'.e($initials).'</span>

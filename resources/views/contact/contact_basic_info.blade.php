@@ -21,6 +21,13 @@
         {{ $contact->supplier_business_name }}
     </p>
 @endif
+@if(!empty($contact->full_name))
+    <strong><i class="fas fa-user margin-r-5"></i>
+    @lang('team_schedule.contact_person')</strong>
+    <p class="text-muted">
+        {{ $contact->full_name }}
+    </p>
+@endif
 
 <strong><i class="fa fa-mobile margin-r-5"></i> @lang('contact.mobile')</strong>
 <p class="text-muted">

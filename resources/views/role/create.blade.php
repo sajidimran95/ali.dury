@@ -1331,6 +1331,62 @@
               </label>
             </div>
           </div>
+          <div class="col-md-12">
+            <div class="checkbox">
+              <label>
+                {!! Form::checkbox('permissions[]', 'attendance.clock_offsite', false, ['class' => 'input-icheck']); !!}
+                @lang('attendance.permission_clock_offsite')
+              </label>
+            </div>
+          </div>
+        </div>
+        </div>
+        <hr>
+
+        <div class="row check_group">
+        <div class="col-md-1">
+          <h4>@lang('team_schedule.permissions')</h4>
+        </div>
+        <div class="col-md-2">
+          <div class="checkbox">
+              <label>
+                <input type="checkbox" class="check_all input-icheck" > {{ __( 'role.select_all' ) }}
+              </label>
+            </div>
+        </div>
+        <div class="col-md-9">
+          <div class="col-md-12">
+            <div class="checkbox">
+              <label>
+                {!! Form::checkbox('permissions[]', 'schedule.view', false, ['class' => 'input-icheck']); !!}
+                @lang('team_schedule.permission_schedule_view')
+              </label>
+            </div>
+          </div>
+          <div class="col-md-12">
+            <div class="checkbox">
+              <label>
+                {!! Form::checkbox('permissions[]', 'schedule.manage', false, ['class' => 'input-icheck']); !!}
+                @lang('team_schedule.permission_schedule_manage')
+              </label>
+            </div>
+          </div>
+          <div class="col-md-12">
+            <div class="checkbox">
+              <label>
+                {!! Form::checkbox('permissions[]', 'time_off.request', false, ['class' => 'input-icheck']); !!}
+                @lang('team_schedule.permission_time_off_request')
+              </label>
+            </div>
+          </div>
+          <div class="col-md-12">
+            <div class="checkbox">
+              <label>
+                {!! Form::checkbox('permissions[]', 'time_off.manage', false, ['class' => 'input-icheck']); !!}
+                @lang('team_schedule.permission_time_off_manage')
+              </label>
+            </div>
+          </div>
         </div>
         </div>
         <hr>

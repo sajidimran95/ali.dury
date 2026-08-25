@@ -61,4 +61,11 @@ return [
     'employee_required' => 'Please select an employee',
     'calendar_unavailable' => 'Calendar could not load. Use list view instead.',
     'notes' => 'Notes',
+    'permission_clock_offsite' => 'Clock in / out from off-site (bypass geofence)',
+    'location_required' => 'Location permission is required to clock in or out at this site',
+    'outside_geofence' => 'You are outside the allowed clock-in radius for this location',
+    'clock_geofence' => 'Time clock geofence',
+    'latitude' => 'Latitude',
+    'longitude' => 'Longitude',
+    'clock_radius_meters' => 'Clock radius (meters)',
 ];

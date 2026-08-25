@@ -750,6 +750,59 @@ class AdminSidebarMenu
                 )->order(80);
             }
 
+            // Team Schedule hub
+            if (auth()->user()->can('schedule.view') || auth()->user()->can('schedule.manage')
+                || auth()->user()->can('time_off.request') || auth()->user()->can('time_off.manage')
+                || auth()->user()->can('attendance.view') || auth()->user()->can('attendance.view_all')
+                || auth()->user()->can('attendance.edit') || $is_admin) {
+                $menu->dropdown(
+                    __('team_schedule.team_schedule'),
+                    function ($sub) use ($is_admin) {
+                        if (auth()->user()->can('schedule.view') || auth()->user()->can('schedule.manage')
+                            || auth()->user()->can('attendance.view') || auth()->user()->can('attendance.view_all')
+                            || $is_admin) {
+                            $sub->url(
+                                action([\App\Http\Controllers\TeamScheduleController::class, 'calendar']),
+                                __('team_schedule.shared_calendar'),
+                                ['icon' => '', 'active' => request()->segment(1) == 'team-schedule' && request()->segment(2) == 'calendar']
+                            );
+                        }
+                        if (auth()->user()->can('schedule.view') || auth()->user()->can('schedule.manage')
+                            || auth()->user()->can('attendance.view') || auth()->user()->can('attendance.view_all')
+                            || $is_admin) {
+                            $sub->url(
+                                action([\App\Http\Controllers\TeamScheduleController::class, 'shifts']),
+                                __('team_schedule.shifts'),
+                                ['icon' => '', 'active' => request()->segment(1) == 'team-schedule' && request()->segment(2) == 'shifts']
+                            );
+                        }
+                        if (auth()->user()->can('time_off.request') || auth()->user()->can('time_off.manage')
+                            || auth()->user()->can('attendance.clock') || $is_admin) {
+                            $sub->url(
+                                action([\App\Http\Controllers\TimeOffController::class, 'index']),
+                                __('team_schedule.time_off'),
+                                ['icon' => '', 'active' => request()->segment(1) == 'team-schedule' && request()->segment(2) == 'time-off']
+                            );
+                        }
+                        if (auth()->user()->can('attendance.view') || auth()->user()->can('attendance.view_all') || $is_admin) {
+                            $sub->url(
+                                action([\App\Http\Controllers\AttendanceController::class, 'report']),
+                                __('attendance.attendance_report'),
+                                ['icon' => '', 'active' => request()->segment(1) == 'attendance']
+                            );
+                        }
+                        if (auth()->user()->can('schedule.manage') || auth()->user()->can('attendance.edit') || $is_admin) {
+                            $sub->url(
+                                action([\App\Http\Controllers\TeamScheduleController::class, 'colors']),
+                                __('team_schedule.member_colors'),
+                                ['icon' => '', 'active' => request()->segment(1) == 'team-schedule' && request()->segment(2) == 'colors']
+                            );
+                        }
+                    },
+                    ['icon' => '<svg aria-hidden="true" class="tw-size-5 tw-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>']
+                )->order(55);
+            }
+
             //Reports dropdown
             if (auth()->user()->can('purchase_n_sell_report.view') || auth()->user()->can('contacts_report.view')
                 || auth()->user()->can('stock_report.view') || auth()->user()->can('tax_report.view')

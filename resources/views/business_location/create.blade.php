@@ -43,6 +43,26 @@
                     </div>
                 </div>
                 <div class="clearfix"></div>
+                <div class="col-sm-4">
+                    <div class="form-group">
+                        {!! Form::label('latitude', __('attendance.latitude') . ':') !!}
+                        {!! Form::text('latitude', null, ['class' => 'form-control', 'placeholder' => 'e.g. 36.1627']); !!}
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="form-group">
+                        {!! Form::label('longitude', __('attendance.longitude') . ':') !!}
+                        {!! Form::text('longitude', null, ['class' => 'form-control', 'placeholder' => 'e.g. -86.7816']); !!}
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="form-group">
+                        {!! Form::label('clock_radius_meters', __('attendance.clock_radius_meters') . ':') !!}
+                        {!! Form::number('clock_radius_meters', 200, ['class' => 'form-control', 'min' => 50, 'step' => 1]); !!}
+                        <p class="help-block">@lang('attendance.clock_geofence')</p>
+                    </div>
+                </div>
+                <div class="clearfix"></div>
                 <div class="col-sm-6">
                     <div class="form-group">
                         {!! Form::label('state', __( 'business.state' ) . ':*') !!}

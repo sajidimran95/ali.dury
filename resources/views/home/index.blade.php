@@ -880,11 +880,13 @@
                 });
             }
 
-            function postAction(url) {
+            function postAction(url, extra) {
+                extra = extra || {};
+                var data = Object.assign({ _token: '{{ csrf_token() }}' }, extra);
                 $.ajax({
                     method: 'POST',
                     url: url,
-                    data: { _token: '{{ csrf_token() }}' },
+                    data: data,
                     dataType: 'json',
                     success: function (result) {
                         if (typeof toastr !== 'undefined') {
@@ -908,8 +910,28 @@
                 });
             }
 
+            function withGeoThen(url) {
+                if (!navigator.geolocation) {
+                    postAction(url);
+                    return;
+                }
+                navigator.geolocation.getCurrentPosition(
+                    function (pos) {
+                        postAction(url, {
+                            latitude: pos.coords.latitude,
+                            longitude: pos.coords.longitude
+                        });
+                    },
+                    function () {
+                        // Still attempt; server allows if no geofence configured
+                        postAction(url);
+                    },
+                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+                );
+            }
+
             $('#att_btn_clock_in').on('click', function () {
-                postAction('{{ action([\App\Http\Controllers\AttendanceController::class, "clockIn"]) }}');
+                withGeoThen('{{ action([\App\Http\Controllers\AttendanceController::class, "clockIn"]) }}');
             });
             $('#att_btn_start_break').on('click', function () {
                 postAction('{{ action([\App\Http\Controllers\AttendanceController::class, "startBreak"]) }}');
@@ -919,7 +941,7 @@
             });
             $('#att_btn_clock_out').on('click', function () {
                 if (typeof swal === 'undefined') {
-                    postAction('{{ action([\App\Http\Controllers\AttendanceController::class, "clockOut"]) }}');
+                    withGeoThen('{{ action([\App\Http\Controllers\AttendanceController::class, "clockOut"]) }}');
                     return;
                 }
                 swal({
@@ -928,7 +950,7 @@
                     buttons: true,
                 }).then(function (confirmed) {
                     if (confirmed) {
-                        postAction('{{ action([\App\Http\Controllers\AttendanceController::class, "clockOut"]) }}');
+                        withGeoThen('{{ action([\App\Http\Controllers\AttendanceController::class, "clockOut"]) }}');
                     }
                 });
             });
