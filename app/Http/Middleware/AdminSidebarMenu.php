@@ -346,6 +346,92 @@ class AdminSidebarMenu
     }
 
     /**
+     * Purchases submenu with section headers (mirrors Sales layout). All items kept.
+     */
+    protected function addPurchasesGroupedMenu($sub, $common_settings): void
+    {
+        if (auth()->user()->can('supplier.view') || auth()->user()->can('supplier.view_own') || auth()->user()->can('supplier.create')) {
+            $sub->header(__('lang_v1.menu_vendors'));
+            $this->addPurchaseSupplierMenuItems($sub);
+        }
+
+        $hasOrders = (! empty($common_settings['enable_purchase_requisition']) && (auth()->user()->can('purchase_requisition.view_all') || auth()->user()->can('purchase_requisition.view_own')))
+            || (! empty($common_settings['enable_purchase_order']) && (auth()->user()->can('purchase_order.view_all') || auth()->user()->can('purchase_order.view_own')));
+
+        if ($hasOrders) {
+            $sub->header(__('lang_v1.menu_purchase_orders'));
+        }
+
+        if (! empty($common_settings['enable_purchase_requisition']) && (auth()->user()->can('purchase_requisition.view_all') || auth()->user()->can('purchase_requisition.view_own'))) {
+            $prAttrs = [
+                'icon' => '',
+                'active' => request()->segment(1) == 'purchase-requisition',
+            ];
+            if (auth()->user()->can('purchase_requisition.create')) {
+                $prAttrs['add_url'] = action([\App\Http\Controllers\PurchaseRequisitionController::class, 'create']);
+                $prAttrs['add_label'] = __('lang_v1.add_purchase_requisition');
+            }
+            $sub->url(
+                action([\App\Http\Controllers\PurchaseRequisitionController::class, 'index']),
+                __('lang_v1.purchase_requisition'),
+                $prAttrs
+            );
+        }
+
+        if (! empty($common_settings['enable_purchase_order']) && (auth()->user()->can('purchase_order.view_all') || auth()->user()->can('purchase_order.view_own'))) {
+            $poAttrs = [
+                'icon' => '',
+                'active' => request()->segment(1) == 'purchase-order',
+            ];
+            if (auth()->user()->can('purchase_order.create')) {
+                $poAttrs['add_url'] = action([\App\Http\Controllers\PurchaseOrderController::class, 'create']);
+                $poAttrs['add_label'] = __('lang_v1.add_purchase_order');
+            }
+            $sub->url(
+                action([\App\Http\Controllers\PurchaseOrderController::class, 'index']),
+                __('lang_v1.purchase_order'),
+                $poAttrs
+            );
+        }
+
+        if (auth()->user()->can('purchase.view') || auth()->user()->can('view_own_purchase')) {
+            $sub->header(__('lang_v1.menu_purchase_bills'));
+            $purchaseAttrs = [
+                'icon' => '',
+                'active' => request()->segment(1) == 'purchases' && request()->segment(2) == null,
+            ];
+            if (auth()->user()->can('purchase.create')) {
+                $purchaseAttrs['add_url'] = action([\App\Http\Controllers\PurchaseController::class, 'create']);
+                $purchaseAttrs['add_label'] = __('purchase.add_purchase');
+                $purchaseAttrs['active'] = request()->segment(1) == 'purchases' && in_array(request()->segment(2), [null, 'create'], true);
+            }
+            $sub->url(
+                action([\App\Http\Controllers\PurchaseController::class, 'index']),
+                __('purchase.list_purchase'),
+                $purchaseAttrs
+            );
+        }
+
+        if (auth()->user()->can('purchase.update')) {
+            $sub->header(__('lang_v1.menu_purchase_returns'));
+            $prReturnAttrs = [
+                'icon' => '',
+                'active' => request()->segment(1) == 'purchase-return',
+            ];
+            $prReturnAttrs = $this->withQuickAddUrl(
+                $prReturnAttrs,
+                action([\App\Http\Controllers\CombinedPurchaseReturnController::class, 'create']),
+                __('lang_v1.add_purchase_return')
+            );
+            $sub->url(
+                action([\App\Http\Controllers\PurchaseReturnController::class, 'index']),
+                __('lang_v1.list_purchase_return'),
+                $prReturnAttrs
+            );
+        }
+    }
+
+    /**
      * Inventory submenu grouped to match requirements PDF.
      * All existing items kept — only rearranged.
      */
@@ -695,77 +781,13 @@ class AdminSidebarMenu
                 )->order(30);
             }
 
-            // Purchases (Zoho-style — vendors first, then bills / POs)
+            // Purchases (Vendors / Orders / Purchases / Returns)
             if (in_array('purchases', $enabled_modules) && (auth()->user()->can('purchase.view') || auth()->user()->can('purchase.create') || auth()->user()->can('purchase.update')
                 || auth()->user()->can('supplier.view') || auth()->user()->can('supplier.view_own'))) {
                 $menu->dropdown(
                     __('lang_v1.menu_purchases'),
                     function ($sub) use ($common_settings) {
-                        $this->addPurchaseSupplierMenuItems($sub);
-
-                        if (!empty($common_settings['enable_purchase_requisition']) && (auth()->user()->can('purchase_requisition.view_all') || auth()->user()->can('purchase_requisition.view_own'))) {
-                            $prAttrs = [
-                                'icon' => '',
-                                'active' => request()->segment(1) == 'purchase-requisition',
-                            ];
-                            if (auth()->user()->can('purchase_requisition.create')) {
-                                $prAttrs['add_url'] = action([\App\Http\Controllers\PurchaseRequisitionController::class, 'create']);
-                                $prAttrs['add_label'] = __('lang_v1.add_purchase_requisition');
-                            }
-                            $sub->url(
-                                action([\App\Http\Controllers\PurchaseRequisitionController::class, 'index']),
-                                __('lang_v1.purchase_requisition'),
-                                $prAttrs
-                            );
-                        }
-
-                        if (!empty($common_settings['enable_purchase_order']) && (auth()->user()->can('purchase_order.view_all') || auth()->user()->can('purchase_order.view_own'))) {
-                            $poAttrs = [
-                                'icon' => '',
-                                'active' => request()->segment(1) == 'purchase-order',
-                            ];
-                            if (auth()->user()->can('purchase_order.create')) {
-                                $poAttrs['add_url'] = action([\App\Http\Controllers\PurchaseOrderController::class, 'create']);
-                                $poAttrs['add_label'] = __('lang_v1.add_purchase_order');
-                            }
-                            $sub->url(
-                                action([\App\Http\Controllers\PurchaseOrderController::class, 'index']),
-                                __('lang_v1.purchase_order'),
-                                $poAttrs
-                            );
-                        }
-                        if (auth()->user()->can('purchase.view') || auth()->user()->can('view_own_purchase')) {
-                            $purchaseAttrs = [
-                                'icon' => '',
-                                'active' => request()->segment(1) == 'purchases' && request()->segment(2) == null,
-                            ];
-                            if (auth()->user()->can('purchase.create')) {
-                                $purchaseAttrs['add_url'] = action([\App\Http\Controllers\PurchaseController::class, 'create']);
-                                $purchaseAttrs['add_label'] = __('purchase.add_purchase');
-                                $purchaseAttrs['active'] = request()->segment(1) == 'purchases' && in_array(request()->segment(2), [null, 'create'], true);
-                            }
-                            $sub->url(
-                                action([\App\Http\Controllers\PurchaseController::class, 'index']),
-                                __('purchase.list_purchase'),
-                                $purchaseAttrs
-                            );
-                        }
-                        if (auth()->user()->can('purchase.update')) {
-                            $prReturnAttrs = [
-                                'icon' => '',
-                                'active' => request()->segment(1) == 'purchase-return',
-                            ];
-                            $prReturnAttrs = $this->withQuickAddUrl(
-                                $prReturnAttrs,
-                                action([\App\Http\Controllers\CombinedPurchaseReturnController::class, 'create']),
-                                __('lang_v1.add_purchase_return')
-                            );
-                            $sub->url(
-                                action([\App\Http\Controllers\PurchaseReturnController::class, 'index']),
-                                __('lang_v1.list_purchase_return'),
-                                $prReturnAttrs
-                            );
-                        }
+                        $this->addPurchasesGroupedMenu($sub, $common_settings);
                     },
                     ['icon' => '<svg aria-hidden="true" class="tw-size-5 tw-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 7h12l-1 13H7L6 7Z"/><path d="M9 7V5a3 3 0 0 1 6 0v2"/></svg>', 'id' => 'tour_step6']
                 )->order(40);
@@ -776,9 +798,10 @@ class AdminSidebarMenu
                 $menu->dropdown(
                     __('expense.expenses'),
                     function ($sub) {
+                        $sub->header(__('lang_v1.menu_expense_list'));
                         $expenseAttrs = [
                             'icon' => '',
-                            'active' => (request()->segment(1) == 'expenses' || request()->segment(1) == 'import-expense') && request()->segment(2) == null,
+                            'active' => request()->segment(1) == 'expenses' && request()->segment(2) == null,
                         ];
                         if (auth()->user()->can('expense.add')) {
                             $expenseAttrs = $this->withQuickAddUrl(
@@ -793,8 +816,16 @@ class AdminSidebarMenu
                             __('lang_v1.list_expenses'),
                             $expenseAttrs
                         );
+                        if (auth()->user()->can('expense.add')) {
+                            $sub->url(
+                                action([\App\Http\Controllers\ExpenseController::class, 'importExpense']),
+                                __('expense.import_expense'),
+                                ['icon' => '', 'active' => request()->segment(1) == 'import-expense']
+                            );
+                        }
 
                         if (auth()->user()->can('expense.add') || auth()->user()->can('expense.edit')) {
+                            $sub->header(__('lang_v1.menu_expense_setup'));
                             $expCatAttrs = [
                                 'icon' => '',
                                 'active' => request()->segment(1) == 'expense-categories',
@@ -821,6 +852,7 @@ class AdminSidebarMenu
                 $menu->dropdown(
                     __('lang_v1.payment_accounts'),
                     function ($sub) {
+                        $sub->header(__('lang_v1.menu_accounts'));
                         $accountAttrs = [
                             'icon' => '',
                             'active' => request()->segment(1) == 'account' && request()->segment(2) == 'account',
@@ -837,6 +869,8 @@ class AdminSidebarMenu
                             __('account.list_accounts'),
                             $accountAttrs
                         );
+
+                        $sub->header(__('lang_v1.menu_account_reports'));
                         $sub->url(
                             action([\App\Http\Controllers\AccountReportsController::class, 'balanceSheet']),
                             __('account.balance_sheet'),
@@ -873,15 +907,12 @@ class AdminSidebarMenu
                         if (auth()->user()->can('schedule.view') || auth()->user()->can('schedule.manage')
                             || auth()->user()->can('attendance.view') || auth()->user()->can('attendance.view_all')
                             || $is_admin) {
+                            $sub->header(__('team_schedule.menu_schedule'));
                             $sub->url(
                                 action([\App\Http\Controllers\TeamScheduleController::class, 'calendar']),
                                 __('team_schedule.shared_calendar'),
                                 ['icon' => '', 'active' => request()->segment(1) == 'team-schedule' && request()->segment(2) == 'calendar']
                             );
-                        }
-                        if (auth()->user()->can('schedule.view') || auth()->user()->can('schedule.manage')
-                            || auth()->user()->can('attendance.view') || auth()->user()->can('attendance.view_all')
-                            || $is_admin) {
                             $sub->url(
                                 action([\App\Http\Controllers\TeamScheduleController::class, 'shifts']),
                                 __('team_schedule.shifts'),
@@ -890,6 +921,7 @@ class AdminSidebarMenu
                         }
                         if (auth()->user()->can('time_off.request') || auth()->user()->can('time_off.manage')
                             || auth()->user()->can('attendance.clock') || $is_admin) {
+                            $sub->header(__('team_schedule.time_off'));
                             $sub->url(
                                 action([\App\Http\Controllers\TimeOffController::class, 'index']),
                                 __('team_schedule.time_off'),
@@ -897,6 +929,7 @@ class AdminSidebarMenu
                             );
                         }
                         if (auth()->user()->can('attendance.view') || auth()->user()->can('attendance.view_all') || $is_admin) {
+                            $sub->header(__('report.menu_time_clock'));
                             $sub->url(
                                 action([\App\Http\Controllers\AttendanceController::class, 'report']),
                                 __('attendance.attendance_report'),
@@ -904,6 +937,7 @@ class AdminSidebarMenu
                             );
                         }
                         if (auth()->user()->can('schedule.manage') || auth()->user()->can('attendance.edit') || $is_admin) {
+                            $sub->header(__('messages.settings'));
                             $sub->url(
                                 action([\App\Http\Controllers\TeamScheduleController::class, 'colors']),
                                 __('team_schedule.member_colors'),
@@ -1236,6 +1270,9 @@ class AdminSidebarMenu
                 $menu->dropdown(
                     __('business.settings'),
                     function ($sub) use ($enabled_modules) {
+                        if (auth()->user()->can('user.view') || auth()->user()->can('roles.view')) {
+                            $sub->header(__('lang_v1.menu_users_access'));
+                        }
                         if (auth()->user()->can('user.view')) {
                             $userAttrs = [
                                 'icon' => '',
@@ -1275,6 +1312,7 @@ class AdminSidebarMenu
                             );
                         }
                         if (auth()->user()->can('business_settings.access')) {
+                            $sub->header(__('lang_v1.menu_business'));
                             $sub->url(
                                 action([\App\Http\Controllers\BusinessController::class, 'getBusinessSettings']),
                                 __('business.business_settings'),
@@ -1294,6 +1332,9 @@ class AdminSidebarMenu
                                 __('business.business_locations'),
                                 $locationAttrs
                             );
+                        }
+                        if (auth()->user()->can('invoice_settings.access') || auth()->user()->can('barcode_settings.access') || auth()->user()->can('access_printers')) {
+                            $sub->header(__('lang_v1.menu_documents_print'));
                         }
                         if (auth()->user()->can('invoice_settings.access')) {
                             $invoiceAttrs = [
@@ -1347,6 +1388,7 @@ class AdminSidebarMenu
                         }
 
                         if (auth()->user()->can('tax_rate.view') || auth()->user()->can('tax_rate.create')) {
+                            $sub->header(__('lang_v1.menu_taxes'));
                             $taxAttrs = [
                                 'icon' => '',
                                 'active' => request()->segment(1) == 'tax-rates',
@@ -1363,6 +1405,13 @@ class AdminSidebarMenu
                                 __('tax_rate.tax_rates'),
                                 $taxAttrs
                             );
+                        }
+
+                        $hasRestaurant = (in_array('tables', $enabled_modules) && auth()->user()->can('access_tables'))
+                            || (in_array('modifiers', $enabled_modules) && (auth()->user()->can('product.view') || auth()->user()->can('product.create')))
+                            || (in_array('types_of_service', $enabled_modules) && auth()->user()->can('access_types_of_service'));
+                        if ($hasRestaurant) {
+                            $sub->header(__('lang_v1.menu_restaurant'));
                         }
 
                         if (in_array('tables', $enabled_modules) && auth()->user()->can('access_tables')) {

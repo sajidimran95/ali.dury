@@ -3,6 +3,9 @@
 return [
     'ecommerce' => 'Ecommerce',
     'dashboard' => 'Dashboard',
+    'menu_catalog' => 'Catalog',
+    'menu_sales' => 'Sales',
+    'menu_marketing' => 'Marketing',
     'products' => 'Products',
     'categories' => 'Categories',
     'brands' => 'Brands',

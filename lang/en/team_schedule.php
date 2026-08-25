@@ -2,6 +2,7 @@
 
 return [
     'team_schedule' => 'Team Schedule',
+    'menu_schedule' => 'Schedule',
     'shared_calendar' => 'Shared Calendar',
     'shifts' => 'Shifts',
     'shift' => 'Shift',
