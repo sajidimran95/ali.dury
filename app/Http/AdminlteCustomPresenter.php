@@ -70,7 +70,7 @@ class AdminlteCustomPresenter extends Presenter
      */
     public function getHeaderWrapper($item)
     {
-        return '<div class="zoho-sidebar-section tw-px-1 tw-pt-3 tw-pb-1 tw-text-[10px] tw-font-semibold tw-uppercase tw-tracking-wider tw-text-gray-400">' . e($item->title) . '</div>';
+        return '<div class="zoho-sidebar-section zoho-sidebar-submenu-header tw-px-1 tw-pt-2 tw-pb-0.5 tw-text-[10px] tw-font-semibold tw-uppercase tw-tracking-wider tw-text-gray-400">' . e($item->title) . '</div>';
     }
 
     /**

@@ -406,12 +406,18 @@ class AdminSidebarMenu
                 )->order(20);
             }
 
-            // Sales (Zoho-style — customers first, then invoices / POS)
+            // Sales (Zoho-style — dashboard first, then customers / invoices / POS)
             if ($is_admin || auth()->user()->hasAnyPermission(['sell.view', 'sell.create', 'direct_sell.access', 'view_own_sell_only', 'view_commission_agent_sell', 'access_shipping', 'access_own_shipping', 'access_commission_agent_shipping', 'access_sell_return', 'direct_sell.view', 'direct_sell.update', 'access_own_sell_return'])
                 || auth()->user()->can('customer.view') || auth()->user()->can('customer.view_own')) {
                 $menu->dropdown(
                     __('lang_v1.menu_sales'),
                     function ($sub) use ($enabled_modules, $is_admin, $pos_settings) {
+                        $sub->url(
+                            action([\App\Http\Controllers\HomeController::class, 'index']),
+                            __('lang_v1.sales_dashboard'),
+                            ['icon' => '', 'active' => request()->segment(1) == 'home']
+                        );
+
                         $this->addSalesCustomerMenuItems($sub);
 
                         if (auth()->user()->can('user.create')) {
@@ -803,15 +809,18 @@ class AdminSidebarMenu
                 )->order(55);
             }
 
-            //Reports dropdown
+            //Reports dropdown — grouped to match requirements PDF (all items kept)
             if (auth()->user()->can('purchase_n_sell_report.view') || auth()->user()->can('contacts_report.view')
                 || auth()->user()->can('stock_report.view') || auth()->user()->can('tax_report.view')
                 || auth()->user()->can('trending_product_report.view') || auth()->user()->can('sales_representative.view') || auth()->user()->can('register_report.view')
                 || auth()->user()->can('expense_report.view')
-                || auth()->user()->can('attendance.view') || auth()->user()->can('attendance.view_all')) {
+                || auth()->user()->can('attendance.view') || auth()->user()->can('attendance.view_all')
+                || auth()->user()->can('account.access') || $is_admin) {
                 $menu->dropdown(
                     __('report.reports'),
                     function ($sub) use ($enabled_modules, $is_admin) {
+                        // —— Business Overview ——
+                        $sub->header(__('report.menu_group_business_overview'));
                         if (auth()->user()->can('profit_loss_report.view')) {
                             $sub->url(
                                 action([\App\Http\Controllers\ReportController::class, 'getProfitLoss']),
@@ -819,119 +828,11 @@ class AdminSidebarMenu
                                 ['icon' => '', 'active' => request()->segment(2) == 'profit-loss']
                             );
                         }
-                        if (config('constants.show_report_606') == true) {
+                        if (auth()->user()->can('account.access') && in_array('account', $enabled_modules)) {
                             $sub->url(
-                                action([\App\Http\Controllers\ReportController::class, 'purchaseReport']),
-                                'Report 606 (' . __('lang_v1.purchase') . ')',
-                                ['icon' => '', 'active' => request()->segment(2) == 'purchase-report']
-                            );
-                        }
-                        if (config('constants.show_report_607') == true) {
-                            $sub->url(
-                                action([\App\Http\Controllers\ReportController::class, 'saleReport']),
-                                'Report 607 (' . __('business.sale') . ')',
-                                ['icon' => '', 'active' => request()->segment(2) == 'sale-report']
-                            );
-                        }
-                        if ((in_array('purchases', $enabled_modules) || in_array('add_sale', $enabled_modules) || in_array('pos_sale', $enabled_modules)) && auth()->user()->can('purchase_n_sell_report.view')) {
-                            $sub->url(
-                                action([\App\Http\Controllers\ReportController::class, 'getPurchaseSell']),
-                                __('report.purchase_sell_report'),
-                                ['icon' => '', 'active' => request()->segment(2) == 'purchase-sell']
-                            );
-                        }
-
-                        if (auth()->user()->can('tax_report.view')) {
-                            $sub->url(
-                                action([\App\Http\Controllers\ReportController::class, 'getTaxReport']),
-                                __('report.tax_report'),
-                                ['icon' => '', 'active' => request()->segment(2) == 'tax-report']
-                            );
-                            $sub->url(
-                                action([\App\Http\Controllers\ReportController::class, 'getMsaReport']),
-                                __('report.msa_tobacco_report'),
-                                ['icon' => '', 'active' => request()->segment(2) == 'msa-report']
-                            );
-                        }
-                        if (auth()->user()->can('contacts_report.view')) {
-                            $sub->url(
-                                action([\App\Http\Controllers\ReportController::class, 'getCustomerSuppliers']),
-                                __('report.contacts'),
-                                ['icon' => '', 'active' => request()->segment(2) == 'customer-supplier']
-                            );
-                            $sub->url(
-                                action([\App\Http\Controllers\ReportController::class, 'getCustomerGroup']),
-                                __('lang_v1.customer_groups_report'),
-                                ['icon' => '', 'active' => request()->segment(2) == 'customer-group']
-                            );
-                        }
-                        if (auth()->user()->can('stock_report.view')) {
-                            $sub->url(
-                                action([\App\Http\Controllers\ReportController::class, 'getStockReport']),
-                                __('report.stock_report'),
-                                ['icon' => '', 'active' => request()->segment(2) == 'stock-report']
-                            );
-                            if (session('business.enable_product_expiry') == 1) {
-                                $sub->url(
-                                    action([\App\Http\Controllers\ReportController::class, 'getStockExpiryReport']),
-                                    __('report.stock_expiry_report'),
-                                    ['icon' => '', 'active' => request()->segment(2) == 'stock-expiry']
-                                );
-                            }
-                            if (session('business.enable_lot_number') == 1) {
-                                $sub->url(
-                                    action([\App\Http\Controllers\ReportController::class, 'getLotReport']),
-                                    __('lang_v1.lot_report'),
-                                    ['icon' => '', 'active' => request()->segment(2) == 'lot-report']
-                                );
-                            }
-
-                            if (in_array('stock_adjustment', $enabled_modules)) {
-                                $sub->url(
-                                    action([\App\Http\Controllers\ReportController::class, 'getStockAdjustmentReport']),
-                                    __('report.stock_adjustment_report'),
-                                    ['icon' => '', 'active' => request()->segment(2) == 'stock-adjustment-report']
-                                );
-                            }
-                        }
-
-                        if (auth()->user()->can('trending_product_report.view')) {
-                            $sub->url(
-                                action([\App\Http\Controllers\ReportController::class, 'getTrendingProducts']),
-                                __('report.trending_products'),
-                                ['icon' => '', 'active' => request()->segment(2) == 'trending-products']
-                            );
-                        }
-
-                        if (auth()->user()->can('purchase_n_sell_report.view')) {
-                            $sub->url(
-                                action([\App\Http\Controllers\ReportController::class, 'itemsReport']),
-                                __('lang_v1.items_report'),
-                                ['icon' => '', 'active' => request()->segment(2) == 'items-report']
-                            );
-
-                            $sub->url(
-                                action([\App\Http\Controllers\ReportController::class, 'getproductPurchaseReport']),
-                                __('lang_v1.product_purchase_report'),
-                                ['icon' => '', 'active' => request()->segment(2) == 'product-purchase-report']
-                            );
-
-                            $sub->url(
-                                action([\App\Http\Controllers\ReportController::class, 'getproductSellReport']),
-                                __('lang_v1.product_sell_report'),
-                                ['icon' => '', 'active' => request()->segment(2) == 'product-sell-report']
-                            );
-
-                            $sub->url(
-                                action([\App\Http\Controllers\ReportController::class, 'purchasePaymentReport']),
-                                __('lang_v1.purchase_payment_report'),
-                                ['icon' => '', 'active' => request()->segment(2) == 'purchase-payment-report']
-                            );
-
-                            $sub->url(
-                                action([\App\Http\Controllers\ReportController::class, 'sellPaymentReport']),
-                                __('lang_v1.sell_payment_report'),
-                                ['icon' => '', 'active' => request()->segment(2) == 'sell-payment-report']
+                                action([\App\Http\Controllers\AccountController::class, 'cashFlow']),
+                                __('lang_v1.cash_flow'),
+                                ['icon' => '', 'active' => request()->segment(1) == 'account' && request()->segment(2) == 'cash-flow']
                             );
                         }
                         if (in_array('expenses', $enabled_modules) && auth()->user()->can('expense_report.view')) {
@@ -948,6 +849,184 @@ class AdminSidebarMenu
                                 ['icon' => '', 'active' => request()->segment(2) == 'register-report']
                             );
                         }
+
+                        // —— Sales ——
+                        $sub->header(__('report.menu_group_sales'));
+                        if ((in_array('purchases', $enabled_modules) || in_array('add_sale', $enabled_modules) || in_array('pos_sale', $enabled_modules)) && auth()->user()->can('purchase_n_sell_report.view')) {
+                            $sub->url(
+                                action([\App\Http\Controllers\ReportController::class, 'getPurchaseSell']),
+                                __('report.sales_summary'),
+                                ['icon' => '', 'active' => request()->segment(2) == 'purchase-sell']
+                            );
+                        }
+                        if (auth()->user()->can('purchase_n_sell_report.view')) {
+                            $sub->url(
+                                action([\App\Http\Controllers\ReportController::class, 'sellPaymentReport']),
+                                __('report.sales_by_customer'),
+                                ['icon' => '', 'active' => request()->segment(2) == 'sell-payment-report']
+                            );
+                            $sub->url(
+                                action([\App\Http\Controllers\ReportController::class, 'getproductSellReport']),
+                                __('report.sales_by_product'),
+                                ['icon' => '', 'active' => request()->segment(2) == 'product-sell-report']
+                            );
+                        }
+                        if (auth()->user()->can('sales_representative.view')) {
+                            $sub->url(
+                                action([\App\Http\Controllers\ReportController::class, 'getSalesRepresentativeReport']),
+                                __('report.sales_representative'),
+                                ['icon' => '', 'active' => request()->segment(2) == 'sales-representative-report']
+                            );
+                        }
+                        if (auth()->user()->can('contacts_report.view')) {
+                            $sub->url(
+                                action([\App\Http\Controllers\ReportController::class, 'getCustomerGroup']),
+                                __('lang_v1.customer_groups_report'),
+                                ['icon' => '', 'active' => request()->segment(2) == 'customer-group']
+                            );
+                        }
+                        if (config('constants.show_report_607') == true) {
+                            $sub->url(
+                                action([\App\Http\Controllers\ReportController::class, 'saleReport']),
+                                'Report 607 (' . __('business.sale') . ')',
+                                ['icon' => '', 'active' => request()->segment(2) == 'sale-report']
+                            );
+                        }
+
+                        // —— Purchasing ——
+                        $sub->header(__('report.menu_group_purchasing'));
+                        if (config('constants.show_report_606') == true) {
+                            $sub->url(
+                                action([\App\Http\Controllers\ReportController::class, 'purchaseReport']),
+                                __('report.purchase_summary'),
+                                ['icon' => '', 'active' => request()->segment(2) == 'purchase-report']
+                            );
+                        } elseif (auth()->user()->can('purchase_n_sell_report.view')) {
+                            $sub->url(
+                                action([\App\Http\Controllers\ReportController::class, 'getPurchaseSell']),
+                                __('report.purchase_summary'),
+                                ['icon' => '', 'active' => request()->segment(2) == 'purchase-sell']
+                            );
+                        }
+                        if (auth()->user()->can('purchase_n_sell_report.view')) {
+                            $sub->url(
+                                action([\App\Http\Controllers\ReportController::class, 'getproductPurchaseReport']),
+                                __('report.purchases_by_product'),
+                                ['icon' => '', 'active' => request()->segment(2) == 'product-purchase-report']
+                            );
+                            $sub->url(
+                                action([\App\Http\Controllers\ReportController::class, 'purchasePaymentReport']),
+                                __('lang_v1.purchase_payment_report'),
+                                ['icon' => '', 'active' => request()->segment(2) == 'purchase-payment-report']
+                            );
+                        }
+                        if (auth()->user()->can('contacts_report.view')) {
+                            $sub->url(
+                                action([\App\Http\Controllers\ReportController::class, 'getCustomerSuppliers']),
+                                __('report.supplier'),
+                                ['icon' => '', 'active' => request()->segment(2) == 'customer-supplier']
+                            );
+                        }
+
+                        // —— Inventory ——
+                        $sub->header(__('report.menu_group_inventory'));
+                        if (auth()->user()->can('stock_report.view')) {
+                            $sub->url(
+                                action([\App\Http\Controllers\ReportController::class, 'getStockReport']),
+                                __('report.stock_report'),
+                                ['icon' => '', 'active' => request()->segment(2) == 'stock-report']
+                            );
+                            if (in_array('stock_adjustment', $enabled_modules)) {
+                                $sub->url(
+                                    action([\App\Http\Controllers\ReportController::class, 'getStockAdjustmentReport']),
+                                    __('report.stock_adjustment_report'),
+                                    ['icon' => '', 'active' => request()->segment(2) == 'stock-adjustment-report']
+                                );
+                            }
+                            $sub->url(
+                                action([\App\Http\Controllers\ReportController::class, 'getStockReport']),
+                                __('report.inventory_valuation'),
+                                ['icon' => '', 'active' => request()->segment(2) == 'stock-report']
+                            );
+                            if (session('business.enable_product_expiry') == 1) {
+                                $sub->url(
+                                    action([\App\Http\Controllers\ReportController::class, 'getStockExpiryReport']),
+                                    __('report.stock_expiry_report'),
+                                    ['icon' => '', 'active' => request()->segment(2) == 'stock-expiry']
+                                );
+                            }
+                            if (session('business.enable_lot_number') == 1) {
+                                $sub->url(
+                                    action([\App\Http\Controllers\ReportController::class, 'getLotReport']),
+                                    __('lang_v1.lot_report'),
+                                    ['icon' => '', 'active' => request()->segment(2) == 'lot-report']
+                                );
+                            }
+                        }
+                        if (auth()->user()->can('purchase_n_sell_report.view')) {
+                            $sub->url(
+                                action([\App\Http\Controllers\ReportController::class, 'itemsReport']),
+                                __('lang_v1.items_report'),
+                                ['icon' => '', 'active' => request()->segment(2) == 'items-report']
+                            );
+                        }
+                        if (auth()->user()->can('trending_product_report.view')) {
+                            $sub->url(
+                                action([\App\Http\Controllers\ReportController::class, 'getTrendingProducts']),
+                                __('report.trending_products'),
+                                ['icon' => '', 'active' => request()->segment(2) == 'trending-products']
+                            );
+                        }
+
+                        // —— Customers & Suppliers ——
+                        $sub->header(__('report.menu_group_customers_suppliers'));
+                        if (auth()->user()->can('contacts_report.view')) {
+                            $sub->url(
+                                action([\App\Http\Controllers\ReportController::class, 'getCustomerSuppliers']),
+                                __('report.customer_report'),
+                                ['icon' => '', 'active' => request()->segment(2) == 'customer-supplier']
+                            );
+                            $sub->url(
+                                action([\App\Http\Controllers\ReportController::class, 'getCustomerSuppliers']),
+                                __('report.supplier_report'),
+                                ['icon' => '', 'active' => request()->segment(2) == 'customer-supplier']
+                            );
+                            $sub->url(
+                                action([\App\Http\Controllers\ReportController::class, 'getCustomerGroup']),
+                                __('lang_v1.customer_groups_report'),
+                                ['icon' => '', 'active' => request()->segment(2) == 'customer-group']
+                            );
+                        }
+
+                        // —— Taxes & Compliance ——
+                        $sub->header(__('report.menu_group_taxes_compliance'));
+                        if (auth()->user()->can('tax_report.view')) {
+                            $sub->url(
+                                action([\App\Http\Controllers\ReportController::class, 'getTaxReport']),
+                                __('report.tax_report'),
+                                ['icon' => '', 'active' => request()->segment(2) == 'tax-report']
+                            );
+                            $sub->url(
+                                action([\App\Http\Controllers\ReportController::class, 'getMsaReport']),
+                                __('report.msa_tobacco_report'),
+                                ['icon' => '', 'active' => request()->segment(2) == 'msa-report']
+                            );
+                        }
+                        if (auth()->user()->can('tax_report.view') && !empty(config('constants.enable_gst_report_india'))) {
+                            $sub->url(
+                                action([\App\Http\Controllers\ReportController::class, 'gstSalesReport']),
+                                __('lang_v1.gst_sales_report'),
+                                ['icon' => '', 'active' => request()->segment(2) == 'gst-sales-report']
+                            );
+                            $sub->url(
+                                action([\App\Http\Controllers\ReportController::class, 'gstPurchaseReport']),
+                                __('lang_v1.gst_purchase_report'),
+                                ['icon' => '', 'active' => request()->segment(2) == 'gst-purchase-report']
+                            );
+                        }
+
+                        // —— Employees & Activity ——
+                        $sub->header(__('report.menu_group_employees_activity'));
                         if (auth()->user()->can('attendance.view') || auth()->user()->can('attendance.view_all')) {
                             $sub->url(
                                 action([\App\Http\Controllers\AttendanceController::class, 'report']),
@@ -962,6 +1041,19 @@ class AdminSidebarMenu
                                 ['icon' => '', 'active' => request()->segment(2) == 'sales-representative-report']
                             );
                         }
+                        if ($is_admin) {
+                            $sub->url(
+                                action([\App\Http\Controllers\ReportController::class, 'activityLog']),
+                                __('lang_v1.activity_log'),
+                                ['icon' => '', 'active' => request()->segment(2) == 'activity-log']
+                            );
+                        }
+
+                        // —— Other (restaurant / extras kept) ——
+                        if ((auth()->user()->can('purchase_n_sell_report.view') && in_array('tables', $enabled_modules))
+                            || (auth()->user()->can('sales_representative.view') && in_array('service_staff', $enabled_modules))) {
+                            $sub->header(__('report.menu_group_other'));
+                        }
                         if (auth()->user()->can('purchase_n_sell_report.view') && in_array('tables', $enabled_modules)) {
                             $sub->url(
                                 action([\App\Http\Controllers\ReportController::class, 'getTableReport']),
@@ -969,34 +1061,11 @@ class AdminSidebarMenu
                                 ['icon' => '', 'active' => request()->segment(2) == 'table-report']
                             );
                         }
-
-                        if (auth()->user()->can('tax_report.view') && !empty(config('constants.enable_gst_report_india'))) {
-                            $sub->url(
-                                action([\App\Http\Controllers\ReportController::class, 'gstSalesReport']),
-                                __('lang_v1.gst_sales_report'),
-                                ['icon' => '', 'active' => request()->segment(2) == 'gst-sales-report']
-                            );
-
-                            $sub->url(
-                                action([\App\Http\Controllers\ReportController::class, 'gstPurchaseReport']),
-                                __('lang_v1.gst_purchase_report'),
-                                ['icon' => '', 'active' => request()->segment(2) == 'gst-purchase-report']
-                            );
-                        }
-
                         if (auth()->user()->can('sales_representative.view') && in_array('service_staff', $enabled_modules)) {
                             $sub->url(
                                 action([\App\Http\Controllers\ReportController::class, 'getServiceStaffReport']),
                                 __('restaurant.service_staff_report'),
                                 ['icon' => '', 'active' => request()->segment(2) == 'service-staff-report']
-                            );
-                        }
-
-                        if ($is_admin) {
-                            $sub->url(
-                                action([\App\Http\Controllers\ReportController::class, 'activityLog']),
-                                __('lang_v1.activity_log'),
-                                ['icon' => '', 'active' => request()->segment(2) == 'activity-log']
                             );
                         }
                     },

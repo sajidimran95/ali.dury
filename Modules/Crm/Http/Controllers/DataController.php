@@ -30,6 +30,7 @@ class DataController
             $menu->dropdown(
                 __('crm::lang.crm'),
                 function ($sub) {
+                    // Dashboard
                     if (auth()->user()->can('crm.access') || auth()->user()->can('superadmin')) {
                         $sub->url(
                             route('crm.dashboard'),
@@ -38,66 +39,92 @@ class DataController
                         );
                     }
 
-                    if (auth()->user()->can('crm.lead.view') || auth()->user()->can('crm.access') || auth()->user()->can('superadmin')) {
-                        $sub->url(
-                            route('crm.leads.index'),
-                            __('crm::lang.leads'),
-                            ['icon' => 'fa fas fa-user-plus', 'active' => request()->segment(1) == 'crm' && request()->segment(2) == 'leads']
-                        );
-                        $sub->url(
-                            route('crm.pipeline.index'),
-                            __('crm::lang.pipeline'),
-                            ['icon' => 'fa fas fa-columns', 'active' => request()->segment(1) == 'crm' && request()->segment(2) == 'pipeline']
-                        );
-                    }
-
+                    // Customer → Customer, Customer Groups (+ import/map kept)
                     if (auth()->user()->can('customer.view') || auth()->user()->can('customer.view_own') || auth()->user()->can('superadmin')) {
-                        $customerAttrs = [
-                            'icon' => 'fa fas fa-users',
-                            'active' => request()->segment(1) == 'contacts' && request()->input('type') == 'customer',
-                        ];
-                        if (auth()->user()->can('customer.create')) {
-                            $customerAttrs['add_modal'] = [
-                                'href' => action([\App\Http\Controllers\ContactController::class, 'create'], ['type' => 'customer']),
-                                'container' => '#global_contact_modal',
-                            ];
-                            $customerAttrs['add_label'] = __('contact.add_contact');
-                        }
-                        $sub->url(
-                            action([\App\Http\Controllers\ContactController::class, 'index'], ['type' => 'customer']),
+                        $sub->dropdown(
                             __('crm::lang.customers'),
-                            $customerAttrs
+                            function ($cust) {
+                                $customerAttrs = [
+                                    'icon' => 'fa fas fa-users',
+                                    'active' => request()->segment(1) == 'contacts' && request()->input('type') == 'customer',
+                                ];
+                                if (auth()->user()->can('customer.create')) {
+                                    $customerAttrs['add_modal'] = [
+                                        'href' => action([\App\Http\Controllers\ContactController::class, 'create'], ['type' => 'customer']),
+                                        'container' => '#global_contact_modal',
+                                    ];
+                                    $customerAttrs['add_label'] = __('contact.add_contact');
+                                }
+                                $cust->url(
+                                    action([\App\Http\Controllers\ContactController::class, 'index'], ['type' => 'customer']),
+                                    __('crm::lang.customers'),
+                                    $customerAttrs
+                                );
+                                $cust->url(
+                                    action([\App\Http\Controllers\CustomerGroupController::class, 'index']),
+                                    __('crm::lang.customer_groups'),
+                                    ['icon' => 'fa fas fa-users-cog', 'active' => request()->segment(1) == 'customer-group']
+                                );
+                                if (auth()->user()->can('customer.create')) {
+                                    $cust->url(
+                                        action([\App\Http\Controllers\ContactController::class, 'getImportContacts']),
+                                        __('lang_v1.import_contacts'),
+                                        ['icon' => 'fa fas fa-upload', 'active' => request()->segment(1) == 'contacts' && request()->segment(2) == 'import']
+                                    );
+                                }
+                                if (! empty(env('GOOGLE_MAP_API_KEY'))) {
+                                    $cust->url(
+                                        action([\App\Http\Controllers\ContactController::class, 'contactMap']),
+                                        __('lang_v1.map'),
+                                        ['icon' => 'fa fas fa-map-marker-alt', 'active' => request()->segment(1) == 'contacts' && request()->segment(2) == 'map']
+                                    );
+                                }
+                            },
+                            0,
+                            ['icon' => 'fa fas fa-users']
                         );
-                        $sub->url(
-                            action([\App\Http\Controllers\CustomerGroupController::class, 'index']),
-                            __('crm::lang.customer_groups'),
-                            ['icon' => 'fa fas fa-users-cog', 'active' => request()->segment(1) == 'customer-group']
-                        );
-                        if (auth()->user()->can('customer.create')) {
-                            $sub->url(
-                                action([\App\Http\Controllers\ContactController::class, 'getImportContacts']),
-                                __('lang_v1.import_contacts'),
-                                ['icon' => 'fa fas fa-upload', 'active' => request()->segment(1) == 'contacts' && request()->segment(2) == 'import']
-                            );
-                        }
                     }
 
-                    if (auth()->user()->can('crm.schedule') || auth()->user()->can('crm.access') || auth()->user()->can('superadmin')) {
-                        $sub->url(
-                            route('crm.schedules.index'),
-                            __('crm::lang.follow_ups'),
-                            ['icon' => 'fa fas fa-calendar-check', 'active' => request()->segment(1) == 'crm' && request()->segment(2) == 'schedules']
+                    // Leads → Leads, Pipeline, Follow Ups, Call Log
+                    if (auth()->user()->can('crm.lead.view') || auth()->user()->can('crm.access')
+                        || auth()->user()->can('crm.schedule') || auth()->user()->can('crm.call_log')
+                        || auth()->user()->can('superadmin')) {
+                        $sub->dropdown(
+                            __('crm::lang.leads'),
+                            function ($leads) {
+                                if (auth()->user()->can('crm.lead.view') || auth()->user()->can('crm.access') || auth()->user()->can('superadmin')) {
+                                    $leads->url(
+                                        route('crm.leads.index'),
+                                        __('crm::lang.leads'),
+                                        ['icon' => 'fa fas fa-user-plus', 'active' => request()->segment(1) == 'crm' && request()->segment(2) == 'leads']
+                                    );
+                                    $leads->url(
+                                        route('crm.pipeline.index'),
+                                        __('crm::lang.pipeline'),
+                                        ['icon' => 'fa fas fa-columns', 'active' => request()->segment(1) == 'crm' && request()->segment(2) == 'pipeline']
+                                    );
+                                }
+                                if (auth()->user()->can('crm.schedule') || auth()->user()->can('crm.access') || auth()->user()->can('superadmin')) {
+                                    $leads->url(
+                                        route('crm.schedules.index'),
+                                        __('crm::lang.follow_ups'),
+                                        ['icon' => 'fa fas fa-calendar-check', 'active' => request()->segment(1) == 'crm' && request()->segment(2) == 'schedules']
+                                    );
+                                }
+                                if (auth()->user()->can('crm.call_log') || auth()->user()->can('crm.access') || auth()->user()->can('superadmin')) {
+                                    $leads->url(
+                                        route('crm.call-logs.index'),
+                                        __('crm::lang.call_log'),
+                                        ['icon' => 'fa fas fa-phone', 'active' => request()->segment(1) == 'crm' && request()->segment(2) == 'call-logs']
+                                    );
+                                }
+                            },
+                            0,
+                            ['icon' => 'fa fas fa-user-plus']
                         );
                     }
 
-                    if (auth()->user()->can('crm.call_log') || auth()->user()->can('crm.access') || auth()->user()->can('superadmin')) {
-                        $sub->url(
-                            route('crm.call-logs.index'),
-                            __('crm::lang.call_logs'),
-                            ['icon' => 'fa fas fa-phone', 'active' => request()->segment(1) == 'crm' && request()->segment(2) == 'call-logs']
-                        );
-                    }
-
+                    // Settings
                     if (auth()->user()->can('crm.settings') || auth()->user()->can('crm.access') || auth()->user()->can('superadmin')) {
                         $sub->url(
                             route('crm.settings'),
@@ -123,60 +150,5 @@ class DataController
             ['value' => 'crm.call_log', 'label' => __('crm::lang.permission_call_log'), 'default' => false],
             ['value' => 'crm.settings', 'label' => __('crm::lang.permission_settings'), 'default' => false],
         ];
-    }
-
-    public function addTaxonomies()
-    {
-        return [
-            'crm_source' => [
-                'taxonomy_label' => __('crm::lang.source'),
-                'heading' => __('crm::lang.sources'),
-                'sub_heading' => __('crm::lang.manage_sources'),
-                'enable_taxonomy_code' => false,
-                'enable_sub_taxonomy' => false,
-            ],
-            'crm_life_stage' => [
-                'taxonomy_label' => __('crm::lang.life_stage'),
-                'heading' => __('crm::lang.life_stages'),
-                'sub_heading' => __('crm::lang.manage_life_stages'),
-                'enable_taxonomy_code' => false,
-                'enable_sub_taxonomy' => false,
-            ],
-        ];
-    }
-
-    /**
-     * Persist CRM fields after contact save (from core ContactController).
-     */
-    public function after_contact_saved($data)
-    {
-        $contact = $data['contact'] ?? null;
-        $input = $data['input'] ?? [];
-
-        if (! $contact) {
-            return;
-        }
-
-        $crmContact = \Modules\Crm\Entities\CrmContact::find($contact->id);
-        if (! $crmContact) {
-            return;
-        }
-
-        $changed = false;
-        if (array_key_exists('crm_source', $input)) {
-            $crmContact->crm_source = $input['crm_source'] ?: null;
-            $changed = true;
-        }
-        if (array_key_exists('crm_life_stage', $input)) {
-            $crmContact->crm_life_stage = $input['crm_life_stage'] ?: null;
-            $changed = true;
-        }
-        if ($changed) {
-            $crmContact->save();
-        }
-
-        if (! empty($input['user_id']) && is_array($input['user_id'])) {
-            $crmContact->leadUsers()->sync($input['user_id']);
-        }
     }
 }
