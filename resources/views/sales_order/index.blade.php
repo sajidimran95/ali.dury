@@ -57,7 +57,7 @@
         <div class="col-md-3">
             <div class="form-group">
                 {!! Form::label('so_list_filter_source',  __('lang_v1.source') . ':') !!}
-                {!! Form::select('so_list_filter_source', $sources, null, ['class' => 'form-control select2', 'style' => 'width:100%', 'placeholder' => __('lang_v1.all')]); !!}
+                {!! Form::select('so_list_filter_source', $sources, request('source'), ['class' => 'form-control select2', 'style' => 'width:100%', 'placeholder' => __('lang_v1.all')]); !!}
             </div>
         </div>
         @if(!empty($shipping_statuses))

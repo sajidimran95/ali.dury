@@ -39,88 +39,76 @@ class DataController
                         );
                     }
 
-                    // Customer → Customer, Customer Groups (+ import/map kept)
+                    // Customer (flat headers — example order; Import Contacts + Map kept)
                     if (auth()->user()->can('customer.view') || auth()->user()->can('customer.view_own') || auth()->user()->can('superadmin')) {
-                        $sub->dropdown(
-                            __('crm::lang.customers'),
-                            function ($cust) {
-                                $customerAttrs = [
-                                    'icon' => 'fa fas fa-users',
-                                    'active' => request()->segment(1) == 'contacts' && request()->input('type') == 'customer',
-                                ];
-                                if (auth()->user()->can('customer.create')) {
-                                    $customerAttrs['add_modal'] = [
-                                        'href' => action([\App\Http\Controllers\ContactController::class, 'create'], ['type' => 'customer']),
-                                        'container' => '#global_contact_modal',
-                                    ];
-                                    $customerAttrs['add_label'] = __('contact.add_contact');
-                                }
-                                $cust->url(
-                                    action([\App\Http\Controllers\ContactController::class, 'index'], ['type' => 'customer']),
-                                    __('crm::lang.customers'),
-                                    $customerAttrs
-                                );
-                                $cust->url(
-                                    action([\App\Http\Controllers\CustomerGroupController::class, 'index']),
-                                    __('crm::lang.customer_groups'),
-                                    ['icon' => 'fa fas fa-users-cog', 'active' => request()->segment(1) == 'customer-group']
-                                );
-                                if (auth()->user()->can('customer.create')) {
-                                    $cust->url(
-                                        action([\App\Http\Controllers\ContactController::class, 'getImportContacts']),
-                                        __('lang_v1.import_contacts'),
-                                        ['icon' => 'fa fas fa-upload', 'active' => request()->segment(1) == 'contacts' && request()->segment(2) == 'import']
-                                    );
-                                }
-                                if (! empty(env('GOOGLE_MAP_API_KEY'))) {
-                                    $cust->url(
-                                        action([\App\Http\Controllers\ContactController::class, 'contactMap']),
-                                        __('lang_v1.map'),
-                                        ['icon' => 'fa fas fa-map-marker-alt', 'active' => request()->segment(1) == 'contacts' && request()->segment(2) == 'map']
-                                    );
-                                }
-                            },
-                            0,
-                            ['icon' => 'fa fas fa-users']
+                        $sub->header(__('crm::lang.customer'));
+                        $customerAttrs = [
+                            'icon' => 'fa fas fa-users',
+                            'active' => request()->segment(1) == 'contacts' && request()->input('type') == 'customer',
+                        ];
+                        if (auth()->user()->can('customer.create')) {
+                            $customerAttrs['add_modal'] = [
+                                'href' => action([\App\Http\Controllers\ContactController::class, 'create'], ['type' => 'customer']),
+                                'container' => '#global_contact_modal',
+                            ];
+                            $customerAttrs['add_label'] = __('contact.add_contact');
+                        }
+                        $sub->url(
+                            action([\App\Http\Controllers\ContactController::class, 'index'], ['type' => 'customer']),
+                            __('crm::lang.customer'),
+                            $customerAttrs
                         );
+                        $sub->url(
+                            action([\App\Http\Controllers\CustomerGroupController::class, 'index']),
+                            __('crm::lang.customer_groups'),
+                            ['icon' => 'fa fas fa-users-cog', 'active' => request()->segment(1) == 'customer-group']
+                        );
+                        if (auth()->user()->can('customer.create')) {
+                            $sub->url(
+                                action([\App\Http\Controllers\ContactController::class, 'getImportContacts']),
+                                __('lang_v1.import_contacts'),
+                                ['icon' => 'fa fas fa-upload', 'active' => request()->segment(1) == 'contacts' && request()->segment(2) == 'import']
+                            );
+                        }
+                        if (! empty(env('GOOGLE_MAP_API_KEY'))) {
+                            $sub->url(
+                                action([\App\Http\Controllers\ContactController::class, 'contactMap']),
+                                __('lang_v1.map'),
+                                ['icon' => 'fa fas fa-map-marker-alt', 'active' => request()->segment(1) == 'contacts' && request()->segment(2) == 'map']
+                            );
+                        }
                     }
 
-                    // Leads → Leads, Pipeline, Follow Ups, Call Log
+                    // Leads (flat — same items, example order)
                     if (auth()->user()->can('crm.lead.view') || auth()->user()->can('crm.access')
                         || auth()->user()->can('crm.schedule') || auth()->user()->can('crm.call_log')
                         || auth()->user()->can('superadmin')) {
-                        $sub->dropdown(
+                        $sub->header(__('crm::lang.leads'));
+                    }
+                    if (auth()->user()->can('crm.lead.view') || auth()->user()->can('crm.access') || auth()->user()->can('superadmin')) {
+                        $sub->url(
+                            route('crm.leads.index'),
                             __('crm::lang.leads'),
-                            function ($leads) {
-                                if (auth()->user()->can('crm.lead.view') || auth()->user()->can('crm.access') || auth()->user()->can('superadmin')) {
-                                    $leads->url(
-                                        route('crm.leads.index'),
-                                        __('crm::lang.leads'),
-                                        ['icon' => 'fa fas fa-user-plus', 'active' => request()->segment(1) == 'crm' && request()->segment(2) == 'leads']
-                                    );
-                                    $leads->url(
-                                        route('crm.pipeline.index'),
-                                        __('crm::lang.pipeline'),
-                                        ['icon' => 'fa fas fa-columns', 'active' => request()->segment(1) == 'crm' && request()->segment(2) == 'pipeline']
-                                    );
-                                }
-                                if (auth()->user()->can('crm.schedule') || auth()->user()->can('crm.access') || auth()->user()->can('superadmin')) {
-                                    $leads->url(
-                                        route('crm.schedules.index'),
-                                        __('crm::lang.follow_ups'),
-                                        ['icon' => 'fa fas fa-calendar-check', 'active' => request()->segment(1) == 'crm' && request()->segment(2) == 'schedules']
-                                    );
-                                }
-                                if (auth()->user()->can('crm.call_log') || auth()->user()->can('crm.access') || auth()->user()->can('superadmin')) {
-                                    $leads->url(
-                                        route('crm.call-logs.index'),
-                                        __('crm::lang.call_log'),
-                                        ['icon' => 'fa fas fa-phone', 'active' => request()->segment(1) == 'crm' && request()->segment(2) == 'call-logs']
-                                    );
-                                }
-                            },
-                            0,
-                            ['icon' => 'fa fas fa-user-plus']
+                            ['icon' => 'fa fas fa-user-plus', 'active' => request()->segment(1) == 'crm' && request()->segment(2) == 'leads']
+                        );
+                        $sub->url(
+                            route('crm.pipeline.index'),
+                            __('crm::lang.pipeline'),
+                            ['icon' => 'fa fas fa-columns', 'active' => request()->segment(1) == 'crm' && request()->segment(2) == 'pipeline']
+                        );
+                    }
+                    if (auth()->user()->can('crm.schedule') || auth()->user()->can('crm.access') || auth()->user()->can('superadmin')) {
+                        $sub->url(
+                            route('crm.schedules.index'),
+                            __('crm::lang.follow_ups'),
+                            ['icon' => 'fa fas fa-calendar-check', 'active' => request()->segment(1) == 'crm' && request()->segment(2) == 'schedules']
+                        );
+                    }
+                    if (auth()->user()->can('crm.call_log') || auth()->user()->can('crm.access') || auth()->user()->can('superadmin')) {
+                        $sub->url(
+                            route('crm.call-logs.index'),
+                            __('crm::lang.call_log'),
+                            ['icon' => 'fa fas fa-phone', 'active' => request()->segment(1) == 'crm' && request()->segment(2) == 'call-logs']
                         );
                     }
 
