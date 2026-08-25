@@ -94,8 +94,12 @@ class HomeController extends Controller
         });
 
         $all_locations = BusinessLocation::forDropdown($business_id)->toArray();
+        $permitted_locations = auth()->user()->permitted_locations();
+        $widgets_start = \Carbon::now()->subDays(29)->format('Y-m-d');
+        $widgets_end = \Carbon::now()->format('Y-m-d');
+        $daily_orders_revenue = $this->getDailyOrdersAndRevenue($business_id, $widgets_start, $widgets_end, $permitted_locations);
 
-        //Chart for sells last 30 days
+        //Chart for sells last 30 days (POS + Online Store + Field Sales)
         $labels = [];
         $all_sell_values = [];
         $dates = [];
@@ -105,13 +109,8 @@ class HomeController extends Controller
 
             $labels[] = date('j M Y', strtotime($date));
 
-            $total_sell_on_date = $sells_this_fy->where('date', $date)->sum('total_sells');
-
-            if (! empty($total_sell_on_date)) {
-                $all_sell_values[] = (float) $total_sell_on_date;
-            } else {
-                $all_sell_values[] = 0;
-            }
+            $row = $daily_orders_revenue->get($date);
+            $all_sell_values[] = $row ? (float) $row->revenue : 0;
         }
 
         //Group sells by location
@@ -151,7 +150,14 @@ class HomeController extends Controller
             'areaspline' => [
                 'fillOpacity' => 0.22,
                 'lineWidth' => 2.75,
-                'marker' => ['enabled' => false, 'radius' => 3, 'states' => ['hover' => ['enabled' => true]]],
+                'marker' => [
+                    'enabled' => true,
+                    'radius' => 3.5,
+                    'symbol' => 'circle',
+                    'lineWidth' => 2,
+                    'lineColor' => '#ffffff',
+                    'states' => ['hover' => ['enabled' => true, 'radius' => 5]],
+                ],
             ],
             'series' => [
                 'type' => 'areaspline',
@@ -251,32 +257,39 @@ class HomeController extends Controller
         $sells_chart_2->dataset(__('home.total_sell'), 'column', $values);
 
         //── Orders / Fulfillment analytics widgets (fixed last-30-days window) ──
-        $permitted_locations = auth()->user()->permitted_locations();
-        $widgets_start = \Carbon::now()->subDays(29)->format('Y-m-d');
-        $widgets_end = \Carbon::now()->format('Y-m-d');
-
-        $orders_by_loc_cache_key = 'home_orders_by_loc_'.$business_id.'_'.auth()->id().'_'.$widgets_start.'_'.$widgets_end;
-        $orders_rows = Cache::remember($orders_by_loc_cache_key, 180, function () use ($business_id, $widgets_start, $widgets_end, $permitted_locations) {
-            return $this->getOrdersCountByLocation($business_id, $widgets_start, $widgets_end, $permitted_locations);
+        $orders_by_channel_cache_key = 'home_orders_by_channel_v2_'.$business_id.'_'.auth()->id().'_'.$widgets_start.'_'.$widgets_end;
+        $orders_rows = Cache::remember($orders_by_channel_cache_key, 180, function () use ($business_id, $widgets_start, $widgets_end, $permitted_locations) {
+            return $this->getOrdersCountByChannel($business_id, $widgets_start, $widgets_end, $permitted_locations);
         });
 
-        // Orders Over Time — daily order count per location, last 30 days
+        // Orders Over Time — daily order count by channel, last 30 days
         $orders_dates = [];
         for ($i = 29; $i >= 0; $i--) {
             $orders_dates[] = \Carbon::now()->subDays($i)->format('Y-m-d');
         }
 
-        $orders_series_by_loc = [];
-        foreach ($all_locations as $loc_id => $loc_name) {
-            $loc_total = (int) $orders_rows->where('location_id', $loc_id)->sum('total_orders');
-            if ($loc_total <= 0) {
-                continue;
-            }
+        $channel_meta = [
+            'pos' => ['label' => __('home.source_pos'), 'color' => '#3b82f6', 'fill' => 'rgba(59,130,246,0.12)'],
+            'online' => ['label' => __('home.source_online'), 'color' => '#8b5cf6', 'fill' => 'rgba(139,92,246,0.12)'],
+            'field' => ['label' => __('home.source_field'), 'color' => '#14b8a6', 'fill' => 'rgba(20,184,166,0.12)'],
+        ];
+
+        $orders_series_by_channel = [];
+        foreach ($channel_meta as $channel => $meta) {
             $values = [];
+            $channel_total = 0;
             foreach ($orders_dates as $date) {
-                $values[] = (int) $orders_rows->where('location_id', $loc_id)->where('date', $date)->sum('total_orders');
+                $cnt = (int) $orders_rows->where('channel', $channel)->where('date', $date)->sum('total_orders');
+                $values[] = $cnt;
+                $channel_total += $cnt;
             }
-            $orders_series_by_loc[$loc_id] = ['label' => $loc_name, 'values' => $values, 'total' => $loc_total];
+            $orders_series_by_channel[$channel] = [
+                'label' => $meta['label'],
+                'values' => $values,
+                'total' => $channel_total,
+                'color' => $meta['color'],
+                'fill' => $meta['fill'],
+            ];
         }
 
         $orders_short_labels = array_map(function ($d) {
@@ -285,7 +298,7 @@ class HomeController extends Controller
 
         $orders_chart = new CommonChart;
         $orders_chart_options = $this->__chartOptions(null);
-        $orders_chart_options['chart']['type'] = 'areaspline';
+        $orders_chart_options['chart']['type'] = 'spline';
         $orders_chart_options['yAxis']['title']['text'] = null;
         $orders_chart_options['yAxis']['gridLineColor'] = '#eef2f7';
         $orders_chart_options['yAxis']['min'] = 0;
@@ -296,8 +309,7 @@ class HomeController extends Controller
         $orders_chart_options['legend']['verticalAlign'] = 'top';
         $orders_chart_options['legend']['symbolRadius'] = 6;
         $orders_chart_options['plotOptions'] = [
-            'areaspline' => [
-                'fillOpacity' => 0.08,
+            'spline' => [
                 'lineWidth' => 2.5,
                 'marker' => [
                     'enabled' => true,
@@ -312,50 +324,28 @@ class HomeController extends Controller
         ];
         $orders_chart->height(260);
         $orders_chart->labels($orders_short_labels)->options($orders_chart_options);
-        $line_palette = ['#3b82f6', '#8b5cf6', '#14b8a6', '#f97316', '#f59e0b', '#22c55e'];
-        $fill_palette = [
-            'rgba(59,130,246,0.12)',
-            'rgba(139,92,246,0.12)',
-            'rgba(20,184,166,0.12)',
-            'rgba(249,115,22,0.12)',
-            'rgba(245,158,11,0.12)',
-            'rgba(34,197,94,0.12)',
-        ];
-        if (! empty($orders_series_by_loc)) {
-            $si = 0;
-            foreach ($orders_series_by_loc as $series) {
-                $c = $line_palette[$si % count($line_palette)];
-                $orders_chart->dataset($series['label'], 'areaspline', $series['values'])
-                    ->options([
-                        'color' => $c,
-                        'fillColor' => $fill_palette[$si % count($fill_palette)],
-                        'marker' => ['fillColor' => $c],
-                    ]);
-                $si++;
-            }
-        } else {
-            $orders_chart->dataset(__('home.total_orders'), 'areaspline', array_fill(0, 30, 0))
-                ->options(['color' => '#3b82f6', 'fillColor' => 'rgba(59,130,246,0.12)']);
+        foreach ($orders_series_by_channel as $series) {
+            $orders_chart->dataset($series['label'], 'spline', $series['values'])
+                ->options([
+                    'color' => $series['color'],
+                    'marker' => ['fillColor' => $series['color']],
+                ]);
         }
 
-        // Orders by Location (donut)
+        // Orders by Source (donut) — always show POS / Online Store / Field Sales
         $orders_by_location = [];
         $orders_by_location_total = 0;
-        foreach ($all_locations as $loc_id => $loc_name) {
-            $loc_total = (int) $orders_rows->where('location_id', $loc_id)->sum('total_orders');
-            if ($loc_total <= 0) {
-                continue;
-            }
-            $orders_by_location[] = ['label' => $loc_name, 'count' => $loc_total];
-            $orders_by_location_total += $loc_total;
+        foreach ($orders_series_by_channel as $channel => $series) {
+            $orders_by_location[] = [
+                'label' => $series['label'],
+                'count' => $series['total'],
+                'color' => $series['color'],
+                'channel' => $channel,
+            ];
+            $orders_by_location_total += $series['total'];
         }
-        usort($orders_by_location, function ($a, $b) {
-            return $b['count'] <=> $a['count'];
-        });
-        $dash_palette = ['#3b82f6', '#8b5cf6', '#14b8a6', '#f97316', '#f59e0b', '#22c55e'];
-        foreach ($orders_by_location as $idx => &$loc_row) {
+        foreach ($orders_by_location as &$loc_row) {
             $loc_row['pct'] = $orders_by_location_total > 0 ? round(($loc_row['count'] / $orders_by_location_total) * 100, 1) : 0;
-            $loc_row['color'] = $dash_palette[$idx % count($dash_palette)];
         }
         unset($loc_row);
 
@@ -376,12 +366,9 @@ class HomeController extends Controller
                 'slicedOffset' => 0,
             ],
         ];
-        $location_donut->height(168);
+        $location_donut->height(140);
         $location_donut->options($location_donut_options);
-        if (! empty($orders_by_location)) {
-            // The package's pie/donut dataset always assigns each point a color — if we don't
-            // pass one explicitly it falls back to its own default (#22292F, near-black) instead
-            // of cycling the chart's `colors` palette. Pass our computed per-location colors.
+        if ($orders_by_location_total > 0) {
             $location_donut->labels(array_column($orders_by_location, 'label'))
                 ->dataset(__('home.total_orders'), 'pie', array_column($orders_by_location, 'count'))
                 ->options(['color' => array_column($orders_by_location, 'color')]);
@@ -406,11 +393,8 @@ class HomeController extends Controller
         // Location Performance mini stats (last 30 days)
         $location_performance = $this->buildLocationPerformance($business_id, $permitted_locations, $all_locations, $widgets_start, $widgets_end);
 
-        // KPI sparklines (last 14 days, business-wide trend indicator)
-        $spark_start = \Carbon::now()->subDays(13)->format('Y-m-d');
-        $spark_end = \Carbon::now()->format('Y-m-d');
-        $daily_orders_revenue = $this->getDailyOrdersAndRevenue($business_id, $spark_start, $spark_end, $permitted_locations);
-        $daily_payment_hours = $this->getDailyAvgPaymentHours($business_id, $spark_start, $spark_end, $permitted_locations);
+        // KPI sparklines (last 14 days from the same 30-day channel series)
+        $daily_payment_hours = $this->getDailyAvgPaymentHours($business_id, \Carbon::now()->subDays(13)->format('Y-m-d'), $widgets_end, $permitted_locations);
 
         $spark_orders = [];
         $spark_revenue = [];
@@ -527,28 +511,21 @@ class HomeController extends Controller
             //NET = TOTAL SALES - INVOICE DUE - EXPENSE
             $output['net'] = $output['total_sell'] - $output['invoice_due'] - $output['total_expense'];
 
-            // Orders / AOV / avg time-to-payment KPIs
+            // Orders / AOV / avg time-to-payment KPIs (POS + Online Store + Field Sales)
             $permitted_locations = auth()->user()->permitted_locations();
-            $total_orders = $this->getOrdersCount($business_id, $start, $end, $location_id, $created_by, $permitted_locations);
-            $output['total_orders'] = $total_orders;
-            $output['avg_order_value'] = $total_orders > 0 ? round($output['total_sell'] / $total_orders, 2) : 0;
+            $pos_orders = $this->getOrdersCount($business_id, $start, $end, $location_id, $created_by, $permitted_locations);
             $output['avg_payment_hours'] = $this->getAvgPaymentHours($business_id, $start, $end, $location_id, $permitted_locations);
 
-            // Online / ecommerce orders in selected period
-            $onlineOrdersQuery = \App\Transaction::where('business_id', $business_id)
-                ->ecommerceOrders()
-                ->whereBetween(\DB::raw('date(transaction_date)'), [$start, $end]);
+            $channel_totals = $this->getOnlineAndFieldTotals($business_id, $start, $end, $location_id, $created_by, $permitted_locations);
+            $output['online_orders'] = $channel_totals['online_orders'];
+            $output['online_orders_amount'] = $channel_totals['online_amount'];
+            $field_orders = $channel_totals['field_orders'];
+            $field_amount = $channel_totals['field_amount'];
 
-            if (! empty($location_id)) {
-                $onlineOrdersQuery->where('location_id', $location_id);
-            }
-            if (! empty($created_by)) {
-                $onlineOrdersQuery->where('created_by', $created_by);
-            }
-
-            $output['online_orders'] = (int) (clone $onlineOrdersQuery)->count();
-            $output['online_orders_amount'] = (float) (clone $onlineOrdersQuery)
-                ->sum('final_total');
+            $output['total_orders'] = $pos_orders + $output['online_orders'] + $field_orders;
+            $output['total_sell'] = $total_sell_inc_tax + $output['online_orders_amount'] + $field_amount;
+            $output['avg_order_value'] = $output['total_orders'] > 0 ? round($output['total_sell'] / $output['total_orders'], 2) : 0;
+            $output['net'] = $output['total_sell'] - $output['invoice_due'] - $output['total_expense'];
 
             // Period-over-period change for dashboard KPI deltas
             $start_date = \Carbon::parse($start);
@@ -567,8 +544,12 @@ class HomeController extends Controller
             $prev_net = $prev_total_sell - $prev_invoice_due - (float) ($prev_txn['total_expense'] ?? 0);
 
             $prev_total_orders = $this->getOrdersCount($business_id, $prev_start, $prev_end_str, $location_id, $created_by, $permitted_locations);
+            $prev_channel = $this->getOnlineAndFieldTotals($business_id, $prev_start, $prev_end_str, $location_id, $created_by, $permitted_locations);
+            $prev_total_orders += $prev_channel['online_orders'] + $prev_channel['field_orders'];
+            $prev_total_sell += $prev_channel['online_amount'] + $prev_channel['field_amount'];
             $prev_avg_order_value = $prev_total_orders > 0 ? $prev_total_sell / $prev_total_orders : 0;
             $prev_avg_payment_hours = $this->getAvgPaymentHours($business_id, $prev_start, $prev_end_str, $location_id, $permitted_locations);
+            $prev_net = $prev_total_sell - $prev_invoice_due - (float) ($prev_txn['total_expense'] ?? 0);
 
             $output['change_pct'] = [
                 'total_sell' => $this->percentChange($output['total_sell'], $prev_total_sell),
@@ -1223,32 +1204,30 @@ class HomeController extends Controller
         $location_id = request()->input('location_id');
         $permitted_locations = auth()->user()->permitted_locations();
 
-        $sells = $this->transactionUtil->getListSells($business_id, 'sell')
-            ->where('transactions.status', 'final');
-
-        if ($permitted_locations != 'all') {
-            $sells->whereIn('transactions.location_id', $permitted_locations);
-        }
-        if (! empty($location_id)) {
-            $sells->where('transactions.location_id', $location_id);
-        }
-
-        $sells->groupBy('transactions.id')->orderBy('transactions.transaction_date', 'desc');
+        $sells = $this->dashboardOrdersQuery($business_id, null, null, $permitted_locations, $location_id, null, 'transactions')
+            ->leftJoin('contacts', 'transactions.contact_id', '=', 'contacts.id')
+            ->select(
+                'transactions.id',
+                'transactions.invoice_no',
+                'transactions.source',
+                'transactions.type',
+                'transactions.status',
+                'transactions.payment_status',
+                'transactions.final_total',
+                'transactions.transaction_date',
+                'contacts.name',
+                'contacts.supplier_business_name'
+            )
+            ->orderBy('transactions.transaction_date', 'desc');
 
         return Datatables::of($sells)
             ->addColumn('action', function ($row) {
-                if (auth()->user()->can('sell.view')) {
-                    return '<a href="#" data-href="'.action([\App\Http\Controllers\SellController::class, 'show'], [$row->id]).'" class="tw-dw-btn tw-dw-btn-xs tw-dw-btn-outline btn-modal" data-container=".view_modal" title="'.e(__('messages.view')).'"><i class="fas fa-eye"></i></a>';
-                }
-
-                return '';
+                return $this->recentOrderLink($row, true);
             })
             ->editColumn('invoice_no', function ($row) {
-                if (auth()->user()->can('sell.view')) {
-                    return '<a href="#" data-href="'.action([\App\Http\Controllers\SellController::class, 'show'], [$row->id]).'" class="btn-modal" data-container=".view_modal">'.e($row->invoice_no).'</a>';
-                }
+                $link = $this->recentOrderLink($row, false);
 
-                return $row->invoice_no;
+                return $link !== '' ? $link : e($row->invoice_no);
             })
             ->editColumn('name', function ($row) {
                 $name = ! empty($row->supplier_business_name) ? $row->supplier_business_name.', '.$row->name : $row->name;
@@ -1256,7 +1235,15 @@ class HomeController extends Controller
                 return e($name);
             })
             ->addColumn('business_location_badge', function ($row) {
-                return '<span class="japs-dash-source-badge">'.e($row->business_location).'</span>';
+                $source = $row->source ?? '';
+                if ($source === 'ecommerce') {
+                    return '<span class="japs-dash-source-badge is-online">'.e(__('home.source_online')).'</span>';
+                }
+                if ($source === 'sale_app') {
+                    return '<span class="japs-dash-source-badge is-field">'.e(__('home.source_field')).'</span>';
+                }
+
+                return '<span class="japs-dash-source-badge is-pos">'.e(__('home.source_pos')).'</span>';
             })
             ->editColumn('payment_status', function ($row) {
                 $payment_status = Transaction::getPaymentStatus($row);
@@ -1281,6 +1268,30 @@ class HomeController extends Controller
             })
             ->rawColumns(['action', 'invoice_no', 'business_location_badge', 'payment_status', 'final_total'])
             ->make(true);
+    }
+
+    /**
+     * View link for a dashboard recent-order row (POS modal vs Online Store page).
+     */
+    private function recentOrderLink($row, $icon_only = false)
+    {
+        $source = $row->source ?? '';
+        $label = $icon_only
+            ? '<i class="fas fa-eye"></i>'
+            : e($row->invoice_no);
+        $btn_class = $icon_only
+            ? 'tw-dw-btn tw-dw-btn-xs tw-dw-btn-outline'
+            : 'btn-modal';
+
+        if ($source === 'ecommerce' && \Illuminate\Support\Facades\Route::has('ecommerce.admin.orders.show')) {
+            return '<a href="'.e(route('ecommerce.admin.orders.show', [$row->id])).'" class="'.($icon_only ? 'tw-dw-btn tw-dw-btn-xs tw-dw-btn-outline' : '').'" title="'.e(__('messages.view')).'">'.$label.'</a>';
+        }
+
+        if (! auth()->user()->can('sell.view')) {
+            return $icon_only ? '' : e($row->invoice_no);
+        }
+
+        return '<a href="#" data-href="'.action([\App\Http\Controllers\SellController::class, 'show'], [$row->id]).'" class="'.$btn_class.' btn-modal" data-container=".view_modal" title="'.e(__('messages.view')).'">'.$label.'</a>';
     }
 
     public function loadMoreNotifications()
@@ -1406,6 +1417,92 @@ class HomeController extends Controller
     }
 
     /**
+     * Daily order count by sales channel (POS / Online Store / Field Sales).
+     */
+    private function getOrdersCountByChannel($business_id, $start, $end, $permitted_locations = null)
+    {
+        $query = $this->dashboardOrdersQuery($business_id, $start, $end, $permitted_locations);
+
+        $channel_case = "CASE
+                WHEN source = 'ecommerce' THEN 'online'
+                WHEN source = 'sale_app' THEN 'field'
+                ELSE 'pos'
+            END";
+
+        return $query->select(
+            DB::raw('DATE(transaction_date) as date'),
+            DB::raw($channel_case.' as channel'),
+            DB::raw('COUNT(*) as total_orders')
+        )
+            ->groupBy(DB::raw($channel_case))
+            ->groupBy(DB::raw('DATE(transaction_date)'))
+            ->get()
+            ->map(function ($row) {
+                $row->date = \Carbon::parse($row->date)->format('Y-m-d');
+                $row->channel = (string) $row->channel;
+
+                return $row;
+            });
+    }
+
+    /**
+     * Online Store + Field Sales counts/amounts for a date range (KPI totals).
+     */
+    private function getOnlineAndFieldTotals($business_id, $start, $end, $location_id = null, $created_by = null, $permitted_locations = null)
+    {
+        $online = $this->dashboardOrdersQuery($business_id, $start, $end, $permitted_locations, $location_id, $created_by)
+            ->where('source', 'ecommerce');
+        $field = $this->dashboardOrdersQuery($business_id, $start, $end, $permitted_locations, $location_id, $created_by)
+            ->where('source', 'sale_app');
+
+        return [
+            'online_orders' => (int) (clone $online)->count(),
+            'online_amount' => (float) (clone $online)->sum('final_total'),
+            'field_orders' => (int) (clone $field)->count(),
+            'field_amount' => (float) (clone $field)->sum('final_total'),
+        ];
+    }
+
+    /**
+     * POS finals + Online Store + Field Sales for dashboard widgets.
+     */
+    private function dashboardOrdersQuery($business_id, $start = null, $end = null, $permitted_locations = null, $location_id = null, $created_by = null, $table = '')
+    {
+        $c = $table !== '' ? $table.'.' : '';
+        $query = Transaction::query()->where($c.'business_id', $business_id);
+        $query->where(function ($q) use ($c) {
+            $q->where(function ($pos) use ($c) {
+                $pos->where($c.'type', 'sell')
+                    ->where($c.'status', 'final')
+                    ->where(function ($s) use ($c) {
+                        $s->whereNull($c.'source')->orWhereNotIn($c.'source', ['ecommerce', 'sale_app']);
+                    });
+            })->orWhere(function ($ecom) use ($c) {
+                $ecom->where($c.'source', 'ecommerce')
+                    ->where($c.'type', 'sales_order')
+                    ->where($c.'status', '!=', 'cancelled');
+            })->orWhere(function ($field) use ($c) {
+                $field->where($c.'source', 'sale_app')->whereIn($c.'type', ['sales_order', 'sell']);
+            });
+        });
+
+        if (! empty($start) && ! empty($end)) {
+            $query->whereBetween($c.'transaction_date', [$start.' 00:00:00', $end.' 23:59:59']);
+        }
+        if (! empty($permitted_locations) && $permitted_locations != 'all') {
+            $query->whereIn($c.'location_id', $permitted_locations);
+        }
+        if (! empty($location_id)) {
+            $query->where($c.'location_id', $location_id);
+        }
+        if (! empty($created_by)) {
+            $query->where($c.'created_by', $created_by);
+        }
+
+        return $query;
+    }
+
+    /**
      * Daily order count per location — mirrors TransactionUtil::getSellsCurrentFy()'s
      * grouping (COUNT instead of SUM), for the Orders Over Time / Orders by Location widgets.
      */
@@ -1436,24 +1533,20 @@ class HomeController extends Controller
      */
     private function getDailyOrdersAndRevenue($business_id, $start, $end, $permitted_locations = null)
     {
-        $query = Transaction::where('business_id', $business_id)
-            ->where('type', 'sell')
-            ->where('status', 'final')
-            ->notEcommerce()
-            ->whereBetween('transaction_date', [$start.' 00:00:00', $end.' 23:59:59']);
-
-        if (! empty($permitted_locations) && $permitted_locations != 'all') {
-            $query->whereIn('location_id', $permitted_locations);
-        }
+        $query = $this->dashboardOrdersQuery($business_id, $start, $end, $permitted_locations);
 
         return $query->select(
             DB::raw('DATE(transaction_date) as date'),
             DB::raw('COUNT(*) as orders_count'),
             DB::raw('SUM(final_total) as revenue')
         )
-            ->groupBy(DB::raw('date(transaction_date)'))
+            ->groupBy(DB::raw('DATE(transaction_date)'))
             ->get()
-            ->keyBy('date');
+            ->mapWithKeys(function ($row) {
+                $date = \Carbon::parse($row->date)->format('Y-m-d');
+
+                return [$date => $row];
+            });
     }
 
     /**
@@ -1499,7 +1592,14 @@ class HomeController extends Controller
     private function buildFulfillmentPipeline($business_id, $permitted_locations, $start, $end, $location_id = null)
     {
         $query = Transaction::where('business_id', $business_id)
-            ->where('type', 'sell')
+            ->where(function ($q) {
+                $q->where('type', 'sell')
+                    ->orWhere(function ($other) {
+                        $other->whereIn('source', ['ecommerce', 'sale_app'])
+                            ->whereIn('type', ['sales_order', 'sell'])
+                            ->where('status', '!=', 'cancelled');
+                    });
+            })
             ->whereBetween('transaction_date', [$start.' 00:00:00', $end.' 23:59:59']);
 
         if (! empty($permitted_locations) && $permitted_locations != 'all') {
@@ -1533,6 +1633,14 @@ class HomeController extends Controller
                 }
             } elseif (array_key_exists($row->status, $stages)) {
                 $stages[$row->status] += (int) $row->cnt;
+            } elseif (in_array($row->status, ['ordered', 'received', 'partial', 'completed'], true)) {
+                if ($row->payment_status === 'paid') {
+                    $stages['final_paid'] += (int) $row->cnt;
+                } elseif ($row->payment_status === 'partial') {
+                    $stages['final_partial'] += (int) $row->cnt;
+                } else {
+                    $stages['final_due'] += (int) $row->cnt;
+                }
             }
         }
 
@@ -1544,33 +1652,15 @@ class HomeController extends Controller
      */
     private function buildLocationPerformance($business_id, $permitted_locations, $all_locations, $start, $end)
     {
-        $has_restriction = ! empty($permitted_locations) && $permitted_locations != 'all';
-
-        $active_locations = (int) Transaction::where('business_id', $business_id)
-            ->where('type', 'sell')->where('status', 'final')->notEcommerce()
-            ->whereBetween('transaction_date', [$start.' 00:00:00', $end.' 23:59:59'])
-            ->when($has_restriction, function ($query) use ($permitted_locations) {
-                $query->whereIn('location_id', $permitted_locations);
-            })
+        $active_locations = (int) $this->dashboardOrdersQuery($business_id, $start, $end, $permitted_locations)
             ->distinct('location_id')->count('location_id');
 
         $today = \Carbon::now()->format('Y-m-d');
-        $sales_today = (int) Transaction::where('business_id', $business_id)
-            ->where('type', 'sell')->where('status', 'final')->notEcommerce()
-            ->whereBetween('transaction_date', [$today.' 00:00:00', $today.' 23:59:59'])
-            ->when($has_restriction, function ($query) use ($permitted_locations) {
-                $query->whereIn('location_id', $permitted_locations);
-            })
-            ->count();
+        $sales_today = (int) $this->dashboardOrdersQuery($business_id, $today, $today, $permitted_locations)->count();
 
         $avg_payment_hours = $this->getAvgPaymentHours($business_id, $start, $end, null, $permitted_locations);
 
-        $sums = Transaction::where('business_id', $business_id)
-            ->where('type', 'sell')->where('status', 'final')->notEcommerce()
-            ->whereBetween('transaction_date', [$start.' 00:00:00', $end.' 23:59:59'])
-            ->when($has_restriction, function ($query) use ($permitted_locations) {
-                $query->whereIn('location_id', $permitted_locations);
-            })
+        $sums = $this->dashboardOrdersQuery($business_id, $start, $end, $permitted_locations)
             ->selectRaw('SUM(final_total) as total_final, SUM(final_total - (SELECT COALESCE(SUM(IF(tp.is_return = 1, -1*tp.amount, tp.amount)), 0) FROM transaction_payments tp WHERE tp.transaction_id = transactions.id)) as total_due')
             ->first();
 
@@ -1587,31 +1677,15 @@ class HomeController extends Controller
         $prev_start = $prev_end->copy()->subDays($days - 1)->format('Y-m-d');
         $prev_end_str = $prev_end->format('Y-m-d');
 
-        $prev_active = (int) Transaction::where('business_id', $business_id)
-            ->where('type', 'sell')->where('status', 'final')->notEcommerce()
-            ->whereBetween('transaction_date', [$prev_start.' 00:00:00', $prev_end_str.' 23:59:59'])
-            ->when($has_restriction, function ($query) use ($permitted_locations) {
-                $query->whereIn('location_id', $permitted_locations);
-            })
+        $prev_active = (int) $this->dashboardOrdersQuery($business_id, $prev_start, $prev_end_str, $permitted_locations)
             ->distinct('location_id')->count('location_id');
 
         $yesterday = \Carbon::now()->subDay()->format('Y-m-d');
-        $sales_yesterday = (int) Transaction::where('business_id', $business_id)
-            ->where('type', 'sell')->where('status', 'final')->notEcommerce()
-            ->whereBetween('transaction_date', [$yesterday.' 00:00:00', $yesterday.' 23:59:59'])
-            ->when($has_restriction, function ($query) use ($permitted_locations) {
-                $query->whereIn('location_id', $permitted_locations);
-            })
-            ->count();
+        $sales_yesterday = (int) $this->dashboardOrdersQuery($business_id, $yesterday, $yesterday, $permitted_locations)->count();
 
         $prev_avg_payment = $this->getAvgPaymentHours($business_id, $prev_start, $prev_end_str, null, $permitted_locations);
 
-        $prev_sums = Transaction::where('business_id', $business_id)
-            ->where('type', 'sell')->where('status', 'final')->notEcommerce()
-            ->whereBetween('transaction_date', [$prev_start.' 00:00:00', $prev_end_str.' 23:59:59'])
-            ->when($has_restriction, function ($query) use ($permitted_locations) {
-                $query->whereIn('location_id', $permitted_locations);
-            })
+        $prev_sums = $this->dashboardOrdersQuery($business_id, $prev_start, $prev_end_str, $permitted_locations)
             ->selectRaw('SUM(final_total) as total_final, SUM(final_total - (SELECT COALESCE(SUM(IF(tp.is_return = 1, -1*tp.amount, tp.amount)), 0) FROM transaction_payments tp WHERE tp.transaction_id = transactions.id)) as total_due')
             ->first();
         $prev_final = (float) ($prev_sums->total_final ?? 0);

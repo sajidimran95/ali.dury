@@ -1582,41 +1582,45 @@ body.japs-dashboard-home .japs-dash-chart-card--location-perf .japs-dash-chart-c
 
 /* Orders by Source: donut left + legend right (matches mock) */
 body.japs-dashboard-home .japs-dash-chart-card--orders-source {
-  overflow: visible;
+  overflow: hidden;
 }
 
 body.japs-dashboard-home .japs-dash-source-body {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   flex: 1 1 auto;
   min-height: 210px;
   width: 100%;
+  min-width: 0;
 }
 
 body.japs-dashboard-home .japs-dash-chart-card--orders-source .japs-dash-payment-chart-wrap {
   position: relative;
-  flex: 0 0 auto;
-  width: 168px;
-  height: 168px;
-  min-width: 168px;
-  min-height: 168px;
-  max-width: 168px;
-  overflow: visible;
+  flex: 0 0 140px;
+  width: 140px;
+  height: 140px;
+  min-width: 140px;
+  min-height: 140px;
+  max-width: 140px;
+  overflow: hidden;
+  z-index: 1;
 }
 
 body.japs-dashboard-home .japs-dash-chart-card--orders-source .japs-dash-payment-chart {
-  width: 168px !important;
-  height: 168px !important;
-  min-height: 168px !important;
+  width: 140px !important;
+  height: 140px !important;
+  min-height: 140px !important;
   position: relative;
-  z-index: 2;
+  z-index: 1;
+  overflow: hidden;
 }
 
 body.japs-dashboard-home .japs-dash-chart-card--orders-source .japs-dash-payment-chart .highcharts-container {
-  width: 168px !important;
-  height: 168px !important;
-  overflow: visible !important;
+  width: 140px !important;
+  height: 140px !important;
+  overflow: hidden !important;
+  z-index: 1 !important;
 }
 
 body.japs-dashboard-home .japs-dash-chart-card--orders-source .japs-dash-donut-center {
@@ -1624,16 +1628,16 @@ body.japs-dashboard-home .japs-dash-chart-card--orders-source .japs-dash-donut-c
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  z-index: 3;
-  width: 88px;
-  max-width: 88px;
+  z-index: 2;
+  width: 84px;
+  max-width: 84px;
   text-align: center;
   line-height: 1.15;
   pointer-events: none;
 }
 
 body.japs-dashboard-home .japs-dash-chart-card--orders-source .japs-dash-donut-center__amount {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 800;
   color: #0f172a;
   letter-spacing: -0.03em;
@@ -1643,66 +1647,72 @@ body.japs-dashboard-home .japs-dash-chart-card--orders-source .japs-dash-donut-c
 
 body.japs-dashboard-home .japs-dash-chart-card--orders-source .japs-dash-donut-center__label {
   margin-top: 2px;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 500;
   color: #64748b;
   line-height: 1.2;
-  white-space: nowrap;
+  white-space: normal;
 }
 
 body.japs-dashboard-home .japs-dash-source-legend {
   list-style: none;
   margin: 0;
   padding: 0;
+  position: relative;
+  z-index: 4;
   flex: 1 1 auto;
+  min-width: 118px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  min-width: 0;
+  gap: 10px;
   justify-content: center;
 }
 
 body.japs-dashboard-home .japs-dash-source-legend__item {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
+  display: grid;
+  grid-template-columns: 10px minmax(0, 1fr) auto;
+  column-gap: 8px;
+  align-items: center;
+  width: 100%;
 }
 
 body.japs-dashboard-home .japs-dash-source-legend__swatch {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  margin-top: 4px;
   flex-shrink: 0;
-}
-
-body.japs-dashboard-home .japs-dash-source-legend__meta {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
 }
 
 body.japs-dashboard-home .japs-dash-source-legend__name {
   font-size: 13px;
   font-weight: 600;
   color: #334155;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  line-height: 1.25;
+  overflow: visible;
+  white-space: normal;
 }
 
 body.japs-dashboard-home .japs-dash-source-legend__nums {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
   font-size: 12.5px;
   font-weight: 700;
   color: #0f172a;
+  line-height: 1.15;
+  white-space: nowrap;
+}
+
+body.japs-dashboard-home .japs-dash-source-legend__nums b {
+  font-weight: 700;
 }
 
 body.japs-dashboard-home .japs-dash-source-legend__nums em {
   font-style: normal;
   font-weight: 500;
   color: #94a3b8;
-  margin-left: 4px;
+  font-size: 11px;
+  margin: 0;
 }
 
 @media (max-width: 767px) {
@@ -1736,6 +1746,21 @@ body.japs-dashboard-home .japs-dash-source-badge {
   white-space: nowrap;
 }
 
+body.japs-dashboard-home .japs-dash-source-badge.is-pos {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+body.japs-dashboard-home .japs-dash-source-badge.is-online {
+  background: #f5f3ff;
+  color: #6d28d9;
+}
+
+body.japs-dashboard-home .japs-dash-source-badge.is-field {
+  background: #f0fdfa;
+  color: #0f766e;
+}
+
 body.japs-dashboard-home .japs-dash-recent-card__export-btn {
   display: inline-flex;
   align-items: center;
@@ -1765,9 +1790,16 @@ body.japs-dashboard-home .japs-dash-product-avatar {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
-  font-weight: 700;
+  overflow: hidden;
+  background: #f1f5f9;
   flex-shrink: 0;
+}
+
+body.japs-dashboard-home .japs-dash-product-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 body.japs-dashboard-home .japs-dash-period-chip {
@@ -1807,10 +1839,6 @@ body.japs-dashboard-home .japs-dash-filter-wrap .select2-selection {
   padding-left: 28px !important;
   height: 40px !important;
   border-radius: 8px !important;
-}
-
-body.japs-dashboard-home .japs-dash-toolbar-attendance {
-  display: none;
 }
 
 body.japs-dashboard-home .japs-dash-status-pill {

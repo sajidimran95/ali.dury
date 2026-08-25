@@ -45,16 +45,15 @@
                                 <svg aria-hidden="true" class="tw-size-3.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"><path d="M6 9l6 6l6 -6"/></svg>
                             </button>
                         @endif
+                        <div class="japs-dash-toolbar-attendance">
+                            @include('home.partials.attendance_clock')
+                        </div>
                     </div>
-                </div>
-                <div class="japs-dash-toolbar-attendance">
-                    @include('home.partials.attendance_clock')
                 </div>
 
                 @if (auth()->user()->can('dashboard.data') && $is_admin)
                     @php
                         $card_sells = action([\App\Http\Controllers\SellController::class, 'index']);
-                        $dash_palette = ['#3b82f6', '#8b5cf6', '#14b8a6', '#f97316', '#f59e0b', '#22c55e'];
                         $pipeline_stage_meta = [
                             'draft' => ['label' => __('sale.draft'), 'color' => '#3b82f6'],
                             'quotation' => ['label' => __('lang_v1.quotation'), 'color' => '#8b5cf6'],
@@ -146,16 +145,17 @@
                                     </div>
                                     <div class="japs-dash-donut-center">
                                         <div class="japs-dash-donut-center__amount">{{ number_format(collect($orders_by_location)->sum('count')) }}</div>
-                                        <div class="japs-dash-donut-center__label">{{ __('home.orders') }}</div>
+                                        <div class="japs-dash-donut-center__label">{{ __('home.total_orders') }}</div>
                                     </div>
                                 </div>
                                 <ul class="japs-dash-source-legend">
                                     @forelse ($orders_by_location as $loc)
                                         <li class="japs-dash-source-legend__item">
                                             <span class="japs-dash-source-legend__swatch" style="background: {{ $loc['color'] }}"></span>
-                                            <span class="japs-dash-source-legend__meta">
-                                                <span class="japs-dash-source-legend__name">{{ $loc['label'] }}</span>
-                                                <span class="japs-dash-source-legend__nums">{{ number_format($loc['count']) }}@if($loc['pct'] > 0) <em>{{ $loc['pct'] }}%</em>@endif</span>
+                                            <span class="japs-dash-source-legend__name">{{ $loc['label'] }}</span>
+                                            <span class="japs-dash-source-legend__nums">
+                                                <b>{{ number_format($loc['count']) }}</b>
+                                                @if($loc['pct'] > 0)<em>{{ $loc['pct'] }}%</em>@endif
                                             </span>
                                         </li>
                                     @empty
@@ -199,8 +199,19 @@
                             </div>
                             <div class="japs-dash-bar-list">
                                 @forelse ($top_products as $tp_idx => $product)
+                                    @php
+                                        $tp_img = asset('/img/default.png');
+                                        if (! empty($product->product_image)) {
+                                            $tp_path = public_path('uploads/'.config('constants.product_img_path').'/'.$product->product_image);
+                                            if (is_file($tp_path)) {
+                                                $tp_img = asset('/uploads/'.config('constants.product_img_path').'/'.rawurlencode($product->product_image));
+                                            }
+                                        }
+                                    @endphp
                                     <div class="japs-dash-bar-list__row japs-dash-bar-list__row--product">
-                                        <span class="japs-dash-product-avatar" style="background: {{ $dash_palette[$tp_idx % count($dash_palette)] }}22; color: {{ $dash_palette[$tp_idx % count($dash_palette)] }}">{{ strtoupper(substr($product->product, 0, 1)) }}</span>
+                                        <span class="japs-dash-product-avatar">
+                                            <img src="{{ $tp_img }}" alt="" onerror="this.src='{{ asset('/img/default.png') }}'">
+                                        </span>
                                         <span class="japs-dash-bar-list__label" title="{{ $product->product }}">{{ \Illuminate\Support\Str::limit($product->product, 22) }}</span>
                                         <span class="japs-dash-bar-list__track">
                                             <span class="japs-dash-bar-list__fill" style="width: {{ $top_products_max > 0 ? round(($product->total_unit_sold / $top_products_max) * 100, 1) : 0 }}%; background: #3b82f6;"></span>

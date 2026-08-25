@@ -79,4 +79,7 @@ return [
     'orders' => 'Orders',
     'units_sold' => 'units sold',
     'source' => 'Source',
+    'source_pos' => 'POS',
+    'source_online' => 'Online Store',
+    'source_field' => 'Field Sales',
 ];

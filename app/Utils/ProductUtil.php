@@ -735,8 +735,15 @@ class ProductUtil extends Util
                     ->join('products as p', 'tsl.product_id', '=', 'p.id')
                     ->leftjoin('units as u', 'u.id', '=', 'p.unit_id')
                     ->where('transactions.business_id', $business_id)
-                    ->where('transactions.type', 'sell')
-                    ->where('transactions.status', 'final');
+                    ->where(function ($q) {
+                        $q->where(function ($pos) {
+                            $pos->where('transactions.type', 'sell')
+                                ->where('transactions.status', 'final');
+                        })->orWhere(function ($other) {
+                            $other->whereIn('transactions.source', ['ecommerce', 'sale_app'])
+                                ->whereIn('transactions.type', ['sales_order', 'sell']);
+                        });
+                    });
 
         $permitted_locations = auth()->user()->permitted_locations();
         if ($permitted_locations != 'all') {
@@ -786,7 +793,8 @@ class ProductUtil extends Util
             DB::raw('(SUM(tsl.quantity) - COALESCE(SUM(tsl.quantity_returned), 0)) as total_unit_sold'),
             'p.name as product',
             'u.short_name as unit',
-            'p.sku'
+            'p.sku',
+            'p.image as product_image'
         )->whereNull('tsl.parent_sell_line_id')
                         ->groupBy('tsl.product_id')
                         ->orderBy('total_unit_sold', 'desc')
