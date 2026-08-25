@@ -101,174 +101,229 @@ class AdminSidebarMenu
     }
 
     /**
-     * Zoho-style Items submenu (products, categories, price lists).
+     * Inventory submenu grouped to match requirements PDF.
+     * All existing items kept — only rearranged.
      */
     protected function addItemsMenuItems($sub): void
     {
-        if (auth()->user()->can('product.view')) {
-            $productAttrs = [
-                'icon' => '',
-                'active' => request()->segment(1) == 'products' && request()->segment(2) == '',
-            ];
-            if (auth()->user()->can('product.create')) {
-                $productAttrs['add_url'] = action([\App\Http\Controllers\ProductController::class, 'create']);
-                $productAttrs['add_label'] = __('product.add_product');
-                $productAttrs['active'] = request()->segment(1) == 'products' && in_array(request()->segment(2), [null, 'create'], true);
-            }
-            $sub->url(
-                action([\App\Http\Controllers\ProductController::class, 'index']),
-                __('lang_v1.list_products'),
-                $productAttrs
-            );
-        }
-        if (auth()->user()->can('product.create')) {
-            $sub->url(
-                action([\App\Http\Controllers\SellingPriceGroupController::class, 'updateProductPrice']),
-                __('lang_v1.update_product_price'),
-                ['icon' => '', 'active' => request()->segment(1) == 'update-product-price']
-            );
-        }
-        if (auth()->user()->can('product.view')) {
-            $sub->url(
-                action([\App\Http\Controllers\LabelsController::class, 'show']),
-                __('barcode.print_labels'),
-                ['icon' => '', 'active' => request()->segment(1) == 'labels' && request()->segment(2) == 'show']
-            );
-        }
-        if (auth()->user()->can('product.create')) {
-            $variationAttrs = [
-                'icon' => '',
-                'active' => request()->segment(1) == 'variation-templates',
-            ];
-            $variationAttrs = $this->withQuickAddModal(
-                $variationAttrs,
-                action([\App\Http\Controllers\VariationTemplateController::class, 'create']),
-                __('product.add_variation')
-            );
-            $sub->url(
-                action([\App\Http\Controllers\VariationTemplateController::class, 'index']),
-                __('product.variations'),
-                $variationAttrs
-            );
-            $sub->url(
-                action([\App\Http\Controllers\ImportProductsController::class, 'index']),
-                __('product.import_products'),
-                ['icon' => '', 'active' => request()->segment(1) == 'import-products']
-            );
-        }
-        if (auth()->user()->can('product.create')) {
-            $spgAttrs = [
-                'icon' => '',
-                'active' => request()->segment(1) == 'selling-price-group',
-            ];
-            $spgAttrs = $this->withQuickAddModal(
-                $spgAttrs,
-                action([\App\Http\Controllers\SellingPriceGroupController::class, 'create']),
-                __('lang_v1.add_selling_price_group')
-            );
-            $sub->url(
-                action([\App\Http\Controllers\SellingPriceGroupController::class, 'index']),
-                __('lang_v1.selling_price_group'),
-                $spgAttrs
-            );
-        }
-        if (auth()->user()->can('unit.view') || auth()->user()->can('unit.create')) {
-            $unitAttrs = [
-                'icon' => '',
-                'active' => request()->segment(1) == 'units',
-            ];
-            if (auth()->user()->can('unit.create')) {
-                $unitAttrs = $this->withQuickAddModal(
-                    $unitAttrs,
-                    action([\App\Http\Controllers\UnitController::class, 'create']),
-                    __('unit.add_unit')
-                );
-            }
-            $sub->url(
-                action([\App\Http\Controllers\UnitController::class, 'index']),
-                __('unit.units'),
-                $unitAttrs
-            );
-        }
-        if (auth()->user()->can('category.view') || auth()->user()->can('category.create')) {
-            $categoryAttrs = [
-                'icon' => '',
-                'active' => request()->segment(1) == 'taxonomies' && request()->get('type') == 'product',
-            ];
-            if (auth()->user()->can('category.create')) {
-                $categoryAttrs = $this->withQuickAddModal(
-                    $categoryAttrs,
-                    action([\App\Http\Controllers\TaxonomyController::class, 'create']) . '?type=product',
-                    __('category.add_category')
-                );
-            }
-            $sub->url(
-                action([\App\Http\Controllers\TaxonomyController::class, 'index']) . '?type=product',
-                __('category.categories'),
-                $categoryAttrs
-            );
-        }
-        if (auth()->user()->can('brand.view') || auth()->user()->can('brand.create')) {
-            $brandAttrs = [
-                'icon' => '',
-                'active' => request()->segment(1) == 'brands',
-            ];
-            if (auth()->user()->can('brand.create')) {
-                $brandAttrs = $this->withQuickAddModal(
-                    $brandAttrs,
-                    action([\App\Http\Controllers\BrandController::class, 'create']),
-                    __('brand.add_brand')
-                );
-            }
-            $sub->url(
-                action([\App\Http\Controllers\BrandController::class, 'index']),
-                __('brand.brands'),
-                $brandAttrs
-            );
-        }
-
-        if (auth()->user()->can('shipping_method.view') || auth()->user()->can('shipping_method.create')) {
-            $sub->url(
-                action([\App\Http\Controllers\ShippingMethodController::class, 'index']),
-                __('lang_v1.shipping_methods'),
-                [
-                    'icon' => '',
-                    'active' => request()->segment(1) == 'shipping-methods',
-                    'data-search-terms' => 'shipping method methods carrier carriers shipment ship delivery freight ups fedex usps dhl',
-                ]
-            );
-        }
-
-        $warrantyAttrs = [
-            'icon' => '',
-            'active' => request()->segment(1) == 'warranties',
-        ];
-        if (auth()->user()->can('product.create')) {
-            $warrantyAttrs = $this->withQuickAddModal(
-                $warrantyAttrs,
-                action([\App\Http\Controllers\WarrantyController::class, 'create']),
-                __('lang_v1.add_warranty')
-            );
-        }
-        $sub->url(
-            action([\App\Http\Controllers\WarrantyController::class, 'index']),
-            __('lang_v1.warranties'),
-            $warrantyAttrs
-        );
-    }
-
-    protected function hasItemsMenu(): bool
-    {
-        return auth()->user()->can('product.view') || auth()->user()->can('product.create') ||
-            auth()->user()->can('brand.view') || auth()->user()->can('unit.view') ||
-            auth()->user()->can('category.view') || auth()->user()->can('brand.create') ||
-            auth()->user()->can('unit.create') || auth()->user()->can('category.create');
+        // Groups are built in addInventoryGroupedMenu() — kept for hasItemsMenu compatibility.
     }
 
     /**
-     * Zoho-style Inventory submenu: stock movements and adjustments.
+     * Full Inventory dropdown body: Inventory / Product Catalog / Pricing / Import / Shipping.
      */
-    protected function addInventoryMenuItems($sub, array $enabled_modules): void
+    protected function addInventoryGroupedMenu($sub, array $enabled_modules): void
+    {
+        // —— Inventory ——
+        $sub->dropdown(
+            __('lang_v1.menu_inventory'),
+            function ($g) use ($enabled_modules) {
+                if (auth()->user()->can('product.view') || auth()->user()->can('dashboard.data') || auth()->user()->can('stock_report.view')) {
+                    $g->url(
+                        action([\App\Http\Controllers\InventoryDashboardController::class, 'index']),
+                        __('lang_v1.inventory_dashboard'),
+                        ['icon' => '', 'active' => request()->segment(1) == 'inventory' && (request()->segment(2) == null || request()->segment(2) == 'dashboard')]
+                    );
+                }
+                if (auth()->user()->can('product.view')) {
+                    $productAttrs = [
+                        'icon' => '',
+                        'active' => request()->segment(1) == 'products' && request()->segment(2) == '',
+                    ];
+                    if (auth()->user()->can('product.create')) {
+                        $productAttrs['add_url'] = action([\App\Http\Controllers\ProductController::class, 'create']);
+                        $productAttrs['add_label'] = __('product.add_product');
+                        $productAttrs['active'] = request()->segment(1) == 'products' && in_array(request()->segment(2), [null, 'create'], true);
+                    }
+                    $g->url(
+                        action([\App\Http\Controllers\ProductController::class, 'index']),
+                        __('sale.products'),
+                        $productAttrs
+                    );
+                }
+                $this->addInventoryStockLinks($g, $enabled_modules);
+            },
+            0,
+            ['icon' => '']
+        );
+
+        // —— Product Catalog ——
+        $sub->dropdown(
+            __('lang_v1.menu_product_catalog'),
+            function ($g) {
+                if (auth()->user()->can('product.create')) {
+                    $variationAttrs = [
+                        'icon' => '',
+                        'active' => request()->segment(1) == 'variation-templates',
+                    ];
+                    $variationAttrs = $this->withQuickAddModal(
+                        $variationAttrs,
+                        action([\App\Http\Controllers\VariationTemplateController::class, 'create']),
+                        __('product.add_variation')
+                    );
+                    $g->url(
+                        action([\App\Http\Controllers\VariationTemplateController::class, 'index']),
+                        __('product.variations'),
+                        $variationAttrs
+                    );
+                }
+                if (auth()->user()->can('category.view') || auth()->user()->can('category.create')) {
+                    $categoryAttrs = [
+                        'icon' => '',
+                        'active' => request()->segment(1) == 'taxonomies' && request()->get('type') == 'product',
+                    ];
+                    if (auth()->user()->can('category.create')) {
+                        $categoryAttrs = $this->withQuickAddModal(
+                            $categoryAttrs,
+                            action([\App\Http\Controllers\TaxonomyController::class, 'create']) . '?type=product',
+                            __('category.add_category')
+                        );
+                    }
+                    $g->url(
+                        action([\App\Http\Controllers\TaxonomyController::class, 'index']) . '?type=product',
+                        __('category.categories'),
+                        $categoryAttrs
+                    );
+                }
+                if (auth()->user()->can('brand.view') || auth()->user()->can('brand.create')) {
+                    $brandAttrs = [
+                        'icon' => '',
+                        'active' => request()->segment(1) == 'brands',
+                    ];
+                    if (auth()->user()->can('brand.create')) {
+                        $brandAttrs = $this->withQuickAddModal(
+                            $brandAttrs,
+                            action([\App\Http\Controllers\BrandController::class, 'create']),
+                            __('brand.add_brand')
+                        );
+                    }
+                    $g->url(
+                        action([\App\Http\Controllers\BrandController::class, 'index']),
+                        __('brand.brands'),
+                        $brandAttrs
+                    );
+                }
+                if (auth()->user()->can('unit.view') || auth()->user()->can('unit.create')) {
+                    $unitAttrs = [
+                        'icon' => '',
+                        'active' => request()->segment(1) == 'units',
+                    ];
+                    if (auth()->user()->can('unit.create')) {
+                        $unitAttrs = $this->withQuickAddModal(
+                            $unitAttrs,
+                            action([\App\Http\Controllers\UnitController::class, 'create']),
+                            __('unit.add_unit')
+                        );
+                    }
+                    $g->url(
+                        action([\App\Http\Controllers\UnitController::class, 'index']),
+                        __('unit.units'),
+                        $unitAttrs
+                    );
+                }
+                $warrantyAttrs = [
+                    'icon' => '',
+                    'active' => request()->segment(1) == 'warranties',
+                ];
+                if (auth()->user()->can('product.create')) {
+                    $warrantyAttrs = $this->withQuickAddModal(
+                        $warrantyAttrs,
+                        action([\App\Http\Controllers\WarrantyController::class, 'create']),
+                        __('lang_v1.add_warranty')
+                    );
+                }
+                $g->url(
+                    action([\App\Http\Controllers\WarrantyController::class, 'index']),
+                    __('lang_v1.warranties'),
+                    $warrantyAttrs
+                );
+            },
+            0,
+            ['icon' => '']
+        );
+
+        // —— Pricing & Labels ——
+        if (auth()->user()->can('product.create') || auth()->user()->can('product.view')) {
+            $sub->dropdown(
+                __('lang_v1.menu_pricing_labels'),
+                function ($g) {
+                    if (auth()->user()->can('product.create')) {
+                        $g->url(
+                            action([\App\Http\Controllers\SellingPriceGroupController::class, 'updateProductPrice']),
+                            __('lang_v1.update_product_price'),
+                            ['icon' => '', 'active' => request()->segment(1) == 'update-product-price']
+                        );
+                    }
+                    if (auth()->user()->can('product.create')) {
+                        $spgAttrs = [
+                            'icon' => '',
+                            'active' => request()->segment(1) == 'selling-price-group',
+                        ];
+                        $spgAttrs = $this->withQuickAddModal(
+                            $spgAttrs,
+                            action([\App\Http\Controllers\SellingPriceGroupController::class, 'create']),
+                            __('lang_v1.add_selling_price_group')
+                        );
+                        $g->url(
+                            action([\App\Http\Controllers\SellingPriceGroupController::class, 'index']),
+                            __('lang_v1.selling_price_group'),
+                            $spgAttrs
+                        );
+                    }
+                    if (auth()->user()->can('product.view')) {
+                        $g->url(
+                            action([\App\Http\Controllers\LabelsController::class, 'show']),
+                            __('barcode.print_labels'),
+                            ['icon' => '', 'active' => request()->segment(1) == 'labels' && request()->segment(2) == 'show']
+                        );
+                    }
+                },
+                0,
+                ['icon' => '']
+            );
+        }
+
+        // —— Import Data ——
+        if (auth()->user()->can('product.create')) {
+            $sub->dropdown(
+                __('lang_v1.menu_import_data'),
+                function ($g) {
+                    $g->url(
+                        action([\App\Http\Controllers\ImportProductsController::class, 'index']),
+                        __('product.import_products'),
+                        ['icon' => '', 'active' => request()->segment(1) == 'import-products']
+                    );
+                },
+                0,
+                ['icon' => '']
+            );
+        }
+
+        // —— Shipping Settings ——
+        if (auth()->user()->can('shipping_method.view') || auth()->user()->can('shipping_method.create')) {
+            $sub->dropdown(
+                __('lang_v1.menu_shipping_settings'),
+                function ($g) {
+                    $g->url(
+                        action([\App\Http\Controllers\ShippingMethodController::class, 'index']),
+                        __('lang_v1.shipping_methods'),
+                        [
+                            'icon' => '',
+                            'active' => request()->segment(1) == 'shipping-methods',
+                            'data-search-terms' => 'shipping method methods carrier carriers shipment ship delivery freight ups fedex usps dhl',
+                        ]
+                    );
+                },
+                0,
+                ['icon' => '']
+            );
+        }
+    }
+
+    /**
+     * Stock transfers / adjustments / opening stock (Inventory group).
+     */
+    protected function addInventoryStockLinks($sub, array $enabled_modules): void
     {
         if (in_array('stock_transfers', $enabled_modules) && (auth()->user()->can('stock_transfer.view') || auth()->user()->can('stock_transfer.create') || auth()->user()->can('stock_transfer.view_own'))) {
             if (auth()->user()->can('stock_transfer.view') || auth()->user()->can('stock_transfer.view_own')) {
@@ -283,7 +338,7 @@ class AdminSidebarMenu
                 }
                 $sub->url(
                     action([\App\Http\Controllers\StockTransferController::class, 'index']),
-                    __('lang_v1.list_stock_transfers'),
+                    __('lang_v1.stock_transfers'),
                     $transferAttrs
                 );
             }
@@ -302,7 +357,7 @@ class AdminSidebarMenu
                 }
                 $sub->url(
                     action([\App\Http\Controllers\StockAdjustmentController::class, 'index']),
-                    __('stock_adjustment.list'),
+                    __('stock_adjustment.stock_adjustments'),
                     $adjustAttrs
                 );
             }
@@ -311,10 +366,27 @@ class AdminSidebarMenu
         if (auth()->user()->can('product.opening_stock')) {
             $sub->url(
                 action([\App\Http\Controllers\ImportOpeningStockController::class, 'index']),
-                __('lang_v1.import_opening_stock'),
+                __('lang_v1.opening_stock'),
                 ['icon' => '', 'active' => request()->segment(1) == 'import-opening-stock']
             );
         }
+    }
+
+    protected function hasItemsMenu(): bool
+    {
+        return auth()->user()->can('product.view') || auth()->user()->can('product.create') ||
+            auth()->user()->can('brand.view') || auth()->user()->can('unit.view') ||
+            auth()->user()->can('category.view') || auth()->user()->can('brand.create') ||
+            auth()->user()->can('unit.create') || auth()->user()->can('category.create') ||
+            auth()->user()->can('shipping_method.view') || auth()->user()->can('shipping_method.create');
+    }
+
+    /**
+     * @deprecated Use addInventoryStockLinks — kept so hasInventoryMenu stays accurate.
+     */
+    protected function addInventoryMenuItems($sub, array $enabled_modules): void
+    {
+        $this->addInventoryStockLinks($sub, $enabled_modules);
     }
 
     protected function hasInventoryMenu(array $enabled_modules): bool
@@ -386,21 +458,12 @@ class AdminSidebarMenu
 
             $menu->url(action([\App\Http\Controllers\HomeController::class, 'index']), __('home.home'), ['icon' => '<svg xmlns="http://www.w3.org/2000/svg" class="tw-size-5 tw-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9.5"/></svg>', 'active' => request()->segment(1) == 'home'])->order(10);
 
-            // Inventory (flat: dashboard + products + stock links)
+            // Inventory (grouped: Inventory / Product Catalog / Pricing / Import / Shipping)
             if ($this->hasItemsMenu() || $this->hasInventoryMenu($enabled_modules) || auth()->user()->can('product.view') || auth()->user()->can('dashboard.data')) {
                 $menu->dropdown(
                     __('lang_v1.menu_inventory'),
                     function ($sub) use ($enabled_modules) {
-                        if (auth()->user()->can('product.view') || auth()->user()->can('dashboard.data') || auth()->user()->can('stock_report.view')) {
-                            $sub->url(
-                                action([\App\Http\Controllers\InventoryDashboardController::class, 'index']),
-                                __('lang_v1.inventory_dashboard'),
-                                ['icon' => '', 'active' => request()->segment(1) == 'inventory' && (request()->segment(2) == null || request()->segment(2) == 'dashboard')]
-                            );
-                        }
-
-                        $this->addItemsMenuItems($sub);
-                        $this->addInventoryMenuItems($sub, $enabled_modules);
+                        $this->addInventoryGroupedMenu($sub, $enabled_modules);
                     },
                     ['icon' => '<svg aria-hidden="true" class="tw-size-5 tw-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>', 'id' => 'tour_step5']
                 )->order(20);

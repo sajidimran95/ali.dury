@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Aug 18, 2026 at 04:48 PM
+-- Generation Time: Aug 25, 2026 at 04:14 PM
 -- Server version: 8.4.3
 -- PHP Version: 8.4.2
 
@@ -310,7 +310,14 @@ INSERT INTO `activity_log` (`id`, `log_name`, `description`, `subject_id`, `subj
 (200, 'default', 'logout', 3, 'App\\User', NULL, 1, 3, 'App\\User', '[]', NULL, '2026-08-17 03:49:39', '2026-08-17 03:49:39'),
 (201, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-08-17 03:49:54', '2026-08-17 03:49:54'),
 (202, 'default', 'logout', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-08-17 04:27:29', '2026-08-17 04:27:29'),
-(203, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-08-18 03:29:55', '2026-08-18 03:29:55');
+(203, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-08-18 03:29:55', '2026-08-18 03:29:55'),
+(204, 'default', 'added', 175, 'App\\Transaction', NULL, 1, 1, 'App\\User', '{\"attributes\":{\"type\":\"sell\",\"status\":\"final\",\"payment_status\":\"paid\",\"final_total\":5.49}}', NULL, '2026-08-18 07:09:23', '2026-08-18 07:09:23'),
+(205, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-08-19 03:19:41', '2026-08-19 03:19:41'),
+(206, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-08-21 05:51:05', '2026-08-21 05:51:05'),
+(207, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-08-24 03:29:30', '2026-08-24 03:29:30'),
+(208, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-08-24 08:11:21', '2026-08-24 08:11:21'),
+(209, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-08-25 03:02:27', '2026-08-25 03:02:27'),
+(210, 'default', 'added', 176, 'App\\Transaction', NULL, 1, 1, 'App\\User', '{\"attributes\":{\"type\":\"sell\",\"status\":\"final\",\"payment_status\":\"paid\",\"final_total\":140.25}}', NULL, '2026-08-25 03:47:01', '2026-08-25 03:47:01');
 
 -- --------------------------------------------------------
 
@@ -549,6 +556,9 @@ CREATE TABLE `business_locations` (
   `state` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `city` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `zip_code` char(7) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `latitude` decimal(10,7) DEFAULT NULL,
+  `longitude` decimal(10,7) DEFAULT NULL,
+  `clock_radius_meters` int UNSIGNED DEFAULT NULL,
   `invoice_scheme_id` int UNSIGNED NOT NULL,
   `sale_invoice_scheme_id` int DEFAULT NULL,
   `invoice_layout_id` int UNSIGNED NOT NULL,
@@ -577,8 +587,8 @@ CREATE TABLE `business_locations` (
 -- Dumping data for table `business_locations`
 --
 
-INSERT INTO `business_locations` (`id`, `business_id`, `location_id`, `name`, `landmark`, `country`, `state`, `city`, `zip_code`, `invoice_scheme_id`, `sale_invoice_scheme_id`, `invoice_layout_id`, `sale_invoice_layout_id`, `selling_price_group_id`, `print_receipt_on_invoice`, `receipt_printer_type`, `printer_id`, `mobile`, `alternate_number`, `email`, `website`, `featured_products`, `is_active`, `default_payment_accounts`, `custom_field1`, `custom_field2`, `custom_field3`, `custom_field4`, `deleted_at`, `created_at`, `updated_at`) VALUES
-(1, 1, 'BL0001', 'Japs POS', 'New York', 'USA', 'New York', 'New York', '11011', 1, 1, 1, 1, NULL, 1, 'browser', NULL, NULL, NULL, NULL, NULL, NULL, 1, '{\"cash\":{\"is_enabled\":\"1\"},\"card\":{\"is_enabled\":\"1\"},\"cheque\":{\"is_enabled\":\"1\"},\"bank_transfer\":{\"is_enabled\":\"1\"},\"other\":{\"is_enabled\":\"1\"}}', NULL, NULL, NULL, NULL, NULL, '2026-06-04 16:29:55', '2026-08-05 15:25:24');
+INSERT INTO `business_locations` (`id`, `business_id`, `location_id`, `name`, `landmark`, `country`, `state`, `city`, `zip_code`, `latitude`, `longitude`, `clock_radius_meters`, `invoice_scheme_id`, `sale_invoice_scheme_id`, `invoice_layout_id`, `sale_invoice_layout_id`, `selling_price_group_id`, `print_receipt_on_invoice`, `receipt_printer_type`, `printer_id`, `mobile`, `alternate_number`, `email`, `website`, `featured_products`, `is_active`, `default_payment_accounts`, `custom_field1`, `custom_field2`, `custom_field3`, `custom_field4`, `deleted_at`, `created_at`, `updated_at`) VALUES
+(1, 1, 'BL0001', 'Japs POS', 'New York', 'USA', 'New York', 'New York', '11011', NULL, NULL, NULL, 1, 1, 1, 1, NULL, 1, 'browser', NULL, NULL, NULL, NULL, NULL, NULL, 1, '{\"cash\":{\"is_enabled\":\"1\"},\"card\":{\"is_enabled\":\"1\"},\"cheque\":{\"is_enabled\":\"1\"},\"bank_transfer\":{\"is_enabled\":\"1\"},\"other\":{\"is_enabled\":\"1\"}}', NULL, NULL, NULL, NULL, NULL, '2026-06-04 16:29:55', '2026-08-05 15:25:24');
 
 -- --------------------------------------------------------
 
@@ -729,7 +739,9 @@ INSERT INTO `cash_register_transactions` (`id`, `cash_register_id`, `amount`, `p
 (82, 2, 9.8900, 'card', 'credit', 'sell', 140, NULL, '2026-08-12 07:06:38', '2026-08-12 07:06:38'),
 (83, 2, 396.0000, 'cash', 'credit', 'sell', 141, NULL, '2026-08-12 07:13:57', '2026-08-12 07:13:57'),
 (84, 2, 79.1100, 'cash', 'credit', 'sell', 148, NULL, '2026-08-14 02:01:30', '2026-08-14 02:01:30'),
-(85, 2, 168.8300, 'cash', 'credit', 'sell', 149, NULL, '2026-08-14 02:03:12', '2026-08-14 02:03:12');
+(85, 2, 168.8300, 'cash', 'credit', 'sell', 149, NULL, '2026-08-14 02:03:12', '2026-08-14 02:03:12'),
+(86, 2, 5.4900, 'cash', 'credit', 'sell', 175, NULL, '2026-08-18 07:09:23', '2026-08-18 07:09:23'),
+(87, 2, 140.2500, 'cash', 'credit', 'sell', 176, NULL, '2026-08-25 03:47:01', '2026-08-25 03:47:01');
 
 -- --------------------------------------------------------
 
@@ -1439,7 +1451,21 @@ INSERT INTO `ecom_carts` (`id`, `business_id`, `contact_id`, `session_id`, `coup
 (110, 1, NULL, 'rwFP2Q0da61hAXgqjXlKo53PDmZk9gQdL2HR69Tp', NULL, '2026-08-17 13:05:36', '2026-08-17 13:05:36'),
 (111, 1, NULL, 'Cx2ytOPFrCvgWRipx7o2iUpVhCOocdw5UE7pG4wF', NULL, '2026-08-17 13:19:44', '2026-08-17 13:19:44'),
 (112, 1, NULL, 'XOaL7XaBoLg9gIQt0c41lvRfNLBhymprDMPsixdK', NULL, '2026-08-18 12:46:21', '2026-08-18 12:46:21'),
-(113, 1, NULL, 'SKA4ww3nF4klprl89ukHP3Thj3QltEt7FKoFJgUG', NULL, '2026-08-18 15:17:27', '2026-08-18 15:17:27');
+(113, 1, NULL, 'SKA4ww3nF4klprl89ukHP3Thj3QltEt7FKoFJgUG', NULL, '2026-08-18 15:17:27', '2026-08-18 15:17:27'),
+(114, 1, NULL, 'qvVslMfpkkStGPwqVUOnSY9VOg3uBtKhZq94foVP', NULL, '2026-08-19 12:48:28', '2026-08-19 12:48:28'),
+(115, 1, NULL, 'BDOUmom9E1Ch47N6LTG1kDpbrfp7XyzcxeEuLBQ8', NULL, '2026-08-19 13:50:50', '2026-08-19 13:50:50'),
+(116, 1, NULL, 'SRUsT41D59u0WETYUPzxtO3Aty3ZJp6a8x6cBvdF', NULL, '2026-08-20 14:37:18', '2026-08-20 14:37:18'),
+(117, 1, NULL, '20MRkkNZrwvoBG1yAxEAeX44s4wx824ynCmgYXkj', NULL, '2026-08-20 14:37:32', '2026-08-20 14:37:32'),
+(118, 1, NULL, 'FomXNYAfPuEE43JkTCSgRSr0MmV6HILMKNAoT1gZ', NULL, '2026-08-20 14:37:32', '2026-08-20 14:37:32'),
+(119, 1, NULL, 'JXFrRkRswXWrKmPVfAesTsbuZNUFonOnwDrluOxC', NULL, '2026-08-21 15:19:17', '2026-08-21 15:19:17'),
+(120, 1, NULL, 'yahf6mMHcSfSDwgGdyiEF9YdNSAYpTIWq8mxzwl6', NULL, '2026-08-21 15:19:17', '2026-08-21 15:19:17'),
+(121, 1, NULL, '7lux5TdxgAEg6LXYkyXUGUyV3o3h4cGmcg5ncntH', NULL, '2026-08-21 16:38:06', '2026-08-21 16:38:06'),
+(122, 1, NULL, 'xqFERqIwXiHRIhY4iJoHOg8ZsKItTRjtgMp9PW5I', NULL, '2026-08-24 12:59:08', '2026-08-24 12:59:08'),
+(123, 1, NULL, 'uXvleQ9hLW9ziSHu2jWY2mC2G5jaaVDUNgcisfGg', NULL, '2026-08-24 14:02:10', '2026-08-24 14:02:10'),
+(124, 1, NULL, 'RvkTI4VQlLQFp1SG2FvG3TDyU9rbCR0LnFwVPOYe', NULL, '2026-08-24 17:41:04', '2026-08-24 17:41:04'),
+(125, 1, NULL, 'tLl3lokZLudi2T76tqcOIpj3HUpPRvc58KgPw7fX', NULL, '2026-08-24 18:25:01', '2026-08-24 18:25:01'),
+(126, 1, NULL, 'ehchEjvTYmIXbQk5CYCoDOOL2v4HPFmdSKBNdv5k', NULL, '2026-08-24 18:41:26', '2026-08-24 18:41:26'),
+(127, 1, NULL, 'LcGLe4SH5BTMDuoZUSlYhwiZNGrxX5YMNKJcjSnS', NULL, '2026-08-25 13:23:17', '2026-08-25 13:23:17');
 
 -- --------------------------------------------------------
 
@@ -1736,6 +1762,9 @@ CREATE TABLE `employee_attendances` (
   `clock_out_at` datetime DEFAULT NULL,
   `status` enum('clocked_in','on_break','clocked_out') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'clocked_in',
   `notes` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `clock_latitude` decimal(10,7) DEFAULT NULL,
+  `clock_longitude` decimal(10,7) DEFAULT NULL,
+  `clock_source` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -1744,15 +1773,16 @@ CREATE TABLE `employee_attendances` (
 -- Dumping data for table `employee_attendances`
 --
 
-INSERT INTO `employee_attendances` (`id`, `business_id`, `user_id`, `clock_in_at`, `clock_out_at`, `status`, `notes`, `created_at`, `updated_at`) VALUES
-(1, 1, 1, '2026-07-20 13:01:00', '2026-07-20 13:01:14', 'clocked_out', NULL, '2026-07-20 07:01:00', '2026-07-20 07:01:14'),
-(2, 1, 1, '2026-07-23 12:43:18', '2026-07-23 12:44:04', 'clocked_out', NULL, '2026-07-23 06:43:18', '2026-07-23 06:44:04'),
-(3, 1, 1, '2026-07-27 11:38:11', '2026-07-27 11:38:26', 'clocked_out', NULL, '2026-07-27 05:38:11', '2026-07-27 05:38:26'),
-(4, 1, 1, '2026-07-27 11:55:18', '2026-07-27 11:55:22', 'clocked_out', NULL, '2026-07-27 05:55:18', '2026-07-27 05:55:22'),
-(5, 1, 1, '2026-07-27 11:57:53', '2026-07-27 11:57:56', 'clocked_out', NULL, '2026-07-27 05:57:53', '2026-07-27 05:57:56'),
-(6, 1, 1, '2026-07-27 12:13:54', '2026-07-27 12:14:23', 'clocked_out', NULL, '2026-07-27 06:13:54', '2026-07-27 06:14:23'),
-(7, 1, 1, '2026-07-28 11:20:21', '2026-07-28 11:20:35', 'clocked_out', NULL, '2026-07-28 05:20:21', '2026-07-28 05:20:35'),
-(8, 1, 1, '2026-08-13 15:08:25', '2026-08-13 15:08:30', 'clocked_out', NULL, '2026-08-13 09:08:25', '2026-08-13 09:08:30');
+INSERT INTO `employee_attendances` (`id`, `business_id`, `user_id`, `clock_in_at`, `clock_out_at`, `status`, `notes`, `clock_latitude`, `clock_longitude`, `clock_source`, `created_at`, `updated_at`) VALUES
+(1, 1, 1, '2026-07-20 13:01:00', '2026-07-20 13:01:14', 'clocked_out', NULL, NULL, NULL, NULL, '2026-07-20 07:01:00', '2026-07-20 07:01:14'),
+(2, 1, 1, '2026-07-23 12:43:18', '2026-07-23 12:44:04', 'clocked_out', NULL, NULL, NULL, NULL, '2026-07-23 06:43:18', '2026-07-23 06:44:04'),
+(3, 1, 1, '2026-07-27 11:38:11', '2026-07-27 11:38:26', 'clocked_out', NULL, NULL, NULL, NULL, '2026-07-27 05:38:11', '2026-07-27 05:38:26'),
+(4, 1, 1, '2026-07-27 11:55:18', '2026-07-27 11:55:22', 'clocked_out', NULL, NULL, NULL, NULL, '2026-07-27 05:55:18', '2026-07-27 05:55:22'),
+(5, 1, 1, '2026-07-27 11:57:53', '2026-07-27 11:57:56', 'clocked_out', NULL, NULL, NULL, NULL, '2026-07-27 05:57:53', '2026-07-27 05:57:56'),
+(6, 1, 1, '2026-07-27 12:13:54', '2026-07-27 12:14:23', 'clocked_out', NULL, NULL, NULL, NULL, '2026-07-27 06:13:54', '2026-07-27 06:14:23'),
+(7, 1, 1, '2026-07-28 11:20:21', '2026-07-28 11:20:35', 'clocked_out', NULL, NULL, NULL, NULL, '2026-07-28 05:20:21', '2026-07-28 05:20:35'),
+(8, 1, 1, '2026-08-13 15:08:25', '2026-08-13 15:08:30', 'clocked_out', NULL, NULL, NULL, NULL, '2026-08-13 09:08:25', '2026-08-13 09:08:30'),
+(9, 1, 1, '2026-08-25 10:15:06', '2026-08-25 10:15:18', 'clocked_out', NULL, NULL, NULL, NULL, '2026-08-25 04:15:06', '2026-08-25 04:15:18');
 
 -- --------------------------------------------------------
 
@@ -1780,7 +1810,8 @@ INSERT INTO `employee_attendance_breaks` (`id`, `attendance_id`, `break_start_at
 (3, 3, '2026-07-27 11:38:20', '2026-07-27 11:38:23', NULL, '2026-07-27 05:38:20', '2026-07-27 05:38:23'),
 (4, 6, '2026-07-27 12:13:58', '2026-07-27 12:14:02', NULL, '2026-07-27 06:13:58', '2026-07-27 06:14:02'),
 (5, 6, '2026-07-27 12:14:12', '2026-07-27 12:14:16', NULL, '2026-07-27 06:14:12', '2026-07-27 06:14:16'),
-(6, 7, '2026-07-28 11:20:27', '2026-07-28 11:20:31', NULL, '2026-07-28 05:20:27', '2026-07-28 05:20:31');
+(6, 7, '2026-07-28 11:20:27', '2026-07-28 11:20:31', NULL, '2026-07-28 05:20:27', '2026-07-28 05:20:31'),
+(7, 9, '2026-08-25 10:15:14', '2026-08-25 10:15:16', NULL, '2026-08-25 04:15:14', '2026-08-25 04:15:16');
 
 -- --------------------------------------------------------
 
@@ -1955,7 +1986,7 @@ CREATE TABLE `invoice_schemes` (
 --
 
 INSERT INTO `invoice_schemes` (`id`, `business_id`, `name`, `scheme_type`, `number_type`, `prefix`, `start_number`, `invoice_count`, `total_digits`, `is_default`, `created_at`, `updated_at`) VALUES
-(1, 1, 'Default', 'blank', 'sequential', NULL, 1, 101, 4, 1, '2026-07-18 18:56:53', '2026-08-14 02:02:04');
+(1, 1, 'Default', 'blank', 'sequential', NULL, 1, 103, 4, 1, '2026-07-18 18:56:53', '2026-08-25 03:47:01');
 
 -- --------------------------------------------------------
 
@@ -2312,7 +2343,8 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (317, '2026_08_07_202300_add_pos_screen_layout_to_business_table', 16),
 (318, '2026_08_07_000001_add_attendance_edit_permission', 17),
 (319, '2026_08_13_000020_convert_ecommerce_sells_to_sales_orders', 18),
-(320, '2026_08_18_193000_ensure_sales_representative_role_for_all_businesses', 19);
+(320, '2026_08_18_193000_ensure_sales_representative_role_for_all_businesses', 19),
+(321, '2026_08_25_200001_create_team_schedule_tables', 20);
 
 -- --------------------------------------------------------
 
@@ -2919,7 +2951,7 @@ INSERT INTO `purchase_lines` (`id`, `transaction_id`, `product_id`, `variation_i
 (9, 22, 39, 39, 44.0000, 0.0000, 8.7800, 0.00, 8.7800, 8.7800, 0.0000, NULL, NULL, NULL, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, NULL, NULL, NULL, NULL, '2026-07-27 15:11:58', '2026-07-27 15:11:58'),
 (10, 23, 40, 40, 48.0000, 0.0000, 10.2000, 0.00, 10.2000, 10.2000, 0.0000, NULL, NULL, NULL, 1.0000, 0.0000, 0.0000, 0.0000, 0.0000, NULL, NULL, NULL, NULL, '2026-07-27 15:11:58', '2026-07-27 08:50:38'),
 (11, 24, 41, 41, 52.0000, 0.0000, 1.5000, 0.00, 1.5000, 1.5000, 0.0000, NULL, NULL, NULL, 2.0000, 0.0000, 0.0000, 0.0000, 0.0000, NULL, NULL, NULL, NULL, '2026-07-27 15:11:58', '2026-08-12 04:04:23'),
-(12, 25, 42, 42, 56.0000, 0.0000, 2.1000, 0.00, 2.1000, 2.1000, 0.0000, NULL, NULL, NULL, 22.0000, 0.0000, 0.0000, 0.0000, 0.0000, NULL, NULL, NULL, NULL, '2026-07-27 15:11:58', '2026-08-14 02:03:12'),
+(12, 25, 42, 42, 56.0000, 0.0000, 2.1000, 0.00, 2.1000, 2.1000, 0.0000, NULL, NULL, NULL, 23.0000, 0.0000, 0.0000, 0.0000, 0.0000, NULL, NULL, NULL, NULL, '2026-07-27 15:11:58', '2026-08-18 07:09:23'),
 (13, 26, 43, 43, 60.0000, 0.0000, 2.4000, 0.00, 2.4000, 2.4000, 0.0000, NULL, NULL, NULL, 60.0000, 0.0000, 0.0000, 0.0000, 0.0000, NULL, NULL, NULL, NULL, '2026-07-27 15:11:58', '2026-07-27 05:44:05'),
 (14, 27, 44, 44, 64.0000, 0.0000, 3.2000, 0.00, 3.2000, 3.2000, 0.0000, NULL, NULL, NULL, 1.0000, 0.0000, 0.0000, 0.0000, 0.0000, NULL, NULL, NULL, NULL, '2026-07-27 15:11:58', '2026-08-03 05:23:18'),
 (15, 28, 45, 45, 68.0000, 0.0000, 1.6000, 0.00, 1.6000, 1.6000, 0.0000, NULL, NULL, NULL, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, NULL, NULL, NULL, NULL, '2026-07-27 15:11:58', '2026-07-27 15:11:58'),
@@ -2978,7 +3010,7 @@ CREATE TABLE `reference_counts` (
 
 INSERT INTO `reference_counts` (`id`, `ref_type`, `ref_count`, `business_id`, `created_at`, `updated_at`) VALUES
 (1, 'contacts', 6, 1, '2026-07-18 18:56:53', '2026-07-23 07:27:00'),
-(4, 'sell_payment', 88, 1, '2026-07-24 10:13:56', '2026-08-14 02:03:12'),
+(4, 'sell_payment', 90, 1, '2026-07-24 10:13:56', '2026-08-25 03:47:01'),
 (5, 'draft', 9, 1, '2026-07-27 05:47:31', '2026-07-27 10:11:34'),
 (6, 'sales_order', 3, 1, '2026-08-13 15:20:58', '2026-08-13 16:00:56');
 
@@ -3266,6 +3298,63 @@ INSERT INTO `tax_rates` (`id`, `business_id`, `name`, `amount`, `is_tax_group`, 
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `team_member_colors`
+--
+
+CREATE TABLE `team_member_colors` (
+  `id` int UNSIGNED NOT NULL,
+  `business_id` int UNSIGNED NOT NULL,
+  `user_id` int UNSIGNED NOT NULL,
+  `color` varchar(7) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `team_shifts`
+--
+
+CREATE TABLE `team_shifts` (
+  `id` int UNSIGNED NOT NULL,
+  `business_id` int UNSIGNED NOT NULL,
+  `user_id` int UNSIGNED NOT NULL,
+  `location_id` int UNSIGNED DEFAULT NULL,
+  `starts_at` datetime NOT NULL,
+  `ends_at` datetime NOT NULL,
+  `title` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `notes` text COLLATE utf8mb4_unicode_ci,
+  `created_by` int UNSIGNED DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `time_off_requests`
+--
+
+CREATE TABLE `time_off_requests` (
+  `id` int UNSIGNED NOT NULL,
+  `business_id` int UNSIGNED NOT NULL,
+  `user_id` int UNSIGNED NOT NULL,
+  `starts_at` datetime NOT NULL,
+  `ends_at` datetime NOT NULL,
+  `type` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'vacation',
+  `status` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pending',
+  `reason` text COLLATE utf8mb4_unicode_ci,
+  `reviewed_by` int UNSIGNED DEFAULT NULL,
+  `reviewed_at` datetime DEFAULT NULL,
+  `admin_note` text COLLATE utf8mb4_unicode_ci,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `transactions`
 --
 
@@ -3525,7 +3614,9 @@ INSERT INTO `transactions` (`id`, `business_id`, `location_id`, `is_kitchen_orde
 (171, 1, 1, 0, NULL, NULL, NULL, 'expense', NULL, 'final', NULL, 0, 'paid', NULL, NULL, NULL, NULL, 'DEMO-EXP-0003', NULL, NULL, NULL, '2026-08-09 21:31:03', 64.1000, NULL, 0.0000, NULL, 0.0000, 0, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, '[DEMO] Internet', NULL, 0, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, 64.1000, 2, NULL, NULL, NULL, NULL, 0, 0, 0, 1.000, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-18 15:31:03', '2026-08-18 15:31:03'),
 (172, 1, 1, 0, NULL, NULL, NULL, 'stock_adjustment', NULL, 'received', NULL, 0, 'paid', 'normal', NULL, NULL, NULL, 'DEMO-SA-0001', NULL, NULL, NULL, '2026-08-15 21:31:03', 43.9000, NULL, 0.0000, NULL, 0.0000, 0, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, '[DEMO] Cycle count correction', NULL, 0, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, 43.9000, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 1.000, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-18 15:31:03', '2026-08-18 15:31:03'),
 (173, 1, 1, 0, NULL, NULL, NULL, 'sell_return', NULL, 'final', NULL, 0, 'paid', NULL, 1, NULL, 'DEMO-CN-0001', NULL, NULL, NULL, NULL, '2026-08-16 21:31:03', 25.0000, NULL, 0.0000, 'percentage', 0.0000, 0, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, '[DEMO] Demo sell_return', NULL, 0, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, 25.0000, NULL, NULL, NULL, NULL, NULL, 1, 0, 0, 1.000, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-18 15:31:03', '2026-08-18 15:31:03'),
-(174, 1, 1, 0, NULL, NULL, NULL, 'purchase_return', NULL, 'received', NULL, 0, 'paid', NULL, 10, NULL, NULL, 'DEMO-PR-0001', NULL, NULL, NULL, '2026-08-11 21:31:04', 40.0000, NULL, 0.0000, NULL, 0.0000, 0, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, '[DEMO] Demo purchase_return', NULL, 0, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, 40.0000, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 1.000, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-18 15:31:04', '2026-08-18 15:31:04');
+(174, 1, 1, 0, NULL, NULL, NULL, 'purchase_return', NULL, 'received', NULL, 0, 'paid', NULL, 10, NULL, NULL, 'DEMO-PR-0001', NULL, NULL, NULL, '2026-08-11 21:31:04', 40.0000, NULL, 0.0000, NULL, 0.0000, 0, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, '[DEMO] Demo purchase_return', NULL, 0, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, 40.0000, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 1.000, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-18 15:31:04', '2026-08-18 15:31:04'),
+(175, 1, 1, 0, NULL, NULL, NULL, 'sell', NULL, 'final', NULL, 0, 'paid', NULL, 1, 1, '0102', '', NULL, NULL, NULL, '2026-08-18 17:09:00', 4.9900, 1, 0.4990, 'percentage', 0.0000, 0, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, 5.4900, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 1.000, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL, 0, 1.0000, 'days', 0, NULL, NULL, NULL, NULL, NULL, 1, '2026-08-18 07:09:23', '2026-08-18 07:09:23'),
+(176, 1, 1, 0, NULL, NULL, NULL, 'sell', NULL, 'final', NULL, 0, 'paid', NULL, 1, 1, '0103', '', NULL, NULL, NULL, '2026-08-25 13:46:00', 127.5000, 1, 12.7500, 'percentage', 0.0000, 0, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, 140.2500, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 1.000, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL, 0, 1.0000, 'days', 0, NULL, NULL, NULL, NULL, NULL, 1, '2026-08-25 03:47:01', '2026-08-25 03:47:01');
 
 -- --------------------------------------------------------
 
@@ -3668,7 +3759,9 @@ INSERT INTO `transaction_payments` (`id`, `transaction_id`, `business_id`, `is_r
 (102, 168, 1, 0, 135.0000, 'cash', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-17 21:31:03', 1, 0, NULL, 0, 1, NULL, '[DEMO]', NULL, NULL, NULL, '2026-08-18 15:31:03', '2026-08-18 15:31:03'),
 (103, 169, 1, 0, 850.0000, 'cash', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-14 21:31:03', 1, 0, NULL, 0, NULL, NULL, '[DEMO]', NULL, NULL, NULL, '2026-08-18 15:31:03', '2026-08-18 15:31:03'),
 (104, 171, 1, 0, 64.1000, 'cash', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-09 21:31:03', 1, 0, NULL, 0, NULL, NULL, '[DEMO]', NULL, NULL, NULL, '2026-08-18 15:31:03', '2026-08-18 15:31:03'),
-(105, 174, 1, 0, 40.0000, 'cash', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-11 21:31:04', 1, 0, NULL, 0, 10, NULL, '[DEMO]', NULL, NULL, NULL, '2026-08-18 15:31:04', '2026-08-18 15:31:04');
+(105, 174, 1, 0, 40.0000, 'cash', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-11 21:31:04', 1, 0, NULL, 0, 10, NULL, '[DEMO]', NULL, NULL, NULL, '2026-08-18 15:31:04', '2026-08-18 15:31:04'),
+(106, 175, 1, 0, 5.4900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-18 13:09:23', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0089', NULL, '2026-08-18 07:09:23', '2026-08-18 07:09:23'),
+(107, 176, 1, 0, 140.2500, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-25 09:47:01', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0090', NULL, '2026-08-25 03:47:01', '2026-08-25 03:47:01');
 
 -- --------------------------------------------------------
 
@@ -3850,7 +3943,9 @@ INSERT INTO `transaction_sell_lines` (`id`, `transaction_id`, `product_id`, `var
 (166, 168, 1, 1, 1.0000, 0.0000, 0.0000, 25.0000, 25.0000, 'fixed', 0.0000, 25.0000, 0.0000, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, '', NULL, '2026-08-18 15:31:03', '2026-08-18 15:31:03'),
 (167, 168, 2, 2, 1.0000, 0.0000, 0.0000, 72.0000, 72.0000, 'fixed', 0.0000, 72.0000, 0.0000, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, '', NULL, '2026-08-18 15:31:03', '2026-08-18 15:31:03'),
 (168, 168, 3, 3, 1.0000, 0.0000, 0.0000, 38.0000, 38.0000, 'fixed', 0.0000, 38.0000, 0.0000, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, '', NULL, '2026-08-18 15:31:03', '2026-08-18 15:31:03'),
-(169, 173, 1, 1, 1.0000, 0.0000, 0.0000, 22.7790, 22.7790, 'fixed', 0.0000, 25.0000, 0.0000, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, '', NULL, '2026-08-18 15:31:03', '2026-08-18 15:31:03');
+(169, 173, 1, 1, 1.0000, 0.0000, 0.0000, 22.7790, 22.7790, 'fixed', 0.0000, 25.0000, 0.0000, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, '', NULL, '2026-08-18 15:31:03', '2026-08-18 15:31:03'),
+(170, 175, 42, 42, 1.0000, 0.0000, 0.0000, 4.9900, 4.9900, 'fixed', 0.0000, 4.9900, 0.0000, NULL, NULL, NULL, '', NULL, 0.0000, NULL, NULL, NULL, '', NULL, '2026-08-18 07:09:23', '2026-08-18 07:09:23'),
+(171, 176, 59, 59, 1.0000, 0.0000, 0.0000, 127.5000, 127.5000, 'fixed', 0.0000, 127.5000, 0.0000, NULL, NULL, NULL, '', NULL, 0.0000, NULL, NULL, NULL, '', NULL, '2026-08-25 03:47:01', '2026-08-25 03:47:01');
 
 -- --------------------------------------------------------
 
@@ -3975,7 +4070,9 @@ INSERT INTO `transaction_sell_lines_purchase_lines` (`id`, `sell_line_id`, `stoc
 (99, 130, NULL, 7, 1.0000, 0.0000, '2026-08-14 02:03:12', '2026-08-14 02:03:12'),
 (100, 131, NULL, 12, 1.0000, 0.0000, '2026-08-14 02:03:12', '2026-08-14 02:03:12'),
 (101, 132, NULL, 0, 1.0000, 0.0000, '2026-08-14 02:03:12', '2026-08-14 02:03:12'),
-(102, 133, NULL, 21, 1.0000, 0.0000, '2026-08-14 02:03:12', '2026-08-14 02:03:12');
+(102, 133, NULL, 21, 1.0000, 0.0000, '2026-08-14 02:03:12', '2026-08-14 02:03:12'),
+(103, 170, NULL, 12, 1.0000, 0.0000, '2026-08-18 07:09:23', '2026-08-18 07:09:23'),
+(104, 171, NULL, 0, 1.0000, 0.0000, '2026-08-25 03:47:01', '2026-08-25 03:47:01');
 
 -- --------------------------------------------------------
 
@@ -4240,7 +4337,7 @@ INSERT INTO `variation_location_details` (`id`, `product_id`, `product_variation
 (39, 39, 39, 39, 1, 44.0000, '2026-07-22 17:42:40', '2026-07-22 17:42:40'),
 (40, 40, 40, 40, 1, 47.0000, '2026-07-22 17:42:40', '2026-07-27 08:50:38'),
 (41, 41, 41, 41, 1, 50.0000, '2026-07-22 17:42:43', '2026-08-12 04:04:23'),
-(42, 42, 42, 42, 1, 40.0000, '2026-07-22 17:42:44', '2026-08-05 08:03:38'),
+(42, 42, 42, 42, 1, 33.0000, '2026-07-22 17:42:44', '2026-08-21 07:14:44'),
 (43, 43, 43, 43, 1, -1.0000, '2026-07-22 17:42:45', '2026-08-05 06:32:36'),
 (44, 44, 44, 44, 1, 63.0000, '2026-07-22 17:42:47', '2026-08-03 05:23:18'),
 (45, 45, 45, 45, 1, 68.0000, '2026-07-22 17:42:50', '2026-07-22 17:42:50'),
@@ -4249,7 +4346,7 @@ INSERT INTO `variation_location_details` (`id`, `product_id`, `product_variation
 (48, 48, 48, 48, 1, 80.0000, '2026-07-22 17:42:52', '2026-07-22 17:42:52'),
 (49, 49, 49, 49, 1, 84.0000, '2026-07-22 17:42:53', '2026-07-22 17:42:53'),
 (50, 50, 50, 50, 1, 88.0000, '2026-07-22 17:42:55', '2026-07-22 17:42:55'),
-(51, 51, 51, 51, 1, 70.0000, '2026-07-22 17:42:55', '2026-08-14 02:01:29'),
+(51, 51, 51, 51, 1, 67.0000, '2026-07-22 17:42:55', '2026-08-21 07:16:51'),
 (52, 52, 52, 52, 1, 95.0000, '2026-07-22 17:42:56', '2026-08-12 06:35:38'),
 (53, 53, 53, 53, 1, 97.0000, '2026-07-22 17:42:57', '2026-08-12 04:04:23'),
 (54, 54, 54, 54, 1, 104.0000, '2026-07-22 17:42:59', '2026-07-22 17:42:59'),
@@ -4257,7 +4354,7 @@ INSERT INTO `variation_location_details` (`id`, `product_id`, `product_variation
 (56, 56, 56, 56, 1, 112.0000, '2026-07-22 17:43:02', '2026-07-22 17:43:02'),
 (57, 57, 57, 57, 1, 116.0000, '2026-07-22 17:43:03', '2026-07-22 17:43:03'),
 (58, 58, 58, 58, 1, -4.0000, '2026-08-12 06:35:18', '2026-08-12 07:13:57'),
-(59, 59, 59, 59, 1, -1.0000, '2026-08-13 06:29:51', '2026-08-13 06:29:51');
+(59, 59, 59, 59, 1, -2.0000, '2026-08-13 06:29:51', '2026-08-25 03:47:01');
 
 -- --------------------------------------------------------
 
@@ -4922,6 +5019,31 @@ ALTER TABLE `tax_rates`
   ADD KEY `tax_rates_created_by_foreign` (`created_by`);
 
 --
+-- Indexes for table `team_member_colors`
+--
+ALTER TABLE `team_member_colors`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `team_member_colors_business_id_user_id_unique` (`business_id`,`user_id`),
+  ADD KEY `team_member_colors_business_id_index` (`business_id`);
+
+--
+-- Indexes for table `team_shifts`
+--
+ALTER TABLE `team_shifts`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `team_shifts_business_id_starts_at_index` (`business_id`,`starts_at`),
+  ADD KEY `team_shifts_business_id_user_id_index` (`business_id`,`user_id`);
+
+--
+-- Indexes for table `time_off_requests`
+--
+ALTER TABLE `time_off_requests`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `time_off_requests_business_id_status_index` (`business_id`,`status`),
+  ADD KEY `time_off_requests_business_id_user_id_index` (`business_id`,`user_id`),
+  ADD KEY `time_off_requests_business_id_starts_at_index` (`business_id`,`starts_at`);
+
+--
 -- Indexes for table `transactions`
 --
 ALTER TABLE `transactions`
@@ -5103,7 +5225,7 @@ ALTER TABLE `account_types`
 -- AUTO_INCREMENT for table `activity_log`
 --
 ALTER TABLE `activity_log`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=204;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=211;
 
 --
 -- AUTO_INCREMENT for table `ai_assistance_settings`
@@ -5157,7 +5279,7 @@ ALTER TABLE `cash_registers`
 -- AUTO_INCREMENT for table `cash_register_transactions`
 --
 ALTER TABLE `cash_register_transactions`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=86;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=88;
 
 --
 -- AUTO_INCREMENT for table `categories`
@@ -5241,7 +5363,7 @@ ALTER TABLE `ecom_banners`
 -- AUTO_INCREMENT for table `ecom_carts`
 --
 ALTER TABLE `ecom_carts`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=114;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=128;
 
 --
 -- AUTO_INCREMENT for table `ecom_cart_items`
@@ -5319,13 +5441,13 @@ ALTER TABLE `ecom_wishlists`
 -- AUTO_INCREMENT for table `employee_attendances`
 --
 ALTER TABLE `employee_attendances`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `employee_attendance_breaks`
 --
 ALTER TABLE `employee_attendance_breaks`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `expense_categories`
@@ -5355,7 +5477,7 @@ ALTER TABLE `media`
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=321;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=322;
 
 --
 -- AUTO_INCREMENT for table `notification_templates`
@@ -5460,28 +5582,46 @@ ALTER TABLE `tax_rates`
   MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
+-- AUTO_INCREMENT for table `team_member_colors`
+--
+ALTER TABLE `team_member_colors`
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `team_shifts`
+--
+ALTER TABLE `team_shifts`
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `time_off_requests`
+--
+ALTER TABLE `time_off_requests`
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `transactions`
 --
 ALTER TABLE `transactions`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=175;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=177;
 
 --
 -- AUTO_INCREMENT for table `transaction_payments`
 --
 ALTER TABLE `transaction_payments`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=106;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=108;
 
 --
 -- AUTO_INCREMENT for table `transaction_sell_lines`
 --
 ALTER TABLE `transaction_sell_lines`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=170;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=172;
 
 --
 -- AUTO_INCREMENT for table `transaction_sell_lines_purchase_lines`
 --
 ALTER TABLE `transaction_sell_lines_purchase_lines`
-  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=103;
+  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=105;
 
 --
 -- AUTO_INCREMENT for table `types_of_services`
