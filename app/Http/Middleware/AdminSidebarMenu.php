@@ -250,20 +250,25 @@ class AdminSidebarMenu
             );
         }
 
-        // —— Returns ——
+        // —— Returns & Refunds ——
         if (auth()->user()->can('access_sell_return') || auth()->user()->can('access_own_sell_return')) {
             $sub->url(
                 action([\App\Http\Controllers\SellReturnController::class, 'index']),
-                __('lang_v1.list_sell_return'),
-                ['icon' => '', 'active' => request()->segment(1) == 'sell-return' && request()->segment(2) == null]
+                __('lang_v1.menu_returns_refunds'),
+                [
+                    'icon' => '',
+                    'active' => request()->segment(1) == 'sell-return' && request()->segment(2) == null,
+                    'data-search-terms' => 'return returns refund refunds sell return list sell return',
+                ]
             );
         }
 
-        // —— Discounts ——
+        // —— Discounts & Promotions ——
         if (auth()->user()->can('discount.access')) {
             $discountAttrs = [
                 'icon' => '',
                 'active' => request()->segment(1) == 'discount',
+                'data-search-terms' => 'discount discounts promotion promotions offer offers',
             ];
             $discountAttrs = $this->withQuickAddModal(
                 $discountAttrs,
@@ -272,7 +277,7 @@ class AdminSidebarMenu
             );
             $sub->url(
                 action([\App\Http\Controllers\DiscountController::class, 'index']),
-                __('lang_v1.discounts'),
+                __('lang_v1.menu_discounts_promotions'),
                 $discountAttrs
             );
         }

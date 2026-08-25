@@ -30,6 +30,8 @@ return [
     'menu_picking' => 'Picking',
     'menu_packing' => 'Packing',
     'menu_ready_for_pickup' => 'Ready for Pickup',
+    'menu_returns_refunds' => 'Returns & Refunds',
+    'menu_discounts_promotions' => 'Discounts & Promotions',
     'menu_purchases' => 'Purchases',
     'menu_vendors' => 'Vendors',
     'menu_purchase_orders' => 'Orders',
