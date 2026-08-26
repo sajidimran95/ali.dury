@@ -199,34 +199,20 @@
         }
         .sale-bottom-nav__inner {
             display: grid;
-            grid-template-columns: 1fr auto 1fr;
-            align-items: flex-end;
+            grid-template-columns: repeat(5, 1fr);
+            align-items: stretch;
             max-width: 560px;
             margin: 0 auto;
-            padding: 2px 4px 2px;
+            padding: 4px 2px 6px;
             gap: 0;
         }
-        .sale-bottom-nav__side {
-            display: flex;
-            align-items: flex-end;
-            justify-content: space-evenly;
-            min-width: 0;
-        }
-        .sale-bottom-nav__center {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-end;
-            padding: 0 6px 6px;
-            flex-shrink: 0;
-        }
         .sale-tab {
-            flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+            flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
             gap: 3px; min-height: 58px; color: #64748b; font-size: 10px; font-weight: 700;
             text-decoration: none; background: transparent; border: 0;
-            padding: 0 4px 6px;
+            padding: 6px 2px;
             -webkit-tap-highlight-color: transparent;
-            max-width: 88px;
+            max-width: none;
         }
         .sale-tab svg {
             width: 22px; height: 22px; display: block; stroke: currentColor; fill: none;
@@ -277,6 +263,217 @@
             .sale-ship-flow {
                 padding-bottom: 16px;
             }
+        }
+
+        /* Dashboard home — card stack (layout like mobile reference) */
+        .sale-home {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-width: 560px;
+            margin: 0 auto;
+            padding-bottom: 8px;
+        }
+        .sale-home-card {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 14px 16px;
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+        }
+        .sale-home-card__title {
+            margin: 0 0 12px;
+            font-size: 15px;
+            font-weight: 800;
+            color: #0b1220;
+        }
+        .sale-home-section-title {
+            margin: 4px 2px 0;
+            font-size: 15px;
+            font-weight: 800;
+            color: #0b1220;
+        }
+        .sale-home-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .sale-home-list li {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 0;
+        }
+        .sale-home-ico {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: #f1f5f9;
+            color: #475569;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .sale-home-ico svg { width: 16px; height: 16px; display: block; }
+        .sale-home-text {
+            min-width: 0;
+            flex: 1;
+            font-size: 14px;
+            font-weight: 600;
+            color: #0f172a;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .sale-home-roles { display: flex; flex-wrap: wrap; gap: 8px; }
+        .sale-home-role-pill {
+            display: inline-flex;
+            align-items: center;
+            border: 1.5px solid #0f766e;
+            color: #0f766e;
+            background: #fff;
+            border-radius: 999px;
+            padding: 6px 14px;
+            font-size: 13px;
+            font-weight: 700;
+        }
+        .sale-home-metric {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-height: 36px;
+        }
+        .sale-home-metric--sub {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid #f1f5f9;
+        }
+        .sale-home-metric--sub .sale-home-metric__label { margin-left: 0; }
+        .sale-home-metric__label {
+            flex: 1;
+            min-width: 0;
+            font-size: 14px;
+            font-weight: 600;
+            color: #334155;
+        }
+        .sale-home-metric__value {
+            font-size: 15px;
+            font-weight: 800;
+            color: #0b1220;
+            font-variant-numeric: tabular-nums;
+        }
+        .sale-profile-menu > summary { list-style: none; }
+        .sale-profile-menu > summary::-webkit-details-marker { display: none; }
+        .sale-profile-panel { min-width: 200px; }
+
+        /* Expense + Delivery screens (keep bottom nav) */
+        .sale-exp__head, .sale-del__head {
+            display: flex; align-items: center; justify-content: space-between; gap: 10px;
+            margin-bottom: 4px;
+        }
+        .sale-exp__title, .sale-del__title {
+            margin: 0; font-size: 22px; font-weight: 800; color: #0b1220;
+        }
+        .sale-del__sub { margin: 2px 0 0; font-size: 13px; color: #64748b; font-weight: 600; }
+        .sale-exp__add {
+            display: inline-flex; align-items: center; justify-content: center;
+            background: #0f766e; color: #fff; border-radius: 10px;
+            padding: 8px 12px; font-size: 11px; font-weight: 800; letter-spacing: .02em;
+            text-decoration: none; white-space: nowrap;
+        }
+        .sale-exp__empty, .sale-del__empty {
+            text-align: center; padding: 56px 16px 24px;
+        }
+        .sale-exp__empty-ico, .sale-del__empty-ico {
+            width: 72px; height: 72px; margin: 0 auto 14px; border-radius: 20px;
+            background: #f1f5f9; color: #94a3b8;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .sale-exp__empty-ico svg, .sale-del__empty-ico svg { width: 34px; height: 34px; }
+        .sale-exp-upload { position: relative; display: block; cursor: pointer; }
+        .sale-exp-upload input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+        .sale-exp-upload__box {
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+            border: 1.5px dashed #cbd5e1; border-radius: 14px; padding: 22px 12px;
+            color: #64748b; background: #f8fafc; text-align: center; cursor: pointer;
+        }
+        .sale-exp-upload__box strong { font-size: 13px; color: #334155; }
+        .sale-exp-upload__box small { font-size: 12px; color: #94a3b8; }
+
+        /* Expense — customer picker (Create Order style list) */
+        .sale-exp-customer {
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            background: #fff;
+            overflow: hidden;
+        }
+        .sale-exp-customer__head {
+            display: flex; align-items: center; justify-content: space-between; gap: 10px;
+            padding: 10px 12px 6px;
+        }
+        .sale-exp-customer__clear {
+            border: 0; background: transparent; color: #e11d48;
+            font-size: 12px; font-weight: 800; cursor: pointer; padding: 0;
+        }
+        .sale-exp-customer__clear.hidden { display: none !important; }
+        .sale-exp-customer__chip {
+            width: 100%; display: flex; align-items: center; gap: 12px;
+            padding: 10px 12px 14px; border: 0; background: #fff;
+            cursor: pointer; text-align: left; font-family: inherit;
+        }
+        .sale-exp-customer__chip.hidden { display: none !important; }
+        .sale-exp-customer__chip-meta { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+        .sale-exp-customer__chip-name { font-size: 14px; font-weight: 800; color: #0b1220; }
+        .sale-exp-customer__chip-hint { font-size: 11px; font-weight: 600; color: #94a3b8; }
+        .sale-exp-customer__search { padding: 0 10px 10px; }
+        .sale-exp-customer__search.hidden { display: none !important; }
+        .sale-exp-customer__searchbox {
+            margin-bottom: 8px;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            background: #f8fafc;
+            padding: 0 12px;
+            height: 42px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .sale-exp-customer__searchbox svg { width: 18px; height: 18px; color: #94a3b8; flex-shrink: 0; }
+        .sale-exp-customer__searchbox .sale-pick-search__input {
+            flex: 1; min-width: 0; border: 0 !important; background: transparent !important;
+            outline: none !important; box-shadow: none !important; padding: 0 !important;
+            font-size: 14px; font-weight: 600; color: #0b1220; height: auto !important;
+        }
+        .sale-exp-customer__list {
+            max-height: 260px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            border: 1px solid #f1f5f9;
+            border-radius: 12px;
+            background: #fff;
+        }
+        .sale-exp-customer__list .sale-pick-row { padding: 12px; }
+        .sale-exp-customer__list .sale-pick-avatar {
+            width: 40px; height: 40px; font-size: 12px;
+            background: #ccfbf1; color: #0f766e; border-radius: 999px;
+            display: inline-flex; align-items: center; justify-content: center; font-weight: 800;
+        }
+        .sale-exp-customer__list .sale-pick-empty { padding: 16px; text-align: center; color: #94a3b8; font-size: 13px; font-weight: 600; }
+        .sale-exp-customer__chip .sale-pick-avatar {
+            width: 42px; height: 42px; border-radius: 999px;
+            background: #ccfbf1; color: #0f766e;
+            display: inline-flex; align-items: center; justify-content: center;
+            font-weight: 800; font-size: 13px; flex-shrink: 0;
+        }
+        .sale-del__dates {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+            background: #fff; border: 1px solid #e2e8f0; border-radius: 14px;
+            padding: 12px; margin-top: 10px;
+        }
+        .sale-del__label {
+            display: block; font-size: 12px; font-weight: 700; color: #334155; margin-bottom: 6px;
         }
 
         /* Dashboard */
@@ -416,13 +613,44 @@
                 min-width: 0;
             }
             .sale-btn { width: auto; min-width: 160px; }
+            /* Shared desktop page frame — same left/right edge on every screen */
             .sale-page {
                 display: block;
-                width: 100%;
+                width: 100% !important;
                 max-width: none !important;
                 margin: 0 !important;
-                padding: 24px 28px 40px;
+                padding: 24px 28px 40px !important;
                 box-sizing: border-box;
+            }
+            body.sale-page-create .sale-page,
+            body.sale-page-products .sale-page,
+            body.sale-page-order-show .sale-page {
+                padding: 24px 28px 40px !important;
+                max-width: none !important;
+                margin: 0 !important;
+                width: 100% !important;
+            }
+            /* Kill mobile-centered column widths so content aligns with page padding */
+            .sale-home,
+            .sale-prod-app,
+            .sale-cart-flow,
+            .sale-ship-flow,
+            .sale-pick-customer,
+            .sale-pick-customer--embedded,
+            .sale-create-form,
+            .sale-exp-form,
+            .sale-page > .max-w-xl,
+            .sale-page > form.max-w-xl {
+                max-width: none !important;
+                margin-left: 0 !important;
+                margin-right: 0 !important;
+                width: 100% !important;
+            }
+            .sale-home {
+                gap: 16px;
+            }
+            .sale-home-card {
+                border-radius: 16px;
             }
             .sale-card {
                 display: block;
@@ -589,7 +817,7 @@
                 overflow: hidden;
             }
             body.sale-page-create .sale-page {
-                padding: 16px 20px 16px;
+                padding: 24px 28px 24px !important;
                 width: 100%;
                 max-width: none !important;
                 height: 100%;
@@ -647,10 +875,19 @@
                 top: 0;
                 align-self: stretch;
             }
-            body.sale-page-create #stepCart #goShippingBtn {
+            /* Old cart-footer layout only — do not stretch header SUBMIT */
+            body.sale-page-create #stepCart .sale-cart-footer #goShippingBtn {
                 margin-top: auto;
                 margin-bottom: 0;
                 width: 100% !important;
+            }
+            body.sale-page-create #stepCart.sale-order-build #goShippingBtn,
+            body.sale-page-create .sale-order-build__submit {
+                width: auto !important;
+                min-width: 96px;
+                margin-top: 0 !important;
+                margin-bottom: 0 !important;
+                flex: 0 0 auto;
             }
             body.sale-page-create #stepShipping.sale-ship-flow {
                 max-width: none;
@@ -671,6 +908,9 @@
                 display: none !important;
             }
             body.sale-page-create #stepCart.sale-cart-flow[hidden] {
+                display: none !important;
+            }
+            body.sale-page-create #stepCustomer.sale-pick-customer[hidden] {
                 display: none !important;
             }
             body.sale-page-create #stepShipping > button#backToCartBtn {
@@ -889,6 +1129,507 @@
             .sale-prod-tile__media.is-placeholder svg { width: 36px; height: 36px; }
         }
 
+        /* Create order: Select Customer */
+        .sale-pick-customer {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            margin: 0;
+            background: #fff;
+            min-height: calc(100dvh - 72px - env(safe-area-inset-bottom, 0px));
+            box-sizing: border-box;
+        }
+        .sale-pick-customer[hidden] { display: none !important; }
+        .sale-pick-customer__head {
+            background: #0f766e;
+            color: #fff;
+            padding: 16px 16px 18px;
+        }
+        .sale-pick-customer__title {
+            margin: 0;
+            font-size: 1.35rem;
+            font-weight: 800;
+            letter-spacing: -.02em;
+            line-height: 1.2;
+        }
+        .sale-pick-customer__sub {
+            margin: 4px 0 0;
+            font-size: .875rem;
+            font-weight: 500;
+            opacity: .92;
+        }
+        .sale-pick-modes {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 6px;
+            flex-wrap: nowrap;
+            padding: 12px 12px 10px;
+            border-bottom: 1px solid #e2e8f0;
+            background: #fff;
+        }
+        .sale-pick-mode {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #334155;
+            cursor: pointer;
+            user-select: none;
+            white-space: nowrap;
+            flex: 1 1 auto;
+            justify-content: center;
+            min-width: 0;
+        }
+        .sale-pick-mode input[type="radio"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            margin: 0;
+            border: 2px solid #cbd5e1;
+            border-radius: 50%;
+            background: #fff;
+            flex-shrink: 0;
+            box-sizing: border-box;
+            vertical-align: middle;
+        }
+        .sale-pick-mode input[type="radio"]:checked {
+            border-color: #0f766e;
+            background:
+                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%23fff' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round' d='M3.5 8.5l3 3 6-6'/%3E%3C/svg%3E")
+                center / 12px 12px no-repeat,
+                #0f766e;
+        }
+        .sale-pick-mode__dot { display: none !important; }
+        .sale-pick-search {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 12px 12px 8px;
+            padding: 0 12px;
+            height: 44px;
+            border-radius: 12px;
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            box-sizing: border-box;
+        }
+        .sale-pick-search svg {
+            width: 18px; height: 18px; color: #94a3b8; flex-shrink: 0;
+        }
+        .sale-pick-search__input {
+            flex: 1;
+            border: 0 !important;
+            background: transparent !important;
+            outline: none !important;
+            box-shadow: none !important;
+            font-size: 15px;
+            font-weight: 600;
+            color: #0b1220;
+            min-width: 0;
+            padding: 0 !important;
+            height: auto !important;
+            border-radius: 0 !important;
+        }
+        .sale-pick-search__input::placeholder { color: #94a3b8; font-weight: 500; }
+        .sale-pick-list {
+            flex: 1 1 auto;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+            background: #fff;
+            min-height: 0;
+        }
+        .sale-pick-row {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 16px;
+            border: 0;
+            border-bottom: 1px solid #f1f5f9;
+            background: #fff;
+            cursor: pointer;
+            text-align: left;
+            font-family: inherit;
+            box-sizing: border-box;
+        }
+        .sale-pick-row:active { background: #f8fafc; }
+        .sale-pick-avatar {
+            width: 44px; height: 44px; border-radius: 999px;
+            background: #ccfbf1; color: #0f766e;
+            display: inline-flex; align-items: center; justify-content: center;
+            font-weight: 800; font-size: 13px; flex-shrink: 0;
+            letter-spacing: .02em;
+        }
+        .sale-pick-meta { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+        .sale-pick-name {
+            font-weight: 800; font-size: 14px; color: #0b1220;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .sale-pick-addr {
+            font-size: 12px; color: #64748b; font-weight: 500;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .sale-pick-chev { color: #94a3b8; font-size: 22px; line-height: 1; flex-shrink: 0; font-weight: 400; }
+        .sale-pick-empty { padding: 28px 16px; text-align: center; color: #94a3b8; font-size: 14px; font-weight: 600; }
+
+        /* Create Order — build step (after customer): system Pickup/Delivery/Shipping + SKU/catalog */
+        .sale-order-build {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+            max-height: 100%;
+            min-height: 0;
+            margin: 0;
+            background: #fff;
+            overflow: hidden;
+        }
+        .sale-order-build[hidden] { display: none !important; }
+        .sale-order-build__bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #0f766e;
+            color: #fff;
+            padding: 10px 12px;
+            padding-top: calc(10px + env(safe-area-inset-top, 0px));
+            position: sticky;
+            top: 0;
+            z-index: 30;
+            flex-shrink: 0;
+        }
+        .sale-order-build__iconbtn {
+            border: 0; background: transparent; color: #fff;
+            width: 40px; height: 40px; border-radius: 10px;
+            display: inline-flex; align-items: center; justify-content: center;
+            cursor: pointer; flex-shrink: 0;
+        }
+        .sale-order-build__titles { flex: 1 1 auto; min-width: 0; }
+        .sale-order-build__title { font-size: 17px; font-weight: 800; line-height: 1.2; color: #fff; }
+        .sale-order-build__sub { font-size: 12px; font-weight: 600; opacity: .92; margin-top: 2px; color: #fff; }
+        .sale-order-build__submit {
+            border: 0 !important;
+            background: #fff !important;
+            color: #0f766e !important;
+            font-weight: 800;
+            font-size: 12px;
+            letter-spacing: .04em;
+            border-radius: 8px;
+            padding: 10px 14px;
+            cursor: pointer;
+            flex: 0 0 auto;
+            width: auto !important;
+            min-width: 88px;
+            white-space: nowrap;
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.12);
+            line-height: 1.2;
+        }
+        .sale-order-build__submit:hover {
+            background: #f0fdfa !important;
+        }
+        .sale-order-build__submit:active {
+            transform: translateY(1px);
+        }
+        .sale-order-build__body {
+            padding: 12px 14px 16px;
+            display: flex; flex-direction: column; gap: 12px;
+            flex: 1 1 auto; min-height: 0; overflow: hidden;
+        }
+        .sale-order-build__row {
+            display: flex; align-items: center; justify-content: space-between; gap: 12px;
+            flex-shrink: 0;
+        }
+        .sale-order-build__label { font-size: 13px; font-weight: 700; color: #334155; min-width: 0; }
+        .sale-toggle {
+            position: relative; display: inline-flex; width: 46px; height: 26px;
+            flex-shrink: 0; cursor: pointer;
+        }
+        .sale-toggle input { position: absolute; opacity: 0; width: 0; height: 0; }
+        .sale-toggle__track {
+            width: 100%; height: 100%; border-radius: 999px; background: #cbd5e1;
+            transition: background .15s ease; position: relative;
+        }
+        .sale-toggle__track::after {
+            content: ''; position: absolute; top: 3px; left: 3px;
+            width: 20px; height: 20px; border-radius: 50%; background: #fff;
+            box-shadow: 0 1px 3px rgba(15,23,42,.2); transition: transform .15s ease;
+        }
+        .sale-toggle input:checked + .sale-toggle__track { background: #0f766e; }
+        .sale-toggle input:checked + .sale-toggle__track::after { transform: translateX(20px); }
+
+        .sale-fulfill {
+            display: flex; align-items: center; justify-content: flex-start; flex-wrap: wrap; gap: 16px 28px;
+            padding: 4px 0 2px;
+            flex-shrink: 0;
+        }
+        .sale-fulfill__opt {
+            display: inline-flex; align-items: center; gap: 7px;
+            font-size: 13px; font-weight: 700; color: #334155; cursor: pointer; user-select: none;
+        }
+        .sale-fulfill__opt input {
+            -webkit-appearance: none; appearance: none;
+            width: 18px; height: 18px; margin: 0; border: 2px solid #cbd5e1; border-radius: 50%;
+            background: #fff; flex-shrink: 0; box-sizing: border-box;
+        }
+        .sale-fulfill__opt input:checked {
+            border-color: #0f766e;
+            background:
+                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%23fff' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round' d='M3.5 8.5l3 3 6-6'/%3E%3C/svg%3E")
+                center / 12px 12px no-repeat, #0f766e;
+        }
+        .sale-fulfill__dot { display: none; }
+
+        .sale-last-qty-status {
+            font-size: 12px;
+            font-weight: 700;
+            color: #0f766e;
+            margin-top: -4px;
+            flex-shrink: 0;
+        }
+        .sale-last-qty-status.is-error { color: #e11d48; }
+        .sale-last-qty-status[hidden] { display: none !important; }
+        .sale-sku-block { position: relative; flex-shrink: 0; }
+        .sale-sku-block .sale-prod-results {
+            position: absolute;
+            left: 0; right: 0; top: calc(100% + 4px);
+            z-index: 25;
+        }
+        .sale-sku-row { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+        .sale-sku-modes { display: inline-flex; gap: 6px; flex-shrink: 0; }
+        .sale-sku-mode {
+            width: 42px; height: 42px; border-radius: 10px; border: 1px solid #e2e8f0;
+            background: #f1f5f9; color: #64748b; display: inline-flex;
+            align-items: center; justify-content: center; cursor: pointer; padding: 0;
+        }
+        .sale-sku-mode.is-active {
+            background: #0f766e; border-color: #0f766e; color: #fff;
+        }
+        .sale-sku-search {
+            flex: 1; min-width: 0; height: 42px; border-radius: 10px;
+            border: 1px solid #e2e8f0; background: #f8fafc;
+            display: flex; align-items: center; gap: 8px; padding: 0 12px;
+        }
+        .sale-sku-search svg { width: 18px; height: 18px; color: #94a3b8; flex-shrink: 0; }
+        .sale-sku-search__input {
+            flex: 1; min-width: 0; border: 0 !important; background: transparent !important;
+            outline: none !important; box-shadow: none !important; padding: 0 !important;
+            font-size: 15px; font-weight: 600; color: #0b1220; height: auto !important;
+        }
+        .sale-order-list-head {
+            display: flex; align-items: center; justify-content: space-between; gap: 10px;
+            padding-top: 4px;
+            flex-shrink: 0;
+        }
+        .sale-order-list-head strong { font-size: 15px; font-weight: 800; color: #0b1220; }
+        .sale-order-list-head__link {
+            border: 0; background: transparent; color: #0f766e;
+            font-size: 13px; font-weight: 800; cursor: pointer; padding: 0;
+        }
+        .sale-order-build .sale-cart-scroll {
+            flex: 1 1 auto;
+            min-height: 180px;
+            max-height: none !important;
+            margin: 0;
+            padding: 0;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            background: #fff;
+            overflow-x: hidden;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        .sale-order-build .sale-cart-lines {
+            display: flex;
+            flex-direction: column;
+            padding: 8px;
+            gap: 8px;
+        }
+        .sale-order-build .sale-cart-item {
+            word-break: break-word;
+            overflow-wrap: anywhere;
+            flex-shrink: 0;
+        }
+        .sale-order-build .sale-cart-item__qty {
+            flex-wrap: nowrap;
+            align-items: center;
+        }
+        .sale-order-build__total {
+            display: flex; align-items: center; justify-content: space-between;
+            font-size: 15px; font-weight: 700; color: #334155;
+            padding: 10px 2px 8px;
+            flex-shrink: 0;
+            background: #fff;
+            border-top: 1px solid #f1f5f9;
+            margin-top: 0;
+        }
+        .sale-order-build__total strong { font-size: 18px; font-weight: 800; color: #0f766e; }
+
+        /* Build step: fill space above bottom nav; cart list scrolls fully */
+        body.sale-building-order {
+            background: #fff;
+            overflow: hidden;
+        }
+        body.sale-building-order.sale-page-create .sale-main-app,
+        body.sale-building-order .sale-main-app {
+            padding: 0 !important;
+            margin: 0 !important;
+            overflow: hidden !important;
+            display: flex !important;
+            flex-direction: column !important;
+            box-sizing: border-box !important;
+            min-height: calc(100dvh - 72px - env(safe-area-inset-bottom, 0px)) !important;
+            height: calc(100dvh - 72px - env(safe-area-inset-bottom, 0px)) !important;
+            max-height: calc(100dvh - 72px - env(safe-area-inset-bottom, 0px)) !important;
+            background: #fff !important;
+        }
+        body.sale-building-order .sale-m-only.sticky { display: none !important; }
+        body.sale-building-order #customerSelected { display: none !important; }
+        body.sale-building-order .sale-page {
+            padding: 0 !important;
+            margin: 0 !important;
+            flex: 1 1 auto !important;
+            min-height: 0 !important;
+            height: auto !important;
+            max-height: none !important;
+            overflow: hidden !important;
+            display: flex !important;
+            flex-direction: column !important;
+            background: #fff !important;
+        }
+        body.sale-building-order .sale-create-form,
+        body.sale-building-order #saleOrderForm,
+        body.sale-building-order form.sale-create-form {
+            flex: 1 1 auto !important;
+            min-height: 0 !important;
+            height: 100% !important;
+            max-height: 100% !important;
+            overflow: hidden !important;
+            display: flex !important;
+            flex-direction: column !important;
+            margin: 0 !important;
+            background: #fff !important;
+        }
+        body.sale-building-order .sale-order-build {
+            flex: 1 1 auto !important;
+            min-height: 0 !important;
+            height: 100% !important;
+            max-height: 100% !important;
+            margin: 0 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            overflow: hidden !important;
+            background: #fff !important;
+        }
+        body.sale-building-order .sale-order-build__body {
+            flex: 1 1 auto !important;
+            min-height: 0 !important;
+            overflow: hidden !important;
+            display: flex !important;
+            flex-direction: column !important;
+            padding-bottom: 8px !important;
+        }
+        body.sale-building-order .sale-order-build .sale-cart-scroll {
+            flex: 1 1 auto !important;
+            min-height: 160px !important;
+            max-height: none !important;
+            overflow-y: auto !important;
+        }
+        @media (min-width: 1024px) {
+            .sale-order-build {
+                margin: 0; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden;
+                height: calc(100dvh - 64px - 48px);
+                max-height: calc(100dvh - 64px - 48px);
+            }
+            body.sale-building-order.sale-page-create .sale-main-app,
+            body.sale-building-order .sale-main-app {
+                padding: 24px 28px !important;
+                height: calc(100dvh - 64px) !important;
+                min-height: calc(100dvh - 64px) !important;
+                max-height: calc(100dvh - 64px) !important;
+                overflow: hidden !important;
+            }
+            body.sale-building-order .sale-page { padding: 0 !important; overflow: hidden !important; }
+            body.sale-building-order .sale-desk-top { display: none !important; }
+            body.sale-building-order .sale-order-build {
+                height: calc(100dvh - 64px - 48px) !important;
+                max-height: calc(100dvh - 64px - 48px) !important;
+            }
+            body.sale-building-order .sale-order-build__bar {
+                padding-left: 16px;
+                padding-right: 16px;
+            }
+            body.sale-building-order .sale-order-build__submit {
+                width: auto !important;
+                flex: 0 0 auto !important;
+                margin: 0 !important;
+            }
+        }
+
+        /* Embedded pick (Delivery) — keep app header + bottom nav */
+        .sale-pick-customer--embedded {
+            margin: -12px -12px 0;
+            border-radius: 0;
+            min-height: calc(100dvh - 56px - 72px - env(safe-area-inset-bottom, 0px));
+        }
+        @media (min-width: 1024px) {
+            .sale-pick-customer--embedded {
+                margin: 0;
+                border: 1px solid #e2e8f0;
+                border-radius: 16px;
+                overflow: hidden;
+                max-width: 720px;
+            }
+        }
+
+        /* Pick step: full-bleed, no double header / no create-page clip */
+        body.sale-picking-customer .sale-m-only.sticky { display: none !important; }
+        body.sale-picking-customer .sale-desk-top { display: none !important; }
+        body.sale-picking-customer.sale-page-create .sale-main-app {
+            padding: 0 !important;
+            height: auto !important;
+            min-height: 100dvh !important;
+            overflow: visible !important;
+        }
+        body.sale-picking-customer.sale-page-create .sale-page {
+            padding: 0 !important;
+            height: auto !important;
+            min-height: 0 !important;
+            overflow: visible !important;
+            max-width: none !important;
+        }
+        body.sale-picking-customer.sale-page-create .sale-create-form {
+            display: block !important;
+            height: auto !important;
+            min-height: 0 !important;
+            overflow: visible !important;
+        }
+        body.sale-picking-customer .sale-flash {
+            margin: 12px 12px 0;
+        }
+        @media (min-width: 1024px) {
+            body.sale-picking-customer.sale-page-create .sale-main-app {
+                padding: 0 !important;
+            }
+            body.sale-picking-customer.sale-page-create .sale-page {
+                padding: 24px 28px 40px !important;
+            }
+            .sale-pick-customer {
+                border: 1px solid #e2e8f0;
+                border-radius: 16px;
+                overflow: hidden;
+                max-width: none !important;
+                margin: 0 !important;
+                width: 100%;
+                min-height: calc(100dvh - 64px - 88px);
+            }
+            .sale-pick-mode { font-size: 13px; justify-content: flex-start; flex: 0 1 auto; }
+            .sale-pick-modes { justify-content: flex-start; gap: 18px; padding-left: 16px; }
+        }
+
         /* Create order: cart layout */
         .sale-cart-flow {
             display: flex;
@@ -1031,7 +1772,7 @@
                 min-height: calc(100dvh - 64px);
             }
             body.sale-page-products .sale-page {
-                padding: 16px 20px 24px;
+                padding: 24px 28px 40px !important;
                 width: 100%;
                 max-width: none !important;
                 margin: 0 !important;
@@ -1223,7 +1964,7 @@
             font-size: 18px; font-weight: 700; flex-shrink: 0;
         }
         @media (min-width: 1024px) {
-            .sale-cart-flow { max-width: 720px; }
+            .sale-cart-flow { max-width: none !important; margin: 0 !important; width: 100%; }
             .sale-catalog { align-items: center; padding: 24px; }
             .sale-catalog__panel { border-radius: 16px; max-height: 80vh; width: min(640px, 92vw); }
             body.sale-page-create .sale-cart-flow { max-width: none; }
@@ -1273,7 +2014,7 @@
     </style>
     @stack('head')
 </head>
-<body class="antialiased {{ auth()->check() ? 'sale-authed' : 'sale-guest' }} {{ in_array(optional(request()->route())->getName(), ['sale.orders.create', 'sale.orders.edit'], true) ? 'sale-page-create' : '' }} {{ (optional(request()->route())->getName() === 'sale.products') ? 'sale-page-products' : '' }} {{ (optional(request()->route())->getName() === 'sale.orders.show') ? 'sale-page-order-show' : '' }}">
+<body class="antialiased {{ auth()->check() ? 'sale-authed' : 'sale-guest' }} {{ in_array(optional(request()->route())->getName(), ['sale.orders.create', 'sale.orders.edit'], true) ? 'sale-page-create' : '' }} {{ optional(request()->route())->getName() === 'sale.orders.create' ? 'sale-picking-customer' : '' }} {{ (optional(request()->route())->getName() === 'sale.products') ? 'sale-page-products' : '' }} {{ (optional(request()->route())->getName() === 'sale.orders.show') ? 'sale-page-order-show' : '' }}">
 @php
     $routeName = optional(request()->route())->getName();
     $isHome = $routeName === 'sale.home';
@@ -1282,12 +2023,20 @@
     $isProducts = $routeName === 'sale.products';
     $isCustomers = in_array($routeName, ['sale.customers', 'sale.customers.create'], true);
     $isAccount = $routeName === 'sale.account' || $routeName === 'sale.account.location';
+    $isExpense = in_array($routeName, ['sale.expenses', 'sale.expenses.create', 'sale.expenses.store'], true)
+        || str_starts_with((string) $routeName, 'sale.expenses');
+    $isDelivery = $routeName === 'sale.delivery';
     $customerMenuUrl = route('sale.customers');
+    $expenseUrl = route('sale.expenses');
+    $canExpense = auth()->check() && (auth()->user()->can('expense.add') || auth()->user()->can('view_own_expense') || auth()->user()->can('all_expense.access'));
     $authUser = auth()->user();
     $userInitial = 'S';
     $userName = '';
     if ($authUser) {
         $userInitial = strtoupper(mb_substr($authUser->first_name ?? $authUser->username ?? 'S', 0, 1));
+        if (! empty($authUser->last_name)) {
+            $userInitial = strtoupper(mb_substr($authUser->first_name ?? 'S', 0, 1).mb_substr($authUser->last_name, 0, 1));
+        }
         $userName = trim(($authUser->first_name ?? '').' '.($authUser->last_name ?? '')) ?: ($authUser->username ?? '');
     }
 @endphp
@@ -1310,17 +2059,31 @@
                 </span>
                 Dashboard
             </a>
+            <a href="{{ route('sale.orders.create') }}" class="sale-side-link {{ $isCreate ? 'active' : '' }}">
+                <span class="sale-side-ico" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                </span>
+                Create
+            </a>
+            @if($canExpense)
+            <a href="{{ $expenseUrl }}" class="sale-side-link {{ $isExpense ? 'active' : '' }}">
+                <span class="sale-side-ico" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M2 10h20M6 14h.01M10 14h4"/></svg>
+                </span>
+                Expense
+            </a>
+            @endif
             <a href="{{ route('sale.orders') }}" class="sale-side-link {{ $isOrders ? 'active' : '' }}">
                 <span class="sale-side-ico" aria-hidden="true">
                     <svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
                 </span>
-                Order list
+                Orders
             </a>
-            <a href="{{ route('sale.orders.create') }}" class="sale-side-link {{ $isCreate ? 'active' : '' }}">
+            <a href="{{ route('sale.delivery') }}" class="sale-side-link {{ $isDelivery ? 'active' : '' }}">
                 <span class="sale-side-ico" aria-hidden="true">
-                    <svg viewBox="0 0 24 24"><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M3 4h2l2.4 11.2a2 2 0 0 0 2 1.6h7.4a2 2 0 0 0 2-1.5L21 8H7"/></svg>
+                    <svg viewBox="0 0 24 24"><path d="M12 21s7-4.5 7-11a7 7 0 1 0-14 0c0 6.5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>
                 </span>
-                Create order
+                Delivery
             </a>
             <a href="{{ route('sale.products') }}" class="sale-side-link {{ $isProducts ? 'active' : '' }}">
                 <span class="sale-side-ico" aria-hidden="true">
@@ -1375,14 +2138,32 @@
             </div>
         </header>
 
-        {{-- Mobile app header --}}
+        {{-- Mobile app header: brand + profile --}}
         <header class="sale-m-only sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-sale-line pt-[env(safe-area-inset-top,0)]">
             <div class="h-14 px-4 flex items-center justify-between gap-3">
-                <div class="min-w-0">
-                    <div class="text-[10px] uppercase tracking-wider font-bold text-slate-400">Sales rep</div>
-                    <div class="font-extrabold text-[15px] truncate">@yield('header', 'Orders')</div>
-                </div>
-                <div class="shrink-0 h-9 w-9 rounded-full bg-sale text-white flex items-center justify-center font-bold text-sm">{{ $userInitial }}</div>
+                <a href="{{ route('sale.home') }}" class="flex items-center gap-2 min-w-0 no-underline text-inherit">
+                    <img src="{{ asset('pwa/sale-icon-192.png') }}" alt="" class="h-8 w-8 rounded-full bg-sale shrink-0">
+                    <span class="font-extrabold text-[15px] truncate">{{ config('app.name', 'Sales') }}</span>
+                </a>
+                <details class="sale-profile-menu relative shrink-0">
+                    <summary class="list-none cursor-pointer h-9 w-9 rounded-full bg-sale text-white flex items-center justify-center font-bold text-sm select-none">
+                        {{ $userInitial }}
+                    </summary>
+                    <div class="sale-profile-panel absolute right-0 mt-2 w-52 bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden z-50">
+                        <div class="px-3 py-2.5 text-sm font-bold text-slate-800 border-b border-slate-100 flex items-center gap-2">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 20c1.5-4 14.5-4 16 0"/></svg>
+                            <span class="truncate">{{ strtoupper($userName) }}</span>
+                        </div>
+                        <a href="{{ route('sale.account') }}" class="block px-3 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 no-underline">Account</a>
+                        <form method="POST" action="{{ route('sale.logout') }}">
+                            @csrf
+                            <button type="submit" class="w-full text-left px-3 py-2.5 text-sm font-semibold text-rose-600 hover:bg-rose-50 flex items-center gap-2 border-0 bg-transparent cursor-pointer">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h4"/><path d="M16 16l4-4-4-4M10 12h10"/></svg>
+                                Sign Out
+                            </button>
+                        </form>
+                    </div>
+                </details>
             </div>
         </header>
 
@@ -1401,35 +2182,29 @@
     </div>
 </div>
 
-{{-- Mobile bottom: left | Create (center) | right --}}
+{{-- Mobile bottom: Home · Create · Expense · Orders · Delivery --}}
 <nav class="sale-bottom-nav sale-m-only" aria-label="Primary">
     <div class="sale-bottom-nav__inner">
-        <div class="sale-bottom-nav__side">
-            <a href="{{ route('sale.home') }}" class="sale-tab {{ $isHome ? 'active' : '' }}">
-                <svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1v-9.5z"/></svg>
-                Home
-            </a>
-            <a href="{{ route('sale.orders') }}" class="sale-tab {{ $isOrders ? 'active' : '' }}">
-                <svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
-                Orders
-            </a>
-        </div>
-        <div class="sale-bottom-nav__center">
-            <a href="{{ route('sale.orders.create') }}" class="sale-tab-fab {{ $isCreate ? 'active' : '' }}" aria-label="Create order">
-                <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M3 4h2l2.4 11.2a2 2 0 0 0 2 1.6h7.4a2 2 0 0 0 2-1.5L21 8H7"/></svg>
-            </a>
-            <span class="sale-bottom-nav__center-label {{ $isCreate ? 'active' : '' }}">Create</span>
-        </div>
-        <div class="sale-bottom-nav__side">
-            <a href="{{ route('sale.products') }}" class="sale-tab {{ $isProducts ? 'active' : '' }}">
-                <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.3 7 12 12l8.7-5M12 22V12"/></svg>
-                Products
-            </a>
-            <a href="{{ route('sale.account') }}" class="sale-tab {{ $isAccount ? 'active' : '' }}">
-                <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c1.5-4 14.5-4 16 0"/></svg>
-                Account
-            </a>
-        </div>
+        <a href="{{ route('sale.home') }}" class="sale-tab {{ $isHome ? 'active' : '' }}">
+            <svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1v-9.5z"/></svg>
+            Home
+        </a>
+        <a href="{{ route('sale.orders.create') }}" class="sale-tab {{ $isCreate ? 'active' : '' }}">
+            <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+            Create
+        </a>
+        <a href="{{ $canExpense ? $expenseUrl : route('sale.account') }}" class="sale-tab {{ $isExpense ? 'active' : '' }}">
+            <svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M2 10h20M6 14h.01M10 14h4"/></svg>
+            Expense
+        </a>
+        <a href="{{ route('sale.orders') }}" class="sale-tab {{ $isOrders ? 'active' : '' }}">
+            <svg viewBox="0 0 24 24"><path d="M3 7h18v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7z"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            Orders
+        </a>
+        <a href="{{ route('sale.delivery') }}" class="sale-tab {{ $isDelivery ? 'active' : '' }}">
+            <svg viewBox="0 0 24 24"><path d="M12 21s7-4.5 7-11a7 7 0 1 0-14 0c0 6.5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>
+            Delivery
+        </a>
     </div>
 </nav>
 

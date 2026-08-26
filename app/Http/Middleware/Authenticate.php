@@ -19,6 +19,10 @@ class Authenticate extends Middleware
                 return route('sale.login');
             }
 
+            if ($request->is('customer') || $request->is('customer/*')) {
+                return route('customer.login');
+            }
+
             $shop = trim((string) config('ecommerce.route_prefix', 'shop'), '/');
             if ($shop !== '' && ($request->is($shop) || $request->is($shop.'/*'))) {
                 return route('ecommerce.login');

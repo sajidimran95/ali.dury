@@ -20,6 +20,7 @@
         @php $curStatus = $status ?? ''; @endphp
         <a href="{{ route('sale.orders', array_filter(['q' => $q ?? ''])) }}" class="sale-chip {{ $curStatus === '' ? 'active' : '' }}">All</a>
         <a href="{{ route('sale.orders', array_filter(['q' => $q ?? '', 'status' => 'sale'])) }}" class="sale-chip {{ $curStatus === 'sale' ? 'active' : '' }}">Sale</a>
+        <a href="{{ route('sale.orders', array_filter(['q' => $q ?? '', 'status' => 'estimate'])) }}" class="sale-chip {{ $curStatus === 'estimate' ? 'active' : '' }}">Estimate</a>
         <a href="{{ route('sale.orders', array_filter(['q' => $q ?? '', 'status' => 'invoiced'])) }}" class="sale-chip {{ $curStatus === 'invoiced' ? 'active' : '' }}">Invoiced</a>
     </div>
 </form>
@@ -29,8 +30,19 @@
     @forelse($orders as $order)
         @php
             $displayStatus = $order->sale_status ?? 'sale';
-            $badge = $displayStatus === 'invoiced' ? 'sale-badge--completed' : 'sale-badge--ordered';
-            $badgeLabel = $displayStatus === 'invoiced' ? 'Invoiced' : 'Sale';
+            if ($displayStatus === 'invoiced') {
+                $badge = 'sale-badge--completed';
+                $badgeLabel = 'Invoiced';
+            } elseif ($displayStatus === 'estimate') {
+                $badge = 'sale-badge--draft';
+                $badgeLabel = 'Estimate';
+            } elseif ($displayStatus === 'back_order') {
+                $badge = 'sale-badge--partial';
+                $badgeLabel = 'Back Order';
+            } else {
+                $badge = 'sale-badge--ordered';
+                $badgeLabel = 'Sale';
+            }
         @endphp
         <div class="sale-order-row !items-stretch">
             <a href="{{ route('sale.orders.show', $order->id) }}" class="sale-order-row__ico shrink-0 self-center">

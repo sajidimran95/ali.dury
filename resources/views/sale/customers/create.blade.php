@@ -9,7 +9,7 @@
 </a>
 @endif
 
-<form method="POST" action="{{ route('sale.customers.store') }}" class="sale-card space-y-3 max-w-xl">
+<form method="POST" action="{{ route('sale.customers.store') }}" class="sale-card space-y-3">
     @csrf
     <div class="sale-sec-title">
         <span class="sale-sec-title__ico">

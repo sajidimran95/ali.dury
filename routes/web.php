@@ -153,21 +153,66 @@ use App\Http\Controllers\Sale\SaleAuthController;
 use App\Http\Controllers\Sale\SalePortalController;
 use App\Http\Controllers\Sale\SalePwaController;
 
-Route::prefix('sale')->name('sale.')->middleware(['setData'])->group(function () {
+/*
+|--------------------------------------------------------------------------
+| Customer App (/customer) — contact login (email or mobile)
+|--------------------------------------------------------------------------
+*/
+use App\Http\Controllers\Customer\CustomerAuthController;
+use App\Http\Controllers\Customer\CustomerPortalController;
+use App\Http\Controllers\Customer\CustomerPwaController;
+
+Route::prefix('customer')->name('customer.')->middleware(['setData', 'language'])->group(function () {
+    // PWA assets (public — needed for install / offline, no auth)
+    Route::get('/pwa/manifest.webmanifest', [CustomerPwaController::class, 'manifest'])->name('pwa.manifest');
+    Route::get('/pwa/sw.js', [CustomerPwaController::class, 'serviceWorker'])->name('pwa.sw');
+    Route::get('/pwa/offline', [CustomerPwaController::class, 'offline'])->name('pwa.offline');
+
+    Route::get('/', function () {
+        return auth('customer')->check()
+            ? redirect()->route('customer.home')
+            : redirect()->route('customer.login');
+    })->name('index');
+
+    Route::middleware('guest:customer')->group(function () {
+        Route::get('/login', [CustomerAuthController::class, 'showLogin'])->name('login');
+        Route::post('/login', [CustomerAuthController::class, 'login'])->name('login.post');
+    });
+
+    Route::post('/logout', [CustomerAuthController::class, 'logout'])->name('logout')->middleware('auth:customer');
+
+    Route::middleware(['auth:customer', 'customer.app'])->group(function () {
+        Route::get('/home', [CustomerPortalController::class, 'home'])->name('home');
+        Route::get('/orders', [CustomerPortalController::class, 'orders'])->name('orders');
+        Route::get('/orders/create', [CustomerPortalController::class, 'createOrder'])->name('orders.create');
+        Route::post('/orders', [CustomerPortalController::class, 'storeOrder'])->name('orders.store');
+        Route::get('/orders/{id}', [CustomerPortalController::class, 'showOrder'])->name('orders.show');
+        Route::get('/documents', [CustomerPortalController::class, 'documents'])->name('documents');
+        Route::get('/documents/{id}/invoice', [CustomerPortalController::class, 'showInvoice'])->name('documents.invoice');
+        Route::get('/price-check', [CustomerPortalController::class, 'priceCheck'])->name('price');
+        Route::get('/profile', [CustomerPortalController::class, 'profile'])->name('profile');
+        Route::post('/profile/password', [CustomerPortalController::class, 'updatePassword'])->name('profile.password');
+        Route::post('/profile/location', [CustomerPortalController::class, 'updateLocation'])->name('profile.location');
+        Route::get('/api/products', [CustomerPortalController::class, 'searchProducts'])->name('api.products');
+        Route::get('/api/categories', [CustomerPortalController::class, 'categoriesTree'])->name('api.categories');
+    });
+});
+
+Route::prefix('sale')->name('sale.')->middleware(['setData', \App\Http\Middleware\UseSaleGuard::class])->group(function () {
     // PWA assets (public — no auth / timezone session required)
     Route::get('/pwa/manifest.webmanifest', [SalePwaController::class, 'manifest'])->name('pwa.manifest');
     Route::get('/pwa/sw.js', [SalePwaController::class, 'serviceWorker'])->name('pwa.sw');
     Route::get('/pwa/offline', [SalePwaController::class, 'offline'])->name('pwa.offline');
 
     // Auth (guest — avoid timezone middleware before business session exists)
-    Route::middleware(['guest', 'language'])->group(function () {
+    Route::middleware(['guest:sale', 'language'])->group(function () {
         Route::get('/login', [SaleAuthController::class, 'showLoginForm'])->name('login');
         Route::post('/login', [SaleAuthController::class, 'login'])->name('login.post');
     });
-    Route::post('/logout', [SaleAuthController::class, 'logout'])->name('logout')->middleware('auth');
+    Route::post('/logout', [SaleAuthController::class, 'logout'])->name('logout')->middleware('auth:sale');
 
     // Portal (authenticated sales users — SetSessionData before timezone)
-    Route::middleware(['auth', 'SetSessionData', 'language', 'timezone', 'CheckUserLogin', 'sale.rep'])->group(function () {
+    Route::middleware(['auth:sale', 'SetSessionData', 'language', 'timezone', 'CheckUserLogin', 'sale.rep'])->group(function () {
         Route::get('/', [SalePortalController::class, 'home'])->name('home');
         Route::get('/orders', [SalePortalController::class, 'orders'])->name('orders');
         Route::get('/orders/create', [SalePortalController::class, 'create'])->name('orders.create');
@@ -179,6 +224,10 @@ Route::prefix('sale')->name('sale.')->middleware(['setData'])->group(function ()
         Route::delete('/orders/{id}', [SalePortalController::class, 'destroy'])->name('orders.destroy');
         Route::get('/account', [SalePortalController::class, 'account'])->name('account');
         Route::post('/account/location', [SalePortalController::class, 'updateLocation'])->name('account.location');
+        Route::get('/expenses', [SalePortalController::class, 'expenses'])->name('expenses');
+        Route::get('/expenses/create', [SalePortalController::class, 'createExpense'])->name('expenses.create');
+        Route::post('/expenses', [SalePortalController::class, 'storeExpense'])->name('expenses.store');
+        Route::get('/delivery', [SalePortalController::class, 'delivery'])->name('delivery');
         Route::get('/products', [SalePortalController::class, 'products'])->name('products');
         Route::get('/customers', [SalePortalController::class, 'customers'])->name('customers');
         Route::get('/customers/create', [SalePortalController::class, 'createCustomer'])->name('customers.create');
@@ -186,6 +235,7 @@ Route::prefix('sale')->name('sale.')->middleware(['setData'])->group(function ()
         Route::get('/api/customers', [SalePortalController::class, 'searchCustomers'])->name('api.customers');
         Route::get('/api/products', [SalePortalController::class, 'searchProducts'])->name('api.products');
         Route::get('/api/categories', [SalePortalController::class, 'categoriesTree'])->name('api.categories');
+        Route::get('/api/last-purchases', [SalePortalController::class, 'lastPurchases'])->name('api.last_purchases');
     });
 });
 

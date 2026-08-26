@@ -41,6 +41,12 @@ return [
             'provider' => 'users',
         ],
 
+        // Sales App only — separate from Admin (web) so same-device logins do not conflict
+        'sale' => [
+            'driver' => 'session',
+            'provider' => 'users',
+        ],
+
         'api' => [
             'driver' => 'passport',
             'provider' => 'users',

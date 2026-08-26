@@ -11,7 +11,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 /**
- * Sales representative login (staff users). Separate from ecommerce customers & main /login UI.
+ * Sales representative login (staff users).
+ * Uses dedicated "sale" guard so Admin / Customer stay logged in on the same device.
  */
 class SaleAuthController extends Controller
 {
@@ -25,9 +26,17 @@ class SaleAuthController extends Controller
 
     public function __construct(BusinessUtil $businessUtil, ModuleUtil $moduleUtil)
     {
-        $this->middleware('guest')->except('logout');
+        $this->middleware('guest:sale')->except('logout');
         $this->businessUtil = $businessUtil;
         $this->moduleUtil = $moduleUtil;
+    }
+
+    /**
+     * Sales App auth guard (not Admin "web").
+     */
+    protected function guard()
+    {
+        return Auth::guard('sale');
     }
 
     public function showLoginForm()
@@ -47,14 +56,14 @@ class SaleAuthController extends Controller
         $business = $user->business_id ? Business::find($user->business_id) : null;
 
         if (! $business || empty($business->is_active)) {
-            Auth::logout();
+            $this->guard()->logout();
 
             return redirect()->route('sale.login')
                 ->with('status', ['success' => 0, 'msg' => __('lang_v1.business_inactive')]);
         }
 
         if ($user->status != 'active' || ! $user->allow_login || $user->user_type !== 'user') {
-            Auth::logout();
+            $this->guard()->logout();
 
             return redirect()->route('sale.login')
                 ->with('status', ['success' => 0, 'msg' => __('lang_v1.login_not_allowed')]);
@@ -62,9 +71,9 @@ class SaleAuthController extends Controller
 
         // Sales App: sales reps only — block Admin and users without sell access
         if (! SaleRepGate::allows($user)) {
-            Auth::logout();
-            $request->session()->invalidate();
-            $request->session()->regenerateToken();
+            $this->guard()->logout();
+            // Do NOT invalidate the whole session — Admin may be logged in on another cookie
+            $request->session()->forget('url.intended');
 
             return redirect()->route('sale.login')
                 ->with('status', ['success' => 0, 'msg' => SaleRepGate::denyMessage($user)]);
@@ -115,12 +124,13 @@ class SaleAuthController extends Controller
 
     public function logout(Request $request)
     {
-        if (auth()->check()) {
-            $this->businessUtil->activityLog(auth()->user(), 'logout');
+        if ($this->guard()->check()) {
+            $this->businessUtil->activityLog($this->guard()->user(), 'logout');
         }
 
-        $request->session()->flush();
-        Auth::logout();
+        $this->guard()->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
 
         return redirect()->route('sale.login');
     }

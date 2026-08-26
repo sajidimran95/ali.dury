@@ -71,5 +71,7 @@ class Kernel extends HttpKernel
         'superadmin' => \App\Http\Middleware\Superadmin::class,
         'CheckUserLogin' => \App\Http\Middleware\CheckUserLogin::class,
         'sale.rep' => \App\Http\Middleware\EnsureSaleRepAccess::class,
+        'customer.app' => \App\Http\Middleware\EnsureCustomerAppAccess::class,
+        'sale.guard' => \App\Http\Middleware\UseSaleGuard::class,
     ];
 }

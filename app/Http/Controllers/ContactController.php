@@ -875,6 +875,19 @@ class ContactController extends Controller
             $input['credit_limit'] = $request->input('credit_limit') != '' ? $this->commonUtil->num_uf($request->input('credit_limit')) : null;
             $input['opening_balance'] = $this->commonUtil->num_uf($request->input('opening_balance'));
 
+            // Customer App access (login at /customer with email or mobile)
+            $allowCustomerApp = (int) $request->input('allow_customer_app', 0) === 1;
+            $input['allow_customer_app'] = $allowCustomerApp ? 1 : 0;
+            if ($allowCustomerApp) {
+                $appPass = trim((string) $request->input('customer_app_password', ''));
+                if ($appPass === '') {
+                    $appPass = (string) ($input['mobile'] ?? '');
+                }
+                if ($appPass !== '') {
+                    $input['password'] = bcrypt($appPass);
+                }
+            }
+
             DB::beginTransaction();
             $output = $this->contactUtil->createNewContact($input);
 
@@ -1081,6 +1094,22 @@ class ContactController extends Controller
 
                 if (! $this->moduleUtil->isSubscribed($business_id)) {
                     return $this->moduleUtil->expiredResponse();
+                }
+
+                // Customer App access
+                $allowCustomerApp = (int) $request->input('allow_customer_app', 0) === 1;
+                $input['allow_customer_app'] = $allowCustomerApp ? 1 : 0;
+                if ($allowCustomerApp) {
+                    $appPass = trim((string) $request->input('customer_app_password', ''));
+                    if ($appPass !== '') {
+                        $input['password'] = bcrypt($appPass);
+                    } elseif (empty(\App\Contact::where('id', $id)->value('password'))) {
+                        // First-time enable with blank password → default to mobile
+                        $fallback = trim((string) ($input['mobile'] ?? ''));
+                        if ($fallback !== '') {
+                            $input['password'] = bcrypt($fallback);
+                        }
+                    }
                 }
 
                 $output = $this->contactUtil->updateContact($input, $id, $business_id);

@@ -5,33 +5,31 @@ namespace App\Http\Middleware;
 use App\Http\Controllers\Sale\SaleRepGate;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 /**
- * Restricts /sale portal to sales representatives only (not Admin / other staff without sell access).
+ * Sale App only — never uses Admin (web) user, never redirects to Admin /home.
  */
 class EnsureSaleRepAccess
 {
     public function handle(Request $request, Closure $next)
     {
-        $user = $request->user();
+        // Strict: only the sale guard (do NOT fall back to web/admin)
+        $user = Auth::guard('sale')->user();
 
         if (! $user) {
-            return redirect()->guest(route('sale.login'));
+            $request->session()->forget('url.intended');
+
+            return redirect()->route('sale.login');
         }
 
         if (! SaleRepGate::allows($user)) {
             $msg = SaleRepGate::denyMessage($user);
 
-            // Admin already using main system — don't kill their session
-            if (SaleRepGate::isAdmin($user)) {
-                return redirect('/home')
-                    ->with('status', ['success' => 0, 'msg' => $msg]);
-            }
+            Auth::guard('sale')->logout();
+            $request->session()->forget('url.intended');
 
-            auth()->logout();
-            $request->session()->invalidate();
-            $request->session()->regenerateToken();
-
+            // Stay in Sales App login — do not touch Admin session / do not go to /home
             return redirect()->route('sale.login')
                 ->with('status', ['success' => 0, 'msg' => $msg]);
         }

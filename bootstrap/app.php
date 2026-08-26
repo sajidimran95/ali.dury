@@ -4,10 +4,12 @@ use App\Http\Middleware\AdminSidebarMenu;
 use App\Http\Middleware\Authenticate;
 use App\Http\Middleware\CheckUserLogin;
 use App\Http\Middleware\EcomApi;
+use App\Http\Middleware\EnsureCustomerAppAccess;
 use App\Http\Middleware\EnsureSaleRepAccess;
 use App\Http\Middleware\IsInstalled;
 use App\Http\Middleware\Language;
 use App\Http\Middleware\RedirectIfAuthenticated;
+use App\Http\Middleware\SeparateAppSession;
 use App\Http\Middleware\SetSessionData;
 use App\Http\Middleware\Superadmin;
 use App\Http\Middleware\Timezone;
@@ -48,6 +50,11 @@ return Application::configure(basePath: dirname(__DIR__))
             ConvertEmptyStringsToNull::class,
         ]);
 
+        // Separate Admin / Sale / Customer sessions on the same device
+        $middleware->web(prepend: [
+            SeparateAppSession::class,
+        ]);
+
         $middleware->preventRequestForgery(except: [
             '/api/ecom/customers',
             '/api/ecom/orders',
@@ -75,6 +82,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'superadmin' => Superadmin::class,
             'CheckUserLogin' => CheckUserLogin::class,
             'sale.rep' => EnsureSaleRepAccess::class,
+            'customer.app' => EnsureCustomerAppAccess::class,
+            'sale.guard' => \App\Http\Middleware\UseSaleGuard::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

@@ -169,6 +169,35 @@
             </div>
         </div>
 
+        <div class="col-md-12 customer_fields">
+            <div class="well well-sm" style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:12px 14px;margin-bottom:15px;">
+                <div class="form-group" style="margin-bottom:8px;">
+                    <label class="control-label" style="font-weight:700;">Active Customer App:</label>
+                    <div>
+                        <label class="radio-inline" style="margin-right:16px;">
+                            <input type="radio" name="allow_customer_app" value="1" class="customer_app_radio" {{ (int)($contact->allow_customer_app ?? 0) === 1 ? 'checked' : '' }}> Yes
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="allow_customer_app" value="0" class="customer_app_radio" {{ (int)($contact->allow_customer_app ?? 0) !== 1 ? 'checked' : '' }}> No
+                        </label>
+                    </div>
+                    <p class="help-block" style="margin:6px 0 0;font-size:12px;">
+                        When Yes, customer can login at <code>/customer</code> using email or mobile as ID.
+                    </p>
+                </div>
+                <div class="row">
+                    <div class="col-md-4 customer_app_password_wrap" style="{{ (int)($contact->allow_customer_app ?? 0) === 1 ? '' : 'display:none;' }}">
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label>App Password:</label>
+                            <input type="text" name="customer_app_password" class="form-control" placeholder="Leave blank to keep current / use mobile">
+                            <p class="help-block" style="margin:4px 0 0;font-size:11px;">Login ID = email or mobile. Leave blank to keep existing password.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="clearfix customer_fields"></div>
+
         <div class="col-sm-4">
             <div class="form-group individual" @if($contact->contact_type == 'business') style="display: none;"  @endif>
                 {!! Form::label('dob', __('lang_v1.dob') . ':') !!}
@@ -667,6 +696,15 @@
             }
         });
     }
+    function bindCustomerApp($) {
+        function syncCustomerAppPassword() {
+            var on = $('input[name="allow_customer_app"]:checked').val() === '1';
+            $('.customer_app_password_wrap').toggle(on);
+        }
+        $(document).off('change.customerApp', '.customer_app_radio').on('change.customerApp', '.customer_app_radio', syncCustomerAppPassword);
+        syncCustomerAppPassword();
+    }
     whenJQuery(bindMsaCot);
+    whenJQuery(bindCustomerApp);
 })();
 </script>

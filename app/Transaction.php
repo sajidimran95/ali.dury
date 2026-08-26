@@ -505,6 +505,12 @@ class Transaction extends Model
         return $this->belongsTo(\App\ExpenseCategory::class, 'expense_category_id');
     }
 
+    /** Alias for Sale App eager-load (`with('expense_category')`) — same as mastergpos. */
+    public function expense_category()
+    {
+        return $this->expenseCategory();
+    }
+
     public function expenseSubCategory()
     {
         return $this->belongsTo(\App\ExpenseCategory::class, 'expense_sub_category_id');

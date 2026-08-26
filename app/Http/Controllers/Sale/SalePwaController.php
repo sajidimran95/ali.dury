@@ -88,7 +88,7 @@ class SalePwaController extends Controller
 
     public function serviceWorker()
     {
-        $version = config('app.asset_version', config('constants.asset_version', '1'));
+        $version = config('app.asset_version', config('constants.asset_version', '1')).'-sale-iso-2';
         $offline = url('/sale/pwa/offline');
         $cache = 'japspos-sale-pwa-v'.preg_replace('/[^a-zA-Z0-9._-]/', '', (string) $version);
 
@@ -130,6 +130,10 @@ self.addEventListener('fetch', (event) => {
   if (isDoc) {
     event.respondWith(
       fetch(req).then((res) => {
+        // Never cache redirects / errors — avoids sticky Admin redirect
+        if (!res.ok || res.redirected || res.type === 'opaqueredirect' || (res.status >= 300 && res.status < 400)) {
+          return res;
+        }
         const copy = res.clone();
         caches.open(CACHE_NAME).then((c) => c.put(req, copy)).catch(() => {});
         return res;
