@@ -113,6 +113,48 @@ class SellPosController extends Controller
     }
 
     /**
+     * POS may stay open a long time; the form date/time is from page load.
+     * On finalize, keep the selected calendar date and stamp the real current time (business TZ).
+     * Direct Sale keeps the submitted datetime as entered.
+     */
+    protected function applyPosTransactionDateTime(array &$input, ?string $submittedDate, bool $is_direct_sale): void
+    {
+        $now = \Carbon\Carbon::now();
+        $is_final = ($input['status'] ?? '') === 'final' && empty($input['is_suspend']);
+
+        if ($is_direct_sale || ! $is_final) {
+            if (empty($submittedDate)) {
+                $input['transaction_date'] = $now->toDateTimeString();
+            } else {
+                $input['transaction_date'] = $this->productUtil->uf_date($submittedDate, true);
+            }
+
+            return;
+        }
+
+        if (empty($submittedDate)) {
+            $input['transaction_date'] = $now->toDateTimeString();
+        } else {
+            $parsed = $this->productUtil->uf_date($submittedDate, true);
+            $date = \Carbon\Carbon::parse($parsed);
+            $input['transaction_date'] = $date->setTime(
+                (int) $now->format('H'),
+                (int) $now->format('i'),
+                (int) $now->format('s')
+            )->toDateTimeString();
+        }
+
+        if (! empty($input['payment']) && is_array($input['payment'])) {
+            foreach ($input['payment'] as $key => $payment) {
+                if (! is_array($payment)) {
+                    continue;
+                }
+                $input['payment'][$key]['paid_on'] = $now->toDateTimeString();
+            }
+        }
+    }
+
+    /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
@@ -450,11 +492,11 @@ class SellPosController extends Controller
 
                 DB::beginTransaction();
 
-                if (empty($request->input('transaction_date'))) {
-                    $input['transaction_date'] = \Carbon::now();
-                } else {
-                    $input['transaction_date'] = $this->productUtil->uf_date($request->input('transaction_date'), true);
-                }
+                $this->applyPosTransactionDateTime(
+                    $input,
+                    $request->input('transaction_date'),
+                    $is_direct_sale
+                );
                 if ($is_direct_sale) {
                     $input['is_direct_sale'] = 1;
                 }
@@ -1506,10 +1548,6 @@ class SellPosController extends Controller
                 ];
                 $invoice_total = $this->productUtil->calculateInvoiceTotal($input['products'], $input['tax_rate_id'], $discount);
 
-                if (!empty($request->input('transaction_date'))) {
-                    $input['transaction_date'] = $this->productUtil->uf_date($request->input('transaction_date'), true);
-                }
-
                 $input['commission_agent'] = !empty($request->input('commission_agent')) ? $request->input('commission_agent') : null;
                 if ($commsn_agnt_setting == 'logged_in_user') {
                     $input['commission_agent'] = $user_id;
@@ -1543,6 +1581,12 @@ class SellPosController extends Controller
                         $input['additional_notes'] = null;
                     }
                 }
+
+                $this->applyPosTransactionDateTime(
+                    $input,
+                    $request->input('transaction_date'),
+                    $is_direct_sale
+                );
 
                 if ($status_before == 'draft' && !empty($request->input('invoice_scheme_id'))) {
                     $input['invoice_scheme_id'] = $request->input('invoice_scheme_id');

@@ -2781,11 +2781,26 @@ function pos_refresh_payment_modal() {
         __write_number($('input#tax_calculation_amount'), tax_rate);
         pos_total_row();
     });
-    //Datetime picker
-    $('#transaction_date').datetimepicker({
-        format: moment_date_format + ' ' + moment_time_format,
-        ignoreReadonly: true,
-    });
+    // Sale date is date-only on screen; real time is stamped server-side on finalize.
+    if ($.fn.datepicker) {
+        try {
+            if ($('#transaction_date').data('DateTimePicker')) {
+                $('#transaction_date').data('DateTimePicker').destroy();
+            }
+        } catch (err) {}
+        $('#transaction_date').datepicker({
+            autoclose: true,
+            todayHighlight: true,
+            enableOnReadonly: true,
+            forceParse: false,
+            format: typeof datepicker_date_format !== 'undefined' ? datepicker_date_format : 'mm/dd/yyyy',
+        });
+    } else {
+        $('#transaction_date').datetimepicker({
+            format: moment_date_format,
+            ignoreReadonly: true,
+        });
+    }
 
     //Direct sell submit
     sell_form = $('form#add_sell_form');
@@ -4898,8 +4913,14 @@ function reset_pos_form(){
     if ($('#status').length > 0 && $('#status').is(":visible")) {
         $('#status').val('').trigger('change');
     }
-    if ($('#transaction_date').length > 0 && $('#transaction_date').data('DateTimePicker')) {
-        $('#transaction_date').data("DateTimePicker").date(moment());
+    if ($('#transaction_date').length > 0) {
+        if ($('#transaction_date').data('DateTimePicker')) {
+            $('#transaction_date').data("DateTimePicker").date(moment());
+        } else if ($('#transaction_date').data('datepicker')) {
+            var dateFmt = typeof moment_date_format !== 'undefined' ? moment_date_format : 'MM/DD/YYYY';
+            $('#transaction_date').datepicker('update', moment().toDate());
+            $('#transaction_date').val(moment().format(dateFmt));
+        }
     }
     if ($('.paid_on').length > 0) {
         $('.paid_on').each(function () {

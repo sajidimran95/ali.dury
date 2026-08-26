@@ -92,7 +92,7 @@
 					<span class="input-group-addon">
 						<i class="fa fa-calendar"></i>
 					</span>
-					{!! Form::text('transaction_date', $default_datetime, ['class' => 'form-control', 'readonly', 'required', 'id' => 'transaction_date']); !!}
+					{!! Form::text('transaction_date', @format_date('now'), ['class' => 'form-control', 'readonly', 'required', 'id' => 'transaction_date']); !!}
 				</div>
 			</div>
 		</div>
