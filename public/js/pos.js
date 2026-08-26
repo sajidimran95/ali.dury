@@ -484,8 +484,8 @@ $(document).ready(function() {
         });
 
         $(document).on('click', '#pos_customer_picker_add.add_new_customer', function (e) {
+            e.preventDefault();
             e.stopPropagation();
-            // existing add_new_customer handler opens modal; just close picker
             posCustPickerClose();
         });
 
@@ -2620,28 +2620,44 @@ function pos_refresh_payment_modal() {
         pos_total_row();
     });
 
-    $(document).on('click', '.add_new_customer', function() {
+    function posContactModal() {
+        var $modal = $('#pos_contact_modal');
+        if (!$modal.length) {
+            $modal = $('form#quick_add_contact').closest('.contact_modal');
+        }
+        // Never use empty #global_contact_modal
+        if ($modal.is('#global_contact_modal')) {
+            $modal = $('form#quick_add_contact').closest('.contact_modal');
+        }
+        return $modal;
+    }
+
+    $(document).on('click', '.add_new_customer', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+
         try {
             $('#customer_id').select2('close');
-        } catch (e) {}
+        } catch (err) {}
         if (typeof posCustPickerClose === 'function') {
             posCustPickerClose();
         }
-        var name = $(this).data('name');
-        var $modal = $('.contact_modal').first();
+
+        var name = $(this).attr('data-name') || '';
+        var $modal = posContactModal();
         if (!$modal.length) {
             return;
         }
-        // Lift out of POS stacking contexts before show (avoids backdrop overlap)
+
         if (!$modal.parent().is('body')) {
             $modal.appendTo('body');
         }
+
         $modal.find('input#name').val(name);
         $modal.find('select#contact_type')
             .val('customer')
             .closest('div.contact_type_div')
             .addClass('hide');
-        // Default to Individual so name + DOB fields are visible
         var $indiv = $modal.find('#inlineRadio1');
         if ($indiv.length) {
             if ($indiv.parent().hasClass('iradio_square-blue')) {
@@ -2654,7 +2670,11 @@ function pos_refresh_payment_modal() {
             $modal.find('.contact_person_hint').hide();
             $modal.find('div.business').hide();
         }
-        $modal.modal('show');
+
+        // Same click can hit the new backdrop and instantly close. Show next tick.
+        setTimeout(function () {
+            $modal.modal('show');
+        }, 0);
     });
     $('form#quick_add_contact')
         .submit(function(e) {
@@ -2762,11 +2782,21 @@ function pos_refresh_payment_modal() {
         });
     }
 
-    $('.contact_modal').on('hidden.bs.modal', function() {
-        $('form#quick_add_contact')
-            .find('button[type="submit"]')
-            .removeAttr('disabled');
-        $('form#quick_add_contact')[0].reset();
+    $(document).on('hidden.bs.modal', '#pos_contact_modal, .contact_modal', function() {
+        if (this.id === 'global_contact_modal') {
+            return;
+        }
+        var $form = $(this).find('form#quick_add_contact');
+        if ($form.length) {
+            $form.find('button[type="submit"]').removeAttr('disabled');
+            if ($form[0]) {
+                $form[0].reset();
+            }
+        }
+        if (!$('.modal.in:visible, .modal.show:visible').not(this).length) {
+            $('.modal-backdrop').remove();
+            $('body').removeClass('modal-open').css({ paddingRight: '', overflow: '' });
+        }
     });
 
     //Updates for add sell

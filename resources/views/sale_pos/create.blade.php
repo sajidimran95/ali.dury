@@ -81,7 +81,7 @@
     <!-- This will be printed -->
     <section class="invoice print_section" id="receipt_section">
     </section>
-    <div class="modal fade contact_modal" tabindex="-1" role="dialog" aria-labelledby="gridSystemModalLabel">
+    <div class="modal fade contact_modal" id="pos_contact_modal" tabindex="-1" role="dialog" aria-labelledby="gridSystemModalLabel">
         @include('contact.create', ['quick_add' => true])
     </div>
     @if (empty($pos_settings['hide_product_suggestion']) && isMobile())
@@ -124,7 +124,7 @@
     @endif
 @stop
 @section('javascript')
-    <script src="{{ asset('js/pos.js?v=' . $asset_v . '&ls=119') }}"></script>
+    <script src="{{ asset('js/pos.js?v=' . $asset_v . '&ls=120') }}"></script>
     <script src="{{ asset('js/printer.js?v=' . $asset_v) }}"></script>
     <script src="{{ asset('js/product.js?v=' . $asset_v) }}"></script>
     <script src="{{ asset('js/opening_stock.js?v=' . $asset_v) }}"></script>
