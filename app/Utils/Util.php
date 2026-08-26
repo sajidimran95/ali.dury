@@ -347,6 +347,9 @@ class Util
     public function format_date($date, $show_time = false, $business_details = null)
     {
         $format = ! empty($business_details) ? $business_details->date_format : session('business.date_format');
+        if (empty($format)) {
+            $format = 'm/d/Y';
+        }
         if (! empty($show_time)) {
             $time_format = ! empty($business_details) ? $business_details->time_format : session('business.time_format');
             if ($time_format == 12) {
@@ -356,7 +359,21 @@ class Util
             }
         }
 
-        return ! empty($date) ? \Carbon::createFromTimestamp(strtotime($date))->format($format) : null;
+        if (empty($date) && $date !== 0 && $date !== '0') {
+            return null;
+        }
+
+        try {
+            // Use app/business timezone (set by Timezone middleware).
+            // Avoid createFromTimestamp(): Carbon keeps that instance in UTC, so POS showed UTC not business TZ.
+            $carbon = ($date === 'now')
+                ? \Carbon\Carbon::now()
+                : \Carbon\Carbon::parse($date);
+
+            return $carbon->format($format);
+        } catch (\Exception $e) {
+            return null;
+        }
     }
 
     /**

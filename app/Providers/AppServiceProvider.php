@@ -188,9 +188,10 @@ class AppServiceProvider extends ServiceProvider
         });
 
         //Blade directive to convert.
+        // Use Carbon::parse (app/business TZ). createFromTimestamp keeps UTC and showed wrong POS times.
         Blade::directive('format_date', function ($date) {
             if (! empty($date)) {
-                return "\Carbon::createFromTimestamp(strtotime($date))->format(session('business.date_format'))";
+                return "\\Carbon\\Carbon::parse($date)->format(session('business.date_format') ?: 'm/d/Y')";
             } else {
                 return null;
             }
@@ -204,7 +205,7 @@ class AppServiceProvider extends ServiceProvider
                     $time_format = 'H:i';
                 }
 
-                return "\Carbon::createFromTimestamp(strtotime($date))->format('$time_format')";
+                return "\\Carbon\\Carbon::parse($date)->format('$time_format')";
             } else {
                 return null;
             }
@@ -217,7 +218,7 @@ class AppServiceProvider extends ServiceProvider
                     $time_format = 'H:i';
                 }
 
-                return "\Carbon::createFromTimestamp(strtotime($date))->format(session('business.date_format') . ' ' . '$time_format')";
+                return "\\Carbon\\Carbon::parse($date)->format((session('business.date_format') ?: 'm/d/Y') . ' ' . '$time_format')";
             } else {
                 return null;
             }
