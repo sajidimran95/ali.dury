@@ -2621,9 +2621,21 @@ function pos_refresh_payment_modal() {
     });
 
     $(document).on('click', '.add_new_customer', function() {
-        $('#customer_id').select2('close');
+        try {
+            $('#customer_id').select2('close');
+        } catch (e) {}
+        if (typeof posCustPickerClose === 'function') {
+            posCustPickerClose();
+        }
         var name = $(this).data('name');
         var $modal = $('.contact_modal').first();
+        if (!$modal.length) {
+            return;
+        }
+        // Lift out of POS stacking contexts before show (avoids backdrop overlap)
+        if (!$modal.parent().is('body')) {
+            $modal.appendTo('body');
+        }
         $modal.find('input#name').val(name);
         $modal.find('select#contact_type')
             .val('customer')

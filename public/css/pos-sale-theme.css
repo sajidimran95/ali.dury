@@ -6443,6 +6443,7 @@ body.lockscreen.pos-sale-theme .select2-container--default .select2-results__opt
 body.lockscreen.pos-sale-theme .contact_modal,
 body.lockscreen.pos-sale-theme #global_contact_modal {
   overflow: hidden !important;
+  z-index: 10600 !important;
 }
 
 body.lockscreen.pos-sale-theme .contact_modal .modal-dialog,

@@ -36,22 +36,23 @@ $(document).on('hidden.bs.modal', STACKED_MODALS_SELECTOR, function () {
 
 // These modals can be opened stacked (e.g. JapsAI's scan modal with "Add new product"
 // opened on top of it for a missing item) and need the later-opened one to paint above
-// the earlier one. The theme CSS pins every `.modal` to the same `z-index: 1100
-// !important`, so with two tied on z-index the browser falls back to DOM/markup order —
-// and in this app's markup the scan modals happen to be declared after the quick-add
-// modal, so they were winning that tie-break even while opened *before* it. That made the
-// product-add popup (and scrolling into it) unusable: input was landing on the modal
-// sitting above it. Assign a z-index based on how many of these are already open when one
-// shows, so open order decides the stack; `setProperty(..., 'important')` is required to
-// outrank the theme's `!important` rule. Scoped to this specific set so it can't touch
-// any other modal's normal (non-stacked) z-index.
+// the earlier one. Admin theme pins `.modal` at z-index 1100; POS theme uses ~10600.
+// Assign a z-index based on how many of these are already open when one shows, so open
+// order decides the stack; `setProperty(..., 'important')` is required to outrank the
+// theme's `!important` rule. Scoped to this specific set so it can't touch any other
+// modal's normal (non-stacked) z-index.
 $(document).on('show.bs.modal', STACKED_MODALS_SELECTOR, function () {
     var depth = $(STACKED_MODALS_SELECTOR).filter('.in').length;
-    this.style.setProperty('z-index', 1100 + depth * 20, 'important');
+    var base = document.body.classList.contains('pos-sale-theme') ? 10600 : 1100;
+    this.style.setProperty('z-index', base + depth * 20, 'important');
 });
 $(document).on('shown.bs.modal', STACKED_MODALS_SELECTOR, function () {
-    var zIndex = parseInt(this.style.zIndex, 10) || 1100;
-    $('.modal-backdrop').last().css('z-index', zIndex - 1);
+    var base = document.body.classList.contains('pos-sale-theme') ? 10600 : 1100;
+    var zIndex = parseInt(this.style.zIndex, 10) || base;
+    var backdrop = document.querySelector('.modal-backdrop:last-of-type') || document.querySelector('.modal-backdrop:last-child');
+    if (backdrop) {
+        backdrop.style.setProperty('z-index', String(zIndex - 1), 'important');
+    }
 });
 
 $(document).on('submit', 'form', function (e) {
