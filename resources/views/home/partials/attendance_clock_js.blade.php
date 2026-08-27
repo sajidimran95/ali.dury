@@ -96,6 +96,26 @@
             });
         }
 
+        var lastGeo = null;
+        var attBusy = false;
+
+        function geoPayload() {
+            return lastGeo ? { latitude: lastGeo.latitude, longitude: lastGeo.longitude } : {};
+        }
+
+        function prefetchGeo() {
+            if (!navigator.geolocation) {
+                return;
+            }
+            navigator.geolocation.getCurrentPosition(
+                function (pos) {
+                    lastGeo = { latitude: pos.coords.latitude, longitude: pos.coords.longitude };
+                },
+                function () {},
+                { enableHighAccuracy: false, timeout: 1500, maximumAge: 300000 }
+            );
+        }
+
         function postAction(url, extra) {
             extra = extra || {};
             var data = Object.assign({ _token: @json(csrf_token()) }, extra);
@@ -105,6 +125,8 @@
                 data: data,
                 dataType: 'json',
                 success: function (result) {
+                    attBusy = false;
+                    $('#att_btn_clock_in, #att_btn_clock_out').prop('disabled', false);
                     if (typeof toastr !== 'undefined') {
                         if (result.success) {
                             toastr.success(result.msg);
@@ -119,6 +141,8 @@
                     }
                 },
                 error: function () {
+                    attBusy = false;
+                    $('#att_btn_clock_in, #att_btn_clock_out').prop('disabled', false);
                     if (typeof toastr !== 'undefined') {
                         toastr.error(@json(__('messages.something_went_wrong')));
                     }
@@ -127,22 +151,12 @@
         }
 
         function withGeoThen(url) {
-            if (!navigator.geolocation) {
-                postAction(url);
+            if (attBusy) {
                 return;
             }
-            navigator.geolocation.getCurrentPosition(
-                function (pos) {
-                    postAction(url, {
-                        latitude: pos.coords.latitude,
-                        longitude: pos.coords.longitude
-                    });
-                },
-                function () {
-                    postAction(url);
-                },
-                { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
-            );
+            attBusy = true;
+            $('#att_btn_clock_in, #att_btn_clock_out').prop('disabled', true);
+            postAction(url, geoPayload());
         }
 
         $(document).off('click.attClock').on('click.attClock', '#att_btn_clock_in', function (e) {
@@ -159,21 +173,10 @@
         });
         $(document).on('click.attClock', '#att_btn_clock_out', function (e) {
             e.preventDefault();
-            if (typeof swal === 'undefined') {
-                withGeoThen(@json(action([\App\Http\Controllers\AttendanceController::class, 'clockOut'])));
-                return;
-            }
-            swal({
-                title: (typeof LANG !== 'undefined' && LANG.sure) ? LANG.sure : 'Are you sure?',
-                icon: 'warning',
-                buttons: true,
-            }).then(function (confirmed) {
-                if (confirmed) {
-                    withGeoThen(@json(action([\App\Http\Controllers\AttendanceController::class, 'clockOut'])));
-                }
-            });
+            withGeoThen(@json(action([\App\Http\Controllers\AttendanceController::class, 'clockOut'])));
         });
 
+        prefetchGeo();
         loadStatus();
         setInterval(updateTimers, 1000);
     });

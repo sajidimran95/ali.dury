@@ -1,8 +1,17 @@
-/* Home operations dashboard (mock-style layout) */
+/* Home operations dashboard — full-width like Inventory / Sales */
+body.japs-home-ops .content-wrapper,
+body.japs-home-ops .content,
+body.japs-home-ops .zoho-app-body,
+body.japs-home-ops #scrollable-container,
+body.japs-home-ops .zoho-main-column {
+    max-width: none !important;
+    width: 100% !important;
+}
+
 body.japs-home-ops .content-wrapper,
 body.japs-home-ops .content {
     background: #eef2f7 !important;
-    padding: 12px 20px 40px !important;
+    padding: 0 0 32px !important;
 }
 
 body.japs-home-ops .japs-ops .att-clock-card {
@@ -19,9 +28,11 @@ body.japs-home-ops .japs-ops .att-clock-card {
 }
 
 .japs-ops {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 8px 8px 32px;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 12px 0 24px;
+    box-sizing: border-box;
 }
 
 .japs-ops__header {

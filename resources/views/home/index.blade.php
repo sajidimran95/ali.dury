@@ -20,6 +20,7 @@
 @endphp
 
 @section('content')
+<div class="japs-dashboard-page">
 <div class="japs-ops">
     <div class="japs-ops__header">
         <div class="japs-ops__title-block">
@@ -181,6 +182,7 @@
             </section>
         </div>
     @endif
+</div>
 </div>
 @endsection
 
