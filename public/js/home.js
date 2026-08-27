@@ -1,6 +1,7 @@
 $(document).ready(function() {
     if ($('#dashboard_date_filter').length == 1) {
-        dateRangeSettings.startDate = moment().subtract(29, 'days');
+        var defaultDaysBack = $('body').hasClass('japs-home-ops') ? 6 : 29;
+        dateRangeSettings.startDate = moment().subtract(defaultDaysBack, 'days');
         dateRangeSettings.endDate = moment();
         $('#dashboard_date_filter').daterangepicker(dateRangeSettings, function(start, end) {
             $('#dashboard_date_filter_label').html(
@@ -8,13 +9,16 @@ $(document).ready(function() {
             );
             // Filter by date → only the 4 KPI cards (not Revenue / Sales Overview)
             update_statistics(start.format('YYYY-MM-DD'), end.format('YYYY-MM-DD'));
+            if (typeof window.japsLoadHomeOps === 'function') {
+                window.japsLoadHomeOps(start.format('YYYY-MM-DD'), end.format('YYYY-MM-DD'));
+            }
             if ($('#quotation_table').length && $('#dashboard_location').length) {
                 quotation_datatable.ajax.reload();
             }
         });
 
         update_statistics(
-            moment().subtract(29, 'days').format('YYYY-MM-DD'),
+            moment().subtract(defaultDaysBack, 'days').format('YYYY-MM-DD'),
             moment().format('YYYY-MM-DD')
         );
         // Charts load once with their own periods (not date filter)
@@ -31,6 +35,9 @@ $(document).ready(function() {
                     .endDate.format('YYYY-MM-DD');
 
         update_statistics(start, end);
+        if (typeof window.japsLoadHomeOps === 'function') {
+            window.japsLoadHomeOps(start, end);
+        }
         japsLoadDashboardCharts();
     });
 

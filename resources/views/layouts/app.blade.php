@@ -13,7 +13,8 @@
 @endif
 
 @php
-    $dashboard_home = $request->segment(1) == 'home';
+    $dashboard_home = in_array($request->segment(1), ['home', 'sales-dashboard'], true);
+    $home_ops = $request->segment(1) == 'home';
     // Premium canvas for all non-POS pages (dashboards + rest of app)
     $dashboard_premium = ! $pos_layout;
 @endphp
@@ -93,7 +94,7 @@
                 $__pos_screen_layout = strtolower((string) $__biz_sess->pos_screen_layout) === 'rtl' ? 'rtl' : 'ltr';
             }
         }
-    @endphp pos-layout-{{ $__pos_screen_layout }} @elseif(!empty($dashboard_home)) hold-transition japs-dashboard-home japs-dashboard-premium sidebar-mini @elseif(!empty($dashboard_premium)) hold-transition japs-dashboard-premium sidebar-mini @else hold-transition skin-@if (!empty(session('business.theme_color'))){{ session('business.theme_color') }}@else{{ 'blue-light' }} @endif sidebar-mini @endif" >
+    @endphp pos-layout-{{ $__pos_screen_layout }} @elseif(!empty($home_ops)) hold-transition japs-dashboard-home japs-home-ops japs-dashboard-premium sidebar-mini @elseif(!empty($dashboard_home)) hold-transition japs-dashboard-home japs-dashboard-premium sidebar-mini @elseif(!empty($dashboard_premium)) hold-transition japs-dashboard-premium sidebar-mini @else hold-transition skin-@if (!empty(session('business.theme_color'))){{ session('business.theme_color') }}@else{{ 'blue-light' }} @endif sidebar-mini @endif" >
     <div class="tw-flex thetop">
         <script type="text/javascript">
             if (localStorage.getItem("upos_sidebar_collapse") == 'true') {

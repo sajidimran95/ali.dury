@@ -74,11 +74,11 @@ class AdminSidebarMenu
      */
     protected function addSalesGroupedMenu($sub, array $enabled_modules, $is_admin, $pos_settings): void
     {
-        $sub->url(
-            action([\App\Http\Controllers\HomeController::class, 'index']),
-            __('lang_v1.sales_dashboard'),
-            ['icon' => '', 'active' => request()->segment(1) == 'home']
-        );
+            $sub->url(
+                action([\App\Http\Controllers\HomeController::class, 'salesDashboard']),
+                __('lang_v1.sales_dashboard'),
+                ['icon' => '', 'active' => request()->segment(1) == 'sales-dashboard']
+            );
 
         $moduleUtil = new ModuleUtil();
         if (! $moduleUtil->isModuleInstalled('Crm')) {

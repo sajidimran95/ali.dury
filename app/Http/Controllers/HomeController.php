@@ -59,11 +59,45 @@ class HomeController extends Controller
     }
 
     /**
-     * Show the application dashboard.
+     * Home operations dashboard (store overview).
      *
      * @return \Illuminate\Http\Response
      */
     public function index()
+    {
+        $user = auth()->user();
+        if ($user->user_type == 'user_customer') {
+            return redirect()->action([\Modules\Crm\Http\Controllers\DashboardController::class, 'index']);
+        }
+
+        $business_id = request()->session()->get('user.business_id');
+        $this->businessUtil->createDefaultSalesRole((int) $business_id);
+
+        $is_admin = $this->businessUtil->is_admin($user);
+
+        if (! $user->can('dashboard.data')) {
+            return view('home.index', [
+                'is_admin' => $is_admin,
+                'all_locations' => [],
+                'display_name' => $this->homeDisplayName($user),
+            ]);
+        }
+
+        $all_locations = BusinessLocation::forDropdown($business_id)->toArray();
+
+        return view('home.index', [
+            'is_admin' => $is_admin,
+            'all_locations' => $all_locations,
+            'display_name' => $this->homeDisplayName($user),
+        ]);
+    }
+
+    /**
+     * Sales menu — Sales & Fulfillment Analytics dashboard.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function salesDashboard()
     {
         $user = auth()->user();
         if ($user->user_type == 'user_customer') {
@@ -431,7 +465,7 @@ class HomeController extends Controller
         $common_settings = ! empty(session('business.common_settings')) ? session('business.common_settings') : [];
 
 
-        return view('home.index', compact(
+        return view('home.sales_analytics', compact(
             'sells_chart_1',
             'sells_chart_2',
             'widgets',
@@ -1213,6 +1247,7 @@ class HomeController extends Controller
                 'transactions.type',
                 'transactions.status',
                 'transactions.payment_status',
+                'transactions.shipping_status',
                 'transactions.final_total',
                 'transactions.transaction_date',
                 'contacts.name',
@@ -1233,6 +1268,13 @@ class HomeController extends Controller
                 $name = ! empty($row->supplier_business_name) ? $row->supplier_business_name.', '.$row->name : $row->name;
 
                 return e($name);
+            })
+            ->addColumn('fulfillment_stage', function ($row) {
+                $stage = $this->fulfillmentStageForRow($row);
+
+                return '<span class="japs-ops-stage japs-ops-stage--'.$stage['key'].'">'
+                    .'<i class="'.$stage['icon'].'"></i> '.e($stage['label'])
+                    .'</span>';
             })
             ->addColumn('business_location_badge', function ($row) {
                 $source = $row->source ?? '';
@@ -1266,8 +1308,158 @@ class HomeController extends Controller
             ->editColumn('transaction_date', function ($row) {
                 return $this->commonUtil->format_date($row->transaction_date, true);
             })
-            ->rawColumns(['action', 'invoice_no', 'business_location_badge', 'payment_status', 'final_total'])
+            ->rawColumns(['action', 'invoice_no', 'business_location_badge', 'payment_status', 'final_total', 'fulfillment_stage'])
             ->make(true);
+    }
+
+    /**
+     * Home operations dashboard payload (KPIs, attention, fulfillment, trends, low stock).
+     */
+    public function getHomeOpsOverview()
+    {
+        $start = request()->input('start', \Carbon::now()->subDays(6)->format('Y-m-d'));
+        $end = request()->input('end', \Carbon::now()->format('Y-m-d'));
+        $location_id = request()->input('location_id');
+        $business_id = request()->session()->get('user.business_id');
+        $permitted_locations = auth()->user()->permitted_locations();
+
+        $awaiting = 0;
+        $delayed = 0;
+        $invoice_due_count = 0;
+        $low_stock_count = 0;
+        $low_stock = collect();
+        $fulfillment = [
+            'picking' => 0,
+            'packing' => 0,
+            'shipment' => 0,
+            'by_source' => [
+                'pos' => ['picking' => 0, 'packing' => 0, 'shipment' => 0],
+                'online' => ['picking' => 0, 'packing' => 0, 'shipment' => 0],
+                'field' => ['picking' => 0, 'packing' => 0, 'shipment' => 0],
+            ],
+        ];
+        $labels = [];
+        $orders = [];
+        $revenue = [];
+
+        try {
+            $awaiting = $this->countAwaitingFulfillment($business_id, $permitted_locations, $location_id);
+            $delayed = $this->countDelayedShipments($business_id, $permitted_locations, $location_id);
+            $invoice_due_count = $this->countInvoiceDue($business_id, $permitted_locations, $location_id);
+            $fulfillment = $this->buildOpsFulfillment($business_id, $permitted_locations, $location_id, $start, $end);
+        } catch (\Throwable $e) {
+            \Log::warning('Home ops overview counts failed: '.$e->getMessage());
+        }
+
+        try {
+            $low_stock_q = $this->lowStockQuery($business_id, $permitted_locations, $location_id);
+            $low_stock_count = (int) (clone $low_stock_q)->count();
+            $low_stock = $low_stock_q
+                ->orderBy('variation_location_details.qty_available', 'asc')
+                ->limit(8)
+                ->get()
+                ->map(function ($row) {
+                    return [
+                        'product' => $row->product,
+                        'sku' => $row->sub_sku ?: $row->sku,
+                        'stock' => (float) $row->stock,
+                        'alert_quantity' => (float) ($row->alert_quantity ?? 0),
+                    ];
+                });
+        } catch (\Throwable $e) {
+            \Log::warning('Home ops low stock failed: '.$e->getMessage());
+        }
+
+        try {
+            $daily = $this->getDailyOrdersAndRevenue($business_id, $start, $end, $permitted_locations);
+            $cursor = \Carbon::parse($start);
+            $last = \Carbon::parse($end);
+            while ($cursor->lte($last)) {
+                $date = $cursor->format('Y-m-d');
+                $labels[] = $cursor->format('M j');
+                $row = $daily->get($date);
+                $orders[] = $row ? (int) $row->orders_count : 0;
+                $revenue[] = $row ? round((float) $row->revenue, 2) : 0;
+                $cursor->addDay();
+            }
+        } catch (\Throwable $e) {
+            \Log::warning('Home ops trends failed: '.$e->getMessage());
+        }
+
+        $open_issues = $delayed + $invoice_due_count + (int) $low_stock_count;
+
+        $start_date = \Carbon::parse($start);
+        $end_date = \Carbon::parse($end);
+        $days = max(1, $start_date->diffInDays($end_date) + 1);
+        $prev_end = $start_date->copy()->subDay();
+        $prev_start = $prev_end->copy()->subDays($days - 1)->format('Y-m-d');
+        $prev_end_str = $prev_end->format('Y-m-d');
+
+        $prev_awaiting = 0;
+        $prev_open = 0;
+        try {
+            $prev_awaiting = $this->countAwaitingFulfillment($business_id, $permitted_locations, $location_id, $prev_start, $prev_end_str);
+            $prev_open = $this->countDelayedShipments($business_id, $permitted_locations, $location_id, $prev_start, $prev_end_str)
+                + $this->countInvoiceDue($business_id, $permitted_locations, $location_id);
+        } catch (\Throwable $e) {
+            // ignore prior-period comparison errors
+        }
+
+        $attention = [
+            [
+                'label' => __('home.online_awaiting_picking'),
+                'count' => $this->safeCount(fn () => $this->countChannelAwaiting($business_id, $permitted_locations, $location_id, 'online')),
+                'url' => action([\App\Http\Controllers\SalesOrderController::class, 'index']).'?source=ecommerce',
+                'icon' => 'cart',
+            ],
+            [
+                'label' => __('home.shipments_delayed'),
+                'count' => $delayed,
+                'url' => action([\App\Http\Controllers\SellController::class, 'shipments']),
+                'icon' => 'truck',
+            ],
+            [
+                'label' => __('home.low_stock_items'),
+                'count' => (int) $low_stock_count,
+                'url' => action([\App\Http\Controllers\ReportController::class, 'getStockReport']),
+                'icon' => 'box',
+            ],
+            [
+                'label' => __('home.invoice_due'),
+                'count' => $invoice_due_count,
+                'url' => action([\App\Http\Controllers\SellController::class, 'index']),
+                'icon' => 'alert',
+            ],
+        ];
+
+        return response()->json([
+            'kpis' => [
+                'awaiting_fulfillment' => $awaiting,
+                'open_issues' => $open_issues,
+                'change_pct' => [
+                    'awaiting_fulfillment' => $this->percentChange($awaiting, $prev_awaiting),
+                    'open_issues' => $this->percentChange($open_issues, $prev_open),
+                ],
+                'prev_period_label' => \Carbon::parse($prev_start)->format('M j').' – '.\Carbon::parse($prev_end_str)->format('M j'),
+            ],
+            'attention' => $attention,
+            'fulfillment' => $fulfillment,
+            'trends' => [
+                'labels' => $labels,
+                'orders' => $orders,
+                'revenue' => $revenue,
+            ],
+            'low_stock' => $low_stock,
+        ]);
+    }
+
+    private function safeCount(callable $fn): int
+    {
+        try {
+            return (int) $fn();
+        } catch (\Throwable $e) {
+            return 0;
+        }
     }
 
     /**
@@ -1332,6 +1524,217 @@ class HomeController extends Controller
             'total_unread' => $total_unread,
             'notification_html' => $notification_html,
         ];
+    }
+
+    private function homeDisplayName($user): string
+    {
+        $name = trim(($user->first_name ?? '').' '.($user->surname ?? ''));
+        if ($name === '') {
+            $name = trim(($user->first_name ?? '').' '.($user->last_name ?? ''));
+        }
+
+        return $name !== '' ? $name : (string) ($user->username ?? __('home.home'));
+    }
+
+    private function fulfillmentStageForRow($row): array
+    {
+        $ship = (string) ($row->shipping_status ?? '');
+        if ($ship === 'shipped') {
+            return ['key' => 'shipment', 'label' => __('home.stage_shipment'), 'icon' => 'fas fa-truck'];
+        }
+        if ($ship === 'packed') {
+            return ['key' => 'packing', 'label' => __('home.stage_packing'), 'icon' => 'fas fa-box'];
+        }
+        if (in_array($ship, ['ordered', ''], true) || $ship === '') {
+            if (in_array((string) $row->status, ['final', 'completed'], true) && empty($ship) && ($row->source ?? '') !== 'ecommerce') {
+                return ['key' => 'complete', 'label' => __('home.stage_complete'), 'icon' => 'fas fa-check'];
+            }
+        }
+        if ($ship === 'delivered') {
+            return ['key' => 'complete', 'label' => __('lang_v1.delivered'), 'icon' => 'fas fa-check'];
+        }
+
+        return ['key' => 'picking', 'label' => __('home.stage_picking'), 'icon' => 'fas fa-clipboard-list'];
+    }
+
+    private function applyLocationScope($query, $permitted_locations, $location_id)
+    {
+        if ($permitted_locations != 'all') {
+            $query->whereIn('transactions.location_id', $permitted_locations);
+        }
+        if (! empty($location_id)) {
+            $query->where('transactions.location_id', $location_id);
+        }
+
+        return $query;
+    }
+
+    private function awaitingFulfillmentQuery($business_id, $permitted_locations, $location_id, $start = null, $end = null)
+    {
+        $query = Transaction::where('transactions.business_id', $business_id)
+            ->where('transactions.status', '!=', 'cancelled')
+            ->where(function ($q) {
+                $q->where(function ($ship) {
+                    $ship->whereNotNull('transactions.shipping_status')
+                        ->whereNotIn('transactions.shipping_status', ['delivered', 'cancelled']);
+                })->orWhere(function ($ecom) {
+                    $ecom->where('transactions.source', 'ecommerce')
+                        ->where('transactions.type', 'sales_order')
+                        ->whereNotIn('transactions.status', ['completed', 'cancelled']);
+                })->orWhere(function ($due) {
+                    $due->where('transactions.type', 'sell')
+                        ->where('transactions.status', 'final')
+                        ->whereIn('transactions.payment_status', ['due', 'partial']);
+                });
+            });
+
+        $this->applyLocationScope($query, $permitted_locations, $location_id);
+
+        if (! empty($start) && ! empty($end)) {
+            $query->whereBetween('transactions.transaction_date', [$start.' 00:00:00', $end.' 23:59:59']);
+        }
+
+        return $query;
+    }
+
+    private function countAwaitingFulfillment($business_id, $permitted_locations, $location_id, $start = null, $end = null): int
+    {
+        return (int) $this->awaitingFulfillmentQuery($business_id, $permitted_locations, $location_id, $start, $end)->count();
+    }
+
+    private function countDelayedShipments($business_id, $permitted_locations, $location_id, $start = null, $end = null): int
+    {
+        $cutoff = \Carbon::now()->subDays(2)->format('Y-m-d H:i:s');
+        $query = Transaction::where('transactions.business_id', $business_id)
+            ->whereNotNull('transactions.shipping_status')
+            ->whereNotIn('transactions.shipping_status', ['delivered', 'cancelled'])
+            ->where('transactions.transaction_date', '<=', $cutoff);
+
+        $this->applyLocationScope($query, $permitted_locations, $location_id);
+        if (! empty($start) && ! empty($end)) {
+            $query->whereBetween('transactions.transaction_date', [$start.' 00:00:00', $end.' 23:59:59']);
+        }
+
+        return (int) $query->count();
+    }
+
+    private function countInvoiceDue($business_id, $permitted_locations, $location_id): int
+    {
+        $query = Transaction::where('transactions.business_id', $business_id)
+            ->where('transactions.type', 'sell')
+            ->where('transactions.status', 'final')
+            ->whereIn('transactions.payment_status', ['due', 'partial']);
+        $this->applyLocationScope($query, $permitted_locations, $location_id);
+
+        return (int) $query->count();
+    }
+
+    private function countChannelAwaiting($business_id, $permitted_locations, $location_id, string $channel): int
+    {
+        $query = $this->awaitingFulfillmentQuery($business_id, $permitted_locations, $location_id);
+        if ($channel === 'online') {
+            $query->where('transactions.source', 'ecommerce');
+        } elseif ($channel === 'field') {
+            $query->where('transactions.source', 'sale_app');
+        } else {
+            $query->where(function ($s) {
+                $s->whereNull('transactions.source')->orWhereNotIn('transactions.source', ['ecommerce', 'sale_app']);
+            });
+        }
+
+        return (int) $query->count();
+    }
+
+    private function channelKey(?string $source): string
+    {
+        if ($source === 'ecommerce') {
+            return 'online';
+        }
+        if ($source === 'sale_app') {
+            return 'field';
+        }
+
+        return 'pos';
+    }
+
+    private function stageKeyForShipping(?string $status, ?string $txnStatus, ?string $source): string
+    {
+        if ($status === 'shipped') {
+            return 'shipment';
+        }
+        if ($status === 'packed') {
+            return 'packing';
+        }
+        if ($status === 'delivered' || ($txnStatus === 'final' && empty($status) && $source !== 'ecommerce')) {
+            return 'complete';
+        }
+
+        return 'picking';
+    }
+
+    private function buildOpsFulfillment($business_id, $permitted_locations, $location_id, $start, $end): array
+    {
+        $empty = ['picking' => 0, 'packing' => 0, 'shipment' => 0];
+        $by_source = [
+            'pos' => $empty,
+            'online' => $empty,
+            'field' => $empty,
+        ];
+
+        $query = $this->dashboardOrdersQuery($business_id, $start, $end, $permitted_locations, $location_id)
+            ->select('source', 'status', 'shipping_status', DB::raw('COUNT(*) as cnt'))
+            ->groupBy('source', 'status', 'shipping_status');
+
+        foreach ($query->get() as $row) {
+            $channel = $this->channelKey($row->source);
+            $stage = $this->stageKeyForShipping($row->shipping_status, $row->status, $row->source);
+            if ($stage === 'complete') {
+                continue;
+            }
+            $by_source[$channel][$stage] += (int) $row->cnt;
+        }
+
+        $totals = $empty;
+        foreach ($by_source as $row) {
+            $totals['picking'] += $row['picking'];
+            $totals['packing'] += $row['packing'];
+            $totals['shipment'] += $row['shipment'];
+        }
+
+        return [
+            'picking' => $totals['picking'],
+            'packing' => $totals['packing'],
+            'shipment' => $totals['shipment'],
+            'by_source' => $by_source,
+        ];
+    }
+
+    private function lowStockQuery($business_id, $permitted_locations, $location_id)
+    {
+        $query = VariationLocationDetails::join('products as p', 'variation_location_details.product_id', '=', 'p.id')
+            ->join('variations as v', 'variation_location_details.variation_id', '=', 'v.id')
+            ->where('p.business_id', $business_id)
+            ->where('p.enable_stock', 1)
+            ->where('p.is_inactive', 0)
+            ->whereNull('v.deleted_at')
+            ->whereNotNull('p.alert_quantity')
+            ->whereRaw('variation_location_details.qty_available <= p.alert_quantity')
+            ->select(
+                'p.name as product',
+                'p.sku',
+                'p.alert_quantity',
+                'v.sub_sku',
+                'variation_location_details.qty_available as stock'
+            );
+
+        if (! empty($permitted_locations) && $permitted_locations != 'all') {
+            $query->whereIn('variation_location_details.location_id', $permitted_locations);
+        }
+        if (! empty($location_id)) {
+            $query->where('variation_location_details.location_id', $location_id);
+        }
+
+        return $query;
     }
 
     /**

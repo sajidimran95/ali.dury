@@ -28,7 +28,7 @@
     $__is_pos = !empty($pos_layout);
     // Heavy libs — only load where the page actually uses them
     $__needs_highcharts = ! $__is_pos && (
-        in_array($__seg1, ['home', 'reports', 'report'], true)
+        in_array($__seg1, ['home', 'sales-dashboard', 'reports', 'report'], true)
         || ($__seg1 === 'ecommerce' && $__seg2 === 'dashboard')
         || !empty($__force_highcharts)
     );

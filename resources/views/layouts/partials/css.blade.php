@@ -165,6 +165,9 @@
 @if(!empty($dashboard_home))
 <link rel="stylesheet" href="{{ asset('css/japs-dashboard-home.css?v='.$asset_v) }}">
 @endif
+@if(!empty($home_ops ?? false))
+<link rel="stylesheet" href="{{ asset('css/japs-home-ops.css?v='.$asset_v) }}">
+@endif
 @if(!empty($__system_settings['additional_css']))
     {!! $__system_settings['additional_css'] !!}
 @endif

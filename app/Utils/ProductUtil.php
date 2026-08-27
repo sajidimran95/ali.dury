@@ -2509,6 +2509,7 @@ class ProductUtil extends Util
             'p.name as product',
             'p.type',
             'p.sku',
+            'p.alert_quantity',
             'pv.name as product_variation',
             'v.name as variation',
             'v.sub_sku',
