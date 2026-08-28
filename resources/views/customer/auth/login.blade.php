@@ -108,8 +108,9 @@
                 </div>
                 <input class="japs-auth-input japs-auth-input--password" id="password" type="password"
                        name="password" required placeholder="Password" autocomplete="current-password" />
-                <button type="button" id="show_hide_icon" class="japs-auth-toggle-pw" style="position:absolute;right:10px;bottom:14px;" aria-label="Show password">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="tw-w-5 tw-h-5 tw-text-slate-500" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none"><path stroke="none" d="M0 0h24v24H0z"/><path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"/><path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6"/></svg>
+                <button type="button" id="show_hide_icon" class="japs-auth-toggle-pw" style="position:absolute;right:10px;bottom:14px;z-index:2;" aria-label="Show password" tabindex="-1">
+                    <svg id="customer_eye_show" xmlns="http://www.w3.org/2000/svg" class="tw-w-5 tw-h-5 tw-text-slate-500" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none"><path stroke="none" d="M0 0h24v24H0z"/><path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"/><path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6"/></svg>
+                    <svg id="customer_eye_hide" xmlns="http://www.w3.org/2000/svg" class="tw-w-5 tw-h-5 tw-text-slate-500" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" style="display:none"><path stroke="none" d="M0 0h24v24H0z"/><path d="M10.585 10.587a2 2 0 0 0 2.829 2.828"/><path d="M16.681 16.673a8.717 8.717 0 0 1 -4.681 1.327c-3.6 0 -6.6 -2 -9 -6c1.272 -2.12 2.712 -3.678 4.32 -4.674m2.86 -1.146a9.055 9.055 0 0 1 1.82 -.18c3.6 0 6.6 2 9 6c-.666 1.11 -1.379 2.067 -2.138 2.87"/><path d="M3 3l18 18"/></svg>
                 </button>
             </label>
         </div>
@@ -133,19 +134,30 @@
 
 @section('javascript')
 @include('customer.partials.pwa')
-<script type="text/javascript">
-    $(document).ready(function () {
-        $('#show_hide_icon').on('click', function (e) {
+<script>
+(function () {
+    function bindToggle() {
+        var btn = document.getElementById('show_hide_icon');
+        var input = document.getElementById('password');
+        var eyeShow = document.getElementById('customer_eye_show');
+        var eyeHide = document.getElementById('customer_eye_hide');
+        if (!btn || !input || btn.getAttribute('data-bound') === '1') return;
+        btn.setAttribute('data-bound', '1');
+        btn.addEventListener('click', function (e) {
             e.preventDefault();
-            const passwordInput = $('#password');
-            if (passwordInput.attr('type') === 'password') {
-                passwordInput.attr('type', 'text');
-                $(this).html('<svg xmlns="http://www.w3.org/2000/svg" class="tw-w-5 tw-h-5 tw-text-slate-500" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none"><path stroke="none" d="M0 0h24v24H0z"/><path d="M10.585 10.587a2 2 0 0 0 2.829 2.828"/><path d="M16.681 16.673a8.717 8.717 0 0 1 -4.681 1.327c-3.6 0 -6.6 -2 -9 -6c1.272 -2.12 2.712 -3.678 4.32 -4.674m2.86 -1.146a9.055 9.055 0 0 1 1.82 -.18c3.6 0 6.6 2 9 6c-.666 1.11 -1.379 2.067 -2.138 2.87"/><path d="M3 3l18 18"/></svg>');
-            } else {
-                passwordInput.attr('type', 'password');
-                $(this).html('<svg xmlns="http://www.w3.org/2000/svg" class="tw-w-5 tw-h-5 tw-text-slate-500" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none"><path stroke="none" d="M0 0h24v24H0z"/><path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"/><path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6"/></svg>');
-            }
+            e.stopPropagation();
+            var show = input.getAttribute('type') === 'password';
+            input.setAttribute('type', show ? 'text' : 'password');
+            btn.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+            if (eyeShow) eyeShow.style.display = show ? 'none' : '';
+            if (eyeHide) eyeHide.style.display = show ? '' : 'none';
         });
-    });
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', bindToggle);
+    } else {
+        bindToggle();
+    }
+})();
 </script>
 @endsection
