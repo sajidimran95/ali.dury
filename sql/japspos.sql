@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Aug 31, 2026 at 02:17 PM
+-- Generation Time: Aug 31, 2026 at 08:31 PM
 -- Server version: 8.4.3
 -- PHP Version: 8.4.2
 
@@ -327,7 +327,9 @@ INSERT INTO `activity_log` (`id`, `log_name`, `description`, `subject_id`, `subj
 (217, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-08-27 07:14:22', '2026-08-27 07:14:22'),
 (218, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-08-31 03:02:16', '2026-08-31 03:02:16'),
 (219, 'default', 'added', 180, 'App\\Transaction', NULL, 1, 1, 'App\\User', '{\"attributes\":{\"type\":\"sell\",\"status\":\"final\",\"shipping_status\":\"ordered\",\"payment_status\":\"paid\",\"final_total\":269.5}}', NULL, '2026-08-31 03:31:01', '2026-08-31 03:31:01'),
-(220, 'default', 'edited', 158, 'App\\Transaction', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-08-31 03:34:37', '2026-08-31 03:34:37');
+(220, 'default', 'edited', 158, 'App\\Transaction', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-08-31 03:34:37', '2026-08-31 03:34:37'),
+(221, 'default', 'logout', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-08-31 08:38:19', '2026-08-31 08:38:19'),
+(222, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-08-31 08:51:06', '2026-08-31 08:51:06');
 
 -- --------------------------------------------------------
 
@@ -1170,8 +1172,8 @@ CREATE TABLE `customer_groups` (
 --
 
 INSERT INTO `customer_groups` (`id`, `business_id`, `name`, `amount`, `price_calculation_type`, `selling_price_group_id`, `created_by`, `created_at`, `updated_at`) VALUES
-(1, 1, 'Retailer', 0.00, 'selling_price_group', 1, 1, '2026-07-18 18:56:54', '2026-07-18 18:56:54'),
-(2, 1, 'Wholesale', 0.00, 'selling_price_group', 2, 1, '2026-07-18 18:56:54', '2026-07-18 18:56:54');
+(1, 1, 'Group A', -10.00, 'percentage', 1, 1, '2026-07-18 18:56:54', '2026-08-31 09:55:02'),
+(2, 1, 'Group B', -5.00, 'percentage', 2, 1, '2026-07-18 18:56:54', '2026-08-31 09:55:02');
 
 -- --------------------------------------------------------
 
@@ -1482,7 +1484,8 @@ INSERT INTO `ecom_carts` (`id`, `business_id`, `contact_id`, `session_id`, `coup
 (127, 1, NULL, 'LcGLe4SH5BTMDuoZUSlYhwiZNGrxX5YMNKJcjSnS', NULL, '2026-08-25 13:23:17', '2026-08-25 13:23:17'),
 (128, 1, NULL, 'BXp6BSA80UO4zQpsEA4slmpHo4mPCtk6K1NZ5BLu', NULL, '2026-08-27 06:22:40', '2026-08-27 06:22:40'),
 (129, 1, NULL, '2x7wPVYzJkNfoCsFCTapZ5hxNePtYd7G5eD3vHH4', NULL, '2026-08-27 07:49:17', '2026-08-27 07:49:17'),
-(130, 1, NULL, 'iaK0vQV9xmCz3nFaEcR8OVymEA4tmVwF3hBLpACA', NULL, '2026-08-28 09:32:56', '2026-08-28 09:32:56');
+(130, 1, NULL, 'iaK0vQV9xmCz3nFaEcR8OVymEA4tmVwF3hBLpACA', NULL, '2026-08-28 09:32:56', '2026-08-28 09:32:56'),
+(131, 1, NULL, 'LI9b738N7sUsrqTNiL6mQ13RxPTBU85bNiJJheOO', NULL, '2026-08-31 04:23:26', '2026-08-31 04:23:26');
 
 -- --------------------------------------------------------
 
@@ -2690,7 +2693,8 @@ INSERT INTO `permissions` (`id`, `name`, `guard_name`, `created_at`, `updated_at
 (96, 'so.update_own', 'web', '2026-08-13 18:17:03', '2026-08-13 18:17:03'),
 (97, 'so.delete_own', 'web', '2026-08-13 18:17:03', '2026-08-13 18:17:03'),
 (98, 'view_own_expense', 'web', '2026-08-26 14:32:18', '2026-08-26 14:32:18'),
-(99, 'expense.add', 'web', '2026-08-26 14:32:18', '2026-08-26 14:32:18');
+(99, 'expense.add', 'web', '2026-08-26 14:32:18', '2026-08-26 14:32:18'),
+(100, 'selling_price_group.3', 'web', '2026-08-31 09:56:40', '2026-08-31 09:56:40');
 
 -- --------------------------------------------------------
 
@@ -3126,6 +3130,7 @@ INSERT INTO `role_has_permissions` (`permission_id`, `role_id`) VALUES
 (90, 1),
 (91, 1),
 (92, 1),
+(100, 1),
 (25, 2),
 (26, 2),
 (48, 2),
@@ -3167,8 +3172,9 @@ CREATE TABLE `selling_price_groups` (
 --
 
 INSERT INTO `selling_price_groups` (`id`, `name`, `description`, `business_id`, `is_active`, `deleted_at`, `created_at`, `updated_at`) VALUES
-(1, 'Retail', 'Retail selling prices for tobacco / MSA', 1, 1, NULL, '2026-07-18 18:56:54', '2026-07-18 18:56:54'),
-(2, 'Wholesale', 'Wholesale selling prices for tobacco / MSA', 1, 1, NULL, '2026-07-18 18:56:54', '2026-07-18 18:56:54');
+(1, 'Group A', 'Retail selling prices for tobacco / MSA', 1, 1, NULL, '2026-07-18 18:56:54', '2026-08-31 08:54:47'),
+(2, 'Group B', 'Wholesale selling prices for tobacco / MSA', 1, 1, NULL, '2026-07-18 18:56:54', '2026-08-31 08:54:47'),
+(3, 'ddd', 'ddd prices', 1, 1, '2026-08-31 10:00:27', '2026-08-31 09:56:40', '2026-08-31 10:00:27');
 
 -- --------------------------------------------------------
 
@@ -4242,7 +4248,7 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `user_type`, `surname`, `first_name`, `last_name`, `username`, `email`, `password`, `language`, `contact_no`, `address`, `remember_token`, `business_id`, `available_at`, `paused_at`, `max_sales_discount_percent`, `allow_login`, `status`, `is_enable_service_staff_pin`, `service_staff_pin`, `crm_contact_id`, `is_cmmsn_agnt`, `cmmsn_percent`, `selected_contacts`, `dob`, `gender`, `marital_status`, `blood_group`, `contact_number`, `alt_number`, `family_number`, `fb_link`, `twitter_link`, `social_media_1`, `social_media_2`, `permanent_address`, `current_address`, `guardian_name`, `custom_field_1`, `custom_field_2`, `custom_field_3`, `custom_field_4`, `bank_details`, `id_proof_name`, `id_proof_number`, `deleted_at`, `created_at`, `updated_at`) VALUES
-(1, 'user', NULL, 'Japs', 'POS', 'japspos', 'japspos@gmail.com', '$2y$10$LH3D2XH/82k.Av8HfGb3GOfKM3F7Qi7I86iZLyxhJFtjajS8pKHpK', 'en', NULL, NULL, 'QFPlHMIOmjagd8dWpZ5tx6hcjLEt3RedM2x6mevy8qNUEqYCBe19LKZBrK4O', 1, NULL, NULL, NULL, 1, 'active', 0, NULL, NULL, 0, 0.00, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '{\"account_holder_name\":null,\"account_number\":null,\"bank_name\":null,\"bank_code\":null,\"branch\":null,\"tax_payer_id\":null}', NULL, NULL, NULL, '2026-06-04 16:29:53', '2026-07-20 06:42:21'),
+(1, 'user', NULL, 'Japs', 'POS', 'japspos', 'japspos@gmail.com', '$2y$10$LH3D2XH/82k.Av8HfGb3GOfKM3F7Qi7I86iZLyxhJFtjajS8pKHpK', 'en', NULL, NULL, 'C0IaJH28LHJdIhv0TKdtYsujBUu8kyku28ELmzN6wECOwbTuB4ogH7XowePh', 1, NULL, NULL, NULL, 1, 'active', 0, NULL, NULL, 0, 0.00, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '{\"account_holder_name\":null,\"account_number\":null,\"bank_name\":null,\"bank_code\":null,\"branch\":null,\"tax_payer_id\":null}', NULL, NULL, NULL, '2026-06-04 16:29:53', '2026-07-20 06:42:21'),
 (3, 'user', NULL, 'Sales', NULL, 'sales', 'sales@japspos.com', '$2y$10$bhjln6gIUl7iQH99RhOHe.SdLfYtmWt46.QAc9EYGCwwKI.apVRG.', 'en', NULL, NULL, NULL, 1, NULL, NULL, NULL, 1, 'active', 0, NULL, NULL, 0, 0.00, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '{\"account_holder_name\":null,\"account_number\":null,\"bank_name\":null,\"bank_code\":null,\"branch\":null,\"tax_payer_id\":null}', NULL, NULL, NULL, '2026-08-17 03:13:14', '2026-08-17 03:13:14');
 
 -- --------------------------------------------------------
@@ -4337,32 +4343,64 @@ CREATE TABLE `variation_group_prices` (
 --
 
 INSERT INTO `variation_group_prices` (`id`, `variation_id`, `price_group_id`, `price_inc_tax`, `price_type`, `created_at`, `updated_at`) VALUES
-(1, 1, 1, 25.0000, 'fixed', '2026-07-18 19:00:29', '2026-07-24 15:59:34'),
-(2, 1, 2, 22.5000, 'fixed', '2026-07-18 19:00:29', '2026-07-24 15:59:34'),
-(3, 2, 1, 72.0000, 'fixed', '2026-07-18 19:00:29', '2026-07-24 15:59:34'),
-(4, 2, 2, 64.8000, 'fixed', '2026-07-18 19:00:29', '2026-07-24 15:59:34'),
-(5, 3, 1, 38.0000, 'fixed', '2026-07-18 19:00:29', '2026-07-24 15:59:34'),
-(6, 3, 2, 33.0600, 'fixed', '2026-07-18 19:00:29', '2026-07-24 15:59:34'),
-(7, 4, 1, 26.0000, 'fixed', '2026-07-18 19:00:29', '2026-07-24 15:59:34'),
-(8, 4, 2, 22.1000, 'fixed', '2026-07-18 19:00:29', '2026-07-24 15:59:34'),
-(9, 5, 1, 20.0000, 'fixed', '2026-07-18 19:00:29', '2026-07-24 15:59:34'),
-(10, 5, 2, 17.0000, 'fixed', '2026-07-18 19:00:29', '2026-07-24 15:59:34'),
-(11, 6, 1, 18.0000, 'fixed', '2026-07-18 19:00:29', '2026-07-24 15:59:34'),
-(12, 6, 2, 14.9400, 'fixed', '2026-07-18 19:00:29', '2026-07-24 15:59:34'),
-(13, 7, 1, 12.0000, 'fixed', '2026-07-18 19:00:29', '2026-07-24 15:59:34'),
-(14, 7, 2, 9.9600, 'fixed', '2026-07-18 19:00:29', '2026-07-24 15:59:34'),
-(15, 8, 1, 11.0000, 'fixed', '2026-07-18 19:00:29', '2026-07-24 15:59:34'),
-(16, 8, 2, 9.0200, 'fixed', '2026-07-18 19:00:29', '2026-07-24 15:59:34'),
-(17, 39, 1, 12.0000, 'fixed', '2026-07-24 15:59:34', '2026-07-24 15:59:34'),
-(18, 39, 2, 10.8000, 'fixed', '2026-07-24 15:59:34', '2026-07-24 15:59:34'),
-(19, 40, 1, 14.5000, 'fixed', '2026-07-24 15:59:34', '2026-07-24 15:59:34'),
-(20, 40, 2, 13.0500, 'fixed', '2026-07-24 15:59:34', '2026-07-24 15:59:34'),
-(21, 41, 1, 3.9900, 'fixed', '2026-07-24 15:59:34', '2026-07-24 15:59:34'),
-(22, 41, 2, 3.5910, 'fixed', '2026-07-24 15:59:34', '2026-07-24 15:59:34'),
-(23, 58, 1, 127.5000, 'fixed', '2026-08-12 06:18:31', '2026-08-12 06:18:31'),
-(24, 58, 2, 127.5000, 'fixed', '2026-08-12 06:18:31', '2026-08-12 06:18:31'),
-(25, 59, 1, 127.5000, 'fixed', '2026-08-12 06:56:32', '2026-08-12 06:56:32'),
-(26, 59, 2, 127.5000, 'fixed', '2026-08-12 06:56:32', '2026-08-12 06:56:32');
+(1, 1, 1, 22.5000, 'fixed', '2026-07-18 19:00:29', '2026-08-31 09:55:02'),
+(2, 1, 2, 23.7500, 'fixed', '2026-07-18 19:00:29', '2026-08-31 09:55:02'),
+(3, 2, 1, 64.8000, 'fixed', '2026-07-18 19:00:29', '2026-08-31 09:55:02'),
+(4, 2, 2, 68.4000, 'fixed', '2026-07-18 19:00:29', '2026-08-31 09:55:02'),
+(5, 3, 1, 34.2000, 'fixed', '2026-07-18 19:00:29', '2026-08-31 09:55:02'),
+(6, 3, 2, 36.1000, 'fixed', '2026-07-18 19:00:29', '2026-08-31 09:55:02'),
+(7, 4, 1, 23.4000, 'fixed', '2026-07-18 19:00:29', '2026-08-31 09:55:02'),
+(8, 4, 2, 24.7000, 'fixed', '2026-07-18 19:00:29', '2026-08-31 09:55:02'),
+(9, 5, 1, 18.0000, 'fixed', '2026-07-18 19:00:29', '2026-08-31 09:55:02'),
+(10, 5, 2, 19.0000, 'fixed', '2026-07-18 19:00:29', '2026-08-31 09:55:02'),
+(11, 6, 1, 16.2000, 'fixed', '2026-07-18 19:00:29', '2026-08-31 09:55:02'),
+(12, 6, 2, 17.1000, 'fixed', '2026-07-18 19:00:29', '2026-08-31 09:55:02'),
+(13, 7, 1, 10.8000, 'fixed', '2026-07-18 19:00:29', '2026-08-31 09:55:02'),
+(14, 7, 2, 11.4000, 'fixed', '2026-07-18 19:00:29', '2026-08-31 09:55:02'),
+(15, 8, 1, 9.9000, 'fixed', '2026-07-18 19:00:29', '2026-08-31 09:55:02'),
+(16, 8, 2, 10.4500, 'fixed', '2026-07-18 19:00:29', '2026-08-31 09:55:02'),
+(17, 39, 1, 10.8000, 'fixed', '2026-07-24 15:59:34', '2026-08-31 09:55:02'),
+(18, 39, 2, 11.4000, 'fixed', '2026-07-24 15:59:34', '2026-08-31 09:55:02'),
+(19, 40, 1, 13.0500, 'fixed', '2026-07-24 15:59:34', '2026-08-31 09:55:02'),
+(20, 40, 2, 13.7750, 'fixed', '2026-07-24 15:59:34', '2026-08-31 09:55:02'),
+(21, 41, 1, 3.5910, 'fixed', '2026-07-24 15:59:34', '2026-08-31 09:55:02'),
+(22, 41, 2, 3.7905, 'fixed', '2026-07-24 15:59:34', '2026-08-31 09:55:02'),
+(23, 58, 1, 114.7500, 'fixed', '2026-08-12 06:18:31', '2026-08-31 09:55:02'),
+(24, 58, 2, 121.1250, 'fixed', '2026-08-12 06:18:31', '2026-08-31 09:55:02'),
+(25, 59, 1, 114.7500, 'fixed', '2026-08-12 06:56:32', '2026-08-31 09:55:02'),
+(26, 59, 2, 121.1250, 'fixed', '2026-08-12 06:56:32', '2026-08-31 09:55:02'),
+(27, 42, 1, 4.4910, 'fixed', '2026-08-31 09:55:02', '2026-08-31 09:55:02'),
+(28, 43, 1, 4.9410, 'fixed', '2026-08-31 09:55:02', '2026-08-31 09:55:02'),
+(29, 44, 1, 6.2910, 'fixed', '2026-08-31 09:55:02', '2026-08-31 09:55:02'),
+(30, 45, 1, 3.4110, 'fixed', '2026-08-31 09:55:02', '2026-08-31 09:55:02'),
+(31, 46, 1, 4.0500, 'fixed', '2026-08-31 09:55:02', '2026-08-31 09:55:02'),
+(32, 47, 1, 2.6910, 'fixed', '2026-08-31 09:55:02', '2026-08-31 09:55:02'),
+(33, 48, 1, 3.1410, 'fixed', '2026-08-31 09:55:02', '2026-08-31 09:55:02'),
+(34, 49, 1, 1.7910, 'fixed', '2026-08-31 09:55:02', '2026-08-31 09:55:02'),
+(35, 50, 1, 5.3910, 'fixed', '2026-08-31 09:55:02', '2026-08-31 09:55:02'),
+(36, 51, 1, 8.0910, 'fixed', '2026-08-31 09:55:02', '2026-08-31 09:55:02'),
+(37, 52, 1, 8.5410, 'fixed', '2026-08-31 09:55:02', '2026-08-31 09:55:02'),
+(38, 53, 1, 6.7410, 'fixed', '2026-08-31 09:55:02', '2026-08-31 09:55:02'),
+(39, 54, 1, 10.7910, 'fixed', '2026-08-31 09:55:02', '2026-08-31 09:55:02'),
+(40, 55, 1, 3.8610, 'fixed', '2026-08-31 09:55:02', '2026-08-31 09:55:02'),
+(41, 56, 1, 14.4000, 'fixed', '2026-08-31 09:55:02', '2026-08-31 09:55:02'),
+(42, 57, 1, 16.6500, 'fixed', '2026-08-31 09:55:02', '2026-08-31 09:55:02'),
+(43, 42, 2, 4.7405, 'fixed', '2026-08-31 09:55:02', '2026-08-31 09:55:02'),
+(44, 43, 2, 5.2155, 'fixed', '2026-08-31 09:55:02', '2026-08-31 09:55:02'),
+(45, 44, 2, 6.6405, 'fixed', '2026-08-31 09:55:02', '2026-08-31 09:55:02'),
+(46, 45, 2, 3.6005, 'fixed', '2026-08-31 09:55:02', '2026-08-31 09:55:02'),
+(47, 46, 2, 4.2750, 'fixed', '2026-08-31 09:55:02', '2026-08-31 09:55:02'),
+(48, 47, 2, 2.8405, 'fixed', '2026-08-31 09:55:02', '2026-08-31 09:55:02'),
+(49, 48, 2, 3.3155, 'fixed', '2026-08-31 09:55:02', '2026-08-31 09:55:02'),
+(50, 49, 2, 1.8905, 'fixed', '2026-08-31 09:55:02', '2026-08-31 09:55:02'),
+(51, 50, 2, 5.6905, 'fixed', '2026-08-31 09:55:02', '2026-08-31 09:55:02'),
+(52, 51, 2, 8.5405, 'fixed', '2026-08-31 09:55:02', '2026-08-31 09:55:02'),
+(53, 52, 2, 9.0155, 'fixed', '2026-08-31 09:55:02', '2026-08-31 09:55:02'),
+(54, 53, 2, 7.1155, 'fixed', '2026-08-31 09:55:02', '2026-08-31 09:55:02'),
+(55, 54, 2, 11.3905, 'fixed', '2026-08-31 09:55:02', '2026-08-31 09:55:02'),
+(56, 55, 2, 4.0755, 'fixed', '2026-08-31 09:55:02', '2026-08-31 09:55:02'),
+(57, 56, 2, 15.2000, 'fixed', '2026-08-31 09:55:02', '2026-08-31 09:55:02'),
+(58, 57, 2, 17.5750, 'fixed', '2026-08-31 09:55:02', '2026-08-31 09:55:02');
 
 -- --------------------------------------------------------
 
@@ -5287,7 +5325,7 @@ ALTER TABLE `account_types`
 -- AUTO_INCREMENT for table `activity_log`
 --
 ALTER TABLE `activity_log`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=221;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=223;
 
 --
 -- AUTO_INCREMENT for table `ai_assistance_settings`
@@ -5383,7 +5421,7 @@ ALTER TABLE `currencies`
 -- AUTO_INCREMENT for table `customer_groups`
 --
 ALTER TABLE `customer_groups`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `dashboard_configurations`
@@ -5425,7 +5463,7 @@ ALTER TABLE `ecom_banners`
 -- AUTO_INCREMENT for table `ecom_carts`
 --
 ALTER TABLE `ecom_carts`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=131;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=132;
 
 --
 -- AUTO_INCREMENT for table `ecom_cart_items`
@@ -5563,7 +5601,7 @@ ALTER TABLE `oauth_personal_access_clients`
 -- AUTO_INCREMENT for table `permissions`
 --
 ALTER TABLE `permissions`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=100;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=101;
 
 --
 -- AUTO_INCREMENT for table `printers`
@@ -5617,7 +5655,7 @@ ALTER TABLE `roles`
 -- AUTO_INCREMENT for table `selling_price_groups`
 --
 ALTER TABLE `selling_price_groups`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `shipping_methods`
@@ -5719,7 +5757,7 @@ ALTER TABLE `variations`
 -- AUTO_INCREMENT for table `variation_group_prices`
 --
 ALTER TABLE `variation_group_prices`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=59;
 
 --
 -- AUTO_INCREMENT for table `variation_location_details`
