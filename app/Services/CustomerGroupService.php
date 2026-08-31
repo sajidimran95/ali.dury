@@ -20,7 +20,6 @@ class CustomerGroupService
         $this->renameRecord(SellingPriceGroup::class, $businessId, ['Wholesale'], 'Group B');
         $this->renameRecord(CustomerGroup::class, $businessId, ['Retailer', 'Retail'], 'Group A');
         $this->renameRecord(CustomerGroup::class, $businessId, ['Wholesale'], 'Group B');
-        $this->ensureDefaultGroupRates($businessId);
     }
 
     /**
@@ -36,7 +35,22 @@ class CustomerGroupService
     {
         $customerGroup->price_calculation_type = 'percentage';
         $customerGroup->amount = $percent;
+        $customerGroup->inventory_slug = 'all_inventory';
         $customerGroup->save();
+
+        if (! $updateAllProductPrices && ! empty($customerGroup->selling_price_group_id)) {
+            VariationGroupPrice::where('price_group_id', $customerGroup->selling_price_group_id)->delete();
+        }
+
+        $updated = 0;
+        if ($updateAllProductPrices) {
+            $priceGroup = $this->ensurePriceGroup($customerGroup);
+            $updated = $this->writeAllProductPricesFromPercent(
+                (int) $customerGroup->business_id,
+                (int) $priceGroup->id,
+                $percent
+            );
+        }
 
         $updated = 0;
         if ($updateAllProductPrices) {
@@ -64,20 +78,31 @@ class CustomerGroupService
             })
             ->orderBy('variations.id')
             ->chunkById(500, function ($variations) use ($priceGroupId, $factor, $now, &$updated) {
+                $ids = $variations->pluck('id')->all();
+                $existing = VariationGroupPrice::where('price_group_id', $priceGroupId)
+                    ->whereIn('variation_id', $ids)
+                    ->pluck('id', 'variation_id');
+
+                $insert = [];
                 foreach ($variations as $variation) {
                     $price = round(((float) ($variation->sell_price_inc_tax ?? 0)) * $factor, 4);
-                    VariationGroupPrice::updateOrCreate(
-                        [
+                    if (isset($existing[$variation->id])) {
+                        VariationGroupPrice::where('id', $existing[$variation->id])
+                            ->update(['price_inc_tax' => $price, 'price_type' => 'fixed', 'updated_at' => $now]);
+                    } else {
+                        $insert[] = [
                             'variation_id' => $variation->id,
                             'price_group_id' => $priceGroupId,
-                        ],
-                        [
                             'price_inc_tax' => $price,
                             'price_type' => 'fixed',
+                            'created_at' => $now,
                             'updated_at' => $now,
-                        ]
-                    );
+                        ];
+                    }
                     $updated++;
+                }
+                if (! empty($insert)) {
+                    VariationGroupPrice::insert($insert);
                 }
             });
 
@@ -98,14 +123,9 @@ class CustomerGroupService
             if ($existing) {
                 if ($existing->trashed()) {
                     $existing->restore();
-                }
-                $existing->is_active = 1;
-                $existing->save();
-                $this->grantPriceGroupPermission($businessId, (int) $existing->id);
-
-                if (empty($customerGroup->selling_price_group_id)) {
-                    $customerGroup->selling_price_group_id = $existing->id;
-                    $customerGroup->save();
+                } elseif ((int) $existing->is_active !== 1) {
+                    $existing->is_active = 1;
+                    $existing->save();
                 }
 
                 return $existing;

@@ -134,7 +134,13 @@ body.zoho-theme .cg-page {
     flex-wrap: wrap;
 }
 
-.cg-discount-row label {
-    margin: 0;
-    font-weight: 600;
+.cg-slug {
+    display: inline-block;
+    background: #ecfdf5;
+    color: #047857;
+    border-radius: 999px;
+    padding: 4px 10px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: lowercase;
 }

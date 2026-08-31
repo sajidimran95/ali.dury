@@ -2,7 +2,7 @@
 @section('title', $customer_group->name)
 
 @section('css')
-    <link rel="stylesheet" href="{{ asset('css/japs-customer-group.css?v=' . ($asset_v ?? '') . '&cg=3') }}">
+    <link rel="stylesheet" href="{{ asset('css/japs-customer-group.css?v=' . ($asset_v ?? '') . '&cg=4') }}">
 @endsection
 
 @section('content')
@@ -21,9 +21,10 @@
                     <label for="cg_discount_amount">@lang('lang_v1.calculation_percentage')</label>
                     <input type="text" class="form-control input_number" id="cg_discount_amount" name="amount" value="{{ @num_format($customer_group->amount) }}" style="max-width:120px">
                     <span class="text-muted">%</span>
+                    <span class="cg-slug">@lang('lang_v1.all_inventory_slug')</span>
                     <button type="submit" class="tw-dw-btn tw-dw-btn-primary tw-text-white">@lang('lang_v1.apply_all_products')</button>
                 </form>
-                <p class="cg-help">@lang('lang_v1.group_discount_help')</p>
+                <p class="cg-help">@lang('lang_v1.group_discount_all_help')</p>
             @endcan
         </div>
         <div class="cg-stats">
@@ -61,10 +62,13 @@
     <section class="cg-panel hide" data-panel="prices">
         <div class="cg-card">
             <h2>@lang('lang_v1.group_product_prices')</h2>
-            <p class="cg-help">@lang('lang_v1.group_product_prices_help')</p>
+            <p class="cg-help">@lang('lang_v1.group_product_overrides_help')</p>
             @can('customer.update')
+                <div class="cg-tag-row">
+                    <select id="cg_product_search" class="form-control" style="width:100%"></select>
+                    <button type="button" class="tw-dw-btn tw-dw-btn-primary tw-text-white" id="cg_add_override">@lang('messages.add')</button>
+                </div>
                 <div class="cg-price-actions">
-                    <button type="button" class="tw-dw-btn tw-dw-btn-outline tw-dw-btn-primary" id="cg_apply_all">@lang('lang_v1.apply_all_products')</button>
                     <button type="button" class="tw-dw-btn tw-dw-btn-primary tw-text-white" id="cg_save_prices">@lang('lang_v1.save_group_prices')</button>
                 </div>
             @endcan
@@ -90,10 +94,12 @@ window.cgGroup = {
     productsUrl: @json(url('customer-group/'.$customer_group->id.'/products')),
     applyAllUrl: @json(url('customer-group/'.$customer_group->id.'/products/apply-all')),
     discountUrl: @json(url('customer-group/'.$customer_group->id.'/discount')),
+    productSearchUrl: @json(url('customer-group/'.$customer_group->id.'/products/search')),
+    productOverrideUrl: @json(url('customer-group/'.$customer_group->id.'/products/override')),
     customersSearchUrl: @json(action([\App\Http\Controllers\ContactController::class, 'getCustomers'])),
     applyAllConfirm: @json(__('lang_v1.apply_all_products_confirm')),
     noPrices: @json(__('lang_v1.no_group_prices_to_save'))
 };
 </script>
-<script src="{{ asset('js/japs-customer-group.js?v=' . ($asset_v ?? '') . '&cg=3') }}"></script>
+<script src="{{ asset('js/japs-customer-group.js?v=' . ($asset_v ?? '') . '&cg=4') }}"></script>
 @endsection

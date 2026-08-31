@@ -86,6 +86,53 @@ $(document).ready(function () {
         });
     }
 
+    if ($.fn.select2 && $('#cg_product_search').length) {
+        $('#cg_product_search').select2({
+            ajax: {
+                url: cfg.productSearchUrl,
+                dataType: 'json',
+                delay: 250,
+                data: function (params) {
+                    return { q: params.term };
+                },
+                processResults: function (data) {
+                    var list = Array.isArray(data) ? data : [];
+                    return { results: list };
+                }
+            },
+            placeholder: (typeof LANG !== 'undefined' && LANG.search) ? LANG.search : 'Search product',
+            minimumInputLength: 1,
+            width: '100%'
+        });
+    }
+
+    $(document).on('click', '#cg_add_override', function (e) {
+        e.preventDefault();
+        var variationId = $('#cg_product_search').val();
+        if (!variationId) {
+            return;
+        }
+        $.ajax({
+            method: 'POST',
+            url: cfg.productOverrideUrl,
+            dataType: 'json',
+            data: { variation_id: variationId },
+            success: function (result) {
+                if (result.success) {
+                    toastr.success(result.msg);
+                    $('#cg_product_search').val(null).trigger('change');
+                    if (productsTable) {
+                        productsTable.ajax.reload();
+                    } else {
+                        initProductsTable();
+                    }
+                } else {
+                    toastr.error(result.msg);
+                }
+            }
+        });
+    });
+
     $(document).on('click', '#cg_tag_customers', function (e) {
         e.preventDefault();
         var ids = $('#cg_customer_search').val() || [];

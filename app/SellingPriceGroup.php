@@ -131,9 +131,18 @@ class SellingPriceGroup extends Model
             return;
         }
 
+        $allInventoryPriceGroupIds = CustomerGroup::where('business_id', $business_id)
+            ->where('inventory_slug', 'all_inventory')
+            ->whereNotNull('selling_price_group_id')
+            ->pluck('selling_price_group_id')
+            ->all();
+
         $base = (float) ($variation->sell_price_inc_tax ?? 0);
 
         foreach ($group_ids as $group_id) {
+            if (in_array($group_id, $allInventoryPriceGroupIds, false)) {
+                continue;
+            }
             $factor = static::groupPriceFactor($business_id, (int) $group_id);
             VariationGroupPrice::firstOrCreate(
                 [
