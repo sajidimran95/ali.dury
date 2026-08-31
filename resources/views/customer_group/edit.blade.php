@@ -15,12 +15,13 @@
       </div>
       <div class="form-group">
             {!! Form::label('price_calculation_type', __( 'lang_v1.price_calculation_type' ) . ':') !!}
-            {!! Form::select('price_calculation_type',['percentage' => __('lang_v1.percentage'), 'selling_price_group' => __('lang_v1.selling_price_group')], $customer_group->price_calculation_type, ['class' => 'form-control']); !!}
+            {!! Form::select('price_calculation_type',['percentage' => __('lang_v1.percentage'), 'selling_price_group' => __('lang_v1.selling_price_group')], $customer_group->price_calculation_type ?: 'percentage', ['class' => 'form-control', 'id' => 'price_calculation_type']); !!}
       </div>
-      <div class="form-group percentage-field @if($customer_group->price_calculation_type != 'percentage') hide @endif">
+      <div class="form-group percentage-field">
         {!! Form::label('amount', __( 'lang_v1.calculation_percentage' ) . ':') !!}
         @show_tooltip(__('lang_v1.tooltip_calculation_percentage'))
-        {!! Form::text('amount', @num_format($customer_group->amount), ['class' => 'form-control input_number','placeholder' => __( 'lang_v1.calculation_percentage')]); !!}
+        {!! Form::text('amount', @num_format($customer_group->amount), ['class' => 'form-control input_number','placeholder' => '-10']); !!}
+        <p class="help-block">@lang('lang_v1.group_discount_help')</p>
       </div>
 
       <div class="form-group selling_price_group-field @if($customer_group->price_calculation_type != 'selling_price_group') hide @endif">

@@ -121,8 +121,8 @@ class MsaSetupService
      */
     public function ensurePriceGroups(int $businessId): array
     {
-        $retail = $this->firstOrCreatePriceGroup($businessId, 'Retail');
-        $wholesale = $this->firstOrCreatePriceGroup($businessId, 'Wholesale');
+        $retail = $this->firstOrCreatePriceGroup($businessId, 'Group A', ['Retail', 'Retailer']);
+        $wholesale = $this->firstOrCreatePriceGroup($businessId, 'Group B', ['Wholesale']);
 
         return [
             'retail' => $retail,
@@ -130,11 +130,17 @@ class MsaSetupService
         ];
     }
 
-    protected function firstOrCreatePriceGroup(int $businessId, string $name): SellingPriceGroup
+    protected function firstOrCreatePriceGroup(int $businessId, string $name, array $legacyNames = []): SellingPriceGroup
     {
         $group = SellingPriceGroup::withTrashed()
             ->where('business_id', $businessId)
-            ->where('name', $name)
+            ->where(function ($q) use ($name, $legacyNames) {
+                $q->where('name', $name);
+                if (! empty($legacyNames)) {
+                    $q->orWhereIn('name', $legacyNames);
+                }
+            })
+            ->orderByRaw("CASE WHEN name = ? THEN 0 ELSE 1 END", [$name])
             ->first();
 
         if ($group && $group->trashed()) {
@@ -144,11 +150,12 @@ class MsaSetupService
         if (! $group) {
             $group = SellingPriceGroup::create([
                 'name' => $name,
-                'description' => $name.' selling prices for tobacco / MSA',
+                'description' => $name.' selling prices',
                 'business_id' => $businessId,
                 'is_active' => 1,
             ]);
         } else {
+            $group->name = $name;
             $group->is_active = 1;
             $group->save();
         }
@@ -176,16 +183,18 @@ class MsaSetupService
 
         $retailer = $this->firstOrCreateCustomerGroup(
             $businessId,
-            'Retailer',
+            'Group A',
             (int) $priceGroups['retail']->id,
-            $createdBy
+            $createdBy,
+            ['Retailer', 'Retail']
         );
 
         $wholesale = $this->firstOrCreateCustomerGroup(
             $businessId,
-            'Wholesale',
+            'Group B',
             (int) $priceGroups['wholesale']->id,
-            $createdBy
+            $createdBy,
+            ['Wholesale']
         );
 
         return [
@@ -198,23 +207,34 @@ class MsaSetupService
         int $businessId,
         string $name,
         int $sellingPriceGroupId,
-        int $createdBy
+        int $createdBy,
+        array $legacyNames = []
     ): CustomerGroup {
         $group = CustomerGroup::where('business_id', $businessId)
-            ->where('name', $name)
+            ->where(function ($q) use ($name, $legacyNames) {
+                $q->where('name', $name);
+                if (! empty($legacyNames)) {
+                    $q->orWhereIn('name', $legacyNames);
+                }
+            })
+            ->orderByRaw("CASE WHEN name = ? THEN 0 ELSE 1 END", [$name])
             ->first();
 
         if (! $group) {
             $group = CustomerGroup::create([
                 'name' => $name,
                 'business_id' => $businessId,
-                'amount' => 0,
-                'price_calculation_type' => 'selling_price_group',
+                'amount' => $name === 'Group B' ? -5 : -10,
+                'price_calculation_type' => 'percentage',
                 'selling_price_group_id' => $sellingPriceGroupId,
                 'created_by' => $createdBy,
             ]);
         } else {
-            $group->price_calculation_type = 'selling_price_group';
+            $group->name = $name;
+            if ((float) $group->amount == 0) {
+                $group->amount = $name === 'Group B' ? -5 : -10;
+                $group->price_calculation_type = 'percentage';
+            }
             $group->selling_price_group_id = $sellingPriceGroupId;
             $group->save();
         }

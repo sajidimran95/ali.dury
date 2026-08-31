@@ -11,18 +11,19 @@
     <div class="modal-body">
       <div class="form-group">
         {!! Form::label('name', __( 'lang_v1.customer_group_name' ) . ':*') !!}
-          {!! Form::text('name', null, ['class' => 'form-control', 'required', 'placeholder' => __( 'lang_v1.customer_group_name' ) ]); !!}
+          {!! Form::text('name', null, ['class' => 'form-control', 'required', 'placeholder' => 'Group A' ]); !!}
       </div>
 
       <div class="form-group">
             {!! Form::label('price_calculation_type', __( 'lang_v1.price_calculation_type' ) . ':') !!}
-            {!! Form::select('price_calculation_type',['percentage' => __('lang_v1.percentage'), 'selling_price_group' => __('lang_v1.selling_price_group')], 'percentage', ['class' => 'form-control']); !!}
+            {!! Form::select('price_calculation_type',['percentage' => __('lang_v1.percentage'), 'selling_price_group' => __('lang_v1.selling_price_group')], 'percentage', ['class' => 'form-control', 'id' => 'price_calculation_type']); !!}
       </div>
 
       <div class="form-group percentage-field">
         {!! Form::label('amount', __( 'lang_v1.calculation_percentage' ) . ':') !!}
         @show_tooltip(__('lang_v1.tooltip_calculation_percentage'))
-        {!! Form::text('amount', null, ['class' => 'form-control input_number','placeholder' => __( 'lang_v1.calculation_percentage')]); !!}
+        {!! Form::text('amount', null, ['class' => 'form-control input_number','placeholder' => '-10']); !!}
+        <p class="help-block">@lang('lang_v1.group_discount_help')</p>
       </div>
 
       <div class="form-group selling_price_group-field hide">

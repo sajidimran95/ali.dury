@@ -569,6 +569,12 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::post('/opening-stock/save', [OpeningStockController::class, 'save']);
 
     //Customer Groups
+    Route::get('customer-group/{id}/members', [CustomerGroupController::class, 'members']);
+    Route::post('customer-group/{id}/members', [CustomerGroupController::class, 'addMembers']);
+    Route::delete('customer-group/{id}/members/{contactId}', [CustomerGroupController::class, 'removeMember']);
+    Route::get('customer-group/{id}/products', [CustomerGroupController::class, 'products']);
+    Route::post('customer-group/{id}/products', [CustomerGroupController::class, 'saveProducts']);
+    Route::post('customer-group/{id}/discount', [CustomerGroupController::class, 'saveDiscount']);
     Route::resource('customer-group', CustomerGroupController::class);
 
     //Import opening stock

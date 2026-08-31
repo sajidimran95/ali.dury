@@ -1,0 +1,117 @@
+body.zoho-theme .cg-page {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 8px 4px 32px;
+}
+
+.cg-crumb {
+    color: #6b7280;
+    font-size: 13px;
+    margin: 0 0 10px;
+}
+
+.cg-crumb a {
+    color: #4f46e5;
+}
+
+.cg-title-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    align-items: flex-start;
+    margin-bottom: 18px;
+}
+
+.cg-title-row h1 {
+    margin: 0 0 6px;
+    font-size: 26px;
+    font-weight: 700;
+}
+
+.cg-sub,
+.cg-help {
+    color: #6b7280;
+    font-size: 13px;
+    margin: 0 0 12px;
+    max-width: 640px;
+}
+
+.cg-stats {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.cg-stats span {
+    background: #eef2ff;
+    color: #3730a3;
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.cg-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 14px;
+}
+
+.cg-tab {
+    border: 0;
+    background: #eef0f4;
+    color: #374151;
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-weight: 600;
+}
+
+.cg-tab.is-active {
+    background: #4f46e5;
+    color: #fff;
+}
+
+.cg-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 18px;
+}
+
+.cg-card h2 {
+    margin: 0 0 12px;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.cg-tag-row {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    margin-bottom: 16px;
+}
+
+.cg-tag-row .select2 {
+    flex: 1;
+    min-width: 0;
+}
+
+.cg-price-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-bottom: 12px;
+}
+
+.cg-discount-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 10px 0 4px;
+    flex-wrap: wrap;
+}
+
+.cg-discount-row label {
+    margin: 0;
+    font-weight: 600;
+}

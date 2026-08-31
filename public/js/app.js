@@ -1998,12 +1998,12 @@ $(document).ready(function() {
         serverSide: true,
         fixedHeader:false,
         ajax: '/customer-group',
-        columnDefs: [
-            {
-                targets: 2,
-                orderable: false,
-                searchable: false,
-            },
+        columns: [
+            { data: 'name', name: 'customer_groups.name' },
+            { data: 'customers_count', name: 'customers_count', searchable: false },
+            { data: 'amount', name: 'customer_groups.amount' },
+            { data: 'selling_price_group', name: 'spg.name' },
+            { data: 'action', orderable: false, searchable: false },
         ],
     });
 
