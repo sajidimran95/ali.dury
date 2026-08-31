@@ -13,6 +13,7 @@
     $first_name = explode(' ', trim($display_name ?? ''))[0] ?? ($display_name ?? '');
     $sells_url = action([\App\Http\Controllers\SellController::class, 'index']);
     $new_order_url = action([\App\Http\Controllers\SellController::class, 'create']);
+    $new_pos_url = action([\App\Http\Controllers\SellPosController::class, 'create']);
     $import_url = action([\App\Http\Controllers\ImportSalesController::class, 'index']);
     $shipments_url = action([\App\Http\Controllers\SellController::class, 'shipments']);
     $week_start = \Carbon::now()->subDays(6);
@@ -24,8 +25,8 @@
 <div class="japs-ops">
     <div class="japs-ops__header">
         <div class="japs-ops__title-block">
-            <h1 class="japs-ops__title">{{ __('home.home_dashboard') }}</h1>
-            <p class="japs-ops__greeting">{{ __('home.home_greeting', ['period' => $greet_period, 'name' => $first_name]) }}</p>
+            <h1 class="japs-ops__title">Good {{ $greet_period }}, {{ $first_name }}</h1>
+            <p class="japs-ops__greeting">{{ __('home.home_happening') }}</p>
         </div>
         <div class="japs-ops__toolbar">
             @if (auth()->user()->can('dashboard.data'))
@@ -50,55 +51,72 @@
     @if (auth()->user()->can('dashboard.data'))
         <div class="japs-ops__kpis">
             <a href="{{ $sells_url }}" class="japs-ops-kpi">
-                <span class="japs-ops-kpi__icon japs-ops-kpi__icon--blue"><i class="fas fa-shopping-bag"></i></span>
-                <span class="japs-ops-kpi__label">{{ __('home.total_orders') }}</span>
-                <span class="japs-ops-kpi__value total_orders">—</span>
-                <span class="japs-ops-kpi__trend"><span class="japs-dash-kpi-card__delta" data-kpi="total_orders">—</span> <em class="japs-ops-kpi__period">{{ __('lang_v1.from_previous_period') }}</em></span>
+                <span class="japs-ops-kpi__icon japs-ops-kpi__icon--blue" aria-hidden="true"><i class="fas fa-shopping-bag"></i></span>
+                <span class="japs-ops-kpi__body">
+                    <span class="japs-ops-kpi__label">{{ __('home.total_orders') }}</span>
+                    <span class="japs-ops-kpi__value total_orders">—</span>
+                    <span class="japs-ops-kpi__trend"><span class="japs-dash-kpi-card__delta" data-kpi="total_orders">—</span> <em class="japs-ops-kpi__period"></em></span>
+                </span>
             </a>
             <a href="{{ $sells_url }}" class="japs-ops-kpi">
-                <span class="japs-ops-kpi__icon japs-ops-kpi__icon--green"><i class="fas fa-dollar-sign"></i></span>
-                <span class="japs-ops-kpi__label">{{ __('home.total_revenue') }}</span>
-                <span class="japs-ops-kpi__value total_sell">—</span>
-                <span class="japs-ops-kpi__trend"><span class="japs-dash-kpi-card__delta" data-kpi="total_sell">—</span> <em class="japs-ops-kpi__period">{{ __('lang_v1.from_previous_period') }}</em></span>
+                <span class="japs-ops-kpi__icon japs-ops-kpi__icon--green" aria-hidden="true"><i class="fas fa-dollar-sign"></i></span>
+                <span class="japs-ops-kpi__body">
+                    <span class="japs-ops-kpi__label">{{ __('home.total_revenue') }}</span>
+                    <span class="japs-ops-kpi__value total_sell">—</span>
+                    <span class="japs-ops-kpi__trend"><span class="japs-dash-kpi-card__delta" data-kpi="total_sell">—</span> <em class="japs-ops-kpi__period"></em></span>
+                </span>
             </a>
             <a href="{{ $shipments_url }}" class="japs-ops-kpi">
-                <span class="japs-ops-kpi__icon japs-ops-kpi__icon--navy"><i class="fas fa-box"></i></span>
-                <span class="japs-ops-kpi__label">{{ __('home.orders_awaiting_fulfillment') }}</span>
-                <span class="japs-ops-kpi__value awaiting_fulfillment">—</span>
-                <span class="japs-ops-kpi__trend"><span class="japs-dash-kpi-card__delta" data-kpi="awaiting_fulfillment">—</span> <em class="japs-ops-kpi__period">{{ __('lang_v1.from_previous_period') }}</em></span>
+                <span class="japs-ops-kpi__icon japs-ops-kpi__icon--orange" aria-hidden="true"><i class="fas fa-box"></i></span>
+                <span class="japs-ops-kpi__body">
+                    <span class="japs-ops-kpi__label">{{ __('home.orders_awaiting_fulfillment') }}</span>
+                    <span class="japs-ops-kpi__value awaiting_fulfillment">—</span>
+                    <span class="japs-ops-kpi__trend"><span class="japs-dash-kpi-card__delta" data-kpi="awaiting_fulfillment">—</span> <em class="japs-ops-kpi__period"></em></span>
+                </span>
             </a>
             <div class="japs-ops-kpi">
-                <span class="japs-ops-kpi__icon japs-ops-kpi__icon--red"><i class="fas fa-exclamation"></i></span>
-                <span class="japs-ops-kpi__label">{{ __('home.open_issues') }}</span>
-                <span class="japs-ops-kpi__value open_issues">—</span>
-                <span class="japs-ops-kpi__trend"><span class="japs-dash-kpi-card__delta" data-kpi="open_issues">—</span> <em class="japs-ops-kpi__period">{{ __('lang_v1.from_previous_period') }}</em></span>
+                <span class="japs-ops-kpi__icon japs-ops-kpi__icon--red" aria-hidden="true"><i class="fas fa-exclamation"></i></span>
+                <span class="japs-ops-kpi__body">
+                    <span class="japs-ops-kpi__label">{{ __('home.open_issues') }}</span>
+                    <span class="japs-ops-kpi__value open_issues">—</span>
+                    <span class="japs-ops-kpi__trend"><span class="japs-dash-kpi-card__delta" data-kpi="open_issues">—</span> <em class="japs-ops-kpi__period"></em></span>
+                </span>
             </div>
         </div>
 
         <div class="japs-ops__row japs-ops__row--2">
             <section class="japs-ops-card">
-                <h3 class="japs-ops-card__title">{{ __('home.needs_attention') }}</h3>
+                <div class="japs-ops-card__head">
+                    <h3 class="japs-ops-card__title">{{ __('home.needs_attention') }}</h3>
+                </div>
                 <div id="japs_ops_attention" class="japs-ops-attention"></div>
             </section>
             <section class="japs-ops-card">
-                <h3 class="japs-ops-card__title">{{ __('home.fulfillment_overview') }}</h3>
-                <div class="japs-ops-flow">
-                    <div class="japs-ops-flow__step">
-                        <span>{{ __('home.stage_picking') }}</span>
-                        <strong id="ops_pick">0</strong>
+                <div class="japs-ops-card__head">
+                    <h3 class="japs-ops-card__title">{{ __('home.fulfillment_overview') }}</h3>
+                    <a href="{{ $shipments_url }}" class="japs-ops-link">{{ __('home.view_details') }}</a>
+                </div>
+                <div class="japs-ops-stepper">
+                    <div class="japs-ops-stepper__item">
+                        <span class="japs-ops-stepper__icon"><i class="fas fa-clipboard-list"></i></span>
+                        <span class="japs-ops-stepper__label">{{ __('home.stage_picking') }}</span>
+                        <strong class="japs-ops-stepper__count" id="ops_pick">0</strong>
                     </div>
-                    <span class="japs-ops-flow__arrow">→</span>
-                    <div class="japs-ops-flow__step">
-                        <span>{{ __('home.stage_packing') }}</span>
-                        <strong id="ops_pack">0</strong>
+                    <span class="japs-ops-stepper__line" aria-hidden="true"></span>
+                    <div class="japs-ops-stepper__item">
+                        <span class="japs-ops-stepper__icon"><i class="fas fa-box"></i></span>
+                        <span class="japs-ops-stepper__label">{{ __('home.stage_packing') }}</span>
+                        <strong class="japs-ops-stepper__count" id="ops_pack">0</strong>
                     </div>
-                    <span class="japs-ops-flow__arrow">→</span>
-                    <div class="japs-ops-flow__step">
-                        <span>{{ __('home.stage_shipment') }}</span>
-                        <strong id="ops_ship">0</strong>
+                    <span class="japs-ops-stepper__line" aria-hidden="true"></span>
+                    <div class="japs-ops-stepper__item">
+                        <span class="japs-ops-stepper__icon"><i class="fas fa-truck"></i></span>
+                        <span class="japs-ops-stepper__label">{{ __('home.stage_shipment') }}</span>
+                        <strong class="japs-ops-stepper__count" id="ops_ship">0</strong>
                     </div>
                 </div>
-                <table class="japs-ops-mini-table">
+                <p class="japs-ops-bysource">{{ __('home.by_source') }}</p>
+                <table class="japs-ops-mini-table japs-ops-src-table">
                     <thead>
                         <tr>
                             <th></th>
@@ -108,9 +126,9 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr data-src="online"><td>{{ __('home.source_online') }}</td><td class="c-pick">0</td><td class="c-pack">0</td><td class="c-ship">0</td></tr>
-                        <tr data-src="field"><td>{{ __('home.source_field') }}</td><td class="c-pick">0</td><td class="c-pack">0</td><td class="c-ship">0</td></tr>
-                        <tr data-src="pos"><td>{{ __('home.source_pos') }}</td><td class="c-pick">0</td><td class="c-pack">0</td><td class="c-ship">0</td></tr>
+                        <tr data-src="online"><td><span class="japs-ops-dot japs-ops-dot--online"></span> {{ __('home.source_online_order') }}s</td><td class="c-pick">0</td><td class="c-pack">0</td><td class="c-ship">0</td></tr>
+                        <tr data-src="field"><td><span class="japs-ops-dot japs-ops-dot--field"></span> {{ __('home.source_field_order') }}s</td><td class="c-pick">0</td><td class="c-pack">0</td><td class="c-ship">0</td></tr>
+                        <tr data-src="pos"><td><span class="japs-ops-dot japs-ops-dot--pos"></span> {{ __('home.source_pos_order') }}s</td><td class="c-pick">0</td><td class="c-pack">0</td><td class="c-ship">0</td></tr>
                     </tbody>
                 </table>
             </section>
@@ -123,7 +141,7 @@
                     <a href="{{ $sells_url }}" class="japs-ops-link">{{ __('home.view_all_orders') }} →</a>
                 </div>
                 <div class="table-responsive">
-                    <table class="table ajax_view" id="recent_sales_table" style="width:100%">
+                    <table class="table ajax_view japs-ops-orders-table" id="recent_sales_table" style="width:100%">
                         <thead>
                             <tr>
                                 <th>@lang('sale.invoice_no')</th>
@@ -131,7 +149,7 @@
                                 <th>@lang('contact.customer')</th>
                                 <th>@lang('sale.total')</th>
                                 <th>@lang('home.fulfillment_stage')</th>
-                                <th>@lang('sale.payment_status')</th>
+                                <th>@lang('sale.status')</th>
                                 <th>@lang('messages.date')</th>
                             </tr>
                         </thead>
@@ -141,15 +159,31 @@
             <section class="japs-ops-card japs-ops-card--actions">
                 <h3 class="japs-ops-card__title">{{ __('home.quick_actions') }}</h3>
                 <div class="japs-ops-actions">
-                    @can('direct_sell.access')
-                        <a href="{{ $new_order_url }}" class="japs-ops-action"><i class="fas fa-plus"></i> {{ __('home.new_order') }}</a>
+                    @can('sell.create')
+                        <a href="{{ $new_pos_url }}" class="japs-ops-action">
+                            <span class="japs-ops-action__ico japs-ops-action__ico--blue"><i class="fas fa-plus"></i></span>
+                            <span class="japs-ops-action__txt">{{ __('home.new_pos_order') }}</span>
+                            <i class="fas fa-chevron-right japs-ops-action__chev"></i>
+                        </a>
                     @endcan
                     @can('sell.create')
-                        <a href="{{ $import_url }}" class="japs-ops-action"><i class="fas fa-upload"></i> {{ __('home.import_orders') }}</a>
+                        <a href="{{ $import_url }}" class="japs-ops-action">
+                            <span class="japs-ops-action__ico japs-ops-action__ico--green"><i class="fas fa-upload"></i></span>
+                            <span class="japs-ops-action__txt">{{ __('home.import_orders') }}</span>
+                            <i class="fas fa-chevron-right japs-ops-action__chev"></i>
+                        </a>
                     @endcan
-                    <a href="{{ $shipments_url }}" class="japs-ops-action"><i class="fas fa-truck"></i> {{ __('home.view_fulfillment') }}</a>
+                    <a href="{{ $shipments_url }}" class="japs-ops-action">
+                        <span class="japs-ops-action__ico japs-ops-action__ico--navy"><i class="fas fa-truck"></i></span>
+                        <span class="japs-ops-action__txt">{{ __('home.view_fulfillment') }}</span>
+                        <i class="fas fa-chevron-right japs-ops-action__chev"></i>
+                    </a>
                     @can('direct_sell.access')
-                        <a href="{{ $new_order_url }}" class="japs-ops-action"><i class="fas fa-file-invoice"></i> {{ __('home.create_invoice') }}</a>
+                        <a href="{{ $new_order_url }}" class="japs-ops-action">
+                            <span class="japs-ops-action__ico japs-ops-action__ico--violet"><i class="fas fa-file-invoice"></i></span>
+                            <span class="japs-ops-action__txt">{{ __('home.create_invoice') }}</span>
+                            <i class="fas fa-chevron-right japs-ops-action__chev"></i>
+                        </a>
                     @endcan
                 </div>
             </section>
@@ -157,15 +191,24 @@
 
         <div class="japs-ops__row japs-ops__row--3">
             <section class="japs-ops-card">
-                <h3 class="japs-ops-card__title">{{ __('home.order_volume_trend') }}</h3>
+                <div class="japs-ops-card__head">
+                    <h3 class="japs-ops-card__title">{{ __('home.order_volume_trend') }}</h3>
+                    <span class="japs-ops-chip is-up" id="ops_orders_growth">—</span>
+                </div>
                 <div id="japs_ops_orders_chart" class="japs-ops-chart"></div>
             </section>
             <section class="japs-ops-card">
-                <h3 class="japs-ops-card__title">{{ __('home.revenue_trend') }}</h3>
+                <div class="japs-ops-card__head">
+                    <h3 class="japs-ops-card__title">{{ __('home.revenue_trend') }}</h3>
+                    <span class="japs-ops-chip is-up" id="ops_revenue_growth">—</span>
+                </div>
                 <div id="japs_ops_revenue_chart" class="japs-ops-chart"></div>
             </section>
             <section class="japs-ops-card">
-                <h3 class="japs-ops-card__title">{{ __('home.low_stock_summary') }}</h3>
+                <div class="japs-ops-card__head">
+                    <h3 class="japs-ops-card__title">{{ __('home.low_stock_summary') }}</h3>
+                    <a href="{{ action([\App\Http\Controllers\ReportController::class, 'getStockReport']) }}" class="japs-ops-link">{{ __('home.view_details') }}</a>
+                </div>
                 <div class="table-responsive">
                     <table class="japs-ops-mini-table" id="japs_ops_low_stock">
                         <thead>

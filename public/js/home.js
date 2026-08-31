@@ -21,8 +21,9 @@ $(document).ready(function() {
             moment().subtract(defaultDaysBack, 'days').format('YYYY-MM-DD'),
             moment().format('YYYY-MM-DD')
         );
-        // Charts load once with their own periods (not date filter)
-        japsLoadDashboardCharts();
+        if (!$('body').hasClass('japs-home-ops')) {
+            japsLoadDashboardCharts();
+        }
     }
 
     $('#dashboard_location').change( function(e) {
@@ -38,7 +39,9 @@ $(document).ready(function() {
         if (typeof window.japsLoadHomeOps === 'function') {
             window.japsLoadHomeOps(start, end);
         }
-        japsLoadDashboardCharts();
+        if (!$('body').hasClass('japs-home-ops')) {
+            japsLoadDashboardCharts();
+        }
     });
 
     // Stock alert datatables
@@ -281,6 +284,9 @@ function update_statistics(start, end) {
             }
             if (data.prev_period_label) {
                 $('.japs-dash-kpi-card__period').text('vs ' + data.prev_period_label);
+                if ($('body').hasClass('japs-home-ops')) {
+                    $('.japs-ops-kpi__period').text('vs ' + data.prev_period_label);
+                }
             }
 
             // assign tooltip total_sell_return 

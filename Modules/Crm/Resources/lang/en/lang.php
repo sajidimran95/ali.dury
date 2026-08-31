@@ -3,6 +3,7 @@
 return [
     'crm' => 'CRM',
     'dashboard' => 'Dashboard',
+    'menu_more' => 'More',
     'leads' => 'Leads',
     'lead' => 'Lead',
     'pipeline' => 'Pipeline',

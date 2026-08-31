@@ -46,6 +46,7 @@ use App\Http\Controllers\Restaurant;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SalesCommissionAgentController;
 use App\Http\Controllers\SalesOrderController;
+use App\Http\Controllers\FulfillmentController;
 use App\Http\Controllers\SellController;
 use App\Http\Controllers\ShippingMethodController;
 use App\Http\Controllers\SellingPriceGroupController;
@@ -667,6 +668,14 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::get('sells/edit-shipping/{id}', [SellController::class, 'editShipping']);
     Route::put('sells/update-shipping/{id}', [SellController::class, 'updateShipping']);
     Route::get('shipments', [SellController::class, 'shipments']);
+    Route::get('fulfillment/picking', [FulfillmentController::class, 'picking'])->name('fulfillment.picking');
+    Route::get('fulfillment/packing', [FulfillmentController::class, 'packing'])->name('fulfillment.packing');
+    Route::get('fulfillment/shipment', [FulfillmentController::class, 'shipment'])->name('fulfillment.shipment');
+    Route::get('fulfillment/{id}', [FulfillmentController::class, 'show'])->name('fulfillment.show');
+    Route::post('fulfillment/{id}/start-picking', [FulfillmentController::class, 'startPicking'])->name('fulfillment.start-picking');
+    Route::post('fulfillment/{id}/pick', [FulfillmentController::class, 'pick'])->name('fulfillment.pick');
+    Route::post('fulfillment/{id}/pack', [FulfillmentController::class, 'pack'])->name('fulfillment.pack');
+    Route::post('fulfillment/{id}/ship', [FulfillmentController::class, 'ship'])->name('fulfillment.ship');
 
     Route::post('upload-module', [ManageModulesController::class, 'uploadModule']);
     Route::delete('manage-modules/destroy/{module_name}', [ManageModulesController::class, 'destroy']);

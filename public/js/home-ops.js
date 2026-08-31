@@ -152,6 +152,21 @@
             if (kpis.prev_period_label) {
                 $('.japs-ops-kpi__period').text('vs ' + kpis.prev_period_label);
             }
+            var growth = (data.kpis && data.kpis.change_pct) ? data.kpis.change_pct : {};
+            function chip($el, pct) {
+                if (!$el.length || typeof pct === 'undefined' || pct === null) {
+                    return;
+                }
+                var n = parseFloat(pct);
+                if (isNaN(n)) {
+                    return;
+                }
+                $el.text((n >= 0 ? '+' : '−') + ' ' + Math.abs(n).toFixed(1) + '%')
+                    .toggleClass('is-up', n >= 0)
+                    .toggleClass('is-down', n < 0);
+            }
+            chip($('#ops_orders_growth'), growth.orders);
+            chip($('#ops_revenue_growth'), growth.revenue);
             renderAttention(data.attention);
             renderFulfillment(data.fulfillment);
             renderLowStock(data.low_stock);
@@ -179,17 +194,30 @@
         window.japsLoadHomeOps(range.start, range.end);
 
         if ($('#recent_sales_table').length && $.fn.DataTable) {
+            if ($.fn.DataTable.isDataTable('#recent_sales_table')) {
+                $('#recent_sales_table').DataTable().destroy();
+            }
             $('#recent_sales_table').DataTable({
                 processing: true,
                 serverSide: true,
                 searching: false,
+                paging: false,
+                info: false,
+                autoWidth: false,
                 order: [[6, 'desc']],
                 pageLength: 8,
                 lengthChange: false,
+                dom: 't',
                 ajax: {
                     url: '/home/recent-orders',
                     data: function (d) {
                         d.location_id = locationId();
+                        d.length = 8;
+                    },
+                    error: function () {
+                        $('#recent_sales_table tbody').html(
+                            '<tr><td colspan="7" class="japs-ops-empty">Could not load orders</td></tr>'
+                        );
                     }
                 },
                 columns: [

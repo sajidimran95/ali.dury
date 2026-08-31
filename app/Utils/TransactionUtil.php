@@ -57,6 +57,30 @@ class TransactionUtil extends Util
             $pay_term_number = $contact->pay_term_number ?? null;
             $pay_term_type = $contact->pay_term_type ?? null;
         }
+
+        $pipeline_source = ! empty($input['order_source'])
+            ? $input['order_source']
+            : (! empty($input['source']) ? $input['source'] : ($sale_type === 'sales_order' ? 'web' : null));
+        if (in_array($pipeline_source, ['ecommerce', 'sale_app'], true) && in_array($sale_type, ['sales_order', 'sell'], true)) {
+            $input['order_source'] = $pipeline_source;
+            if (empty($input['shipping_status'])) {
+                $input['shipping_status'] = 'ordered';
+            }
+            if (empty($input['fulfillment_stage'])) {
+                $input['fulfillment_stage'] = 'picking';
+            }
+            if (empty($input['fulfillment_meta'])) {
+                $input['fulfillment_meta'] = [
+                    'timeline' => [[
+                        'event' => 'entered_fulfillment',
+                        'label' => 'Entered Fulfillment',
+                        'at' => now()->toDateTimeString(),
+                        'by' => 'System',
+                    ]],
+                ];
+            }
+        }
+
         $transaction = Transaction::create([
             'business_id' => $business_id,
             'location_id' => $input['location_id'],
@@ -70,6 +94,9 @@ class TransactionUtil extends Util
             'source' => ! empty($input['source'])
                 ? $input['source']
                 : ($sale_type === 'sales_order' ? 'web' : null),
+            'order_source' => ! empty($input['order_source'])
+                ? $input['order_source']
+                : (! empty($input['source']) ? $input['source'] : ($sale_type === 'sales_order' ? 'web' : null)),
             'total_before_tax' => $invoice_total['total_before_tax'],
             'transaction_date' => $input['transaction_date'],
             'tax_id' => ! empty($input['tax_rate_id']) ? $input['tax_rate_id'] : null,
@@ -92,6 +119,8 @@ class TransactionUtil extends Util
             'shipping_method' => isset($input['shipping_method']) ? $input['shipping_method'] : null,
             'shipping_address' => isset($input['shipping_address']) ? $input['shipping_address'] : null,
             'shipping_status' => isset($input['shipping_status']) ? $input['shipping_status'] : null,
+            'fulfillment_stage' => $input['fulfillment_stage'] ?? null,
+            'fulfillment_meta' => $input['fulfillment_meta'] ?? null,
             'shipping_date' => ! empty($input['shipping_date'])
                 ? ($uf_data ? $this->uf_date($input['shipping_date'], true) : $input['shipping_date'])
                 : null,

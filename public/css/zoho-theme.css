@@ -513,10 +513,10 @@ body.zoho-theme.sidebar-collapse #side-bar > a {
     position: relative;
 }
 
-body.zoho-theme .side-bar.zoho-sidebar-collapsed #side-bar a.drop_down,
-body.zoho-theme .side-bar.zoho-sidebar-collapsed #side-bar .zoho-sidebar-item > a,
-body.zoho-theme.sidebar-collapse #side-bar a.drop_down,
-body.zoho-theme.sidebar-collapse #side-bar .zoho-sidebar-item > a {
+body.zoho-theme .side-bar.zoho-sidebar-collapsed #side-bar > .zoho-sidebar-item > a.drop_down,
+body.zoho-theme .side-bar.zoho-sidebar-collapsed #side-bar > .zoho-sidebar-item > a,
+body.zoho-theme.sidebar-collapse #side-bar > .zoho-sidebar-item > a.drop_down,
+body.zoho-theme.sidebar-collapse #side-bar > .zoho-sidebar-item > a {
     flex-direction: column !important;
     align-items: center !important;
     justify-content: center !important;
@@ -527,8 +527,8 @@ body.zoho-theme.sidebar-collapse #side-bar .zoho-sidebar-item > a {
     text-align: center;
 }
 
-body.zoho-theme .side-bar.zoho-sidebar-collapsed #side-bar .sidebar-menu-label,
-body.zoho-theme.sidebar-collapse #side-bar .sidebar-menu-label {
+body.zoho-theme .side-bar.zoho-sidebar-collapsed #side-bar > .zoho-sidebar-item > a .sidebar-menu-label,
+body.zoho-theme.sidebar-collapse #side-bar > .zoho-sidebar-item > a .sidebar-menu-label {
     font-size: 10px !important;
     line-height: 1.2 !important;
     max-width: 64px;
@@ -538,8 +538,8 @@ body.zoho-theme.sidebar-collapse #side-bar .sidebar-menu-label {
     display: block;
 }
 
-body.zoho-theme .side-bar.zoho-sidebar-collapsed #side-bar .sidebar-menu-chevron,
-body.zoho-theme.sidebar-collapse #side-bar .sidebar-menu-chevron {
+body.zoho-theme .side-bar.zoho-sidebar-collapsed #side-bar > .zoho-sidebar-item > a .sidebar-menu-chevron,
+body.zoho-theme.sidebar-collapse #side-bar > .zoho-sidebar-item > a .sidebar-menu-chevron {
     display: none !important;
 }
 
@@ -592,10 +592,33 @@ body.zoho-theme.sidebar-collapse #side-bar > .zoho-sidebar-item.zoho-sidebar-fly
     box-shadow: none !important;
     border: 0 !important;
     border-radius: 0 !important;
-    margin: 4px 0 4px 8px !important;
-    padding-left: 10px !important;
+    margin: 0 8px 6px 16px !important;
+    padding: 0 0 0 10px !important;
     overflow: visible !important;
     background: transparent !important;
+    border-left: 1px solid #e5e7eb !important;
+}
+
+body.zoho-theme .side-bar.zoho-sidebar-collapsed #side-bar .zoho-sidebar-nested-toggle,
+body.zoho-theme.sidebar-collapse #side-bar .zoho-sidebar-nested-toggle {
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    min-height: 0 !important;
+    gap: 8px !important;
+    padding: 8px 10px 8px 16px !important;
+    text-align: left !important;
+    width: 100%;
+    font-weight: 600;
+    color: #334155 !important;
+}
+
+body.zoho-theme .side-bar.zoho-sidebar-collapsed #side-bar .zoho-sidebar-nested-toggle .sidebar-menu-chevron,
+body.zoho-theme.sidebar-collapse #side-bar .zoho-sidebar-nested-toggle .sidebar-menu-chevron {
+    display: inline-block !important;
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
 }
 
 body.zoho-theme .side-bar.zoho-sidebar-collapsed #side-bar > .zoho-sidebar-item:hover > .chiled,

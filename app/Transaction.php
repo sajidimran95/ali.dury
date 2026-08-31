@@ -27,6 +27,7 @@ class Transaction extends Model
         'sales_order_ids' => 'array',
         'export_custom_fields_info' => 'array',
         'purchase_requisition_ids' => 'array',
+        'fulfillment_meta' => 'array',
     ];
 
     /**
@@ -498,6 +499,29 @@ class Transaction extends Model
             'label' => ucfirst(str_replace('_', ' ', $key)),
             'class' => 'bg-gray',
         ];
+    }
+
+    /**
+     * Stored fulfillment source (order_source, falling back to source).
+     */
+    public function fulfillmentSourceKey(): string
+    {
+        $key = $this->order_source ?: $this->source;
+
+        return in_array($key, ['ecommerce', 'sale_app'], true) ? $key : (string) ($key ?: 'web');
+    }
+
+    public function fulfillmentSourceBadge(): array
+    {
+        $key = $this->fulfillmentSourceKey();
+        if ($key === 'ecommerce') {
+            return ['key' => 'ecommerce', 'label' => __('lang_v1.menu_online_orders'), 'short' => __('home.source_online_order'), 'class' => 'is-online'];
+        }
+        if ($key === 'sale_app') {
+            return ['key' => 'sale_app', 'label' => __('lang_v1.menu_field_sales_orders'), 'short' => __('home.source_field_order'), 'class' => 'is-field'];
+        }
+
+        return ['key' => $key, 'label' => __('home.source_pos_order'), 'short' => __('home.source_pos_order'), 'class' => 'is-pos'];
     }
 
     public function expenseCategory()
