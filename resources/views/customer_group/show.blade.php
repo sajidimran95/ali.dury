@@ -2,7 +2,7 @@
 @section('title', $customer_group->name)
 
 @section('css')
-    <link rel="stylesheet" href="{{ asset('css/japs-customer-group.css?v=' . ($asset_v ?? '')) }}">
+    <link rel="stylesheet" href="{{ asset('css/japs-customer-group.css?v=' . ($asset_v ?? '') . '&cg=3') }}">
 @endsection
 
 @section('content')
@@ -21,7 +21,7 @@
                     <label for="cg_discount_amount">@lang('lang_v1.calculation_percentage')</label>
                     <input type="text" class="form-control input_number" id="cg_discount_amount" name="amount" value="{{ @num_format($customer_group->amount) }}" style="max-width:120px">
                     <span class="text-muted">%</span>
-                    <button type="submit" class="btn btn-primary">@lang('lang_v1.apply_all_products')</button>
+                    <button type="submit" class="tw-dw-btn tw-dw-btn-primary tw-text-white">@lang('lang_v1.apply_all_products')</button>
                 </form>
                 <p class="cg-help">@lang('lang_v1.group_discount_help')</p>
             @endcan
@@ -33,8 +33,8 @@
     </div>
 
     <div class="cg-tabs">
-        <button type="button" class="cg-tab is-active" data-tab="customers">@lang('lang_v1.tag_customers')</button>
-        <button type="button" class="cg-tab" data-tab="prices">@lang('lang_v1.group_product_prices')</button>
+        <button type="button" class="tw-dw-btn tw-dw-btn-sm cg-tab is-active" data-tab="customers">@lang('lang_v1.tag_customers')</button>
+        <button type="button" class="tw-dw-btn tw-dw-btn-sm tw-dw-btn-outline cg-tab" data-tab="prices">@lang('lang_v1.group_product_prices')</button>
     </div>
 
     <section class="cg-panel" data-panel="customers">
@@ -43,7 +43,7 @@
             @can('customer.update')
                 <div class="cg-tag-row">
                     <select id="cg_customer_search" class="form-control" multiple style="width:100%"></select>
-                    <button type="button" class="btn btn-primary" id="cg_tag_customers">@lang('lang_v1.tag_customers')</button>
+                    <button type="button" class="tw-dw-btn tw-dw-btn-primary tw-text-white" id="cg_tag_customers">@lang('lang_v1.tag_customers')</button>
                 </div>
             @endcan
             <table class="table table-bordered" id="cg_members_table" style="width:100%">
@@ -64,8 +64,8 @@
             <p class="cg-help">@lang('lang_v1.group_product_prices_help')</p>
             @can('customer.update')
                 <div class="cg-price-actions">
-                    <button type="button" class="btn btn-default" id="cg_apply_all">@lang('lang_v1.apply_all_products')</button>
-                    <button type="button" class="btn btn-primary" id="cg_save_prices">@lang('lang_v1.save_group_prices')</button>
+                    <button type="button" class="tw-dw-btn tw-dw-btn-outline tw-dw-btn-primary" id="cg_apply_all">@lang('lang_v1.apply_all_products')</button>
+                    <button type="button" class="tw-dw-btn tw-dw-btn-primary tw-text-white" id="cg_save_prices">@lang('lang_v1.save_group_prices')</button>
                 </div>
             @endcan
             <table class="table table-bordered" id="cg_products_table" style="width:100%">
@@ -95,5 +95,5 @@ window.cgGroup = {
     noPrices: @json(__('lang_v1.no_group_prices_to_save'))
 };
 </script>
-<script src="{{ asset('js/japs-customer-group.js?v=' . ($asset_v ?? '')) }}"></script>
+<script src="{{ asset('js/japs-customer-group.js?v=' . ($asset_v ?? '') . '&cg=3') }}"></script>
 @endsection

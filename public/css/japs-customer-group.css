@@ -57,18 +57,41 @@ body.zoho-theme .cg-page {
     margin-bottom: 14px;
 }
 
-.cg-tab {
-    border: 0;
-    background: #eef0f4;
-    color: #374151;
-    border-radius: 8px;
-    padding: 8px 14px;
-    font-weight: 600;
+.cg-panel.hide {
+    display: none !important;
 }
 
-.cg-tab.is-active {
-    background: #4f46e5;
-    color: #fff;
+.cg-page .cg-tab {
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    border: 1px solid #d1d5db !important;
+    background: #f3f4f6 !important;
+    color: #111827 !important;
+    border-radius: 8px !important;
+    padding: 8px 16px !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    line-height: 1.3 !important;
+    min-height: 36px;
+    box-shadow: none !important;
+}
+
+.cg-page .cg-tab:hover {
+    background: #e5e7eb !important;
+    color: #111827 !important;
+}
+
+.cg-page .cg-tab.is-active {
+    background: #4f46e5 !important;
+    border-color: #4f46e5 !important;
+    color: #ffffff !important;
+}
+
+.cg-page .tw-dw-btn-primary {
+    background: #4f46e5 !important;
+    border-color: #4f46e5 !important;
+    color: #ffffff !important;
 }
 
 .cg-card {

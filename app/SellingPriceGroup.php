@@ -78,13 +78,14 @@ class SellingPriceGroup extends Model
                 $q->where('business_id', $business_id);
             })
             ->orderBy('variations.id')
-            ->chunkById(500, function ($variations) use ($price_group_id, $now, &$seeded) {
+            ->chunkById(500, function ($variations) use ($price_group_id, $now, &$seeded, $business_id) {
                 $ids = $variations->pluck('id')->all();
                 $existing = VariationGroupPrice::where('price_group_id', $price_group_id)
                     ->whereIn('variation_id', $ids)
                     ->pluck('variation_id')
                     ->all();
                 $existingLookup = array_flip($existing);
+                $factor = static::groupPriceFactor($business_id, $price_group_id);
 
                 $batch = [];
                 foreach ($variations as $variation) {
@@ -94,7 +95,7 @@ class SellingPriceGroup extends Model
                     $batch[] = [
                         'variation_id' => $variation->id,
                         'price_group_id' => $price_group_id,
-                        'price_inc_tax' => $variation->sell_price_inc_tax ?? 0,
+                        'price_inc_tax' => round(((float) ($variation->sell_price_inc_tax ?? 0)) * $factor, 4),
                         'price_type' => 'fixed',
                         'created_at' => $now,
                         'updated_at' => $now,
@@ -130,19 +131,37 @@ class SellingPriceGroup extends Model
             return;
         }
 
-        $price = $variation->sell_price_inc_tax ?? 0;
+        $base = (float) ($variation->sell_price_inc_tax ?? 0);
 
         foreach ($group_ids as $group_id) {
+            $factor = static::groupPriceFactor($business_id, (int) $group_id);
             VariationGroupPrice::firstOrCreate(
                 [
                     'variation_id' => $variation->id,
                     'price_group_id' => $group_id,
                 ],
                 [
-                    'price_inc_tax' => $price,
+                    'price_inc_tax' => round($base * $factor, 4),
                     'price_type' => 'fixed',
                 ]
             );
         }
+    }
+
+    /**
+     * 1 + (customer group calculation % / 100). Missing % means default selling price.
+     */
+    public static function groupPriceFactor(int $business_id, int $price_group_id): float
+    {
+        $percent = CustomerGroup::where('business_id', $business_id)
+            ->where('selling_price_group_id', $price_group_id)
+            ->where('price_calculation_type', 'percentage')
+            ->value('amount');
+
+        if ($percent === null || $percent === '') {
+            return 1.0;
+        }
+
+        return 1 + ((float) $percent / 100);
     }
 }
