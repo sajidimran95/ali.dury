@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Aug 31, 2026 at 08:31 PM
+-- Generation Time: Aug 31, 2026 at 08:54 PM
 -- Server version: 8.4.3
 -- PHP Version: 8.4.2
 
@@ -1160,6 +1160,7 @@ CREATE TABLE `customer_groups` (
   `business_id` int UNSIGNED NOT NULL,
   `name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `amount` double(5,2) NOT NULL,
+  `inventory_slug` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'all_inventory',
   `price_calculation_type` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT 'percentage',
   `selling_price_group_id` int DEFAULT NULL,
   `created_by` int UNSIGNED NOT NULL,
@@ -1171,9 +1172,9 @@ CREATE TABLE `customer_groups` (
 -- Dumping data for table `customer_groups`
 --
 
-INSERT INTO `customer_groups` (`id`, `business_id`, `name`, `amount`, `price_calculation_type`, `selling_price_group_id`, `created_by`, `created_at`, `updated_at`) VALUES
-(1, 1, 'Group A', -10.00, 'percentage', 1, 1, '2026-07-18 18:56:54', '2026-08-31 09:55:02'),
-(2, 1, 'Group B', -5.00, 'percentage', 2, 1, '2026-07-18 18:56:54', '2026-08-31 09:55:02');
+INSERT INTO `customer_groups` (`id`, `business_id`, `name`, `amount`, `inventory_slug`, `price_calculation_type`, `selling_price_group_id`, `created_by`, `created_at`, `updated_at`) VALUES
+(1, 1, 'Group A', -10.00, 'all_inventory', 'percentage', 1, 1, '2026-07-18 18:56:54', '2026-08-31 09:55:02'),
+(2, 1, 'Group B', -5.00, 'all_inventory', 'percentage', 2, 1, '2026-07-18 18:56:54', '2026-08-31 09:55:02');
 
 -- --------------------------------------------------------
 
@@ -2376,7 +2377,8 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (321, '2026_08_25_200001_create_team_schedule_tables', 20),
 (322, '2026_08_24_211200_add_expense_permissions_to_sales_representative_role', 21),
 (323, '2026_08_25_010000_add_allow_customer_app_to_contacts_table', 21),
-(324, '2026_08_31_190000_add_fulfillment_pipeline_fields', 22);
+(324, '2026_08_31_190000_add_fulfillment_pipeline_fields', 22),
+(325, '2026_09_01_030000_add_inventory_slug_to_customer_groups', 23);
 
 -- --------------------------------------------------------
 
@@ -5577,7 +5579,7 @@ ALTER TABLE `media`
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=325;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=326;
 
 --
 -- AUTO_INCREMENT for table `notification_templates`
