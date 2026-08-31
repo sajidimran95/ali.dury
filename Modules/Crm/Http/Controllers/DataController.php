@@ -109,7 +109,7 @@ class DataController
                     if ($can_import) {
                         $sub->url(
                             action([\App\Http\Controllers\ContactController::class, 'getImportContacts']),
-                            __('lang_v1.import_contacts'),
+                            __('lang_v1.menu_import_contacts'),
                             ['icon' => '', 'active' => request()->segment(1) == 'contacts' && request()->segment(2) == 'import']
                         );
                     }

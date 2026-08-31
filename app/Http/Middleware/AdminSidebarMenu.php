@@ -55,7 +55,7 @@ class AdminSidebarMenu
         if (! $crm_installed && auth()->user()->can('customer.create')) {
             $sub->url(
                 action([\App\Http\Controllers\ContactController::class, 'getImportContacts']),
-                __('lang_v1.import_contacts'),
+                __('lang_v1.menu_import_contacts'),
                 ['icon' => '', 'active' => request()->segment(1) == 'contacts' && request()->segment(2) == 'import']
             );
         }
@@ -75,7 +75,7 @@ class AdminSidebarMenu
     {
         $sub->url(
             action([\App\Http\Controllers\HomeController::class, 'salesDashboard']),
-            __('lang_v1.sales_dashboard'),
+            __('lang_v1.menu_dashboard'),
             ['icon' => '', 'active' => request()->segment(1) == 'sales-dashboard']
         );
 
@@ -315,7 +315,7 @@ class AdminSidebarMenu
             }
             $sub->url(
                 action([\App\Http\Controllers\SellController::class, 'getQuotations']),
-                __('lang_v1.list_quotations'),
+                __('lang_v1.menu_quotations'),
                 $quoteAttrs
             );
         }
@@ -356,7 +356,7 @@ class AdminSidebarMenu
         if (auth()->user()->can('supplier.create')) {
             $sub->url(
                 action([\App\Http\Controllers\ContactController::class, 'getImportContacts']),
-                __('lang_v1.import_contacts'),
+                __('lang_v1.menu_import_contacts'),
                 ['icon' => '', 'active' => request()->segment(1) == 'contacts' && request()->segment(2) == 'import']
             );
         }
@@ -424,7 +424,7 @@ class AdminSidebarMenu
             }
             $sub->url(
                 action([\App\Http\Controllers\PurchaseController::class, 'index']),
-                __('purchase.list_purchase'),
+                __('lang_v1.menu_purchases_all'),
                 $purchaseAttrs
             );
         }
@@ -442,7 +442,7 @@ class AdminSidebarMenu
             );
             $sub->url(
                 action([\App\Http\Controllers\PurchaseReturnController::class, 'index']),
-                __('lang_v1.list_purchase_return'),
+                __('lang_v1.menu_purchase_returns'),
                 $prReturnAttrs
             );
         }
@@ -468,7 +468,7 @@ class AdminSidebarMenu
         if (auth()->user()->can('product.view') || auth()->user()->can('dashboard.data') || auth()->user()->can('stock_report.view')) {
             $sub->url(
                 action([\App\Http\Controllers\InventoryDashboardController::class, 'index']),
-                __('lang_v1.inventory_dashboard'),
+                __('lang_v1.menu_dashboard'),
                 ['icon' => '', 'active' => request()->segment(1) == 'inventory' && (request()->segment(2) == null || request()->segment(2) == 'dashboard')]
             );
         }
@@ -484,7 +484,7 @@ class AdminSidebarMenu
             }
             $sub->url(
                 action([\App\Http\Controllers\ProductController::class, 'index']),
-                __('lang_v1.list_products'),
+                __('lang_v1.menu_products'),
                 $productAttrs
             );
         }
@@ -600,7 +600,7 @@ class AdminSidebarMenu
             );
             $sub->url(
                 action([\App\Http\Controllers\SellingPriceGroupController::class, 'index']),
-                __('lang_v1.selling_price_group'),
+                __('lang_v1.menu_selling_price_groups'),
                 $spgAttrs
             );
         }
@@ -617,7 +617,7 @@ class AdminSidebarMenu
             $sub->header(__('lang_v1.menu_import_data'));
             $sub->url(
                 action([\App\Http\Controllers\ImportProductsController::class, 'index']),
-                __('product.import_products'),
+                __('lang_v1.menu_import_products'),
                 ['icon' => '', 'active' => request()->segment(1) == 'import-products']
             );
         }
@@ -655,7 +655,7 @@ class AdminSidebarMenu
                 }
                 $sub->url(
                     action([\App\Http\Controllers\StockTransferController::class, 'index']),
-                    __('lang_v1.list_stock_transfers'),
+                    __('lang_v1.menu_stock_transfers'),
                     $transferAttrs
                 );
             }
@@ -674,7 +674,7 @@ class AdminSidebarMenu
                 }
                 $sub->url(
                     action([\App\Http\Controllers\StockAdjustmentController::class, 'index']),
-                    __('stock_adjustment.list'),
+                    __('lang_v1.menu_stock_adjustments'),
                     $adjustAttrs
                 );
             }
@@ -683,7 +683,7 @@ class AdminSidebarMenu
         if (auth()->user()->can('product.opening_stock')) {
             $sub->url(
                 action([\App\Http\Controllers\ImportOpeningStockController::class, 'index']),
-                __('lang_v1.import_opening_stock'),
+                __('lang_v1.menu_opening_stock'),
                 ['icon' => '', 'active' => request()->segment(1) == 'import-opening-stock']
             );
         }
@@ -830,13 +830,13 @@ class AdminSidebarMenu
                         }
                         $sub->url(
                             action([\App\Http\Controllers\ExpenseController::class, 'index']),
-                            __('lang_v1.list_expenses'),
+                            __('lang_v1.menu_expenses_all'),
                             $expenseAttrs
                         );
                         if (auth()->user()->can('expense.add')) {
                             $sub->url(
                                 action([\App\Http\Controllers\ExpenseController::class, 'importExpense']),
-                                __('expense.import_expense'),
+                                __('lang_v1.menu_import_expense'),
                                 ['icon' => '', 'active' => request()->segment(1) == 'import-expense']
                             );
                         }
