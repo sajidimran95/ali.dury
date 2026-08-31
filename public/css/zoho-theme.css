@@ -459,8 +459,12 @@ body.zoho-theme #side-bar .zoho-sidebar-child-row:focus-within .theme-sidebar-ch
 }
 
 body.zoho-theme #side-bar .zoho-sidebar-submenu-header {
-    margin-top: 6px;
-    opacity: 0.9;
+    margin-top: 10px;
+    margin-bottom: 2px;
+    padding-left: 16px !important;
+    opacity: 1;
+    letter-spacing: 0.08em;
+    color: #8b95a7 !important;
 }
 
 body.zoho-theme #side-bar a svg,

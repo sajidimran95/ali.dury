@@ -27,6 +27,7 @@ return [
     'menu_all_orders' => 'All Orders',
     'menu_pos_orders' => 'POS Orders',
     'menu_fulfillment' => 'Fulfillment',
+    'menu_more' => 'More',
     'menu_online_orders' => 'Online Orders',
     'menu_field_sales_orders' => 'Field Sales Orders',
     'menu_sales_team_commissions' => 'Sales Team & Commissions',

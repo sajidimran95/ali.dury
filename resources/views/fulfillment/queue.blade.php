@@ -6,6 +6,7 @@
 @endsection
 
 @section('content')
+<div class="japs-dashboard-page">
 <div class="ff-page">
     <p class="ff-crumb">{{ __('fulfillment.breadcrumb_orders') }} / {{ __('fulfillment.breadcrumb_fulfillment') }} / {{ __('fulfillment.'.$stage) }}</p>
     <div class="ff-queue-head">
@@ -33,6 +34,7 @@
             </thead>
         </table>
     </div>
+</div>
 </div>
 @endsection
 

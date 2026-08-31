@@ -43,63 +43,61 @@ class DataController
 
                     $can_customers = auth()->user()->can('customer.view') || auth()->user()->can('customer.view_own') || $is_super;
                     if ($can_customers) {
-                        $sub->dropdown(__('crm::lang.customer'), function ($cust) {
-                            $customerAttrs = [
-                                'icon' => '',
-                                'active' => request()->segment(1) == 'contacts' && request()->input('type') == 'customer',
+                        $sub->header(__('crm::lang.customer'));
+                        $customerAttrs = [
+                            'icon' => '',
+                            'active' => request()->segment(1) == 'contacts' && request()->input('type') == 'customer',
+                        ];
+                        if (auth()->user()->can('customer.create')) {
+                            $customerAttrs['add_modal'] = [
+                                'href' => action([\App\Http\Controllers\ContactController::class, 'create'], ['type' => 'customer']),
+                                'container' => '#global_contact_modal',
                             ];
-                            if (auth()->user()->can('customer.create')) {
-                                $customerAttrs['add_modal'] = [
-                                    'href' => action([\App\Http\Controllers\ContactController::class, 'create'], ['type' => 'customer']),
-                                    'container' => '#global_contact_modal',
-                                ];
-                                $customerAttrs['add_label'] = __('contact.add_contact');
-                            }
-                            $cust->url(
-                                action([\App\Http\Controllers\ContactController::class, 'index'], ['type' => 'customer']),
-                                __('crm::lang.customer'),
-                                $customerAttrs
-                            );
-                            $cust->url(
-                                action([\App\Http\Controllers\CustomerGroupController::class, 'index']),
-                                __('crm::lang.customer_groups'),
-                                ['icon' => '', 'active' => request()->segment(1) == 'customer-group']
-                            );
-                        }, 0, []);
+                            $customerAttrs['add_label'] = __('contact.add_contact');
+                        }
+                        $sub->url(
+                            action([\App\Http\Controllers\ContactController::class, 'index'], ['type' => 'customer']),
+                            __('crm::lang.customer'),
+                            $customerAttrs
+                        );
+                        $sub->url(
+                            action([\App\Http\Controllers\CustomerGroupController::class, 'index']),
+                            __('crm::lang.customer_groups'),
+                            ['icon' => '', 'active' => request()->segment(1) == 'customer-group']
+                        );
                     }
 
                     $can_leads = auth()->user()->can('crm.lead.view') || $can_crm;
                     $can_follow = auth()->user()->can('crm.schedule') || $can_crm;
                     $can_calls = auth()->user()->can('crm.call_log') || $can_crm;
                     if ($can_leads || $can_follow || $can_calls) {
-                        $sub->dropdown(__('crm::lang.leads'), function ($leads) use ($can_leads, $can_follow, $can_calls) {
-                            if ($can_leads) {
-                                $leads->url(
-                                    route('crm.leads.index'),
-                                    __('crm::lang.leads'),
-                                    ['icon' => '', 'active' => request()->segment(1) == 'crm' && request()->segment(2) == 'leads']
-                                );
-                                $leads->url(
-                                    route('crm.pipeline.index'),
-                                    __('crm::lang.pipeline'),
-                                    ['icon' => '', 'active' => request()->segment(1) == 'crm' && request()->segment(2) == 'pipeline']
-                                );
-                            }
-                            if ($can_follow) {
-                                $leads->url(
-                                    route('crm.schedules.index'),
-                                    __('crm::lang.follow_ups'),
-                                    ['icon' => '', 'active' => request()->segment(1) == 'crm' && request()->segment(2) == 'schedules']
-                                );
-                            }
-                            if ($can_calls) {
-                                $leads->url(
-                                    route('crm.call-logs.index'),
-                                    __('crm::lang.call_log'),
-                                    ['icon' => '', 'active' => request()->segment(1) == 'crm' && request()->segment(2) == 'call-logs']
-                                );
-                            }
-                        }, 0, []);
+                        $sub->header(__('crm::lang.leads'));
+                    }
+                    if ($can_leads) {
+                        $sub->url(
+                            route('crm.leads.index'),
+                            __('crm::lang.leads'),
+                            ['icon' => '', 'active' => request()->segment(1) == 'crm' && request()->segment(2) == 'leads']
+                        );
+                        $sub->url(
+                            route('crm.pipeline.index'),
+                            __('crm::lang.pipeline'),
+                            ['icon' => '', 'active' => request()->segment(1) == 'crm' && request()->segment(2) == 'pipeline']
+                        );
+                    }
+                    if ($can_follow) {
+                        $sub->url(
+                            route('crm.schedules.index'),
+                            __('crm::lang.follow_ups'),
+                            ['icon' => '', 'active' => request()->segment(1) == 'crm' && request()->segment(2) == 'schedules']
+                        );
+                    }
+                    if ($can_calls) {
+                        $sub->url(
+                            route('crm.call-logs.index'),
+                            __('crm::lang.call_log'),
+                            ['icon' => '', 'active' => request()->segment(1) == 'crm' && request()->segment(2) == 'call-logs']
+                        );
                     }
 
                     $can_import = $can_customers && auth()->user()->can('customer.create');
