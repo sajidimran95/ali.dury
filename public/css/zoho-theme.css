@@ -375,6 +375,38 @@ body.zoho-theme #side-bar .chiled {
     background: #eef0f4;
 }
 
+body.zoho-theme #side-bar .chiled .zoho-sidebar-nested-toggle,
+body.zoho-theme #side-bar .chiled a.drop_down {
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    min-height: 0 !important;
+    gap: 8px !important;
+    padding: 6px 8px 6px 16px !important;
+    margin: 0 8px 2px 0 !important;
+    width: calc(100% - 8px);
+    border-left: none !important;
+    border-radius: 6px !important;
+    font-size: 12.5px !important;
+    font-weight: 600;
+    color: #5a6577 !important;
+    background: transparent !important;
+}
+
+body.zoho-theme #side-bar .chiled .zoho-sidebar-nested-toggle:hover,
+body.zoho-theme #side-bar .chiled a.drop_down:hover,
+body.zoho-theme #side-bar .chiled a.drop_down.theme-sidebar-child-active {
+    background: #e4e7ee !important;
+    color: #1f2937 !important;
+}
+
+body.zoho-theme #side-bar .chiled .zoho-sidebar-nested {
+    padding-left: 12px !important;
+    margin: 0 8px 6px 8px !important;
+    background: transparent !important;
+    border-left: 1px solid #d7dbe3;
+}
+
 body.zoho-theme #side-bar .zoho-sidebar-child-row {
     display: flex;
     align-items: center;
@@ -2655,6 +2687,24 @@ body.zoho-theme #side-bar .zoho-sidebar-item > a.theme-sidebar-active {
 
 body.zoho-theme #side-bar .chiled {
     background: #11182a !important;
+}
+
+body.zoho-theme #side-bar .chiled .zoho-sidebar-nested-toggle,
+body.zoho-theme #side-bar .chiled a.drop_down {
+    color: #c5cde0 !important;
+    background: transparent !important;
+}
+
+body.zoho-theme #side-bar .chiled .zoho-sidebar-nested-toggle:hover,
+body.zoho-theme #side-bar .chiled a.drop_down:hover,
+body.zoho-theme #side-bar .chiled a.drop_down.theme-sidebar-child-active {
+    background: #232d4a !important;
+    color: #ffffff !important;
+}
+
+body.zoho-theme #side-bar .chiled .zoho-sidebar-nested {
+    background: transparent !important;
+    border-left-color: #2a3348;
 }
 
 body.zoho-theme #side-bar .zoho-sidebar-child-link,

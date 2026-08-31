@@ -75,7 +75,7 @@ class AdminSidebarMenu
     {
         $sub->url(
             action([\App\Http\Controllers\HomeController::class, 'salesDashboard']),
-            __('lang_v1.menu_dashboard'),
+            __('lang_v1.sales_dashboard'),
             ['icon' => '', 'active' => request()->segment(1) == 'sales-dashboard']
         );
 
@@ -216,15 +216,6 @@ class AdminSidebarMenu
                     'data-search-terms' => 'shipment shipments shipping ship delivery package packages tracking boxes picking packing fulfillment',
                 ]
             );
-            $shipmentsUrl = action([\App\Http\Controllers\SellController::class, 'shipments']);
-            $sub->url(
-                $shipmentsUrl.'?shipping_status=shipped',
-                __('lang_v1.menu_ready_for_pickup'),
-                [
-                    'icon' => '',
-                    'active' => request()->segment(1) == 'shipments' && request()->get('shipping_status') == 'shipped',
-                ]
-            );
         }
 
         $canReturns = auth()->user()->can('access_sell_return') || auth()->user()->can('access_own_sell_return');
@@ -292,12 +283,10 @@ class AdminSidebarMenu
 
         $moduleUtil = new ModuleUtil();
         if (! $moduleUtil->isModuleInstalled('Crm')) {
-            $sub->header(__('lang_v1.menu_customers'));
             $this->addSalesCustomerMenuItems($sub);
         }
 
         if (in_array('add_sale', $enabled_modules) && ($is_admin || auth()->user()->hasAnyPermission(['quotation.view_all', 'quotation.view_own']))) {
-            $sub->header(__('lang_v1.menu_quotations'));
             $quoteAttrs = [
                 'icon' => '',
                 'active' => request()->segment(1) == 'sells' && request()->segment(2) == 'quotations',
@@ -321,7 +310,6 @@ class AdminSidebarMenu
         }
 
         if (in_array('subscription', $enabled_modules) && auth()->user()->can('direct_sell.access')) {
-            $sub->header(__('lang_v1.subscriptions'));
             $sub->url(
                 action([\App\Http\Controllers\SellPosController::class, 'listSubscriptions']),
                 __('lang_v1.subscriptions'),
@@ -786,7 +774,7 @@ class AdminSidebarMenu
                 )->order(20);
             }
 
-            // Sales (grouped: Dashboard / Orders / Invoices / Fulfillment / More / Customers / Quotations)
+            // Sales: Dashboard, nested Orders, Invoices, nested Fulfillment, then remaining items
             if ($is_admin || auth()->user()->hasAnyPermission(['sell.view', 'sell.create', 'direct_sell.access', 'view_own_sell_only', 'view_commission_agent_sell', 'access_shipping', 'access_own_shipping', 'access_commission_agent_shipping', 'access_sell_return', 'direct_sell.view', 'direct_sell.update', 'access_own_sell_return'])
                 || auth()->user()->can('customer.view') || auth()->user()->can('customer.view_own')) {
                 $menu->dropdown(
