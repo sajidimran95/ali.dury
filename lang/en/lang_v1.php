@@ -180,6 +180,8 @@ return [
     'group_discount_help' => 'Negative % lowers the price for every product (Group A −10, Group B −5). Existing group prices are updated to that % off the default selling price. You can still override a single product below.',
     'group_discount_saved' => 'Group discount :percent% applied to :count products.',
     'no_customer_group' => 'no group',
+    'in_customer_group' => 'in a group',
+    'customers_count' => 'Customers',
     'none' => 'None',
     'enable_imei_or_sr_no' => 'Enable Product description, IMEI or Serial Number',
     'tooltip_sr_no' => 'Enable or disable adding product description, IMEI or Serial number while selling products in POS screen',
