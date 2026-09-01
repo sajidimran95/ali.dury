@@ -180,6 +180,7 @@ return [
     'group_discount_all_inventory' => 'All inventory uses :percent% for this group. New products are included automatically.',
     'all_inventory_slug' => 'all inventory',
     'group_discount_all_help' => 'This % applies to every product in inventory. You do not need to load or save each product. New products use the same %. Use Product prices only if one item needs a different price.',
+    'group_discount_help' => 'Negative % lowers the price for every product (example: -10). This applies to all inventory. New products use the same %.',
     'group_product_overrides_help' => 'Optional. Search and add only the products that should not use the all-inventory %. Leave this empty if every product uses the group %.',
     'group_product_override_added' => 'Product added as an exception price.',
     'group_discount_saved' => 'Group discount :percent% applied to :count products.',
