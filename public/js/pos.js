@@ -524,7 +524,7 @@ $(document).ready(function() {
         $('#advance_balance_text').text(__currency_trans_from_en(data.balance), true);
         $('#advance_balance').val(data.balance);
 
-        if ($data.price_calculation_type == 'selling_price_group') {
+        if (data.price_calculation_type == 'selling_price_group') {
             $('#price_group').val(data.selling_price_group_id);
             $('#price_group').change();
         }

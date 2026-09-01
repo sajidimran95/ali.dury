@@ -529,7 +529,7 @@ class MsaSetupService
             return;
         }
 
-        $walkIn->customer_group_id = $retailerGroup->id;
+        $walkIn->customer_group_id = null;
         if (empty($walkIn->custom_field1)) {
             $walkIn->custom_field1 = 'RETAIL';
         }
