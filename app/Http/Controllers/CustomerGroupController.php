@@ -372,15 +372,13 @@ class CustomerGroupController extends Controller
 
         $business_id = (int) request()->session()->get('user.business_id');
         $customer_group = CustomerGroup::where('business_id', $business_id)->findOrFail($id);
-        $price_group_id = $customer_group->selling_price_group_id;
-        if (empty($price_group_id)) {
-            $price_group_id = $this->customerGroupService->ensurePriceGroup($customer_group)->id;
-        }
+        $price_group_id = $customer_group->selling_price_group_id ?: 0;
+        $percent = $customer_group->price_calculation_type === 'percentage' ? (float) $customer_group->amount : 0;
 
         $query = Variation::query()
             ->join('products as p', 'variations.product_id', '=', 'p.id')
             ->join('product_variations as pv', 'variations.product_variation_id', '=', 'pv.id')
-            ->join('variation_group_prices as vgp', function ($join) use ($price_group_id) {
+            ->leftJoin('variation_group_prices as vgp', function ($join) use ($price_group_id) {
                 $join->on('vgp.variation_id', '=', 'variations.id')
                     ->where('vgp.price_group_id', '=', $price_group_id);
             })
@@ -408,10 +406,14 @@ class CustomerGroupController extends Controller
             ->editColumn('default_price', function ($row) {
                 return $this->commonUtil->num_f($row->default_price);
             })
-            ->addColumn('group_price_input', function ($row) {
-                $value = $row->group_price !== null ? $this->commonUtil->num_f($row->group_price) : '';
+            ->addColumn('group_price_input', function ($row) use ($percent) {
+                if ($row->group_price !== null && $row->group_price !== '') {
+                    $value = $this->commonUtil->num_f($row->group_price);
+                } else {
+                    $value = $this->commonUtil->num_f(((float) $row->default_price) * (1 + $percent / 100));
+                }
 
-                return '<input type="text" class="form-control input_number js-group-price" data-variation-id="'.$row->variation_id.'" value="'.e($value).'" placeholder="'.$this->commonUtil->num_f($row->default_price).'">';
+                return '<input type="text" class="form-control input_number js-group-price" data-variation-id="'.$row->variation_id.'" value="'.e($value).'">';
             })
             ->rawColumns(['group_price_input'])
             ->make(true);

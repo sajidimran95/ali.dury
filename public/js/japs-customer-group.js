@@ -249,4 +249,6 @@ $(document).ready(function () {
             }
         });
     });
+
+    initProductsTable();
 });

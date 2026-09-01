@@ -62,7 +62,7 @@
     <section class="cg-panel hide" data-panel="prices">
         <div class="cg-card">
             <h2>@lang('lang_v1.group_product_prices')</h2>
-            <p class="cg-help">@lang('lang_v1.group_product_overrides_help')</p>
+            <p class="cg-help">@lang('lang_v1.group_product_prices_help')</p>
             @can('customer.update')
                 <div class="cg-tag-row">
                     <select id="cg_product_search" class="form-control" style="width:100%"></select>
@@ -101,5 +101,5 @@ window.cgGroup = {
     noPrices: @json(__('lang_v1.no_group_prices_to_save'))
 };
 </script>
-<script src="{{ asset('js/japs-customer-group.js?v=' . ($asset_v ?? '') . '&cg=4') }}"></script>
+<script src="{{ asset('js/japs-customer-group.js?v=' . ($asset_v ?? '') . '&cg=5') }}"></script>
 @endsection

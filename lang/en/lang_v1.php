@@ -167,7 +167,7 @@ return [
     'customers_tagged' => 'Customers tagged to this group.',
     'customer_removed_from_group' => 'Customer removed from this group.',
     'group_product_prices' => 'Product prices',
-    'group_product_prices_help' => 'Set a price for one product, or apply the default selling price to every product that does not have a group price yet. Existing group prices are not overwritten.',
+    'group_product_prices_help' => 'All inventory products are listed here. Group % is applied automatically. Change a price only if that one product should differ.',
     'default_selling_price' => 'Default selling price',
     'group_price' => 'Group price',
     'save_group_prices' => 'Save prices',

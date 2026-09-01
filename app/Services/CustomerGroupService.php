@@ -31,38 +31,24 @@ class CustomerGroupService
         $this->applyPercentToNamedGroup($businessId, 'Group B', -5);
     }
 
-    public function applyPercentToGroup(CustomerGroup $customerGroup, float $percent, bool $updateAllProductPrices = true): int
+    public function applyPercentToGroup(CustomerGroup $customerGroup, float $percent, bool $updateAllProductPrices = false): int
     {
         $customerGroup->price_calculation_type = 'percentage';
         $customerGroup->amount = $percent;
         $customerGroup->inventory_slug = 'all_inventory';
         $customerGroup->save();
 
-        if (! $updateAllProductPrices && ! empty($customerGroup->selling_price_group_id)) {
-            VariationGroupPrice::where('price_group_id', $customerGroup->selling_price_group_id)->delete();
+        if (! $updateAllProductPrices) {
+            return 0;
         }
 
-        $updated = 0;
-        if ($updateAllProductPrices) {
-            $priceGroup = $this->ensurePriceGroup($customerGroup);
-            $updated = $this->writeAllProductPricesFromPercent(
-                (int) $customerGroup->business_id,
-                (int) $priceGroup->id,
-                $percent
-            );
-        }
+        $priceGroup = $this->ensurePriceGroup($customerGroup);
 
-        $updated = 0;
-        if ($updateAllProductPrices) {
-            $priceGroup = $this->ensurePriceGroup($customerGroup);
-            $updated = $this->writeAllProductPricesFromPercent(
-                (int) $customerGroup->business_id,
-                (int) $priceGroup->id,
-                $percent
-            );
-        }
-
-        return $updated;
+        return $this->writeAllProductPricesFromPercent(
+            (int) $customerGroup->business_id,
+            (int) $priceGroup->id,
+            $percent
+        );
     }
 
     public function writeAllProductPricesFromPercent(int $businessId, int $priceGroupId, float $percent): int
