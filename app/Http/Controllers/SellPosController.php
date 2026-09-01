@@ -2069,9 +2069,15 @@ class SellPosController extends Controller
         }
 
         $discounts = [];
+        $prices = [];
         foreach ($variation_ids as $variation_id) {
             try {
                 $product = $this->productUtil->getDetailsFromVariation($variation_id, $business_id, $location_id, false);
+                $this->productUtil->applyCustomerGroupSellPrices($product, $cg, $variation_id, $price_group);
+                $prices[$variation_id] = [
+                    'unit_price' => (float) $product->default_sell_price,
+                    'unit_price_inc_tax' => (float) $product->sell_price_inc_tax,
+                ];
                 $discount = $this->productUtil->getProductDiscount(
                     $product,
                     $business_id,
@@ -2095,12 +2101,14 @@ class SellPosController extends Controller
                 }
             } catch (\Exception $e) {
                 $discounts[$variation_id] = null;
+                $prices[$variation_id] = null;
             }
         }
 
         return [
             'success' => true,
             'discounts' => $discounts,
+            'prices' => $prices,
         ];
     }
 

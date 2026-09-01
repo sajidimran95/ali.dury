@@ -276,6 +276,12 @@ $(document).ready(function() {
 
     $('select#customer_id').select2(posCustomerSelect2Opts);
 
+    $('select#customer_id').on('change', function () {
+        if (typeof pos_schedule_cart_price_refresh === 'function') {
+            pos_schedule_cart_price_refresh();
+        }
+    });
+
     // Keep walk-in / selected customer name visible
     if (isPosSaleTheme) {
         $('select#customer_id').on('change select2:select', function () {
@@ -529,9 +535,9 @@ $(document).ready(function() {
             $('#price_group').change();
         }
 
-        // Re-apply category / brand / product line discounts for current cart
-        if (typeof pos_refresh_line_discounts === 'function') {
-            pos_refresh_line_discounts();
+        // Re-apply group prices and line discounts for current cart
+        if (typeof pos_schedule_cart_price_refresh === 'function') {
+            pos_schedule_cart_price_refresh();
         }
         //  else {
         //     $('#price_group').val(0);
@@ -3297,8 +3303,8 @@ function pos_refresh_payment_modal() {
 
     $('select#price_group').change(function() {
         $('input#hidden_price_group').val($(this).val());
-        if (typeof pos_refresh_line_discounts === 'function') {
-            pos_refresh_line_discounts();
+        if (typeof pos_schedule_cart_price_refresh === 'function') {
+            pos_schedule_cart_price_refresh();
         }
     });
 
@@ -5249,9 +5255,22 @@ function calculate_discounted_unit_price(row) {
 }
 
 /**
- * Re-resolve brand / category / product discounts for all cart lines
+ * Re-resolve group prices and brand / category / product discounts for all cart lines
  * when customer or selling price group changes.
  */
+var posCartPriceRefreshTimer = null;
+function pos_schedule_cart_price_refresh() {
+    if (posCartPriceRefreshTimer) {
+        clearTimeout(posCartPriceRefreshTimer);
+    }
+    posCartPriceRefreshTimer = setTimeout(function () {
+        posCartPriceRefreshTimer = null;
+        if (typeof pos_refresh_line_discounts === 'function') {
+            pos_refresh_line_discounts();
+        }
+    }, 80);
+}
+
 function pos_refresh_line_discounts() {
     var $rows = $('table#pos_table tbody tr.product_row');
     if (!$rows.length) {
@@ -5298,7 +5317,7 @@ function pos_refresh_line_discounts() {
             variation_ids: variation_ids,
         },
         success: function (result) {
-            if (!result || !result.success || !result.discounts) {
+            if (!result || !result.success) {
                 return;
             }
 
@@ -5309,7 +5328,21 @@ function pos_refresh_line_discounts() {
                     return;
                 }
 
-                var disc = result.discounts[vid];
+                var price = result.prices ? result.prices[vid] : null;
+                if (price && (price.unit_price || price.unit_price_inc_tax)) {
+                    var $unit = pos_row_field($row, 'input.pos_unit_price');
+                    var $inc = $row.find('input.pos_unit_price_inc_tax');
+                    if ($unit.length && price.unit_price) {
+                        __write_number($unit, price.unit_price);
+                        $unit.attr('data-rule-min-value', price.unit_price);
+                    }
+                    if ($inc.length && price.unit_price_inc_tax) {
+                        __write_number($inc, price.unit_price_inc_tax);
+                        $inc.attr('data-rule-min-value', price.unit_price_inc_tax);
+                    }
+                }
+
+                var disc = result.discounts ? result.discounts[vid] : null;
                 var $type = pos_row_field($row, 'select.row_discount_type');
                 var $amount = pos_row_field($row, 'input.row_discount_amount');
                 var $discId = $row.find('input.row_discount_id');

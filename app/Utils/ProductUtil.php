@@ -2611,6 +2611,43 @@ class ProductUtil extends Util
     }
 
     /**
+     * Apply customer-group calculation % and any per-SKU group price onto a variation.
+     *
+     * @param  object  $product
+     * @param  object|null  $cg
+     * @param  int  $variation_id
+     * @param  mixed  $price_group
+     * @return object
+     */
+    public function applyCustomerGroupSellPrices($product, $cg, $variation_id, $price_group = null)
+    {
+        $is_percentage_group = ! empty($cg) && is_object($cg) && ($cg->price_calculation_type ?? '') === 'percentage';
+        $percent = (! $is_percentage_group || $cg->amount === null || $cg->amount === '') ? 0 : $cg->amount;
+        $product->default_sell_price = $product->default_sell_price + ($percent * $product->default_sell_price / 100);
+        $product->sell_price_inc_tax = $product->sell_price_inc_tax + ($percent * $product->sell_price_inc_tax / 100);
+
+        $used_group_override = false;
+        if (! empty($cg) && ! empty($cg->selling_price_group_id)) {
+            $variation_group_prices = $this->getVariationGroupPrice($variation_id, $cg->selling_price_group_id, $product->tax_id);
+            if (! empty($variation_group_prices['price_inc_tax'])) {
+                $product->sell_price_inc_tax = $variation_group_prices['price_inc_tax'];
+                $product->default_sell_price = $variation_group_prices['price_exc_tax'];
+                $used_group_override = true;
+            }
+        }
+
+        if (! $used_group_override && ! $is_percentage_group && ! empty($price_group)) {
+            $variation_group_prices = $this->getVariationGroupPrice($variation_id, $price_group, $product->tax_id);
+            if (! empty($variation_group_prices['price_inc_tax'])) {
+                $product->sell_price_inc_tax = $variation_group_prices['price_inc_tax'];
+                $product->default_sell_price = $variation_group_prices['price_exc_tax'];
+            }
+        }
+
+        return $product;
+    }
+
+    /**
      * Generate sell line row for POS
      * This is the core business logic for generating a product row
      * 
@@ -2663,10 +2700,8 @@ class ProductUtil extends Util
         //Get customer group and change the price accordingly
         $customer_id = request()->get('customer_id', null);
         $cg = $contact_util->getCustomerGroup($business_id, $customer_id);
-        $is_percentage_group = ! empty($cg) && ($cg->price_calculation_type ?? '') === 'percentage';
-        $percent = (! $is_percentage_group || $cg->amount === null || $cg->amount === '') ? 0 : $cg->amount;
-        $product->default_sell_price = $product->default_sell_price + ($percent * $product->default_sell_price / 100);
-        $product->sell_price_inc_tax = $product->sell_price_inc_tax + ($percent * $product->sell_price_inc_tax / 100);
+        $price_group = request()->input('price_group');
+        $this->applyCustomerGroupSellPrices($product, $cg, $variation_id, $price_group);
 
         $tax_dropdown = TaxRate::forBusinessDropdown($business_id, true, true);
 
@@ -2684,28 +2719,6 @@ class ProductUtil extends Util
         $product->lot_numbers = $lot_numbers;
 
         $purchase_line_id = request()->get('purchase_line_id');
-
-        $price_group = request()->input('price_group');
-        $used_group_override = false;
-
-        // Manual Group A / B product price is the final price (no extra %).
-        if (! empty($cg) && ! empty($cg->selling_price_group_id)) {
-            $variation_group_prices = $this->getVariationGroupPrice($variation_id, $cg->selling_price_group_id, $product->tax_id);
-            if (! empty($variation_group_prices['price_inc_tax'])) {
-                $product->sell_price_inc_tax = $variation_group_prices['price_inc_tax'];
-                $product->default_sell_price = $variation_group_prices['price_exc_tax'];
-                $used_group_override = true;
-            }
-        }
-
-        if (! $used_group_override && ! $is_percentage_group && ! empty($price_group)) {
-            $variation_group_prices = $this->getVariationGroupPrice($variation_id, $price_group, $product->tax_id);
-
-            if (! empty($variation_group_prices['price_inc_tax'])) {
-                $product->sell_price_inc_tax = $variation_group_prices['price_inc_tax'];
-                $product->default_sell_price = $variation_group_prices['price_exc_tax'];
-            }
-        }
 
         $warranties = $this->getWarrantiesForDropdown();
 
