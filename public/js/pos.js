@@ -1,6 +1,7 @@
 var global_brand_id = null;
 var global_p_category_id = null;
 var global_is_clear_local_storage = false;
+var posCartPriceRefreshEnabled = false;
 
 function pos_play_success_sound() {
     var audio = document.getElementById('success-audio');
@@ -116,6 +117,59 @@ function pos_restore_all_row_edit_modals() {
     $('.row_edit_product_price_model').each(function() {
         pos_restore_row_edit_modal($(this));
     });
+}
+
+/** Load current cart line values into the price-edit popup (avoids stale catalog price). */
+function pos_sync_row_edit_modal_from_cart($modal, $tr) {
+    $modal = $($modal);
+    $tr = $($tr);
+    if (!$modal.length || !$tr.length) {
+        return;
+    }
+
+    var inc_tax = __read_number($tr.find('input.pos_unit_price_inc_tax'));
+    var tax_rate = pos_row_field($tr, 'select.tax_id').find(':selected').data('rate') || 0;
+    var discounted = typeof __get_principle === 'function'
+        ? __get_principle(inc_tax, tax_rate)
+        : inc_tax;
+    var unit_price = typeof get_unit_price_from_discounted_unit_price === 'function'
+        ? get_unit_price_from_discounted_unit_price($tr, discounted)
+        : discounted;
+
+    __write_number($modal.find('input.pos_unit_price'), unit_price);
+
+    var discType = pos_row_field($tr, 'select.row_discount_type').val();
+    if (discType) {
+        $modal.find('select.row_discount_type').val(discType);
+    }
+    __write_number($modal.find('input.row_discount_amount'), __read_number(pos_row_field($tr, 'input.row_discount_amount')));
+
+    var taxId = pos_row_field($tr, 'select.tax_id').val();
+    if (taxId !== undefined && taxId !== null) {
+        $modal.find('select.tax_id').val(taxId);
+    }
+
+    var note = pos_row_field($tr, 'textarea[name*="sell_line_note"]').val();
+    if (note !== undefined) {
+        $modal.find('textarea[name*="sell_line_note"]').val(note);
+    }
+}
+
+/** Apply popup fields to the cart row and recalculate totals. */
+function pos_apply_row_edit_modal($modal, $tr, markManual) {
+    $modal = $($modal);
+    if (!$tr || !$tr.length) {
+        $tr = pos_product_row_from_el($modal);
+    }
+    pos_restore_row_edit_modal($modal);
+    if (!$tr.length) {
+        return;
+    }
+    if (markManual) {
+        $tr.attr('data-pos-manual-price', '1').data('pos-manual-price', 1);
+    }
+    pos_each_row($tr);
+    pos_total_row();
 }
 
 /**
@@ -552,6 +606,9 @@ $(document).ready(function() {
     });
 
     set_default_customer();
+    setTimeout(function () {
+        posCartPriceRefreshEnabled = true;
+    }, 700);
 
     if ($('#search_product').length) {
         // ------------------------------------------------------------
@@ -2581,6 +2638,10 @@ function pos_refresh_payment_modal() {
         if ($modal.parent()[0] !== document.body) {
             $modal.appendTo('body');
         }
+        var tr = pos_product_row_from_el($modal);
+        if (tr.length) {
+            pos_sync_row_edit_modal_from_cart($modal, tr);
+        }
     });
 
     $(document).on('shown.bs.modal', '.row_edit_product_price_model', function() {
@@ -2599,16 +2660,26 @@ function pos_refresh_payment_modal() {
     // Put fields back inside the product row (POS form) so sale create includes unit_price/tax
     $(document).on('hidden.bs.modal', '.row_edit_product_price_model', function() {
         var $modal = $(this);
-        var tr = pos_product_row_from_el($modal);
-        pos_restore_row_edit_modal($modal);
-        if (tr.length) {
-            pos_each_row(tr);
-            pos_total_row();
+        if ($modal.data('pos-row-edit-applied')) {
+            $modal.removeData('pos-row-edit-applied');
+        } else {
+            pos_apply_row_edit_modal($modal, null, false);
         }
         if (!$('.modal:visible').length) {
             $('.modal-backdrop').remove();
             $('body').removeClass('modal-open').css({ paddingRight: '', overflow: '' });
         }
+    });
+
+    $(document).on('click.posRowEditUpdate', '.pos-row-edit-price-update', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var $modal = $(this).closest('.row_edit_product_price_model');
+        var tr = pos_product_row_from_el($modal);
+        pos_apply_row_edit_modal($modal, tr, true);
+        $modal.data('pos-row-edit-applied', true);
+        $modal.modal('hide');
+        return false;
     });
 
     //Update Order tax (delegated — modal moved to body)
@@ -5260,6 +5331,9 @@ function calculate_discounted_unit_price(row) {
  */
 var posCartPriceRefreshTimer = null;
 function pos_schedule_cart_price_refresh() {
+    if (!posCartPriceRefreshEnabled) {
+        return;
+    }
     if (posCartPriceRefreshTimer) {
         clearTimeout(posCartPriceRefreshTimer);
     }
@@ -5329,7 +5403,7 @@ function pos_refresh_line_discounts() {
                 }
 
                 var price = result.prices ? result.prices[vid] : null;
-                if (price && (price.unit_price || price.unit_price_inc_tax)) {
+                if (price && (price.unit_price || price.unit_price_inc_tax) && !$row.data('pos-manual-price')) {
                     var $unit = pos_row_field($row, 'input.pos_unit_price');
                     var $inc = $row.find('input.pos_unit_price_inc_tax');
                     if ($unit.length && price.unit_price) {

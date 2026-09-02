@@ -4394,6 +4394,23 @@ body.lockscreen.pos-sale-theme .row_edit_product_price_model .close {
   text-shadow: none !important;
 }
 
+body.lockscreen.pos-sale-theme .row_edit_product_price_model .modal-footer {
+  display: flex !important;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+body.lockscreen.pos-sale-theme .row_edit_product_price_model .modal-footer .pos-row-edit-price-update {
+  display: inline-flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  background: #3b8ddd !important;
+  border-color: #2f7bc4 !important;
+  color: #fff !important;
+}
+
 /* Modals ? centered + white text (Retrieve / Park / Payment / generic) */
 body.lockscreen.pos-sale-theme .modal {
   z-index: 10600 !important;

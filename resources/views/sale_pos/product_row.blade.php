@@ -76,7 +76,9 @@
 
 			if($hide_tax == 'hide'){
 				$tax_id = null;
-				$unit_price_inc_tax = $product->default_sell_price;
+				if (empty($product->transaction_sell_lines_id)) {
+					$unit_price_inc_tax = $product->default_sell_price;
+				}
 			}
 
 			if(!empty($so_line) && $action !== 'edit') {
