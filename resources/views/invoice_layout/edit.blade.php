@@ -112,7 +112,19 @@
         <div class="col-sm-6">
           <div class="form-group">
             {!! Form::label('logo', __('invoice.invoice_logo') . ':') !!}
-            {!! Form::file('logo', ['accept' => 'image/*']); !!}
+            {!! Form::file('logo', ['accept' => 'image/*', 'id' => 'invoice_logo_input']); !!}
+            @php
+              $invoice_logo_preview = null;
+              if (!empty($invoice_layout->logo) && file_exists(public_path('uploads/invoice_logos/' . $invoice_layout->logo))) {
+                  $invoice_logo_preview = asset('uploads/invoice_logos/' . $invoice_layout->logo);
+              }
+            @endphp
+            <div id="invoice_logo_preview_wrap" style="margin-top:10px;@if(empty($invoice_logo_preview)) display:none;@endif">
+              <img id="invoice_logo_preview"
+                   src="{{ $invoice_logo_preview ?: '' }}"
+                   alt="@lang('invoice.invoice_logo')"
+                   style="max-height:72px;max-width:180px;width:auto;height:auto;object-fit:contain;border:1px solid #ddd;border-radius:4px;padding:4px;background:#fff;">
+            </div>
             <span class="help-block">@lang('lang_v1.invoice_logo_help', ['max_size' => '1 MB'])<br> @lang('lang_v1.invoice_logo_help2')</span>
           </div>
         </div>
@@ -1204,6 +1216,21 @@
 
     $(document).ready(function(){
         letter_head_changed();
+
+        $('#invoice_logo_input').on('change', function () {
+            var file = this.files && this.files[0];
+            var $wrap = $('#invoice_logo_preview_wrap');
+            var $img = $('#invoice_logo_preview');
+            if (!file || !file.type.match(/^image\//)) {
+                return;
+            }
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                $img.attr('src', e.target.result);
+                $wrap.show();
+            };
+            reader.readAsDataURL(file);
+        });
     })
 </script>
 <script>
