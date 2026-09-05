@@ -454,8 +454,11 @@ class ProductController extends Controller
         //product screen view from module
         $pos_module_data = $this->moduleUtil->getModuleData('get_product_screen_top_view');
 
+        $enable_expiry = request()->session()->get('business.enable_product_expiry');
+        $enable_lot = request()->session()->get('business.enable_lot_number');
+
         return view('product.create')
-            ->with(compact('categories', 'brands', 'units', 'taxes', 'barcode_types', 'default_profit_percent', 'tax_attributes', 'barcode_default', 'business_locations', 'duplicate_product', 'sub_categories', 'rack_details', 'selling_price_group_count', 'module_form_parts', 'product_types', 'common_settings', 'warranties', 'pos_module_data'));
+            ->with(compact('categories', 'brands', 'units', 'taxes', 'barcode_types', 'default_profit_percent', 'tax_attributes', 'barcode_default', 'business_locations', 'duplicate_product', 'sub_categories', 'rack_details', 'selling_price_group_count', 'module_form_parts', 'product_types', 'common_settings', 'warranties', 'pos_module_data', 'enable_expiry', 'enable_lot'));
     }
 
     private function product_types()
@@ -480,6 +483,7 @@ class ProductController extends Controller
         }
         try {
             $business_id = $request->session()->get('user.business_id');
+            $has_inline_opening_stock = false;
             $form_fields = ['name', 'brand_id', 'unit_id', 'category_id', 'tax', 'type', 'barcode_type', 'sku', 'alert_quantity', 'tax_type', 'weight', 'product_description', 'sub_unit_ids', 'preparation_time_in_minutes', 'product_custom_field1', 'product_custom_field2', 'product_custom_field3', 'product_custom_field4', 'product_custom_field5', 'product_custom_field6', 'product_custom_field7', 'product_custom_field8', 'product_custom_field9', 'product_custom_field10', 'product_custom_field11', 'product_custom_field12', 'product_custom_field13', 'product_custom_field14', 'product_custom_field15', 'product_custom_field16', 'product_custom_field17', 'product_custom_field18', 'product_custom_field19', 'product_custom_field20',];
 
             $module_form_fields = $this->moduleUtil->getModuleFormField('product_form_fields');
@@ -525,6 +529,8 @@ class ProductController extends Controller
             $common_settings = session()->get('business.common_settings');
 
             $product_details['warranty_id'] = ! empty($request->input('warranty_id')) ? $request->input('warranty_id') : null;
+
+            $product_details = $this->applyPackagingUnitFromRequest($request, $product_details, $business_id);
 
             DB::beginTransaction();
 
@@ -586,6 +592,41 @@ class ProductController extends Controller
 
             Media::uploadMedia($product->business_id, $product, $request, 'product_brochure', true);
 
+            $has_inline_opening_stock = false;
+            if (
+                $product->enable_stock == 1
+                && $product->type == 'single'
+                && auth()->user()->can('product.opening_stock')
+                && ! empty($request->input('opening_stock'))
+            ) {
+                $os_input = $request->input('opening_stock');
+                $has_qty = false;
+                foreach ($os_input as $os_row) {
+                    if ($this->productUtil->num_uf($os_row['quantity'] ?? 0) > 0) {
+                        $has_qty = true;
+                        break;
+                    }
+                }
+                if ($has_qty) {
+                    $product = Product::where('business_id', $business_id)
+                        ->with(['variations', 'product_tax'])
+                        ->findOrFail($product->id);
+
+                    $user_id = $request->session()->get('user.id');
+                    $transaction_date = $request->session()->get('financial_year.start');
+                    $transaction_date = \Carbon::createFromFormat('Y-m-d', $transaction_date)->toDateTimeString();
+
+                    $this->productUtil->addSingleProductOpeningStock(
+                        $business_id,
+                        $product,
+                        $os_input,
+                        $transaction_date,
+                        $user_id
+                    );
+                    $has_inline_opening_stock = true;
+                }
+            }
+
             DB::commit();
             $output = ['success' => 1,
                 'msg' => __('product.product_added_success'),
@@ -601,7 +642,7 @@ class ProductController extends Controller
             return redirect('products')->with('status', $output);
         }
 
-        if ($request->input('submit_type') == 'submit_n_add_opening_stock') {
+        if ($request->input('submit_type') == 'submit_n_add_opening_stock' && empty($has_inline_opening_stock)) {
             return redirect()->action([\App\Http\Controllers\OpeningStockController::class, 'add'],
                 ['product_id' => $product->id]
             );
@@ -693,8 +734,10 @@ class ProductController extends Controller
 
         $alert_quantity = ! is_null($product->alert_quantity) ? $this->productUtil->num_f($product->alert_quantity, false, null, true) : null;
 
+        $packaging_helper = $this->getPackagingHelperForProduct($business_id, $product);
+
         return view('product.edit')
-                ->with(compact('categories', 'brands', 'units', 'sub_units', 'taxes', 'tax_attributes', 'barcode_types', 'product', 'sub_categories', 'default_profit_percent', 'business_locations', 'rack_details', 'selling_price_group_count', 'module_form_parts', 'product_types', 'common_settings', 'warranties', 'pos_module_data', 'alert_quantity'));
+                ->with(compact('categories', 'brands', 'units', 'sub_units', 'taxes', 'tax_attributes', 'barcode_types', 'product', 'sub_categories', 'default_profit_percent', 'business_locations', 'rack_details', 'selling_price_group_count', 'module_form_parts', 'product_types', 'common_settings', 'warranties', 'pos_module_data', 'alert_quantity', 'packaging_helper'));
     }
 
     /**
@@ -713,6 +756,8 @@ class ProductController extends Controller
         try {
             $business_id = $request->session()->get('user.business_id');
             $product_details = $request->only(['name', 'brand_id', 'unit_id', 'category_id', 'tax', 'barcode_type', 'sku', 'alert_quantity', 'tax_type', 'weight', 'product_description', 'sub_unit_ids', 'preparation_time_in_minutes', 'product_custom_field1', 'product_custom_field2', 'product_custom_field3', 'product_custom_field4', 'product_custom_field5', 'product_custom_field6', 'product_custom_field7', 'product_custom_field8', 'product_custom_field9', 'product_custom_field10', 'product_custom_field11', 'product_custom_field12', 'product_custom_field13', 'product_custom_field14', 'product_custom_field15', 'product_custom_field16', 'product_custom_field17', 'product_custom_field18', 'product_custom_field19', 'product_custom_field20',]);
+
+            $product_details = $this->applyPackagingUnitFromRequest($request, $product_details, $business_id);
 
             DB::beginTransaction();
 
@@ -2534,6 +2579,161 @@ class ProductController extends Controller
             }
 
             return $html;
+        }
+    }
+
+    /**
+     * Find/create packaging unit from product form helper and merge into sub_unit_ids.
+     */
+    protected function applyPackagingUnitFromRequest(Request $request, array $product_details, $business_id): array
+    {
+        if (empty($request->input('enable_packaging_unit'))) {
+            // If user turns packaging off, drop the previous packaging unit from related list
+            $prev_pack_id = $request->input('packaging_unit_id');
+            if (! empty($prev_pack_id) && ! empty($product_details['sub_unit_ids']) && is_array($product_details['sub_unit_ids'])) {
+                $product_details['sub_unit_ids'] = array_values(array_filter(
+                    $product_details['sub_unit_ids'],
+                    function ($id) use ($prev_pack_id) {
+                        return (string) $id !== (string) $prev_pack_id;
+                    }
+                ));
+                if (empty($product_details['sub_unit_ids'])) {
+                    $product_details['sub_unit_ids'] = null;
+                }
+            }
+
+            return $product_details;
+        }
+
+        $base_unit_id = $product_details['unit_id'] ?? $request->input('unit_id');
+        $factor = $this->productUtil->num_uf($request->input('packaging_conversion_factor'));
+
+        $pack_name = $request->input('packaging_unit_name');
+        if ($pack_name === '__custom__') {
+            $pack_name = trim((string) $request->input('packaging_unit_custom_name'));
+        }
+        $pack_name = trim((string) $pack_name);
+
+        if (empty($base_unit_id) || empty($pack_name) || empty($factor) || $factor <= 0) {
+            return $product_details;
+        }
+
+        $packaging = null;
+        $existing_id = $request->input('packaging_unit_id');
+        if (! empty($existing_id)) {
+            $packaging = Unit::where('business_id', $business_id)
+                ->where('id', $existing_id)
+                ->where('base_unit_id', $base_unit_id)
+                ->first();
+        }
+
+        if (empty($packaging)) {
+            $packaging = Unit::where('business_id', $business_id)
+                ->where('base_unit_id', $base_unit_id)
+                ->where('actual_name', $pack_name)
+                ->where('base_unit_multiplier', $factor)
+                ->first();
+        }
+
+        if (empty($packaging)) {
+            $short = strlen($pack_name) <= 10 ? $pack_name : substr($pack_name, 0, 10);
+            $packaging = Unit::create([
+                'business_id' => $business_id,
+                'actual_name' => $pack_name,
+                'short_name' => $short,
+                'allow_decimal' => 0,
+                'base_unit_id' => $base_unit_id,
+                'base_unit_multiplier' => $factor,
+                'created_by' => $request->session()->get('user.id'),
+            ]);
+        } elseif ((float) $packaging->base_unit_multiplier != (float) $factor) {
+            // Existing packaging selected but factor changed — create a distinct unit row
+            $short = strlen($pack_name) <= 10 ? $pack_name : substr($pack_name, 0, 10);
+            $packaging = Unit::create([
+                'business_id' => $business_id,
+                'actual_name' => $pack_name,
+                'short_name' => $short,
+                'allow_decimal' => 0,
+                'base_unit_id' => $base_unit_id,
+                'base_unit_multiplier' => $factor,
+                'created_by' => $request->session()->get('user.id'),
+            ]);
+        }
+
+        $sub_ids = $product_details['sub_unit_ids'] ?? [];
+        if (! is_array($sub_ids)) {
+            $sub_ids = [];
+        }
+        $sub_ids[] = $packaging->id;
+        // Keep base unit out of related filter list (POS always includes base)
+        $sub_ids = array_values(array_unique(array_filter($sub_ids, function ($id) use ($base_unit_id) {
+            return ! empty($id) && (string) $id !== (string) $base_unit_id;
+        })));
+        $product_details['sub_unit_ids'] = ! empty($sub_ids) ? $sub_ids : null;
+
+        $this->ensureEnableSubUnits($business_id);
+
+        return $product_details;
+    }
+
+    /**
+     * Prefill packaging helper on product edit.
+     */
+    protected function getPackagingHelperForProduct($business_id, $product): array
+    {
+        $helper = [
+            'enabled' => false,
+            'name' => 'Box',
+            'factor' => '',
+            'unit_id' => '',
+        ];
+
+        if (empty($product) || empty($product->sub_unit_ids) || ! is_array($product->sub_unit_ids)) {
+            return $helper;
+        }
+
+        $packaging = Unit::where('business_id', $business_id)
+            ->whereIn('id', $product->sub_unit_ids)
+            ->whereNotNull('base_unit_id')
+            ->where('base_unit_id', $product->unit_id)
+            ->orderBy('id')
+            ->first();
+
+        if (empty($packaging)) {
+            return $helper;
+        }
+
+        return [
+            'enabled' => true,
+            'name' => $packaging->actual_name,
+            'factor' => $packaging->base_unit_multiplier,
+            'unit_id' => $packaging->id,
+        ];
+    }
+
+    /**
+     * Turn on business enable_sub_units when packaging helper is used.
+     */
+    protected function ensureEnableSubUnits($business_id): void
+    {
+        $business = Business::find($business_id);
+        if (empty($business)) {
+            return;
+        }
+
+        if (empty($business->enable_sub_units)) {
+            $business->enable_sub_units = 1;
+            $business->save();
+        }
+
+        $session_business = request()->session()->get('business');
+        if (! empty($session_business)) {
+            if (is_array($session_business)) {
+                $session_business['enable_sub_units'] = 1;
+            } else {
+                $session_business->enable_sub_units = 1;
+            }
+            request()->session()->put('business', $session_business);
         }
     }
 

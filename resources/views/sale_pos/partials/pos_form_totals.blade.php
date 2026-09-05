@@ -30,6 +30,15 @@
 			<span class="pos_totals_value price_total">0</span>
 		</div>
 
+		{{-- Line Item (D/C) — sum of per-line discounts/charges --}}
+		<div class="pos_totals_cell">
+			<span class="pos_totals_label">
+				<span class="mobile-only">LINE D/C</span>
+				<span class="desktop-only">@lang('lang_v1.line_item_dc')</span>
+			</span>
+			<span class="pos_totals_value pos_totals_value--danger" id="total_line_item_dc">0</span>
+		</div>
+
 		{{-- Discount --}}
 		<div class="pos_totals_cell @if(Gate::check('disable_discount') && !auth()->user()->can('superadmin') && !auth()->user()->can('admin')) hide @endif">
 			<span class="pos_totals_label">

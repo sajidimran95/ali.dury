@@ -4614,7 +4614,9 @@ function get_item_discount_total() {
 
 function update_payment_od_item_discount() {
     var item_disc = get_item_discount_total();
-    $('span.payment_od_item_discount').text(__currency_trans_from_en(item_disc, false));
+    var formatted = __currency_trans_from_en(item_disc, false);
+    $('span.payment_od_item_discount').text(formatted);
+    $('span#total_line_item_dc').text(formatted);
 }
 
 function calculate_billing_details(price_total) {

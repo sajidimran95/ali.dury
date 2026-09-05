@@ -47,7 +47,7 @@
         <div class="clearfix"></div>
         <div class="col-sm-4">
             <div class="form-group">
-                {!! Form::label('unit_id', __('product.unit') . ':*') !!}
+                {!! Form::label('unit_id', __('lang_v1.product_base_unit') . ':*') !!} @show_tooltip(__('lang_v1.product_base_unit_help'))
                 <div class="input-group">
                     {!! Form::select('unit_id', $units, !empty($duplicate_product->unit_id) ? $duplicate_product->unit_id : session('business.default_unit'), ['class' => 'form-control select2', 'required']); !!}
                     <span class="input-group-btn">
@@ -72,6 +72,9 @@
             </div>
         </div>
         @endif
+
+        <div class="clearfix"></div>
+        @include('product.partials.packaging_unit_helper', ['packaging_helper' => $packaging_helper ?? []])
 
         <div class="col-sm-4 @if(!session('business.enable_brand')) hide @endif">
             <div class="form-group">
@@ -368,6 +371,14 @@
 
     </div>
     @endcomponent
+
+    @include('product.partials.product_opening_stock', [
+        'locations' => $business_locations,
+        'enable_expiry' => $enable_expiry,
+        'enable_lot' => $enable_lot,
+        'opening_stock_required' => false,
+    ])
+
     <div class="row">
         <div class="col-sm-12">
             <input type="hidden" name="submit_type" id="submit_type">
@@ -398,11 +409,75 @@
 
 @section('javascript')
 
-<script src="{{ asset('js/product.js?v=' . $asset_v) }}"></script>
+<script src="{{ asset('js/product.js?v=' . $asset_v . '&uom=1&os=1') }}"></script>
+<script src="{{ asset('js/opening_stock.js?v=' . $asset_v) }}"></script>
 
 <script type="text/javascript">
     $(document).ready(function() {
         __page_leave_confirmation('#product_add_form');
+
+        function syncOpeningStockPurchasePrice() {
+            if (!$('#product_opening_stock_table').length) return;
+            var price = __read_number($('input#single_dpp'));
+            if (price == undefined || price === null) return;
+            $('#product_opening_stock_table tbody tr').each(function () {
+                var $pp = $(this).find('input.os_purchase_price, input.unit_price');
+                if (!$pp.length) return;
+                var cur = __read_number($pp);
+                if (!cur) {
+                    __write_number($pp, price);
+                    $pp.trigger('change');
+                }
+            });
+        }
+
+        function updateOpeningStockVisibility() {
+            var stockOn = $('#enable_stock').is(':checked');
+            var type = $('#type').val() || 'single';
+            if (stockOn && type === 'single') {
+                $('#product_opening_stock_div').show();
+            } else {
+                $('#product_opening_stock_div').hide();
+            }
+        }
+
+        updateOpeningStockVisibility();
+        syncOpeningStockPurchasePrice();
+
+        $(document).on('change', '#type', updateOpeningStockVisibility);
+        $(document).on('ifChecked ifUnchecked', 'input#enable_stock', updateOpeningStockVisibility);
+        $(document).on('change', 'input#single_dpp', syncOpeningStockPurchasePrice);
+
+        $(document).on('submit', '#product_add_form', function () {
+            // Ensure purchase cost is set for rows with qty before save
+            var price = __read_number($('input#single_dpp')) || 0;
+            $('#product_opening_stock_table tbody tr').each(function () {
+                var qty = __read_number($(this).find('.purchase_quantity')) || 0;
+                if (qty <= 0) return;
+                var $pp = $(this).find('input.unit_price');
+                var cur = __read_number($pp);
+                if (!cur && price) {
+                    __write_number($pp, price);
+                }
+            });
+        });
+
+        $(document).ajaxComplete(function (event, xhr, settings) {
+            if (settings && settings.url && String(settings.url).indexOf('product_form_part') !== -1) {
+                setTimeout(function () {
+                    updateOpeningStockVisibility();
+                    syncOpeningStockPurchasePrice();
+                }, 50);
+            }
+        });
+
+        if ($('.os_exp_date').length) {
+            $('.os_exp_date').datepicker({
+                autoclose: true,
+                format: datepicker_date_format,
+            });
+        }
+
         onScan.attachTo(document, {
             suffixKeyCodes: [13], // enter-key expected at the end of a scan
             reactToPaste: true, // Compatibility to built-in scanners in paste-mode (as opposed to keyboard-mode)

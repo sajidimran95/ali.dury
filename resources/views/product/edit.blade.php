@@ -51,7 +51,7 @@
             
             <div class="col-sm-4">
               <div class="form-group">
-                {!! Form::label('unit_id', __('product.unit') . ':*') !!}
+                {!! Form::label('unit_id', __('lang_v1.product_base_unit') . ':*') !!} @show_tooltip(__('lang_v1.product_base_unit_help'))
                 <div class="input-group">
                   {!! Form::select('unit_id', $units, $product->unit_id, ['placeholder' => __('messages.please_select'), 'class' => 'form-control select2', 'required']); !!}
                   <span class="input-group-btn">
@@ -83,6 +83,9 @@
                     </div>
                 </div>
             @endif
+
+            <div class="clearfix"></div>
+            @include('product.partials.packaging_unit_helper', ['packaging_helper' => $packaging_helper ?? []])
 
             <div class="col-sm-4 @if(!session('business.enable_brand')) hide @endif">
               <div class="form-group">
@@ -396,7 +399,7 @@
 @endsection
 
 @section('javascript')
-  <script src="{{ asset('js/product.js?v=' . $asset_v) }}"></script>
+  <script src="{{ asset('js/product.js?v=' . $asset_v . '&uom=1') }}"></script>
   <script type="text/javascript">
     $(document).ready( function(){
       __page_leave_confirmation('#product_add_form');

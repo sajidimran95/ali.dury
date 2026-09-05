@@ -4,6 +4,7 @@ $(document).ready(function() {
     $(document).on('ifChecked', 'input#enable_stock', function() {
         $('div#alert_quantity_div').show();
         $('div#quick_product_opening_stock_div').show();
+        $('div#product_opening_stock_div').show();
 
         //Enable expiry selection
         if ($('#expiry_period_type').length) {
@@ -17,6 +18,7 @@ $(document).ready(function() {
     $(document).on('ifUnchecked', 'input#enable_stock', function() {
         $('div#alert_quantity_div').hide();
         $('div#quick_product_opening_stock_div').hide();
+        $('div#product_opening_stock_div').hide();
         $('input#alert_quantity').val(0);
 
         //Disable expiry selection
@@ -810,3 +812,259 @@ $(document).on('change', '.variation-file-input', function() {
         $preview.hide();
     }
 });
+
+// --- Packaging UoM helper (Add/Edit Product) ---
+(function () {
+    var uomLock = false;
+
+    function uomEnabled() {
+        var $cb = $('#enable_packaging_unit');
+        if (!$cb.length) return false;
+        return $cb.is(':checked');
+    }
+
+    function uomFactor() {
+        var f = __read_number($('#packaging_conversion_factor'));
+        return f && f > 0 ? f : 0;
+    }
+
+    function uomPackName() {
+        var v = $('#packaging_unit_name').val();
+        if (v === '__custom__') {
+            return ($('#packaging_unit_custom_name').val() || 'Pack').toString().trim() || 'Pack';
+        }
+        return (v || 'Box').toString().trim();
+    }
+
+    function uomBaseLabel() {
+        var text = ($('#unit_id option:selected').text() || 'Pcs').toString();
+        var m = text.match(/\(([^)]+)\)\s*$/);
+        return m ? m[1] : text.split(' ')[0] || 'Pcs';
+    }
+
+    function uomUpdateLabels() {
+        var pack = uomPackName();
+        var base = uomBaseLabel();
+        $('.js-pack-unit-label').text(pack);
+        $('.js-base-unit-label').text(base);
+    }
+
+    function uomToggleFields() {
+        if (uomEnabled()) {
+            $('#packaging_uom_fields').removeClass('hide');
+            uomUpdateLabels();
+            uomSyncFromMainPrices();
+        } else {
+            $('#packaging_uom_fields').addClass('hide');
+        }
+    }
+
+    function uomSyncFromMainPrices() {
+        if (!uomEnabled() || uomLock) return;
+        uomLock = true;
+        var factor = uomFactor();
+        var sellBase = __read_number($('input#single_dsp'));
+        var purchaseBase = __read_number($('input#single_dpp'));
+        if (sellBase !== undefined && sellBase !== null) {
+            __write_number($('#uom_sell_base'), sellBase);
+            if (factor > 0) {
+                __write_number($('#uom_sell_pack'), sellBase * factor);
+            }
+        }
+        if (purchaseBase !== undefined && purchaseBase !== null) {
+            __write_number($('#uom_purchase_base'), purchaseBase);
+            if (factor > 0) {
+                __write_number($('#uom_purchase_pack'), purchaseBase * factor);
+            }
+        }
+        uomLock = false;
+    }
+
+    function uomFromSellBase() {
+        if (!uomEnabled() || uomLock) return;
+        uomLock = true;
+        var factor = uomFactor();
+        var base = __read_number($('#uom_sell_base'));
+        base = base == undefined ? 0 : base;
+        __write_number($('input#single_dsp'), base);
+        var tax_rate = $('select#tax').find(':selected').data('rate') || 0;
+        __write_number($('input#single_dsp_inc_tax'), __add_percent(base, tax_rate));
+        if (factor > 0) {
+            __write_number($('#uom_sell_pack'), base * factor);
+        }
+        var purchase_exc_tax = __read_number($('input#single_dpp')) || 0;
+        if (purchase_exc_tax > 0) {
+            __write_number($('#profit_percent'), __get_rate(purchase_exc_tax, base));
+        }
+        uomLock = false;
+    }
+
+    function uomFromSellPack() {
+        if (!uomEnabled() || uomLock) return;
+        var factor = uomFactor();
+        if (!(factor > 0)) return;
+        uomLock = true;
+        var pack = __read_number($('#uom_sell_pack'));
+        pack = pack == undefined ? 0 : pack;
+        var base = pack / factor;
+        __write_number($('#uom_sell_base'), base);
+        __write_number($('input#single_dsp'), base);
+        var tax_rate = $('select#tax').find(':selected').data('rate') || 0;
+        __write_number($('input#single_dsp_inc_tax'), __add_percent(base, tax_rate));
+        var purchase_exc_tax = __read_number($('input#single_dpp')) || 0;
+        if (purchase_exc_tax > 0) {
+            __write_number($('#profit_percent'), __get_rate(purchase_exc_tax, base));
+        }
+        uomLock = false;
+    }
+
+    function uomFromPurchaseBase() {
+        if (!uomEnabled() || uomLock) return;
+        uomLock = true;
+        var factor = uomFactor();
+        var base = __read_number($('#uom_purchase_base'));
+        base = base == undefined ? 0 : base;
+        __write_number($('input#single_dpp'), base);
+        $('input#single_dpp').trigger('change');
+        if (factor > 0) {
+            __write_number($('#uom_purchase_pack'), base * factor);
+        }
+        var sellBase = __read_number($('input#single_dsp')) || 0;
+        __write_number($('#uom_sell_base'), sellBase);
+        if (factor > 0) {
+            __write_number($('#uom_sell_pack'), sellBase * factor);
+        }
+        uomLock = false;
+    }
+
+    function uomFromPurchasePack() {
+        if (!uomEnabled() || uomLock) return;
+        var factor = uomFactor();
+        if (!(factor > 0)) return;
+        uomLock = true;
+        var pack = __read_number($('#uom_purchase_pack'));
+        pack = pack == undefined ? 0 : pack;
+        var base = pack / factor;
+        __write_number($('#uom_purchase_base'), base);
+        __write_number($('input#single_dpp'), base);
+        $('input#single_dpp').trigger('change');
+        var sellBase = __read_number($('input#single_dsp')) || 0;
+        __write_number($('#uom_sell_base'), sellBase);
+        __write_number($('#uom_sell_pack'), sellBase * factor);
+        uomLock = false;
+    }
+
+    $(document).ready(function () {
+        if (!$('#product_packaging_uom').length) return;
+
+        function uomVisibilityByType() {
+            var type = $('#type').val() || 'single';
+            if (type === 'single') {
+                $('#product_packaging_uom').show();
+            } else {
+                $('#product_packaging_uom').hide();
+            }
+        }
+
+        uomVisibilityByType();
+        uomToggleFields();
+        uomUpdateLabels();
+
+        $(document).on('change', '#type', uomVisibilityByType);
+
+        $(document).ajaxComplete(function (event, xhr, settings) {
+            if (settings && settings.url && String(settings.url).indexOf('product_form_part') !== -1) {
+                if (uomEnabled()) {
+                    setTimeout(uomSyncFromMainPrices, 50);
+                }
+            }
+        });
+
+        $(document).on('ifChecked', '#enable_packaging_unit', function () {
+            uomToggleFields();
+        });
+        $(document).on('ifUnchecked', '#enable_packaging_unit', function () {
+            uomToggleFields();
+        });
+        $(document).on('change', '#enable_packaging_unit', function () {
+            uomToggleFields();
+        });
+
+        $(document).on('change', '#packaging_unit_name', function () {
+            if ($(this).val() === '__custom__') {
+                $('#packaging_unit_custom_name').removeClass('hide').focus();
+            } else {
+                $('#packaging_unit_custom_name').addClass('hide');
+            }
+            $('#packaging_unit_id').val('');
+            uomUpdateLabels();
+        });
+
+        $(document).on('input change', '#packaging_unit_custom_name', function () {
+            uomUpdateLabels();
+        });
+
+        $(document).on('change', '#unit_id', function () {
+            uomUpdateLabels();
+            $('#packaging_unit_id').val('');
+        });
+
+        $(document).on('change', '#packaging_conversion_factor', function () {
+            if (!uomEnabled()) return;
+            var factor = uomFactor();
+            if (!(factor > 0)) return;
+            var sellBase = __read_number($('#uom_sell_base'));
+            if (sellBase == undefined || sellBase === null || sellBase === '') {
+                sellBase = __read_number($('input#single_dsp')) || 0;
+                __write_number($('#uom_sell_base'), sellBase);
+            }
+            var purchaseBase = __read_number($('#uom_purchase_base'));
+            if (purchaseBase == undefined || purchaseBase === null || purchaseBase === '') {
+                purchaseBase = __read_number($('input#single_dpp')) || 0;
+                __write_number($('#uom_purchase_base'), purchaseBase);
+            }
+            uomLock = true;
+            __write_number($('#uom_sell_pack'), (sellBase || 0) * factor);
+            __write_number($('#uom_purchase_pack'), (purchaseBase || 0) * factor);
+            uomLock = false;
+        });
+
+        $(document).on('change', '#uom_sell_base', uomFromSellBase);
+        $(document).on('change', '#uom_sell_pack', uomFromSellPack);
+        $(document).on('change', '#uom_purchase_base', uomFromPurchaseBase);
+        $(document).on('change', '#uom_purchase_pack', uomFromPurchasePack);
+
+        $(document).on('change', 'input#single_dsp, input#single_dpp', function () {
+            if (!uomEnabled() || uomLock) return;
+            uomSyncFromMainPrices();
+        });
+
+        $(document).on('submit', 'form.product_form, form#product_add_form, form#product_edit_form', function (e) {
+            if (!uomEnabled()) return;
+            var factor = uomFactor();
+            if (!(factor > 0)) {
+                toastr.error('Enter conversion factor (e.g. 1 Box = 10 Pcs)');
+                e.preventDefault();
+                return false;
+            }
+            var name = uomPackName();
+            if (!name) {
+                toastr.error('Enter packaging unit name');
+                e.preventDefault();
+                return false;
+            }
+            var sellBase = __read_number($('#uom_sell_base'));
+            var purchaseBase = __read_number($('#uom_purchase_base'));
+            if (sellBase != undefined && $('input#single_dsp').length) {
+                __write_number($('input#single_dsp'), sellBase);
+                var tax_rate = $('select#tax').find(':selected').data('rate') || 0;
+                __write_number($('input#single_dsp_inc_tax'), __add_percent(sellBase, tax_rate));
+            }
+            if (purchaseBase != undefined && $('input#single_dpp').length) {
+                __write_number($('input#single_dpp'), purchaseBase);
+                var tax_rate2 = $('select#tax').find(':selected').data('rate') || 0;
+                __write_number($('input#single_dpp_inc_tax'), __add_percent(purchaseBase, tax_rate2));
+            }
+        });
+    });
+})();
