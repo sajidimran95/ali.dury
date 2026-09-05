@@ -24,6 +24,7 @@
 				{!! Form::select('contact_id', 
 					[], null, ['class' => 'form-control mousetrap', 'id' => 'customer_id', 'placeholder' => 'Add a customer', 'required']); !!}
 				<span class="input-group-btn">
+					<button type="button" id="pos_customer_reset_walkin" class="btn btn-default bg-white btn-flat hide" title="Reset to Walk-In Customer"><i class="fas fa-undo text-primary fa-lg"></i></button>
 					<button type="button" class="btn btn-default bg-white btn-flat add_new_customer" data-name=""  @if(!auth()->user()->can('customer.create')) disabled @endif><i class="fa fa-plus-circle text-primary fa-lg"></i></button>
 					<button type="button" id="pos-customer-purchase-history" class="btn btn-default bg-white btn-flat" title="@lang('lang_v1.customer_purchase_history')"><i class="fas fa-history text-primary fa-lg"></i></button>
 					@can('sell.payments')

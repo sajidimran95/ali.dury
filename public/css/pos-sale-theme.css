@@ -3651,6 +3651,33 @@ body.lockscreen.pos-sale-theme .pos-customer-picker-item:focus {
   outline: none;
 }
 
+body.lockscreen.pos-sale-theme .pos-customer-picker-item.is-current {
+  background: rgba(59, 141, 221, 0.12);
+}
+
+body.lockscreen.pos-sale-theme .pos-customer-picker-item--walkin {
+  border-bottom: 1px solid #333;
+}
+
+body.lockscreen.pos-sale-theme .pos-cust-current {
+  margin-left: auto;
+  font-size: 10px;
+  font-weight: 700;
+  color: #3b8ddd;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+body.lockscreen.pos-sale-theme #pos_customer_reset_walkin {
+  color: #fff !important;
+  background: #2a2a2a !important;
+  border-color: #3a3a3a !important;
+}
+
+body.lockscreen.pos-sale-theme #pos_customer_reset_walkin:hover {
+  background: #333 !important;
+}
+
 body.lockscreen.pos-sale-theme .pos-customer-picker-loading,
 body.lockscreen.pos-sale-theme .pos-customer-picker-empty {
   padding: 16px 14px;

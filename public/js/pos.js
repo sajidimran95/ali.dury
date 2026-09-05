@@ -339,17 +339,30 @@ $(document).ready(function() {
     // Keep walk-in / selected customer name visible
     if (isPosSaleTheme) {
         $('select#customer_id').on('change select2:select', function () {
-            var $rendered = $(this).next('.select2-container').find('.select2-selection__rendered');
-            var text = ($(this).find('option:selected').text() || '').trim();
-            if (!text || text === String($(this).val())) {
+            var $opt = $(this).find('option:selected');
+            var text = ($opt.text() || '').trim();
+            var val = String($(this).val() || '');
+            // Only fall back to Walk-In when nothing is selected
+            if (!val) {
                 text = $('#default_customer_name').val() || 'Walk-In Customer';
+            } else if (!text || text === val) {
+                // Prefer option text; if missing keep current rendered label
+                var cur = $(this)
+                    .next('.select2-container')
+                    .find('.select2-selection__rendered')
+                    .text();
+                text = (cur || text || ('Customer #' + val)).toString().trim();
             }
             text = text.replace(/\s*\((?:CO|C)?\d+\)\s*$/i, '').trim() || text;
+            var $rendered = $(this).next('.select2-container').find('.select2-selection__rendered');
             $rendered
                 .text(text)
                 .attr('title', text)
                 .removeClass('pos-cust-placeholder-text')
                 .css('color', '#f2f2f2');
+            if (typeof posCustSyncResetBtn === 'function') {
+                posCustSyncResetBtn();
+            }
         });
     }
 
@@ -378,16 +391,50 @@ $(document).ready(function() {
         $picker.addClass('is-open').attr('aria-hidden', 'false');
         $('.pos-customer-bar').addClass('is-picking');
         $('#pos_customer_picker_input').val('').focus();
-        // Do not load all customers — wait for search text
-        var $list = $('#pos_customer_picker_list');
-        $list.html('<div class="pos-customer-picker-empty">Type to search customers</div>');
         $('#pos_customer_picker_add').attr('data-name', '');
         $('#pos_customer_picker_add .pos-cust-add-label').text('Add as a new customer');
+        posCustPickerRenderPinned();
     }
 
     function posCustPickerClose() {
         $('#pos_customer_picker').removeClass('is-open').attr('aria-hidden', 'true');
         $('.pos-customer-bar').removeClass('is-picking');
+    }
+
+    /** Walk-In always available so user can switch away from / back to default. */
+    function posCustPickerRenderPinned() {
+        var $list = $('#pos_customer_picker_list');
+        if (!$list.length) return;
+        var defId = String($('#default_customer_id').val() || '').trim();
+        var defName = ($('#default_customer_name').val() || 'Walk-In Customer').toString().trim();
+        var curId = String($('#customer_id').val() || '').trim();
+        var html = '';
+        if (defId && /^\d+$/.test(defId)) {
+            var isCurrent = curId === defId;
+            html +=
+                '<button type="button" class="pos-customer-picker-item pos-customer-picker-item--walkin' +
+                (isCurrent ? ' is-current' : '') +
+                '" data-id="' +
+                defId +
+                '" data-text="' +
+                $('<div>').text(defName).html() +
+                '" data-name="' +
+                $('<div>').text(defName).html() +
+                '" data-pay_term_number="" data-pay_term_type="" data-balance="' +
+                ($('#default_customer_balance').val() || '') +
+                '" data-price_calculation_type="" data-selling_price_group_id="">' +
+                '<div class="pos-cust-avatar" style="background:#64748b">WI</div>' +
+                '<div class="pos-cust-meta">' +
+                '<div class="pos-cust-name">' +
+                $('<div>').text(defName).html() +
+                '</div>' +
+                '<div class="pos-cust-sub">Default walk-in customer</div>' +
+                '</div>' +
+                (isCurrent ? '<span class="pos-cust-current">Current</span>' : '') +
+                '</button>';
+        }
+        html += '<div class="pos-customer-picker-empty">Type a name or phone to find other customers</div>';
+        $list.html(html);
     }
 
     function posCustPickerSearch(term) {
@@ -398,9 +445,8 @@ $(document).ready(function() {
         var label = term ? ("Add '" + term + "' as a new customer") : 'Add as a new customer';
         $('#pos_customer_picker_add .pos-cust-add-label').text(label);
 
-        // Search-wise only — do not list everyone on empty query (previous: 1 letter)
         if (term.length < 1) {
-            $list.html('<div class="pos-customer-picker-empty">Type to search customers</div>');
+            posCustPickerRenderPinned();
             return;
         }
 
@@ -411,16 +457,50 @@ $(document).ready(function() {
             dataType: 'json',
             data: { q: term },
             success: function (data) {
+                var curId = String($('#customer_id').val() || '').trim();
+                var defId = String($('#default_customer_id').val() || '').trim();
+                var defName = ($('#default_customer_name').val() || 'Walk-In Customer').toString().trim();
+                var html = '';
+
+                // Always keep Walk-In at the top so you can switch away from / back to it
+                if (defId && /^\d+$/.test(defId)) {
+                    var walkCurrent = curId === defId;
+                    html +=
+                        '<button type="button" class="pos-customer-picker-item pos-customer-picker-item--walkin' +
+                        (walkCurrent ? ' is-current' : '') +
+                        '" data-id="' +
+                        defId +
+                        '" data-text="' +
+                        $('<div>').text(defName).html() +
+                        '" data-name="' +
+                        $('<div>').text(defName).html() +
+                        '" data-pay_term_number="" data-pay_term_type="" data-balance="' +
+                        ($('#default_customer_balance').val() || '') +
+                        '" data-price_calculation_type="" data-selling_price_group_id="">' +
+                        '<div class="pos-cust-avatar" style="background:#64748b">WI</div>' +
+                        '<div class="pos-cust-meta">' +
+                        '<div class="pos-cust-name">' +
+                        $('<div>').text(defName).html() +
+                        '</div>' +
+                        '<div class="pos-cust-sub">Default walk-in customer</div>' +
+                        '</div>' +
+                        (walkCurrent ? '<span class="pos-cust-current">Current</span>' : '') +
+                        '</button>';
+                }
+
                 if (!data || !data.length) {
-                    $list.html('<div class="pos-customer-picker-empty">No customers found</div>');
+                    html += '<div class="pos-customer-picker-empty">No other customers found</div>';
+                    $list.html(html);
                     return;
                 }
-                var html = '';
+
                 data.forEach(function (row) {
-                    // Prefer real name/business name — never show contact code alone
+                    // Skip duplicate walk-in row from API
+                    if (defId && String(row.id) === defId) {
+                        return;
+                    }
                     var displayName = (row.supplier_business_name || row.name || '').toString().trim();
                     if (!displayName) {
-                        // row.text may be "Name (CO0001)" — strip trailing code
                         displayName = (row.text || '').toString().replace(/\s*\([^)]*\)\s*$/, '').trim();
                     }
                     if (!displayName) {
@@ -433,26 +513,78 @@ $(document).ready(function() {
                     if (row.contact_id) subParts.push(row.contact_id);
                     if (row.mobile) subParts.push(row.mobile);
                     var sub = subParts.join(' | ');
+                    var isCurrent = String(row.id) === curId;
                     html +=
-                        '<button type="button" class="pos-customer-picker-item" data-id="' + row.id + '" ' +
-                        'data-text="' + $('<div>').text(selectionText).html() + '" ' +
-                        'data-name="' + $('<div>').text(displayName).html() + '" ' +
-                        'data-pay_term_number="' + (row.pay_term_number || '') + '" ' +
-                        'data-pay_term_type="' + (row.pay_term_type || '') + '" ' +
-                        'data-balance="' + (row.balance || '') + '">' +
-                            '<div class="pos-cust-avatar" style="background:' + color + '">' + initials + '</div>' +
-                            '<div class="pos-cust-meta">' +
-                                '<div class="pos-cust-name">' + $('<div>').text(displayName).html() + '</div>' +
-                                (sub ? '<div class="pos-cust-sub">' + $('<div>').text(sub).html() + '</div>' : '') +
-                            '</div>' +
+                        '<button type="button" class="pos-customer-picker-item' +
+                        (isCurrent ? ' is-current' : '') +
+                        '" data-id="' +
+                        row.id +
+                        '" ' +
+                        'data-text="' +
+                        $('<div>').text(selectionText).html() +
+                        '" ' +
+                        'data-name="' +
+                        $('<div>').text(displayName).html() +
+                        '" ' +
+                        'data-pay_term_number="' +
+                        (row.pay_term_number || '') +
+                        '" ' +
+                        'data-pay_term_type="' +
+                        (row.pay_term_type || '') +
+                        '" ' +
+                        'data-balance="' +
+                        (row.balance || '') +
+                        '" ' +
+                        'data-price_calculation_type="' +
+                        (row.price_calculation_type || '') +
+                        '" ' +
+                        'data-selling_price_group_id="' +
+                        (row.selling_price_group_id || '') +
+                        '">' +
+                        '<div class="pos-cust-avatar" style="background:' +
+                        color +
+                        '">' +
+                        initials +
+                        '</div>' +
+                        '<div class="pos-cust-meta">' +
+                        '<div class="pos-cust-name">' +
+                        $('<div>').text(displayName).html() +
+                        '</div>' +
+                        (sub ? '<div class="pos-cust-sub">' + $('<div>').text(sub).html() + '</div>' : '') +
+                        '</div>' +
+                        (isCurrent ? '<span class="pos-cust-current">Current</span>' : '') +
                         '</button>';
                 });
                 $list.html(html);
             },
             error: function () {
                 $list.html('<div class="pos-customer-picker-empty">Could not load customers</div>');
-            }
+            },
         });
+    }
+
+    function posCustSetDisplayName(text) {
+        text = (text || '').toString().trim();
+        text = text.replace(/\s*\((?:CO|C)?\d+\)\s*$/i, '').trim() || text;
+        var $rendered = $('#customer_id').next('.select2-container').find('.select2-selection__rendered');
+        $rendered
+            .text(text)
+            .attr('title', text)
+            .removeClass('pos-cust-placeholder-text')
+            .css('color', '#f2f2f2');
+        posCustSyncResetBtn();
+    }
+
+    function posCustSyncResetBtn() {
+        var cur = String($('#customer_id').val() || '').trim();
+        var def = String($('#default_customer_id').val() || '').trim();
+        var $btn = $('#pos_customer_reset_walkin');
+        if (!$btn.length) return;
+        if (cur && def && cur !== def) {
+            $btn.removeClass('hide').attr('title', 'Reset to Walk-In Customer');
+        } else {
+            $btn.addClass('hide');
+        }
     }
 
     // when a real customer is picked, show their name (walk-in keeps its name)
@@ -468,7 +600,6 @@ $(document).ready(function() {
             return;
         }
         if (!text || /^\(?[A-Z]*0*\d+\)?$/.test(text) || text === id) {
-            // Avoid leaving only id/code in the bar — use list label
             var $nameEl = $btn.find('.pos-cust-name');
             if ($nameEl.length) {
                 text = $.trim($nameEl.text()) || text;
@@ -477,19 +608,20 @@ $(document).ready(function() {
         if (!text) {
             text = 'Customer #' + id;
         }
-        // Update or create option with full name as text
-        var $opt = $('#customer_id option[value="' + id + '"]');
-        if ($opt.length === 0) {
-            $('#customer_id').append($('<option>', { value: id, text: text }));
-        } else {
-            $opt.text(text);
-        }
-        $('#customer_id').val(id).trigger('change');
-        var $rendered = $('#customer_id').next('.select2-container').find('.select2-selection__rendered');
-        $rendered.text(text).attr('title', text).removeClass('pos-cust-placeholder-text').css('color', '#f2f2f2');
+
+        // Replace options so Select2 cannot stick on Walk-In label
+        var $sel = $('#customer_id');
+        $sel.empty().append($('<option>', { value: id, text: text, selected: true }));
+        $sel.val(id).trigger('change');
+        posCustSetDisplayName(text);
+
         var payNum = $btn.attr('data-pay_term_number');
         var payType = $btn.attr('data-pay_term_type');
-        if (payNum) { $('input#pay_term_number').val(payNum); } else { $('input#pay_term_number').val(''); }
+        if (payNum) {
+            $('input#pay_term_number').val(payNum);
+        } else {
+            $('input#pay_term_number').val('');
+        }
         if (payType) {
             $('#add_sell_form select[name="pay_term_type"]').val(payType);
             $('#edit_sell_form select[name="pay_term_type"]').val(payType);
@@ -508,7 +640,40 @@ $(document).ready(function() {
         if ($('.contact_due_text').length && typeof get_contact_due === 'function') {
             get_contact_due(id);
         }
+
+        // Apply customer group / selling price group (same as Select2 select path)
+        var priceType = $btn.attr('data-price_calculation_type') || '';
+        var spg = $btn.attr('data-selling_price_group_id') || '';
+        if (priceType === 'selling_price_group' && spg && $('#price_group').length) {
+            $('#price_group').val(spg).trigger('change');
+        } else if ($('#default_selling_price_group').length) {
+            $('#price_group').val($('#default_selling_price_group').val() || 0).trigger('change');
+        } else if ($('#price_group').length && String($('#default_customer_id').val()) === id) {
+            $('#price_group').val(0).trigger('change');
+        }
+        if (typeof pos_schedule_cart_price_refresh === 'function') {
+            pos_schedule_cart_price_refresh();
+        }
+
         posCustPickerClose();
+    }
+
+    function posCustResetToWalkIn() {
+        var defId = String($('#default_customer_id').val() || '').trim();
+        var defName = ($('#default_customer_name').val() || 'Walk-In Customer').toString().trim();
+        if (!defId) {
+            return;
+        }
+        var $fake = $('<button>')
+            .attr('data-id', defId)
+            .attr('data-name', defName)
+            .attr('data-text', defName)
+            .attr('data-balance', $('#default_customer_balance').val() || '')
+            .attr('data-pay_term_number', '')
+            .attr('data-pay_term_type', '')
+            .attr('data-price_calculation_type', '')
+            .attr('data-selling_price_group_id', '');
+        posCustPickerSelect($fake);
     }
 
     if (isPosSaleTheme) {
@@ -526,15 +691,26 @@ $(document).ready(function() {
         });
 
         $(document).on('click', '.pos-customer-bar .select2-container, .pos-customer-bar .input-group-addon', function (e) {
+            if ($(e.target).closest('#pos_customer_reset_walkin').length) {
+                return;
+            }
             e.preventDefault();
             e.stopPropagation();
             posCustPickerToggle();
         });
 
+        $(document).on('click', '#pos_customer_reset_walkin', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            posCustResetToWalkIn();
+        });
+
         $(document).on('input', '#pos_customer_picker_input', function () {
             var term = $(this).val();
             clearTimeout(posCustPickerTimer);
-            posCustPickerTimer = setTimeout(function () { posCustPickerSearch(term); }, 200);
+            posCustPickerTimer = setTimeout(function () {
+                posCustPickerSearch(term);
+            }, 200);
         });
 
         $(document).on('click', '.pos-customer-picker-item', function (e) {
@@ -5112,6 +5288,9 @@ function set_default_customer() {
                 .attr('title', default_customer_name)
                 .removeClass('pos-cust-placeholder-text')
                 .css('color', '#f2f2f2');
+            if (typeof posCustSyncResetBtn === 'function') {
+                posCustSyncResetBtn();
+            }
         }, 0);
     }
 
