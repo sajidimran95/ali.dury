@@ -45,6 +45,27 @@
     z-index: 1051;
 }
 
+/* Actions menu parked on body — never unlock table overflow */
+body > .dropdown-menu.dt-dropdown-menu-fixed {
+    position: fixed !important;
+    z-index: 2000 !important;
+    float: none !important;
+    max-height: min(70vh, 420px);
+    overflow-y: auto;
+    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.18);
+}
+
+/* Keep page footer from painting through DataTables gaps */
+#scrollable-container > .content,
+#scrollable-container > section.content {
+    position: relative;
+    z-index: 3;
+    background: #f7f9fc;
+}
+.japs-page-footer {
+    z-index: 1 !important;
+}
+
 /* DataTables toolbar base — full rules in css/dt-toolbar.css + premium-theme.css */
 
 #online_indicator {

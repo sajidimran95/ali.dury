@@ -675,14 +675,14 @@ class Util
 
         $sub_units = [];
 
-        //Add main unit as per given parameter or conditions.
-        if (($return_main_unit_if_empty && count($unit->sub_units) == 0)) {
-            $sub_units[$unit->id] = [
-                'name' => $unit->actual_name,
-                'multiplier' => 1,
-                'allow_decimal' => $unit->allow_decimal,
-            ];
-        } elseif (empty($related_sub_units) || in_array($unit->id, $related_sub_units)) {
+        // Always include the base unit so POS can switch Pcs ↔ Box, etc.
+        // Related Sub Units only filter which packaging units apply — not the base.
+        if (
+            ($return_main_unit_if_empty && count($unit->sub_units) == 0)
+            || empty($related_sub_units)
+            || in_array($unit->id, $related_sub_units)
+            || count($unit->sub_units) > 0
+        ) {
             $sub_units[$unit->id] = [
                 'name' => $unit->actual_name,
                 'multiplier' => 1,

@@ -3084,31 +3084,63 @@ function calculateExpensePaymentDue() {
 
 $(document).on('show.bs.dropdown', '.dataTables_wrapper .btn-group', function () {
     var $btnGroup = $(this);
-    var $scrollBody = $btnGroup.closest('.dataTables_scrollBody');
-
-    if (!$scrollBody.length) {
+    var $menu = $btnGroup.children('ul.dropdown-menu').first();
+    if (!$menu.length) {
         return;
     }
 
-    // Let the menu escape the scroll container (needed when few rows / last rows)
-    $scrollBody.addClass('of-visible');
+    // Move menu to body (fixed) — do NOT unlock scrollBody overflow
+    // (of-visible made table rows spill and footer paint mid-table).
+    $btnGroup.closest('.dataTables_scrollBody').removeClass('of-visible');
+    $menu.data('dt-dd-home', $btnGroup);
+    $btnGroup.data('dt-dd-menu', $menu);
+    $menu.appendTo(document.body).addClass('dt-dropdown-menu-fixed');
 
-    var btnRect = this.getBoundingClientRect();
-    var bodyRect = $scrollBody[0].getBoundingClientRect();
-    var spaceBelow = bodyRect.bottom - btnRect.bottom;
-    var spaceAbove = btnRect.top - bodyRect.top;
-    var menuHeight = 280;
+    var placeMenu = function () {
+        if (!$menu.parent().is('body')) {
+            return;
+        }
+        var r = $btnGroup[0].getBoundingClientRect();
+        var menuW = $menu.outerWidth() || 180;
+        var menuH = $menu.outerHeight() || 280;
+        var spaceBelow = window.innerHeight - r.bottom;
+        var openUp = spaceBelow < menuH && r.top > spaceBelow;
+        var left = Math.max(8, Math.min(r.left, window.innerWidth - menuW - 8));
 
-    // Only flip upward in taller tables when the button is near the bottom
-    if (bodyRect.height > menuHeight * 1.5 && spaceBelow < menuHeight && spaceAbove > spaceBelow) {
-        $btnGroup.addClass('dropup');
-    } else {
-        $btnGroup.removeClass('dropup');
-    }
+        $menu.css({
+            position: 'fixed',
+            left: left + 'px',
+            top: openUp ? 'auto' : r.bottom + 2 + 'px',
+            bottom: openUp ? window.innerHeight - r.top + 2 + 'px' : 'auto',
+            right: 'auto',
+            float: 'none',
+            display: 'block',
+            zIndex: 2000,
+            minWidth: Math.max(r.width, 160) + 'px',
+        });
+        $btnGroup.toggleClass('dropup', openUp);
+    };
+
+    placeMenu();
+    $btnGroup.data('dt-dd-place', placeMenu);
+    $(window).off('scroll.dtDd resize.dtDd').on('scroll.dtDd resize.dtDd', placeMenu);
+    $('#scrollable-container').off('scroll.dtDd').on('scroll.dtDd', placeMenu);
 });
 $(document).on('hidden.bs.dropdown', '.dataTables_wrapper .btn-group', function () {
-    $(this).removeClass('dropup');
-    $(this).closest('.dataTables_scrollBody').removeClass('of-visible');
+    var $btnGroup = $(this);
+    var $menu = $btnGroup.data('dt-dd-menu');
+    $(window).off('scroll.dtDd resize.dtDd');
+    $('#scrollable-container').off('scroll.dtDd');
+    $btnGroup.removeClass('dropup');
+    $btnGroup.closest('.dataTables_scrollBody').removeClass('of-visible');
+
+    if ($menu && $menu.length) {
+        $menu
+            .removeClass('dt-dropdown-menu-fixed')
+            .removeAttr('style')
+            .appendTo($btnGroup);
+        $btnGroup.removeData('dt-dd-menu').removeData('dt-dd-place');
+    }
 });
 
 function get_expense_sub_categories() {
