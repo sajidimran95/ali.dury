@@ -113,6 +113,12 @@
                 </li>
             @endcan
             <li>
+                <button type="button" id="pos_nav_screen_setting" data-toggle="modal" data-target="#pos_screen_setting_modal">
+                    <i class="fas fa-columns"></i>
+                    <span>POS Screen Setting</span>
+                </button>
+            </li>
+            <li>
                 <button type="button" id="pos_nav_quick_keys" data-toggle="modal" data-target="#pos_quick_keys_modal">
                     <i class="fas fa-cog"></i>
                     <span>Setting</span>
