@@ -346,7 +346,7 @@ class SellPosController extends Controller
 
         $posQuickLayout = PosQuickLayout::currentForUser((int) $business_id, (int) auth()->id());
         $posQuickLayouts = PosQuickLayout::forUser((int) $business_id, (int) auth()->id());
-        $posQuickKeysEnabled = (int) session('pos_quick_keys_enabled', auth()->user()->pos_quick_keys_enabled ?? 1) === 1;
+        $posQuickKeysEnabled = (int) (auth()->user()->pos_quick_keys_enabled ?? 1) === 1;
 
         return view('sale_pos.create')
             ->with(compact(
@@ -1440,7 +1440,7 @@ class SellPosController extends Controller
 
         $posQuickLayout = PosQuickLayout::currentForUser((int) $business_id, (int) auth()->id());
         $posQuickLayouts = PosQuickLayout::forUser((int) $business_id, (int) auth()->id());
-        $posQuickKeysEnabled = (int) session('pos_quick_keys_enabled', auth()->user()->pos_quick_keys_enabled ?? 1) === 1;
+        $posQuickKeysEnabled = (int) (auth()->user()->pos_quick_keys_enabled ?? 1) === 1;
 
         return view('sale_pos.edit')
             ->with(compact('business_details', 'taxes', 'payment_types', 'walk_in_customer',

@@ -40,12 +40,12 @@ class PosQuickKeyController extends Controller
 
     protected function isEnabled(int $userId): bool
     {
-        if (request()->session()->has('pos_quick_keys_enabled')) {
-            return (int) request()->session()->get('pos_quick_keys_enabled') === 1;
-        }
         $user = User::find($userId);
         if ($user && \Schema::hasColumn('users', 'pos_quick_keys_enabled')) {
             return (int) ($user->pos_quick_keys_enabled ?? 1) === 1;
+        }
+        if (request()->session()->has('pos_quick_keys_enabled')) {
+            return (int) request()->session()->get('pos_quick_keys_enabled') === 1;
         }
 
         return true;
@@ -65,8 +65,8 @@ class PosQuickKeyController extends Controller
                     'name' => $l->name,
                     'is_current' => (int) $l->is_current === 1,
                     'keep_folder_open' => (bool) $l->keep_folder_open,
-                    'keys' => $l->keys ?: [],
-                    'key_count' => count($l->keys ?: []),
+                    'keys' => $this->normalizedKeys($l->keys),
+                    'key_count' => count($this->normalizedKeys($l->keys)),
                 ];
             })->values(),
         ];
@@ -130,20 +130,17 @@ class PosQuickKeyController extends Controller
         return view('pos_quick_keys.edit', compact('layout', 'categories'));
     }
 
-    public function update(Request $request, $id)
+    protected function normalizedKeys($keys): array
     {
-        $layout = $this->ownedLayout($id);
-        $keys = $request->input('keys', []);
         if (is_string($keys)) {
             $keys = json_decode($keys, true) ?: [];
         }
         if (! is_array($keys)) {
-            $keys = [];
+            return [];
         }
-
         $clean = [];
         foreach ($keys as $row) {
-            if (empty($row['category_id'])) {
+            if (! is_array($row) || empty($row['category_id'])) {
                 continue;
             }
             $clean[] = [
@@ -153,6 +150,15 @@ class PosQuickKeyController extends Controller
                 'color' => preg_match('/^#[0-9a-fA-F]{6}$/', (string) ($row['color'] ?? '')) ? $row['color'] : '#3a3f4b',
             ];
         }
+
+        return $clean;
+    }
+
+    public function update(Request $request, $id)
+    {
+        $layout = $this->ownedLayout($id);
+        $keys = $request->input('keys', []);
+        $clean = $this->normalizedKeys($keys);
 
         $layout->name = trim((string) $request->input('name', $layout->name)) ?: $layout->name;
         $layout->keep_folder_open = $request->boolean('keep_folder_open');

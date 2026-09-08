@@ -1008,6 +1008,11 @@ body.lockscreen.pos-sale-theme .pos-cat-tile--accent {
   background: var(--pos-orange) !important;
 }
 
+body.lockscreen.pos-sale-theme .pos-cat-tile.pos-cat-tile--custom {
+  background: var(--qk-color) !important;
+  border-top-color: rgba(255,255,255,.35) !important;
+}
+
 body.lockscreen.pos-sale-theme .pos-cat-tile.is-active,
 body.lockscreen.pos-sale-theme .pos-card.cat.is-active {
   border-top-color: var(--pos-accent) !important;

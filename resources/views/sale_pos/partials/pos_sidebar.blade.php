@@ -21,6 +21,12 @@
         $ordered = [];
         $seen = [];
         $keyRows = $qkLayout->keys;
+        if (is_string($keyRows)) {
+            $keyRows = json_decode($keyRows, true) ?: [];
+        }
+        if (!is_array($keyRows)) {
+            $keyRows = [];
+        }
         usort($keyRows, function ($a, $b) {
             return ((int) ($a['slot'] ?? 0)) <=> ((int) ($b['slot'] ?? 0));
         });
@@ -52,8 +58,8 @@
             <div class="col-md-2 col-xs-4 tw-mb-2 tw-cursor-pointer main-category-div main-category no-print"
                 data-value="{{ $category['id'] }}" data-name="{{ $category['_qk_label'] ?? $category['name'] }}" data-parent="0"
                 style="padding-left: 4px; padding-right: 4px;">
-                <div class="pos-card cat pos-cat-tile @if($index % 5 === 1 || $index % 5 === 3) pos-cat-tile--accent @endif"
-                    @if(!empty($category['_qk_color'])) style="background: {{ $category['_qk_color'] }}; color: #fff; border-color: {{ $category['_qk_color'] }};" @endif>
+                <div class="pos-card cat pos-cat-tile {{ !empty($category['_qk_color']) ? 'pos-cat-tile--custom' : (($index % 5 === 1 || $index % 5 === 3) ? 'pos-cat-tile--accent' : '') }}"
+                    @if(!empty($category['_qk_color'])) style="--qk-color: {{ $category['_qk_color'] }};" @endif>
                     <h4 class="pos-card-name">{{ $category['_qk_label'] ?? $category['name'] }}</h4>
                     @if (!empty($category['sub_categories']))
                         <span class="pos-card-subcat-dot"></span>

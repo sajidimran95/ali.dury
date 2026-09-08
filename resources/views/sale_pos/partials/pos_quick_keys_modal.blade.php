@@ -106,9 +106,11 @@ window.__posQkLayouts = @json($posQkLayoutsJson);
     window.__posQkBound = true;
 
     var SLOTS = 30;
+    var PALETTE = ['#3a3f4b','#e67e22','#2980b9','#e53935','#16a34a','#7c3aed','#db2777','#0f766e'];
     var data = { enabled: true, layouts: window.__posQkLayouts || [] };
     var picked = null;
     var color = '#3a3f4b';
+    var lastCatId = null;
     var dragFrom = null;
     var cats = [];
 
@@ -196,9 +198,14 @@ window.__posQkLayouts = @json($posQkLayoutsJson);
         }
         var html = '';
         rows.forEach(function (c) {
-            var style = c.color ? ' style="background:' + c.color + ';color:#fff;border-color:' + c.color + '"' : '';
+            var extra = '';
+            if (c.color) {
+                extra = ' pos-cat-tile--custom" style="--qk-color:' + c.color + '"';
+            } else {
+                extra = '"';
+            }
             html += '<div class="col-md-2 col-xs-4 tw-mb-2 tw-cursor-pointer main-category-div main-category no-print" data-value="' + c.id + '" data-name="' + String(c.name).replace(/"/g, '') + '" data-parent="0" style="padding-left: 4px; padding-right: 4px;">' +
-                '<div class="pos-card cat pos-cat-tile"' + style + '><h4 class="pos-card-name">' + c.name + '</h4></div></div>';
+                '<div class="pos-card cat pos-cat-tile' + extra + '><h4 class="pos-card-name">' + c.name + '</h4></div></div>';
         });
         if (allTile) allTile.insertAdjacentHTML('afterend', html);
     }
@@ -233,6 +240,24 @@ window.__posQkLayouts = @json($posQkLayoutsJson);
                 data = j;
                 renderList();
             });
+    }
+    function colorForCat(id) {
+        var n = parseInt(id, 10) || 0;
+        return PALETTE[Math.abs(n) % PALETTE.length];
+    }
+    function usedColorMap() {
+        var map = {};
+        gridCells().forEach(function (el) {
+            var d = readCell(el);
+            if (d) map[d.category_id] = d.color || colorForCat(d.category_id);
+        });
+        return map;
+    }
+    function setPaletteOn(hex) {
+        color = hex || color;
+        document.querySelectorAll('#posQkColors .pos-qk-dot').forEach(function (d) {
+            d.classList.toggle('is-on', d.getAttribute('data-color') === color);
+        });
     }
     function usedIds() {
         var ids = {};
@@ -277,24 +302,32 @@ window.__posQkLayouts = @json($posQkLayoutsJson);
         var el = document.getElementById('posQkCats');
         if (!el) return;
         var used = usedIds();
+        var colors = usedColorMap();
         el.innerHTML = cats.filter(function (c) {
             return !q || (c.name || '').toLowerCase().indexOf(q) >= 0;
         }).map(function (c) {
             var on = !!used[c.id];
-            return '<button type="button" class="' + (on ? 'is-on' : '') + '" data-id="' + c.id + '" data-name="' + (c.name || '').replace(/"/g, '') + '">' +
+            var bg = on ? (colors[c.id] || colorForCat(c.id)) : '';
+            var st = bg ? ' style="background:' + bg + ';color:#fff;border-left:4px solid #fff;"' : '';
+            return '<button type="button" class="' + (on ? 'is-on' : '') + '" data-id="' + c.id + '" data-name="' + (c.name || '').replace(/"/g, '') + '"' + st + '>' +
                 (on ? '<span class="pos-qk-tick">✓</span> ' : '') + c.name + '</button>';
         }).join('') || '<div class="pos-qk-mini">No categories in this business.</div>';
         el.querySelectorAll('button').forEach(function (btn) {
             btn.addEventListener('click', function () {
                 var id = parseInt(btn.getAttribute('data-id'), 10);
                 var label = btn.getAttribute('data-name');
+                lastCatId = id;
                 var existing = cellForCategory(id);
                 if (existing) {
+                    var cur = readCell(existing);
+                    setPaletteOn(cur && cur.color ? cur.color : colorForCat(id));
                     paintCell(existing, null);
                 } else {
                     var slot = nextEmpty();
                     if (!slot) { status('Layout is full', true); return; }
-                    paintCell(slot, { category_id: id, label: label, color: color });
+                    var useColor = colorForCat(id);
+                    setPaletteOn(useColor);
+                    paintCell(slot, { category_id: id, label: label, color: useColor });
                 }
                 paintCats(document.getElementById('posQkSearch').value);
             });
@@ -335,6 +368,12 @@ window.__posQkLayouts = @json($posQkLayoutsJson);
                 if (e.target.classList.contains('qk-x')) {
                     paintCell(el, null);
                     paintCats(document.getElementById('posQkSearch').value);
+                    return;
+                }
+                var d = readCell(el);
+                if (d) {
+                    lastCatId = d.category_id;
+                    setPaletteOn(d.color || colorForCat(d.category_id));
                 }
             };
             el.ondragstart = function () { dragFrom = el; };
@@ -450,16 +489,23 @@ window.__posQkLayouts = @json($posQkLayoutsJson);
     document.getElementById('posQkSaveBtn').addEventListener('click', function () {
         var keys = [];
         gridCells().forEach(function (el) { var d = readCell(el); if (d) keys.push(d); });
-        var fd = new FormData();
-        fd.append('_token', csrf());
-        fd.append('_method', 'PUT');
-        fd.append('name', document.getElementById('posQkName').value || 'New layout');
-        fd.append('keep_folder_open', document.getElementById('posQkKeepOpen').checked ? '1' : '0');
-        fd.append('keys', JSON.stringify(keys));
         fetch(base() + '/pos/quick-keys/' + document.getElementById('posQkEditId').value, {
-            method: 'POST', credentials: 'same-origin', headers: jsonHeaders(), body: fd
-        }).then(function (r) { return r.json(); }).then(function (j) {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: Object.assign({}, jsonHeaders(), { 'Content-Type': 'application/json' }),
+            body: JSON.stringify({
+                _token: csrf(),
+                _method: 'PUT',
+                name: document.getElementById('posQkName').value || 'New layout',
+                keep_folder_open: document.getElementById('posQkKeepOpen').checked ? 1 : 0,
+                keys: keys
+            })
+        }).then(function (r) {
+            if (!r.ok) throw new Error('save failed');
+            return r.json();
+        }).then(function (j) {
             if (j && j.layouts) data = j;
+            if (j && typeof j.enabled !== 'undefined') data.enabled = !!j.enabled;
             renderList();
             applyPosLayout();
             showList();
@@ -473,6 +519,18 @@ window.__posQkLayouts = @json($posQkLayoutsJson);
             document.querySelectorAll('#posQkColors .pos-qk-dot').forEach(function (d) { d.classList.remove('is-on'); });
             dot.classList.add('is-on');
             color = dot.getAttribute('data-color');
+            setPaletteOn(color);
+            if (lastCatId) {
+                var cell = cellForCategory(lastCatId);
+                if (cell) {
+                    var d = readCell(cell);
+                    if (d) {
+                        d.color = color;
+                        paintCell(cell, d);
+                        paintCats(document.getElementById('posQkSearch').value);
+                    }
+                }
+            }
             if (picked) picked.color = color;
         });
     });
@@ -480,9 +538,17 @@ window.__posQkLayouts = @json($posQkLayoutsJson);
     if (typeof jQuery !== 'undefined') {
         jQuery(document).on('shown.bs.modal', '#pos_quick_keys_modal', function () {
             showList();
-            loadList();
+            loadList().then(function () { applyPosLayout(); });
             loadCats();
         });
+    }
+    function bootLayout() {
+        loadList().then(function () { applyPosLayout(); });
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', bootLayout);
+    } else {
+        bootLayout();
     }
 })();
 </script>
@@ -569,7 +635,7 @@ window.__posQkLayouts = @json($posQkLayoutsJson);
 .pos-qk-check { display: flex; gap: 8px; font-size: 13px; margin: 8px 0 4px; font-weight: 600; color: #d1d5db; }
 .pos-qk-cats { max-height: 120px; overflow: auto; border: 1px solid #3a3f4b; border-radius: 8px; margin-bottom: 10px; background: #111318; }
 .pos-qk-cats button { display: block; width: 100%; text-align: left; border: 0; border-bottom: 1px solid #2a2e36; background: transparent; color: #e5e7eb; padding: 10px 12px; cursor: pointer; }
-.pos-qk-cats button.is-on { background: rgba(124,58,237,.28); font-weight: 800; }
+.pos-qk-cats button.is-on { font-weight: 800; background: rgba(124,58,237,.28); }
 .pos-qk-colors { display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0 14px; }
 .pos-qk-dot { width: 22px; height: 22px; border-radius: 6px; border: 2px solid transparent; cursor: pointer; padding: 0; }
 .pos-qk-dot.is-on { border-color: #fff; }
