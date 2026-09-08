@@ -27,7 +27,7 @@ class SalePwaController extends Controller
             'business' => $business,
             'app_name' => $name,
             'short_name' => mb_substr($name, 0, 12),
-            'theme_color' => '#0f766e',
+            'theme_color' => '#e53935',
             'background_color' => '#0b1220',
         ];
     }

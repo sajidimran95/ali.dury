@@ -14,120 +14,69 @@
     <input type="hidden" name="order_mode" id="order_mode" value="{{ old('order_mode', 'new_order') }}">
     <div id="productsJson" class="hidden"></div>
 
-    {{-- STEP 0: Select customer (layout like app — uses existing customers API) --}}
-    @if(empty($edit_order))
-    <div id="stepCustomer" class="sale-pick-customer">
-        <div class="sale-pick-customer__head">
-            <h1 class="sale-pick-customer__title">Create Order</h1>
-            <p class="sale-pick-customer__sub">Select Customer</p>
-        </div>
-
-        <div class="sale-pick-modes" role="radiogroup" aria-label="Order type">
-            <label class="sale-pick-mode">
-                <input type="radio" name="order_mode_ui" value="new_order" checked>
-                <span>New Order</span>
-            </label>
-            <label class="sale-pick-mode">
-                <input type="radio" name="order_mode_ui" value="estimate">
-                <span>Estimate</span>
-            </label>
-            <label class="sale-pick-mode">
-                <input type="radio" name="order_mode_ui" value="back_order">
-                <span>Back Order</span>
-            </label>
-        </div>
-
-        <div class="sale-pick-search">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-            <input type="search" id="customerSearch" class="sale-pick-search__input" placeholder="Search Customer Name" autocomplete="off">
-        </div>
-
-        <div id="customerResults" class="sale-pick-list"></div>
-    </div>
-    @endif
-
-    {{-- STEP 1: Build order (after customer) — Pickup/Delivery/Shipping + SKU/scan + catalog --}}
-    <div id="stepCart" class="sale-order-build" @if(empty($edit_order)) hidden @endif>
+    {{-- Customer is chosen from Customers → Create Order --}}
+    <div id="stepCart" class="sale-order-build">
         <div class="sale-order-build__bar">
-            <button type="button" id="backToCustomerBtn" class="sale-order-build__iconbtn" aria-label="Back" @if(!empty($edit_order)) hidden @endif>
+            <button type="button" id="backToCustomerBtn" class="sale-order-build__iconbtn" aria-label="Back">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>
             </button>
-            <div class="sale-order-build__titles min-w-0">
-                <div class="sale-order-build__title">Create Order</div>
-                <div class="sale-order-build__sub truncate" id="orderCustomerName">{{ $default_customer['text'] ?? ($edit_order->contact->supplier_business_name ?? $edit_order->contact->name ?? '') }}</div>
+            <div class="sale-order-build__titles">
+                <div class="sale-ois-h1">Order</div>
+                <div class="sale-ois-h2">Products</div>
             </div>
-            <button type="button" class="sale-order-build__submit" id="goShippingBtn">SUBMIT</button>
+            <span class="hidden" id="orderCustomerName">{{ $default_customer['text'] ?? ($edit_order->contact->supplier_business_name ?? $edit_order->contact->name ?? '') }}</span>
+            <span class="sale-order-cart-ico" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M3 4h2l2.4 11.2a2 2 0 0 0 2 1.6h7.4a2 2 0 0 0 2-1.5L21 8H7"/></svg>
+                <span class="sale-order-cart-badge" id="cartBadge" hidden>0</span>
+            </span>
+            <button type="button" class="sale-order-build__iconbtn" id="orderMoreBtn" aria-label="More">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg>
+            </button>
         </div>
 
         <div class="sale-order-build__body">
-            <div class="sale-order-build__row">
-                <span class="sale-order-build__label">Use last purchased quantities?</span>
-                <label class="sale-toggle" title="Fill order list from this customer’s last order">
-                    <input type="checkbox" id="useLastQtyToggle">
-                    <span class="sale-toggle__track"></span>
-                </label>
-            </div>
-            <div id="lastQtyStatus" class="sale-last-qty-status" hidden></div>
-
-            {{-- Existing system fulfillment → shipping_details / shipping_method --}}
-            <div class="sale-fulfill" role="radiogroup" aria-label="Fulfillment">
-                <label class="sale-fulfill__opt">
-                    <input type="radio" name="fulfillment_ui" value="Pickup">
-                    <span class="sale-fulfill__dot"></span>
-                    <span>Pickup</span>
-                </label>
-                <label class="sale-fulfill__opt">
-                    <input type="radio" name="fulfillment_ui" value="Delivery" checked>
-                    <span class="sale-fulfill__dot"></span>
-                    <span>Delivery</span>
-                </label>
-                <label class="sale-fulfill__opt">
-                    <input type="radio" name="fulfillment_ui" value="Shipping">
-                    <span class="sale-fulfill__dot"></span>
-                    <span>Shipping</span>
-                </label>
-            </div>
             <input type="hidden" name="shipping_method" id="shipping_method" value="{{ old('shipping_method', $edit_order->shipping_method ?? 'Delivery') }}">
-
-            <div class="sale-sku-block">
-                <div class="sale-sku-row">
-                    <div class="sale-sku-modes" role="group" aria-label="Search mode">
-                        <button type="button" class="sale-sku-mode is-active" id="skuModeScan" title="Scan / SKU" aria-pressed="true">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M7 8h1M10 8h2M14 8h3M7 12h3M12 12h1M15 12h2M7 16h2M11 16h4"/></svg>
-                        </button>
-                        <button type="button" class="sale-sku-mode" id="skuModeText" title="Search by name" aria-pressed="false">
-                            <span class="font-extrabold text-sm leading-none">T</span>
-                        </button>
-                    </div>
-                    <div class="sale-sku-search">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-                        <input type="search" id="productSearch" class="sale-sku-search__input" placeholder="Enter SKU" autocomplete="off" enterkeyhint="search">
-                    </div>
+            <div class="sale-ois-toolbar">
+                <button type="button" class="sale-ois-toolbar__ico" id="orderViewBtn" aria-label="View" onclick="return saleOpenSheet('orderViewSheet', event)">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+                </button>
+                <div class="sale-ois-search">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#e53935" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+                    <input type="search" id="productSearch" placeholder="Search" autocomplete="off">
                 </div>
-                <div id="productResults" class="sale-prod-results hidden"></div>
+                <button type="button" class="sale-ois-toolbar__ico" id="orderSortBtn" aria-label="Sort" onclick="return saleOpenSheet('orderSortSheet', event)">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 7l4-4 4 4M8 17l4 4 4-4M12 3v18"/></svg>
+                </button>
+                <button type="button" class="sale-ois-toolbar__ico" id="orderFilterBtn" aria-label="Filter" onclick="return saleOpenSheet('orderFilterSheet', event)">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
+                </button>
             </div>
-
-            <div class="sale-order-list-head">
-                <strong>Order List</strong>
-                <button type="button" id="catalogOpenBtn" class="sale-order-list-head__link">Product Catalog</button>
+            <div id="orderResultCount" class="sale-ois-results">Results: 0</div>
+            <div id="productResults" class="sale-prod-results hidden"></div>
+            <button type="button" id="skuModeScan" class="hidden" tabindex="-1"></button>
+            <input type="checkbox" id="useLastQtyToggle" class="hidden" tabindex="-1">
+            <div id="lastQtyStatus" hidden></div>
+            <div class="sale-fulfill hidden" aria-hidden="true">
+                <label><input type="radio" name="fulfillment_ui" value="Pickup"></label>
+                <label><input type="radio" name="fulfillment_ui" value="Delivery" checked></label>
+                <label><input type="radio" name="fulfillment_ui" value="Shipping"></label>
             </div>
 
             <div class="sale-cart-scroll" id="cartScroll">
-                <div id="cartEmpty" class="sale-cart-empty">
-                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-slate-300 mx-auto mb-2"><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M3 4h2l2.4 11.2a2 2 0 0 0 2 1.6h7.4a2 2 0 0 0 2-1.5L21 8H7"/></svg>
-                    <div class="text-sm font-semibold text-slate-400">Order list is empty</div>
-                    <div class="text-xs text-slate-400 mt-1">Scan SKU or open Product Catalog</div>
-                </div>
-                <div id="cartLines" class="sale-cart-lines"></div>
+                <div id="cartEmpty" class="sale-cart-empty hidden"></div>
+                <div id="cartLines" class="sale-cart-lines is-view-item"></div>
             </div>
 
             <div class="sale-order-build__total">
-                <span>Total</span>
-                <strong id="cartTotal" class="tabular-nums">$0.00</strong>
+                <div>
+                    <div class="sale-order-build__total-label">TOTAL</div>
+                    <strong id="cartTotal" class="tabular-nums">$0.00</strong>
+                </div>
+                <button type="button" class="sale-order-build__checkout is-off" id="goShippingBtn">Check Out</button>
             </div>
         </div>
 
-        <input type="hidden" name="payment_type" value="due">
+        <input type="hidden" name="payment_type" id="payment_type" value="{{ old('payment_type', (!empty($edit_order) && ($edit_order->prefer_payment_method ?? '') === 'credit_sale') ? 'due' : 'cash') }}">
         {{-- Keep selected customer chip for change (edit / change customer) --}}
         <button type="button" id="customerSelected" class="hidden" aria-hidden="true">
             <span id="customerLabel"></span>
@@ -140,49 +89,96 @@
         </div>
     </div>
 
-    {{-- STEP 2: Shipping (shown after Order click) --}}
-    <div id="stepShipping" class="sale-ship-flow" hidden>
-        <button type="button" id="backToCartBtn" class="inline-flex items-center gap-1.5 text-sm font-bold text-sale mb-3">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>
-            Back to cart
-        </button>
-
-        <div class="sale-card space-y-3 mb-3">
-            <div class="sale-sec-title !mb-1">
-                <span class="sale-sec-title__ico">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 21s7-4.5 7-11a7 7 0 1 0-14 0c0 6.5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>
-                </span>
-                Shipping
-            </div>
-            <div class="flex justify-between text-sm font-bold mb-1">
-                <span class="text-slate-500">Order total</span>
-                <span id="shipTotal" class="tabular-nums text-sale">$0.00</span>
-            </div>
-            <div>
-                <label class="text-xs font-bold text-slate-500 mb-1.5 block">Shipping details:*</label>
-                <textarea name="shipping_details" id="shipping_details" rows="4" class="sale-input" required placeholder="Shipping details">{{ old('shipping_details', $edit_order->shipping_details ?? '') }}</textarea>
-            </div>
-            <div>
-                <label class="text-xs font-bold text-slate-500 mb-1.5 block">Shipping address:</label>
-                <textarea name="shipping_address" id="shipping_address" rows="4" class="sale-input" required placeholder="Shipping address">{{ old('shipping_address', $edit_order->shipping_address ?? '') }}</textarea>
-            </div>
-            <div>
-                <label class="text-xs font-bold text-slate-500 mb-1.5 block">Note (optional)</label>
-                <textarea name="sale_note" rows="2" class="sale-input" placeholder="Order note">{{ old('sale_note', $edit_order->additional_notes ?? '') }}</textarea>
-            </div>
-        </div>
-
-        <div class="sale-create-bar">
-            <button type="submit" class="sale-btn !w-full inline-flex items-center justify-center gap-2" id="submitOrderBtn">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-                {{ !empty($edit_order) ? 'Save order' : 'Create order' }}
+    <div id="stepCheckout" class="sale-checkout" hidden>
+        <div class="sale-checkout__bar">
+            <button type="button" id="backFromCheckoutBtn" class="sale-order-build__iconbtn" aria-label="Close">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
+            <div class="sale-checkout__title">Order Check Out</div>
+            <button type="button" class="sale-order-build__iconbtn" id="checkoutMoreBtn" aria-label="More">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg>
             </button>
         </div>
+        <div class="sale-checkout__body">
+            <div class="sale-co-card">
+                <div class="sale-checkout__name" id="coName"></div>
+                <div class="sale-checkout__acct" id="coAcct"></div>
+                <div class="sale-checkout__addr" id="coAddr"></div>
+            </div>
+            <div class="sale-checkout__stats">
+                <div class="sale-co-stat"><strong id="coLimit">$0.00</strong><span>Limit</span></div>
+                <div class="sale-co-stat"><strong id="coLast">$0.00</strong><span>Last order</span></div>
+                <div class="sale-co-stat"><strong id="coOpen">$0.00</strong><span>Open Invoices</span></div>
+            </div>
+            <div class="sale-checkout__meta">
+                <div>Order # <b id="coOrderNo">{{ !empty($edit_order) ? $edit_order->invoice_no : '0' }}</b></div>
+                <div>Date <b id="coDate">{{ now()->format('m/d/Y') }}</b></div>
+                <div>Terms <b id="coTerms">Credit</b></div>
+            </div>
+            <div class="sale-co-card">
+                <div class="sale-checkout__lines-title">Order summary</div>
+                <div id="coLines" class="sale-checkout__lines"></div>
+            </div>
+            <div class="sale-co-card sale-checkout__fields">
+                <label>Shipping address
+                    <textarea name="shipping_address" id="shipping_address" rows="2" class="sale-input" required placeholder="Shipping address">{{ old('shipping_address', $edit_order->shipping_address ?? ($default_customer['address'] ?? $default_customer['shipping_address'] ?? '')) }}</textarea>
+                </label>
+                <label>Delivery / shipping details
+                    <textarea name="shipping_details" id="shipping_details" rows="2" class="sale-input" required placeholder="Delivery details">{{ old('shipping_details', $edit_order->shipping_details ?? '') }}</textarea>
+                </label>
+                <label>Notes
+                    <textarea name="sale_note" id="sale_note" rows="2" class="sale-input" placeholder="Order note">{{ old('sale_note', $edit_order->additional_notes ?? '') }}</textarea>
+                </label>
+            </div>
+        </div>
+        <div class="sale-order-build__total">
+            <div>
+                <div class="sale-order-build__total-label">TOTAL</div>
+                <strong id="coTotal" class="tabular-nums">$0.00</strong>
+            </div>
+            <button type="button" class="sale-order-build__checkout" id="placeOrderBtn">Place Order</button>
+        </div>
     </div>
+
+    {{-- Shipping / notes live on checkout summary --}}
+    <span id="shipTotal" class="hidden"></span>
+    <button type="submit" class="hidden" id="submitOrderBtn">{{ !empty($edit_order) ? 'Save order' : 'Create order' }}</button>
 </form>
 @endsection
 
 @push('scripts')
+<div id="saleScanScreen" class="sale-scan" hidden>
+    <div class="sale-scan__bar">
+        <button type="button" class="sale-scan__back" id="saleScanBack" aria-label="Back">‹</button>
+        <div class="sale-scan__title">Scan your barcode</div>
+    </div>
+    <div class="sale-scan__cam">
+        <div id="saleScanReader"></div>
+        <div class="sale-scan__laser" aria-hidden="true"></div>
+    </div>
+    <div class="sale-scan__guide" aria-hidden="true">
+        <div class="sale-scan__guide-ico">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 8V6h3M17 6h3v2M20 16v2h-3M7 18H4v-2"/><path d="M7 9h10M7 12h10M7 15h6"/></svg>
+        </div>
+        <span class="sale-scan__chev">›</span>
+        <div class="sale-scan__guide-ico is-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="5" y="6" width="14" height="12" rx="1"/><path d="M5 12h14" stroke="#e53935"/></svg>
+        </div>
+        <span class="sale-scan__chev">›</span>
+        <div class="sale-scan__guide-ico">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="6" y="4" width="12" height="16" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></svg>
+        </div>
+    </div>
+    <div class="sale-scan__empty" id="saleScanEmpty">Your scanned products will be displayed here.</div>
+    <div class="sale-scan__list" id="saleScanList" hidden></div>
+    <div class="sale-order-build__total">
+        <div>
+            <div class="sale-order-build__total-label">TOTAL</div>
+            <strong id="saleScanTotal">$0.00</strong>
+        </div>
+        <button type="button" class="sale-order-build__checkout is-off" id="saleScanCheckout">Check Out</button>
+    </div>
+</div>
 <div id="catalogModal" class="sale-catalog" hidden>
     <div class="sale-catalog__panel">
         <div class="sale-catalog__head">
@@ -193,8 +189,153 @@
         <div id="catalogBody" class="sale-catalog__body"></div>
     </div>
 </div>
+<div id="orderViewSheet" class="sale-sheet" hidden>
+    <div class="sale-sheet__panel">
+        <div class="sale-sheet__head is-center">
+            <div class="sale-sheet__title">View</div>
+            <button type="button" class="sale-sheet__close" id="orderViewClose" aria-label="Close">×</button>
+        </div>
+        <div class="sale-sheet__body sale-view-sheet">
+            <button type="button" class="sale-view-opt is-on" data-view="item">Item</button>
+            <button type="button" class="sale-view-opt" data-view="large">Large</button>
+            <button type="button" class="sale-view-opt" data-view="medium">Medium</button>
+            <button type="button" class="sale-view-opt" data-view="details">Details</button>
+            <button type="button" class="sale-view-opt" data-view="list">List</button>
+        </div>
+        <div class="sale-sheet__foot">
+            <button type="button" class="sale-more-cancel" id="orderViewCancel">CANCEL</button>
+        </div>
+    </div>
+</div>
+<div id="orderSortSheet" class="sale-sheet" hidden>
+    <div class="sale-sheet__panel">
+        <div class="sale-sheet__head is-center">
+            <div class="sale-sheet__title">Sort</div>
+            <button type="button" class="sale-sheet__close" onclick="saleCloseSheet('orderSortSheet')" aria-label="Close">×</button>
+        </div>
+        <div class="sale-sheet__body sale-view-sheet">
+            <button type="button" class="sale-view-opt is-on" data-sort="name_asc">Name A–Z</button>
+            <button type="button" class="sale-view-opt" data-sort="name_desc">Name Z–A</button>
+            <button type="button" class="sale-view-opt" data-sort="price_asc">Price: low to high</button>
+            <button type="button" class="sale-view-opt" data-sort="price_desc">Price: high to low</button>
+            <button type="button" class="sale-view-opt" data-sort="stock">In stock first</button>
+        </div>
+        <div class="sale-sheet__foot">
+            <button type="button" class="sale-more-cancel" onclick="saleCloseSheet('orderSortSheet')">CANCEL</button>
+        </div>
+    </div>
+</div>
+<div id="orderFilterSheet" class="sale-sheet" hidden>
+    <div class="sale-sheet__panel">
+        <div class="sale-sheet__head is-center">
+            <div class="sale-sheet__title">Filter</div>
+            <button type="button" class="sale-sheet__close" onclick="saleCloseSheet('orderFilterSheet')" aria-label="Close">×</button>
+        </div>
+        <div class="sale-sheet__body" style="padding: 8px 16px 16px">
+            <div class="text-xs font-bold uppercase tracking-wide text-slate-400 mb-2">Category</div>
+            <select id="orderFilterCat" class="sale-input mb-4">
+                <option value="">All categories</option>
+            </select>
+            <div class="text-xs font-bold uppercase tracking-wide text-slate-400 mb-2">Subcategory</div>
+            <select id="orderFilterSub" class="sale-input" disabled>
+                <option value="">All</option>
+            </select>
+        </div>
+        <div class="sale-sheet__foot" style="display:flex;gap:8px;justify-content:flex-end;padding:12px 16px">
+            <button type="button" class="sale-btn-ghost !w-auto !px-4" id="orderFilterReset">Reset</button>
+            <button type="button" class="sale-btn !w-auto !px-6" id="orderFilterApply">Apply</button>
+        </div>
+    </div>
+</div>
+<div id="orderMoreSheet" class="sale-sheet" hidden>
+    <div class="sale-sheet__panel">
+        <div class="sale-sheet__head is-center">
+            <div class="sale-sheet__title">More</div>
+            <button type="button" class="sale-sheet__close" id="orderMoreClose" aria-label="Close">×</button>
+        </div>
+        <div class="sale-sheet__body !pt-1">
+            <button type="button" class="sale-act-row" id="orderMoreScan">
+                <svg viewBox="0 0 24 24"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"/><circle cx="12" cy="12" r="3"/><path d="M12 9v1"/></svg>
+                Scan
+            </button>
+            <button type="button" class="sale-act-row" id="orderMoreCredit">
+                <span class="sale-act-row__ico">
+                    <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M16 8.5a4 4 0 1 1-8 .2"/></svg>
+                    <span class="sale-credit-on" id="creditOnBadge">ON</span>
+                </span>
+                Credit
+            </button>
+            <button type="button" class="sale-act-row" id="orderMoreDocs">
+                <svg viewBox="0 0 24 24"><path d="M4 20h16a1 1 0 0 0 1-1V8l-5-5H5a1 1 0 0 0-1 1v15a1 1 0 0 0 1 1z"/><path d="M15 3v5h5"/></svg>
+                Documents
+            </button>
+        </div>
+        <div class="sale-sheet__foot">
+            <button type="button" class="sale-more-cancel" id="orderMoreCancel">CANCEL</button>
+        </div>
+    </div>
+</div>
+<div id="checkoutMoreSheet" class="sale-sheet sale-sheet--dark" hidden>
+    <div class="sale-sheet__panel">
+        <div class="sale-sheet__head is-center">
+            <div class="sale-sheet__title">Options</div>
+            <button type="button" class="sale-sheet__close" id="checkoutMoreClose" aria-label="Close">×</button>
+        </div>
+        <div class="sale-sheet__body !pt-1">
+            <button type="button" class="sale-act-row" id="coNewCredit">
+                <span class="sale-act-row__ico">
+                    <svg viewBox="0 0 24 24"><path d="M14 3h-4v4H6v4h4v10h4V11h4V7h-4z"/></svg>
+                    <span class="sale-credit-on" id="coCreditOnBadge">ON</span>
+                </span>
+                New Credit
+            </button>
+            <a class="sale-act-row" id="coHistory" href="{{ route('sale.orders') }}">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg>
+                History
+            </a>
+            <button type="button" class="sale-act-row" id="coShare">
+                <svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>
+                Share
+            </button>
+            <button type="button" class="sale-act-row" id="coPrint">
+                <svg viewBox="0 0 24 24"><path d="M6 9V3h12v6"/><rect x="4" y="9" width="16" height="8" rx="1"/><path d="M6 17h12v4H6z"/></svg>
+                Print
+            </button>
+            <button type="button" class="sale-act-row" id="coDocs">
+                <svg viewBox="0 0 24 24"><path d="M4 20h16a1 1 0 0 0 1-1V8l-5-5H5a1 1 0 0 0-1 1v15a1 1 0 0 0 1 1z"/><path d="M15 3v5h5"/></svg>
+                Documents
+            </button>
+        </div>
+        <div class="sale-sheet__foot">
+            <button type="button" class="sale-more-cancel" id="checkoutMoreCancel">CANCEL</button>
+        </div>
+    </div>
+</div>
+<div id="orderCreditSheet" class="sale-sheet sale-credit-modal" hidden>
+    <div class="sale-credit-modal__panel">
+        <div class="sale-credit-modal__icon" aria-hidden="true">!</div>
+        <div class="sale-credit-modal__title">Warning!!</div>
+        <p class="sale-credit-modal__msg" id="orderCreditMsg">Customer has credit limit 0</p>
+        <button type="button" class="sale-credit-modal__accept" id="orderCreditAccept">Accept</button>
+    </div>
+</div>
+<div id="saleAttnSheet" class="sale-sheet sale-credit-modal sale-attn-modal" hidden>
+    <div class="sale-attn-panel">
+        <div class="sale-attn-ico">!</div>
+        <div class="sale-attn-title">Attention!</div>
+        <p class="sale-attn-msg" id="saleAttnMsg">Do you want to save this order?</p>
+        <div class="sale-attn-btns">
+            <button type="button" class="sale-attn-no" id="saleAttnNo">NO</button>
+            <button type="button" class="sale-attn-yes" id="saleAttnYes">YES</button>
+        </div>
+    </div>
+</div>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script>
 (function () {
+    document.querySelectorAll('.sale-sheet').forEach(function (el) {
+        document.body.appendChild(el);
+    });
     const cart = [];
     const customerSearch = document.getElementById('customerSearch');
     const customerResults = document.getElementById('customerResults');
@@ -205,6 +346,39 @@
     const productSearch = document.getElementById('productSearch');
     const productResults = document.getElementById('productResults');
     const cartLines = document.getElementById('cartLines');
+    const VIEW_MODES = ['item', 'large', 'medium', 'details', 'list'];
+    window.__saleProductView = 'item';
+    function applyProductView(mode, closeSheet) {
+        const lines = document.getElementById('cartLines');
+        const step = document.getElementById('stepCart');
+        if (!VIEW_MODES.includes(mode)) mode = 'item';
+        window.__saleProductView = mode;
+        if (lines) {
+            lines.classList.remove('is-view-item', 'is-view-large', 'is-view-medium', 'is-view-details', 'is-view-list');
+            lines.classList.add('is-view-' + mode);
+        }
+        if (step) step.setAttribute('data-product-view', mode);
+        try { localStorage.setItem('saleProductView', mode); } catch (e) {}
+        document.querySelectorAll('.sale-view-opt').forEach((btn) => {
+            btn.classList.toggle('is-on', btn.getAttribute('data-view') === mode);
+        });
+        if (closeSheet !== false) {
+            const sheet = document.getElementById('orderViewSheet');
+            if (sheet) {
+                sheet.hidden = true;
+                sheet.classList.remove('is-open');
+            }
+        }
+    }
+    window.applyProductView = applyProductView;
+    document.getElementById('orderViewBtn')?.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const sheet = document.getElementById('orderViewSheet');
+        if (!sheet) return;
+        document.body.appendChild(sheet);
+        sheet.hidden = false;
+    }, true);
     const cartEmpty = document.getElementById('cartEmpty');
     const cartTotal = document.getElementById('cartTotal');
     const shipTotal = document.getElementById('shipTotal');
@@ -215,9 +389,17 @@
     const productsJson = document.getElementById('productsJson');
     const stepCart = document.getElementById('stepCart');
     const stepShipping = document.getElementById('stepShipping');
+    const stepCheckout = document.getElementById('stepCheckout');
+    const paymentTypeInput = document.getElementById('payment_type');
     let custTimer = null, prodTimer = null;
     let savedShipAddr = '';
-    let lastCustomer = { id: '', text: '', shipAddr: '' };
+    let lastCustomer = { id: '', text: '', shipAddr: '', credit: null, acct: '', address: '' };
+    let browseRows = [];
+    let productSort = 'name_asc';
+    let orderCatId = '';
+    let orderSubId = '';
+    let orderCategories = [];
+    let creditAfterAccept = null;
 
     const catalogModal = document.getElementById('catalogModal');
     const catalogBody = document.getElementById('catalogBody');
@@ -225,6 +407,84 @@
     const catalogBackBtn = document.getElementById('catalogBackBtn');
     let catalogTree = null;
     let catalogStack = [];
+    let saleScanner = null;
+    let lastScanCode = '';
+    let lastScanAt = 0;
+
+    function syncScanUi() {
+        const total = cartSum();
+        const totEl = document.getElementById('saleScanTotal');
+        const btn = document.getElementById('saleScanCheckout');
+        const empty = document.getElementById('saleScanEmpty');
+        const list = document.getElementById('saleScanList');
+        if (totEl) totEl.textContent = money(total);
+        if (btn) btn.classList.toggle('is-off', total <= 0);
+        const scanned = cart.filter((l) => Number(l.quantity) > 0);
+        if (!scanned.length) {
+            if (empty) empty.hidden = false;
+            if (list) { list.hidden = true; list.innerHTML = ''; }
+            return;
+        }
+        if (empty) empty.hidden = true;
+        if (list) {
+            list.hidden = false;
+            list.innerHTML = scanned.map((l) => `
+                <div class="sale-scan__row">
+                    <div>
+                        <div class="sale-scan__row-name">${escapeHtml(l.name)}</div>
+                        <div class="sale-scan__row-meta">${escapeHtml(l.sku || '')} · ${fmtQty(l.quantity)} ${escapeHtml(lineUnitName(l))}${(Number(l.multiplier) || 1) > 1 ? ' = ' + fmtQty(linePcs(l)) + ' Pc' : ''}</div>
+                    </div>
+                    <div class="sale-scan__row-name">${money(l.quantity * l.unit_price)}</div>
+                </div>`).join('');
+        }
+    }
+
+    async function stopSaleScan() {
+        try {
+            if (saleScanner) {
+                const s = saleScanner;
+                saleScanner = null;
+                if (s.isScanning) await s.stop();
+                await s.clear();
+            }
+        } catch (e) {}
+        const screen = document.getElementById('saleScanScreen');
+        if (screen) screen.hidden = true;
+    }
+
+    async function startSaleScan() {
+        const screen = document.getElementById('saleScanScreen');
+        if (screen) screen.hidden = false;
+        syncScanUi();
+        if (typeof Html5Qrcode === 'undefined') return;
+        if (saleScanner) return;
+        try {
+            saleScanner = new Html5Qrcode('saleScanReader');
+            await saleScanner.start(
+                { facingMode: 'environment' },
+                { fps: 8, qrbox: { width: 280, height: 90 } },
+                async (decoded) => {
+                    const code = String(decoded || '').trim();
+                    const now = Date.now();
+                    if (!code || (code === lastScanCode && now - lastScanAt < 1200)) return;
+                    lastScanCode = code;
+                    lastScanAt = now;
+                    if (!locationId || !locationId.value) return;
+                    const rows = await fetchJson(@json(route('sale.api.products')) + '?q=' + encodeURIComponent(code) + '&location_id=' + encodeURIComponent(locationId.value));
+                    const exact = rows.find((r) => String(r.sku || '').toLowerCase() === code.toLowerCase()) || (rows.length === 1 ? rows[0] : null);
+                    if (exact) addToCart(exact);
+                },
+                () => {}
+            );
+        } catch (e) {}
+    }
+
+    document.getElementById('saleScanBack')?.addEventListener('click', () => stopSaleScan());
+    document.getElementById('saleScanCheckout')?.addEventListener('click', async () => {
+        if (cartSum() <= 0) return;
+        await stopSaleScan();
+        document.getElementById('goShippingBtn')?.click();
+    });
 
     function money(n) { return '$' + (Number(n) || 0).toFixed(2); }
 
@@ -237,18 +497,174 @@
             .replace(/'/g, '&#39;');
     }
 
+    function unitMeta(r) {
+        const units = Array.isArray(r.units) ? r.units : [];
+        const defaultId = r.sub_unit_id || r.unit_id || (units[0] && units[0].id);
+        const unit = units.find(u => Number(u.id) === Number(defaultId)) || units[0] || {
+            id: r.unit_id || 0,
+            name: r.unit_name || 'Pc',
+            multiplier: 1,
+            allow_decimal: r.allow_decimal
+        };
+        const multiplier = Number(unit.multiplier) || 1;
+        const basePrice = (typeof r.base_price !== 'undefined' && r.base_price !== null)
+            ? Number(r.base_price)
+            : (Number(r.price) / (multiplier || 1));
+        return { units, unit, multiplier, basePrice, unitPrice: basePrice * multiplier };
+    }
+
+    function hasPackUnits(units) {
+        if (!Array.isArray(units) || units.length < 2) return false;
+        const ids = new Set(units.map((u) => String(u.id)));
+        return ids.size > 1;
+    }
+
+    function priceLine(r) {
+        const m = unitMeta(r);
+        let s = money(m.unitPrice) + ' / ' + escapeHtml(m.unit.name || 'Pc');
+        if (m.multiplier > 1) s += ' (' + escapeHtml(m.unit.name) + ' x ' + m.multiplier + ')';
+        return s;
+    }
+
+    function cartKey(variationId, subUnitId) {
+        return String(variationId) + ':' + String(subUnitId || 0);
+    }
+
     function cartSum() {
         return cart.reduce((s, l) => s + (l.quantity * l.unit_price), 0);
     }
 
+    let allowLeave = false;
+    let pendingLeave = null;
+    let skipPersist = true;
+    const DRAFT_KEY = 'sale_draft_cart';
+    const serverDraft = @json($order_draft ?? null);
+    const draftSaveUrl = @json(route('sale.api.order_draft'));
+    const draftClearUrl = @json(route('sale.api.order_draft.clear'));
+    const savedOrdersUrl = @json(route('sale.saved_orders'));
+    function csrfToken() {
+        return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+    }
+    function draftPayload() {
+        return {
+            contact_id: contactId ? contactId.value : '',
+            contact_name: lastCustomer.display || lastCustomer.text || '',
+            payment_type: paymentTypeInput ? paymentTypeInput.value : 'cash',
+            cart: cart.filter((l) => Number(l.quantity) > 0),
+            shipping_address: shippingAddress ? shippingAddress.value : '',
+            shipping_details: shippingDetails ? shippingDetails.value : '',
+        };
+    }
+    function persistCart(force) {
+        if (typeof isEdit !== 'undefined' && isEdit) return;
+        if (!force && (skipPersist || !cartHasItems())) return;
+        try {
+            const raw = JSON.stringify(draftPayload());
+            localStorage.setItem(DRAFT_KEY, raw);
+            sessionStorage.setItem(DRAFT_KEY, raw);
+        } catch (e) {}
+    }
+    function clearDraftStorage() {
+        try {
+            localStorage.removeItem(DRAFT_KEY);
+            sessionStorage.removeItem(DRAFT_KEY);
+        } catch (e) {}
+    }
+    function applyDraft(data) {
+        if (!data || !Array.isArray(data.cart) || !data.cart.length) return false;
+        if (contactId.value && data.contact_id && String(data.contact_id) !== String(contactId.value)) return false;
+        data.cart.forEach((r) => addToCart(r, true, true));
+        if (paymentTypeInput && data.payment_type) paymentTypeInput.value = data.payment_type;
+        if (shippingAddress && data.shipping_address) shippingAddress.value = data.shipping_address;
+        if (shippingDetails && data.shipping_details) shippingDetails.value = data.shipping_details;
+        syncCreditBadges();
+        return true;
+    }
+    function restoreCart() {
+        if (typeof isEdit !== 'undefined' && isEdit) return;
+        if (applyDraft(serverDraft)) return;
+        try {
+            const raw = localStorage.getItem(DRAFT_KEY) || sessionStorage.getItem(DRAFT_KEY);
+            if (!raw) return;
+            applyDraft(JSON.parse(raw));
+        } catch (e) {}
+    }
+    async function saveDraftToServer() {
+        persistCart(true);
+        try {
+            await fetch(draftSaveUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken(),
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify(draftPayload()),
+            });
+        } catch (e) {}
+    }
+    async function clearDraftServer() {
+        clearDraftStorage();
+        try {
+            await fetch(draftClearUrl, {
+                method: 'DELETE',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken(),
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                credentials: 'same-origin',
+            });
+        } catch (e) {}
+    }
+    function cartHasItems() {
+        return cart.some((l) => Number(l.quantity) > 0);
+    }
+    let attnLeaveOnNo = false;
+    let pendingLeaveNo = null;
+    function hideAttn() {
+        const el = document.getElementById('saleAttnSheet');
+        if (el) el.hidden = true;
+        pendingLeave = null;
+        pendingLeaveNo = null;
+        attnLeaveOnNo = false;
+    }
+    function confirmLeave(go, opts) {
+        opts = opts || {};
+        if (!cartHasItems()) {
+            allowLeave = true;
+            go();
+            return;
+        }
+        pendingLeave = go;
+        pendingLeaveNo = typeof opts.onNo === 'function' ? opts.onNo : null;
+        attnLeaveOnNo = !!opts.leaveOnNo || !!pendingLeaveNo;
+        const msgEl = document.getElementById('saleAttnMsg');
+        if (msgEl) {
+            msgEl.textContent = opts.msg || 'Do you want to save this order?';
+        }
+        const el = document.getElementById('saleAttnSheet');
+        if (el) el.hidden = false;
+    }
+    function checkoutClosePrompt() {
+        confirmLeave(() => { location.href = savedOrdersUrl; }, {
+            msg: 'Do you want to save this order?',
+            onNo: () => showCartStep(),
+        });
+    }
+
     function addToCart(r, silent, skipRender) {
         if (!r || !r.variation_id) return;
+        const meta = unitMeta(r);
         const vid = Number(r.variation_id);
-        const existingIdx = cart.findIndex(c => Number(c.variation_id) === vid);
+        const subId = Number(meta.unit.id) || 0;
+        const existingIdx = cart.findIndex(c => Number(c.variation_id) === vid && Number(c.sub_unit_id || 0) === subId);
         if (existingIdx >= 0) {
             cart[existingIdx].quantity = +cart[existingIdx].quantity + (Number(r.quantity) || 1);
             if (typeof r.allow_decimal !== 'undefined') {
-                cart[existingIdx].allow_decimal = !!Number(r.allow_decimal);
+                cart[existingIdx].allow_decimal = !!Number(meta.unit.allow_decimal);
             }
             if (r.transaction_sell_lines_id && !cart[existingIdx].transaction_sell_lines_id) {
                 cart[existingIdx].transaction_sell_lines_id = r.transaction_sell_lines_id;
@@ -260,11 +676,22 @@
                 variation_id: vid,
                 transaction_sell_lines_id: r.transaction_sell_lines_id || null,
                 name: r.name,
-                unit_price: Number(r.price) || 0,
+                sku: r.sku || '',
+                image: r.image || '',
+                has_image: !!r.has_image,
+                stock: Number(r.stock) || 0,
+                category: r.category || '',
+                base_price: meta.basePrice,
+                unit_price: meta.unitPrice,
                 quantity: Number(r.quantity) || 1,
                 enable_stock: r.enable_stock,
                 product_type: r.product_type,
-                allow_decimal: !!Number(r.allow_decimal),
+                allow_decimal: !!Number(meta.unit.allow_decimal),
+                units: meta.units,
+                unit_id: Number(r.unit_id) || subId,
+                unit_name: meta.unit.name,
+                sub_unit_id: subId,
+                multiplier: meta.multiplier,
             });
         }
         if (!skipRender) renderCart();
@@ -285,8 +712,10 @@
         showAddedMsg._t = setTimeout(() => { el.hidden = true; }, 1400);
     }
 
-    function cartQty(variationId) {
-        const line = cart.find(c => Number(c.variation_id) === Number(variationId));
+    function cartQty(variationId, subUnitId) {
+        const line = (typeof subUnitId === 'undefined')
+            ? cart.find(c => Number(c.variation_id) === Number(variationId))
+            : cart.find(c => Number(c.variation_id) === Number(variationId) && Number(c.sub_unit_id || 0) === Number(subUnitId || 0));
         if (!line) return 0;
         return formatQty(line);
     }
@@ -302,14 +731,16 @@
     function changeQty(i, delta) {
         const line = cart[i];
         if (!line) return;
-        if (delta < 0 && Number(line.quantity) <= 1) return;
         let next = Number(line.quantity) + delta;
         if (!line.allow_decimal) {
             next = Math.round(next);
-            if (next < 1) return;
         } else {
             next = Math.round(next * 100) / 100;
-            if (next < 1) return;
+        }
+        if (next < 1) {
+            cart.splice(i, 1);
+            renderCart();
+            return;
         }
         line.quantity = next;
         renderCart();
@@ -325,14 +756,36 @@
         } else {
             q = Math.round(q * 100) / 100;
         }
-        if (q < 1) q = 1;
+        if (q < 1) {
+            cart.splice(i, 1);
+            renderCart();
+            return;
+        }
         line.quantity = q;
+        renderCart();
+    }
+
+    function setCartUnit(i, unitId) {
+        const line = cart[i];
+        if (!line) return;
+        const unit = (line.units || []).find(u => Number(u.id) === Number(unitId));
+        if (!unit) return;
+        const other = cart.findIndex((c, idx) => idx !== i && Number(c.variation_id) === Number(line.variation_id) && Number(c.sub_unit_id) === Number(unit.id));
+        line.sub_unit_id = Number(unit.id);
+        line.unit_name = unit.name;
+        line.multiplier = Number(unit.multiplier) || 1;
+        line.allow_decimal = !!Number(unit.allow_decimal);
+        line.unit_price = Number(line.base_price) * line.multiplier;
+        if (other >= 0) {
+            cart[other].quantity = Number(cart[other].quantity) + Number(line.quantity);
+            cart.splice(i, 1);
+        }
         renderCart();
     }
 
     const stepCustomer = document.getElementById('stepCustomer');
     const orderModeInput = document.getElementById('order_mode');
-    const isEdit = !stepCustomer;
+    const isEdit = @json(!empty($edit_order));
     const customerSearchEdit = document.getElementById('customerSearchEdit');
     const customerResultsEdit = document.getElementById('customerResultsEdit');
 
@@ -354,31 +807,74 @@
     });
     syncOrderMode();
 
+    function creditLimitText(lim) {
+        if (lim === null || typeof lim === 'undefined' || lim === '' || Number(lim) === 0) {
+            return 'Customer has credit limit 0';
+        }
+        return 'Customer has credit limit $' + Number(lim).toFixed(2);
+    }
+
+    function hideCreditWarning() {
+        const sheet = document.getElementById('orderCreditSheet');
+        if (sheet) sheet.hidden = true;
+    }
+
+    function showCreditWarning(lim, afterAccept) {
+        creditAfterAccept = afterAccept || null;
+        const msg = document.getElementById('orderCreditMsg');
+        const sheet = document.getElementById('orderCreditSheet');
+        if (msg) msg.textContent = creditLimitText(lim);
+        if (sheet) sheet.hidden = false;
+    }
+
     function showCustomerStep() {
-        if (!stepCustomer) return;
-        stepCustomer.hidden = false;
-        stepCart.hidden = true;
-        stepShipping.hidden = true;
-        document.body.classList.add('sale-picking-customer');
-        document.body.classList.remove('sale-building-order');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        window.location.href = @json(route('sale.customers'));
     }
 
     function showCartStep() {
         if (stepCustomer) stepCustomer.hidden = true;
         stepCart.hidden = false;
-        stepShipping.hidden = true;
+        if (stepShipping) stepShipping.hidden = true;
+        if (stepCheckout) stepCheckout.hidden = true;
         document.body.classList.remove('sale-picking-customer');
         document.body.classList.add('sale-building-order');
+        document.body.classList.remove('sale-checking-out');
         window.scrollTo({ top: 0, behavior: 'smooth' });
         applyFulfillment();
+        loadBrowse(productSearch ? productSearch.value.trim() : '');
     }
 
-    function setCustomer(id, text, shipAddr, goToCart) {
+    async function loadBrowse(q) {
+        if (!locationId || !locationId.value) {
+            browseRows = [];
+            renderCart();
+            return;
+        }
+        let url = @json(route('sale.api.products')) + '?location_id=' + encodeURIComponent(locationId.value) + '&limit=80';
+        if (q) url += '&q=' + encodeURIComponent(q);
+        if (orderSubId) url += '&sub_category_id=' + encodeURIComponent(orderSubId);
+        else if (orderCatId) url += '&category_id=' + encodeURIComponent(orderCatId);
+        try {
+            browseRows = await fetchJson(url);
+        } catch (err) {
+            browseRows = [];
+        }
+        renderCart();
+    }
+
+    function setCustomer(id, text, shipAddr, goToCart, creditLimit, extra) {
         contactId.value = id || '';
         const orderCustomerName = document.getElementById('orderCustomerName');
         if (id) {
-            lastCustomer = { id: String(id), text: text || '', shipAddr: shipAddr || '' };
+            lastCustomer = {
+                id: String(id),
+                text: text || '',
+                shipAddr: shipAddr || '',
+                credit: creditLimit,
+                acct: extra && extra.acct ? extra.acct : '',
+                address: (extra && extra.address) ? extra.address : (shipAddr || ''),
+                display: (extra && extra.display_name) ? extra.display_name : (text || ''),
+            };
             if (customerLabel) customerLabel.textContent = text;
             if (orderCustomerName) orderCustomerName.textContent = text;
             // Keep chip hidden — customer name shows in order header only
@@ -400,11 +896,11 @@
             if (savedShipAddr && shippingAddress && !shippingAddress.value.trim()) {
                 shippingAddress.value = savedShipAddr;
             }
-            if (goToCart !== false && stepCustomer) {
-                showCartStep();
+            if (goToCart !== false && !isEdit) {
+                showCreditWarning(creditLimit, () => showCartStep());
             }
         } else {
-            lastCustomer = { id: '', text: '', shipAddr: '' };
+            lastCustomer = { id: '', text: '', shipAddr: '', credit: null, acct: '', address: '', display: '' };
             if (customerLabel) customerLabel.textContent = '';
             if (orderCustomerName) orderCustomerName.textContent = '';
             if (customerSelected) customerSelected.classList.add('hidden');
@@ -427,7 +923,7 @@
         }
     }
 
-    customerSelected.addEventListener('click', openCustomerSearch);
+    if (customerSelected) customerSelected.addEventListener('click', openCustomerSearch);
 
     function esc(s) {
         return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -472,7 +968,7 @@
             clearTimeout(custTimer);
             custTimer = setTimeout(() => {
                 loadCustomers(customerSearch.value.trim(), customerResults, (r) => {
-                    setCustomer(r.id, r.text, r.shipping_address || r.address || '', true);
+                    setCustomer(r.id, r.text, r.shipping_address || r.address || '', true, r.credit_limit, r);
                 });
             }, 250);
         });
@@ -484,7 +980,7 @@
             clearTimeout(custTimer);
             custTimer = setTimeout(() => {
                 loadCustomers(customerSearchEdit.value.trim(), customerResultsEdit, (r) => {
-                    setCustomer(r.id, r.text, r.shipping_address || r.address || '', false);
+                    setCustomer(r.id, r.text, r.shipping_address || r.address || '', false, r.credit_limit, r);
                     customerSearchWrap.classList.add('hidden');
                 });
             }, 250);
@@ -496,7 +992,9 @@
         {{ (int) $default_customer['id'] }},
         @json($default_customer['text']),
         @json($default_customer['shipping_address'] ?? ''),
-        true
+        true,
+        @json($default_customer['credit_limit'] ?? null),
+        @json(['acct' => $default_customer['acct'] ?? '', 'display_name' => $default_customer['display_name'] ?? '', 'address' => $default_customer['address'] ?? ($default_customer['shipping_address'] ?? '')])
     );
     @elseif(!empty($edit_order))
     document.body.classList.remove('sale-picking-customer');
@@ -506,31 +1004,118 @@
     function renderCart() {
         cartLines.innerHTML = '';
         const total = cartSum();
-        cartEmpty.classList.toggle('hidden', cart.length > 0);
-        cart.forEach((line, idx) => {
-            const lineTot = line.quantity * line.unit_price;
+        cartEmpty.classList.add('hidden');
+        const badge = document.getElementById('cartBadge');
+        if (badge) {
+            const n = cart.reduce((s, l) => s + Number(l.quantity), 0);
+            badge.hidden = n < 1;
+            badge.textContent = String(Math.round(n * 100) / 100);
+        }
+        const rows = browseRows.length ? browseRows.slice() : [];
+        rows.sort(function (a, b) {
+            if (productSort === 'name_desc') return String(b.name || '').localeCompare(String(a.name || ''));
+            if (productSort === 'price_asc') return Number(a.price || 0) - Number(b.price || 0);
+            if (productSort === 'price_desc') return Number(b.price || 0) - Number(a.price || 0);
+            if (productSort === 'stock') {
+                const as = (Number(a.enable_stock) === 1 && Number(a.stock) <= 0) ? 1 : 0;
+                const bs = (Number(b.enable_stock) === 1 && Number(b.stock) <= 0) ? 1 : 0;
+                return as - bs;
+            }
+            return String(a.name || '').localeCompare(String(b.name || ''));
+        });
+        const display = rows.length ? rows.map((r) => {
+            const meta = unitMeta(r);
+            const found = cart.find(c => Number(c.variation_id) === Number(r.variation_id) && Number(c.sub_unit_id || 0) === Number(meta.unit.id || 0));
+            if (found) return found;
+            return {
+                product_id: r.product_id,
+                variation_id: r.variation_id,
+                name: r.name,
+                sku: r.sku || '',
+                image: r.image || '',
+                has_image: !!r.has_image,
+                stock: r.stock,
+                enable_stock: r.enable_stock,
+                category_name: r.category_name || '',
+                base_price: meta.basePrice,
+                unit_price: meta.unitPrice,
+                quantity: 0,
+                units: meta.units,
+                unit_name: meta.unit.name,
+                sub_unit_id: meta.unit.id,
+                multiplier: meta.multiplier,
+                allow_decimal: !!Number(meta.unit.allow_decimal),
+                _browse: r,
+            };
+        }) : cart;
+        const countEl = document.getElementById('orderResultCount');
+        if (countEl) countEl.textContent = 'Results: ' + (browseRows.length || cart.length);
+        display.forEach((line, idx) => {
+            const cartIdx = cart.findIndex(c => Number(c.variation_id) === Number(line.variation_id) && Number(c.sub_unit_id || 0) === Number(line.sub_unit_id || 0));
+            const qty = cartIdx >= 0 ? cart[cartIdx].quantity : 0;
+            const unitPrice = cartIdx >= 0 ? cart[cartIdx].unit_price : line.unit_price;
+            const lineTot = qty * unitPrice;
+            const perPc = line.multiplier > 0 ? (unitPrice / line.multiplier) : unitPrice;
+            const units = line.units || [];
+            const canPickUnit = hasPackUnits(units);
+            const pack = canPickUnit && Number(line.multiplier) > 1
+                ? '(' + escapeHtml(line.unit_name || 'Unit') + ' x ' + line.multiplier + ')'
+                : '';
+            const unitSelect = canPickUnit
+                ? `<div class="sale-ois-radios">${units.map((u) => `<label class="sale-ois-radio${Number(u.id) === Number(line.sub_unit_id) ? ' is-on' : ''}"><input type="radio" name="u${idx}-${line.variation_id}" value="${u.id}" ${Number(u.id) === Number(line.sub_unit_id) ? 'checked' : ''} ${cartIdx >= 0 ? 'data-unit="'+cartIdx+'"' : 'data-browse-unit="'+idx+'"'}><span>${escapeHtml(u.name)}</span></label>`).join('')}</div>`
+                : '';
+            const packRow = unitSelect ? `<div class="sale-ois-units">${unitSelect}${pack ? `<div class="sale-ois-card__pack">${pack}</div>` : ''}</div>` : '';
+            const q = (productSearch.value || '').trim();
+            const highlightName = (name) => {
+                const safe = escapeHtml(name);
+                if (!q) return safe;
+                const esc = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                return safe.replace(new RegExp(esc, 'ig'), (m) => `<mark class="sale-ois-hit">${m}</mark>`);
+            };
+            const inStock = Number(line.enable_stock) !== 1 || Number(line.stock) > 0;
+            const thumb = line.has_image && line.image
+                ? `<img src="${escapeHtml(line.image)}" alt="">`
+                : `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.6"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m21 15-4.5-4.5L9 18"/></svg>`;
+            const catName = (line.category_name || (line._browse && line._browse.category_name) || '').toString().toUpperCase();
             const el = document.createElement('div');
-            el.className = 'sale-cart-item';
+            el.className = 'sale-ois-card' + (qty > 0 ? ' is-active' : '');
+            const stockHtml = `<span class="sale-ois-card__stock ${inStock ? 'in' : 'out'}">${inStock ? ('In Stock' + (line.stock != null ? ': ' + line.stock : '')) : 'Out Stock'}</span>`;
             el.innerHTML = `
-                <div class="sale-cart-item__top">
-                    <div class="min-w-0">
-                        <div class="font-bold text-sm leading-snug break-words">${escapeHtml(line.name)}</div>
-                        <div class="text-xs text-slate-500 mt-0.5">${money(line.unit_price)} each</div>
-                    </div>
-                    <button type="button" data-rm="${idx}" class="sale-cart-item__rm" aria-label="Remove">×</button>
+                <div class="sale-ois-card__head">
+                    <div class="sale-ois-card__name">${highlightName(line.name)}</div>
+                    <span class="sale-ois-card__chev">›</span>
                 </div>
-                <div class="sale-cart-item__qty">
-                    <button type="button" data-dec="${idx}" class="sale-qty-btn"${Number(line.quantity) <= 1 ? ' disabled' : ''}>−</button>
-                    <input type="text" inputmode="${line.allow_decimal ? 'decimal' : 'numeric'}" pattern="${line.allow_decimal ? '[0-9]*[.,]?[0-9]*' : '[0-9]*'}" value="${formatQty(line)}" data-qty="${idx}" class="sale-qty-input" autocomplete="off">
-                    <button type="button" data-inc="${idx}" class="sale-qty-btn">+</button>
-                    <span class="ml-auto font-extrabold tabular-nums text-sm text-sale">${money(lineTot)}</span>
-                </div>`;
+                <div class="sale-ois-card__photo">${thumb}${stockHtml}</div>
+                <div class="sale-ois-card__body">
+                    <div class="sale-ois-card__left">
+                        <div class="sale-ois-card__price">Price: $ ${Number(unitPrice).toFixed(2)}</div>
+                        <div class="sale-ois-card__total">Total: ${money(lineTot)}</div>
+                        <div class="sale-ois-card__unit">Unit Price: ${money(perPc)}</div>
+                        <div class="sale-ois-card__meta">Last price: $0.00 ea x 0</div>
+                        ${line.sku ? `<div class="sale-ois-card__meta"><span class="sale-ois-card__code">Code:</span> ${escapeHtml(line.sku)}</div>` : ''}
+                    </div>
+                    <div class="sale-ois-card__right">
+                        <div class="sale-ois-qty">
+                            <button type="button" class="is-minus" ${cartIdx >= 0 ? 'data-dec="'+cartIdx+'"' : 'disabled'}>−</button>
+                            <input type="text" value="${qty}" ${cartIdx >= 0 ? 'data-qty="'+cartIdx+'"' : ''} class="sale-qty-input" autocomplete="off">
+                            <button type="button" class="is-plus" ${cartIdx >= 0 ? 'data-inc="'+cartIdx+'"' : 'data-add-b="'+idx+'"'}>+</button>
+                        </div>
+                        ${stockHtml}
+                        <div class="sale-ois-card__meta">Min Qty: 0</div>
+                        ${catName ? `<div class="sale-ois-card__cat">${escapeHtml(catName)}</div>` : ''}
+                    </div>
+                </div>
+                ${packRow}`;
             cartLines.appendChild(el);
         });
         cartTotal.textContent = money(total);
         shipTotal.textContent = money(total);
+        const checkoutBtn = document.getElementById('goShippingBtn');
+        if (checkoutBtn) checkoutBtn.classList.toggle('is-off', total <= 0);
+        syncScanUi();
+        applyProductView(window.__saleProductView || 'item', false);
 
-        cartLines.querySelectorAll('[data-rm]').forEach(b => b.onclick = () => { cart.splice(+b.dataset.rm, 1); renderCart(); });
+        cartLines.querySelectorAll('[data-add-b]').forEach(b => b.onclick = () => addToCart(browseRows[+b.dataset.addB]));
         cartLines.querySelectorAll('[data-inc]').forEach(b => b.onclick = () => changeQty(+b.dataset.inc, 1));
         cartLines.querySelectorAll('[data-dec]').forEach(b => b.onclick = () => changeQty(+b.dataset.dec, -1));
         cartLines.querySelectorAll('[data-qty]').forEach(inp => {
@@ -543,6 +1128,18 @@
             });
             inp.addEventListener('blur', () => setQtyFromInput(+inp.dataset.qty, inp.value));
         });
+        cartLines.querySelectorAll('input[data-unit]').forEach(inp => {
+            inp.addEventListener('change', () => setCartUnit(+inp.dataset.unit, inp.value));
+        });
+        cartLines.querySelectorAll('input[data-browse-unit]').forEach(inp => {
+            inp.addEventListener('change', () => {
+                const r = browseRows[+inp.dataset.browseUnit];
+                if (!r) return;
+                r.sub_unit_id = inp.value;
+                renderCart();
+            });
+        });
+        if (!skipPersist) persistCart();
     }
 
     async function fetchJson(url) {
@@ -553,50 +1150,22 @@
 
     if (customerSearch && customerResults && stepCustomer && !contactId.value) {
         loadCustomers('', customerResults, (r) => {
-            setCustomer(r.id, r.text, r.shipping_address || r.address || '', true);
+            setCustomer(r.id, r.text, r.shipping_address || r.address || '', true, r.credit_limit, r);
         });
     }
 
+    if (productSearch) {
     productSearch.addEventListener('input', () => {
         clearTimeout(prodTimer);
-        prodTimer = setTimeout(async () => {
-            const q = productSearch.value.trim();
-            if (q.length < 1) { productResults.classList.add('hidden'); productResults.innerHTML = ''; return; }
-            const rows = await fetchJson(@json(route('sale.api.products')) + '?q=' + encodeURIComponent(q) + '&location_id=' + encodeURIComponent(locationId.value));
-            productResults.innerHTML = '';
-            if (!rows.length) {
-                productResults.innerHTML = '<div class="px-3 py-3 text-sm text-slate-400">No products</div>';
-                productResults.classList.remove('hidden');
-                return;
+        prodTimer = setTimeout(() => {
+            if (productResults) {
+                productResults.classList.add('hidden');
+                productResults.innerHTML = '';
             }
-            // Scan mode: exact SKU match adds immediately when only one hit
-            if (skuMode === 'scan' && rows.length === 1) {
-                const exact = rows[0];
-                const sku = String(exact.sku || '').toLowerCase();
-                if (sku && sku === q.toLowerCase()) {
-                    addToCart(exact);
-                    productSearch.value = '';
-                    productResults.classList.add('hidden');
-                    productResults.innerHTML = '';
-                    return;
-                }
-            }
-            rows.forEach(r => {
-                const a = document.createElement('button');
-                a.type = 'button';
-                a.className = 'product-pick w-full text-left px-3 py-2.5 text-sm border-b border-slate-100';
-                a.innerHTML = `<div class="font-semibold">${r.name}</div><div class="text-xs text-slate-500">${money(r.price)} · Stock ${r.stock}</div>`;
-                a.onclick = () => {
-                    addToCart(r);
-                    productSearch.value = '';
-                    productResults.classList.add('hidden');
-                    productResults.innerHTML = '';
-                };
-                productResults.appendChild(a);
-            });
-            productResults.classList.remove('hidden');
+            loadBrowse(productSearch.value.trim());
         }, 250);
     });
+    }
 
     productSearch.addEventListener('keydown', async (e) => {
         if (e.key !== 'Enter') return;
@@ -622,7 +1191,7 @@
             const a = document.createElement('button');
             a.type = 'button';
             a.className = 'product-pick w-full text-left px-3 py-2.5 text-sm border-b border-slate-100';
-            a.innerHTML = `<div class="font-semibold">${r.name}</div><div class="text-xs text-slate-500">${money(r.price)} · Stock ${r.stock}</div>`;
+            a.innerHTML = `<div class="font-semibold">${escapeHtml(r.name)}</div><div class="text-xs text-slate-500">${priceLine(r)} · Stock ${r.stock}</div>`;
             a.onclick = () => {
                 addToCart(r);
                 productSearch.value = '';
@@ -634,37 +1203,185 @@
         productResults.classList.remove('hidden');
     });
 
-    document.getElementById('goShippingBtn').addEventListener('click', () => {
+    function isCreditSale() {
+        return paymentTypeInput && paymentTypeInput.value === 'due';
+    }
+    function syncCreditBadges() {
+        const on = isCreditSale();
+        document.querySelectorAll('#creditOnBadge, #coCreditOnBadge').forEach((el) => { el.hidden = !on; });
+        const terms = document.getElementById('coTerms');
+        if (terms) terms.textContent = on ? 'Credit' : 'Cash';
+    }
+    function setCreditSale(on) {
+        if (!paymentTypeInput) return;
+        paymentTypeInput.value = on ? 'due' : 'cash';
+        syncCreditBadges();
+    }
+    function toggleCreditSale() {
+        setCreditSale(!isCreditSale());
+    }
+    function fmtQty(n) {
+        const x = Number(n);
+        if (!isFinite(x)) return '0';
+        return Math.abs(x - Math.round(x)) < 0.0001 ? String(Math.round(x)) : String(Math.round(x * 1000) / 1000);
+    }
+    function lineUnitName(l) {
+        return (l.unit_name || 'Pc').toString();
+    }
+    function linePcs(l) {
+        return Number(l.quantity) * (Number(l.multiplier) || 1);
+    }
+    function unitMixText(lines) {
+        const parts = lines.map((l) => fmtQty(l.quantity) + ' ' + lineUnitName(l));
+        const pcs = lines.reduce((s, l) => s + linePcs(l), 0);
+        const hasPack = lines.some((l) => (Number(l.multiplier) || 1) > 1);
+        let t = parts.join(' + ');
+        if (hasPack) t += '  =  ' + fmtQty(pcs) + ' Pc';
+        return t;
+    }
+
+    async function fillCheckoutSummary() {
+        const total = cartSum();
+        const setTxt = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+        setTxt('coName', lastCustomer.display || lastCustomer.text || '');
+        setTxt('coAcct', lastCustomer.acct ? ('Acct #: ' + lastCustomer.acct) : '');
+        setTxt('coAddr', lastCustomer.address || lastCustomer.shipAddr || '');
+        const lim = lastCustomer.credit;
+        setTxt('coLimit', (lim === null || typeof lim === 'undefined' || lim === '') ? '$0.00' : money(lim));
+        setTxt('coTotal', money(total));
+        setTxt('coTerms', isCreditSale() ? 'Credit' : 'Cash');
+        const lines = document.getElementById('coLines');
+        if (lines) {
+            const groups = [];
+            const idx = {};
+            cart.filter((l) => Number(l.quantity) > 0).forEach((l) => {
+                const key = String(l.variation_id || l.product_id || l.name);
+                if (typeof idx[key] === 'undefined') {
+                    idx[key] = groups.length;
+                    groups.push({ name: l.name, rows: [], total: 0 });
+                }
+                const g = groups[idx[key]];
+                g.rows.push(l);
+                g.total += Number(l.quantity) * Number(l.unit_price);
+            });
+            lines.innerHTML = groups.map((g) => `
+                <div class="sale-checkout__line">
+                    <div>${escapeHtml(g.name)}<span>${escapeHtml(unitMixText(g.rows))}</span></div>
+                    <strong>${money(g.total)}</strong>
+                </div>`).join('');
+        }
+        setTxt('coLast', '$0.00');
+        setTxt('coOpen', '$0.00');
+        if (contactId.value) {
+            try {
+                const rows = await fetchJson(@json(route('sale.api.last_purchases')) + '?contact_id=' + encodeURIComponent(contactId.value) + '&location_id=' + encodeURIComponent(locationId.value || ''));
+                const lastTot = (rows || []).reduce((s, r) => s + (Number(r.quantity || 0) * Number(r.price || r.unit_price || 0)), 0);
+                setTxt('coLast', money(lastTot));
+            } catch (e) {}
+        }
+    }
+    async function showCheckoutStep() {
         if (!contactId.value) { alert('Select a customer'); return; }
-        if (!cart.length) { alert('Add at least one product'); return; }
+        const hasQty = cart.some((l) => Number(l.quantity) > 0);
+        if (!hasQty) { alert('Add at least one product'); return; }
         applyFulfillment();
-        if (savedShipAddr && !shippingAddress.value.trim()) {
+        if (savedShipAddr && shippingAddress && !shippingAddress.value.trim()) {
             shippingAddress.value = savedShipAddr;
         }
-        if (!shippingAddress.value.trim()) {
-            shippingAddress.value = lastCustomer.text || 'Customer address';
+        if (shippingAddress && !shippingAddress.value.trim()) {
+            shippingAddress.value = lastCustomer.address || lastCustomer.text || 'Customer address';
         }
-        shipTotal.textContent = money(cartSum());
+        if (shippingDetails && !shippingDetails.value.trim()) {
+            shippingDetails.value = 'Delivery';
+        }
         if (stepCustomer) stepCustomer.hidden = true;
         stepCart.hidden = true;
-        stepShipping.hidden = false;
-        document.body.classList.remove('sale-picking-customer');
-        document.body.classList.remove('sale-building-order');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        if (stepShipping) stepShipping.hidden = true;
+        if (stepCheckout) stepCheckout.hidden = false;
+        document.body.classList.remove('sale-picking-customer', 'sale-building-order');
+        document.body.classList.add('sale-checking-out');
+        await fillCheckoutSummary();
+        syncCreditBadges();
+    }
+
+    document.getElementById('goShippingBtn').addEventListener('click', () => {
+        showCheckoutStep();
     });
 
-    document.getElementById('backToCartBtn').addEventListener('click', () => {
-        stepShipping.hidden = true;
-        stepCart.hidden = false;
-        if (stepCustomer) stepCustomer.hidden = true;
-        document.body.classList.remove('sale-picking-customer');
-        document.body.classList.add('sale-building-order');
+    document.getElementById('backToCartBtn')?.addEventListener('click', () => {
+        showCartStep();
+    });
+    document.getElementById('backFromCheckoutBtn')?.addEventListener('click', checkoutClosePrompt);
+    document.getElementById('placeOrderBtn')?.addEventListener('click', () => {
+        if (shippingAddress && !shippingAddress.value.trim()) {
+            shippingAddress.value = lastCustomer.address || lastCustomer.shipAddr || lastCustomer.text || 'Customer address';
+        }
+        if (shippingDetails && !shippingDetails.value.trim()) {
+            shippingDetails.value = 'Delivery';
+        }
+        form.requestSubmit();
     });
 
     const backToCustomerBtn = document.getElementById('backToCustomerBtn');
     if (backToCustomerBtn) {
-        backToCustomerBtn.addEventListener('click', () => showCustomerStep());
+        backToCustomerBtn.addEventListener('click', () => confirmLeave(() => showCustomerStep()));
     }
+    document.getElementById('saleAttnNo')?.addEventListener('click', () => {
+        const go = pendingLeave;
+        const goNo = pendingLeaveNo;
+        const leave = attnLeaveOnNo;
+        hideAttn();
+        if (typeof goNo === 'function') goNo();
+        else if (leave && typeof go === 'function') go();
+    });
+    document.getElementById('saleAttnYes')?.addEventListener('click', async () => {
+        await saveDraftToServer();
+        allowLeave = true;
+        const go = pendingLeave;
+        hideAttn();
+        if (typeof go === 'function') go();
+    });
+    document.getElementById('saleAttnSheet')?.addEventListener('click', (e) => {
+        if (e.target === e.currentTarget) hideAttn();
+    });
+    document.getElementById('saleSyncBtn')?.addEventListener('click', (e) => {
+        if (allowLeave || !cartHasItems()) return;
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        confirmLeave(() => {
+            allowLeave = true;
+            if (typeof window.saleAppSync === 'function') window.saleAppSync();
+            else location.reload();
+        }, {
+            msg: 'Do you want to save this order?',
+            leaveOnNo: true,
+        });
+    }, true);
+    document.querySelectorAll('a.sale-tab, a.sale-side-link, header a[href]').forEach((a) => {
+        a.addEventListener('click', (e) => {
+            if (allowLeave || !cartHasItems()) return;
+            const href = a.getAttribute('href');
+            if (!href || href.startsWith('#') || href === location.href) return;
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            confirmLeave(() => { location.href = href; }, {
+                msg: 'Do you want to save this order?',
+                leaveOnNo: true,
+            });
+        }, true);
+    });
+    try { history.pushState({ saleOrderDraft: 1 }, ''); } catch (err) {}
+    window.addEventListener('popstate', (e) => {
+        if (allowLeave || !cartHasItems()) return;
+        history.pushState({ saleOrderDraft: 1 }, '');
+        confirmLeave(() => {
+            allowLeave = true;
+            history.go(-2);
+        }, {
+            msg: 'Do you want to save this order?',
+            leaveOnNo: true,
+        });
+    });
 
     // Fulfillment: Pickup / Delivery / Shipping → existing shipping_details + shipping_method
     const shippingMethodInput = document.getElementById('shipping_method');
@@ -765,16 +1482,7 @@
                 // Replace list with last order lines (system-wise fill)
                 cart.length = 0;
                 rows.forEach(r => {
-                    addToCart({
-                        product_id: r.product_id,
-                        variation_id: r.variation_id,
-                        name: r.name,
-                        price: r.price,
-                        quantity: r.quantity || 1,
-                        enable_stock: r.enable_stock,
-                        product_type: r.product_type,
-                        allow_decimal: r.allow_decimal,
-                    }, true, true);
+                    addToCart(r, true, true);
                 });
                 renderCart();
                 const scroll = document.getElementById('cartScroll');
@@ -878,7 +1586,7 @@
             b.type = 'button';
             b.className = 'sale-catalog__row sale-catalog__prod';
             const qty = cartQty(r.variation_id);
-            b.innerHTML = `<div class="min-w-0"><div class="font-bold text-sm truncate">${r.name}</div><div class="text-xs text-slate-500">${money(r.price)} · Stock ${r.stock}</div></div><span class="sale-catalog__add">${qty || '+'}</span>`;
+            b.innerHTML = `<div class="min-w-0"><div class="font-bold text-sm truncate">${escapeHtml(r.name)}</div><div class="text-xs text-slate-500">${priceLine(r)} · Stock ${r.stock}</div></div><span class="sale-catalog__add">${qty || '+'}</span>`;
             b.onclick = (e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -890,12 +1598,172 @@
         });
     }
 
-    document.getElementById('catalogOpenBtn').addEventListener('click', openCatalog);
-    document.getElementById('catalogCloseBtn').addEventListener('click', closeCatalog);
-    catalogBackBtn.addEventListener('click', () => {
+    document.getElementById('catalogCloseBtn')?.addEventListener('click', closeCatalog);
+    catalogBackBtn?.addEventListener('click', () => {
         if (catalogStack.length > 1) { catalogStack.pop(); renderCatalog(); }
     });
-    catalogModal.addEventListener('click', (e) => { if (e.target === catalogModal) closeCatalog(); });
+    catalogModal?.addEventListener('click', (e) => { if (e.target === catalogModal) closeCatalog(); });
+
+    const orderViewSheet = document.getElementById('orderViewSheet');
+    function hideOrderView() { if (orderViewSheet) orderViewSheet.hidden = true; }
+    document.getElementById('orderViewBtn')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (orderViewSheet) orderViewSheet.hidden = false;
+    });
+    document.getElementById('orderViewClose')?.addEventListener('click', hideOrderView);
+    document.getElementById('orderViewCancel')?.addEventListener('click', hideOrderView);
+    orderViewSheet?.addEventListener('click', (e) => {
+        const opt = e.target.closest('.sale-view-opt');
+        if (opt) {
+            e.preventDefault();
+            e.stopPropagation();
+            applyProductView(opt.getAttribute('data-view'), true);
+            return;
+        }
+        if (e.target === orderViewSheet) hideOrderView();
+    });
+    try {
+        applyProductView(localStorage.getItem('saleProductView') || 'item', false);
+    } catch (e) {
+        applyProductView('item', false);
+    }
+
+    document.getElementById('orderSortSheet')?.addEventListener('click', function (e) {
+        const opt = e.target.closest('[data-sort]');
+        if (!opt) {
+            if (e.target === e.currentTarget) saleCloseSheet('orderSortSheet');
+            return;
+        }
+        productSort = opt.getAttribute('data-sort') || 'name_asc';
+        document.querySelectorAll('#orderSortSheet [data-sort]').forEach(function (btn) {
+            btn.classList.toggle('is-on', btn.getAttribute('data-sort') === productSort);
+        });
+        saleCloseSheet('orderSortSheet');
+        renderCart();
+    });
+
+    const filterCat = document.getElementById('orderFilterCat');
+    const filterSub = document.getElementById('orderFilterSub');
+    function fillOrderSubs() {
+        if (!filterSub || !filterCat) return;
+        const id = filterCat.value;
+        filterSub.innerHTML = '<option value="">All</option>';
+        const found = orderCategories.find(function (c) { return String(c.id) === String(id); });
+        const subs = found ? (found.sub_categories || []) : [];
+        filterSub.disabled = !subs.length;
+        subs.forEach(function (s) {
+            const o = document.createElement('option');
+            o.value = s.id;
+            o.textContent = s.name;
+            filterSub.appendChild(o);
+        });
+        filterSub.value = '';
+    }
+    fetch(@json(route('sale.api.categories')), { headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' } })
+        .then(function (r) { return r.json(); })
+        .then(function (rows) {
+            orderCategories = Array.isArray(rows) ? rows : [];
+            if (!filterCat) return;
+            orderCategories.forEach(function (c) {
+                const o = document.createElement('option');
+                o.value = c.id;
+                o.textContent = c.name;
+                filterCat.appendChild(o);
+            });
+        })
+        .catch(function () {});
+    filterCat?.addEventListener('change', fillOrderSubs);
+    document.getElementById('orderFilterApply')?.addEventListener('click', function () {
+        orderCatId = filterCat ? filterCat.value : '';
+        orderSubId = filterSub ? filterSub.value : '';
+        saleCloseSheet('orderFilterSheet');
+        loadBrowse(productSearch ? productSearch.value.trim() : '');
+    });
+    document.getElementById('orderFilterReset')?.addEventListener('click', function () {
+        orderCatId = '';
+        orderSubId = '';
+        if (filterCat) filterCat.value = '';
+        fillOrderSubs();
+        saleCloseSheet('orderFilterSheet');
+        loadBrowse(productSearch ? productSearch.value.trim() : '');
+    });
+
+    const orderMoreSheet = document.getElementById('orderMoreSheet');
+    function hideOrderMore() { if (orderMoreSheet) orderMoreSheet.hidden = true; }
+    function showOrderMore(e) {
+        if (e) { e.preventDefault(); e.stopPropagation(); }
+        syncCreditBadges();
+        if (orderMoreSheet) orderMoreSheet.hidden = false;
+    }
+    document.getElementById('orderMoreBtn')?.addEventListener('click', showOrderMore);
+    document.getElementById('orderMoreClose')?.addEventListener('click', hideOrderMore);
+    document.getElementById('orderMoreCancel')?.addEventListener('click', hideOrderMore);
+    orderMoreSheet?.addEventListener('click', (e) => { if (e.target === orderMoreSheet) hideOrderMore(); });
+    document.getElementById('orderMoreScan')?.addEventListener('click', () => {
+        hideOrderMore();
+        startSaleScan();
+    });
+    document.getElementById('orderMoreCredit')?.addEventListener('click', () => {
+        toggleCreditSale();
+    });
+    document.getElementById('orderCreditAccept')?.addEventListener('click', () => {
+        hideCreditWarning();
+        const fn = creditAfterAccept;
+        creditAfterAccept = null;
+        if (typeof fn === 'function') fn();
+    });
+    document.getElementById('orderCreditSheet')?.addEventListener('click', (e) => {
+        if (e.target === e.currentTarget) {
+            hideCreditWarning();
+            creditAfterAccept = null;
+        }
+    });
+    document.getElementById('orderMoreDocs')?.addEventListener('click', () => {
+        hideOrderMore();
+        @if(!empty($edit_order))
+        window.open(@json(route('sale.orders.invoice', $edit_order->id)), '_blank');
+        @else
+        showCheckoutStep();
+        @endif
+    });
+
+    const checkoutMoreSheet = document.getElementById('checkoutMoreSheet');
+    function hideCheckoutMore() { if (checkoutMoreSheet) checkoutMoreSheet.hidden = true; }
+    document.getElementById('checkoutMoreBtn')?.addEventListener('click', () => {
+        syncCreditBadges();
+        const hist = document.getElementById('coHistory');
+        if (hist && contactId.value) hist.href = @json(route('sale.orders')) + '?contact_id=' + encodeURIComponent(contactId.value);
+        if (checkoutMoreSheet) checkoutMoreSheet.hidden = false;
+    });
+    document.getElementById('checkoutMoreClose')?.addEventListener('click', hideCheckoutMore);
+    document.getElementById('checkoutMoreCancel')?.addEventListener('click', hideCheckoutMore);
+    checkoutMoreSheet?.addEventListener('click', (e) => { if (e.target === checkoutMoreSheet) hideCheckoutMore(); });
+    document.getElementById('coNewCredit')?.addEventListener('click', () => {
+        toggleCreditSale();
+    });
+    document.getElementById('coShare')?.addEventListener('click', async () => {
+        hideCheckoutMore();
+        const text = (lastCustomer.display || lastCustomer.text || 'Order') + ' · ' + (document.getElementById('coTotal')?.textContent || '');
+        try {
+            if (navigator.share) await navigator.share({ title: 'Order', text });
+            else await navigator.clipboard.writeText(text);
+        } catch (e) {}
+    });
+    document.getElementById('coPrint')?.addEventListener('click', () => {
+        hideCheckoutMore();
+        window.print();
+    });
+    document.getElementById('coDocs')?.addEventListener('click', () => {
+        hideCheckoutMore();
+        @if(!empty($edit_order))
+        window.open(@json(route('sale.orders.invoice', $edit_order->id)), '_blank');
+        @else
+        document.getElementById('sale_note')?.focus();
+        @endif
+    });
+
+    syncCreditBadges();
 
     form.addEventListener('submit', (e) => {
         if (!contactId.value) { e.preventDefault(); alert('Select a customer'); return; }
@@ -904,7 +1772,7 @@
         if (!shippingAddress.value.trim()) { e.preventDefault(); alert('Enter shipping address'); return; }
         productsJson.innerHTML = '';
         cart.forEach((line, i) => {
-            ['product_id', 'variation_id', 'quantity', 'unit_price', 'transaction_sell_lines_id'].forEach(k => {
+            ['product_id', 'variation_id', 'quantity', 'unit_price', 'sub_unit_id', 'transaction_sell_lines_id'].forEach(k => {
                 if (k === 'transaction_sell_lines_id' && !line[k]) return;
                 const inp = document.createElement('input');
                 inp.type = 'hidden';
@@ -913,22 +1781,32 @@
                 productsJson.appendChild(inp);
             });
         });
+        allowLeave = true;
+        clearDraftStorage();
+        clearDraftServer();
     });
 
     (async function prefillFromQuery() {
         const editLines = @json($edit_lines ?? []);
         if (editLines.length) {
             editLines.forEach(r => addToCart(r, true));
+            skipPersist = false;
+            await loadBrowse('');
             return;
         }
+        restoreCart();
+        skipPersist = false;
         const params = new URLSearchParams(window.location.search);
         const vid = params.get('add');
-        if (!vid || !locationId.value) return;
+        if (!vid || !locationId.value) {
+            if (isEdit || (contactId && contactId.value)) await loadBrowse('');
+            else renderCart();
+            return;
+        }
         const rows = await fetchJson(@json(route('sale.api.products')) + '?location_id=' + encodeURIComponent(locationId.value) + '&variation_id=' + encodeURIComponent(vid));
         if (rows[0]) addToCart(rows[0]);
+        await loadBrowse('');
     })();
-
-    renderCart();
 })();
 </script>
 @endpush

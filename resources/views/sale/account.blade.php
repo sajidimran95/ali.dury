@@ -1,6 +1,6 @@
 @extends('sale.layout')
-@section('title', 'Account')
-@section('header', 'Account')
+@section('title', 'Settings')
+@section('header', 'Settings')
 @section('content')
 @php
     $displayName = trim(($user->first_name ?? '').' '.($user->last_name ?? ''));
@@ -20,7 +20,7 @@
 
 <div class="sale-card mb-3">
     <div class="flex items-center gap-4 py-1">
-        <div class="h-16 w-16 rounded-2xl bg-sale text-white flex items-center justify-center font-bold text-2xl shrink-0 shadow-md shadow-teal-900/10">
+        <div class="h-16 w-16 rounded-2xl bg-sale text-white flex items-center justify-center font-bold text-2xl shrink-0 shadow-md shadow-red-900/10">
             {{ strtoupper(mb_substr($displayName, 0, 1)) }}
         </div>
         <div class="min-w-0">

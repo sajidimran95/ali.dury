@@ -27,9 +27,7 @@ class AttendanceController extends Controller
      */
     public function status()
     {
-        if (! auth()->user()->can('attendance.clock')) {
-            abort(403, 'Unauthorized action.');
-        }
+        $this->assertCanClock();
 
         return response()->json($this->statusPayload(auth()->user()->id));
     }
@@ -39,9 +37,7 @@ class AttendanceController extends Controller
      */
     public function clockIn(Request $request)
     {
-        if (! auth()->user()->can('attendance.clock')) {
-            abort(403, 'Unauthorized action.');
-        }
+        $this->assertCanClock();
 
         try {
             $business_id = $request->session()->get('user.business_id');
@@ -100,9 +96,7 @@ class AttendanceController extends Controller
      */
     public function startBreak(Request $request)
     {
-        if (! auth()->user()->can('attendance.clock')) {
-            abort(403, 'Unauthorized action.');
-        }
+        $this->assertCanClock();
 
         try {
             $business_id = $request->session()->get('user.business_id');
@@ -155,9 +149,7 @@ class AttendanceController extends Controller
      */
     public function endBreak(Request $request)
     {
-        if (! auth()->user()->can('attendance.clock')) {
-            abort(403, 'Unauthorized action.');
-        }
+        $this->assertCanClock();
 
         try {
             $business_id = $request->session()->get('user.business_id');
@@ -214,9 +206,7 @@ class AttendanceController extends Controller
      */
     public function clockOut(Request $request)
     {
-        if (! auth()->user()->can('attendance.clock')) {
-            abort(403, 'Unauthorized action.');
-        }
+        $this->assertCanClock();
 
         try {
             $business_id = $request->session()->get('user.business_id');
@@ -1019,5 +1009,21 @@ class AttendanceController extends Controller
                 'reason' => $row['reason'] ?? null,
             ]);
         }
+    }
+
+    /**
+     * POS Time Clock permission, or Sale App (same EmployeeAttendance records).
+     */
+    protected function assertCanClock(): void
+    {
+        $user = auth()->user();
+        if (! $user) {
+            abort(403, 'Unauthorized action.');
+        }
+        if ($user->can('attendance.clock') || auth()->getDefaultDriver() === 'sale') {
+            return;
+        }
+
+        abort(403, 'Unauthorized action.');
     }
 }

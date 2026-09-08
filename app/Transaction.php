@@ -102,6 +102,16 @@ class Transaction extends Model
         return $this->belongsTo(\App\Transaction::class, 'return_parent_id');
     }
 
+    public function transfer_child()
+    {
+        return $this->hasOne(\App\Transaction::class, 'transfer_parent_id', 'id');
+    }
+
+    public function transfer_parent()
+    {
+        return $this->belongsTo(\App\Transaction::class, 'transfer_parent_id');
+    }
+
     public function table()
     {
         return $this->belongsTo(\App\Restaurant\ResTable::class, 'res_table_id');

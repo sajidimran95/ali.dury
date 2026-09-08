@@ -5,9 +5,12 @@ namespace App\Http\Controllers\Sale;
 use App\BusinessLocation;
 use App\Category;
 use App\Contact;
+use App\CustomerGroup;
+use App\EmployeeAttendance;
 use App\Http\Controllers\Controller;
 use App\Product;
 use App\Transaction;
+use App\Unit;
 use App\Utils\BusinessUtil;
 use App\Utils\ContactUtil;
 use App\Utils\ProductUtil;
@@ -16,6 +19,8 @@ use App\Utils\TransactionUtil;
 use App\Variation;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -32,6 +37,8 @@ class SalePortalController extends Controller
     protected $contactUtil;
 
     protected $businessUtil;
+
+    protected $saleAppUnitsCache = [];
 
     public function __construct(
         TransactionUtil $transactionUtil,
@@ -94,13 +101,18 @@ class SalePortalController extends Controller
         $convertedIds = array_keys($invoiceMap);
         $invoiceTotals = $this->saleAppInvoiceTotals($invoiceMap);
 
-        $todayRows = (clone $base)->where('transaction_date', '>=', $todayStart)->get(['id', 'final_total']);
-        $monthRows = (clone $base)->where('transaction_date', '>=', $monthStart)->get(['id', 'final_total']);
+        $todayRows = (clone $base)->where('transaction_date', '>=', $todayStart)->get(['id', 'final_total', 'prefer_payment_method']);
+        $monthRows = (clone $base)->where('transaction_date', '>=', $monthStart)->get(['id', 'final_total', 'prefer_payment_method']);
+        $todayCreditRows = $todayRows->filter(fn ($o) => $this->saleAppIsCreditOrder($o));
+        $todayCashRows = $todayRows->reject(fn ($o) => $this->saleAppIsCreditOrder($o));
 
         $stats = [
             'total_orders' => (clone $base)->count(),
             'today_orders' => $todayRows->count(),
             'today_total' => $this->saleAppSumDisplayTotals($todayRows, $invoiceMap, $invoiceTotals),
+            'today_cash_total' => $this->saleAppSumDisplayTotals($todayCashRows, $invoiceMap, $invoiceTotals),
+            'today_credit_total' => $this->saleAppSumDisplayTotals($todayCreditRows, $invoiceMap, $invoiceTotals),
+            'today_credit_orders' => $todayCreditRows->count(),
             'month_orders' => $monthRows->count(),
             'month_total' => $this->saleAppSumDisplayTotals($monthRows, $invoiceMap, $invoiceTotals),
             'paid_orders' => (clone $base)->where('status', 'completed')
@@ -134,10 +146,18 @@ class SalePortalController extends Controller
             ->orderByDesc('id')
             ->limit(6)
             ->get()
-            ->map(function ($p) {
+            ->map(function ($p) use ($current_location_id) {
                 $v = $p->variations->first();
                 $price = $v ? (float) ($v->sell_price_inc_tax ?: $v->default_sell_price ?: 0) : 0;
                 $img = $this->saleProductImage($p->image);
+                $inStock = (int) $p->enable_stock !== 1;
+                if (! $inStock && $v && $current_location_id) {
+                    $qty = DB::table('variation_location_details')
+                        ->where('variation_id', $v->id)
+                        ->where('location_id', $current_location_id)
+                        ->value('qty_available');
+                    $inStock = (float) $qty > 0;
+                }
 
                 return [
                     'id' => $p->id,
@@ -147,39 +167,77 @@ class SalePortalController extends Controller
                     'price' => $price,
                     'image' => $img['url'],
                     'has_image' => $img['has_image'],
+                    'in_stock' => $inStock,
                 ];
             });
 
-        // Top products by qty sold by this rep
-        $topProducts = DB::table('transaction_sell_lines as tsl')
-            ->join('transactions as t', 't.id', '=', 'tsl.transaction_id')
-            ->join('products as p', 'p.id', '=', 'tsl.product_id')
-            ->leftJoin('variations as v', 'v.id', '=', 'tsl.variation_id')
-            ->where('t.business_id', $business_id)
-            ->where('t.type', 'sell')
-            ->where('t.status', 'final')
-            ->where('t.created_by', $user_id)
-            ->whereNull('tsl.parent_sell_line_id')
-            ->select(
-                'p.id as product_id',
-                'p.name',
-                'p.sku',
-                'p.image',
-                DB::raw('MAX(tsl.variation_id) as variation_id'),
-                DB::raw('SUM(tsl.quantity) as qty_sold'),
-                DB::raw('MAX(COALESCE(v.sell_price_inc_tax, v.default_sell_price, tsl.unit_price_inc_tax, 0)) as price')
-            )
-            ->groupBy('p.id', 'p.name', 'p.sku', 'p.image')
-            ->orderByDesc('qty_sold')
-            ->limit(6)
-            ->get()
-            ->map(function ($row) {
-                $img = $this->saleProductImage($row->image);
-                $row->image_url = $img['url'];
-                $row->has_image = $img['has_image'];
+        // Top sellers = products with the highest sold qty (final invoices + this rep's sales orders)
+        $topSelect = function ($types) use ($business_id, $user_id) {
+            $q = DB::table('transaction_sell_lines as tsl')
+                ->join('transactions as t', 't.id', '=', 'tsl.transaction_id')
+                ->join('products as p', 'p.id', '=', 'tsl.product_id')
+                ->leftJoin('variations as v', 'v.id', '=', 'tsl.variation_id')
+                ->where('t.business_id', $business_id)
+                ->whereNull('tsl.parent_sell_line_id')
+                ->where('p.is_inactive', 0)
+                ->where(function ($w) {
+                    $w->whereNull('p.not_for_selling')->orWhere('p.not_for_selling', 0);
+                })
+                ->where(function ($w) use ($types, $user_id) {
+                    if (in_array('sell', $types, true)) {
+                        $w->orWhere(function ($inner) {
+                            $inner->where('t.type', 'sell')->where('t.status', 'final');
+                        });
+                    }
+                    if (in_array('sales_order', $types, true)) {
+                        $w->orWhere(function ($inner) use ($user_id) {
+                            $inner->where('t.type', 'sales_order')
+                                ->where('t.created_by', $user_id)
+                                ->where('t.status', '!=', 'cancelled');
+                        });
+                    }
+                })
+                ->select(
+                    'p.id as product_id',
+                    'p.name',
+                    'p.sku',
+                    'p.image',
+                    'p.enable_stock',
+                    DB::raw('SUBSTRING_INDEX(GROUP_CONCAT(tsl.variation_id ORDER BY tsl.quantity DESC), ",", 1) as variation_id'),
+                    DB::raw('SUM(tsl.quantity) as qty_sold'),
+                    DB::raw('SUM(tsl.quantity * COALESCE(tsl.unit_price_inc_tax, 0)) as sales_amount'),
+                    DB::raw('MAX(COALESCE(v.sell_price_inc_tax, v.default_sell_price, tsl.unit_price_inc_tax, 0)) as price')
+                )
+                ->groupBy('p.id', 'p.name', 'p.sku', 'p.image', 'p.enable_stock')
+                ->orderByDesc('qty_sold')
+                ->limit(8);
 
-                return $row;
-            });
+            return $q->get();
+        };
+
+        $topProducts = $topSelect(['sell', 'sales_order']);
+        if ($topProducts->isEmpty()) {
+            $topProducts = $topSelect(['sell']);
+        }
+
+        $topProducts = $topProducts->map(function ($row) use ($current_location_id) {
+            $img = $this->saleProductImage($row->image);
+            $row->image_url = $img['url'];
+            $row->has_image = $img['has_image'];
+            $inStock = (int) ($row->enable_stock ?? 0) !== 1;
+            if (! $inStock && $row->variation_id && $current_location_id) {
+                $qty = DB::table('variation_location_details')
+                    ->where('variation_id', $row->variation_id)
+                    ->where('location_id', $current_location_id)
+                    ->value('qty_available');
+                $inStock = (float) $qty > 0;
+            }
+            $row->in_stock = $inStock;
+
+            return $row;
+        });
+
+        $userName = auth()->user()->first_name ?? auth()->user()->username ?? 'Sales Rep';
 
         return view('sale.dashboard', compact(
             'stats',
@@ -187,6 +245,7 @@ class SalePortalController extends Controller
             'locations',
             'current_location_id',
             'current_location_name',
+            'userName',
             'location',
             'role_name',
             'newProducts',
@@ -200,12 +259,270 @@ class SalePortalController extends Controller
         $user_id = auth()->id();
         $q = trim((string) $request->get('q', ''));
         $status = (string) $request->get('status', '');
+        $section = (string) $request->get('section', '');
+        if (! in_array($section, ['orders', 'invoices', 'payments', 'visits', 'day', 'quotes', 'credit'], true)) {
+            $section = '';
+        }
+        $contactFilter = (int) $request->get('contact_id', 0);
 
         $invoiceMap = $this->saleAppInvoiceMap((int) $business_id);
         $convertedIds = array_keys($invoiceMap);
 
-        // Sales orders + Estimates (quotations) created from this sale app
-        $orders = Transaction::where('business_id', $business_id)
+        $period = (string) $request->get('period', 'monthly');
+        if (! in_array($period, ['daily', 'weekly', 'monthly'], true)) {
+            $period = 'monthly';
+        }
+        $monthKey = (string) $request->get('month', now()->format('Y-m'));
+        if (! preg_match('/^\d{4}-\d{2}$/', $monthKey)) {
+            $monthKey = now()->format('Y-m');
+        }
+        $dayKey = (string) $request->get('day', now()->format('Y-m-d'));
+        if (! preg_match('/^\d{4}-\d{2}-\d{2}$/', $dayKey)) {
+            $dayKey = now()->format('Y-m-d');
+        }
+        $periodStart = now()->startOfMonth();
+        $periodEnd = now()->endOfMonth();
+        if ($period === 'daily' || $section === 'day') {
+            try {
+                $periodStart = Carbon::createFromFormat('Y-m-d', $dayKey)->startOfDay();
+                $periodEnd = (clone $periodStart)->endOfDay();
+            } catch (\Throwable $e) {
+                $periodStart = now()->startOfDay();
+                $periodEnd = now()->endOfDay();
+                $dayKey = now()->format('Y-m-d');
+            }
+            $period = $section === 'day' ? 'daily' : $period;
+        } elseif ($period === 'weekly') {
+            try {
+                $anchor = Carbon::createFromFormat('Y-m-d', $dayKey);
+            } catch (\Throwable $e) {
+                $anchor = now();
+            }
+            $periodStart = $anchor->copy()->startOfWeek();
+            $periodEnd = $anchor->copy()->endOfWeek();
+        } else {
+            try {
+                $periodStart = Carbon::createFromFormat('Y-m', $monthKey)->startOfMonth();
+                $periodEnd = (clone $periodStart)->endOfMonth();
+            } catch (\Throwable $e) {
+                $periodStart = now()->startOfMonth();
+                $periodEnd = now()->endOfMonth();
+                $monthKey = now()->format('Y-m');
+            }
+        }
+
+        $periodRows = Transaction::where('business_id', $business_id)
+            ->where('created_by', $user_id)
+            ->where('type', 'sales_order')
+            ->whereBetween('transaction_date', [$periodStart, $periodEnd])
+            ->get(['id', 'final_total', 'contact_id', 'prefer_payment_method', 'transaction_date']);
+
+        $invoiceTotals = $this->saleAppInvoiceTotals($invoiceMap);
+        $invoicedTotal = 0.0;
+        $periodConvertedIds = [];
+        foreach ($periodRows as $row) {
+            $stubs = $invoiceMap[(int) $row->id] ?? [];
+            if ($stubs !== []) {
+                $periodConvertedIds[] = (int) $row->id;
+            }
+            foreach ($stubs as $inv) {
+                $invoicedTotal += (float) ($invoiceTotals[(int) $inv->id] ?? 0);
+            }
+        }
+        $cashTotal = (float) $periodRows->filter(fn ($o) => ! $this->saleAppIsCreditOrder($o))->sum('final_total');
+        $orderTotal = (float) $periodRows->sum('final_total');
+        $visits = $periodRows->pluck('contact_id')->filter()->unique()->count();
+        $creditRows = $periodRows->filter(fn ($o) => $this->saleAppIsCreditOrder($o));
+        $cashRows = $periodRows->filter(fn ($o) => ! $this->saleAppIsCreditOrder($o));
+
+        $quoteRows = Transaction::where('business_id', $business_id)
+            ->where('created_by', $user_id)
+            ->where('type', 'sell')
+            ->where('is_quotation', 1)
+            ->where('source', 'sale_app')
+            ->whereBetween('transaction_date', [$periodStart, $periodEnd])
+            ->get(['id', 'final_total', 'contact_id']);
+
+        $tx = [
+            'quotes' => $quoteRows->count(),
+            'quotes_total' => (float) $quoteRows->sum('final_total'),
+            'orders' => $periodRows->count(),
+            'orders_total' => $orderTotal,
+            'invoices' => count($periodConvertedIds),
+            'invoices_total' => $invoicedTotal,
+            'credit' => $creditRows->count(),
+            'credit_total' => (float) $creditRows->sum('final_total'),
+            'payments' => $cashRows->count(),
+            'payments_total' => $cashTotal,
+        ];
+
+        if ($period === 'daily') {
+            $prevStart = $periodStart->copy()->subDay()->startOfDay();
+            $prevEnd = $periodStart->copy()->subDay()->endOfDay();
+        } elseif ($period === 'weekly') {
+            $prevStart = $periodStart->copy()->subWeek()->startOfWeek();
+            $prevEnd = $periodStart->copy()->subWeek()->endOfWeek();
+        } else {
+            $prevStart = $periodStart->copy()->subMonth()->startOfMonth();
+            $prevEnd = $periodStart->copy()->subMonth()->endOfMonth();
+        }
+
+        $prevGoals = $this->saleAppGoalTotals($business_id, $user_id, $prevStart, $prevEnd, $invoiceMap, $invoiceTotals);
+        $goalTarget = static function ($previous, $current, $defaultTarget = 1000) {
+            $previous = (float) $previous;
+            $current = (float) $current;
+            // If there's previous data, use it as target
+            if ($previous > 0) {
+                return $previous;
+            }
+            // If no previous data but has current, set target 20% higher
+            if ($current > 0) {
+                return $current * 1.2;
+            }
+            // Default target if no data at all
+            return $defaultTarget;
+        };
+
+        $goals = [
+            'orders_current' => $orderTotal,
+            'invoices_current' => $invoicedTotal,
+            'payments_current' => $cashTotal,
+            'visits_current' => $visits,
+            'orders_target' => $goalTarget($prevGoals['orders'], $orderTotal, 1000),
+            'invoices_target' => $goalTarget($prevGoals['invoices'], $invoicedTotal, 1000),
+            'payments_target' => $goalTarget($prevGoals['payments'], $cashTotal, 1000),
+            'visits_target' => (int) max(1, $goalTarget($prevGoals['visits'], $visits, 10)),
+        ];
+        $periodLabel = $period === 'daily'
+            ? $periodStart->format('M j, Y')
+            : ($period === 'weekly'
+                ? $periodStart->format('M j').' – '.$periodEnd->format('M j')
+                : $periodStart->format('M Y'));
+
+        $dayTimes = $periodRows->pluck('transaction_date')->filter()->sort()->values();
+        $dayReport = [
+            'date' => $periodStart->format('l, M j, Y'),
+            'start' => $dayTimes->isNotEmpty() ? Carbon::parse($dayTimes->first())->format('g:i A') : '—',
+            'end' => $dayTimes->isNotEmpty() ? Carbon::parse($dayTimes->last())->format('g:i A') : '—',
+            'orders' => $periodRows->count(),
+            'orders_total' => $orderTotal,
+            'cash' => $cashTotal,
+            'credit' => round($orderTotal - $cashTotal, 2),
+            'invoices' => count($periodConvertedIds),
+            'invoices_total' => $invoicedTotal,
+            'visits' => $visits,
+        ];
+
+        $visitCustomers = new LengthAwarePaginator([], 0, 20, 1, [
+            'path' => $request->url(),
+            'query' => $request->query(),
+        ]);
+
+        if ($section === 'visits') {
+            $visitIds = $periodRows->pluck('contact_id')->filter()->unique()->values()->all();
+            $grouped = $periodRows->groupBy('contact_id');
+            $visitCustomers = Contact::where('business_id', $business_id)
+                ->whereIn('id', $visitIds ?: [0])
+                ->orderBy('name')
+                ->paginate(20)
+                ->withQueryString();
+            $visitCustomers->getCollection()->transform(function ($c) use ($grouped) {
+                $rows = $grouped->get($c->id, collect());
+                $c->visit_orders = $rows->count();
+                $c->visit_total = (float) $rows->sum('final_total');
+
+                return $c;
+            });
+            $orders = new LengthAwarePaginator([], 0, 20, 1, [
+                'path' => $request->url(),
+                'query' => $request->query(),
+            ]);
+        } elseif (in_array($section, ['orders', 'invoices', 'payments', 'day', 'quotes', 'credit'], true) || $status !== '') {
+            $listStatus = $section === 'invoices' ? 'invoiced' : ($section === 'payments' ? 'payments' : ($section === 'quotes' ? 'estimate' : ($section === 'credit' ? 'credit' : ($section === 'orders' || $section === 'day' ? 'orders' : $status))));
+            $orders = Transaction::where('business_id', $business_id)
+                ->where('created_by', $user_id)
+                ->where(function ($query) {
+                    $query->where('type', 'sales_order')
+                        ->orWhere(function ($q) {
+                            $q->where('type', 'sell')
+                                ->where('is_quotation', 1)
+                                ->where('source', 'sale_app');
+                        });
+                })
+                ->with(['contact:id,name,mobile,supplier_business_name'])
+                ->when($section !== '', function ($query) use ($periodStart, $periodEnd) {
+                    $query->whereBetween('transaction_date', [$periodStart, $periodEnd]);
+                })
+                ->when($q !== '', function ($query) use ($q, $invoiceMap) {
+                    $term = '%'.$q.'%';
+                    $matchedSoIds = [];
+                    foreach ($invoiceMap as $soId => $invoices) {
+                        foreach ($invoices as $inv) {
+                            if (stripos((string) ($inv->invoice_no ?? ''), $q) !== false) {
+                                $matchedSoIds[] = (int) $soId;
+                                break;
+                            }
+                        }
+                    }
+                    $query->where(function ($inner) use ($term, $matchedSoIds) {
+                        $inner->where('invoice_no', 'like', $term)
+                            ->orWhereHas('contact', function ($c) use ($term) {
+                                $c->where('name', 'like', $term)
+                                    ->orWhere('mobile', 'like', $term)
+                                    ->orWhere('supplier_business_name', 'like', $term);
+                            });
+                        if ($matchedSoIds !== []) {
+                            $inner->orWhereIn('id', $matchedSoIds);
+                        }
+                    });
+                })
+                ->when($listStatus === 'orders', function ($query) {
+                    $query->where('type', 'sales_order');
+                })
+                ->when($listStatus === 'sale', function ($query) use ($convertedIds) {
+                    $query->where('type', 'sales_order');
+                    if ($convertedIds !== []) {
+                        $query->whereNotIn('id', $convertedIds);
+                    }
+                })
+                ->when($listStatus === 'estimate', function ($query) {
+                    $query->where('type', 'sell')->where('is_quotation', 1);
+                })
+                ->when($listStatus === 'invoiced', function ($query) use ($periodConvertedIds, $convertedIds, $section) {
+                    $ids = $section === 'invoices' ? $periodConvertedIds : $convertedIds;
+                    $query->where('type', 'sales_order');
+                    if ($ids === []) {
+                        $query->whereRaw('1 = 0');
+                    } else {
+                        $query->whereIn('id', $ids);
+                    }
+                })
+                ->when($listStatus === 'payments', function ($query) {
+                    $query->where('type', 'sales_order')
+                        ->where(function ($q) {
+                            $q->whereNull('prefer_payment_method')
+                                ->orWhere('prefer_payment_method', '!=', 'credit_sale');
+                        });
+                })
+                ->when($listStatus === 'credit', function ($query) {
+                    $query->where('type', 'sales_order')
+                        ->where('prefer_payment_method', 'credit_sale');
+                })
+                ->when($contactFilter > 0, function ($query) use ($contactFilter) {
+                    $query->where('contact_id', $contactFilter);
+                })
+                ->orderByDesc('id')
+                ->paginate(20)
+                ->withQueryString();
+            $this->applySaleAppOrderStatus($orders->getCollection(), $invoiceMap);
+        } else {
+            $orders = new LengthAwarePaginator([], 0, 20, 1, [
+                'path' => $request->url(),
+                'query' => $request->query(),
+            ]);
+        }
+
+        $reportBase = Transaction::where('business_id', $business_id)
             ->where('created_by', $user_id)
             ->where(function ($query) {
                 $query->where('type', 'sales_order')
@@ -214,61 +531,42 @@ class SalePortalController extends Controller
                             ->where('is_quotation', 1)
                             ->where('source', 'sale_app');
                     });
-            })
-            ->with(['contact:id,name,mobile,supplier_business_name'])
-            ->when($q !== '', function ($query) use ($q, $invoiceMap) {
-                $term = '%'.$q.'%';
-                $matchedSoIds = [];
-                foreach ($invoiceMap as $soId => $invoices) {
-                    foreach ($invoices as $inv) {
-                        if (stripos((string) ($inv->invoice_no ?? ''), $q) !== false) {
-                            $matchedSoIds[] = (int) $soId;
-                            break;
-                        }
-                    }
-                }
-                $query->where(function ($inner) use ($term, $matchedSoIds) {
-                    $inner->where('invoice_no', 'like', $term)
-                        ->orWhereHas('contact', function ($c) use ($term) {
-                            $c->where('name', 'like', $term)
-                                ->orWhere('mobile', 'like', $term)
-                                ->orWhere('supplier_business_name', 'like', $term);
-                        });
-                    if ($matchedSoIds !== []) {
-                        $inner->orWhereIn('id', $matchedSoIds);
-                    }
-                });
-            })
-            ->when($status === 'sale', function ($query) use ($convertedIds) {
-                $query->where('type', 'sales_order');
-                if ($convertedIds !== []) {
-                    $query->whereNotIn('id', $convertedIds);
-                }
-            })
-            ->when($status === 'estimate', function ($query) {
-                $query->where('type', 'sell')->where('is_quotation', 1);
-            })
-            ->when($status === 'invoiced', function ($query) use ($convertedIds) {
-                $query->where('type', 'sales_order');
-                if ($convertedIds === []) {
-                    $query->whereRaw('1 = 0');
-                } else {
-                    $query->whereIn('id', $convertedIds);
-                }
-            })
-            ->orderByDesc('id')
-            ->paginate(20)
-            ->withQueryString();
+            });
+        $creditBase = (clone $reportBase)->where('type', 'sales_order')->where('prefer_payment_method', 'credit_sale');
+        $cashBase = (clone $reportBase)->where('type', 'sales_order')->where(function ($q) {
+            $q->whereNull('prefer_payment_method')
+                ->orWhere('prefer_payment_method', '!=', 'credit_sale');
+        });
+        $reportStats = [
+            'orders' => (clone $reportBase)->where('type', 'sales_order')->count(),
+            'orders_total' => (float) (clone $reportBase)->where('type', 'sales_order')->sum('final_total'),
+            'quotes' => (clone $reportBase)->where('type', 'sell')->where('is_quotation', 1)->count(),
+            'quotes_total' => (float) (clone $reportBase)->where('type', 'sell')->where('is_quotation', 1)->sum('final_total'),
+            'invoiced' => count($convertedIds),
+            'credit' => (clone $creditBase)->count(),
+            'credit_total' => (float) (clone $creditBase)->sum('final_total'),
+            'cash' => (clone $cashBase)->count(),
+            'cash_total' => (float) (clone $cashBase)->sum('final_total'),
+        ];
 
-        $this->applySaleAppOrderStatus($orders->getCollection(), $invoiceMap);
+        $listTitle = $section === 'invoices' ? 'Invoices'
+            : ($section === 'payments' ? 'Payments'
+            : ($section === 'visits' ? 'Visits'
+            : ($section === 'quotes' ? 'Quotes'
+            : ($section === 'credit' ? 'Credit'
+            : ($section === 'day' ? 'Start / End of day' : 'Orders')))));
 
-        return view('sale.orders.index', compact('orders', 'q', 'status'));
+        return view($section !== '' ? 'sale.orders.list' : 'sale.orders.index', compact(
+            'orders', 'q', 'status', 'reportStats', 'contactFilter',
+            'period', 'monthKey', 'dayKey', 'goals', 'periodLabel', 'section', 'visitCustomers', 'dayReport', 'listTitle',
+            'tx'
+        ));
     }
 
     public function show(Request $request, $id)
     {
         $order = $this->findOwnOrder($id);
-        $order->load(['contact', 'sell_lines.product', 'sell_lines.variations', 'payment_lines']);
+        $order->load(['contact', 'sell_lines.product.unit', 'sell_lines.sub_unit', 'sell_lines.variations', 'payment_lines']);
         $invoiceMap = $this->saleAppInvoiceMap((int) $order->business_id);
         $this->applySaleAppInvoiceSnapshot($order, $invoiceMap);
         $amounts = $this->saleAppAmountBreakdown($order);
@@ -418,7 +716,7 @@ class SalePortalController extends Controller
 
         // Only prefill after validation error — create starts on Select Customer
         $default_customer = null;
-        $oldContactId = old('contact_id');
+        $oldContactId = old('contact_id', $request->get('contact_id'));
         if (! empty($oldContactId)) {
             $c = Contact::where('business_id', $business_id)
                 ->onlyCustomers()
@@ -431,11 +729,163 @@ class SalePortalController extends Controller
                     'shipping_address' => $c->shipping_address ?: trim(implode(', ', array_filter([
                         $c->address_line_1, $c->city,
                     ]))),
+                    'credit_limit' => $c->credit_limit,
+                    'acct' => $c->contact_id,
+                    'display_name' => trim((string) ($c->supplier_business_name ?: $c->name)),
+                    'address' => $c->shipping_address ?: trim(implode(', ', array_filter([$c->address_line_1, $c->city]))),
                 ];
             }
         }
 
-        return view('sale.orders.create', compact('locations', 'default_location', 'default_customer'));
+        if (empty($default_customer)) {
+            return redirect()->route('sale.customers', $request->only('add'));
+        }
+
+        $order_draft = $this->saleAppFindSavedDraft(
+            (string) $request->get('saved', ''),
+            (string) ($default_customer['id'] ?? '')
+        );
+
+        return view('sale.orders.create', compact('locations', 'default_location', 'default_customer', 'order_draft'));
+    }
+
+    protected function saleAppDraftSessionKey(): string
+    {
+        return 'sale_order_draft_'.(string) auth()->id();
+    }
+
+    protected function saleAppSavedOrdersKey(): string
+    {
+        return 'sale_saved_orders_'.(string) auth()->id();
+    }
+
+    protected function saleAppGetSavedOrders(): array
+    {
+        $rows = Cache::get($this->saleAppSavedOrdersKey(), []);
+
+        return is_array($rows) ? array_values($rows) : [];
+    }
+
+    protected function saleAppPutSavedOrders(array $rows): void
+    {
+        Cache::forever($this->saleAppSavedOrdersKey(), array_values($rows));
+    }
+
+    protected function saleAppFindSavedDraft(string $savedId, string $contactId): ?array
+    {
+        foreach ($this->saleAppGetSavedOrders() as $row) {
+            if ($savedId !== '' && (string) ($row['id'] ?? '') === $savedId) {
+                return $row;
+            }
+            if ($savedId === '' && $contactId !== '' && (string) ($row['contact_id'] ?? '') === $contactId) {
+                return $row;
+            }
+        }
+
+        return null;
+    }
+
+    protected function saleAppRemoveSavedForContact($contactId): void
+    {
+        $rows = array_values(array_filter(
+            $this->saleAppGetSavedOrders(),
+            fn ($row) => (string) ($row['contact_id'] ?? '') !== (string) $contactId
+        ));
+        $this->saleAppPutSavedOrders($rows);
+    }
+
+    public function savedOrders()
+    {
+        $saved_orders = $this->saleAppGetSavedOrders();
+        usort($saved_orders, function ($a, $b) {
+            return strcmp((string) ($b['saved_at'] ?? ''), (string) ($a['saved_at'] ?? ''));
+        });
+
+        return view('sale.orders.saved', compact('saved_orders'));
+    }
+
+    public function destroySavedOrder($id)
+    {
+        $rows = array_values(array_filter(
+            $this->saleAppGetSavedOrders(),
+            fn ($row) => (string) ($row['id'] ?? '') !== (string) $id
+        ));
+        $this->saleAppPutSavedOrders($rows);
+
+        return redirect()->route('sale.saved_orders')->with('status', [
+            'success' => 1,
+            'msg' => 'Saved order removed.',
+        ]);
+    }
+
+    public function saveOrderDraft(Request $request)
+    {
+        $data = $request->validate([
+            'contact_id' => 'required',
+            'contact_name' => 'nullable|string',
+            'payment_type' => 'nullable|string',
+            'shipping_address' => 'nullable|string',
+            'shipping_details' => 'nullable|string',
+            'cart' => 'required|array|min:1',
+        ]);
+
+        $total = 0.0;
+        foreach ($data['cart'] as $line) {
+            $total += ((float) ($line['quantity'] ?? 0)) * ((float) ($line['unit_price'] ?? 0));
+        }
+
+        $contactName = trim((string) ($data['contact_name'] ?? ''));
+        if ($contactName === '') {
+            $c = Contact::find($data['contact_id']);
+            if ($c) {
+                $contactName = trim((string) ($c->supplier_business_name ?: $c->name));
+            }
+        }
+
+        $rows = $this->saleAppGetSavedOrders();
+        $id = null;
+        foreach ($rows as $i => $row) {
+            if ((string) ($row['contact_id'] ?? '') === (string) $data['contact_id']) {
+                $id = $row['id'] ?? uniqid('so', true);
+                $rows[$i] = array_merge($row, $data, [
+                    'id' => $id,
+                    'contact_name' => $contactName,
+                    'total' => round($total, 2),
+                    'saved_at' => now()->toDateTimeString(),
+                ]);
+                break;
+            }
+        }
+        if ($id === null) {
+            $id = uniqid('so', true);
+            $rows[] = array_merge($data, [
+                'id' => $id,
+                'contact_name' => $contactName,
+                'total' => round($total, 2),
+                'saved_at' => now()->toDateTimeString(),
+            ]);
+        }
+        $this->saleAppPutSavedOrders($rows);
+        $request->session()->put($this->saleAppDraftSessionKey(), $data);
+
+        return response()->json(['ok' => true, 'id' => $id]);
+    }
+
+    public function clearOrderDraft(Request $request)
+    {
+        $request->session()->forget($this->saleAppDraftSessionKey());
+
+        return response()->json(['ok' => true]);
+    }
+
+    public function syncApp(Request $request)
+    {
+        $request->session()->forget('sale_catalog_cache');
+
+        return response()->json([
+            'ok' => true,
+            'synced_at' => now()->toIso8601String(),
+        ]);
     }
 
     public function searchCustomers(Request $request)
@@ -461,7 +911,7 @@ class SalePortalController extends Controller
 
         $rows = $query->orderBy('name')->limit(40)->get([
             'id', 'name', 'mobile', 'supplier_business_name', 'shipping_address',
-            'address_line_1', 'address_line_2', 'city',
+            'address_line_1', 'address_line_2', 'city', 'credit_limit', 'contact_id',
         ]);
 
         return response()->json($rows->map(function ($c) {
@@ -494,6 +944,8 @@ class SalePortalController extends Controller
                 'address' => $address,
                 'initials' => $initials,
                 'shipping_address' => $c->shipping_address ?: $address,
+                'credit_limit' => $c->credit_limit,
+                'acct' => $c->contact_id,
             ];
         }));
     }
@@ -518,6 +970,7 @@ class SalePortalController extends Controller
                     ->where('vld.location_id', '=', $location_id);
             })
             ->leftJoin('units as u', 'p.unit_id', '=', 'u.id')
+            ->leftJoin('categories as cat', 'p.category_id', '=', 'cat.id')
             ->where('p.business_id', $business_id)
             ->where('p.type', '!=', 'modifier')
             ->where('p.is_inactive', 0)
@@ -558,7 +1011,11 @@ class SalePortalController extends Controller
             'p.tax as tax_id',
             'p.category_id',
             'p.sub_category_id',
+            'cat.name as category_name',
             'p.image as product_image',
+            'u.id as unit_id',
+            'u.actual_name as unit_name',
+            'u.short_name as unit_short',
             'u.allow_decimal as allow_decimal',
             DB::raw('COALESCE(vld.qty_available, 0) as stock')
         )
@@ -566,7 +1023,7 @@ class SalePortalController extends Controller
             ->limit($limit)
             ->get();
 
-        return response()->json($rows->map(function ($r) {
+        return response()->json($rows->map(function ($r) use ($business_id) {
             $label = $r->product_name;
             if (! empty($r->variation_name) && $r->variation_name !== 'DUMMY') {
                 $label .= ' - '.$r->variation_name;
@@ -577,6 +1034,7 @@ class SalePortalController extends Controller
 
             $price = (float) ($r->sell_price_inc_tax ?: $r->default_sell_price ?: 0);
             $img = $this->saleProductImage($r->product_image);
+            $units = $this->saleAppUnits((int) $business_id, (int) $r->product_id, (int) $r->unit_id);
 
             return [
                 'product_id' => (int) $r->product_id,
@@ -584,13 +1042,18 @@ class SalePortalController extends Controller
                 'name' => $label,
                 'sku' => $r->sub_sku,
                 'price' => $price,
+                'base_price' => $price,
                 'stock' => (float) $r->stock,
                 'enable_stock' => (int) $r->enable_stock,
                 'product_type' => $r->product_type,
+                'unit_id' => (int) $r->unit_id,
+                'unit_name' => $r->unit_name ?: ($r->unit_short ?: 'Pc'),
                 'allow_decimal' => (int) $r->allow_decimal,
+                'units' => $units,
                 'tax_id' => $r->tax_id,
                 'category_id' => (int) $r->category_id,
                 'sub_category_id' => (int) $r->sub_category_id,
+                'category_name' => $r->category_name ?: '',
                 'image' => $img['url'],
                 'has_image' => $img['has_image'],
             ];
@@ -646,19 +1109,35 @@ class SalePortalController extends Controller
             'tsl.variation_id',
             'tsl.quantity',
             'tsl.unit_price_inc_tax',
+            'tsl.sub_unit_id',
             'p.name as product_name',
             'p.type as product_type',
             'p.enable_stock',
+            'p.unit_id',
             'v.name as variation_name',
             'v.sub_sku',
+            'u.actual_name as unit_name',
             'u.allow_decimal',
             DB::raw($location_id > 0 ? 'COALESCE(vld.qty_available, 0) as stock' : '0 as stock')
         )->get();
 
-        return response()->json($lines->map(function ($r) {
+        return response()->json($lines->map(function ($r) use ($business_id) {
             $name = $r->product_name;
             if (! empty($r->variation_name) && $r->variation_name !== 'DUMMY') {
                 $name .= ' - '.$r->variation_name;
+            }
+
+            $units = $this->saleAppUnits((int) $business_id, (int) $r->product_id, (int) $r->unit_id);
+            $subId = (int) ($r->sub_unit_id ?: $r->unit_id);
+            $mult = $this->saleAppUnitMultiplier($units, $subId, (int) $r->unit_id);
+            $basePrice = (float) $r->unit_price_inc_tax;
+            $qty = $mult > 0 ? ((float) $r->quantity / $mult) : (float) $r->quantity;
+            $unitName = $r->unit_name ?: 'Pc';
+            foreach ($units as $u) {
+                if ((int) $u['id'] === $subId) {
+                    $unitName = $u['name'];
+                    break;
+                }
             }
 
             return [
@@ -666,12 +1145,17 @@ class SalePortalController extends Controller
                 'variation_id' => (int) $r->variation_id,
                 'name' => $name.(! empty($r->sub_sku) ? ' ('.$r->sub_sku.')' : ''),
                 'sku' => $r->sub_sku,
-                'price' => (float) $r->unit_price_inc_tax,
-                'quantity' => (float) $r->quantity,
+                'price' => $basePrice * $mult,
+                'base_price' => $basePrice,
+                'quantity' => $qty,
                 'stock' => (float) $r->stock,
                 'enable_stock' => (int) $r->enable_stock,
                 'product_type' => $r->product_type,
+                'unit_id' => (int) $r->unit_id,
+                'unit_name' => $unitName,
+                'sub_unit_id' => $subId,
                 'allow_decimal' => (int) $r->allow_decimal,
+                'units' => $units,
             ];
         }));
     }
@@ -740,6 +1224,7 @@ class SalePortalController extends Controller
             'products.*.variation_id' => 'required|integer',
             'products.*.quantity' => 'required|numeric|min:0.0001',
             'products.*.unit_price' => 'required|numeric|min:0',
+            'products.*.sub_unit_id' => 'nullable|integer',
             'payment_type' => 'required|in:cash,due',
             'sale_note' => 'nullable|string|max:500',
             'shipping_details' => 'required|string|max:1000',
@@ -766,24 +1251,7 @@ class SalePortalController extends Controller
             $transaction = DB::transaction(function () use ($request, $data, $business_id, $user_id, $contact, $orderMode) {
                 $products = [];
                 foreach ($data['products'] as $line) {
-                    $product = Product::where('business_id', $business_id)->findOrFail($line['product_id']);
-                    $variation = Variation::where('product_id', $product->id)->findOrFail($line['variation_id']);
-                    $price = (float) $line['unit_price'];
-                    $qty = (float) $line['quantity'];
-
-                    $products[] = [
-                        'product_id' => $product->id,
-                        'variation_id' => $variation->id,
-                        'quantity' => $qty,
-                        'unit_price' => $price,
-                        'unit_price_inc_tax' => $price,
-                        'item_tax' => 0,
-                        'tax_id' => null,
-                        'enable_stock' => $product->enable_stock,
-                        'product_type' => $product->type,
-                        'line_discount_type' => 'fixed',
-                        'line_discount_amount' => 0,
-                    ];
+                    $products[] = $this->saleAppSellLineFromRequest($business_id, $line);
                 }
 
                 $invoice_total = $this->productUtil->calculateInvoiceTotal($products, null, null, false);
@@ -793,6 +1261,7 @@ class SalePortalController extends Controller
 
                 $shipping_charges = 0;
                 $final_total = (float) $invoice_total['final_total'] + $shipping_charges;
+                $preferPay = $this->saleAppPreferPayment($data['payment_type'] ?? 'due');
 
                 $cg = $this->contactUtil->getCustomerGroup($business_id, $contact->id);
 
@@ -822,6 +1291,7 @@ class SalePortalController extends Controller
                         'shipping_status' => null,
                         'shipping_method' => $data['shipping_method'] ?? null,
                         'shipping_charges' => 0,
+                        'prefer_payment_method' => $preferPay,
                     ];
                 } else {
                     $input = [
@@ -847,6 +1317,7 @@ class SalePortalController extends Controller
                         'shipping_status' => $data['shipping_status'] ?? 'ordered',
                         'shipping_method' => $data['shipping_method'] ?? null,
                         'shipping_charges' => 0,
+                        'prefer_payment_method' => $preferPay,
                     ];
                 }
 
@@ -873,6 +1344,10 @@ class SalePortalController extends Controller
                     false
                 );
 
+                $transaction->payment_status = ($data['payment_type'] ?? 'due') === 'due' ? 'due' : ($transaction->payment_status ?: 'due');
+                $transaction->prefer_payment_method = $preferPay;
+                $transaction->save();
+
                 // Sales order / quotation: no stock decrease until invoiced
 
                 return $transaction;
@@ -883,6 +1358,9 @@ class SalePortalController extends Controller
                 : ($orderMode === 'back_order'
                     ? 'Back order created: '.$transaction->invoice_no
                     : 'Sales order created: '.$transaction->invoice_no);
+
+            $request->session()->forget($this->saleAppDraftSessionKey());
+            $this->saleAppRemoveSavedForContact($request->input('contact_id'));
 
             return redirect()
                 ->route('sale.orders')
@@ -921,16 +1399,33 @@ class SalePortalController extends Controller
             'text' => trim(($c->supplier_business_name ? $c->supplier_business_name.' — ' : '').$c->name.
                 ($c->mobile ? ' ('.$c->mobile.')' : '')),
             'shipping_address' => $order->shipping_address ?: $c->shipping_address,
+            'credit_limit' => $c->credit_limit,
+            'acct' => $c->contact_id,
+            'display_name' => trim((string) ($c->supplier_business_name ?: $c->name)),
+            'address' => $order->shipping_address ?: ($c->shipping_address ?: ''),
         ] : null;
 
         $edit_lines = $order->sell_lines
             ->whereNull('parent_sell_line_id')
             ->values()
-            ->map(function ($line) {
-                $name = optional($line->product)->name ?: 'Item';
+            ->map(function ($line) use ($business_id) {
+                $product = $line->product;
+                $name = optional($product)->name ?: 'Item';
                 $vname = optional($line->variations)->name;
                 if (! empty($vname) && $vname !== 'DUMMY') {
                     $name .= ' - '.$vname;
+                }
+                $unitId = (int) optional($product)->unit_id;
+                $units = $product ? $this->saleAppUnits((int) $business_id, (int) $product->id, $unitId) : [];
+                $subId = (int) ($line->sub_unit_id ?: $unitId);
+                $mult = $this->saleAppUnitMultiplier($units, $subId, $unitId);
+                $basePrice = (float) $line->unit_price_inc_tax;
+                $unitName = optional(optional($product)->unit)->actual_name ?: 'Pc';
+                foreach ($units as $u) {
+                    if ((int) $u['id'] === $subId) {
+                        $unitName = $u['name'];
+                        break;
+                    }
                 }
 
                 return [
@@ -938,11 +1433,16 @@ class SalePortalController extends Controller
                     'variation_id' => (int) $line->variation_id,
                     'transaction_sell_lines_id' => (int) $line->id,
                     'name' => $name,
-                    'price' => (float) $line->unit_price_inc_tax,
-                    'quantity' => (float) $line->quantity,
-                    'enable_stock' => (int) optional($line->product)->enable_stock,
-                    'product_type' => optional($line->product)->type,
-                    'allow_decimal' => (int) optional(optional($line->product)->unit)->allow_decimal,
+                    'price' => $basePrice * $mult,
+                    'base_price' => $basePrice,
+                    'quantity' => $mult > 0 ? ((float) $line->quantity / $mult) : (float) $line->quantity,
+                    'enable_stock' => (int) optional($product)->enable_stock,
+                    'product_type' => optional($product)->type,
+                    'unit_id' => $unitId,
+                    'unit_name' => $unitName,
+                    'sub_unit_id' => $subId,
+                    'allow_decimal' => (int) optional(optional($product)->unit)->allow_decimal,
+                    'units' => $units,
                 ];
             });
 
@@ -978,6 +1478,7 @@ class SalePortalController extends Controller
             'products.*.variation_id' => 'required|integer',
             'products.*.quantity' => 'required|numeric|min:0.0001',
             'products.*.unit_price' => 'required|numeric|min:0',
+            'products.*.sub_unit_id' => 'nullable|integer',
             'products.*.transaction_sell_lines_id' => 'nullable|integer',
             'payment_type' => 'required|in:cash,due',
             'sale_note' => 'nullable|string|max:500',
@@ -999,28 +1500,7 @@ class SalePortalController extends Controller
             DB::transaction(function () use ($data, $business_id, $user_id, $contact, $order) {
                 $products = [];
                 foreach ($data['products'] as $line) {
-                    $product = Product::where('business_id', $business_id)->findOrFail($line['product_id']);
-                    $variation = Variation::where('product_id', $product->id)->findOrFail($line['variation_id']);
-                    $price = (float) $line['unit_price'];
-                    $qty = (float) $line['quantity'];
-
-                    $row = [
-                        'product_id' => $product->id,
-                        'variation_id' => $variation->id,
-                        'quantity' => $qty,
-                        'unit_price' => $price,
-                        'unit_price_inc_tax' => $price,
-                        'item_tax' => 0,
-                        'tax_id' => null,
-                        'enable_stock' => $product->enable_stock,
-                        'product_type' => $product->type,
-                        'line_discount_type' => 'fixed',
-                        'line_discount_amount' => 0,
-                    ];
-                    if (! empty($line['transaction_sell_lines_id'])) {
-                        $row['transaction_sell_lines_id'] = (int) $line['transaction_sell_lines_id'];
-                    }
-                    $products[] = $row;
+                    $products[] = $this->saleAppSellLineFromRequest($business_id, $line);
                 }
 
                 $invoice_total = $this->productUtil->calculateInvoiceTotal($products, null, null, false);
@@ -1047,6 +1527,7 @@ class SalePortalController extends Controller
                     'shipping_status' => $data['shipping_status'] ?? ($order->shipping_status ?: 'ordered'),
                     'shipping_charges' => $order->shipping_charges ?: 0,
                     'source' => $order->source ?: 'sale_app',
+                    'prefer_payment_method' => $this->saleAppPreferPayment($data['payment_type'] ?? 'due'),
                 ];
 
                 $this->transactionUtil->updateSellTransaction(
@@ -1068,7 +1549,17 @@ class SalePortalController extends Controller
                     [],
                     false
                 );
+
+                $fresh = $order->fresh();
+                $fresh->prefer_payment_method = $this->saleAppPreferPayment($data['payment_type'] ?? 'due');
+                if (($data['payment_type'] ?? 'due') === 'due') {
+                    $fresh->payment_status = 'due';
+                }
+                $fresh->save();
             });
+
+            $request->session()->forget($this->saleAppDraftSessionKey());
+            $this->saleAppRemoveSavedForContact($request->input('contact_id'));
 
             return redirect()
                 ->route('sale.orders')
@@ -1294,12 +1785,19 @@ class SalePortalController extends Controller
             $end = $endAt->toDateString();
         }
 
-        // Same ownership rule as Orders: only SO this rep created
-        $orders = Transaction::where('business_id', $business_id)
+        $locationId = $request->session()->get('user.default_location_id');
+        $origin = BusinessLocation::where('business_id', $business_id)
+            ->when($locationId, fn ($q) => $q->where('id', $locationId))
+            ->first(['name', 'city', 'zip_code']);
+        $originZip = (int) preg_replace('/\D+/', '', (string) optional($origin)->zip_code);
+        $originCity = trim((string) optional($origin)->city);
+        $originName = trim((string) optional($origin)->name);
+
+        $rows = Transaction::where('business_id', $business_id)
             ->where('type', 'sales_order')
             ->where('created_by', $user_id)
             ->whereBetween('transaction_date', [$startAt, $endAt])
-            ->with(['contact:id,name,mobile,supplier_business_name,city,address_line_1'])
+            ->with(['contact:id,name,mobile,supplier_business_name,city,state,zip_code,address_line_1,shipping_address'])
             ->when($q !== '', function ($query) use ($q) {
                 $term = '%'.$q.'%';
                 $query->where(function ($inner) use ($term) {
@@ -1308,15 +1806,44 @@ class SalePortalController extends Controller
                         ->orWhereHas('contact', function ($c) use ($term) {
                             $c->where('name', 'like', $term)
                                 ->orWhere('mobile', 'like', $term)
-                                ->orWhere('supplier_business_name', 'like', $term);
+                                ->orWhere('supplier_business_name', 'like', $term)
+                                ->orWhere('city', 'like', $term);
                         });
                 });
             })
-            ->orderByDesc('id')
-            ->paginate(20)
-            ->withQueryString();
+            ->orderBy('transaction_date')
+            ->limit(200)
+            ->get();
 
-        return view('sale.delivery', compact('orders', 'start', 'end', 'q'));
+        $zipNum = function ($order) {
+            $z = preg_replace('/\D+/', '', (string) ($order->contact->zip_code ?? ''));
+
+            return (int) $z;
+        };
+        $street = function ($order) {
+            return strtolower(trim((string) (
+                $order->shipping_address
+                ?: ($order->contact->address_line_1 ?? '')
+            )));
+        };
+
+        // One route from the POS location: same city first, then closer zip, then street.
+        $distanceFromPos = function ($order) use ($originZip, $originCity, $zipNum, $street) {
+            $zip = $zipNum($order);
+            $zipDist = $originZip > 0 && $zip > 0 ? abs($zip - $originZip) : ($zip ?: 999999);
+            $city = trim((string) ($order->contact->city ?? ''));
+            $sameCity = ($originCity !== '' && strcasecmp($city, $originCity) === 0) ? 0 : 1;
+
+            return sprintf('%d-%08d-%s', $sameCity, $zipDist, $street($order));
+        };
+
+        $sorted = $rows->sortBy($distanceFromPos)->values();
+        $routeLabel = $originName !== '' ? $originName : ($originCity !== '' ? $originCity : 'POS');
+        $routes = $sorted->isEmpty()
+            ? collect()
+            : collect([$routeLabel => $sorted]);
+
+        return view('sale.delivery', compact('routes', 'start', 'end', 'q', 'originCity', 'originName'));
     }
 
     /**
@@ -1389,7 +1916,19 @@ class SalePortalController extends Controller
         $query = Contact::where('business_id', $business_id)
             ->onlyCustomers()
             ->where('contact_status', 'active')
-            ->select('contacts.id', 'contacts.name', 'contacts.mobile', 'contacts.email', 'contacts.supplier_business_name', 'contacts.contact_id', 'contacts.created_at');
+            ->select(
+                'contacts.id',
+                'contacts.name',
+                'contacts.mobile',
+                'contacts.email',
+                'contacts.supplier_business_name',
+                'contacts.contact_id',
+                'contacts.address_line_1',
+                'contacts.city',
+                'contacts.shipping_address',
+                'contacts.credit_limit',
+                'contacts.created_at'
+            );
 
         if ($term !== '') {
             $query->where(function ($q) use ($term) {
@@ -1406,6 +1945,37 @@ class SalePortalController extends Controller
             ->paginate(20)
             ->appends(['q' => $term]);
 
+        $pageIds = $customers->getCollection()->pluck('id')->filter()->all();
+        $lastOrderTotals = [];
+        if (! empty($pageIds)) {
+            $lastIds = Transaction::query()
+                ->where('business_id', $business_id)
+                ->whereIn('contact_id', $pageIds)
+                ->where(function ($q) {
+                    $q->where('type', 'sales_order')
+                        ->orWhere(function ($inner) {
+                            $inner->where('type', 'sell')->where('status', 'final');
+                        });
+                })
+                ->select('contact_id', DB::raw('MAX(id) as last_id'))
+                ->groupBy('contact_id')
+                ->pluck('last_id', 'contact_id');
+
+            if ($lastIds->isNotEmpty()) {
+                $lastOrderTotals = Transaction::query()
+                    ->whereIn('id', $lastIds->values()->all())
+                    ->pluck('final_total', 'contact_id')
+                    ->map(fn ($v) => (float) $v)
+                    ->all();
+            }
+        }
+
+        $customers->getCollection()->transform(function ($c) use ($lastOrderTotals) {
+            $c->last_order_total = $lastOrderTotals[$c->id] ?? 0;
+
+            return $c;
+        });
+
         return view('sale.customers.index', compact('customers', 'term', 'canCreate', 'canList'));
     }
 
@@ -1416,8 +1986,10 @@ class SalePortalController extends Controller
         }
 
         $canList = self::userCanListCustomers();
+        $business_id = session('user.business_id');
+        $customer_groups = CustomerGroup::forDropdown($business_id);
 
-        return view('sale.customers.create', compact('canList'));
+        return view('sale.customers.create', compact('canList', 'customer_groups'));
     }
 
     public function storeCustomer(Request $request)
@@ -1427,32 +1999,73 @@ class SalePortalController extends Controller
         }
 
         $data = $request->validate([
-            'name' => 'required|string|max:191',
-            'mobile' => 'nullable|string|max:50',
-            'email' => 'nullable|email|max:191',
-            'address_line_1' => 'nullable|string|max:255',
+            'contact_type_radio' => 'nullable|in:individual,business',
+            'first_name' => 'required|string|max:191',
+            'last_name' => 'nullable|string|max:191',
             'supplier_business_name' => 'nullable|string|max:191',
+            'contact_id' => 'nullable|string|max:191',
+            'customer_group_id' => 'nullable|integer',
+            'mobile' => 'nullable|string|max:50',
+            'alternate_number' => 'nullable|string|max:50',
+            'landline' => 'nullable|string|max:50',
+            'email' => 'nullable|email|max:191',
+            'tax_number' => 'nullable|string|max:191',
+            'address_line_1' => 'nullable|string|max:255',
+            'address_line_2' => 'nullable|string|max:255',
+            'city' => 'nullable|string|max:191',
+            'state' => 'nullable|string|max:191',
+            'zip_code' => 'nullable|string|max:50',
+            'country' => 'nullable|string|max:191',
+            'shipping_address' => 'nullable|string|max:1000',
+            'credit_limit' => 'nullable|numeric',
+            'allow_customer_app' => 'nullable|in:0,1',
+            'customer_app_password' => 'nullable|string|max:191',
         ]);
 
         $business_id = $request->session()->get('user.business_id');
         $user_id = auth()->id();
 
         try {
-            $name = trim($data['name']);
-            $parts = preg_split('/\s+/', $name, 2);
+            $first = trim($data['first_name']);
+            $last = trim((string) ($data['last_name'] ?? ''));
+            $name = trim($first.' '.$last);
+            $allowCustomerApp = (int) ($data['allow_customer_app'] ?? 0) === 1;
             $input = [
                 'type' => 'customer',
+                'contact_type' => $data['contact_type_radio'] ?? 'individual',
                 'business_id' => $business_id,
                 'created_by' => $user_id,
                 'name' => $name,
-                'first_name' => $parts[0] ?? $name,
-                'last_name' => $parts[1] ?? null,
+                'first_name' => $first,
+                'last_name' => $last !== '' ? $last : null,
                 'mobile' => $data['mobile'] ?? null,
+                'alternate_number' => $data['alternate_number'] ?? null,
+                'landline' => $data['landline'] ?? null,
                 'email' => $data['email'] ?? null,
+                'tax_number' => $data['tax_number'] ?? null,
                 'address_line_1' => $data['address_line_1'] ?? null,
+                'address_line_2' => $data['address_line_2'] ?? null,
+                'city' => $data['city'] ?? null,
+                'state' => $data['state'] ?? null,
+                'zip_code' => $data['zip_code'] ?? null,
+                'country' => $data['country'] ?? null,
+                'shipping_address' => $data['shipping_address'] ?? null,
                 'supplier_business_name' => $data['supplier_business_name'] ?? null,
+                'customer_group_id' => $data['customer_group_id'] ?: null,
+                'contact_id' => $data['contact_id'] ?: null,
+                'credit_limit' => $data['credit_limit'] !== null && $data['credit_limit'] !== '' ? $data['credit_limit'] : null,
                 'contact_status' => 'active',
+                'allow_customer_app' => $allowCustomerApp ? 1 : 0,
             ];
+            if ($allowCustomerApp) {
+                $appPass = trim((string) ($data['customer_app_password'] ?? ''));
+                if ($appPass === '') {
+                    $appPass = (string) ($input['mobile'] ?? '');
+                }
+                if ($appPass !== '') {
+                    $input['password'] = bcrypt($appPass);
+                }
+            }
 
             $output = $this->contactUtil->createNewContact($input);
 
@@ -1471,6 +2084,32 @@ class SalePortalController extends Controller
                 'msg' => 'Could not add customer. '.$e->getMessage(),
             ]);
         }
+    }
+
+    /**
+     * Previous-period totals used as live Sales Goals targets.
+     */
+    protected function saleAppGoalTotals($businessId, $userId, $start, $end, array $invoiceMap, array $invoiceTotals): array
+    {
+        $rows = Transaction::where('business_id', $businessId)
+            ->where('created_by', $userId)
+            ->where('type', 'sales_order')
+            ->whereBetween('transaction_date', [$start, $end])
+            ->get(['id', 'final_total', 'contact_id', 'prefer_payment_method']);
+
+        $invoices = 0.0;
+        foreach ($rows as $row) {
+            foreach ($invoiceMap[(int) $row->id] ?? [] as $inv) {
+                $invoices += (float) ($invoiceTotals[(int) $inv->id] ?? 0);
+            }
+        }
+
+        return [
+            'orders' => (float) $rows->sum('final_total'),
+            'invoices' => $invoices,
+            'payments' => (float) $rows->filter(fn ($o) => ! $this->saleAppIsCreditOrder($o))->sum('final_total'),
+            'visits' => $rows->pluck('contact_id')->filter()->unique()->count(),
+        ];
     }
 
     /**
@@ -1582,7 +2221,18 @@ class SalePortalController extends Controller
             $order->converted_invoice_no = ! empty($invoices)
                 ? ($invoices[count($invoices) - 1]->invoice_no ?? null)
                 : null;
+            $order->is_credit_sale = $this->saleAppIsCreditOrder($order);
         }
+    }
+
+    protected function saleAppPreferPayment(string $paymentType): string
+    {
+        return $paymentType === 'due' ? 'credit_sale' : 'cash';
+    }
+
+    protected function saleAppIsCreditOrder($order): bool
+    {
+        return ($order->prefer_payment_method ?? '') === 'credit_sale';
     }
 
     /**
@@ -1745,5 +2395,227 @@ class SalePortalController extends Controller
             'url' => asset('/uploads/'.config('constants.product_img_path').'/'.rawurlencode($image)),
             'has_image' => true,
         ];
+    }
+
+    /**
+     * POS units for this product only: base (Pc) plus related Box/Carton/etc.
+     * Products with no related sub-units stay Pc-only (do not inherit every packing unit on the unit type).
+     */
+    protected function saleAppUnits(int $business_id, int $product_id, int $unit_id): array
+    {
+        $key = $business_id.'-'.$product_id.'-'.$unit_id;
+        if (isset($this->saleAppUnitsCache[$key])) {
+            return $this->saleAppUnitsCache[$key];
+        }
+        if ($unit_id < 1) {
+            return $this->saleAppUnitsCache[$key] = [
+                ['id' => 0, 'name' => 'Pc', 'multiplier' => 1.0, 'allow_decimal' => 0],
+            ];
+        }
+
+        $related = [];
+        try {
+            $product = Product::where('business_id', $business_id)->find($product_id);
+            $ids = $product ? ($product->sub_unit_ids ?? []) : [];
+            if (is_array($ids)) {
+                $related = array_values(array_filter(array_map('intval', $ids)));
+            }
+        } catch (\Throwable $e) {
+            $related = [];
+        }
+
+        try {
+            $map = $this->productUtil->getSubUnits($business_id, $unit_id, true, $product_id);
+        } catch (\Throwable $e) {
+            return $this->saleAppUnitsCache[$key] = [
+                ['id' => $unit_id, 'name' => 'Pc', 'multiplier' => 1.0, 'allow_decimal' => 0],
+            ];
+        }
+
+        $out = [];
+        $seen = [];
+        foreach ($map as $id => $u) {
+            $id = (int) $id;
+            $isBase = $id === $unit_id;
+            if (! $isBase && ($related === [] || ! in_array($id, $related, true))) {
+                continue;
+            }
+            if (isset($seen[$id])) {
+                continue;
+            }
+            $seen[$id] = true;
+            $out[] = [
+                'id' => $id,
+                'name' => $u['name'],
+                'multiplier' => (float) ($u['multiplier'] ?: 1),
+                'allow_decimal' => (int) $u['allow_decimal'],
+            ];
+        }
+        if ($out === []) {
+            $out[] = ['id' => $unit_id, 'name' => 'Pc', 'multiplier' => 1.0, 'allow_decimal' => 0];
+        }
+
+        return $this->saleAppUnitsCache[$key] = $out;
+    }
+
+    protected function saleAppUnitMultiplier(array $units, int $subId, int $baseUnitId): float
+    {
+        foreach ($units as $u) {
+            if ((int) $u['id'] === $subId) {
+                return max(0.0001, (float) ($u['multiplier'] ?: 1));
+            }
+        }
+        if ($subId && $subId !== $baseUnitId) {
+            $m = (float) $this->productUtil->getMultiplierOf2Units($baseUnitId, $subId);
+
+            return $m > 0 ? $m : 1.0;
+        }
+
+        return 1.0;
+    }
+
+    protected function saleAppSellLineFromRequest(int $business_id, array $line): array
+    {
+        $product = Product::where('business_id', $business_id)->findOrFail($line['product_id']);
+        $variation = Variation::where('product_id', $product->id)->findOrFail($line['variation_id']);
+        $units = $this->saleAppUnits($business_id, $product->id, (int) $product->unit_id);
+        $subId = isset($line['sub_unit_id']) ? (int) $line['sub_unit_id'] : (int) $product->unit_id;
+        $multiplier = $this->saleAppUnitMultiplier($units, $subId, (int) $product->unit_id);
+
+        $row = [
+            'product_id' => $product->id,
+            'variation_id' => $variation->id,
+            'quantity' => (float) $line['quantity'],
+            'unit_price' => (float) $line['unit_price'],
+            'unit_price_inc_tax' => (float) $line['unit_price'],
+            'item_tax' => 0,
+            'tax_id' => null,
+            'enable_stock' => $product->enable_stock,
+            'product_type' => $product->type,
+            'line_discount_type' => 'fixed',
+            'line_discount_amount' => 0,
+            'sub_unit_id' => $subId,
+            'product_unit_id' => (int) $product->unit_id,
+            'base_unit_multiplier' => $multiplier,
+        ];
+        if (! empty($line['transaction_sell_lines_id'])) {
+            $row['transaction_sell_lines_id'] = (int) $line['transaction_sell_lines_id'];
+        }
+
+        return $row;
+    }
+
+    /**
+     * Timesheet: existing POS Time Clock (clock in / out / break) for this sales user.
+     */
+    public function timesheet(Request $request)
+    {
+        $business_id = $request->session()->get('user.business_id');
+        $user_id = auth()->id();
+
+        $entries = EmployeeAttendance::with('breaks')
+            ->where('business_id', $business_id)
+            ->where('user_id', $user_id)
+            ->orderByDesc('clock_in_at')
+            ->limit(14)
+            ->get();
+
+        return view('sale.timesheet', compact('entries'));
+    }
+
+    /**
+     * Display list of stock transfers for this sales user.
+     */
+    public function stockTransfers(Request $request)
+    {
+        $business_id = $request->session()->get('user.business_id');
+        $user_id = auth()->id();
+
+        // Get stock transfers - either created by user or location-based
+        $transfers = Transaction::where('business_id', $business_id)
+            ->where('type', 'sell_transfer')
+            ->where(function ($q) use ($user_id) {
+                $q->where('created_by', $user_id)
+                  ->orWhereHas('transfer_child', function ($child) use ($user_id) {
+                      $child->where('created_by', $user_id);
+                  });
+            })
+            ->with([
+                'location:id,name',
+                'transfer_child' => function ($q) {
+                    $q->select('id', 'transfer_parent_id', 'location_id', 'status')
+                      ->with('location:id,name');
+                }
+            ])
+            ->orderByDesc('transaction_date')
+            ->orderByDesc('created_at')
+            ->paginate(20);
+
+        return view('sale.transfers.index', compact('transfers'));
+    }
+
+    /**
+     * Show stock transfer details.
+     */
+    public function showStockTransfer(Request $request, $id)
+    {
+        $business_id = $request->session()->get('user.business_id');
+        $user_id = auth()->id();
+
+        $transfer = Transaction::where('business_id', $business_id)
+            ->where('type', 'sell_transfer')
+            ->where(function ($q) use ($user_id) {
+                $q->where('created_by', $user_id)
+                  ->orWhereHas('transfer_child', function ($child) use ($user_id) {
+                      $child->where('created_by', $user_id);
+                  });
+            })
+            ->with([
+                'location:id,name',
+                'transfer_child' => function ($q) {
+                    $q->with([
+                        'location:id,name',
+                        'sell_lines' => function ($line) {
+                            $line->with([
+                                'product:id,name,sku',
+                                'variations:id,name,sub_sku'
+                            ]);
+                        }
+                    ]);
+                }
+            ])
+            ->findOrFail($id);
+
+        return view('sale.transfers.show', compact('transfer'));
+    }
+
+    /**
+     * Show create stock transfer form (redirect to main system).
+     */
+    public function createStockTransfer(Request $request)
+    {
+        $business_id = $request->session()->get('user.business_id');
+        
+        // Get business locations
+        $business_locations = BusinessLocation::forDropdown($business_id, false);
+        
+        // Get statuses
+        $statuses = [
+            'pending' => 'Pending',
+            'in_transit' => 'In Transit',
+            'completed' => 'Completed'
+        ];
+        
+        return view('sale.transfers.create', compact('business_locations', 'statuses'));
+    }
+
+    /**
+     * Store stock transfer (redirect to main system store method).
+     */
+    public function storeStockTransfer(Request $request)
+    {
+        // Redirect to main stock transfer controller to handle the actual storage
+        // This reuses existing business logic
+        return app(\App\Http\Controllers\StockTransferController::class)->store($request);
     }
 }

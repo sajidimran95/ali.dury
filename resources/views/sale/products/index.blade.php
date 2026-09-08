@@ -1,6 +1,6 @@
 @extends('sale.layout')
-@section('title', 'Products')
-@section('header', 'Products')
+@section('title', 'Catalog')
+@section('header', 'Catalog')
 @section('content')
 <input type="hidden" id="prodLoc" value="{{ $default_location }}">
 
@@ -9,7 +9,7 @@
         <div class="sale-prod-app__search">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3"/></svg>
             <input type="search" id="prodQ" placeholder="Search name / SKU" autocomplete="off">
-            <button type="button" id="prodFilterBtn" class="sale-prod-app__filter-btn" aria-label="Filter">
+            <button type="button" id="prodFilterBtn" class="sale-prod-app__filter-btn" aria-label="Filter" onclick="return saleOpenSheet('prodFilterSheet', event)">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
                 <span id="prodFilterDot" class="sale-prod-app__dot hidden"></span>
             </button>
@@ -37,31 +37,26 @@
 {{-- Filter bottom sheet --}}
 <div id="prodFilterSheet" class="sale-sheet" hidden>
     <div class="sale-sheet__panel">
-        <div class="sale-sheet__handle"></div>
-        <div class="sale-sheet__head">
-            <div class="font-extrabold text-base">Filter products</div>
-            <button type="button" id="prodFilterClose" class="sale-sheet__close" aria-label="Close">×</button>
+        <div class="sale-sheet__head is-center">
+            <div class="sale-sheet__title">Filter</div>
+            <button type="button" class="sale-sheet__close" id="prodFilterClose" onclick="saleCloseSheet('prodFilterSheet')" aria-label="Close">×</button>
         </div>
-        <div class="sale-sheet__body">
-            <div class="mb-4">
-                <div class="text-xs font-bold uppercase tracking-wide text-slate-400 mb-2">Category</div>
-                <select id="prodCat" class="sale-input">
-                    <option value="">All categories</option>
-                    @foreach($categories as $cat)
-                        <option value="{{ $cat['id'] }}">{{ $cat['name'] }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="mb-4">
-                <div class="text-xs font-bold uppercase tracking-wide text-slate-400 mb-2">Subcategory</div>
-                <select id="prodSub" class="sale-input" disabled>
-                    <option value="">All</option>
-                </select>
-            </div>
+        <div class="sale-sheet__body sale-filter-body">
+            <label class="sale-filter-label">Category</label>
+            <select id="prodCat" class="sale-input sale-filter-select">
+                <option value="">All categories</option>
+                @foreach($categories as $cat)
+                    <option value="{{ $cat['id'] }}">{{ $cat['name'] }}</option>
+                @endforeach
+            </select>
+            <label class="sale-filter-label">Subcategory</label>
+            <select id="prodSub" class="sale-input sale-filter-select" disabled>
+                <option value="">All</option>
+            </select>
         </div>
-        <div class="sale-sheet__foot">
-            <button type="button" id="prodFilterReset" class="sale-btn-ghost !w-auto !px-4">Reset</button>
-            <button type="button" id="prodFilterApply" class="sale-btn !w-auto !px-6">Apply</button>
+        <div class="sale-sheet__foot sale-filter-foot">
+            <button type="button" id="prodFilterReset" class="sale-more-cancel">RESET</button>
+            <button type="button" id="prodFilterApply" class="sale-btn sale-filter-apply">Apply</button>
         </div>
     </div>
 </div>
@@ -183,11 +178,23 @@
             const thumb = r.has_image
                 ? `<img src="${r.image}" alt="" loading="lazy">`
                 : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10.5" r="1.5"/><path d="m21 15-4.5-4.5L9 18"/></svg>`;
+            const packs = Array.isArray(r.units) && r.units.length
+                ? r.units.map(u => {
+                    const m = Number(u.multiplier) || 1;
+                    return '(' + u.name + ' x ' + m + ')';
+                }).join(' ')
+                : (r.unit_name ? '(' + r.unit_name + ' x 1)' : '');
+            const inStock = Number(r.enable_stock) !== 1 || Number(r.stock) > 0;
             el.innerHTML = `
-                <div class="sale-prod-card__thumb ${r.has_image ? '' : 'is-placeholder'}">${thumb}</div>
-                <div class="min-w-0 flex-1">
-                    <div class="font-bold text-sm leading-snug truncate">${r.name}</div>
-                    <div class="text-xs text-slate-500 mt-1">${money(r.price)} · Stock ${r.stock}</div>
+                <div class="sale-prod-card__media">
+                    <div class="sale-prod-card__thumb ${r.has_image ? '' : 'is-placeholder'}">${thumb}</div>
+                    <span class="sale-prod-card__stock ${inStock ? 'in' : 'out'}">${inStock ? 'In Stock' : 'Out Stock'}</span>
+                </div>
+                <div class="sale-prod-card__info">
+                    <div class="sale-prod-card__name">${r.name}</div>
+                    <div class="sale-prod-card__price">List Price: ${money(r.price)}</div>
+                    ${packs ? `<div class="sale-prod-card__units">${packs}</div>` : ''}
+                    ${r.sku ? `<div class="sale-prod-card__code">Code: ${r.sku}</div>` : ''}
                 </div>
                 <a class="sale-prod-card__add" href="${@json(route('sale.orders.create'))}?add=${r.variation_id}">Add</a>`;
             list.appendChild(el);
@@ -209,19 +216,33 @@
         load();
     });
 
-    document.getElementById('prodFilterBtn').addEventListener('click', () => { sheet.hidden = false; });
-    document.getElementById('prodFilterClose').addEventListener('click', () => { sheet.hidden = true; });
-    sheet.addEventListener('click', (e) => { if (e.target === sheet) sheet.hidden = true; });
+    document.getElementById('prodFilterBtn').addEventListener('click', (e) => {
+        e.preventDefault();
+        if (typeof saleOpenSheet === 'function') saleOpenSheet('prodFilterSheet', e);
+        else { sheet.hidden = false; sheet.classList.add('is-open'); }
+    });
+    document.getElementById('prodFilterClose').addEventListener('click', () => {
+        if (typeof saleCloseSheet === 'function') saleCloseSheet('prodFilterSheet');
+        else { sheet.hidden = true; sheet.classList.remove('is-open'); }
+    });
+    sheet.addEventListener('click', (e) => {
+        if (e.target === sheet) {
+            if (typeof saleCloseSheet === 'function') saleCloseSheet('prodFilterSheet');
+            else { sheet.hidden = true; sheet.classList.remove('is-open'); }
+        }
+    });
     document.getElementById('prodFilterApply').addEventListener('click', () => {
         fillSubs(true);
-        sheet.hidden = true;
+        if (typeof saleCloseSheet === 'function') saleCloseSheet('prodFilterSheet');
+        else { sheet.hidden = true; sheet.classList.remove('is-open'); }
         load();
     });
     document.getElementById('prodFilterReset').addEventListener('click', () => {
         cat.value = '';
         fillSubs(false);
         q.value = '';
-        sheet.hidden = true;
+        if (typeof saleCloseSheet === 'function') saleCloseSheet('prodFilterSheet');
+        else { sheet.hidden = true; sheet.classList.remove('is-open'); }
         load();
     });
     clearBtn.addEventListener('click', () => {

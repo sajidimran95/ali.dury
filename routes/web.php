@@ -216,6 +216,8 @@ Route::prefix('sale')->name('sale.')->middleware(['setData', \App\Http\Middlewar
     Route::middleware(['auth:sale', 'SetSessionData', 'language', 'timezone', 'CheckUserLogin', 'sale.rep'])->group(function () {
         Route::get('/', [SalePortalController::class, 'home'])->name('home');
         Route::get('/orders', [SalePortalController::class, 'orders'])->name('orders');
+        Route::get('/saved-orders', [SalePortalController::class, 'savedOrders'])->name('saved_orders');
+        Route::delete('/saved-orders/{id}', [SalePortalController::class, 'destroySavedOrder'])->name('saved_orders.destroy');
         Route::get('/orders/create', [SalePortalController::class, 'create'])->name('orders.create');
         Route::post('/orders', [SalePortalController::class, 'store'])->name('orders.store');
         Route::get('/orders/{id}/edit', [SalePortalController::class, 'edit'])->name('orders.edit');
@@ -229,6 +231,12 @@ Route::prefix('sale')->name('sale.')->middleware(['setData', \App\Http\Middlewar
         Route::get('/expenses/create', [SalePortalController::class, 'createExpense'])->name('expenses.create');
         Route::post('/expenses', [SalePortalController::class, 'storeExpense'])->name('expenses.store');
         Route::get('/delivery', [SalePortalController::class, 'delivery'])->name('delivery');
+        Route::get('/timesheet', [SalePortalController::class, 'timesheet'])->name('timesheet');
+        Route::get('/timesheet/status', [AttendanceController::class, 'status'])->name('timesheet.status');
+        Route::post('/timesheet/clock-in', [AttendanceController::class, 'clockIn'])->name('timesheet.clock_in');
+        Route::post('/timesheet/start-break', [AttendanceController::class, 'startBreak'])->name('timesheet.start_break');
+        Route::post('/timesheet/end-break', [AttendanceController::class, 'endBreak'])->name('timesheet.end_break');
+        Route::post('/timesheet/clock-out', [AttendanceController::class, 'clockOut'])->name('timesheet.clock_out');
         Route::get('/products', [SalePortalController::class, 'products'])->name('products');
         Route::get('/customers', [SalePortalController::class, 'customers'])->name('customers');
         Route::get('/customers/create', [SalePortalController::class, 'createCustomer'])->name('customers.create');
@@ -237,6 +245,15 @@ Route::prefix('sale')->name('sale.')->middleware(['setData', \App\Http\Middlewar
         Route::get('/api/products', [SalePortalController::class, 'searchProducts'])->name('api.products');
         Route::get('/api/categories', [SalePortalController::class, 'categoriesTree'])->name('api.categories');
         Route::get('/api/last-purchases', [SalePortalController::class, 'lastPurchases'])->name('api.last_purchases');
+        Route::get('/api/sync', [SalePortalController::class, 'syncApp'])->name('api.sync');
+        Route::post('/api/order-draft', [SalePortalController::class, 'saveOrderDraft'])->name('api.order_draft');
+        Route::delete('/api/order-draft', [SalePortalController::class, 'clearOrderDraft'])->name('api.order_draft.clear');
+        
+        // Stock Transfer routes
+        Route::get('/transfers', [SalePortalController::class, 'stockTransfers'])->name('transfers');
+        Route::get('/transfers/create', [SalePortalController::class, 'createStockTransfer'])->name('transfers.create');
+        Route::post('/transfers', [SalePortalController::class, 'storeStockTransfer'])->name('transfers.store');
+        Route::get('/transfers/{id}', [SalePortalController::class, 'showStockTransfer'])->name('transfers.show');
     });
 });
 

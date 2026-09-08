@@ -5,7 +5,7 @@
     {{-- Desktop brand panel --}}
     <div class="hidden lg:flex lg:w-[44%] bg-[#0b1220] text-white flex-col justify-between p-12">
         <div class="flex items-center gap-3">
-            <img src="{{ asset('pwa/sale-icon-192.png') }}" alt="" class="h-11 w-11 rounded-xl bg-sale">
+            <div class="h-11 w-11 rounded-xl bg-sale flex items-center justify-center text-white font-black text-xl">S</div>
             <div>
                 <div class="font-extrabold text-lg">Sales App</div>
                 <div class="text-sm text-white/50">Representative portal</div>
@@ -22,14 +22,14 @@
     <div class="flex-1 flex flex-col justify-center px-4 py-10 lg:px-16">
         <div class="w-full max-w-md mx-auto">
             <div class="text-center lg:text-left mb-8">
-                <div class="mx-auto lg:mx-0 h-16 w-16 rounded-2xl bg-sale flex items-center justify-center text-white text-2xl font-black shadow-lg shadow-teal-900/20 mb-4">S</div>
+                <div class="mx-auto lg:mx-0 h-16 w-16 rounded-2xl bg-sale flex items-center justify-center text-white text-2xl font-black shadow-lg shadow-red-900/20 mb-4">S</div>
                 <h1 class="text-2xl lg:text-3xl font-extrabold tracking-tight">Sales Representative</h1>
                 <p class="text-sm text-slate-500 mt-1">Sales users only — not for admin or other staff</p>
             </div>
 
             @if(session('status'))
                 @php $st = session('status'); @endphp
-                <div class="mb-4 rounded-xl px-3 py-2.5 text-sm font-semibold {{ !empty($st['success']) ? 'bg-emerald-50 text-emerald-900 border border-emerald-200' : 'bg-rose-50 text-rose-900 border border-rose-200' }}">
+                <div class="mb-4 rounded-xl px-3 py-2.5 text-sm font-semibold {{ !empty($st['success']) ? 'bg-sale-soft text-sale-dark border border-rose-200' : 'bg-rose-50 text-rose-900 border border-rose-200' }}">
                     {{ is_array($st) ? ($st['msg'] ?? '') : $st }}
                 </div>
             @endif

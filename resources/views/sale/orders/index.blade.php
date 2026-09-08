@@ -1,110 +1,234 @@
-@extends('sale.layout')
-@section('title', 'Orders')
-@section('header', 'Order list')
+﻿@extends('sale.layout')
+@section('title', 'Reports')
+@section('header', 'Reports')
+@section('header_right')
+<button type="button" class="sale-rpt-more-btn" id="saleRptMoreBtn" aria-label="More">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg>
+</button>
+@endsection
 @section('content')
-<div class="sale-page-tool">
-    <span class="sale-chip" id="saleOrderCount">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
-        {{ $orders->total() }} order(s)
-    </span>
-    <a href="{{ route('sale.orders.create') }}" class="sale-btn-sm lg:hidden">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>
-        Create
-    </a>
+@php
+    $rs = $reportStats ?? [];
+    $g = $goals ?? [];
+    $period = $period ?? 'monthly';
+    $monthKey = $monthKey ?? now()->format('Y-m');
+    $periodLabel = $periodLabel ?? now()->format('M Y');
+    $goalPct = function ($cur, $tgt) {
+        $tgt = (float) $tgt;
+        if ($tgt <= 0) {
+            return 0;
+        }
+
+        return (int) min(100, round(((float) $cur / $tgt) * 100));
+    };
+    $section = $section ?? '';
+    $visitCustomers = $visitCustomers ?? collect();
+    $rptBase = array_filter([
+        'period' => $period,
+        'month' => $period === 'monthly' ? $monthKey : null,
+        'section' => $section ?: null,
+        'q' => $q ?? null,
+        'status' => $status ?? null,
+    ]);
+    $rptLink = function ($sec) use ($period, $monthKey) {
+        return route('sale.orders', array_filter([
+            'period' => $period,
+            'month' => $period === 'monthly' ? $monthKey : null,
+            'section' => $sec,
+        ]));
+    };
+    $listTitle = $section === 'invoices' ? 'Invoices' : ($section === 'payments' ? 'Payments' : ($section === 'visits' ? 'Visits' : ($section === 'orders' ? 'Orders' : '')));
+    $periodName = $period === 'daily' ? 'Daily Statistic' : ($period === 'weekly' ? 'Weekly Statistic' : 'Monthly Statistic');
+@endphp
+<div class="sale-rpt">
+    <div class="sale-rpt__row">
+        <button type="button" class="sale-rpt__dd" id="salePeriodOpen">{{ $periodName }} <span class="sale-rpt__caret"></span></button>
+        <button type="button" class="sale-rpt__dd" id="saleMonthOpen">{{ $periodLabel }} <span class="sale-rpt__caret"></span></button>
+    </div>
+    <div class="sale-goals">
+        <h2>Sales Goals</h2>
+        <div class="sale-goals__grid">
+            <a class="sale-goal" href="{{ $rptLink('orders') }}">
+                <div class="sale-goal__arc" style="--p: {{ $goalPct($g['orders_current'] ?? 0, $g['orders_target'] ?? 0) }}"><b>{{ $goalPct($g['orders_current'] ?? 0, $g['orders_target'] ?? 0) }}%</b></div>
+                <div class="sale-goal__name">Orders</div>
+                <div class="sale-goal__cur" style="color:#7c3aed">Current: ${{ number_format((float) ($g['orders_current'] ?? 0), 2) }}</div>
+                <div class="sale-goal__tgt">Target: ${{ number_format((float) ($g['orders_target'] ?? 0), 2) }}</div>
+            </a>
+            <a class="sale-goal" href="{{ $rptLink('invoices') }}">
+                <div class="sale-goal__arc" style="--p: {{ $goalPct($g['invoices_current'] ?? 0, $g['invoices_target'] ?? 0) }}"><b>{{ $goalPct($g['invoices_current'] ?? 0, $g['invoices_target'] ?? 0) }}%</b></div>
+                <div class="sale-goal__name">Invoices</div>
+                <div class="sale-goal__cur" style="color:#ea580c">Current: ${{ number_format((float) ($g['invoices_current'] ?? 0), 2) }}</div>
+                <div class="sale-goal__tgt">Target: ${{ number_format((float) ($g['invoices_target'] ?? 0), 2) }}</div>
+            </a>
+            <a class="sale-goal" href="{{ $rptLink('payments') }}">
+                <div class="sale-goal__arc" style="--p: {{ $goalPct($g['payments_current'] ?? 0, $g['payments_target'] ?? 0) }}"><b>{{ $goalPct($g['payments_current'] ?? 0, $g['payments_target'] ?? 0) }}%</b></div>
+                <div class="sale-goal__name">Payments</div>
+                <div class="sale-goal__cur" style="color:#e53935">Current: ${{ number_format((float) ($g['payments_current'] ?? 0), 2) }}</div>
+                <div class="sale-goal__tgt">Target: ${{ number_format((float) ($g['payments_target'] ?? 0), 2) }}</div>
+            </a>
+            <a class="sale-goal" href="{{ $rptLink('visits') }}">
+                <div class="sale-goal__arc" style="--p: {{ $goalPct($g['visits_current'] ?? 0, $g['visits_target'] ?? 0) }}"><b>{{ $goalPct($g['visits_current'] ?? 0, $g['visits_target'] ?? 0) }}%</b></div>
+                <div class="sale-goal__name">Visits</div>
+                <div class="sale-goal__cur" style="color:#0284c7">Current: {{ (int) ($g['visits_current'] ?? 0) }}</div>
+                <div class="sale-goal__tgt">Target: {{ (int) ($g['visits_target'] ?? 0) }}</div>
+            </a>
+        </div>
+    </div>
+
+    @php $t = $tx ?? []; @endphp
+    <div class="sale-tx">
+        <h2>Transactions</h2>
+        <div class="sale-tx__grid">
+            <a class="sale-tx__tile is-quotes" href="{{ $rptLink('quotes') }}">
+                <div class="sale-tx__top"><b>{{ (int) ($t['quotes'] ?? 0) }} Quotes</b><span class="sale-rpt__caret"></span></div>
+                <div class="sale-tx__amt">${{ number_format((float) ($t['quotes_total'] ?? 0), 2) }}</div>
+            </a>
+            <a class="sale-tx__tile is-orders" href="{{ $rptLink('orders') }}">
+                <div class="sale-tx__top"><b>{{ (int) ($t['orders'] ?? 0) }} Orders</b><span class="sale-rpt__caret"></span></div>
+                <div class="sale-tx__amt">${{ number_format((float) ($t['orders_total'] ?? 0), 2) }}</div>
+            </a>
+            <a class="sale-tx__tile is-invoices" href="{{ $rptLink('invoices') }}">
+                <div class="sale-tx__top"><b>{{ (int) ($t['invoices'] ?? 0) }} Invoices</b><span class="sale-rpt__caret"></span></div>
+                <div class="sale-tx__amt">${{ number_format((float) ($t['invoices_total'] ?? 0), 2) }}</div>
+            </a>
+            <a class="sale-tx__tile is-credit" href="{{ $rptLink('credit') }}">
+                <div class="sale-tx__top"><b>{{ (int) ($t['credit'] ?? 0) }} Credit</b><span class="sale-rpt__caret"></span></div>
+                <div class="sale-tx__amt">${{ number_format((float) ($t['credit_total'] ?? 0), 2) }}</div>
+            </a>
+            <a class="sale-tx__tile is-pay sale-tx__tile--wide" href="{{ $rptLink('payments') }}">
+                <div class="sale-tx__top"><b>{{ (int) ($t['payments'] ?? 0) }} Payments</b><span class="sale-rpt__caret"></span></div>
+                <div class="sale-tx__amt">${{ number_format((float) ($t['payments_total'] ?? 0), 2) }}</div>
+            </a>
+        </div>
+    </div>
 </div>
 
-<form method="GET" action="{{ route('sale.orders') }}" id="saleOrderSearchForm" class="sale-card !p-3 mb-3 space-y-2">
-    <input type="hidden" name="status" value="{{ $status ?? '' }}">
-    <input type="search" name="q" id="saleOrderSearch" value="{{ $q ?? '' }}" class="sale-input" placeholder="Search customer / order / invoice no" autocomplete="off">
-    <div class="sale-prod-app__chips" id="saleOrderChips">
-        @php $curStatus = $status ?? ''; @endphp
-        <a href="{{ route('sale.orders', array_filter(['q' => $q ?? ''])) }}" class="sale-chip {{ $curStatus === '' ? 'active' : '' }}">All</a>
-        <a href="{{ route('sale.orders', array_filter(['q' => $q ?? '', 'status' => 'sale'])) }}" class="sale-chip {{ $curStatus === 'sale' ? 'active' : '' }}">Sale</a>
-        <a href="{{ route('sale.orders', array_filter(['q' => $q ?? '', 'status' => 'estimate'])) }}" class="sale-chip {{ $curStatus === 'estimate' ? 'active' : '' }}">Estimate</a>
-        <a href="{{ route('sale.orders', array_filter(['q' => $q ?? '', 'status' => 'invoiced'])) }}" class="sale-chip {{ $curStatus === 'invoiced' ? 'active' : '' }}">Invoiced</a>
+<div id="saleRptMenu" class="sale-sheet sale-sheet--rpt" hidden>
+    <div class="sale-sheet__panel">
+        <div class="sale-sheet__head is-center">
+            <div class="sale-sheet__title">Reports</div>
+            <button type="button" class="sale-sheet__close" id="saleRptMenuClose" aria-label="Close">×</button>
+        </div>
+        <div class="sale-sheet__body !pt-1">
+            <a class="sale-act-row" href="{{ route('sale.orders', ['section' => 'day', 'period' => 'daily', 'day' => now()->format('Y-m-d')]) }}">
+                <svg viewBox="0 0 24 24"><path d="M4 14a8 8 0 1 1 8 6"/><path d="M4 14h6v6"/></svg>
+                Start/End of day report
+            </a>
+            <a class="sale-act-row" href="{{ route('sale.products') }}">
+                <svg viewBox="0 0 24 24"><path d="M3 10h18M5 10V8l7-4 7 4v2M6 10v8h12v-8"/></svg>
+                Inventory Report
+            </a>
+        </div>
+        <div class="sale-sheet__foot">
+            <button type="button" class="sale-more-cancel" id="saleRptMenuCancel">CANCEL</button>
+        </div>
     </div>
-</form>
-
-<div id="saleOrderResults">
-<div class="space-y-2">
-    @forelse($orders as $order)
-        @php
-            $displayStatus = $order->sale_status ?? 'sale';
-            if ($displayStatus === 'invoiced') {
-                $badge = 'sale-badge--completed';
-                $badgeLabel = 'Invoiced';
-            } elseif ($displayStatus === 'estimate') {
-                $badge = 'sale-badge--draft';
-                $badgeLabel = 'Estimate';
-            } elseif ($displayStatus === 'back_order') {
-                $badge = 'sale-badge--partial';
-                $badgeLabel = 'Back Order';
-            } else {
-                $badge = 'sale-badge--ordered';
-                $badgeLabel = 'Sale';
-            }
-        @endphp
-        <div class="sale-order-row !items-stretch">
-            <a href="{{ route('sale.orders.show', $order->id) }}" class="sale-order-row__ico shrink-0 self-center">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg>
-            </a>
-            <a href="{{ route('sale.orders.show', $order->id) }}" class="sale-order-row__body min-w-0 flex-1 no-underline text-inherit">
-                <div class="font-extrabold text-[15px] truncate">{{ $order->invoice_no }}</div>
-                @if(!empty($order->converted_invoice_no))
-                    <div class="text-xs font-bold text-sale mt-0.5">Invoice {{ $order->converted_invoice_no }}</div>
-                @endif
-                <div class="text-sm text-slate-500 truncate mt-0.5">
-                    {{ optional($order->contact)->supplier_business_name ?: optional($order->contact)->name ?: 'Customer' }}
-                </div>
-                @if(optional($order->contact)->mobile)
-                    <div class="text-xs text-slate-400 mt-0.5">{{ $order->contact->mobile }}</div>
-                @endif
-                <div class="text-xs text-slate-400 mt-1">
-                    {{ \Carbon\Carbon::parse($order->transaction_date)->format('M j, Y g:i A') }}
-                </div>
-            </a>
-            <div class="sale-order-row__meta shrink-0">
-                <div class="font-extrabold tabular-nums">${{ number_format($order->sale_display_total ?? $order->final_total, 2) }}</div>
-                <span class="sale-badge {{ $badge }} mt-1">{{ $badgeLabel }}</span>
-            </div>
-            <div class="sale-order-actions">
-                <a href="{{ route('sale.orders.show', $order->id) }}" class="sale-act sale-act--view" title="View">View</a>
-                @if(!empty($order->can_show_edit) || !empty($order->can_edit))
-                    @if(!empty($order->can_edit))
-                        <a href="{{ route('sale.orders.edit', $order->id) }}" class="sale-act sale-act--edit" title="Edit">Edit</a>
-                    @else
-                        <span class="sale-act sale-act--edit is-disabled" title="Invoiced — cannot edit" aria-disabled="true">Edit</span>
-                    @endif
-                @endif
-                <a href="{{ route('sale.orders.invoice', $order->id) }}" target="_blank" class="sale-act sale-act--dl" title="Invoice">Invoice</a>
-                <form method="POST" action="{{ route('sale.orders.destroy', $order->id) }}" onsubmit="return confirm('Delete order {{ $order->invoice_no }}?');">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="sale-act sale-act--del" title="Delete">Delete</button>
-                </form>
-            </div>
-        </div>
-    @empty
-        <div class="sale-card sale-empty">
-            <div class="sale-empty__ico">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
-            </div>
-            <p class="text-slate-500 text-sm mb-4">No orders yet.</p>
-            <a href="{{ route('sale.orders.create') }}" class="sale-btn inline-block w-auto px-6">Create first order</a>
-        </div>
-    @endforelse
 </div>
-
-@if($orders->hasPages())
-    <div class="mt-4">
-        {{ $orders->onEachSide(1)->links('sale.partials.pagination') }}
+<div id="salePeriodSheet" class="sale-sheet sale-sheet--rpt" hidden>
+    <div class="sale-sheet__panel">
+        <div class="sale-sheet__head">
+            <div class="sale-sheet__title">Select date period</div>
+            <button type="button" class="sale-sheet__close" id="salePeriodClose" aria-label="Close">×</button>
+        </div>
+        <div class="sale-sheet__body text-center">
+            <a class="sale-period-opt {{ $period === 'daily' ? 'is-on' : '' }}" href="{{ route('sale.orders', array_filter(['period' => 'daily'])) }}">Daily</a>
+            <a class="sale-period-opt {{ $period === 'weekly' ? 'is-on' : '' }}" href="{{ route('sale.orders', array_filter(['period' => 'weekly'])) }}">Weekly</a>
+            <a class="sale-period-opt {{ $period === 'monthly' ? 'is-on' : '' }}" href="{{ route('sale.orders', array_filter(['period' => 'monthly', 'month' => $monthKey])) }}">Monthly</a>
+        </div>
+        <div class="sale-sheet__foot">
+            <button type="button" class="sale-more-cancel" id="salePeriodCancel">CANCEL</button>
+        </div>
     </div>
-@endif
+</div>
+<div id="saleMonthSheet" class="sale-sheet sale-sheet--rpt" hidden>
+    <div class="sale-sheet__panel">
+        <button type="button" class="sale-month-done" id="saleMonthDone">Done</button>
+        <form method="GET" action="{{ route('sale.orders') }}" id="saleMonthForm">
+            <input type="hidden" name="period" id="saleWheelPeriod" value="{{ $period }}">
+            <input type="hidden" name="month" id="saleWheelMonth" value="{{ $monthKey }}">
+            <input type="hidden" name="day" id="saleWheelDay" value="{{ $dayKey ?? now()->format('Y-m-d') }}">
+        </form>
+        <div class="sale-wheel" id="saleWheel">
+            <div class="sale-wheel__hl" aria-hidden="true"></div>
+            <div class="sale-wheel__col" id="saleWheelM" data-kind="month">
+                @foreach(['January','February','March','April','May','June','July','August','September','October','November','December'] as $i => $mn)
+                    <div class="sale-wheel__item" data-val="{{ str_pad($i+1, 2, '0', STR_PAD_LEFT) }}">{{ $mn }}</div>
+                @endforeach
+            </div>
+            <div class="sale-wheel__col" id="saleWheelD" data-kind="day">
+                @for($d = 1; $d <= 31; $d++)
+                    <div class="sale-wheel__item" data-val="{{ str_pad($d, 2, '0', STR_PAD_LEFT) }}">{{ $d }}</div>
+                @endfor
+            </div>
+            <div class="sale-wheel__col" id="saleWheelY" data-kind="year">
+                @for($y = now()->year - 2; $y <= now()->year + 4; $y++)
+                    <div class="sale-wheel__item" data-val="{{ $y }}">{{ $y }}</div>
+                @endfor
+            </div>
+        </div>
+    </div>
 </div>
 @endsection
 
 @push('scripts')
 <script>
+(function () {
+    function bindSheet(openId, sheetId, closes) {
+        const sheet = document.getElementById(sheetId);
+        const open = document.getElementById(openId);
+        if (!sheet || !open) return;
+        open.addEventListener('click', () => { sheet.hidden = false; });
+        (closes || []).forEach((id) => {
+            document.getElementById(id)?.addEventListener('click', () => { sheet.hidden = true; });
+        });
+        sheet.addEventListener('click', (e) => { if (e.target === sheet) sheet.hidden = true; });
+    }
+    bindSheet('saleRptMoreBtn', 'saleRptMenu', ['saleRptMenuClose', 'saleRptMenuCancel']);
+    bindSheet('salePeriodOpen', 'salePeriodSheet', ['salePeriodClose', 'salePeriodCancel']);
+    bindSheet('saleMonthOpen', 'saleMonthSheet', []);
+    function wheelValue(col) {
+        if (!col) return '';
+        const items = [...col.querySelectorAll('.sale-wheel__item')];
+        const mid = col.getBoundingClientRect().top + col.clientHeight / 2;
+        let best = items[0], bestDist = 9999;
+        items.forEach((it) => {
+            const r = it.getBoundingClientRect();
+            const d = Math.abs((r.top + r.height / 2) - mid);
+            if (d < bestDist) { bestDist = d; best = it; }
+        });
+        return best ? best.getAttribute('data-val') : '';
+    }
+    function scrollWheelTo(col, val) {
+        if (!col || !val) return;
+        const item = col.querySelector('.sale-wheel__item[data-val="' + val + '"]');
+        if (!item) return;
+        const top = item.offsetTop - (col.clientHeight / 2) + (item.offsetHeight / 2);
+        col.scrollTop = Math.max(0, top);
+    }
+    document.getElementById('saleMonthOpen')?.addEventListener('click', () => {
+        setTimeout(() => {
+            const mk = @json($monthKey);
+            const dk = @json($dayKey ?? now()->format('Y-m-d'));
+            scrollWheelTo(document.getElementById('saleWheelM'), mk.slice(5, 7));
+            scrollWheelTo(document.getElementById('saleWheelY'), mk.slice(0, 4));
+            scrollWheelTo(document.getElementById('saleWheelD'), dk.slice(8, 10));
+        }, 50);
+    });
+    document.getElementById('saleMonthDone')?.addEventListener('click', () => {
+        const form = document.getElementById('saleMonthForm');
+        const m = wheelValue(document.getElementById('saleWheelM'));
+        const y = wheelValue(document.getElementById('saleWheelY'));
+        const d = wheelValue(document.getElementById('saleWheelD')) || '01';
+        if (!form || !m || !y) return;
+        const period = @json($period);
+        document.getElementById('saleWheelPeriod').value = period;
+        document.getElementById('saleWheelMonth').value = y + '-' + m;
+        const last = new Date(Number(y), Number(m), 0).getDate();
+        const day = String(Math.min(Number(d), last)).padStart(2, '0');
+        document.getElementById('saleWheelDay').value = y + '-' + m + '-' + day;
+        form.submit();
+    });
+})();
 (function () {
     const form = document.getElementById('saleOrderSearchForm');
     const input = document.getElementById('saleOrderSearch');
