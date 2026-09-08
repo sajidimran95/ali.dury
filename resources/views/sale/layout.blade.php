@@ -66,7 +66,7 @@
             .lg\:w-\[44\%\] { width: 44%; }
             .lg\:flex { display: flex; }
         }
-        body { font-family: Inter, system-ui, sans-serif; background: #fff; color: #0b1220; margin: 0; }
+        body { font-family: Inter, system-ui, sans-serif; background: #f4f6fb; color: #0b1220; margin: 0; }
         .sale-input {
             width: 100%; border: 1px solid #e2e8f0; border-radius: 12px; padding: .75rem .9rem;
             font-size: .9375rem; background: #fff; outline: none; box-sizing: border-box;
@@ -88,8 +88,8 @@
             width: auto;
         }
         .sale-card {
-            background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 14px;
-            box-shadow: 0 1px 2px rgba(15,23,42,.03);
+            background: #fff; border: 1px solid #e8edf5; border-radius: 18px; padding: 14px;
+            box-shadow: 0 8px 24px rgba(15,23,42,.05);
         }
         .sale-badge {
             display: inline-flex; align-items: center; border-radius: 999px;
@@ -262,6 +262,7 @@
         }
         .sale-tab.active { color: #e53935; }
         .sale-tab.active svg { stroke-width: 2.2; }
+        .sale-tab.active span, .sale-tab.active { font-weight: 800; }
         .sale-tab-fab {
             width: 54px; height: 54px; border-radius: 999px;
             background: #e53935; color: #fff;
@@ -2342,11 +2343,11 @@
         }
         .sale-attn-no { background: transparent; border: 1.5px solid #e53935; color: #e53935; }
         .sale-attn-yes { background: #e53935; border: 0; color: #fff; }
-        body.sale-page-reports { background: #fff; }
+        body.sale-page-reports { background: #f4f6fb; }
         body.sale-page-reports .sale-m-only.sticky { background: #fff; }
-        body.sale-page-reports .sale-main-app { background: #fff !important; }
-        body.sale-authed { background: #fff; }
-        body.sale-authed .sale-main-app { background: #fff; }
+        body.sale-page-reports .sale-main-app { background: #f4f6fb !important; }
+        body.sale-authed { background: #f4f6fb; }
+        body.sale-authed .sale-main-app { background: #f4f6fb; }
         .sale-rpt { color: #0b1220; padding-bottom: 12px; }
         .sale-rpt__row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
         .sale-rpt__dd { background: none; border: 0; color: #0b1220; font-weight: 800; font-size: 15px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
@@ -2357,26 +2358,26 @@
             border-top: 6px solid #e53935;
         }
         .sale-goals {
-            background: #fff; border-radius: 18px; padding: 14px 10px 16px;
-            box-shadow: 0 8px 24px rgba(15,23,42,.06);
+            background: #fff; border-radius: 20px; padding: 16px 12px 18px;
+            box-shadow: 0 10px 28px rgba(15,23,42,.06);
+            border: 1px solid #eef2f7;
         }
         .sale-goals h2 { text-align: center; font-size: 16px; font-weight: 800; margin: 0 0 12px; }
         .sale-goals__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        a.sale-goal { text-align: center; padding: 10px 8px; text-decoration: none; color: inherit; display: block; border-radius: 14px; border: 1px solid transparent; }
-        a.sale-goal.is-on { border-color: #e53935; background: #fff5f5; }
+        a.sale-goal { text-align: center; padding: 10px 8px; text-decoration: none; color: inherit; display: block; border-radius: 16px; border: 1px solid transparent; }
+        a.sale-goal.is-on { border-color: #fecaca; background: #fff7f7; }
         .sale-goal__arc {
-            width: 92px; height: 52px; margin: 0 auto 6px; position: relative;
-            background: conic-gradient(from 180deg at 50% 100%, #e53935 0deg, #e53935 calc(var(--p, 0) * 180deg / 100), #e2e8f0 calc(var(--p, 0) * 180deg / 100), #e2e8f0 180deg);
-            border-radius: 92px 92px 0 0; overflow: hidden;
+            width: 118px; height: 72px; margin: 0 auto 4px; position: relative;
         }
-        .sale-goal__arc::after {
-            content: ''; position: absolute; left: 10px; right: 10px; top: 10px; height: 42px;
-            background: #fff; border-radius: 80px 80px 0 0;
+        .sale-goal__arc svg { width: 118px; height: 72px; display: block; overflow: visible; }
+        .sale-goal__track, .sale-goal__fill {
+            fill: none; stroke-width: 10; stroke-linecap: round;
         }
-        a.sale-goal.is-on .sale-goal__arc::after { background: #fff5f5; }
+        .sale-goal__track { stroke: #e8edf5; }
+        .sale-goal__fill { stroke: #e53935; }
         .sale-goal__arc b {
-            position: absolute; left: 0; right: 0; bottom: 4px; z-index: 1;
-            font-size: 13px; font-weight: 800;
+            position: absolute; left: 0; right: 0; bottom: 2px; z-index: 1;
+            font-size: 15px; font-weight: 800; color: #0b1220;
         }
         .sale-goal__name { font-weight: 800; font-size: 14px; margin-bottom: 4px; }
         .sale-goal__cur { font-size: 12px; font-weight: 700; }
@@ -2386,8 +2387,9 @@
         .sale-tx__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
         .sale-tx__tile {
             display: block; text-decoration: none; color: inherit;
-            background: #fff; border: 1px solid #eee; border-radius: 12px;
+            background: #fff; border: 1px solid #eef2f7; border-radius: 16px;
             padding: 12px 12px 10px; min-height: 72px;
+            box-shadow: 0 6px 16px rgba(15,23,42,.04);
         }
         .sale-tx__tile--wide { grid-column: 1 / -1; max-width: 50%; }
         .sale-tx__top { display: flex; justify-content: space-between; align-items: center; gap: 6px; }

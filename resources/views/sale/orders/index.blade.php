@@ -39,6 +39,11 @@
     };
     $listTitle = $section === 'invoices' ? 'Invoices' : ($section === 'payments' ? 'Payments' : ($section === 'visits' ? 'Visits' : ($section === 'orders' ? 'Orders' : '')));
     $periodName = $period === 'daily' ? 'Daily Statistic' : ($period === 'weekly' ? 'Weekly Statistic' : 'Monthly Statistic');
+    $goalArc = function ($pct) {
+        $pct = max(0, min(100, (int) $pct));
+
+        return $pct;
+    };
 @endphp
 <div class="sale-rpt">
     <div class="sale-rpt__row">
@@ -48,26 +53,54 @@
     <div class="sale-goals">
         <h2>Sales Goals</h2>
         <div class="sale-goals__grid">
+            @php $pOrders = $goalPct($g['orders_current'] ?? 0, $g['orders_target'] ?? 0); @endphp
             <a class="sale-goal" href="{{ $rptLink('orders') }}">
-                <div class="sale-goal__arc" style="--p: {{ $goalPct($g['orders_current'] ?? 0, $g['orders_target'] ?? 0) }}"><b>{{ $goalPct($g['orders_current'] ?? 0, $g['orders_target'] ?? 0) }}%</b></div>
+                <div class="sale-goal__arc">
+                    <svg viewBox="0 0 120 70" aria-hidden="true">
+                        <path class="sale-goal__track" d="M14 62 A46 46 0 0 1 106 62"/>
+                        <path class="sale-goal__fill" d="M14 62 A46 46 0 0 1 106 62" pathLength="100" stroke-dasharray="{{ $goalArc($pOrders) }} 100"/>
+                    </svg>
+                    <b>{{ $pOrders }}%</b>
+                </div>
                 <div class="sale-goal__name">Orders</div>
                 <div class="sale-goal__cur" style="color:#7c3aed">Current: ${{ number_format((float) ($g['orders_current'] ?? 0), 2) }}</div>
                 <div class="sale-goal__tgt">Target: ${{ number_format((float) ($g['orders_target'] ?? 0), 2) }}</div>
             </a>
+            @php $pInv = $goalPct($g['invoices_current'] ?? 0, $g['invoices_target'] ?? 0); @endphp
             <a class="sale-goal" href="{{ $rptLink('invoices') }}">
-                <div class="sale-goal__arc" style="--p: {{ $goalPct($g['invoices_current'] ?? 0, $g['invoices_target'] ?? 0) }}"><b>{{ $goalPct($g['invoices_current'] ?? 0, $g['invoices_target'] ?? 0) }}%</b></div>
+                <div class="sale-goal__arc">
+                    <svg viewBox="0 0 120 70" aria-hidden="true">
+                        <path class="sale-goal__track" d="M14 62 A46 46 0 0 1 106 62"/>
+                        <path class="sale-goal__fill" d="M14 62 A46 46 0 0 1 106 62" pathLength="100" stroke-dasharray="{{ $goalArc($pInv) }} 100"/>
+                    </svg>
+                    <b>{{ $pInv }}%</b>
+                </div>
                 <div class="sale-goal__name">Invoices</div>
                 <div class="sale-goal__cur" style="color:#ea580c">Current: ${{ number_format((float) ($g['invoices_current'] ?? 0), 2) }}</div>
                 <div class="sale-goal__tgt">Target: ${{ number_format((float) ($g['invoices_target'] ?? 0), 2) }}</div>
             </a>
+            @php $pPay = $goalPct($g['payments_current'] ?? 0, $g['payments_target'] ?? 0); @endphp
             <a class="sale-goal" href="{{ $rptLink('payments') }}">
-                <div class="sale-goal__arc" style="--p: {{ $goalPct($g['payments_current'] ?? 0, $g['payments_target'] ?? 0) }}"><b>{{ $goalPct($g['payments_current'] ?? 0, $g['payments_target'] ?? 0) }}%</b></div>
+                <div class="sale-goal__arc">
+                    <svg viewBox="0 0 120 70" aria-hidden="true">
+                        <path class="sale-goal__track" d="M14 62 A46 46 0 0 1 106 62"/>
+                        <path class="sale-goal__fill" d="M14 62 A46 46 0 0 1 106 62" pathLength="100" stroke-dasharray="{{ $goalArc($pPay) }} 100"/>
+                    </svg>
+                    <b>{{ $pPay }}%</b>
+                </div>
                 <div class="sale-goal__name">Payments</div>
                 <div class="sale-goal__cur" style="color:#e53935">Current: ${{ number_format((float) ($g['payments_current'] ?? 0), 2) }}</div>
                 <div class="sale-goal__tgt">Target: ${{ number_format((float) ($g['payments_target'] ?? 0), 2) }}</div>
             </a>
+            @php $pVis = $goalPct($g['visits_current'] ?? 0, $g['visits_target'] ?? 0); @endphp
             <a class="sale-goal" href="{{ $rptLink('visits') }}">
-                <div class="sale-goal__arc" style="--p: {{ $goalPct($g['visits_current'] ?? 0, $g['visits_target'] ?? 0) }}"><b>{{ $goalPct($g['visits_current'] ?? 0, $g['visits_target'] ?? 0) }}%</b></div>
+                <div class="sale-goal__arc">
+                    <svg viewBox="0 0 120 70" aria-hidden="true">
+                        <path class="sale-goal__track" d="M14 62 A46 46 0 0 1 106 62"/>
+                        <path class="sale-goal__fill" d="M14 62 A46 46 0 0 1 106 62" pathLength="100" stroke-dasharray="{{ $goalArc($pVis) }} 100"/>
+                    </svg>
+                    <b>{{ $pVis }}%</b>
+                </div>
                 <div class="sale-goal__name">Visits</div>
                 <div class="sale-goal__cur" style="color:#0284c7">Current: {{ (int) ($g['visits_current'] ?? 0) }}</div>
                 <div class="sale-goal__tgt">Target: {{ (int) ($g['visits_target'] ?? 0) }}</div>
