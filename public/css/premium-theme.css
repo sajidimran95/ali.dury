@@ -3867,6 +3867,94 @@ body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dataTables_length .for
     }
 }
 
+/* Small / 14" laptops: never let export buttons overlap */
+@media (max-width: 1400px) {
+    body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dt-toolbar__left,
+    body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dt-toolbar__right,
+    body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper > .row:first-child > [class*="col-"],
+    body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .row.margin-bottom-20 > [class*="col-"] {
+        display: block !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        float: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper > .row:first-child,
+    body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .row.margin-bottom-20,
+    body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dt-toolbar {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        align-items: center !important;
+        gap: 8px 10px !important;
+        grid-template-columns: none !important;
+    }
+
+    body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dataTables_length {
+        order: 1;
+        grid-column: auto !important;
+        grid-row: auto !important;
+        width: auto !important;
+    }
+
+    body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dataTables_filter {
+        order: 2;
+        margin-left: auto !important;
+        grid-column: auto !important;
+        grid-row: auto !important;
+        justify-self: unset !important;
+        width: auto !important;
+    }
+
+    body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dt-buttons,
+    body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dt-buttons.btn-group {
+        order: 3;
+        flex: 1 1 100% !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 6px !important;
+        float: none !important;
+        grid-column: auto !important;
+        grid-row: auto !important;
+        position: relative !important;
+    }
+
+    body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dt-buttons > .btn,
+    body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dt-buttons > .tw-dw-btn,
+    body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dt-buttons > a,
+    body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .btn-group > .btn {
+        float: none !important;
+        position: relative !important;
+        margin: 0 !important;
+        left: auto !important;
+        top: auto !important;
+    }
+
+    body.zoho-theme:not(.pos-sale-theme) .table-responsive,
+    body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper,
+    body.zoho-theme:not(.pos-sale-theme) .dataTables_scroll {
+        overflow-x: auto;
+        max-width: 100%;
+    }
+}
+
+body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dt-buttons,
+body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dt-buttons.btn-group {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    gap: 6px;
+    float: none !important;
+}
+
+body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dt-buttons > .btn + .btn,
+body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .btn-group > .btn + .btn {
+    margin-left: 0 !important;
+}
+
 /* Active page ? style the clickable child, never the wrapping <li> */
 body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dataTables_paginate .paginate_button.current > a,
 body.zoho-theme:not(.pos-sale-theme) .dataTables_wrapper .dataTables_paginate .paginate_button.current > span,
