@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Sep 05, 2026 at 03:07 PM
+-- Generation Time: Sep 08, 2026 at 07:39 PM
 -- Server version: 8.4.3
 -- PHP Version: 8.4.2
 
@@ -339,7 +339,13 @@ INSERT INTO `activity_log` (`id`, `log_name`, `description`, `subject_id`, `subj
 (229, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-09-04 09:36:46', '2026-09-04 09:36:46'),
 (230, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-09-05 03:15:21', '2026-09-05 03:15:21'),
 (231, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-09-05 03:50:37', '2026-09-05 03:50:37'),
-(232, 'default', 'added', 182, 'App\\Transaction', NULL, 1, 1, 'App\\User', '{\"attributes\":{\"type\":\"sell\",\"status\":\"final\",\"payment_status\":\"paid\",\"final_total\":6.99}}', NULL, '2026-09-05 04:26:18', '2026-09-05 04:26:18');
+(232, 'default', 'added', 182, 'App\\Transaction', NULL, 1, 1, 'App\\User', '{\"attributes\":{\"type\":\"sell\",\"status\":\"final\",\"payment_status\":\"paid\",\"final_total\":6.99}}', NULL, '2026-09-05 04:26:18', '2026-09-05 04:26:18'),
+(233, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-09-08 03:14:01', '2026-09-08 03:14:01'),
+(234, 'default', 'logout', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-09-08 03:27:26', '2026-09-08 03:27:26'),
+(235, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-09-08 07:29:27', '2026-09-08 07:29:27'),
+(236, 'default', 'sell_deleted', 166, 'App\\Transaction', NULL, 1, 1, 'App\\User', '{\"id\":166,\"invoice_no\":\"DEMO-INV-0006\",\"attributes\":{\"type\":\"sell\",\"status\":\"draft\",\"payment_status\":\"due\",\"final_total\":\"685.0000\"}}', NULL, '2026-09-08 07:31:16', '2026-09-08 07:31:16'),
+(237, 'default', 'logout', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-09-08 09:04:51', '2026-09-08 09:04:51'),
+(238, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-09-08 09:05:02', '2026-09-08 09:05:02');
 
 -- --------------------------------------------------------
 
@@ -1509,7 +1515,11 @@ INSERT INTO `ecom_carts` (`id`, `business_id`, `contact_id`, `session_id`, `coup
 (140, 1, NULL, 'E8sh3iks5tOEKQRePsUONzVmO29V2MmErP1AR6pG', NULL, '2026-09-03 06:59:28', '2026-09-03 06:59:28'),
 (141, 1, NULL, 'QhB6ymQE0QgmCL1aVEQ24ASGZ6qhZVKttdxjMWXQ', NULL, '2026-09-04 09:36:29', '2026-09-04 09:36:29'),
 (142, 1, NULL, 'M2RAVA6VuQIfFtrrK822AhxgFtz7kC7WfUCs2vMh', NULL, '2026-09-05 03:11:12', '2026-09-05 03:11:12'),
-(143, 1, NULL, '5MMcRJApRdD3XRmbeAqzhYGIu9lgKOBwBSZxyrMe', NULL, '2026-09-05 03:34:14', '2026-09-05 03:34:14');
+(143, 1, NULL, '5MMcRJApRdD3XRmbeAqzhYGIu9lgKOBwBSZxyrMe', NULL, '2026-09-05 03:34:14', '2026-09-05 03:34:14'),
+(144, 1, NULL, '2b1Cf9cYCzfVBudmSJDTMUI0QHfMFJg1XNb92Fed', NULL, '2026-09-08 03:13:17', '2026-09-08 03:13:17'),
+(145, 1, NULL, 'xnHYBjvhIUVVMO9IQUdRmzKCRITE53dN2E51n32G', NULL, '2026-09-08 03:27:29', '2026-09-08 03:27:29'),
+(146, 1, NULL, 'kTnc5UWIUpKkJGVyNERtruus7RStwqcbPawwuWHl', NULL, '2026-09-08 07:29:16', '2026-09-08 07:29:16'),
+(147, 1, NULL, 'HVs3oyxNDV2Sj6RVaacRDFMwuWfGeVQWLMnwa8cD', NULL, '2026-09-08 07:41:57', '2026-09-08 07:41:57');
 
 -- --------------------------------------------------------
 
@@ -2401,7 +2411,10 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (322, '2026_08_24_211200_add_expense_permissions_to_sales_representative_role', 21),
 (323, '2026_08_25_010000_add_allow_customer_app_to_contacts_table', 21),
 (324, '2026_08_31_190000_add_fulfillment_pipeline_fields', 22),
-(325, '2026_09_01_030000_add_inventory_slug_to_customer_groups', 23);
+(325, '2026_09_01_030000_add_inventory_slug_to_customer_groups', 23),
+(326, '2026_09_08_210000_create_pos_quick_layouts_table', 24),
+(327, '2026_09_08_220000_add_sales_target_and_barcode_login_to_users', 24),
+(328, '2026_09_08_230000_add_period_sales_targets_to_users', 24);
 
 -- --------------------------------------------------------
 
@@ -2720,6 +2733,31 @@ INSERT INTO `permissions` (`id`, `name`, `guard_name`, `created_at`, `updated_at
 (98, 'view_own_expense', 'web', '2026-08-26 14:32:18', '2026-08-26 14:32:18'),
 (99, 'expense.add', 'web', '2026-08-26 14:32:18', '2026-08-26 14:32:18'),
 (100, 'selling_price_group.3', 'web', '2026-08-31 09:56:40', '2026-08-31 09:56:40');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `pos_quick_layouts`
+--
+
+CREATE TABLE `pos_quick_layouts` (
+  `id` int UNSIGNED NOT NULL,
+  `business_id` int UNSIGNED NOT NULL,
+  `user_id` int UNSIGNED NOT NULL,
+  `name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `keys` json DEFAULT NULL,
+  `keep_folder_open` tinyint(1) NOT NULL DEFAULT '1',
+  `is_current` tinyint(1) NOT NULL DEFAULT '0',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `pos_quick_layouts`
+--
+
+INSERT INTO `pos_quick_layouts` (`id`, `business_id`, `user_id`, `name`, `keys`, `keep_folder_open`, `is_current`, `created_at`, `updated_at`) VALUES
+(1, 1, 1, 'New layout', '[{\"slot\": 0, \"color\": \"#e67e22\", \"label\": \"Beverages\", \"category_id\": 10}, {\"slot\": 1, \"color\": \"#7c3aed\", \"label\": \"Household\", \"category_id\": 12}, {\"slot\": 2, \"color\": \"#db2777\", \"label\": \"Personal Care\", \"category_id\": 11}, {\"slot\": 3, \"color\": \"#e53935\", \"label\": \"Snacks\", \"category_id\": 9}, {\"slot\": 4, \"color\": \"#2980b9\", \"label\": \"Tobacco\", \"category_id\": 1}]', 1, 1, '2026-09-08 07:31:40', '2026-09-08 09:05:37');
 
 -- --------------------------------------------------------
 
@@ -3676,7 +3714,6 @@ INSERT INTO `transactions` (`id`, `business_id`, `location_id`, `is_kitchen_orde
 (164, 1, 1, 0, NULL, NULL, NULL, 'sell', NULL, 'final', NULL, 0, 'due', NULL, 15, NULL, 'DEMO-INV-0004', NULL, NULL, NULL, NULL, NULL, '2026-08-12 13:15:00', 427.0000, NULL, 0.0000, 'percentage', 0.0000, 0, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, '[DEMO] Demo sell', NULL, 0, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, 427.0000, NULL, NULL, NULL, NULL, NULL, 1, 0, 0, 1.000, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-18 15:31:03', '2026-08-18 15:31:03');
 INSERT INTO `transactions` (`id`, `business_id`, `location_id`, `is_kitchen_order`, `res_table_id`, `res_waiter_id`, `res_order_status`, `type`, `sub_type`, `status`, `sub_status`, `is_quotation`, `payment_status`, `adjustment_type`, `contact_id`, `customer_group_id`, `invoice_no`, `ref_no`, `source`, `order_source`, `subscription_no`, `subscription_repeat_on`, `transaction_date`, `total_before_tax`, `tax_id`, `tax_amount`, `discount_type`, `discount_amount`, `rp_redeemed`, `rp_redeemed_amount`, `shipping_details`, `shipping_method`, `shipping_address`, `delivery_date`, `shipping_status`, `fulfillment_stage`, `fulfillment_meta`, `shipping_date`, `shipping_tracking_no`, `no_of_boxes`, `delivered_to`, `delivery_person`, `shipping_charges`, `shipping_custom_field_1`, `shipping_custom_field_2`, `shipping_custom_field_3`, `shipping_custom_field_4`, `shipping_custom_field_5`, `additional_notes`, `staff_note`, `is_export`, `export_custom_fields_info`, `round_off_amount`, `additional_expense_key_1`, `additional_expense_value_1`, `additional_expense_key_2`, `additional_expense_value_2`, `additional_expense_key_3`, `additional_expense_value_3`, `additional_expense_key_4`, `additional_expense_value_4`, `final_total`, `expense_category_id`, `expense_sub_category_id`, `expense_for`, `commission_agent`, `document`, `is_direct_sale`, `crm_is_order_request`, `is_suspend`, `exchange_rate`, `total_amount_recovered`, `transfer_parent_id`, `return_parent_id`, `opening_stock_product_id`, `created_by`, `purchase_requisition_ids`, `prefer_payment_method`, `prefer_payment_account`, `sales_order_ids`, `purchase_order_ids`, `custom_field_1`, `custom_field_2`, `custom_field_3`, `custom_field_4`, `import_batch`, `import_time`, `types_of_service_id`, `packing_charge`, `packing_charge_type`, `service_custom_field_1`, `service_custom_field_2`, `service_custom_field_3`, `service_custom_field_4`, `service_custom_field_5`, `service_custom_field_6`, `is_created_from_api`, `rp_earned`, `order_addresses`, `is_recurring`, `recur_interval`, `recur_interval_type`, `recur_repetitions`, `recur_stopped_on`, `recur_parent_id`, `invoice_token`, `pay_term_number`, `pay_term_type`, `selling_price_group_id`, `created_at`, `updated_at`) VALUES
 (165, 1, 1, 0, NULL, NULL, NULL, 'sell', NULL, 'final', NULL, 0, 'paid', NULL, 16, NULL, 'DEMO-INV-0005', NULL, NULL, NULL, NULL, NULL, '2026-08-18 14:15:00', 396.0000, NULL, 0.0000, 'percentage', 0.0000, 0, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, '[DEMO] Demo sell', NULL, 0, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, 396.0000, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 1.000, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-18 15:31:03', '2026-08-18 15:31:03'),
-(166, 1, 1, 0, NULL, NULL, NULL, 'sell', NULL, 'draft', NULL, 0, 'due', NULL, 1, NULL, 'DEMO-INV-0006', NULL, NULL, NULL, NULL, NULL, '2026-08-17 15:15:00', 685.0000, NULL, 0.0000, 'percentage', 0.0000, 0, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, '[DEMO] Demo sell', NULL, 0, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, 685.0000, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 1.000, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-18 15:31:03', '2026-08-18 15:31:03'),
 (167, 1, 1, 0, NULL, NULL, NULL, 'sell', NULL, 'draft', 'quotation', 0, 'due', NULL, 1, NULL, 'DEMO-QT-0001', NULL, NULL, NULL, NULL, NULL, '2026-08-17 21:31:03', 460.0000, NULL, 0.0000, 'percentage', 0.0000, 0, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, '[DEMO] Demo sell', NULL, 0, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, 460.0000, NULL, NULL, NULL, NULL, NULL, 1, 0, 0, 1.000, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-18 15:31:03', '2026-08-18 15:31:03'),
 (168, 1, 1, 0, NULL, NULL, NULL, 'sell', NULL, 'final', NULL, 0, 'paid', NULL, 1, NULL, 'DEMO-INV-SO-0001', NULL, NULL, NULL, NULL, NULL, '2026-08-17 21:31:03', 135.0000, NULL, 0.0000, 'percentage', 0.0000, 0, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, '[DEMO] Demo sell', NULL, 0, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, 135.0000, NULL, NULL, NULL, NULL, NULL, 1, 0, 0, 1.000, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, '[157]', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-18 15:31:03', '2026-08-18 15:31:03'),
 (169, 1, 1, 0, NULL, NULL, NULL, 'expense', NULL, 'final', NULL, 0, 'paid', NULL, NULL, NULL, NULL, 'DEMO-EXP-0001', NULL, NULL, NULL, NULL, '2026-08-14 21:31:03', 850.0000, NULL, 0.0000, NULL, 0.0000, 0, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, '[DEMO] Store rent', NULL, 0, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, 850.0000, 1, NULL, NULL, NULL, NULL, 0, 0, 0, 1.000, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-18 15:31:03', '2026-08-18 15:31:03'),
@@ -4019,9 +4056,6 @@ INSERT INTO `transaction_sell_lines` (`id`, `transaction_id`, `product_id`, `var
 (158, 165, 1, 1, 4.0000, 0.0000, 0.0000, 0.0000, 0.0000, 25.0000, 25.0000, 'fixed', 0.0000, 25.0000, 0.0000, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, '', NULL, '2026-08-18 15:31:03', '2026-08-18 15:31:03'),
 (159, 165, 2, 2, 2.0000, 0.0000, 0.0000, 0.0000, 0.0000, 72.0000, 72.0000, 'fixed', 0.0000, 72.0000, 0.0000, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, '', NULL, '2026-08-18 15:31:03', '2026-08-18 15:31:03'),
 (160, 165, 3, 3, 4.0000, 0.0000, 0.0000, 0.0000, 0.0000, 38.0000, 38.0000, 'fixed', 0.0000, 38.0000, 0.0000, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, '', NULL, '2026-08-18 15:31:03', '2026-08-18 15:31:03'),
-(161, 166, 1, 1, 1.0000, 0.0000, 0.0000, 0.0000, 0.0000, 25.0000, 25.0000, 'fixed', 0.0000, 25.0000, 0.0000, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, '', NULL, '2026-08-18 15:31:03', '2026-08-18 15:31:03'),
-(162, 166, 2, 2, 6.0000, 0.0000, 0.0000, 0.0000, 0.0000, 72.0000, 72.0000, 'fixed', 0.0000, 72.0000, 0.0000, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, '', NULL, '2026-08-18 15:31:03', '2026-08-18 15:31:03'),
-(163, 166, 3, 3, 6.0000, 0.0000, 0.0000, 0.0000, 0.0000, 38.0000, 38.0000, 'fixed', 0.0000, 38.0000, 0.0000, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, '', NULL, '2026-08-18 15:31:03', '2026-08-18 15:31:03'),
 (164, 167, 1, 1, 4.0000, 0.0000, 0.0000, 0.0000, 0.0000, 25.0000, 25.0000, 'fixed', 0.0000, 25.0000, 0.0000, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, '', NULL, '2026-08-18 15:31:03', '2026-08-18 15:31:03'),
 (165, 167, 2, 2, 5.0000, 0.0000, 0.0000, 0.0000, 0.0000, 72.0000, 72.0000, 'fixed', 0.0000, 72.0000, 0.0000, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, '', NULL, '2026-08-18 15:31:03', '2026-08-18 15:31:03'),
 (166, 168, 1, 1, 1.0000, 0.0000, 0.0000, 0.0000, 0.0000, 25.0000, 25.0000, 'fixed', 0.0000, 25.0000, 0.0000, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, '', NULL, '2026-08-18 15:31:03', '2026-08-18 15:31:03'),
@@ -4249,12 +4283,17 @@ CREATE TABLE `users` (
   `paused_at` datetime DEFAULT NULL COMMENT 'Service staff available time paused at, Will be nulled on resume.',
   `max_sales_discount_percent` decimal(5,2) DEFAULT NULL,
   `allow_login` tinyint(1) NOT NULL DEFAULT '1',
+  `barcode_login` tinyint(1) NOT NULL DEFAULT '0',
   `status` enum('active','inactive','terminated') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'active',
   `is_enable_service_staff_pin` tinyint(1) NOT NULL DEFAULT '0',
   `service_staff_pin` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `crm_contact_id` int UNSIGNED DEFAULT NULL,
   `is_cmmsn_agnt` tinyint(1) NOT NULL DEFAULT '0',
   `cmmsn_percent` decimal(4,2) NOT NULL DEFAULT '0.00',
+  `sales_target` decimal(22,4) DEFAULT NULL,
+  `sales_target_daily` decimal(22,4) DEFAULT NULL,
+  `sales_target_weekly` decimal(22,4) DEFAULT NULL,
+  `sales_target_monthly` decimal(22,4) DEFAULT NULL,
   `selected_contacts` tinyint(1) NOT NULL DEFAULT '0',
   `dob` date DEFAULT NULL,
   `gender` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
@@ -4279,16 +4318,17 @@ CREATE TABLE `users` (
   `id_proof_number` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `deleted_at` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
-  `updated_at` timestamp NULL DEFAULT NULL
+  `updated_at` timestamp NULL DEFAULT NULL,
+  `pos_quick_keys_enabled` tinyint(1) NOT NULL DEFAULT '1'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`id`, `user_type`, `surname`, `first_name`, `last_name`, `username`, `email`, `password`, `language`, `contact_no`, `address`, `remember_token`, `business_id`, `available_at`, `paused_at`, `max_sales_discount_percent`, `allow_login`, `status`, `is_enable_service_staff_pin`, `service_staff_pin`, `crm_contact_id`, `is_cmmsn_agnt`, `cmmsn_percent`, `selected_contacts`, `dob`, `gender`, `marital_status`, `blood_group`, `contact_number`, `alt_number`, `family_number`, `fb_link`, `twitter_link`, `social_media_1`, `social_media_2`, `permanent_address`, `current_address`, `guardian_name`, `custom_field_1`, `custom_field_2`, `custom_field_3`, `custom_field_4`, `bank_details`, `id_proof_name`, `id_proof_number`, `deleted_at`, `created_at`, `updated_at`) VALUES
-(1, 'user', NULL, 'Japs', 'POS', 'japspos', 'japspos@gmail.com', '$2y$10$LH3D2XH/82k.Av8HfGb3GOfKM3F7Qi7I86iZLyxhJFtjajS8pKHpK', 'en', NULL, NULL, 'C0IaJH28LHJdIhv0TKdtYsujBUu8kyku28ELmzN6wECOwbTuB4ogH7XowePh', 1, NULL, NULL, NULL, 1, 'active', 0, NULL, NULL, 0, 0.00, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '{\"account_holder_name\":null,\"account_number\":null,\"bank_name\":null,\"bank_code\":null,\"branch\":null,\"tax_payer_id\":null}', NULL, NULL, NULL, '2026-06-04 16:29:53', '2026-07-20 06:42:21'),
-(3, 'user', NULL, 'Sales', NULL, 'sales', 'sales@japspos.com', '$2y$10$bhjln6gIUl7iQH99RhOHe.SdLfYtmWt46.QAc9EYGCwwKI.apVRG.', 'en', NULL, NULL, NULL, 1, NULL, NULL, NULL, 1, 'active', 0, NULL, NULL, 0, 0.00, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '{\"account_holder_name\":null,\"account_number\":null,\"bank_name\":null,\"bank_code\":null,\"branch\":null,\"tax_payer_id\":null}', NULL, NULL, NULL, '2026-08-17 03:13:14', '2026-08-17 03:13:14');
+INSERT INTO `users` (`id`, `user_type`, `surname`, `first_name`, `last_name`, `username`, `email`, `password`, `language`, `contact_no`, `address`, `remember_token`, `business_id`, `available_at`, `paused_at`, `max_sales_discount_percent`, `allow_login`, `barcode_login`, `status`, `is_enable_service_staff_pin`, `service_staff_pin`, `crm_contact_id`, `is_cmmsn_agnt`, `cmmsn_percent`, `sales_target`, `sales_target_daily`, `sales_target_weekly`, `sales_target_monthly`, `selected_contacts`, `dob`, `gender`, `marital_status`, `blood_group`, `contact_number`, `alt_number`, `family_number`, `fb_link`, `twitter_link`, `social_media_1`, `social_media_2`, `permanent_address`, `current_address`, `guardian_name`, `custom_field_1`, `custom_field_2`, `custom_field_3`, `custom_field_4`, `bank_details`, `id_proof_name`, `id_proof_number`, `deleted_at`, `created_at`, `updated_at`, `pos_quick_keys_enabled`) VALUES
+(1, 'user', NULL, 'Japs', 'POS', 'japspos', 'japspos@gmail.com', '$2y$10$LH3D2XH/82k.Av8HfGb3GOfKM3F7Qi7I86iZLyxhJFtjajS8pKHpK', 'en', NULL, NULL, 'si0L87cZq5yV5jAHVuvfqBO28C0M40Li5wPEIHsGByVo3c28gwLgEtWDo6aX', 1, NULL, NULL, NULL, 1, 0, 'active', 0, NULL, NULL, 0, 0.00, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '{\"account_holder_name\":null,\"account_number\":null,\"bank_name\":null,\"bank_code\":null,\"branch\":null,\"tax_payer_id\":null}', NULL, NULL, NULL, '2026-06-04 16:29:53', '2026-09-08 07:47:15', 1),
+(3, 'user', NULL, 'Sales', NULL, 'sales', 'sales@japspos.com', '$2y$10$bhjln6gIUl7iQH99RhOHe.SdLfYtmWt46.QAc9EYGCwwKI.apVRG.', 'en', NULL, NULL, NULL, 1, NULL, NULL, NULL, 1, 0, 'active', 0, NULL, NULL, 0, 0.00, NULL, 20.0000, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '{\"account_holder_name\":null,\"account_number\":null,\"bank_name\":null,\"bank_code\":null,\"branch\":null,\"tax_payer_id\":null}', NULL, NULL, NULL, '2026-08-17 03:13:14', '2026-09-08 07:35:23', 1);
 
 -- --------------------------------------------------------
 
@@ -5014,6 +5054,13 @@ ALTER TABLE `permissions`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `pos_quick_layouts`
+--
+ALTER TABLE `pos_quick_layouts`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `pos_quick_layouts_business_id_user_id_index` (`business_id`,`user_id`);
+
+--
 -- Indexes for table `printers`
 --
 ALTER TABLE `printers`
@@ -5366,7 +5413,7 @@ ALTER TABLE `account_types`
 -- AUTO_INCREMENT for table `activity_log`
 --
 ALTER TABLE `activity_log`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=233;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=239;
 
 --
 -- AUTO_INCREMENT for table `ai_assistance_settings`
@@ -5504,7 +5551,7 @@ ALTER TABLE `ecom_banners`
 -- AUTO_INCREMENT for table `ecom_carts`
 --
 ALTER TABLE `ecom_carts`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=144;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=148;
 
 --
 -- AUTO_INCREMENT for table `ecom_cart_items`
@@ -5618,7 +5665,7 @@ ALTER TABLE `media`
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=326;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=329;
 
 --
 -- AUTO_INCREMENT for table `notification_templates`
@@ -5643,6 +5690,12 @@ ALTER TABLE `oauth_personal_access_clients`
 --
 ALTER TABLE `permissions`
   MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=101;
+
+--
+-- AUTO_INCREMENT for table `pos_quick_layouts`
+--
+ALTER TABLE `pos_quick_layouts`
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `printers`
