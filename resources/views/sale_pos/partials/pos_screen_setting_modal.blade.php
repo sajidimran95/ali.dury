@@ -207,6 +207,13 @@
             .on('shown.bs.modal.posScreenSetting', '#pos_screen_setting_modal', function () {
                 bindOptions();
                 setLayoutUI(dbLayout());
+            })
+            .off('click.posQkOpen')
+            .on('click.posQkOpen', '#pos_open_quick_keys', function () {
+                jQuery('#pos_screen_setting_modal').modal('hide');
+                setTimeout(function () {
+                    jQuery('#pos_quick_keys_modal').modal('show');
+                }, 280);
             });
     }
 })();

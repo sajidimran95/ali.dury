@@ -1713,12 +1713,17 @@ class Util
         $user_details = $request->only([
             'surname', 'first_name', 'last_name', 'email',
             'user_type', 'crm_contact_id', 'allow_login', 'username', 'password',
-            'cmmsn_percent', 'max_sales_discount_percent', 'dob', 'gender', 'marital_status', 'blood_group', 'contact_number', 'alt_number', 'family_number', 'fb_link',
+            'cmmsn_percent', 'max_sales_discount_percent', 'sales_target', 'sales_target_daily', 'sales_target_weekly', 'sales_target_monthly', 'dob', 'gender', 'marital_status', 'blood_group', 'contact_number', 'alt_number', 'family_number', 'fb_link',
             'twitter_link', 'social_media_1', 'social_media_2', 'custom_field_1',
             'custom_field_2', 'custom_field_3', 'custom_field_4', 'guardian_name', 'id_proof_name', 'id_proof_number', 'permanent_address', 'current_address', 'bank_details', 'selected_contacts', 'is_enable_service_staff_pin', 'service_staff_pin',
         ]);
 
         $user_details['status'] = ! empty($request->input('is_active')) ? $request->input('is_active') : 'inactive';
+        $user_details['barcode_login'] = ! empty($request->input('barcode_login')) ? 1 : 0;
+        $user_details['sales_target_daily'] = ! empty($request->input('sales_target_daily')) ? $this->num_uf($request->input('sales_target_daily')) : null;
+        $user_details['sales_target_weekly'] = ! empty($request->input('sales_target_weekly')) ? $this->num_uf($request->input('sales_target_weekly')) : null;
+        $user_details['sales_target_monthly'] = ! empty($request->input('sales_target_monthly')) ? $this->num_uf($request->input('sales_target_monthly')) : null;
+        $user_details['sales_target'] = $user_details['sales_target_monthly'];
         $user_details['user_type'] = ! empty($user_details['user_type']) ? $user_details['user_type'] : 'user';
 
         $user_details['is_enable_service_staff_pin'] = ! empty($request->input('is_enable_service_staff_pin')) ? true : false;

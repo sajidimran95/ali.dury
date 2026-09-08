@@ -108,6 +108,8 @@
 
     @include('sale_pos.partials.pos_screen_setting_modal')
 
+    @include('sale_pos.partials.pos_quick_keys_modal')
+
     @include('sale_pos.partials.customer_purchase_history_modal')
 
     @include('sale_pos.partials.weighing_scale_modal')
@@ -124,7 +126,7 @@
     @endif
 @stop
 @section('javascript')
-    <script src="{{ asset('js/pos.js?v=' . $asset_v . '&ls=124') }}"></script>
+    <script src="{{ asset('js/pos.js?v=' . $asset_v . '&ls=125') }}"></script>
     <script src="{{ asset('js/printer.js?v=' . $asset_v) }}"></script>
     <script src="{{ asset('js/product.js?v=' . $asset_v) }}"></script>
     <script src="{{ asset('js/opening_stock.js?v=' . $asset_v) }}"></script>

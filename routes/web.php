@@ -444,6 +444,15 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
 
     Route::post('/sells/pos/print-per-sale-settings', [SellPosController::class, 'savePrintPerSaleSettings']);
     Route::post('/sells/pos/screen-settings', [SellPosController::class, 'savePosScreenSettings']);
+    Route::get('/pos/quick-keys', [\App\Http\Controllers\PosQuickKeyController::class, 'index'])->name('pos.quick_keys.index');
+    Route::post('/pos/quick-keys', [\App\Http\Controllers\PosQuickKeyController::class, 'store'])->name('pos.quick_keys.store');
+    Route::post('/pos/quick-keys/toggle', [\App\Http\Controllers\PosQuickKeyController::class, 'toggleEnabled'])->name('pos.quick_keys.toggle');
+    Route::get('/pos/quick-keys/categories', [\App\Http\Controllers\PosQuickKeyController::class, 'searchCategories'])->name('pos.quick_keys.categories');
+    Route::get('/pos/quick-keys/{id}/edit', [\App\Http\Controllers\PosQuickKeyController::class, 'edit'])->name('pos.quick_keys.edit');
+    Route::put('/pos/quick-keys/{id}', [\App\Http\Controllers\PosQuickKeyController::class, 'update'])->name('pos.quick_keys.update');
+    Route::delete('/pos/quick-keys/{id}', [\App\Http\Controllers\PosQuickKeyController::class, 'destroy'])->name('pos.quick_keys.destroy');
+    Route::post('/pos/quick-keys/{id}/duplicate', [\App\Http\Controllers\PosQuickKeyController::class, 'duplicate'])->name('pos.quick_keys.duplicate');
+    Route::post('/pos/quick-keys/{id}/current', [\App\Http\Controllers\PosQuickKeyController::class, 'setCurrent'])->name('pos.quick_keys.current');
     Route::get('/sells/pos/get_product_row/{variation_id}/{location_id}', [SellPosController::class, 'getProductRow']);
     Route::post('/sells/pos/get-product-line-discounts', [SellPosController::class, 'getProductLineDiscounts']);
     Route::post('/sells/pos/get_payment_row', [SellPosController::class, 'getPaymentRow']);
@@ -462,6 +471,8 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
 
     Route::resource('roles', RoleController::class);
 
+    Route::post('/users/{user}/toggle-enabled', [ManageUserController::class, 'toggleEnabled']);
+    Route::post('/users/{user}/sales-targets', [ManageUserController::class, 'updateSalesTargets']);
     Route::resource('users', ManageUserController::class);
 
     Route::resource('group-taxes', GroupTaxController::class);

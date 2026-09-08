@@ -1,77 +1,155 @@
 @extends('layouts.app')
 @section('title', __( 'user.users' ))
+@section('css')
+<link rel="stylesheet" href="{{ asset('css/ls-users.css') }}">
+@endsection
 
 @section('content')
-
-<!-- Content Header (Page header) -->
-<section class="content-header">
-    <h1 class="tw-text-xl md:tw-text-3xl tw-font-bold tw-text-black">@lang( 'user.users' )
-        <small class="tw-text-sm md:tw-text-base tw-text-gray-700 tw-font-semibold">@lang( 'user.manage_users' )</small>
-    </h1>
-    <!-- <ol class="breadcrumb">
-        <li><a href="#"><i class="fa fa-dashboard"></i> Level</a></li>
-        <li class="active">Here</li>
-    </ol> -->
-</section>
-
-<!-- Main content -->
-<section class="content">
-    @component('components.widget', ['class' => 'box-primary', 'title' => __( 'user.all_users' )])
-        @can('user.create')
-            @slot('tool')
-                <div class="box-tools">
-                    <a class="tw-dw-btn tw-bg-gradient-to-r tw-from-indigo-600 tw-to-blue-500 tw-font-bold tw-text-white tw-border-none tw-rounded-full" href="{{action([\App\Http\Controllers\ManageUserController::class, 'create'])}}">
-                        <svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-plus"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 5l0 14" /><path d="M5 12l14 0" /></svg>                        @lang( 'messages.add' )
-                    </a>
-                 </div>
-            @endslot
-        @endcan
-        @can('user.view')
-            <div class="table-responsive">
-                <table class="table table-bordered table-striped" id="users_table">
-                    <thead>
-                        <tr>
-                            <th>@lang( 'business.username' )</th>
-                            <th>@lang( 'user.name' )</th>
-                            <th>@lang( 'user.role' )</th>
-                            <th>@lang( 'business.email' )</th>
-                            <th class="not-export">@lang( 'messages.action' )</th>
-                        </tr>
-                    </thead>
-                </table>
-            </div>
-        @endcan
-    @endcomponent
-
-    <div class="modal fade user_modal" tabindex="-1" role="dialog" 
-    	aria-labelledby="gridSystemModalLabel">
+<section class="content" style="padding:0;margin:0;width:100%;">
+<div class="ls-users-page">
+    <div class="ls-users-head">
+        <div>
+            <div class="ls-users-kicker">Settings</div>
+            <h1 class="ls-users-title">Users</h1>
+            <p class="ls-users-sub">Manage users and their access. Need help?</p>
+        </div>
     </div>
 
+    <nav class="ls-users-tabs">
+        <a href="{{ action([\App\Http\Controllers\ManageUserController::class, 'index']) }}" class="is-on">Users</a>
+        <a href="{{ action([\App\Http\Controllers\RoleController::class, 'index']) }}">Roles</a>
+    </nav>
+
+    <div class="ls-users-banner">
+        <i class="fa fa-info-circle"></i>
+        <div>Manage users and their sales targets. Need help?</div>
+    </div>
+
+    <div class="ls-users-tools">
+        <input type="search" id="ls_user_search" class="ls-users-search" placeholder="Search users">
+        <select id="ls_role_filter" class="ls-users-select">
+            <option value="">All roles</option>
+            @foreach($roles as $id => $name)
+                <option value="{{ $id }}">{{ $name }}</option>
+            @endforeach
+        </select>
+        <select id="ls_outlet_filter" class="ls-users-select">
+            <option value="">All outlets</option>
+            @foreach($locations as $location)
+                <option value="{{ $location->id }}">{{ $location->name }}</option>
+            @endforeach
+        </select>
+        @can('user.create')
+            <a class="ls-users-add" href="{{ action([\App\Http\Controllers\ManageUserController::class, 'create']) }}">
+                <i class="fa fa-plus"></i> Add user
+            </a>
+        @endcan
+    </div>
+
+    @can('user.view')
+    <div class="ls-users-card table-responsive">
+        <table class="table ls-users-table" id="users_table">
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Role</th>
+                    <th>Outlet</th>
+                    <th>Daily target</th>
+                    <th>Weekly target</th>
+                    <th>Monthly target</th>
+                    <th>Last active</th>
+                    <th>Enabled</th>
+                    <th class="not-export">@lang( 'messages.action' )</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+    @endcan
+
+    <div class="modal fade user_modal" tabindex="-1" role="dialog" aria-labelledby="gridSystemModalLabel"></div>
+</div>
 </section>
-<!-- /.content -->
 @stop
 @section('javascript')
 <script type="text/javascript">
-    //Roles table
     $(document).ready( function(){
         var users_table = $('#users_table').DataTable({
                     processing: true,
                     serverSide: true,
                     fixedHeader:false,
-                    ajax: '/users',
+                    searching: true,
+                    dom: 't<"ls-users-foot"ip>',
+                    ajax: {
+                        url: '/users',
+                        data: function (d) {
+                            d.role_id = $('#ls_role_filter').val();
+                            d.location_id = $('#ls_outlet_filter').val();
+                        }
+                    },
                     columnDefs: [ {
-                        "targets": [4],
+                        "targets": [7, 8],
                         "orderable": false,
                         "searchable": false
                     } ],
                     "columns":[
-                        {"data":"username"},
-                        {"data":"full_name"},
+                        {"data":"user_cell"},
                         {"data":"role"},
-                        {"data":"email"},
+                        {"data":"outlet", "orderable": false, "searchable": false},
+                        {"data":"target_daily", "orderable": false, "searchable": false},
+                        {"data":"target_weekly", "orderable": false, "searchable": false},
+                        {"data":"target_monthly", "orderable": false, "searchable": false},
+                        {"data":"last_active", "orderable": false, "searchable": false},
+                        {"data":"enabled"},
                         {"data":"action"}
                     ]
                 });
+        $('#ls_user_search').on('keyup', function () {
+            users_table.search(this.value).draw();
+        });
+        $('#ls_role_filter, #ls_outlet_filter').on('change', function () {
+            users_table.ajax.reload();
+        });
+        $(document).on('change', '.ls-user-enabled', function(){
+            var id = $(this).data('id');
+            var enabled = this.checked ? 1 : 0;
+            $.ajax({
+                method: 'POST',
+                url: '/users/' + id + '/toggle-enabled',
+                data: { _token: $('meta[name="csrf-token"]').attr('content'), enabled: enabled }
+            });
+        });
+        $(document).on('keydown keyup click', '.ls-target-input', function (e) {
+            e.stopPropagation();
+        });
+        $(document).on('change', '.ls-target-input', function () {
+            var $el = $(this);
+            var id = $el.attr('data-id');
+            var field = $el.attr('data-field');
+            if (!id || !field) return;
+            $.ajax({
+                method: 'POST',
+                url: (typeof base_path !== 'undefined' ? base_path : '') + '/users/' + id + '/sales-targets',
+                data: {
+                    _token: $('meta[name="csrf-token"]').attr('content'),
+                    field: field,
+                    value: $el.val()
+                },
+                success: function (result) {
+                    if (result && result.success && typeof toastr !== 'undefined') {
+                        toastr.success('Target saved');
+                    }
+                },
+                error: function () {
+                    if (typeof toastr !== 'undefined') toastr.error('Could not save target');
+                }
+            });
+        });
+        $(document).on('keydown', '.ls-target-input', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                $(this).blur();
+            }
+        });
         $(document).on('click', 'button.delete_user_button', function(){
             swal({
               title: LANG.sure,
@@ -100,9 +178,6 @@
                 }
              });
         });
-        
     });
-    
-    
 </script>
 @endsection

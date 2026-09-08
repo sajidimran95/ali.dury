@@ -3327,7 +3327,7 @@ function pos_refresh_payment_modal() {
     //   "All"              → clear filter, show all products
     //   No subcategories   → filter directly
     //   Has subcategories  → load parent products + subcategory pills
-    $('.main-category').on('click', function(e) {
+    $('.pos-card-grid-categories').on('click', '.main-category', function(e) {
         e.stopPropagation();
 
         var value = $(this).data('value');

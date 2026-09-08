@@ -56,6 +56,7 @@ use App\Utils\TransactionUtil;
 use App\Variation;
 use App\Warranty;
 use App\Printer;
+use App\PosQuickLayout;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -343,6 +344,10 @@ class SellPosController extends Controller
 
         $pos_printers = Printer::forDropdown($business_id, false);
 
+        $posQuickLayout = PosQuickLayout::currentForUser((int) $business_id, (int) auth()->id());
+        $posQuickLayouts = PosQuickLayout::forUser((int) $business_id, (int) auth()->id());
+        $posQuickKeysEnabled = (int) session('pos_quick_keys_enabled', auth()->user()->pos_quick_keys_enabled ?? 1) === 1;
+
         return view('sale_pos.create')
             ->with(compact(
                 'edit_discount',
@@ -377,6 +382,9 @@ class SellPosController extends Controller
                 'invoice_layouts',
                 'users',
                 'pos_printers',
+                'posQuickLayout',
+                'posQuickLayouts',
+                'posQuickKeysEnabled',
             ));
     }
 
@@ -1430,6 +1438,10 @@ class SellPosController extends Controller
 
         $pos_printers = Printer::forDropdown($business_id, false);
 
+        $posQuickLayout = PosQuickLayout::currentForUser((int) $business_id, (int) auth()->id());
+        $posQuickLayouts = PosQuickLayout::forUser((int) $business_id, (int) auth()->id());
+        $posQuickKeysEnabled = (int) session('pos_quick_keys_enabled', auth()->user()->pos_quick_keys_enabled ?? 1) === 1;
+
         return view('sale_pos.edit')
             ->with(compact('business_details', 'taxes', 'payment_types', 'walk_in_customer',
                 'sell_details', 'transaction', 'payment_lines', 'location_printer_type', 'shortcuts',
@@ -1438,7 +1450,7 @@ class SellPosController extends Controller
                 'shipping_statuses', 'warranties', 'sub_type', 'pos_module_data', 'invoice_schemes',
                 'default_invoice_schemes', 'invoice_layouts', 'featured_products', 'customer_due',
                 'users', 'only_payment', 'default_location', 'business_locations', 'price_groups', 'default_price_group_id',
-                'pos_printers'));
+                'pos_printers', 'posQuickLayout', 'posQuickLayouts', 'posQuickKeysEnabled'));
     }
 
     /**

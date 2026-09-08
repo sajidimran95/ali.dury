@@ -112,14 +112,12 @@
                     @endcan
                 </li>
             @endcan
-            @can('business_settings.access')
-                <li>
-                    <a href="{{ route('business.getBusinessSettings') }}">
-                        <i class="fas fa-cog"></i>
-                        <span>Settings</span>
-                    </a>
-                </li>
-            @endcan
+            <li>
+                <button type="button" id="pos_nav_quick_keys" data-toggle="modal" data-target="#pos_quick_keys_modal">
+                    <i class="fas fa-cog"></i>
+                    <span>Setting</span>
+                </button>
+            </li>
             @if (!Gate::check('disable_quotation') || auth()->user()->can('superadmin') || auth()->user()->can('admin'))
                 <li>
                     <a href="{{ action([\App\Http\Controllers\SellController::class, 'getQuotations']) }}">
@@ -132,12 +130,6 @@
                 <button type="button" id="pos_nav_print_toggle" data-toggle="modal" data-target="#pos_print_per_sale_modal">
                     <i class="fas fa-print"></i>
                     <span>Print Per Sale</span>
-                </button>
-            </li>
-            <li>
-                <button type="button" id="pos_nav_screen_setting" data-toggle="modal" data-target="#pos_screen_setting_modal">
-                    <i class="fas fa-columns"></i>
-                    <span>POS Screen Setting</span>
                 </button>
             </li>
         </ul>

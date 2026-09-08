@@ -9,6 +9,36 @@
 
 {{-- Category tiles (top) — same classes so existing pos.js filtering works --}}
 @if (!empty($categories))
+@php
+    $qkEnabled = !empty($posQuickKeysEnabled);
+    $qkLayout = $posQuickLayout ?? null;
+    $displayCats = $categories;
+    if ($qkEnabled && $qkLayout && !empty($qkLayout->keys)) {
+        $byId = [];
+        foreach ($categories as $c) {
+            $byId[(int) $c['id']] = $c;
+        }
+        $ordered = [];
+        $seen = [];
+        $keyRows = $qkLayout->keys;
+        usort($keyRows, function ($a, $b) {
+            return ((int) ($a['slot'] ?? 0)) <=> ((int) ($b['slot'] ?? 0));
+        });
+        foreach ($keyRows as $key) {
+            $cid = (int) ($key['category_id'] ?? 0);
+            if ($cid && isset($byId[$cid]) && empty($seen[$cid])) {
+                $row = $byId[$cid];
+                $row['_qk_label'] = $key['label'] ?: $row['name'];
+                $row['_qk_color'] = $key['color'] ?? null;
+                $ordered[] = $row;
+                $seen[$cid] = true;
+            }
+        }
+        if ($ordered) {
+            $displayCats = $ordered;
+        }
+    }
+@endphp
 <div id="product_category_div" class="pos-inline-categories">
     <div class="pos-category-scroll" aria-label="@lang('category.categories')">
     <div class="row pos-card-grid pos-card-grid-categories" data-label-all="@lang('messages.all')" style="margin: 0;">
@@ -18,12 +48,13 @@
                 <h4 class="pos-card-name">@lang('lang_v1.all_category')</h4>
             </div>
         </div>
-        @foreach ($categories as $index => $category)
+        @foreach ($displayCats as $index => $category)
             <div class="col-md-2 col-xs-4 tw-mb-2 tw-cursor-pointer main-category-div main-category no-print"
-                data-value="{{ $category['id'] }}" data-name="{{ $category['name'] }}" data-parent="0"
+                data-value="{{ $category['id'] }}" data-name="{{ $category['_qk_label'] ?? $category['name'] }}" data-parent="0"
                 style="padding-left: 4px; padding-right: 4px;">
-                <div class="pos-card cat pos-cat-tile @if($index % 5 === 1 || $index % 5 === 3) pos-cat-tile--accent @endif">
-                    <h4 class="pos-card-name">{{ $category['name'] }}</h4>
+                <div class="pos-card cat pos-cat-tile @if($index % 5 === 1 || $index % 5 === 3) pos-cat-tile--accent @endif"
+                    @if(!empty($category['_qk_color'])) style="background: {{ $category['_qk_color'] }}; color: #fff; border-color: {{ $category['_qk_color'] }};" @endif>
+                    <h4 class="pos-card-name">{{ $category['_qk_label'] ?? $category['name'] }}</h4>
                     @if (!empty($category['sub_categories']))
                         <span class="pos-card-subcat-dot"></span>
                     @endif

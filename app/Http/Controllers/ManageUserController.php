@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\BusinessLocation;
+use App\Transaction;
 use App\User;
 use App\Utils\BusinessUtil;
 use App\Utils\ModuleUtil;
+use Carbon\Carbon;
 use DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -46,42 +48,124 @@ class ManageUserController extends Controller
             $users = User::where('business_id', $business_id)
                         ->user()
                         ->where('is_cmmsn_agnt', 0)
-                        ->select(['id', 'username',
-                            DB::raw("CONCAT(COALESCE(surname, ''), ' ', COALESCE(first_name, ''), ' ', COALESCE(last_name, '')) as full_name"), 'email', 'allow_login', ]);
+                        ->with(['roles', 'permissions'])
+                        ->select(['id', 'username', 'first_name', 'last_name', 'email', 'allow_login', 'status',
+                            'sales_target', 'sales_target_daily', 'sales_target_weekly', 'sales_target_monthly', 'updated_at',
+                            DB::raw("CONCAT(COALESCE(surname, ''), ' ', COALESCE(first_name, ''), ' ', COALESCE(last_name, '')) as full_name")]);
+
+            if (request()->filled('role_id')) {
+                $roleId = request()->get('role_id');
+                $users->whereHas('roles', function ($q) use ($roleId) {
+                    $q->where('id', $roleId);
+                });
+            }
+
+            if (request()->filled('location_id')) {
+                $locationId = request()->get('location_id');
+                $permNames = ['access_all_locations', 'location.'.$locationId];
+                $users->where(function ($q) use ($permNames) {
+                    $q->whereHas('permissions', function ($p) use ($permNames) {
+                        $p->whereIn('name', $permNames);
+                    })->orWhereHas('roles.permissions', function ($p) use ($permNames) {
+                        $p->whereIn('name', $permNames);
+                    });
+                });
+            }
+
+            $locations = BusinessLocation::where('business_id', $business_id)->pluck('name', 'id');
+            $adminCount = $this->listedAdminCount((int) $business_id);
 
             return Datatables::of($users)
+                ->addColumn('user_cell', function ($row) {
+                    $name = e(trim($row->full_name));
+                    $email = e($row->email);
+
+                    return '<a class="ls-user-name" href="'.action([\App\Http\Controllers\ManageUserController::class, 'edit'], [$row->id]).'">'.$name.'</a>'
+                        .'<div class="ls-user-email">'.$email.'</div>';
+                })
                 ->editColumn('username', '{{$username}} @if(empty($allow_login)) <span class="label bg-gray">@lang("lang_v1.login_not_allowed")</span>@endif')
                 ->addColumn(
                     'role',
                     function ($row) {
-                        $role_name = $this->moduleUtil->getUserRoleName($row->id);
-
-                        return $role_name;
+                        return $this->moduleUtil->getUserRoleName($row->id);
                     }
                 )
-                ->addColumn(
-                    'action',
-                    '@can("user.update")
-                        <a href="{{action(\'App\Http\Controllers\ManageUserController@edit\', [$id])}}" class="tw-dw-btn tw-dw-btn-xs tw-dw-btn-outline tw-dw-btn-primary"><i class="glyphicon glyphicon-edit"></i> @lang("messages.edit")</a>
-                        &nbsp;
-                    @endcan
-                    @can("user.view")
-                    <a href="{{action(\'App\Http\Controllers\ManageUserController@show\', [$id])}}" class="tw-dw-btn tw-dw-btn-xs tw-dw-btn-outline  tw-dw-btn-info"><i class="fa fa-eye"></i> @lang("messages.view")</a>
-                    &nbsp;
-                    @endcan
-                    @can("user.delete")
-                        <button data-href="{{action(\'App\Http\Controllers\ManageUserController@destroy\', [$id])}}" class="tw-dw-btn tw-dw-btn-outline tw-dw-btn-xs tw-dw-btn-error delete_user_button"><i class="glyphicon glyphicon-trash"></i> @lang("messages.delete")</button>
-                    @endcan'
-                )
+                ->addColumn('outlet', function ($row) use ($locations) {
+                    $permitted = $row->permitted_locations();
+                    if ($permitted === 'all') {
+                        return 'All outlets';
+                    }
+                    if (! is_array($permitted) || empty($permitted)) {
+                        return '—';
+                    }
+                    $names = [];
+                    foreach ($permitted as $lid) {
+                        if (isset($locations[$lid])) {
+                            $names[] = $locations[$lid];
+                        }
+                    }
+
+                    return e(implode(', ', $names) ?: '—');
+                })
+                ->addColumn('target_daily', function ($row) {
+                    if (! $this->userIsSalesRepresentative($row)) {
+                        return '—';
+                    }
+
+                    return $this->targetInputHtml($row->id, 'sales_target_daily', $row->sales_target_daily);
+                })
+                ->addColumn('target_weekly', function ($row) {
+                    if (! $this->userIsSalesRepresentative($row)) {
+                        return '—';
+                    }
+
+                    return $this->targetInputHtml($row->id, 'sales_target_weekly', $row->sales_target_weekly);
+                })
+                ->addColumn('target_monthly', function ($row) {
+                    if (! $this->userIsSalesRepresentative($row)) {
+                        return '—';
+                    }
+
+                    return $this->targetInputHtml($row->id, 'sales_target_monthly', $row->sales_target_monthly ?? $row->sales_target);
+                })
+                ->addColumn('last_active', function ($row) {
+                    return $row->updated_at ? $row->updated_at->format('M j, Y g:i A') : '—';
+                })
+                ->addColumn('enabled', function ($row) {
+                    $on = $row->status === 'active' ? 'checked' : '';
+
+                    return '<label class="ls-switch"><input type="checkbox" class="ls-user-enabled" data-id="'.$row->id.'" '.$on.'><i></i></label>';
+                })
+                ->addColumn('action', function ($row) use ($adminCount) {
+                    $html = '';
+                    if (auth()->user()->can('user.update')) {
+                        $html .= '<a href="'.action([\App\Http\Controllers\ManageUserController::class, 'edit'], [$row->id]).'" class="tw-dw-btn tw-dw-btn-xs tw-dw-btn-outline tw-dw-btn-primary"><i class="glyphicon glyphicon-edit"></i> '.e(__('messages.edit')).'</a>&nbsp;';
+                    }
+                    if (auth()->user()->can('user.view')) {
+                        $html .= '<a href="'.action([\App\Http\Controllers\ManageUserController::class, 'show'], [$row->id]).'" class="tw-dw-btn tw-dw-btn-xs tw-dw-btn-outline tw-dw-btn-info"><i class="fa fa-eye"></i> '.e(__('messages.view')).'</a>&nbsp;';
+                    }
+                    $isLastAdmin = $this->userIsAdmin($row) && $adminCount <= 1;
+                    if (auth()->user()->can('user.delete') && ! $isLastAdmin) {
+                        $html .= '<button data-href="'.action([\App\Http\Controllers\ManageUserController::class, 'destroy'], [$row->id]).'" class="tw-dw-btn tw-dw-btn-outline tw-dw-btn-xs tw-dw-btn-error delete_user_button"><i class="glyphicon glyphicon-trash"></i> '.e(__('messages.delete')).'</button>';
+                    }
+
+                    return $html;
+                })
                 ->filterColumn('full_name', function ($query, $keyword) {
                     $query->whereRaw("CONCAT(COALESCE(surname, ''), ' ', COALESCE(first_name, ''), ' ', COALESCE(last_name, '')) like ?", ["%{$keyword}%"]);
                 })
-                ->removeColumn('id')
-                ->rawColumns(['action', 'username'])
+                ->filterColumn('user_cell', function ($query, $keyword) {
+                    $query->whereRaw("CONCAT(COALESCE(surname, ''), ' ', COALESCE(first_name, ''), ' ', COALESCE(last_name, ''), ' ', COALESCE(email, '')) like ?", ["%{$keyword}%"]);
+                })
+                ->rawColumns(['action', 'username', 'user_cell', 'enabled', 'target_daily', 'target_weekly', 'target_monthly'])
                 ->make(true);
         }
 
-        return view('manage_user.index');
+        $business_id = request()->session()->get('user.business_id');
+        $roles = $this->getRolesArray($business_id);
+        $locations = BusinessLocation::where('business_id', $business_id)->Active()->get();
+
+        return view('manage_user.index')->with(compact('roles', 'locations'));
     }
 
     /**
@@ -171,7 +255,7 @@ class ManageUserController extends Controller
         $business_id = request()->session()->get('user.business_id');
 
         $user = User::where('business_id', $business_id)
-                    ->with(['contactAccess'])
+                    ->with(['contactAccess', 'media'])
                     ->find($id);
 
         //Get user view part from modules
@@ -184,7 +268,123 @@ class ManageUserController extends Controller
            ->latest()
            ->get();
 
-        return view('manage_user.show')->with(compact('user', 'view_partials', 'users', 'activities'));
+        $locations = BusinessLocation::where('business_id', $business_id)->get();
+        $permitted_locations = $user->permitted_locations();
+        $salesStats = $this->userSalesStats((int) $user->id, (int) $business_id);
+        $isSalesRep = $this->userIsSalesRepresentative($user);
+        $isLastAdmin = $this->isLastAdmin($user);
+
+        return view('manage_user.show')->with(compact('user', 'view_partials', 'users', 'activities', 'locations', 'permitted_locations', 'salesStats', 'isSalesRep', 'isLastAdmin'));
+    }
+
+    protected function userSalesStats(int $userId, int $businessId): array
+    {
+        $base = Transaction::where('business_id', $businessId)
+            ->where('type', 'sell')
+            ->whereIn('status', ['final', 'completed'])
+            ->where('created_by', $userId);
+
+        $todayStart = Carbon::today();
+        $weekStart = Carbon::now()->startOfWeek();
+        $monthStart = Carbon::now()->startOfMonth();
+
+        $days = [];
+        for ($i = 29; $i >= 0; $i--) {
+            $day = Carbon::today()->subDays($i);
+            $key = $day->toDateString();
+            $days[$key] = [
+                'label' => $day->format('M j'),
+                'total' => (float) (clone $base)->whereDate('transaction_date', $key)->sum('final_total'),
+            ];
+        }
+
+        $todayTotal = (float) (clone $base)->whereDate('transaction_date', $todayStart->toDateString())->sum('final_total');
+        $weekTotal = (float) (clone $base)->where('transaction_date', '>=', $weekStart)->sum('final_total');
+        $monthTotal = (float) (clone $base)->where('transaction_date', '>=', $monthStart)->sum('final_total');
+
+        $last7 = array_slice($days, -7, 7, true);
+        $saleCount7 = 0;
+        foreach ($last7 as $row) {
+            if ($row['total'] > 0) {
+                $saleCount7++;
+            }
+        }
+
+        return [
+            'today' => $todayTotal,
+            'week' => $weekTotal,
+            'month' => $monthTotal,
+            'days' => array_values($days),
+            'total_7' => array_sum(array_column($last7, 'total')),
+            'avg_day_7' => count($last7) ? array_sum(array_column($last7, 'total')) / count($last7) : 0,
+        ];
+    }
+
+    protected function formatSalesTarget($value): string
+    {
+        if ($value === null || $value === '') {
+            return '—';
+        }
+
+        return number_format((float) $value, 2);
+    }
+
+    protected function targetInputHtml(int $userId, string $field, $value): string
+    {
+        $val = ($value === null || $value === '') ? '' : number_format((float) $value, 2, '.', '');
+        $can = auth()->user()->can('user.update');
+        $ro = $can ? '' : 'readonly';
+
+        return '<label class="ls-target-in"><span>$</span><input type="text" class="ls-target-input" data-id="'.$userId.'" data-field="'.$field.'" value="'.e($val).'" placeholder="0.00" '.$ro.'></label>';
+    }
+
+    protected function userIsSalesRepresentative($user): bool
+    {
+        $names = $user instanceof User ? $user->getRoleNames() : collect();
+        foreach ($names as $name) {
+            $plain = trim(explode('#', (string) $name)[0]);
+            if (strcasecmp($plain, 'Sales Representative') === 0) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    protected function userIsAdmin($user): bool
+    {
+        $names = $user instanceof User ? $user->getRoleNames() : collect();
+        foreach ($names as $name) {
+            $plain = strtolower(trim(explode('#', (string) $name)[0]));
+            if ($plain === 'admin') {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    protected function listedAdminCount(int $businessId): int
+    {
+        return User::where('business_id', $businessId)
+            ->user()
+            ->where('is_cmmsn_agnt', 0)
+            ->whereHas('roles', function ($q) use ($businessId) {
+                $q->where('roles.name', 'Admin#'.$businessId)
+                    ->orWhere('roles.name', 'Admin');
+            })
+            ->count();
+    }
+
+    protected function isLastAdmin($user): bool
+    {
+        if (! $this->userIsAdmin($user)) {
+            return false;
+        }
+
+        $count = $this->listedAdminCount((int) $user->business_id);
+
+        return $count <= 1;
     }
 
     /**
@@ -222,9 +422,10 @@ class ManageUserController extends Controller
 
         //Get user form part from modules
         $form_partials = $this->moduleUtil->getModuleData('moduleViewPartials', ['view' => 'manage_user.edit', 'user' => $user]);
+        $isLastAdmin = $this->isLastAdmin($user);
 
         return view('manage_user.edit')
-                ->with(compact('roles', 'user', 'contact_access', 'is_checked_checkbox', 'locations', 'permitted_locations', 'form_partials', 'username_ext'));
+                ->with(compact('roles', 'user', 'contact_access', 'is_checked_checkbox', 'locations', 'permitted_locations', 'form_partials', 'username_ext', 'isLastAdmin'));
     }
 
     /**
@@ -296,6 +497,8 @@ class ManageUserController extends Controller
             
 
             //Sales commission percentage
+            $user_data['barcode_login'] = ! empty($request->input('barcode_login')) ? 1 : 0;
+
             $user_data['cmmsn_percent'] = ! empty($user_data['cmmsn_percent']) ? $this->moduleUtil->num_uf($user_data['cmmsn_percent']) : 0;
 
             $user_data['max_sales_discount_percent'] = ! is_null($user_data['max_sales_discount_percent']) ? $this->moduleUtil->num_uf($user_data['max_sales_discount_percent']) : null;
@@ -414,6 +617,10 @@ class ManageUserController extends Controller
                 $user = User::where('business_id', $business_id)
                     ->findOrFail($id);
 
+                if ($this->isLastAdmin($user)) {
+                    return ['success' => false, 'msg' => 'The last admin cannot be deleted.'];
+                }
+
                 $this->moduleUtil->activityLog($user, 'deleted', null, ['name' => $user->user_full_name, 'id' => $user->id]);
 
                 $user->delete();
@@ -432,6 +639,50 @@ class ManageUserController extends Controller
 
             return $output;
         }
+    }
+
+    public function toggleEnabled($user)
+    {
+        if (! auth()->user()->can('user.update')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $id = $user instanceof User ? $user->id : $user;
+        $business_id = request()->session()->get('user.business_id');
+        $model = User::where('business_id', $business_id)->findOrFail($id);
+        $model->status = request()->boolean('enabled') ? 'active' : 'inactive';
+        $model->save();
+
+        return response()->json(['success' => true, 'status' => $model->status]);
+    }
+
+    public function updateSalesTargets($user)
+    {
+        if (! auth()->user()->can('user.update')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $id = $user instanceof User ? $user->id : $user;
+        $business_id = request()->session()->get('user.business_id');
+        $model = User::where('business_id', $business_id)->findOrFail($id);
+        if (! $this->userIsSalesRepresentative($model)) {
+            return response()->json(['success' => false, 'msg' => 'Sales targets apply to Sales Representative users only.'], 422);
+        }
+        $allowed = ['sales_target_daily', 'sales_target_weekly', 'sales_target_monthly'];
+        $field = (string) request()->input('field');
+        if (! in_array($field, $allowed, true)) {
+            return response()->json(['success' => false, 'msg' => 'Invalid field'], 422);
+        }
+
+        $raw = request()->input('value');
+        $value = ($raw === null || $raw === '') ? null : $this->moduleUtil->num_uf($raw);
+        $model->{$field} = $value;
+        if ($field === 'sales_target_monthly') {
+            $model->sales_target = $value;
+        }
+        $model->save();
+
+        return response()->json(['success' => true]);
     }
 
     /**
