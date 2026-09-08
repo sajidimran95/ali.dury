@@ -2,21 +2,17 @@
 
 @section('title', __( 'user.add_user' ))
 @section('css')
-<link rel="stylesheet" href="{{ asset('css/ls-users.css') }}">
+<link rel="stylesheet" href="{{ asset('css/ls-users.css') }}?v=24">
 @endsection
 
 @section('content')
+<section class="content-header ls-users-page-head">
+    <h1 class="tw-text-xl md:tw-text-3xl tw-font-bold tw-text-black">@lang('user.add_user')</h1>
+    <button type="submit" form="user_add_form" class="ls-users-save" id="submit_user_button">@lang('messages.save')</button>
+</section>
 <section class="content" style="padding:0;margin:0;width:100%;">
 <div class="ls-users-page">
 {!! Form::open(['url' => action([\App\Http\Controllers\ManageUserController::class, 'store']), 'method' => 'post', 'id' => 'user_add_form' ]) !!}
-    <div class="ls-users-head">
-        <div>
-            <div class="ls-users-kicker">Settings</div>
-            <h1 class="ls-users-title">Add a user</h1>
-            <p class="ls-users-sub">Create a new user and choose what they can access.</p>
-        </div>
-        <button type="submit" class="ls-users-save" id="submit_user_button">Save</button>
-    </div>
     <nav class="ls-users-tabs">
         <a href="{{ action([\App\Http\Controllers\ManageUserController::class, 'index']) }}">Users</a>
         <a href="{{ action([\App\Http\Controllers\RoleController::class, 'index']) }}">Roles</a>

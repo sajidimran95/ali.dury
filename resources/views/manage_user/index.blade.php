@@ -1,29 +1,21 @@
 @extends('layouts.app')
 @section('title', __( 'user.users' ))
 @section('css')
-<link rel="stylesheet" href="{{ asset('css/ls-users.css') }}">
+<link rel="stylesheet" href="{{ asset('css/ls-users.css') }}?v=25">
 @endsection
 
 @section('content')
+<section class="content-header">
+    <h1 class="tw-text-xl md:tw-text-3xl tw-font-bold tw-text-black">@lang('user.users')
+        <small class="tw-text-sm md:tw-text-base tw-text-gray-700 tw-font-semibold">@lang('user.manage_users')</small>
+    </h1>
+</section>
 <section class="content" style="padding:0;margin:0;width:100%;">
 <div class="ls-users-page">
-    <div class="ls-users-head">
-        <div>
-            <div class="ls-users-kicker">Settings</div>
-            <h1 class="ls-users-title">Users</h1>
-            <p class="ls-users-sub">Manage users and their access. Need help?</p>
-        </div>
-    </div>
-
     <nav class="ls-users-tabs">
         <a href="{{ action([\App\Http\Controllers\ManageUserController::class, 'index']) }}" class="is-on">Users</a>
         <a href="{{ action([\App\Http\Controllers\RoleController::class, 'index']) }}">Roles</a>
     </nav>
-
-    <div class="ls-users-banner">
-        <i class="fa fa-info-circle"></i>
-        <div>Manage users and their sales targets. Need help?</div>
-    </div>
 
     <div class="ls-users-tools">
         <input type="search" id="ls_user_search" class="ls-users-search" placeholder="Search users">
@@ -110,12 +102,24 @@
             users_table.ajax.reload();
         });
         $(document).on('change', '.ls-user-enabled', function(){
-            var id = $(this).data('id');
+            var $sw = $(this);
+            var id = $sw.data('id');
             var enabled = this.checked ? 1 : 0;
             $.ajax({
                 method: 'POST',
-                url: '/users/' + id + '/toggle-enabled',
-                data: { _token: $('meta[name="csrf-token"]').attr('content'), enabled: enabled }
+                url: (typeof base_path !== 'undefined' ? base_path : '') + '/users/' + id + '/toggle-enabled',
+                data: { _token: $('meta[name="csrf-token"]').attr('content'), enabled: enabled },
+                success: function (result) {
+                    if (typeof toastr !== 'undefined') {
+                        toastr.success((result && result.msg) ? result.msg : (enabled ? 'User enabled successfully.' : 'User disabled successfully.'));
+                    }
+                },
+                error: function (xhr) {
+                    $sw.prop('checked', !enabled);
+                    if (typeof toastr !== 'undefined') {
+                        toastr.error((xhr.responseJSON && xhr.responseJSON.msg) ? xhr.responseJSON.msg : 'Could not update user status');
+                    }
+                }
             });
         });
         $(document).on('keydown keyup click', '.ls-target-input', function (e) {

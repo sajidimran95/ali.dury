@@ -11,6 +11,11 @@
     $contact_access = $contact_access ?? [];
     $is_checked_checkbox = $is_checked_checkbox ?? true;
     $username_ext = $username_ext ?? null;
+    $isAdminUser = $isEdit && !empty($u) && method_exists($u, 'getRoleNames')
+        ? collect($u->getRoleNames())->contains(function ($name) {
+            return strtolower(trim(explode('#', (string) $name)[0])) === 'admin';
+        })
+        : false;
 @endphp
 
 <section class="ls-sec">
@@ -32,18 +37,41 @@
                     </div>
                     <div>
                         <label class="ls-ro-label">{{ __('business.last_name') }}</label>
-                        {!! Form::text('last_name', $isEdit ? $u->last_name : null, ['class' => 'form-control', 'placeholder' => __('business.last_name')]); !!}
+                        {!! Form::text('last_name', $isEdit ? $u->last_name : null, ['class' => 'form-control', 'placeholder' => __('business.last_name'), 'id' => 'last_name']); !!}
                     </div>
                 </div>
-                <label class="ls-ro-label">{{ __('business.email') }} *</label>
+                <label class="ls-ro-label">Username</label>
+                @if($isEdit && !empty($u->username) && !empty($u->allow_login))
+                    {!! Form::text('username_display', $u->username, ['class' => 'form-control', 'readonly' => true]); !!}
+                @elseif(!empty($username_ext))
+                    <div class="input-group">
+                        {!! Form::text('username', $isEdit ? $u->username : null, ['class' => 'form-control', 'placeholder' => __('business.username'), 'id' => 'username']); !!}
+                        <span class="input-group-addon">{{ $username_ext }}</span>
+                    </div>
+                    <p class="help-block" id="show_username"></p>
+                @else
+                    {!! Form::text('username', $isEdit ? ($u->username ?? null) : null, ['class' => 'form-control', 'placeholder' => __('business.username'), 'id' => 'username']); !!}
+                @endif
+                <label class="ls-ro-label">Display name</label>
+                {!! Form::text('display_name', $isEdit ? $u->user_full_name : null, ['class' => 'form-control', 'id' => 'ls_display_name', 'readonly' => true, 'placeholder' => 'Display name']); !!}
+                <label class="ls-ro-label">Email address *</label>
                 {!! Form::text('email', $isEdit ? $u->email : null, ['class' => 'form-control', 'required', 'placeholder' => __('business.email'), 'id' => 'email']); !!}
-                <div class="ls-check-row">
-                    <label>
-                        {!! Form::checkbox('is_active', $isEdit ? $u->status : 'active', $isEdit ? $is_checked_checkbox : true, ['class' => 'input-icheck status']); !!}
-                        {{ __('lang_v1.status_for_user') }}
-                    </label>
-                    @show_tooltip(__('lang_v1.tooltip_enable_user_active'))
-                </div>
+                <label class="ls-ro-label">{{ __('lang_v1.status_for_user') }}</label>
+                @if(!empty($isAdminUser))
+                    {!! Form::hidden('is_active', 'active') !!}
+                    {!! Form::text('status_display', __('business.is_active'), ['class' => 'form-control', 'readonly' => true]); !!}
+                @else
+                    <div class="ls-check-row" style="margin-top:0;">
+                        <label>
+                            {!! Form::checkbox('is_active', $isEdit ? $u->status : 'active', $isEdit ? $is_checked_checkbox : true, ['class' => 'input-icheck status']); !!}
+                            {{ __('lang_v1.status_for_user') }}
+                        </label>
+                        @show_tooltip(__('lang_v1.tooltip_enable_user_active'))
+                    </div>
+                @endif
+                @if($isEdit)
+                    <p class="ls-ro-meta">Created at {{ $u->created_at ? $u->created_at->format('M j, Y \a\t g:i A') : '—' }}</p>
+                @endif
             </div>
             <div class="ls-profile-card">
                 <div class="ls-profile-card__top">
@@ -57,11 +85,15 @@
             </div>
         </div>
     </div>
-</section>
+    </section>
 
-<section class="ls-sec">
-    <div class="ls-sec__side">
-        <h2>Outlets</h2>
+    @if($isEdit && !empty($isSalesRep) && isset($salesStats))
+        @include('manage_user.partials.targets_history')
+    @endif
+
+    <section class="ls-sec">
+        <div class="ls-sec__side">
+            <h2>Outlets</h2>
         <p>Assigned outlets for this user that they can work at.</p>
     </div>
     <div class="ls-sec__main">
@@ -129,7 +161,7 @@
 <section class="ls-sec">
     <div class="ls-sec__side">
         <h2>Security and ID</h2>
-        <p>Use a secure password. You can also use a quick switch ID at the register.</p>
+        <p>Use a secure password. You can also set a staff PIN.</p>
     </div>
     <div class="ls-sec__main">
         <div class="ls-check-row">
@@ -139,19 +171,6 @@
             </label>
         </div>
         <div class="user_auth_fields @if($isEdit && empty($u->allow_login)) hide @endif">
-            @if(!$isEdit || empty($u->allow_login))
-                <label class="ls-ro-label">{{ __('business.username') }}</label>
-                @if(!empty($username_ext))
-                    <div class="input-group">
-                        {!! Form::text('username', null, ['class' => 'form-control', 'placeholder' => __('business.username'), 'id' => 'username']); !!}
-                        <span class="input-group-addon">{{ $username_ext }}</span>
-                    </div>
-                    <p class="help-block" id="show_username"></p>
-                @else
-                    {!! Form::text('username', $isEdit ? $u->username : null, ['class' => 'form-control', 'placeholder' => __('business.username'), 'id' => 'username']); !!}
-                @endif
-                <p class="help-block">@lang('lang_v1.username_help')</p>
-            @endif
             <div class="ls-subh">CHANGE PASSWORD</div>
             <div class="ls-pass-row">
                 <div>
@@ -167,25 +186,6 @@
                 </div>
             </div>
         </div>
-        <div class="ls-check-row">
-            <label>
-                {!! Form::checkbox('barcode_login', 1, $isEdit ? !empty($u->barcode_login) : false, ['class' => 'input-icheck']); !!}
-                Enable barcode
-            </label>
-        </div>
-        @if($isEdit && !empty($u->username))
-            <div class="ls-barcode-card">
-                <div class="ls-barcode-kicker">Your quick switch ID</div>
-                <div class="ls-barcode-id">{{ $u->username }}</div>
-                <div class="ls-barcode-img-wrap">
-                    <img src="data:image/png;base64,{{ DNS1D::getBarcodePNG($u->username, 'C128', 2, 70, [0, 0, 0], false) }}" alt="{{ $u->username }}" class="ls-barcode-img">
-                </div>
-                <div class="ls-barcode-foot">
-                    <span>Use this ID to switch users faster at the register.</span>
-                    <button type="button" class="ls-users-save" id="lsCopyId" data-id="{{ $u->username }}">Copy ID</button>
-                </div>
-            </div>
-        @endif
         <div class="ls-check-row">
             <label>
                 {!! Form::checkbox('is_enable_service_staff_pin', 1, $isEdit ? $u->is_enable_service_staff_pin : false, ['class' => 'input-icheck status', 'id' => 'is_enable_service_staff_pin']); !!}

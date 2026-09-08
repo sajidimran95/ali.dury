@@ -132,17 +132,17 @@ class ManageUserController extends Controller
                     return $row->updated_at ? $row->updated_at->format('M j, Y g:i A') : '—';
                 })
                 ->addColumn('enabled', function ($row) {
+                    if ($this->userIsAdmin($row)) {
+                        return '<label class="ls-switch ls-switch--lock" title="Admin stays active"><input type="checkbox" checked disabled><i></i></label>';
+                    }
                     $on = $row->status === 'active' ? 'checked' : '';
 
                     return '<label class="ls-switch"><input type="checkbox" class="ls-user-enabled" data-id="'.$row->id.'" '.$on.'><i></i></label>';
                 })
                 ->addColumn('action', function ($row) use ($adminCount) {
                     $html = '';
-                    if (auth()->user()->can('user.update')) {
+                    if (auth()->user()->can('user.update') || auth()->user()->can('user.view')) {
                         $html .= '<a href="'.action([\App\Http\Controllers\ManageUserController::class, 'edit'], [$row->id]).'" class="tw-dw-btn tw-dw-btn-xs tw-dw-btn-outline tw-dw-btn-primary"><i class="glyphicon glyphicon-edit"></i> '.e(__('messages.edit')).'</a>&nbsp;';
-                    }
-                    if (auth()->user()->can('user.view')) {
-                        $html .= '<a href="'.action([\App\Http\Controllers\ManageUserController::class, 'show'], [$row->id]).'" class="tw-dw-btn tw-dw-btn-xs tw-dw-btn-outline tw-dw-btn-info"><i class="fa fa-eye"></i> '.e(__('messages.view')).'</a>&nbsp;';
                     }
                     $isLastAdmin = $this->userIsAdmin($row) && $adminCount <= 1;
                     if (auth()->user()->can('user.delete') && ! $isLastAdmin) {
@@ -222,6 +222,10 @@ class ManageUserController extends Controller
 
             $request['max_sales_discount_percent'] = ! is_null($request->input('max_sales_discount_percent')) ? $this->moduleUtil->num_uf($request->input('max_sales_discount_percent')) : null;
 
+            if ($this->requestAssignsAdminRole($request)) {
+                $request->merge(['is_active' => 'active']);
+            }
+
             $user = $this->moduleUtil->createUser($request);
 
             event(new UserCreatedOrModified($user, 'added'));
@@ -248,33 +252,7 @@ class ManageUserController extends Controller
      */
     public function show($id)
     {
-        if (! auth()->user()->can('user.view')) {
-            abort(403, 'Unauthorized action.');
-        }
-
-        $business_id = request()->session()->get('user.business_id');
-
-        $user = User::where('business_id', $business_id)
-                    ->with(['contactAccess', 'media'])
-                    ->find($id);
-
-        //Get user view part from modules
-        $view_partials = $this->moduleUtil->getModuleData('moduleViewPartials', ['view' => 'manage_user.show', 'user' => $user]);
-
-        $users = User::forDropdown($business_id, false);
-
-        $activities = Activity::forSubject($user)
-           ->with(['causer', 'subject'])
-           ->latest()
-           ->get();
-
-        $locations = BusinessLocation::where('business_id', $business_id)->get();
-        $permitted_locations = $user->permitted_locations();
-        $salesStats = $this->userSalesStats((int) $user->id, (int) $business_id);
-        $isSalesRep = $this->userIsSalesRepresentative($user);
-        $isLastAdmin = $this->isLastAdmin($user);
-
-        return view('manage_user.show')->with(compact('user', 'view_partials', 'users', 'activities', 'locations', 'permitted_locations', 'salesStats', 'isSalesRep', 'isLastAdmin'));
+        return redirect()->action([ManageUserController::class, 'edit'], [$id]);
     }
 
     protected function userSalesStats(int $userId, int $businessId): array
@@ -387,6 +365,21 @@ class ManageUserController extends Controller
         return $count <= 1;
     }
 
+    protected function requestAssignsAdminRole($request): bool
+    {
+        $roleId = $request->input('role');
+        if (empty($roleId)) {
+            return false;
+        }
+        $role = Role::find($roleId);
+        if (! $role) {
+            return false;
+        }
+        $plain = strtolower(trim(explode('#', (string) $role->name)[0]));
+
+        return $plain === 'admin';
+    }
+
     /**
      * Show the form for editing the specified resource.
      *
@@ -401,7 +394,7 @@ class ManageUserController extends Controller
 
         $business_id = request()->session()->get('user.business_id');
         $user = User::where('business_id', $business_id)
-                    ->with(['contactAccess'])
+                    ->with(['contactAccess', 'media'])
                     ->findOrFail($id);
 
         $roles = $this->getRolesArray($business_id);
@@ -423,9 +416,13 @@ class ManageUserController extends Controller
         //Get user form part from modules
         $form_partials = $this->moduleUtil->getModuleData('moduleViewPartials', ['view' => 'manage_user.edit', 'user' => $user]);
         $isLastAdmin = $this->isLastAdmin($user);
+        $isSalesRep = $this->userIsSalesRepresentative($user);
+        $salesStats = $isSalesRep ? $this->userSalesStats((int) $user->id, (int) $business_id) : [];
+        $users = User::forDropdown($business_id, false);
+        $activities = Activity::forSubject($user)->with(['causer', 'subject'])->latest()->get();
 
         return view('manage_user.edit')
-                ->with(compact('roles', 'user', 'contact_access', 'is_checked_checkbox', 'locations', 'permitted_locations', 'form_partials', 'username_ext', 'isLastAdmin'));
+                ->with(compact('roles', 'user', 'contact_access', 'is_checked_checkbox', 'locations', 'permitted_locations', 'form_partials', 'username_ext', 'isLastAdmin', 'isSalesRep', 'salesStats', 'users', 'activities'));
     }
 
     /**
@@ -497,8 +494,6 @@ class ManageUserController extends Controller
             
 
             //Sales commission percentage
-            $user_data['barcode_login'] = ! empty($request->input('barcode_login')) ? 1 : 0;
-
             $user_data['cmmsn_percent'] = ! empty($user_data['cmmsn_percent']) ? $this->moduleUtil->num_uf($user_data['cmmsn_percent']) : 0;
 
             $user_data['max_sales_discount_percent'] = ! is_null($user_data['max_sales_discount_percent']) ? $this->moduleUtil->num_uf($user_data['max_sales_discount_percent']) : null;
@@ -528,6 +523,10 @@ class ManageUserController extends Controller
 
             $user = User::where('business_id', $business_id)
                           ->findOrFail($id);
+
+            if ($this->userIsAdmin($user) || $this->requestAssignsAdminRole($request)) {
+                $user_data['status'] = 'active';
+            }
 
             $user->update($user_data);
             $role_id = $request->input('role');
@@ -650,10 +649,21 @@ class ManageUserController extends Controller
         $id = $user instanceof User ? $user->id : $user;
         $business_id = request()->session()->get('user.business_id');
         $model = User::where('business_id', $business_id)->findOrFail($id);
-        $model->status = request()->boolean('enabled') ? 'active' : 'inactive';
+        if ($this->userIsAdmin($model)) {
+            $model->status = 'active';
+            $model->save();
+
+            return response()->json(['success' => false, 'msg' => 'Admin stays active.', 'status' => 'active'], 422);
+        }
+        $enabled = request()->boolean('enabled');
+        $model->status = $enabled ? 'active' : 'inactive';
         $model->save();
 
-        return response()->json(['success' => true, 'status' => $model->status]);
+        return response()->json([
+            'success' => true,
+            'status' => $model->status,
+            'msg' => $enabled ? 'User enabled successfully.' : 'User disabled successfully.',
+        ]);
     }
 
     public function updateSalesTargets($user)
