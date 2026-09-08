@@ -602,9 +602,30 @@ window.__posQkLayouts = @json($posQkLayoutsJson);
   display: flex; align-items: center; justify-content: space-between; gap: 16px;
   padding: 10px 0 14px;
 }
-.pos-qk-switch { position: relative; width: 46px; height: 26px; flex-shrink: 0; }
-.pos-qk-switch input { opacity: 0; width: 0; height: 0; }
-.pos-qk-switch i { position: absolute; inset: 0; background: #4b5563; border-radius: 999px; cursor: pointer; }
+.pos-qk-switch { position: relative; width: 46px; height: 26px; flex-shrink: 0; overflow: hidden; }
+#pos_quick_keys_modal .pos-qk-switch input[type="checkbox"],
+body.zoho-theme #pos_quick_keys_modal .pos-qk-switch input[type="checkbox"],
+body.lockscreen .pos-qk-switch input[type="checkbox"] {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  opacity: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  position: absolute !important;
+  inset: 0;
+  z-index: 2;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+  cursor: pointer;
+}
+.pos-qk-switch i { position: absolute; inset: 0; background: #4b5563; border-radius: 999px; pointer-events: none; }
 .pos-qk-switch i:before { content:''; position:absolute; width:20px; height:20px; left:3px; top:3px; background:#fff; border-radius:50%; transition:.2s; }
 .pos-qk-switch input:checked + i { background: #7c3aed; }
 .pos-qk-switch input:checked + i:before { transform: translateX(20px); }

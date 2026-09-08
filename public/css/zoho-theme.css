@@ -816,8 +816,8 @@ body.zoho-theme .box-body {
 }
 
 /* ── Forms: radio & checkbox (modals, contact forms) ── */
-body.zoho-theme input[type="radio"]:not(.input-icheck),
-body.zoho-theme input[type="checkbox"]:not(.input-icheck) {
+body.zoho-theme input[type="radio"]:not(.input-icheck):not(.ls-user-enabled):not(#posQkEnabled),
+body.zoho-theme input[type="checkbox"]:not(.input-icheck):not(.ls-user-enabled):not(#posQkEnabled) {
     appearance: none;
     -webkit-appearance: none;
     width: 16px;
@@ -843,13 +843,13 @@ body.zoho-theme input[type="checkbox"]:not(.input-icheck) {
     border-radius: 4px;
 }
 
-body.zoho-theme input[type="radio"]:not(.input-icheck):checked {
+body.zoho-theme input[type="radio"]:not(.input-icheck):not(#posQkEnabled):checked {
     border-color: var(--zoho-blue);
     background: #fff;
     box-shadow: inset 0 0 0 4px var(--zoho-blue);
 }
 
-body.zoho-theme input[type="checkbox"]:not(.input-icheck):checked {
+body.zoho-theme input[type="checkbox"]:not(.input-icheck):not(.ls-user-enabled):not(#posQkEnabled):checked {
     border-color: var(--zoho-blue);
     background-color: var(--zoho-blue);
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='white'%3E%3Cpath d='M12.2 4.2 6.5 9.9 3.8 7.2l-1.3 1.3 4 4 7-7z'/%3E%3C/svg%3E");
