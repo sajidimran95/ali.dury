@@ -2366,7 +2366,7 @@
         a.sale-goal.is-on { border-color: #e53935; background: #fff5f5; }
         .sale-goal__arc {
             width: 92px; height: 52px; margin: 0 auto 6px; position: relative;
-            background: conic-gradient(#e53935 calc(var(--p, 0) * .5%), #e2e8f0 0) top/100% 200%;
+            background: conic-gradient(from 180deg at 50% 100%, #e53935 0deg, #e53935 calc(var(--p, 0) * 180deg / 100), #e2e8f0 calc(var(--p, 0) * 180deg / 100), #e2e8f0 180deg);
             border-radius: 92px 92px 0 0; overflow: hidden;
         }
         .sale-goal__arc::after {
