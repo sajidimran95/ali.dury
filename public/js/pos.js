@@ -20,19 +20,92 @@ function pos_sync_empty_state() {
  * Keep newest cart activity at the top (after empty-state placeholder if present).
  * Used by create + edit POS whenever a line is added or re-scanned.
  */
+function pos_line_edit_row($tr) {
+    $tr = $($tr);
+    if (!$tr.length) {
+        return $();
+    }
+    var idx = $tr.attr('data-row_index');
+    var $next = $tr.next('tr.pos-line-edit-row');
+    if ($next.length) {
+        return $next;
+    }
+    if (typeof idx !== 'undefined') {
+        return $('table#pos_table tbody tr.pos-line-edit-row[data-row_index="' + idx + '"]');
+    }
+    return $();
+}
+
+function pos_close_line_edit($tr) {
+    $tr = $($tr);
+    var $edit = $tr && $tr.length ? pos_line_edit_row($tr) : $();
+    if ($edit.length) {
+        $edit.removeClass('is-open');
+    }
+    if ($tr.length) {
+        $tr.removeClass('is-editing');
+    }
+}
+
+function pos_close_all_line_edits() {
+    $('table#pos_table tbody tr.pos-line-edit-row').removeClass('is-open');
+    $('table#pos_table tbody tr.product_row').removeClass('is-editing');
+}
+
+function pos_open_line_edit($tr) {
+    $tr = $($tr);
+    if (!$tr.length) {
+        return;
+    }
+    var $edit = pos_line_edit_row($tr);
+    var $panel = pos_row_edit_modal($tr);
+    pos_close_all_line_edits();
+    if ($panel.length) {
+        pos_sync_row_edit_modal_from_cart($panel, $tr);
+    }
+    $tr.addClass('is-editing');
+    $edit.addClass('is-open');
+    var $first = $edit.find('input, select, textarea').filter(':visible').first();
+    if ($first.length) {
+        $first.focus().select();
+    }
+}
+
+function pos_toggle_line_edit($tr) {
+    $tr = $($tr);
+    var $edit = pos_line_edit_row($tr);
+    if ($edit.hasClass('is-open')) {
+        pos_close_line_edit($tr);
+        return;
+    }
+    pos_open_line_edit($tr);
+}
+
 function pos_bring_product_row_to_top($row) {
     if (!$row || !$row.length) {
         return $row;
     }
     $row = $($row);
+    var $block = $row;
+    var $product = $row.filter ? $row.filter('tr.product_row').first() : $();
+    if (!$product.length && $row.hasClass && $row.hasClass('product_row')) {
+        $product = $row;
+    }
+    if ($product.length) {
+        var $edit = $row.filter ? $row.filter('tr.pos-line-edit-row') : $();
+        if (!$edit.length) {
+            $edit = $product.next('tr.pos-line-edit-row');
+        }
+        $block = $product.add($edit);
+    }
     var $tbody = $('table#pos_table tbody');
     var $empty = $tbody.children('tr.pos-empty-state-row').first();
     if ($empty.length) {
-        $empty.after($row);
+        $empty.after($block);
     } else {
-        $tbody.prepend($row);
+        $tbody.prepend($block);
     }
-    return $row;
+    return $product.length ? $product : $row;
 }
 
 /**
@@ -62,6 +135,13 @@ function pos_product_row_from_el($el) {
     var $tr = $el.closest('tr.product_row');
     if ($tr.length) {
         return $tr;
+    }
+    var $editTr = $el.closest('tr.pos-line-edit-row');
+    if ($editTr.length) {
+        var eidx = $editTr.attr('data-row_index');
+        if (typeof eidx !== 'undefined') {
+            return $('table#pos_table tbody tr.product_row[data-row_index="' + eidx + '"]');
+        }
     }
     var $modal = $el.closest('.row_edit_product_price_model');
     if (!$modal.length) {
@@ -98,10 +178,15 @@ function pos_restore_row_edit_modal($modal) {
     }
 
     // Fallback if original parent was lost (still on body / outside form)
-    if (!$modal.closest('tr.product_row').length) {
+    if (!$modal.closest('tr.product_row, tr.pos-line-edit-row').length) {
         var id = $modal.attr('id') || '';
         var match = id.match(/row_edit_product_price_modal_(\d+)/);
         if (match) {
+            var $editTr = $('table#pos_table tbody tr.pos-line-edit-row[data-row_index="' + match[1] + '"]');
+            if ($editTr.length) {
+                $modal.appendTo($editTr.children('td').first());
+                return;
+            }
             var $tr = $('table#pos_table tbody tr.product_row[data-row_index="' + match[1] + '"]');
             if ($tr.length) {
                 var $nameCell = $tr.children('td.serial_no').length
@@ -1569,13 +1654,12 @@ $(document).ready(function() {
 
     //Remove row on click on remove row
     $('table#pos_table tbody').on('click', '.pos_remove_row', function() {
-        var $tr = $(this).parents('tr');
+        var $tr = $(this).closest('tr.product_row');
         var idx = $tr.attr('data-row_index');
-        // Modal may have been moved to body — remove it too
+        pos_line_edit_row($tr).remove();
         if (typeof idx !== 'undefined') {
+            $('#row_edit_product_price_modal_' + idx).closest('tr.pos-line-edit-row').remove();
             $('#row_edit_product_price_modal_' + idx).remove();
-        } else {
-            $tr.find('.row_edit_product_price_model').remove();
         }
         $tr.remove();
         pos_total_row();
@@ -2364,6 +2448,7 @@ function pos_refresh_payment_modal() {
 
                         // Always clear cart lines after a successful park
                         $('.row_edit_product_price_model').remove();
+                        $('table#pos_table tbody tr.pos-line-edit-row').remove();
                         $('table#pos_table tbody tr.product_row').remove();
                         $('input#product_row_count').val(0);
                         if (typeof pos_sync_empty_state === 'function') {
@@ -2810,45 +2895,18 @@ function pos_refresh_payment_modal() {
             // $('.select2-selection__rendered').css('padding-right', '150px');
     });
 
-    $(document).on('show.bs.modal', '.row_edit_product_price_model', function() {
-        // Nested in cart table clips / covers wrong — move to body for display,
-        // but remember parent so fields can return to the POS form on close/submit.
-        var $modal = $(this);
-        pos_remember_row_edit_modal_parent($modal);
-        if ($modal.parent()[0] !== document.body) {
-            $modal.appendTo('body');
+    $(document).on('click.posLineEditOpen', 'table#pos_table tbody tr.product_row', function(e) {
+        if ($(e.target).closest('input, select, textarea, button, a, .pos_remove_row, .quantity-up, .quantity-down, .input-number, .pos-sub-unit-select').length) {
+            return;
         }
-        var tr = pos_product_row_from_el($modal);
-        if (tr.length) {
-            pos_sync_row_edit_modal_from_cart($modal, tr);
-        }
+        e.preventDefault();
+        pos_toggle_line_edit($(this));
     });
 
-    $(document).on('shown.bs.modal', '.row_edit_product_price_model', function() {
-        var $modal = $(this);
-        pos_remember_row_edit_modal_parent($modal);
-        if ($modal.parent()[0] !== document.body) {
-            $modal.appendTo('body');
-        }
-        $modal
-            .find('input')
-            .filter(':visible:first')
-            .focus()
-            .select();
-    });
-
-    // Put fields back inside the product row (POS form) so sale create includes unit_price/tax
-    $(document).on('hidden.bs.modal', '.row_edit_product_price_model', function() {
-        var $modal = $(this);
-        if ($modal.data('pos-row-edit-applied')) {
-            $modal.removeData('pos-row-edit-applied');
-        } else {
-            pos_apply_row_edit_modal($modal, null, false);
-        }
-        if (!$('.modal:visible').length) {
-            $('.modal-backdrop').remove();
-            $('body').removeClass('modal-open').css({ paddingRight: '', overflow: '' });
-        }
+    $(document).on('click.posLineEditName', '.pos-line-open-edit', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        pos_toggle_line_edit(pos_product_row_from_el($(this)));
     });
 
     $(document).on('click.posRowEditUpdate', '.pos-row-edit-price-update', function(e) {
@@ -2857,8 +2915,17 @@ function pos_refresh_payment_modal() {
         var $modal = $(this).closest('.row_edit_product_price_model');
         var tr = pos_product_row_from_el($modal);
         pos_apply_row_edit_modal($modal, tr, true);
-        $modal.data('pos-row-edit-applied', true);
-        $modal.modal('hide');
+        pos_close_line_edit(tr);
+        return false;
+    });
+
+    $(document).on('click.posRowEditClose', '.pos-line-edit-panel [data-dismiss="modal"]', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var tr = pos_product_row_from_el($(this));
+        var $modal = $(this).closest('.row_edit_product_price_model');
+        pos_apply_row_edit_modal($modal, tr, false);
+        pos_close_line_edit(tr);
         return false;
     });
 
@@ -4226,10 +4293,10 @@ function pos_insert_product_row(result) {
     pos_play_success_sound();
     var product_row = $('input#product_row_count').val();
     // Newest scanned/selected line stays in the first cart row (create + edit)
-    var $nodes = $(result.html_content);
+    var $nodes = $('<tbody>' + result.html_content + '</tbody>').children('tr');
     var $newRows = $nodes.filter('tr');
     if (!$newRows.length) {
-        $newRows = $nodes;
+        $newRows = $(result.html_content);
     }
     pos_bring_product_row_to_top($newRows);
     pos_sync_empty_state();
@@ -4253,14 +4320,7 @@ function pos_insert_product_row(result) {
     }
 
     if (result.enable_sr_no == '1') {
-        var $editModal = this_row.find('.row_edit_product_price_model');
-        if ($editModal.length) {
-            pos_remember_row_edit_modal_parent($editModal);
-            if ($editModal.parent()[0] !== document.body) {
-                $editModal.appendTo('body');
-            }
-            $editModal.modal('show');
-        }
+        pos_open_line_edit(this_row);
     }
 
     round_row_to_iraqi_dinnar(this_row);
@@ -4906,6 +4966,7 @@ function pos_load_retrieved_sale_into_cart(row) {
 
     var doLoad = function () {
         // Clear current cart lines
+        $('table#pos_table tbody tr.pos-line-edit-row').remove();
         $('table#pos_table tbody tr.product_row').remove();
         $('input#product_row_count').val(0);
         if (typeof pos_sync_empty_state === 'function') {
@@ -5097,6 +5158,7 @@ function reset_pos_form(){
 
     // Clear cart lines FIRST (before any optional widgets that may throw)
     $('.row_edit_product_price_model').remove();
+    $('table#pos_table tbody tr.pos-line-edit-row').remove();
     $('table#pos_table tbody tr.product_row').remove();
     $('input#product_row_count').val(0);
     if (typeof pos_sync_empty_state === 'function') {

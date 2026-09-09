@@ -46,7 +46,7 @@
 			<div style="min-width:0;flex:1;">
 				@if( ($edit_price || $edit_discount) && empty($is_direct_sell) )
 				<div title="@lang('lang_v1.pos_edit_product_price_help')">
-				<span class="text-link text-info tw-cursor-pointer tw-font-semibold tw-text-[13px] tw-leading-snug tw-block tw-truncate md:tw-truncate" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;" data-toggle="modal" data-target="#row_edit_product_price_modal_{{$row_count}}">
+				<span class="text-link text-info tw-cursor-pointer tw-font-semibold tw-text-[13px] tw-leading-snug tw-block tw-truncate md:tw-truncate pos-line-open-edit" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
 					{!! $product_name !!} &nbsp;<i class="fa fa-info-circle"></i>
 				</span>
 				</div>
@@ -124,12 +124,6 @@
 		@endphp
 
 		{{-- Unit price shown inline with editable field in price column --}}
-
-		@if(empty($is_direct_sell))
-		<div class="modal fade row_edit_product_price_model" id="row_edit_product_price_modal_{{$row_count}}" tabindex="-1" role="dialog">
-			@include('sale_pos.partials.row_edit_product_price_modal')
-		</div>
-		@endif
 		<!-- Description modal end -->
 		@if(in_array('modifiers' , $enabled_modules))
 			<div class="modifiers_html">
@@ -433,3 +427,12 @@
 		</button>
 	</td>
 </tr>
+@if(empty($is_direct_sell) && ($edit_price || $edit_discount))
+<tr class="pos-line-edit-row" data-row_index="{{$row_count}}">
+	<td colspan="12">
+		<div class="row_edit_product_price_model pos-line-edit-panel" id="row_edit_product_price_modal_{{$row_count}}">
+			@include('sale_pos.partials.row_edit_product_price_modal')
+		</div>
+	</td>
+</tr>
+@endif
