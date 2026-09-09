@@ -2521,9 +2521,7 @@ function pos_refresh_payment_modal() {
 
                         reset_pos_form();
 
-                        if (result.receipt && result.receipt.is_enabled) {
-                            pos_print(result.receipt);
-                        }
+                        // Parked sale is not a completed invoice — never auto-print
                         if (typeof refreshPosSuspendedCount === 'function') {
                             refreshPosSuspendedCount();
                         }
@@ -2792,7 +2790,10 @@ function pos_refresh_payment_modal() {
                                 }
                             };
 
-                            if (result.receipt && result.receipt.is_enabled) {
+                            // Park / suspend is not a sale — do not print
+                            if (isSuspend) {
+                                doReset();
+                            } else if (result.receipt && result.receipt.is_enabled) {
                                 pos_print(result.receipt);
                                 if ($('form#edit_pos_sell_form').length > 0) {
                                     setTimeout(doReset, 1200);

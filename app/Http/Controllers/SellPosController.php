@@ -1842,6 +1842,10 @@ class SellPosController extends Controller
                 $receipt = '';
                 $can_print_invoice = auth()->user()->can('print_invoice');
                 $invoice_layout_id = $request->input('invoice_layout_id');
+                if (! isset($pos_settings)) {
+                    $business_details = $this->businessUtil->getDetails($business_id);
+                    $pos_settings = empty($business_details->pos_settings) ? $this->businessUtil->defaultPosSettings() : json_decode($business_details->pos_settings, true);
+                }
 
                 if ($input['status'] == 'draft' && $input['is_quotation'] == 0) {
                     $msg = trans('sale.draft_added');
@@ -1851,7 +1855,11 @@ class SellPosController extends Controller
                     $receipt = '';
                 } elseif ($input['status'] == 'final') {
                     $msg = trans('sale.pos_sale_updated');
-                    if (!$is_direct_sale && $can_print_invoice) {
+                    $print_invoice = ! $is_direct_sale && $can_print_invoice;
+                    if (! empty($input['is_suspend']) && empty($pos_settings['print_on_suspend'])) {
+                        $print_invoice = false;
+                    }
+                    if ($print_invoice) {
                         $print_override = $this->resolvePosPrintOverride($request, $business_id, $input['location_id']);
                         $receipt = $this->receiptContent(
                             $business_id,
