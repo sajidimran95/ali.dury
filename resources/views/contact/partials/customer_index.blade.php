@@ -208,9 +208,7 @@
         font-size: 14px;
         margin-top: 4px;
     }
-    @media (max-width: 767px) {
-        .customers-page .cust-stat-value { font-size: 22px; }
-    }
+    .customers-page #contact_table tbody tr { cursor: pointer; }
 </style>
 
 <section class="content-header">
@@ -399,4 +397,5 @@
     @endif
 
     <div class="modal fade pay_contact_due_modal" tabindex="-1" role="dialog" aria-labelledby="gridSystemModalLabel"></div>
+    @include('contact.partials.customer_options_modal')
 </section>

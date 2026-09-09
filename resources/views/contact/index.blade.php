@@ -313,8 +313,19 @@
                             var m = String(data.action).match(/contacts\/(\d+)/);
                             if (m) id = m[1];
                         }
-                        if (id) {
-                            window.location.href = '/contacts/' + id;
+                        if (!id) return;
+                        window.__custOptId = String(id);
+                        var name = data.supplier_business_name || data.name || data.text || '';
+                        if (typeof name === 'object' && name !== null) name = name.display || '';
+                        window.__custOptName = $('<div>').html(name).text().replace(/\s+/g, ' ').trim();
+                        window.__posCustAddress = (data.address || data.shipping_address || '').toString().replace(/<[^>]+>/g, ' ').trim();
+                        $('#posCustOptName').text(window.__custOptName || '');
+                        $('#posCustOptMenu').show();
+                        $('#posCustOptInvoices').attr('hidden', true);
+                        var $m = $('#pos_customer_options_modal');
+                        if ($m.length) {
+                            $m.appendTo('body');
+                            $m.modal('show');
                         }
                     });
 
@@ -329,6 +340,81 @@
                 }
 
                 $(document).ready(wireCustomerUi);
+
+                $(document).on('click', '#posCustOptMenu [data-cust-act]', function () {
+                    if (typeof posCurrentCustomerId === 'function' && $('select#customer_id').length) {
+                        return;
+                    }
+                    var act = $(this).data('cust-act');
+                    var id = window.__custOptId;
+                    if (!id) return;
+                    if (act === 'order') {
+                        window.location.href = '/pos/create?customer_id=' + id;
+                        return;
+                    }
+                    if (act === 'payment') {
+                        $('#pos_customer_options_modal').modal('hide');
+                        var $a = $('<a class="pay_sale_due" href="/payments/pay-contact-due/' + id + '?type=sell"></a>');
+                        $('body').append($a);
+                        $a.trigger('click');
+                        $a.remove();
+                        return;
+                    }
+                    if (act === 'invoices' || act === 'credit') {
+                        $('#posCustOptMenu').hide();
+                        $('#posCustOptInvoices').removeAttr('hidden');
+                        $('#posCustOptInvoiceHint').text(act === 'credit' ? 'Select an invoice to create a credit' : 'This customer invoices');
+                        var $list = $('#posCustOptInvoiceList').html('<div class="pos-cust-opt-hint">Loading…</div>');
+                        $.getJSON('/contacts/purchase-history/' + id, { limit: 25 }, function (res) {
+                            var rows = (res && res.history) || [];
+                            if (!rows.length) {
+                                $list.html('<div class="pos-cust-opt-hint">No invoices for this customer.</div>');
+                                return;
+                            }
+                            var html = '';
+                            rows.forEach(function (sale) {
+                                var label = (sale.invoice_no || '#' + sale.id);
+                                html += '<button type="button" class="pos-cust-opt-inv" data-sale-id="' + sale.id + '" data-mode="' + (act === 'credit' ? 'credit' : 'view') + '"><span>' + label + '</span><i class="fas fa-chevron-right"></i></button>';
+                            });
+                            $list.html(html);
+                        }).fail(function () {
+                            $list.html('<div class="pos-cust-opt-hint">Could not load invoices.</div>');
+                        });
+                        return;
+                    }
+                    if (act === 'history') {
+                        $('#pos_customer_options_modal').modal('hide');
+                        window.location.href = '/contacts/' + id + '?view=ledger';
+                        return;
+                    }
+                    if (act === 'details') {
+                        $('#pos_customer_options_modal').modal('hide');
+                        window.location.href = '/contacts/' + id;
+                        return;
+                    }
+                    if (act === 'directions') {
+                        var addr = window.__posCustAddress || '';
+                        $('#pos_customer_options_modal').modal('hide');
+                        if (!addr) {
+                            if (typeof toastr !== 'undefined') toastr.warning('No address on this customer');
+                            return;
+                        }
+                        window.open('https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(addr), '_blank');
+                    }
+                });
+                $(document).on('click', '#posCustOptInvoiceList .pos-cust-opt-inv', function () {
+                    if (typeof posCurrentCustomerId === 'function' && $('select#customer_id').length) {
+                        return;
+                    }
+                    var saleId = $(this).data('sale-id');
+                    var mode = $(this).data('mode');
+                    $('#pos_customer_options_modal').modal('hide');
+                    if (mode === 'credit') {
+                        window.location.href = '/sell-return/add/' + saleId;
+                        return;
+                    }
+                    window.location.href = '/sells/' + saleId;
+                });
             })();
         </script>
     @else

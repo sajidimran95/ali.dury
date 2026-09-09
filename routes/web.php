@@ -241,6 +241,12 @@ Route::prefix('sale')->name('sale.')->middleware(['setData', \App\Http\Middlewar
         Route::get('/customers', [SalePortalController::class, 'customers'])->name('customers');
         Route::get('/customers/create', [SalePortalController::class, 'createCustomer'])->name('customers.create');
         Route::post('/customers', [SalePortalController::class, 'storeCustomer'])->name('customers.store');
+        Route::get('/customers/{id}/invoices/{invoiceId}/print', [SalePortalController::class, 'printCustomerInvoice'])->name('customers.invoice.print');
+        Route::get('/customers/{id}/invoices', [SalePortalController::class, 'customerOpenInvoices'])->name('customers.invoices');
+        Route::get('/customers/{id}/history', [SalePortalController::class, 'customerHistory'])->name('customers.history');
+        Route::get('/customers/{id}/payment', [SalePortalController::class, 'customerPayment'])->name('customers.payment');
+        Route::post('/customers/{id}/payment', [SalePortalController::class, 'storeCustomerPayment'])->name('customers.payment.store');
+        Route::get('/customers/{id}', [SalePortalController::class, 'showCustomer'])->name('customers.show');
         Route::get('/api/customers', [SalePortalController::class, 'searchCustomers'])->name('api.customers');
         Route::get('/api/products', [SalePortalController::class, 'searchProducts'])->name('api.products');
         Route::get('/api/categories', [SalePortalController::class, 'categoriesTree'])->name('api.categories');

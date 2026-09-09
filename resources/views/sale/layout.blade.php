@@ -66,7 +66,14 @@
             .lg\:w-\[44\%\] { width: 44%; }
             .lg\:flex { display: flex; }
         }
-        body { font-family: Inter, system-ui, sans-serif; background: #f4f6fb; color: #0b1220; margin: 0; }
+        .sale-page-title {
+            font-size: 14px; font-weight: 700; color: #0b1220; line-height: 1.2;
+        }
+        .sale-goals h2, .sale-tx h2, .sale-rpt-list__title {
+            font-size: 15px !important;
+        }
+        .sale-cust-card { font-size: 14px; }
+        .sale-cust-card .font-extrabold { font-size: 15px; font-weight: 700; }
         .sale-input {
             width: 100%; border: 1px solid #e2e8f0; border-radius: 12px; padding: .75rem .9rem;
             font-size: .9375rem; background: #fff; outline: none; box-sizing: border-box;
@@ -419,7 +426,7 @@
             margin-bottom: 4px;
         }
         .sale-exp__title, .sale-del__title {
-            margin: 0; font-size: 22px; font-weight: 800; color: #0b1220;
+            margin: 0; font-size: 16px; font-weight: 700; color: #0b1220;
         }
         .sale-del__sub { margin: 2px 0 0; font-size: 13px; color: #64748b; font-weight: 600; }
         .sale-exp__add {
@@ -1388,7 +1395,7 @@
             cursor: pointer; flex-shrink: 0;
         }
         .sale-order-build__titles { flex: 1 1 auto; min-width: 0; }
-        .sale-order-build__title { font-size: 17px; font-weight: 800; line-height: 1.2; color: #e11d48; }
+        .sale-order-build__title { font-size: 15px; font-weight: 700; line-height: 1.2; color: #e11d48; }
         .sale-order-build__sub { font-size: 12px; font-weight: 600; margin-top: 2px; color: #64748b; }
         .sale-order-cart-badge {
             min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px;
@@ -2474,7 +2481,7 @@
             padding-top: 14px;
         }
         .sale-sheet__head.is-center .sale-sheet__title {
-            font-size: 18px; font-weight: 800; color: #111;
+            font-size: 16px; font-weight: 700; color: #111;
         }
         .sale-sheet__head.is-center .sale-sheet__close {
             position: absolute; right: 8px; top: 8px;
@@ -2483,7 +2490,7 @@
         .sale-act-row {
             display: flex; align-items: center; gap: 16px;
             width: 100%; padding: 16px 12px; border: 0; background: transparent;
-            font-size: 17px; font-weight: 500; color: #111; cursor: pointer; text-align: left;
+            font-size: 15px; font-weight: 500; color: #111; cursor: pointer; text-align: left;
         }
         .sale-act-row svg {
             width: 28px; height: 28px; stroke: #e53935; fill: none;
@@ -2707,6 +2714,84 @@
             /* On cart step, Order button stays in card — only shipping submit is fixed */
             body.sale-page-create #stepCart .sale-btn { position: static; box-shadow: 0 6px 16px rgba(229, 57, 53, 0.25); }
         }
+        .sale-cust-head { padding: 4px 4px 10px; }
+        .sale-cust-head h1 { font-size: 18px; font-weight: 700; line-height: 1.2; margin: 0 0 6px; }
+        .sale-acct-pill { display: inline-block; background: #e8e8e8; color: #444; font-size: 12px; border-radius: 999px; padding: 3px 10px; }
+        .sale-cust-head__addr { color: #9aa0a6; font-size: 12px; margin-top: 6px; }
+        .sale-cust-head__addr-label { color: #e53935; font-weight: 700; font-size: 11px; }
+        .sale-cust-tabs { display: flex; justify-content: space-around; border-bottom: 1px solid #eee; margin: 8px -12px 0; padding: 0 8px; background: #fff; border-radius: 18px 18px 0 0; }
+        .sale-cust-tabs a { flex: 1; text-align: center; padding: 12px 4px 8px; font-weight: 600; color: #111; text-decoration: none; font-size: 13px; border-bottom: 2px solid transparent; }
+        .sale-cust-tabs a.is-on { border-bottom-color: #111; }
+        .sale-cust-panel { background: #fff; margin: 0 -12px; padding: 16px 16px 24px; min-height: 50vh; }
+        .sale-open-bal { text-align: center; }
+        .sale-open-bal span { color: #64748b; font-size: 14px; }
+        .sale-open-bal b { display: block; font-size: 20px; font-weight: 700; margin-top: 2px; }
+        .sale-aging { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: 18px 0 8px; min-height: 210px; align-items: end; }
+        .sale-aging__col { display: flex; flex-direction: column; align-items: center; height: 210px; position: relative; }
+        .sale-aging__val { font-size: 11px; font-weight: 700; margin-bottom: 4px; }
+        .sale-aging__track { flex: 1; width: 10px; background: #f3f4f6; border-radius: 8px; position: relative; overflow: hidden; }
+        .sale-aging__bar { position: absolute; left: 0; right: 0; border-radius: 8px; }
+        .sale-aging__dot { width: 12px; height: 12px; border-radius: 999px; position: absolute; left: 50%; margin-left: -6px; }
+        .sale-aging__lbl { font-size: 11px; color: #64748b; margin-top: 8px; }
+        .sale-aging-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+        .sale-aging-card { border: 1px solid #eee; border-radius: 12px; padding: 12px; }
+        .sale-aging-card em { font-style: normal; font-weight: 700; font-size: 13px; }
+        .sale-aging-card b { display: block; font-size: 15px; margin-top: 6px; }
+        .sale-inv-card { display: block; background: #fff; border: 1px solid #eee; border-radius: 12px; padding: 12px; margin-bottom: 8px; text-decoration: none; color: inherit; }
+        .sale-inv-card__row { display: flex; justify-content: space-between; gap: 8px; align-items: flex-start; }
+        .sale-inv-card h3 { margin: 0; font-size: 15px; font-weight: 700; }
+        .sale-inv-card .meta { color: #64748b; font-size: 13px; margin-top: 4px; }
+        .sale-status-sent { background: #22c55e; color: #fff; font-size: 11px; font-weight: 700; border-radius: 999px; padding: 3px 10px; }
+        .sale-status-paid { background: #94a3b8; color: #fff; font-size: 11px; font-weight: 700; border-radius: 999px; padding: 3px 10px; }
+        .sale-inv-cols { display: flex; justify-content: space-between; color: #94a3b8; font-size: 11px; margin: 8px 2px 10px; }
+        .sale-inv-total { display: flex; justify-content: space-between; font-weight: 700; font-size: 14px; padding: 12px 4px 8px; }
+        .sale-seg { display: flex; background: #ececec; border-radius: 8px; overflow: hidden; margin: 10px 0; }
+        .sale-seg a, .sale-seg button { flex: 1; border: 0; background: transparent; padding: 8px; font-weight: 700; font-size: 13px; color: #888; text-decoration: none; text-align: center; cursor: pointer; }
+        .sale-seg .is-on { background: #4b5563; color: #fff; }
+        .sale-pay-total { background: #f3f4f6; border-radius: 8px; padding: 12px; display: flex; justify-content: space-between; font-weight: 700; margin-bottom: 12px; }
+        .sale-pay-check {
+            display: flex; gap: 12px; align-items: flex-start;
+            background: #fff; border: 1px solid #ececec; border-radius: 14px;
+            padding: 14px 14px 12px; margin-bottom: 10px;
+        }
+        .sale-pay-check input[type="checkbox"] {
+            appearance: none; -webkit-appearance: none;
+            width: 22px; height: 22px; margin-top: 2px; flex-shrink: 0;
+            border: 2px solid #cbd5e1; border-radius: 4px; background: #fff;
+            position: relative; cursor: pointer;
+        }
+        .sale-pay-check input[type="checkbox"]:checked {
+            background: #2563eb; border-color: #2563eb;
+        }
+        .sale-pay-check input[type="checkbox"]:checked::after {
+            content: ''; position: absolute; left: 6px; top: 2px;
+            width: 6px; height: 11px; border: solid #fff; border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+        .sale-pay-dl {
+            display: grid; grid-template-columns: 1fr auto; gap: 8px 16px;
+            font-size: 14px; width: 100%; margin: 0;
+        }
+        .sale-pay-dl dt { color: #9ca3af; font-weight: 500; }
+        .sale-pay-dl dd { margin: 0; text-align: right; color: #6b7280; font-weight: 500; }
+        .sale-pay-btn {
+            width: 100%; border: 0; background: #e53935; color: #fff;
+            font-weight: 700; font-size: 15px; letter-spacing: .04em;
+            border-radius: 10px; padding: 12px; cursor: pointer; margin: 8px 0 6px;
+        }
+        .sale-pay-tools {
+            display: flex; justify-content: space-around; padding: 16px 0 8px;
+            color: #0b1220; font-size: 12px; font-weight: 600; text-align: center;
+        }
+        .sale-pay-tools button { background: none; border: 0; color: inherit; cursor: pointer; font: inherit; }
+        .sale-pay-tools svg { display: block; margin: 0 auto 6px; }
+        .sale-sig-pad { width: 100%; height: 180px; border: 1px solid #e5e7eb; border-radius: 10px; background: #fff; touch-action: none; }
+        .sale-pay-sum { background: #fff; border: 1px solid #eee; border-radius: 12px; padding: 12px; margin-bottom: 14px; font-size: 14px; }
+        .sale-pay-sum .red { color: #e53935; font-weight: 700; }
+        .sale-pay-sum-row { display: flex; justify-content: space-between; padding: 6px 0; }
+        .sale-pay-modes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+        .sale-pay-chip { border-radius: 999px; padding: 8px; font-weight: 700; font-size: 13px; border: 1.5px solid #e53935; background: #fff; color: #e53935; cursor: pointer; }
+        .sale-pay-chip.is-on { background: #9ca3af; color: #fff; border-color: #9ca3af; }
         @media (min-width: 1024px) {
             body.sale-page-create .sale-create-bar {
                 margin-top: 16px;
@@ -2722,7 +2807,7 @@
     $isOrders = in_array($routeName, ['sale.orders', 'sale.orders.show'], true);
     $isCreate = in_array($routeName, ['sale.orders.create', 'sale.orders.edit'], true);
     $isProducts = $routeName === 'sale.products';
-    $isCustomers = in_array($routeName, ['sale.customers', 'sale.customers.create'], true);
+        $isCustomers = str_starts_with((string) $routeName, 'sale.customers');
     $isAccount = $routeName === 'sale.account' || $routeName === 'sale.account.location';
     $isExpense = in_array($routeName, ['sale.expenses', 'sale.expenses.create', 'sale.expenses.store'], true)
         || str_starts_with((string) $routeName, 'sale.expenses');
@@ -2843,7 +2928,7 @@
         <header class="sale-desk-top sale-d-flex">
             <div>
                 <div class="text-[11px] uppercase tracking-wider font-bold text-slate-400">Sales workstation</div>
-                <div class="font-extrabold text-lg leading-tight">@yield('header', 'Orders')</div>
+                <div class="font-extrabold text-base leading-tight">@yield('header', 'Orders')</div>
             </div>
             <div class="flex items-center gap-3">
                 <a href="{{ route('sale.customers') }}" class="sale-btn-sm sale-d-only">
@@ -2857,10 +2942,14 @@
         {{-- Mobile app header: brand + profile --}}
         <header class="sale-m-only sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-sale-line pt-[env(safe-area-inset-top,0)]">
             <div class="h-14 px-4 flex items-center justify-between gap-3">
+                @hasSection('header_left')
+                    @yield('header_left')
+                @else
                 <a href="{{ route('sale.home') }}" class="flex items-center gap-2 min-w-0 no-underline text-inherit">
                     <img src="{{ asset('pwa/sale-icon-192.png') }}" alt="" class="h-8 w-8 rounded-full bg-sale shrink-0">
                 </a>
-                <div class="font-extrabold text-[16px] truncate">@yield('header', 'Sales')</div>
+                @endif
+                <div class="sale-page-title truncate">@yield('header', 'Sales')</div>
                 @hasSection('header_right')
                     @yield('header_right')
                 @else

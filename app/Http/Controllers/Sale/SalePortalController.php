@@ -10,6 +10,7 @@ use App\EmployeeAttendance;
 use App\Http\Controllers\Controller;
 use App\Product;
 use App\Transaction;
+use App\TransactionPayment;
 use App\Unit;
 use App\Utils\BusinessUtil;
 use App\Utils\ContactUtil;
@@ -641,6 +642,76 @@ class SalePortalController extends Controller
             \Log::error('Sale app invoice show failed: '.$e->getMessage(), [
                 'trace' => $e->getTraceAsString(),
             ]);
+
+            return back()->with('status', [
+                'success' => 0,
+                'msg' => 'Could not open invoice.',
+            ]);
+        }
+    }
+
+    public function printCustomerInvoice(Request $request, $id, $invoiceId)
+    {
+        $this->saleAppFindCustomer($request, $id);
+        $business_id = $request->session()->get('user.business_id');
+        $order = Transaction::where('business_id', $business_id)
+            ->where('contact_id', $id)
+            ->where('id', $invoiceId)
+            ->where(function ($q) {
+                $q->where(function ($inner) {
+                    $inner->where('type', 'sell')->where('status', 'final');
+                })->orWhere('type', 'sales_order');
+            })
+            ->firstOrFail();
+
+        try {
+            $printTx = $order;
+            if ($order->type === 'sales_order') {
+                $invoiceMap = $this->saleAppInvoiceMap((int) $order->business_id);
+                $printTx = $this->saleAppPrintTransaction($order, $invoiceMap);
+            }
+            $printTx->loadMissing('location');
+            $location = $printTx->location;
+            if (empty($location) && ! empty($printTx->location_id)) {
+                $location = BusinessLocation::find($printTx->location_id);
+            }
+            if (empty($location)) {
+                $location = BusinessLocation::where('business_id', $business_id)->first();
+            }
+            if (empty($location)) {
+                throw new \RuntimeException('Invoice location not found.');
+            }
+
+            $business_details = $this->businessUtil->getDetails($business_id);
+            $invoice_layout_id = ! empty($printTx->is_direct_sale)
+                ? ($location->sale_invoice_layout_id ?: $location->invoice_layout_id)
+                : $location->invoice_layout_id;
+            $invoice_layout = $this->businessUtil->invoiceLayout($business_id, $invoice_layout_id);
+            $receipt_details = $this->transactionUtil->getReceiptDetails(
+                $printTx->id,
+                $printTx->location_id ?: $location->id,
+                $invoice_layout,
+                $business_details,
+                $location,
+                'browser'
+            );
+            $receipt_details->currency = [
+                'symbol' => $business_details->currency_symbol,
+                'thousand_separator' => $business_details->thousand_separator,
+                'decimal_separator' => $business_details->decimal_separator,
+            ];
+            $receipt_details->invoice_no = $order->invoice_no;
+            $receipt_details->design = 'us_letter';
+            $layout = view()->exists('sale_pos.receipts.us_letter')
+                ? 'sale_pos.receipts.us_letter'
+                : 'sale_pos.receipts.classic';
+            $html = view($layout, compact('receipt_details'))->render();
+            $title = $order->invoice_no;
+            $orderId = $order->id;
+
+            return response()->view('sale.orders.invoice', compact('html', 'title', 'orderId'));
+        } catch (\Throwable $e) {
+            \Log::error('Sale app customer invoice print failed: '.$e->getMessage());
 
             return back()->with('status', [
                 'success' => 0,
@@ -2617,5 +2688,247 @@ class SalePortalController extends Controller
         // Redirect to main stock transfer controller to handle the actual storage
         // This reuses existing business logic
         return app(\App\Http\Controllers\StockTransferController::class)->store($request);
+    }
+
+    public function showCustomer(Request $request, $id)
+    {
+        $data = $this->saleAppCustomerBundle($request, $id);
+        $tab = $request->get('tab', 'details');
+        if (! in_array($tab, ['details', 'invoices', 'history'], true)) {
+            $tab = 'invoices';
+        }
+        $data['tab'] = $tab;
+
+        return view('sale.customers.show', $data);
+    }
+
+    public function customerOpenInvoices(Request $request, $id)
+    {
+        $data = $this->saleAppCustomerBundle($request, $id, true);
+        $q = trim((string) $request->get('q', ''));
+        if ($q !== '') {
+            $data['openInvoices'] = $data['openInvoices']->filter(function ($row) use ($q) {
+                return stripos($row['invoice_no'].' '.$row['name'], $q) !== false;
+            })->values();
+        }
+        $data['q'] = $q;
+
+        return view('sale.customers.open_invoices', $data);
+    }
+
+    public function customerHistory(Request $request, $id)
+    {
+        $data = $this->saleAppCustomerBundle($request, $id);
+        $q = trim((string) $request->get('q', ''));
+        if ($q !== '') {
+            $data['history'] = $data['history']->filter(function ($row) use ($q) {
+                return stripos($row['invoice_no'].' '.$row['kind'].' '.$row['name'], $q) !== false;
+            })->values();
+        }
+        $data['q'] = $q;
+
+        return view('sale.customers.history', $data);
+    }
+
+    public function customerPayment(Request $request, $id)
+    {
+        $data = $this->saleAppCustomerBundle($request, $id, true);
+        $data['paymentTypes'] = $this->transactionUtil->payment_types(null, false, $request->session()->get('user.business_id'));
+        $data['tabPay'] = $request->get('view', 'amount') === 'payments' ? 'payments' : 'amount';
+        $data['preselect'] = (int) $request->get('invoice_id', 0);
+
+        return view('sale.customers.payment', $data);
+    }
+
+    public function storeCustomerPayment(Request $request, $id)
+    {
+        $this->saleAppFindCustomer($request, $id);
+        $data = $request->validate([
+            'amount' => 'required',
+            'method' => 'required|string',
+            'paid_on' => 'nullable|string',
+            'note' => 'nullable|string|max:500',
+            'pay_mode' => 'nullable|in:pay,credit',
+        ]);
+        $amount = (float) str_replace([',', '$'], '', (string) $data['amount']);
+        if ($amount <= 0) {
+            return back()->with('status', ['success' => 0, 'msg' => 'Enter a payment amount.']);
+        }
+
+        $payRequest = new Request([
+            'contact_id' => (int) $id,
+            'amount' => $amount,
+            'method' => $data['method'],
+            'paid_on' => $data['paid_on'] ?: Carbon::now()->toDateTimeString(),
+            'note' => $data['note'] ?? '',
+            'due_payment_type' => 'sell',
+            'is_reverse' => ($data['pay_mode'] ?? 'pay') === 'credit' ? 1 : 0,
+        ]);
+
+        try {
+            DB::beginTransaction();
+            $this->transactionUtil->payContact($payRequest, false);
+            DB::commit();
+
+            return redirect()
+                ->route('sale.customers.payment', $id)
+                ->with('status', ['success' => 1, 'msg' => 'Payment saved.']);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return back()->with('status', ['success' => 0, 'msg' => $e->getMessage()]);
+        }
+    }
+
+    protected function saleAppFindCustomer(Request $request, $id): Contact
+    {
+        if (! self::userCanListCustomers()) {
+            abort(403);
+        }
+        $business_id = $request->session()->get('user.business_id');
+
+        return Contact::where('business_id', $business_id)
+            ->onlyCustomers()
+            ->findOrFail($id);
+    }
+
+    protected function saleAppCustomerAddress(Contact $c): string
+    {
+        if (! empty($c->shipping_address)) {
+            return trim(preg_replace('/\s+/', ' ', strip_tags(str_replace(['<br>', '<br/>', '<br />'], ', ', $c->shipping_address))));
+        }
+
+        return trim(implode(', ', array_filter([
+            $c->address_line_1,
+            $c->address_line_2,
+            $c->city,
+            $c->state,
+            $c->zip_code,
+        ])));
+    }
+
+    protected function saleAppTxnPaid(Transaction $tx): float
+    {
+        $paid = 0.0;
+        foreach ($tx->payment_lines ?? [] as $pay) {
+            $amt = (float) ($pay->amount ?? 0);
+            $paid += ! empty($pay->is_return) ? -$amt : $amt;
+        }
+
+        return $paid;
+    }
+
+    protected function saleAppCustomerBundle(Request $request, $id, bool $openOnly = false): array
+    {
+        $customer = $this->saleAppFindCustomer($request, $id);
+        $business_id = $request->session()->get('user.business_id');
+        $name = trim((string) ($customer->supplier_business_name ?: $customer->name));
+        $address = $this->saleAppCustomerAddress($customer);
+        $groupName = '';
+        if (! empty($customer->customer_group_id)) {
+            $groupName = (string) (CustomerGroup::where('business_id', $business_id)
+                ->where('id', $customer->customer_group_id)
+                ->value('name') ?? '');
+        }
+
+        $sells = Transaction::where('business_id', $business_id)
+            ->where('contact_id', $customer->id)
+            ->where('type', 'sell')
+            ->where('status', 'final')
+            ->with('payment_lines')
+            ->orderByDesc('transaction_date')
+            ->get();
+
+        $orders = Transaction::where('business_id', $business_id)
+            ->where('contact_id', $customer->id)
+            ->where('type', 'sales_order')
+            ->orderByDesc('transaction_date')
+            ->get();
+
+        $openInvoices = collect();
+        $aging = ['current' => 0.0, 'd30' => 0.0, 'd60' => 0.0, 'd90' => 0.0];
+        $now = Carbon::now();
+
+        foreach ($sells as $tx) {
+            $paid = $this->saleAppTxnPaid($tx);
+            $due = round((float) $tx->final_total - $paid, 2);
+            $row = [
+                'id' => $tx->id,
+                'kind' => 'Invoice',
+                'name' => $name,
+                'invoice_no' => $tx->invoice_no ?: (string) $tx->id,
+                'date' => Carbon::parse($tx->transaction_date)->format('m/d/Y'),
+                'due_date' => Carbon::parse($tx->transaction_date)->addDays(4)->format('m/d/Y'),
+                'amount' => (float) $tx->final_total,
+                'balance' => $due,
+                'status' => $due <= 0.009 ? 'Paid' : 'Sent',
+                'acct' => $customer->contact_id,
+            ];
+            if ($due > 0.009) {
+                $openInvoices->push($row);
+                $age = abs((int) Carbon::parse($tx->transaction_date)->diffInDays($now));
+                if ($age < 30) {
+                    $aging['current'] += $due;
+                } elseif ($age < 60) {
+                    $aging['d30'] += $due;
+                } elseif ($age < 90) {
+                    $aging['d60'] += $due;
+                } else {
+                    $aging['d90'] += $due;
+                }
+            }
+        }
+
+        $history = collect();
+        foreach ($sells as $tx) {
+            $paid = $this->saleAppTxnPaid($tx);
+            $due = round((float) $tx->final_total - $paid, 2);
+            $history->push([
+                'id' => $tx->id,
+                'kind' => 'Invoice',
+                'name' => $name,
+                'invoice_no' => $tx->invoice_no ?: (string) $tx->id,
+                'date' => Carbon::parse($tx->transaction_date)->format('m/d/Y'),
+                'amount' => (float) $tx->final_total,
+                'balance' => $due,
+                'status' => $due <= 0.009 ? 'Paid' : 'Sent',
+                'show_url' => (int) $tx->created_by === (int) auth()->id()
+                    ? route('sale.orders.show', $tx->id)
+                    : route('sale.customers.show', [$customer->id, 'tab' => 'history']),
+            ]);
+        }
+        foreach ($orders as $tx) {
+            $history->push([
+                'id' => $tx->id,
+                'kind' => 'Order',
+                'name' => $name,
+                'invoice_no' => $tx->invoice_no ?: (string) $tx->id,
+                'date' => Carbon::parse($tx->transaction_date)->format('m/d/Y'),
+                'amount' => (float) $tx->final_total,
+                'balance' => null,
+                'status' => 'Sent',
+                'show_url' => (int) $tx->created_by === (int) auth()->id()
+                    ? route('sale.orders.show', $tx->id)
+                    : route('sale.customers.show', [$customer->id, 'tab' => 'history']),
+            ]);
+        }
+        $history = $history->sortByDesc(function ($r) {
+            return $r['date'].$r['id'];
+        })->values();
+
+        $openBalance = round((float) array_sum($aging), 2);
+
+        return [
+            'customer' => $customer,
+            'custName' => $name,
+            'custAddr' => $address,
+            'openInvoices' => $openInvoices->values(),
+            'history' => $history,
+            'aging' => $aging,
+            'openBalance' => $openBalance,
+            'openOnly' => $openOnly,
+            'groupName' => $groupName,
+            'printBase' => url('/sale/customers/'.$customer->id.'/invoices'),
+        ];
     }
 }

@@ -12,7 +12,7 @@
 
 <div class="sale-home-welcome">
     <h1>Welcome</h1>
-    <div class="font-extrabold text-2xl mt-2">{{ $userName }}</div>
+    <div class="font-bold text-lg mt-2">{{ $userName }}</div>
 </div>
 
 <div class="flex justify-between items-end mb-2">
@@ -21,13 +21,13 @@
 </div>
 <div class="sale-home-today mb-5">
     <div class="sale-card text-center">
-        <div class="text-2xl font-extrabold text-violet-600">{{ $todayOrders }} <span class="text-sm font-bold text-slate-500">Orders</span></div>
+        <div class="text-lg font-bold text-violet-600">{{ $todayOrders }} <span class="text-sm font-bold text-slate-500">Orders</span></div>
         <div class="sale-gauge mt-2" style="--p: {{ $orderPct }}"></div>
         <div class="text-xs text-amber-500 mt-1">{{ $orderPct }}% Goal</div>
         <div class="text-xs text-slate-400 mt-1">{{ (int) ($stats['due_orders'] ?? 0) }} Pending</div>
     </div>
     <div class="sale-card text-center">
-        <div class="text-2xl font-extrabold text-sale">{{ number_format((float) ($stats['today_cash_total'] ?? $todayTotal), 0) }} <span class="text-sm font-bold text-slate-500">Cash</span></div>
+        <div class="text-lg font-bold text-sale">{{ number_format((float) ($stats['today_cash_total'] ?? $todayTotal), 0) }} <span class="text-sm font-bold text-slate-500">Cash</span></div>
         <div class="sale-gauge mt-2" style="--p: {{ $payPct }}; background: conic-gradient(#e53935 calc(var(--p, 0) * 1%), #e5e7eb 0);"></div>
         <div class="text-xs text-sale mt-1">{{ $payPct }}% Goal</div>
         <div class="text-xs text-rose-500 mt-1 font-semibold">Credit {{ (int) ($stats['today_credit_orders'] ?? 0) }} · ${{ number_format((float) ($stats['today_credit_total'] ?? 0), 0) }}</div>

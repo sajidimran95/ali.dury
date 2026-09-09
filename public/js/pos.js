@@ -540,6 +540,9 @@ $(document).ready(function() {
                         '" ' +
                         'data-selling_price_group_id="' +
                         (row.selling_price_group_id || '') +
+                        '" ' +
+                        'data-address="' +
+                        $('<div>').text([row.shipping_address, row.address_line_1, row.address_line_2, row.city, row.state, row.zip_code, row.country].filter(Boolean).join(', ')).html() +
                         '">' +
                         '<div class="pos-cust-avatar" style="background:' +
                         color +
@@ -630,6 +633,7 @@ $(document).ready(function() {
             $('#edit_sell_form select[name="pay_term_type"]').val('');
         }
         var balance = $btn.attr('data-balance');
+        window.__posCustAddress = $btn.attr('data-address') || '';
         if (typeof update_shipping_address === 'function') {
             update_shipping_address({ id: id, name: text, balance: balance });
         }
@@ -7224,3 +7228,4 @@ function saveFormDataToLocalStorage() {
 
     // console.log("Form data successfully saved to LocalStorage.");
 }
+

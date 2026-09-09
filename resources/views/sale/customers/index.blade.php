@@ -22,7 +22,7 @@
             ])));
             $limit = $customer->credit_limit;
         @endphp
-        <button type="button" class="sale-cust-card w-full text-left" data-cust="{{ $customer->id }}" data-name="{{ e($customer->supplier_business_name ?: $customer->name) }}" data-addr="{{ e($addr) }}">
+        <button type="button" class="sale-cust-card w-full text-left" data-cust="{{ $customer->id }}" data-name="{{ e($customer->supplier_business_name ?: $customer->name) }}" data-addr="{{ e($addr) }}" data-acct="{{ e($customer->contact_id) }}" data-mobile="{{ e($customer->mobile) }}" data-limit="{{ $limit === null ? '0.00' : number_format((float) $limit, 2, '.', '') }}">
             <div class="sale-cust-card__top">
                 <div class="font-extrabold text-[15px]">{{ $customer->supplier_business_name ?: $customer->name }}</div>
                 <span class="sale-cust-card__chev">›</span>
@@ -64,23 +64,45 @@
             <div class="sale-sheet__title">Options</div>
             <button type="button" class="sale-sheet__close" id="saleCustClose" aria-label="Close">×</button>
         </div>
-        <div class="sale-sheet__body !pt-1">
+        <p id="saleCustWho" class="text-center text-sm text-slate-500 px-4 -mt-1 mb-1"></p>
+        <div class="sale-sheet__body !pt-1" id="saleCustMenu">
             <a id="saleCustOrder" class="sale-act-row" href="#">
                 <svg viewBox="0 0 24 24"><path d="M8 4h8v3H8z"/><path d="M6 7h12v13H6z"/><path d="M9 11h6M9 15h4"/></svg>
                 Create Order
+            </a>
+            <a id="saleCustPayment" class="sale-act-row" href="#">
+                <svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18"/><path d="M7 15h4"/></svg>
+                Create Payment
             </a>
             <a id="saleCustInvoices" class="sale-act-row" href="#">
                 <svg viewBox="0 0 24 24"><path d="M7 3h10v18H7z"/><path d="M10 8h4M10 12h4M10 16h3"/></svg>
                 Open Invoices
             </a>
+            <a id="saleCustCredit" class="sale-act-row" href="#">
+                <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 10h4M7 14h6"/></svg>
+                Create Credit
+            </a>
             <a id="saleCustHistory" class="sale-act-row" href="#">
                 <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg>
                 History
             </a>
+            <button type="button" class="sale-act-row" id="saleCustDetails">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3"/><path d="M5 19c1.5-3.5 4-5 7-5s5.5 1.5 7 5"/></svg>
+                Customer Details
+            </button>
             <a id="saleCustDirections" class="sale-act-row" href="#" target="_blank" rel="noopener">
                 <svg viewBox="0 0 24 24"><path d="M12 21s7-4.5 7-11a7 7 0 1 0-14 0c0 6.5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>
                 Directions
             </a>
+        </div>
+        <div class="sale-sheet__body !pt-1" id="saleCustDetailsPane" hidden>
+            <div class="px-4 pb-3 text-sm text-slate-600 space-y-2">
+                <div><b>Account</b><div id="saleCustDAcct">—</div></div>
+                <div><b>Mobile</b><div id="saleCustDMobile">—</div></div>
+                <div><b>Address</b><div id="saleCustDAddr">—</div></div>
+                <div><b>Credit limit</b><div id="saleCustDLimit">—</div></div>
+            </div>
+            <button type="button" class="sale-act-row" id="saleCustDetailsBack">Back to Options</button>
         </div>
         <div class="sale-sheet__foot">
             <button type="button" class="sale-more-cancel" id="saleCustCancel">CANCEL</button>
@@ -96,33 +118,57 @@
     const input = document.getElementById('saleCustomerSearch');
     const sheet = document.getElementById('saleCustSheet');
     const orderLink = document.getElementById('saleCustOrder');
+    const payLink = document.getElementById('saleCustPayment');
     const histLink = document.getElementById('saleCustHistory');
     const invLink = document.getElementById('saleCustInvoices');
+    const creditLink = document.getElementById('saleCustCredit');
     const dirLink = document.getElementById('saleCustDirections');
+    const who = document.getElementById('saleCustWho');
+    const menu = document.getElementById('saleCustMenu');
+    const detailsPane = document.getElementById('saleCustDetailsPane');
     const createBase = @json(route('sale.orders.create'));
+    const payBase = @json(url('/sale/customers'));
     const histBase = @json(route('sale.orders'));
+    let lastAddr = '';
 
-    function hideSheet() { if (sheet) sheet.hidden = true; }
-    function showSheet(id, addr) {
+    function hideSheet() {
+        if (typeof saleCloseSheet === 'function') saleCloseSheet('saleCustSheet');
+        else if (sheet) { sheet.hidden = true; sheet.classList.remove('is-open'); }
+    }
+    function showMenu() {
+        if (menu) menu.hidden = false;
+        if (detailsPane) detailsPane.hidden = true;
+    }
+    function showSheet(card) {
         if (!sheet) return;
+        const id = card.getAttribute('data-cust');
+        const addr = card.getAttribute('data-addr') || '';
+        lastAddr = addr;
+        if (sheet) sheet.setAttribute('data-open-id', id);
         const addVid = new URLSearchParams(window.location.search).get('add');
-        orderLink.href = createBase + '?contact_id=' + encodeURIComponent(id) + (addVid ? '&add=' + encodeURIComponent(addVid) : '');
-        histLink.href = histBase + '?contact_id=' + encodeURIComponent(id);
-        invLink.href = histBase + '?contact_id=' + encodeURIComponent(id) + '&status=invoiced';
-        if (addr) {
-            dirLink.href = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(addr);
-            dirLink.style.display = '';
-        } else {
-            dirLink.href = '#';
-            dirLink.style.display = 'none';
-        }
-        sheet.hidden = false;
+        const q = '?contact_id=' + encodeURIComponent(id);
+        if (who) who.textContent = card.getAttribute('data-name') || '';
+        orderLink.href = createBase + q + (addVid ? '&add=' + encodeURIComponent(addVid) : '');
+        payLink.href = payBase + '/' + encodeURIComponent(id) + '/payment';
+        histLink.href = payBase + '/' + encodeURIComponent(id) + '/history';
+        invLink.href = payBase + '/' + encodeURIComponent(id) + '/invoices';
+        creditLink.href = payBase + '/' + encodeURIComponent(id) + '/payment?view=payments';
+        dirLink.href = addr
+            ? 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(addr)
+            : '#';
+        document.getElementById('saleCustDAcct').textContent = card.getAttribute('data-acct') || '—';
+        document.getElementById('saleCustDMobile').textContent = card.getAttribute('data-mobile') || '—';
+        document.getElementById('saleCustDAddr').textContent = addr || '—';
+        document.getElementById('saleCustDLimit').textContent = '$' + (card.getAttribute('data-limit') || '0.00');
+        showMenu();
+        if (typeof saleOpenSheet === 'function') saleOpenSheet('saleCustSheet');
+        else { sheet.hidden = false; sheet.classList.add('is-open'); document.body.appendChild(sheet); }
     }
     document.addEventListener('click', function (e) {
         const card = e.target.closest('[data-cust]');
         if (card) {
             e.preventDefault();
-            showSheet(card.getAttribute('data-cust'), card.getAttribute('data-addr') || '');
+            showSheet(card);
         }
     });
     const close = document.getElementById('saleCustClose');
@@ -130,6 +176,19 @@
     if (close) close.addEventListener('click', hideSheet);
     if (cancel) cancel.addEventListener('click', hideSheet);
     if (sheet) sheet.addEventListener('click', (e) => { if (e.target === sheet) hideSheet(); });
+    const detailsBtn = document.getElementById('saleCustDetails');
+    const detailsBack = document.getElementById('saleCustDetailsBack');
+    if (detailsBtn) detailsBtn.addEventListener('click', function () {
+        var id = document.querySelector('#saleCustSheet').getAttribute('data-open-id') || '';
+        if (id) window.location.href = payBase + '/' + encodeURIComponent(id);
+    });
+    if (detailsBack) detailsBack.addEventListener('click', showMenu);
+    if (dirLink) dirLink.addEventListener('click', function (e) {
+        if (!lastAddr) {
+            e.preventDefault();
+            alert('No address on this customer');
+        }
+    });
 
     if (!form || !input) return;
     let timer = null;
