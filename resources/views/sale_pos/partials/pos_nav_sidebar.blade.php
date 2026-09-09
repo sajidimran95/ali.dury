@@ -28,12 +28,9 @@
             @if(!empty($icon_html))
                 @php
                     $title_l = mb_strtolower(trim((string) $item->title));
-                    $skip_icon = in_array($title_l, ['setting', 'settings'], true)
-                        || strpos($icon_raw, 'fa-cog') !== false
-                        || strpos($icon_raw, 'fa-cogs') !== false
-                        || strpos($icon_raw, 'fa-gear') !== false;
+                    $hide_left_settings_icon = $title_l === 'setting' || $title_l === 'settings';
                 @endphp
-                @if(!$skip_icon)
+                @if(!$hide_left_settings_icon)
                 <a href="{{ $item_url }}"
                    class="pos-nav-icon @if($is_active) is-active @endif"
                    title="{{ $item->title }}">
@@ -125,6 +122,12 @@
                 <button type="button" id="pos_nav_screen_setting" data-toggle="modal" data-target="#pos_screen_setting_modal">
                     <i class="fas fa-columns"></i>
                     <span>POS Screen Setting</span>
+                </button>
+            </li>
+            <li>
+                <button type="button" id="pos_nav_quick_keys" data-toggle="modal" data-target="#pos_quick_keys_modal">
+                    <i class="fas fa-cog"></i>
+                    <span>Setting</span>
                 </button>
             </li>
             @if (!Gate::check('disable_quotation') || auth()->user()->can('superadmin') || auth()->user()->can('admin'))
