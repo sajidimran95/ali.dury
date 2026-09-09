@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 5.2.3
+-- version 6.0.0-dev+20250422.c097b1deca
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Sep 08, 2026 at 07:39 PM
+-- Generation Time: Sep 09, 2026 at 03:38 PM
 -- Server version: 8.4.3
--- PHP Version: 8.4.2
+-- PHP Version: 8.4.5
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -18,7 +18,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `japspos`
+-- Database: `japs_pos`
 --
 
 -- --------------------------------------------------------
@@ -345,7 +345,8 @@ INSERT INTO `activity_log` (`id`, `log_name`, `description`, `subject_id`, `subj
 (235, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-09-08 07:29:27', '2026-09-08 07:29:27'),
 (236, 'default', 'sell_deleted', 166, 'App\\Transaction', NULL, 1, 1, 'App\\User', '{\"id\":166,\"invoice_no\":\"DEMO-INV-0006\",\"attributes\":{\"type\":\"sell\",\"status\":\"draft\",\"payment_status\":\"due\",\"final_total\":\"685.0000\"}}', NULL, '2026-09-08 07:31:16', '2026-09-08 07:31:16'),
 (237, 'default', 'logout', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-09-08 09:04:51', '2026-09-08 09:04:51'),
-(238, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-09-08 09:05:02', '2026-09-08 09:05:02');
+(238, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-09-08 09:05:02', '2026-09-08 09:05:02'),
+(239, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-09-09 04:59:55', '2026-09-09 04:59:55');
 
 -- --------------------------------------------------------
 
@@ -1177,7 +1178,7 @@ CREATE TABLE `customer_groups` (
   `business_id` int UNSIGNED NOT NULL,
   `name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `amount` double(5,2) NOT NULL,
-  `inventory_slug` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'all_inventory',
+  `inventory_slug` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'all_inventory',
   `price_calculation_type` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT 'percentage',
   `selling_price_group_id` int DEFAULT NULL,
   `created_by` int UNSIGNED NOT NULL,
@@ -1519,7 +1520,8 @@ INSERT INTO `ecom_carts` (`id`, `business_id`, `contact_id`, `session_id`, `coup
 (144, 1, NULL, '2b1Cf9cYCzfVBudmSJDTMUI0QHfMFJg1XNb92Fed', NULL, '2026-09-08 03:13:17', '2026-09-08 03:13:17'),
 (145, 1, NULL, 'xnHYBjvhIUVVMO9IQUdRmzKCRITE53dN2E51n32G', NULL, '2026-09-08 03:27:29', '2026-09-08 03:27:29'),
 (146, 1, NULL, 'kTnc5UWIUpKkJGVyNERtruus7RStwqcbPawwuWHl', NULL, '2026-09-08 07:29:16', '2026-09-08 07:29:16'),
-(147, 1, NULL, 'HVs3oyxNDV2Sj6RVaacRDFMwuWfGeVQWLMnwa8cD', NULL, '2026-09-08 07:41:57', '2026-09-08 07:41:57');
+(147, 1, NULL, 'HVs3oyxNDV2Sj6RVaacRDFMwuWfGeVQWLMnwa8cD', NULL, '2026-09-08 07:41:57', '2026-09-08 07:41:57'),
+(148, 1, NULL, 'edTA5gtWOqMpJxpsh7MjL3E5q81mdExDNuI8Vv1X', NULL, '2026-09-09 14:29:44', '2026-09-09 14:29:44');
 
 -- --------------------------------------------------------
 
@@ -1818,7 +1820,7 @@ CREATE TABLE `employee_attendances` (
   `notes` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `clock_latitude` decimal(10,7) DEFAULT NULL,
   `clock_longitude` decimal(10,7) DEFAULT NULL,
-  `clock_source` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `clock_source` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -2414,7 +2416,9 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (325, '2026_09_01_030000_add_inventory_slug_to_customer_groups', 23),
 (326, '2026_09_08_210000_create_pos_quick_layouts_table', 24),
 (327, '2026_09_08_220000_add_sales_target_and_barcode_login_to_users', 24),
-(328, '2026_09_08_230000_add_period_sales_targets_to_users', 24);
+(328, '2026_09_08_230000_add_period_sales_targets_to_users', 24),
+(329, '2026_09_09_204900_create_sale_zero_sales_tables', 25),
+(330, '2026_09_09_211000_add_signature_to_transaction_payments_table', 26);
 
 -- --------------------------------------------------------
 
@@ -2744,7 +2748,7 @@ CREATE TABLE `pos_quick_layouts` (
   `id` int UNSIGNED NOT NULL,
   `business_id` int UNSIGNED NOT NULL,
   `user_id` int UNSIGNED NOT NULL,
-  `name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `keys` json DEFAULT NULL,
   `keep_folder_open` tinyint(1) NOT NULL DEFAULT '1',
   `is_current` tinyint(1) NOT NULL DEFAULT '0',
@@ -3219,6 +3223,61 @@ INSERT INTO `role_has_permissions` (`permission_id`, `role_id`) VALUES
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `sale_zero_sales`
+--
+
+CREATE TABLE `sale_zero_sales` (
+  `id` int UNSIGNED NOT NULL,
+  `business_id` int UNSIGNED NOT NULL,
+  `contact_id` int UNSIGNED NOT NULL,
+  `reason_id` int UNSIGNED NOT NULL,
+  `created_by` int UNSIGNED NOT NULL,
+  `location_id` int UNSIGNED DEFAULT NULL,
+  `comment` text COLLATE utf8mb4_unicode_ci,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `sale_zero_sales`
+--
+
+INSERT INTO `sale_zero_sales` (`id`, `business_id`, `contact_id`, `reason_id`, `created_by`, `location_id`, `comment`, `created_at`, `updated_at`) VALUES
+(1, 1, 3, 2, 3, 1, 'aaaaaa', '2026-09-09 05:00:21', '2026-09-09 05:00:21');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `sale_zero_sale_reasons`
+--
+
+CREATE TABLE `sale_zero_sale_reasons` (
+  `id` int UNSIGNED NOT NULL,
+  `name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `slug` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `sort_order` int UNSIGNED NOT NULL DEFAULT '0',
+  `is_active` tinyint(1) NOT NULL DEFAULT '1',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `sale_zero_sale_reasons`
+--
+
+INSERT INTO `sale_zero_sale_reasons` (`id`, `name`, `slug`, `sort_order`, `is_active`, `created_at`, `updated_at`) VALUES
+(1, 'call back', 'call_back', 1, 1, '2026-09-09 14:21:03', '2026-09-09 14:21:03'),
+(2, 'does not want order', 'does_not_want_order', 2, 1, '2026-09-09 14:21:03', '2026-09-09 14:21:03'),
+(3, 'gps reset', 'gps_reset', 3, 1, '2026-09-09 14:21:03', '2026-09-09 14:21:03'),
+(4, 'marchandising', 'marchandising', 4, 1, '2026-09-09 14:21:03', '2026-09-09 14:21:03'),
+(5, 'note', 'note', 5, 1, '2026-09-09 14:21:03', '2026-09-09 14:21:03'),
+(6, 'owner/manager not in', 'owner_manager_not_in', 6, 1, '2026-09-09 14:21:03', '2026-09-09 14:21:03'),
+(7, 'refused service', 'refused_service', 7, 1, '2026-09-09 14:21:03', '2026-09-09 14:21:03'),
+(8, 'will order next time', 'will_order_next_time', 8, 1, '2026-09-09 14:21:03', '2026-09-09 14:21:03');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `selling_price_groups`
 --
 
@@ -3410,7 +3469,7 @@ CREATE TABLE `team_member_colors` (
   `id` int UNSIGNED NOT NULL,
   `business_id` int UNSIGNED NOT NULL,
   `user_id` int UNSIGNED NOT NULL,
-  `color` varchar(7) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `color` varchar(7) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -3428,8 +3487,8 @@ CREATE TABLE `team_shifts` (
   `location_id` int UNSIGNED DEFAULT NULL,
   `starts_at` datetime NOT NULL,
   `ends_at` datetime NOT NULL,
-  `title` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `notes` text COLLATE utf8mb4_unicode_ci,
+  `title` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `notes` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `created_by` int UNSIGNED DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
@@ -3447,12 +3506,12 @@ CREATE TABLE `time_off_requests` (
   `user_id` int UNSIGNED NOT NULL,
   `starts_at` datetime NOT NULL,
   `ends_at` datetime NOT NULL,
-  `type` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'vacation',
-  `status` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pending',
-  `reason` text COLLATE utf8mb4_unicode_ci,
+  `type` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'vacation',
+  `status` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pending',
+  `reason` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `reviewed_by` int UNSIGNED DEFAULT NULL,
   `reviewed_at` datetime DEFAULT NULL,
-  `admin_note` text COLLATE utf8mb4_unicode_ci,
+  `admin_note` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -3483,7 +3542,7 @@ CREATE TABLE `transactions` (
   `invoice_no` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `ref_no` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `source` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `order_source` varchar(32) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `order_source` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `subscription_no` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `subscription_repeat_on` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `transaction_date` datetime NOT NULL,
@@ -3499,7 +3558,7 @@ CREATE TABLE `transactions` (
   `shipping_address` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `delivery_date` datetime DEFAULT NULL,
   `shipping_status` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `fulfillment_stage` varchar(24) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `fulfillment_stage` varchar(24) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `fulfillment_meta` json DEFAULT NULL,
   `shipping_date` datetime DEFAULT NULL,
   `shipping_tracking_no` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
@@ -3763,6 +3822,7 @@ CREATE TABLE `transaction_payments` (
   `payment_for` int DEFAULT NULL COMMENT 'stores the contact id',
   `parent_id` int DEFAULT NULL,
   `note` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `signature` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `document` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `payment_ref_no` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `account_id` int DEFAULT NULL,
@@ -3774,113 +3834,113 @@ CREATE TABLE `transaction_payments` (
 -- Dumping data for table `transaction_payments`
 --
 
-INSERT INTO `transaction_payments` (`id`, `transaction_id`, `business_id`, `is_return`, `amount`, `method`, `payment_type`, `transaction_no`, `card_transaction_number`, `card_number`, `card_type`, `card_holder_name`, `card_month`, `card_year`, `card_security`, `cheque_number`, `bank_account_number`, `paid_on`, `created_by`, `paid_through_link`, `gateway`, `is_advance`, `payment_for`, `parent_id`, `note`, `document`, `payment_ref_no`, `account_id`, `created_at`, `updated_at`) VALUES
-(3, 14, 1, 0, 12.0700, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-24 16:13:56', 1, 0, NULL, 0, 2, NULL, NULL, NULL, 'SP2026/0001', NULL, '2026-07-24 10:13:56', '2026-07-24 10:13:56'),
-(4, 16, 1, 0, 3.0000, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-24 16:28:16', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0002', NULL, '2026-07-24 10:28:16', '2026-07-24 10:28:16'),
-(5, 16, 1, 0, 10.1700, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-24 16:28:16', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0003', NULL, '2026-07-24 10:28:17', '2026-07-24 10:28:17'),
-(6, NULL, 1, 0, 26.3400, 'cash', 'credit', NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-24 20:28:00', 1, 0, NULL, 1, 2, NULL, NULL, NULL, 'SP2026/0004', NULL, '2026-07-24 10:28:43', '2026-07-24 10:28:43'),
-(7, 11, 1, 0, 26.3400, 'cash', NULL, 'cash', NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-24 20:28:00', 1, 0, NULL, 0, 2, 6, NULL, NULL, 'SP2026/0005', NULL, '2026-07-24 10:28:43', '2026-07-24 10:28:43'),
-(10, 19, 1, 0, 21.9500, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-27 11:34:00', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0006', NULL, '2026-07-27 05:34:00', '2026-07-27 05:34:00'),
-(13, 42, 1, 0, 6.0300, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-27 11:43:40', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0007', NULL, '2026-07-27 05:43:40', '2026-07-27 05:43:40'),
-(14, 43, 1, 0, 355.4900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-27 11:44:05', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0008', NULL, '2026-07-27 05:44:05', '2026-07-27 05:44:05'),
-(15, 48, 1, 0, 4.9900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-27 12:19:24', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0009', NULL, '2026-07-27 06:19:24', '2026-07-27 06:19:24'),
-(16, 49, 1, 0, 11.0000, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-27 12:19:44', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0010', NULL, '2026-07-27 06:19:44', '2026-07-27 06:19:44'),
-(17, 52, 1, 0, 11.0000, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-27 12:20:48', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0011', NULL, '2026-07-27 06:20:48', '2026-07-27 06:20:48'),
-(18, 55, 1, 0, 4.9900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-27 12:26:44', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0012', NULL, '2026-07-27 06:26:44', '2026-07-27 06:26:44'),
-(19, 56, 1, 0, 16.4600, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-27 12:26:55', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0013', NULL, '2026-07-27 06:26:55', '2026-07-27 06:26:55'),
-(20, 57, 1, 0, 7.6100, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-27 12:49:08', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0014', NULL, '2026-07-27 06:49:08', '2026-07-27 06:49:08'),
-(21, 58, 1, 0, 11.0000, 'card', NULL, NULL, NULL, NULL, 'visa', NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-27 12:49:15', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0015', NULL, '2026-07-27 06:49:15', '2026-07-27 06:49:15'),
-(22, 59, 1, 0, 6.0000, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-27 14:41:32', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0016', NULL, '2026-07-27 08:41:32', '2026-07-27 08:41:32'),
-(23, 60, 1, 0, 12.0000, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-27 14:45:04', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0017', NULL, '2026-07-27 08:45:04', '2026-07-27 08:45:04'),
-(24, 46, 1, 0, 8.2200, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-27 14:45:30', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0018', NULL, '2026-07-27 08:45:30', '2026-07-27 08:45:30'),
-(25, 61, 1, 0, 7.4900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-27 14:47:43', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0019', NULL, '2026-07-27 08:47:43', '2026-07-27 08:47:43'),
-(26, 63, 1, 0, 14.5000, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-27 14:50:38', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0020', NULL, '2026-07-27 08:50:38', '2026-07-27 08:50:38'),
-(27, 73, 1, 0, 21.4900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-27 15:30:54', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0021', NULL, '2026-07-27 09:30:54', '2026-07-27 09:30:54'),
-(28, 74, 1, 0, 9.4900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-27 15:35:46', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0022', NULL, '2026-07-27 09:35:46', '2026-07-27 09:35:46'),
-(29, 75, 1, 0, 12.0000, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-27 15:38:36', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0023', NULL, '2026-07-27 09:38:36', '2026-07-27 09:38:36'),
-(30, 76, 1, 0, 46.4900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-27 15:39:08', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0024', NULL, '2026-07-27 09:39:08', '2026-07-27 09:39:08'),
-(31, 77, 1, 0, 22.9900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-27 15:42:01', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0025', NULL, '2026-07-27 09:42:01', '2026-07-27 09:42:01'),
-(32, 78, 1, 0, 12.0000, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-27 16:02:21', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0026', NULL, '2026-07-27 10:02:21', '2026-07-27 10:02:21'),
-(33, 79, 1, 0, 12.0000, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-27 16:02:26', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0027', NULL, '2026-07-27 10:02:26', '2026-07-27 10:02:26'),
-(34, 80, 1, 0, 20.9900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-27 16:03:19', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0028', NULL, '2026-07-27 10:03:19', '2026-07-27 10:03:19'),
-(35, 83, 1, 0, 12.0000, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-27 16:11:23', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0029', NULL, '2026-07-27 10:11:23', '2026-07-27 10:11:23'),
-(36, 84, 1, 0, 4.9900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-27 16:11:42', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0030', NULL, '2026-07-27 10:11:42', '2026-07-27 10:11:42'),
-(37, 86, 1, 0, 12.0000, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-27 16:21:29', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0031', NULL, '2026-07-27 10:21:29', '2026-07-27 10:21:29'),
-(38, 87, 1, 0, 8.9900, 'card', NULL, NULL, NULL, NULL, 'visa', NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-28 14:11:07', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0032', NULL, '2026-07-28 08:11:07', '2026-07-28 08:11:07'),
-(39, 88, 1, 0, 92.0700, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-03 11:23:18', 1, 0, NULL, 0, 2, NULL, NULL, NULL, 'SP2026/0033', NULL, '2026-08-03 05:23:18', '2026-08-03 05:23:18'),
-(40, 89, 1, 0, 8.9900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-03 11:36:11', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0034', NULL, '2026-08-03 05:36:11', '2026-08-03 05:36:11'),
-(41, 93, 1, 0, 21.4900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-03 12:00:19', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0035', NULL, '2026-08-03 06:00:19', '2026-08-03 06:00:19'),
-(42, 95, 1, 0, 10.0000, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-03 12:02:12', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0036', NULL, '2026-08-03 06:02:12', '2026-08-03 06:02:12'),
-(43, 97, 1, 0, 20.6700, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-03 13:10:27', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0037', NULL, '2026-08-03 07:10:27', '2026-08-03 07:10:27'),
-(44, NULL, 1, 0, 13.2000, 'cash', 'credit', NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-03 17:14:00', 1, 0, NULL, 1, 2, NULL, NULL, NULL, 'SP2026/0038', NULL, '2026-08-03 07:14:52', '2026-08-03 07:14:52'),
-(45, 99, 1, 0, 13.2000, 'cash', NULL, 'cash', NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-03 17:14:00', 1, 0, NULL, 0, 2, 44, NULL, NULL, 'SP2026/0039', NULL, '2026-08-03 07:14:52', '2026-08-03 07:14:52'),
-(46, 100, 1, 0, 13.2000, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-03 13:23:58', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0040', NULL, '2026-08-03 07:23:58', '2026-08-03 07:23:58'),
-(47, 103, 1, 0, 5.4900, 'card', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-03 13:32:08', 1, 0, NULL, 0, 2, NULL, NULL, NULL, 'SP2026/0041', NULL, '2026-08-03 07:32:08', '2026-08-03 07:32:08'),
-(49, 105, 1, 0, 9.8900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-03 13:42:48', 1, 0, NULL, 0, 3, NULL, NULL, NULL, 'SP2026/0043', NULL, '2026-08-03 07:42:48', '2026-08-03 07:42:48'),
-(50, 104, 1, 0, 4.0000, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-03 13:57:05', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0044', NULL, '2026-08-03 07:57:05', '2026-08-03 07:57:05'),
-(51, 104, 1, 0, 5.8900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-03 13:57:05', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0045', NULL, '2026-08-03 07:57:05', '2026-08-03 07:57:05'),
-(52, 106, 1, 0, 9.8900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-03 14:34:31', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0046', NULL, '2026-08-03 08:34:31', '2026-08-03 08:34:31'),
-(53, 107, 1, 0, 45.4900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-03 14:42:12', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0047', NULL, '2026-08-03 08:42:12', '2026-08-03 08:42:12'),
-(54, 108, 1, 0, 9.8900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-03 14:45:04', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0048', NULL, '2026-08-03 08:45:04', '2026-08-03 08:45:04'),
-(55, 109, 1, 0, 59.8900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-03 14:46:35', 1, 0, NULL, 0, 2, NULL, NULL, NULL, 'SP2026/0049', NULL, '2026-08-03 08:46:35', '2026-08-03 08:46:35'),
-(56, 110, 1, 0, 10.4400, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-03 14:47:42', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0050', NULL, '2026-08-03 08:47:42', '2026-08-03 08:47:42'),
-(57, 111, 1, 0, 5.4900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-03 15:07:44', 1, 0, NULL, 0, 2, NULL, NULL, NULL, 'SP2026/0051', NULL, '2026-08-03 09:07:44', '2026-08-03 09:07:44'),
-(58, 113, 1, 0, 5.4900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-03 15:20:11', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0052', NULL, '2026-08-03 09:20:11', '2026-08-03 09:20:11'),
-(59, 116, 1, 0, 71.5600, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-03 15:33:47', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0053', NULL, '2026-08-03 09:33:47', '2026-08-03 09:33:47'),
-(60, 117, 1, 0, 20.7800, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-03 15:39:11', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0054', NULL, '2026-08-03 09:39:11', '2026-08-03 09:39:11'),
-(61, 118, 1, 0, 13.2000, 'card', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-03 15:39:32', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0055', NULL, '2026-08-03 09:39:32', '2026-08-03 09:39:32'),
-(62, 119, 1, 0, 5.4900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-03 15:40:47', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0056', NULL, '2026-08-03 09:40:47', '2026-08-03 09:40:47'),
-(63, 120, 1, 0, 5.4900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-03 15:43:42', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0057', NULL, '2026-08-03 09:43:42', '2026-08-03 09:43:42'),
-(64, 121, 1, 0, 5.4900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-03 16:33:09', 1, 0, NULL, 0, 3, NULL, NULL, NULL, 'SP2026/0058', NULL, '2026-08-03 10:33:09', '2026-08-03 10:33:09'),
-(65, 122, 1, 0, 5.4900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-03 16:35:05', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0059', NULL, '2026-08-03 10:35:05', '2026-08-03 10:35:05'),
-(66, 123, 1, 0, 13.2000, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-03 16:45:50', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0060', NULL, '2026-08-03 10:45:50', '2026-08-03 10:45:50'),
-(67, 124, 1, 0, 13.2000, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-03 16:47:11', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0061', NULL, '2026-08-03 10:47:11', '2026-08-03 10:47:11'),
-(68, 125, 1, 0, 50.0000, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-04 11:19:16', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0062', NULL, '2026-08-04 05:19:16', '2026-08-04 05:19:16'),
-(69, 125, 1, 1, 36.8000, 'card', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-04 11:19:16', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0063', NULL, '2026-08-04 05:19:16', '2026-08-04 05:19:16'),
-(70, 126, 1, 0, 5.0000, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-04 14:28:24', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0064', NULL, '2026-08-04 08:28:24', '2026-08-04 08:28:24'),
-(71, 126, 1, 0, 30.0000, 'card', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-04 14:28:24', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0065', NULL, '2026-08-04 08:28:24', '2026-08-04 08:28:24'),
-(72, 126, 1, 0, 30.3800, 'cheque', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-04 14:28:24', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0066', NULL, '2026-08-04 08:28:24', '2026-08-04 08:28:24'),
-(73, NULL, 1, 0, 13.2000, 'cash', 'credit', NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-04 18:45:00', 1, 0, NULL, 1, 1, NULL, NULL, NULL, 'SP2026/0067', NULL, '2026-08-04 08:45:04', '2026-08-04 08:45:04'),
-(74, 115, 1, 0, 13.2000, 'cash', NULL, 'cash', NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-04 18:45:00', 1, 0, NULL, 0, 1, 73, NULL, NULL, 'SP2026/0068', NULL, '2026-08-04 08:45:04', '2026-08-04 08:45:04'),
-(75, 127, 1, 0, 13.2000, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-04 14:46:22', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0069', NULL, '2026-08-04 08:46:22', '2026-08-04 08:46:22'),
-(76, 128, 1, 0, 5.4900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-05 10:25:37', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0070', NULL, '2026-08-05 04:25:37', '2026-08-05 04:25:37'),
-(77, 129, 1, 0, 13.2000, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-05 11:40:28', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0071', NULL, '2026-08-05 05:40:28', '2026-08-05 05:40:28'),
-(78, 130, 1, 0, 5.4900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-05 11:40:59', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0072', NULL, '2026-08-05 05:40:59', '2026-08-05 05:40:59'),
-(79, 131, 1, 0, 6.0400, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-05 12:32:36', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0073', NULL, '2026-08-05 06:32:36', '2026-08-05 06:32:36'),
-(80, 132, 1, 0, 5.4900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-05 14:03:09', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0074', NULL, '2026-08-05 08:03:09', '2026-08-05 08:03:09'),
-(81, 133, 1, 0, 15.3800, 'cheque', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-05 14:03:38', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0075', NULL, '2026-08-05 08:03:38', '2026-08-05 08:03:38'),
-(82, 134, 1, 0, 4.7100, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-06 11:51:04', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0076', NULL, '2026-08-06 05:51:04', '2026-08-06 05:51:04'),
-(83, 135, 1, 0, 9.8900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-07 11:48:53', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0077', NULL, '2026-08-07 05:48:53', '2026-08-07 05:48:53'),
-(84, 137, 1, 0, 9.8900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-12 12:35:00', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0078', NULL, '2026-08-12 06:35:00', '2026-08-12 06:35:00'),
-(85, 138, 1, 0, 140.2500, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-12 12:35:18', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0079', NULL, '2026-08-12 06:35:18', '2026-08-12 06:35:18'),
-(86, 139, 1, 0, 163.8900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-12 12:35:37', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0080', NULL, '2026-08-12 06:35:37', '2026-08-12 06:35:37'),
-(87, 140, 1, 0, 9.8900, 'card', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-12 13:06:38', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0081', NULL, '2026-08-12 07:06:38', '2026-08-12 07:06:38'),
-(88, 141, 1, 0, 396.0000, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-12 13:13:57', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0082', NULL, '2026-08-12 07:13:57', '2026-08-12 07:13:57'),
-(89, 143, 1, 0, 13.2000, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-13 16:13:00', 1, 0, NULL, 0, 6, NULL, NULL, NULL, 'SP2026/0083', NULL, '2026-08-13 06:13:49', '2026-08-13 06:13:49'),
-(90, 144, 1, 0, 127.5000, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-13 16:28:00', 1, 0, NULL, 0, 4, NULL, NULL, NULL, 'SP2026/0084', NULL, '2026-08-13 06:29:35', '2026-08-13 06:29:35'),
-(91, 145, 1, 0, 140.2500, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-13 16:29:00', 1, 0, NULL, 0, 4, NULL, NULL, NULL, 'SP2026/0085', NULL, '2026-08-13 06:29:51', '2026-08-13 06:29:51'),
-(92, 147, 1, 0, 19.1900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-13 16:41:00', 1, 0, NULL, 0, 8, NULL, NULL, NULL, 'SP2026/0086', NULL, '2026-08-13 06:41:27', '2026-08-13 06:41:27'),
-(93, 148, 1, 0, 79.1100, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-14 08:01:29', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0087', NULL, '2026-08-14 02:01:29', '2026-08-14 02:01:29'),
-(94, 149, 1, 0, 168.8300, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-14 08:03:12', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0088', NULL, '2026-08-14 02:03:12', '2026-08-14 02:03:12'),
-(95, 150, 1, 0, 4811.4400, 'cash', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-06 21:31:03', 1, 0, NULL, 0, 10, NULL, '[DEMO]', NULL, NULL, NULL, '2026-08-18 15:31:03', '2026-08-18 15:31:03'),
-(96, 151, 1, 0, 2569.0300, 'cash', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-10 21:31:03', 1, 0, NULL, 0, 11, NULL, '[DEMO]', NULL, NULL, NULL, '2026-08-18 15:31:03', '2026-08-18 15:31:03'),
-(97, 154, 1, 0, 7511.2900, 'cash', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-31 21:31:03', 1, 0, NULL, 0, 11, NULL, '[DEMO]', NULL, NULL, NULL, '2026-08-18 15:31:03', '2026-08-18 15:31:03'),
-(98, 161, 1, 0, 307.0000, 'cash', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-17 10:15:00', 1, 0, NULL, 0, 1, NULL, '[DEMO]', NULL, NULL, NULL, '2026-08-18 15:31:03', '2026-08-18 15:31:03'),
-(99, 162, 1, 0, 738.0000, 'cash', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-16 11:15:00', 1, 0, NULL, 0, 13, NULL, '[DEMO]', NULL, NULL, NULL, '2026-08-18 15:31:03', '2026-08-18 15:31:03'),
-(100, 163, 1, 0, 268.5000, 'cash', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-15 12:15:00', 1, 0, NULL, 0, 14, NULL, '[DEMO]', NULL, NULL, NULL, '2026-08-18 15:31:03', '2026-08-18 15:31:03'),
-(101, 165, 1, 0, 396.0000, 'cash', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-18 14:15:00', 1, 0, NULL, 0, 16, NULL, '[DEMO]', NULL, NULL, NULL, '2026-08-18 15:31:03', '2026-08-18 15:31:03'),
-(102, 168, 1, 0, 135.0000, 'cash', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-17 21:31:03', 1, 0, NULL, 0, 1, NULL, '[DEMO]', NULL, NULL, NULL, '2026-08-18 15:31:03', '2026-08-18 15:31:03'),
-(103, 169, 1, 0, 850.0000, 'cash', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-14 21:31:03', 1, 0, NULL, 0, NULL, NULL, '[DEMO]', NULL, NULL, NULL, '2026-08-18 15:31:03', '2026-08-18 15:31:03'),
-(104, 171, 1, 0, 64.1000, 'cash', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-09 21:31:03', 1, 0, NULL, 0, NULL, NULL, '[DEMO]', NULL, NULL, NULL, '2026-08-18 15:31:03', '2026-08-18 15:31:03'),
-(105, 174, 1, 0, 40.0000, 'cash', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-11 21:31:04', 1, 0, NULL, 0, 10, NULL, '[DEMO]', NULL, NULL, NULL, '2026-08-18 15:31:04', '2026-08-18 15:31:04'),
-(106, 175, 1, 0, 5.4900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-18 13:09:23', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0089', NULL, '2026-08-18 07:09:23', '2026-08-18 07:09:23'),
-(107, 176, 1, 0, 140.2500, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-25 09:47:01', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0090', NULL, '2026-08-25 03:47:01', '2026-08-25 03:47:01'),
-(108, 177, 1, 0, 13.2000, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-26 11:36:34', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0091', NULL, '2026-08-26 05:36:34', '2026-08-26 05:36:34'),
-(109, 178, 1, 0, 9.8900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-26 11:48:01', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0092', NULL, '2026-08-26 05:48:01', '2026-08-26 05:48:01'),
-(110, 179, 1, 0, 5.4900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-26 11:56:57', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0093', NULL, '2026-08-26 05:56:57', '2026-08-26 05:56:57'),
-(111, 180, 1, 0, 269.5000, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-31 09:30:00', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0094', NULL, '2026-08-31 03:31:01', '2026-08-31 03:31:01'),
-(112, 158, 1, 0, 473.0000, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-31 09:32:00', 1, 0, NULL, 0, 13, NULL, NULL, NULL, 'SP2026/0095', NULL, '2026-08-31 03:34:37', '2026-08-31 03:34:37'),
-(113, 182, 1, 0, 6.9900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-09-05 10:26:18', 1, 0, NULL, 0, 1, NULL, NULL, NULL, 'SP2026/0096', NULL, '2026-09-05 04:26:18', '2026-09-05 04:26:18');
+INSERT INTO `transaction_payments` (`id`, `transaction_id`, `business_id`, `is_return`, `amount`, `method`, `payment_type`, `transaction_no`, `card_transaction_number`, `card_number`, `card_type`, `card_holder_name`, `card_month`, `card_year`, `card_security`, `cheque_number`, `bank_account_number`, `paid_on`, `created_by`, `paid_through_link`, `gateway`, `is_advance`, `payment_for`, `parent_id`, `note`, `signature`, `document`, `payment_ref_no`, `account_id`, `created_at`, `updated_at`) VALUES
+(3, 14, 1, 0, 12.0700, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-24 16:13:56', 1, 0, NULL, 0, 2, NULL, NULL, NULL, NULL, 'SP2026/0001', NULL, '2026-07-24 10:13:56', '2026-07-24 10:13:56'),
+(4, 16, 1, 0, 3.0000, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-24 16:28:16', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0002', NULL, '2026-07-24 10:28:16', '2026-07-24 10:28:16'),
+(5, 16, 1, 0, 10.1700, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-24 16:28:16', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0003', NULL, '2026-07-24 10:28:17', '2026-07-24 10:28:17'),
+(6, NULL, 1, 0, 26.3400, 'cash', 'credit', NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-24 20:28:00', 1, 0, NULL, 1, 2, NULL, NULL, NULL, NULL, 'SP2026/0004', NULL, '2026-07-24 10:28:43', '2026-07-24 10:28:43'),
+(7, 11, 1, 0, 26.3400, 'cash', NULL, 'cash', NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-24 20:28:00', 1, 0, NULL, 0, 2, 6, NULL, NULL, NULL, 'SP2026/0005', NULL, '2026-07-24 10:28:43', '2026-07-24 10:28:43'),
+(10, 19, 1, 0, 21.9500, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-27 11:34:00', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0006', NULL, '2026-07-27 05:34:00', '2026-07-27 05:34:00'),
+(13, 42, 1, 0, 6.0300, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-27 11:43:40', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0007', NULL, '2026-07-27 05:43:40', '2026-07-27 05:43:40'),
+(14, 43, 1, 0, 355.4900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-27 11:44:05', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0008', NULL, '2026-07-27 05:44:05', '2026-07-27 05:44:05'),
+(15, 48, 1, 0, 4.9900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-27 12:19:24', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0009', NULL, '2026-07-27 06:19:24', '2026-07-27 06:19:24'),
+(16, 49, 1, 0, 11.0000, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-27 12:19:44', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0010', NULL, '2026-07-27 06:19:44', '2026-07-27 06:19:44'),
+(17, 52, 1, 0, 11.0000, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-27 12:20:48', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0011', NULL, '2026-07-27 06:20:48', '2026-07-27 06:20:48'),
+(18, 55, 1, 0, 4.9900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-27 12:26:44', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0012', NULL, '2026-07-27 06:26:44', '2026-07-27 06:26:44'),
+(19, 56, 1, 0, 16.4600, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-27 12:26:55', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0013', NULL, '2026-07-27 06:26:55', '2026-07-27 06:26:55'),
+(20, 57, 1, 0, 7.6100, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-27 12:49:08', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0014', NULL, '2026-07-27 06:49:08', '2026-07-27 06:49:08'),
+(21, 58, 1, 0, 11.0000, 'card', NULL, NULL, NULL, NULL, 'visa', NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-27 12:49:15', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0015', NULL, '2026-07-27 06:49:15', '2026-07-27 06:49:15'),
+(22, 59, 1, 0, 6.0000, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-27 14:41:32', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0016', NULL, '2026-07-27 08:41:32', '2026-07-27 08:41:32'),
+(23, 60, 1, 0, 12.0000, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-27 14:45:04', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0017', NULL, '2026-07-27 08:45:04', '2026-07-27 08:45:04'),
+(24, 46, 1, 0, 8.2200, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-27 14:45:30', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0018', NULL, '2026-07-27 08:45:30', '2026-07-27 08:45:30'),
+(25, 61, 1, 0, 7.4900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-27 14:47:43', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0019', NULL, '2026-07-27 08:47:43', '2026-07-27 08:47:43'),
+(26, 63, 1, 0, 14.5000, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-27 14:50:38', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0020', NULL, '2026-07-27 08:50:38', '2026-07-27 08:50:38'),
+(27, 73, 1, 0, 21.4900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-27 15:30:54', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0021', NULL, '2026-07-27 09:30:54', '2026-07-27 09:30:54'),
+(28, 74, 1, 0, 9.4900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-27 15:35:46', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0022', NULL, '2026-07-27 09:35:46', '2026-07-27 09:35:46'),
+(29, 75, 1, 0, 12.0000, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-27 15:38:36', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0023', NULL, '2026-07-27 09:38:36', '2026-07-27 09:38:36'),
+(30, 76, 1, 0, 46.4900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-27 15:39:08', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0024', NULL, '2026-07-27 09:39:08', '2026-07-27 09:39:08'),
+(31, 77, 1, 0, 22.9900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-27 15:42:01', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0025', NULL, '2026-07-27 09:42:01', '2026-07-27 09:42:01'),
+(32, 78, 1, 0, 12.0000, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-27 16:02:21', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0026', NULL, '2026-07-27 10:02:21', '2026-07-27 10:02:21'),
+(33, 79, 1, 0, 12.0000, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-27 16:02:26', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0027', NULL, '2026-07-27 10:02:26', '2026-07-27 10:02:26'),
+(34, 80, 1, 0, 20.9900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-27 16:03:19', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0028', NULL, '2026-07-27 10:03:19', '2026-07-27 10:03:19'),
+(35, 83, 1, 0, 12.0000, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-27 16:11:23', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0029', NULL, '2026-07-27 10:11:23', '2026-07-27 10:11:23'),
+(36, 84, 1, 0, 4.9900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-27 16:11:42', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0030', NULL, '2026-07-27 10:11:42', '2026-07-27 10:11:42'),
+(37, 86, 1, 0, 12.0000, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-27 16:21:29', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0031', NULL, '2026-07-27 10:21:29', '2026-07-27 10:21:29'),
+(38, 87, 1, 0, 8.9900, 'card', NULL, NULL, NULL, NULL, 'visa', NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-28 14:11:07', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0032', NULL, '2026-07-28 08:11:07', '2026-07-28 08:11:07'),
+(39, 88, 1, 0, 92.0700, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-03 11:23:18', 1, 0, NULL, 0, 2, NULL, NULL, NULL, NULL, 'SP2026/0033', NULL, '2026-08-03 05:23:18', '2026-08-03 05:23:18'),
+(40, 89, 1, 0, 8.9900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-03 11:36:11', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0034', NULL, '2026-08-03 05:36:11', '2026-08-03 05:36:11'),
+(41, 93, 1, 0, 21.4900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-03 12:00:19', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0035', NULL, '2026-08-03 06:00:19', '2026-08-03 06:00:19'),
+(42, 95, 1, 0, 10.0000, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-03 12:02:12', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0036', NULL, '2026-08-03 06:02:12', '2026-08-03 06:02:12'),
+(43, 97, 1, 0, 20.6700, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-03 13:10:27', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0037', NULL, '2026-08-03 07:10:27', '2026-08-03 07:10:27'),
+(44, NULL, 1, 0, 13.2000, 'cash', 'credit', NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-03 17:14:00', 1, 0, NULL, 1, 2, NULL, NULL, NULL, NULL, 'SP2026/0038', NULL, '2026-08-03 07:14:52', '2026-08-03 07:14:52'),
+(45, 99, 1, 0, 13.2000, 'cash', NULL, 'cash', NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-03 17:14:00', 1, 0, NULL, 0, 2, 44, NULL, NULL, NULL, 'SP2026/0039', NULL, '2026-08-03 07:14:52', '2026-08-03 07:14:52'),
+(46, 100, 1, 0, 13.2000, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-03 13:23:58', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0040', NULL, '2026-08-03 07:23:58', '2026-08-03 07:23:58'),
+(47, 103, 1, 0, 5.4900, 'card', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-03 13:32:08', 1, 0, NULL, 0, 2, NULL, NULL, NULL, NULL, 'SP2026/0041', NULL, '2026-08-03 07:32:08', '2026-08-03 07:32:08'),
+(49, 105, 1, 0, 9.8900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-03 13:42:48', 1, 0, NULL, 0, 3, NULL, NULL, NULL, NULL, 'SP2026/0043', NULL, '2026-08-03 07:42:48', '2026-08-03 07:42:48'),
+(50, 104, 1, 0, 4.0000, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-03 13:57:05', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0044', NULL, '2026-08-03 07:57:05', '2026-08-03 07:57:05'),
+(51, 104, 1, 0, 5.8900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-03 13:57:05', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0045', NULL, '2026-08-03 07:57:05', '2026-08-03 07:57:05'),
+(52, 106, 1, 0, 9.8900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-03 14:34:31', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0046', NULL, '2026-08-03 08:34:31', '2026-08-03 08:34:31'),
+(53, 107, 1, 0, 45.4900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-03 14:42:12', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0047', NULL, '2026-08-03 08:42:12', '2026-08-03 08:42:12'),
+(54, 108, 1, 0, 9.8900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-03 14:45:04', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0048', NULL, '2026-08-03 08:45:04', '2026-08-03 08:45:04'),
+(55, 109, 1, 0, 59.8900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-03 14:46:35', 1, 0, NULL, 0, 2, NULL, NULL, NULL, NULL, 'SP2026/0049', NULL, '2026-08-03 08:46:35', '2026-08-03 08:46:35'),
+(56, 110, 1, 0, 10.4400, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-03 14:47:42', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0050', NULL, '2026-08-03 08:47:42', '2026-08-03 08:47:42'),
+(57, 111, 1, 0, 5.4900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-03 15:07:44', 1, 0, NULL, 0, 2, NULL, NULL, NULL, NULL, 'SP2026/0051', NULL, '2026-08-03 09:07:44', '2026-08-03 09:07:44'),
+(58, 113, 1, 0, 5.4900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-03 15:20:11', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0052', NULL, '2026-08-03 09:20:11', '2026-08-03 09:20:11'),
+(59, 116, 1, 0, 71.5600, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-03 15:33:47', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0053', NULL, '2026-08-03 09:33:47', '2026-08-03 09:33:47'),
+(60, 117, 1, 0, 20.7800, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-03 15:39:11', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0054', NULL, '2026-08-03 09:39:11', '2026-08-03 09:39:11'),
+(61, 118, 1, 0, 13.2000, 'card', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-03 15:39:32', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0055', NULL, '2026-08-03 09:39:32', '2026-08-03 09:39:32'),
+(62, 119, 1, 0, 5.4900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-03 15:40:47', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0056', NULL, '2026-08-03 09:40:47', '2026-08-03 09:40:47'),
+(63, 120, 1, 0, 5.4900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-03 15:43:42', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0057', NULL, '2026-08-03 09:43:42', '2026-08-03 09:43:42'),
+(64, 121, 1, 0, 5.4900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-03 16:33:09', 1, 0, NULL, 0, 3, NULL, NULL, NULL, NULL, 'SP2026/0058', NULL, '2026-08-03 10:33:09', '2026-08-03 10:33:09'),
+(65, 122, 1, 0, 5.4900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-03 16:35:05', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0059', NULL, '2026-08-03 10:35:05', '2026-08-03 10:35:05'),
+(66, 123, 1, 0, 13.2000, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-03 16:45:50', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0060', NULL, '2026-08-03 10:45:50', '2026-08-03 10:45:50'),
+(67, 124, 1, 0, 13.2000, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-03 16:47:11', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0061', NULL, '2026-08-03 10:47:11', '2026-08-03 10:47:11'),
+(68, 125, 1, 0, 50.0000, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-04 11:19:16', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0062', NULL, '2026-08-04 05:19:16', '2026-08-04 05:19:16'),
+(69, 125, 1, 1, 36.8000, 'card', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-04 11:19:16', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0063', NULL, '2026-08-04 05:19:16', '2026-08-04 05:19:16'),
+(70, 126, 1, 0, 5.0000, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-04 14:28:24', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0064', NULL, '2026-08-04 08:28:24', '2026-08-04 08:28:24'),
+(71, 126, 1, 0, 30.0000, 'card', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-04 14:28:24', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0065', NULL, '2026-08-04 08:28:24', '2026-08-04 08:28:24'),
+(72, 126, 1, 0, 30.3800, 'cheque', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-04 14:28:24', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0066', NULL, '2026-08-04 08:28:24', '2026-08-04 08:28:24'),
+(73, NULL, 1, 0, 13.2000, 'cash', 'credit', NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-04 18:45:00', 1, 0, NULL, 1, 1, NULL, NULL, NULL, NULL, 'SP2026/0067', NULL, '2026-08-04 08:45:04', '2026-08-04 08:45:04'),
+(74, 115, 1, 0, 13.2000, 'cash', NULL, 'cash', NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-04 18:45:00', 1, 0, NULL, 0, 1, 73, NULL, NULL, NULL, 'SP2026/0068', NULL, '2026-08-04 08:45:04', '2026-08-04 08:45:04'),
+(75, 127, 1, 0, 13.2000, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-04 14:46:22', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0069', NULL, '2026-08-04 08:46:22', '2026-08-04 08:46:22'),
+(76, 128, 1, 0, 5.4900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-05 10:25:37', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0070', NULL, '2026-08-05 04:25:37', '2026-08-05 04:25:37'),
+(77, 129, 1, 0, 13.2000, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-05 11:40:28', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0071', NULL, '2026-08-05 05:40:28', '2026-08-05 05:40:28'),
+(78, 130, 1, 0, 5.4900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-05 11:40:59', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0072', NULL, '2026-08-05 05:40:59', '2026-08-05 05:40:59'),
+(79, 131, 1, 0, 6.0400, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-05 12:32:36', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0073', NULL, '2026-08-05 06:32:36', '2026-08-05 06:32:36'),
+(80, 132, 1, 0, 5.4900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-05 14:03:09', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0074', NULL, '2026-08-05 08:03:09', '2026-08-05 08:03:09'),
+(81, 133, 1, 0, 15.3800, 'cheque', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-05 14:03:38', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0075', NULL, '2026-08-05 08:03:38', '2026-08-05 08:03:38'),
+(82, 134, 1, 0, 4.7100, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-06 11:51:04', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0076', NULL, '2026-08-06 05:51:04', '2026-08-06 05:51:04'),
+(83, 135, 1, 0, 9.8900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-07 11:48:53', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0077', NULL, '2026-08-07 05:48:53', '2026-08-07 05:48:53'),
+(84, 137, 1, 0, 9.8900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-12 12:35:00', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0078', NULL, '2026-08-12 06:35:00', '2026-08-12 06:35:00'),
+(85, 138, 1, 0, 140.2500, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-12 12:35:18', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0079', NULL, '2026-08-12 06:35:18', '2026-08-12 06:35:18'),
+(86, 139, 1, 0, 163.8900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-12 12:35:37', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0080', NULL, '2026-08-12 06:35:37', '2026-08-12 06:35:37'),
+(87, 140, 1, 0, 9.8900, 'card', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-12 13:06:38', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0081', NULL, '2026-08-12 07:06:38', '2026-08-12 07:06:38'),
+(88, 141, 1, 0, 396.0000, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-12 13:13:57', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0082', NULL, '2026-08-12 07:13:57', '2026-08-12 07:13:57'),
+(89, 143, 1, 0, 13.2000, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-13 16:13:00', 1, 0, NULL, 0, 6, NULL, NULL, NULL, NULL, 'SP2026/0083', NULL, '2026-08-13 06:13:49', '2026-08-13 06:13:49'),
+(90, 144, 1, 0, 127.5000, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-13 16:28:00', 1, 0, NULL, 0, 4, NULL, NULL, NULL, NULL, 'SP2026/0084', NULL, '2026-08-13 06:29:35', '2026-08-13 06:29:35'),
+(91, 145, 1, 0, 140.2500, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-13 16:29:00', 1, 0, NULL, 0, 4, NULL, NULL, NULL, NULL, 'SP2026/0085', NULL, '2026-08-13 06:29:51', '2026-08-13 06:29:51'),
+(92, 147, 1, 0, 19.1900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-13 16:41:00', 1, 0, NULL, 0, 8, NULL, NULL, NULL, NULL, 'SP2026/0086', NULL, '2026-08-13 06:41:27', '2026-08-13 06:41:27'),
+(93, 148, 1, 0, 79.1100, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-14 08:01:29', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0087', NULL, '2026-08-14 02:01:29', '2026-08-14 02:01:29'),
+(94, 149, 1, 0, 168.8300, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-14 08:03:12', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0088', NULL, '2026-08-14 02:03:12', '2026-08-14 02:03:12'),
+(95, 150, 1, 0, 4811.4400, 'cash', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-06 21:31:03', 1, 0, NULL, 0, 10, NULL, '[DEMO]', NULL, NULL, NULL, NULL, '2026-08-18 15:31:03', '2026-08-18 15:31:03'),
+(96, 151, 1, 0, 2569.0300, 'cash', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-10 21:31:03', 1, 0, NULL, 0, 11, NULL, '[DEMO]', NULL, NULL, NULL, NULL, '2026-08-18 15:31:03', '2026-08-18 15:31:03'),
+(97, 154, 1, 0, 7511.2900, 'cash', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-31 21:31:03', 1, 0, NULL, 0, 11, NULL, '[DEMO]', NULL, NULL, NULL, NULL, '2026-08-18 15:31:03', '2026-08-18 15:31:03'),
+(98, 161, 1, 0, 307.0000, 'cash', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-17 10:15:00', 1, 0, NULL, 0, 1, NULL, '[DEMO]', NULL, NULL, NULL, NULL, '2026-08-18 15:31:03', '2026-08-18 15:31:03'),
+(99, 162, 1, 0, 738.0000, 'cash', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-16 11:15:00', 1, 0, NULL, 0, 13, NULL, '[DEMO]', NULL, NULL, NULL, NULL, '2026-08-18 15:31:03', '2026-08-18 15:31:03'),
+(100, 163, 1, 0, 268.5000, 'cash', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-15 12:15:00', 1, 0, NULL, 0, 14, NULL, '[DEMO]', NULL, NULL, NULL, NULL, '2026-08-18 15:31:03', '2026-08-18 15:31:03'),
+(101, 165, 1, 0, 396.0000, 'cash', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-18 14:15:00', 1, 0, NULL, 0, 16, NULL, '[DEMO]', NULL, NULL, NULL, NULL, '2026-08-18 15:31:03', '2026-08-18 15:31:03'),
+(102, 168, 1, 0, 135.0000, 'cash', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-17 21:31:03', 1, 0, NULL, 0, 1, NULL, '[DEMO]', NULL, NULL, NULL, NULL, '2026-08-18 15:31:03', '2026-08-18 15:31:03'),
+(103, 169, 1, 0, 850.0000, 'cash', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-14 21:31:03', 1, 0, NULL, 0, NULL, NULL, '[DEMO]', NULL, NULL, NULL, NULL, '2026-08-18 15:31:03', '2026-08-18 15:31:03'),
+(104, 171, 1, 0, 64.1000, 'cash', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-09 21:31:03', 1, 0, NULL, 0, NULL, NULL, '[DEMO]', NULL, NULL, NULL, NULL, '2026-08-18 15:31:03', '2026-08-18 15:31:03'),
+(105, 174, 1, 0, 40.0000, 'cash', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-11 21:31:04', 1, 0, NULL, 0, 10, NULL, '[DEMO]', NULL, NULL, NULL, NULL, '2026-08-18 15:31:04', '2026-08-18 15:31:04'),
+(106, 175, 1, 0, 5.4900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-18 13:09:23', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0089', NULL, '2026-08-18 07:09:23', '2026-08-18 07:09:23'),
+(107, 176, 1, 0, 140.2500, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-25 09:47:01', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0090', NULL, '2026-08-25 03:47:01', '2026-08-25 03:47:01'),
+(108, 177, 1, 0, 13.2000, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-26 11:36:34', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0091', NULL, '2026-08-26 05:36:34', '2026-08-26 05:36:34'),
+(109, 178, 1, 0, 9.8900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-26 11:48:01', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0092', NULL, '2026-08-26 05:48:01', '2026-08-26 05:48:01'),
+(110, 179, 1, 0, 5.4900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-26 11:56:57', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0093', NULL, '2026-08-26 05:56:57', '2026-08-26 05:56:57'),
+(111, 180, 1, 0, 269.5000, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-31 09:30:00', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0094', NULL, '2026-08-31 03:31:01', '2026-08-31 03:31:01'),
+(112, 158, 1, 0, 473.0000, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-31 09:32:00', 1, 0, NULL, 0, 13, NULL, NULL, NULL, NULL, 'SP2026/0095', NULL, '2026-08-31 03:34:37', '2026-08-31 03:34:37'),
+(113, 182, 1, 0, 6.9900, 'cash', NULL, NULL, NULL, NULL, 'credit', NULL, NULL, NULL, NULL, NULL, NULL, '2026-09-05 10:26:18', 1, 0, NULL, 0, 1, NULL, NULL, NULL, NULL, 'SP2026/0096', NULL, '2026-09-05 04:26:18', '2026-09-05 04:26:18');
 
 -- --------------------------------------------------------
 
@@ -5159,6 +5219,21 @@ ALTER TABLE `role_has_permissions`
   ADD KEY `role_has_permissions_role_id_foreign` (`role_id`);
 
 --
+-- Indexes for table `sale_zero_sales`
+--
+ALTER TABLE `sale_zero_sales`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `sale_zero_sales_business_id_contact_id_index` (`business_id`,`contact_id`),
+  ADD KEY `sale_zero_sales_created_by_index` (`created_by`);
+
+--
+-- Indexes for table `sale_zero_sale_reasons`
+--
+ALTER TABLE `sale_zero_sale_reasons`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `sale_zero_sale_reasons_slug_unique` (`slug`);
+
+--
 -- Indexes for table `selling_price_groups`
 --
 ALTER TABLE `selling_price_groups`
@@ -5413,7 +5488,7 @@ ALTER TABLE `account_types`
 -- AUTO_INCREMENT for table `activity_log`
 --
 ALTER TABLE `activity_log`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=239;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=240;
 
 --
 -- AUTO_INCREMENT for table `ai_assistance_settings`
@@ -5551,7 +5626,7 @@ ALTER TABLE `ecom_banners`
 -- AUTO_INCREMENT for table `ecom_carts`
 --
 ALTER TABLE `ecom_carts`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=148;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=149;
 
 --
 -- AUTO_INCREMENT for table `ecom_cart_items`
@@ -5665,7 +5740,7 @@ ALTER TABLE `media`
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=329;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=331;
 
 --
 -- AUTO_INCREMENT for table `notification_templates`
@@ -5744,6 +5819,18 @@ ALTER TABLE `res_tables`
 --
 ALTER TABLE `roles`
   MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT for table `sale_zero_sales`
+--
+ALTER TABLE `sale_zero_sales`
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT for table `sale_zero_sale_reasons`
+--
+ALTER TABLE `sale_zero_sale_reasons`
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `selling_price_groups`
