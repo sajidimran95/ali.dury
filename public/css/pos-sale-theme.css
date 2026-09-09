@@ -4678,6 +4678,7 @@ body.lockscreen.pos-sale-theme #confirmSuspendModal .modal-dialog {
   margin: 0 auto !important;
   width: 100%;
   max-width: 480px;
+  transition: transform 0.4s ease, opacity 0.35s ease;
 }
 
 body.lockscreen.pos-sale-theme #confirmSuspendModal .modal-content {
@@ -4754,6 +4755,13 @@ body.lockscreen.pos-sale-theme #modal_payment .modal-dialog {
   position: relative;
   z-index: 10601 !important;
   pointer-events: auto !important;
+}
+
+/* After Save: Suspend Sale box slides to the top, then closes */
+body.lockscreen.pos-sale-theme #confirmSuspendModal.is-sliding-top .modal-dialog {
+  transform: translateY(-46vh) !important;
+  opacity: 0 !important;
+  transition: transform 0.4s ease, opacity 0.35s ease !important;
 }
 
 /* Payment modal: solid card + scrollable body, footer always visible */

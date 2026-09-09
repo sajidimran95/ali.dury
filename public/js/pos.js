@@ -78,6 +78,42 @@ function pos_close_all_line_edits() {
     $('#pos_table tr.product_row').removeClass('is-editing is-selected');
 }
 
+function pos_close_suspend_modal_to_top(thenFn) {
+    var $modal = $('#confirmSuspendModal');
+    var finish = function () {
+        $modal.removeClass('is-sliding-top');
+        $modal.find('.modal-dialog').off('transitionend.posParkSlide');
+        $modal.modal('hide');
+        if (typeof thenFn === 'function') {
+            thenFn();
+        }
+    };
+    if (!$modal.length || (!$modal.hasClass('in') && !$modal.hasClass('show'))) {
+        $modal.modal('hide');
+        if (typeof thenFn === 'function') {
+            thenFn();
+        }
+        return;
+    }
+    $modal.addClass('is-sliding-top');
+    var $dialog = $modal.find('.modal-dialog').first();
+    var done = false;
+    var once = function () {
+        if (done) {
+            return;
+        }
+        done = true;
+        finish();
+    };
+    $dialog.off('transitionend.posParkSlide').on('transitionend.posParkSlide', function (e) {
+        if (e.target !== this) {
+            return;
+        }
+        once();
+    });
+    setTimeout(once, 500);
+}
+
 function pos_open_line_edit($tr) {
     $tr = $($tr);
     if (!$tr.length) {
@@ -2418,6 +2454,7 @@ function pos_refresh_payment_modal() {
     }
 
     $('div#confirmSuspendModal').on('shown.bs.modal', function(e) {
+        $(this).removeClass('is-sliding-top');
         $(this)
             .find('textarea')
             .focus();
@@ -2433,9 +2470,8 @@ function pos_refresh_payment_modal() {
         }
 
         $('input#is_suspend').val(1);
-        $('div#confirmSuspendModal').modal('hide');
 
-        // Park directly (like draft) — avoid silent jquery.validate failures on hidden payment/shipping fields
+        // Keep Suspend Sale open until save succeeds, then slide it to the top and close.
         setTimeout(function() {
             if (typeof pos_form_obj === 'undefined' || !pos_form_obj.length) {
                 return;
@@ -2498,36 +2534,34 @@ function pos_refresh_payment_modal() {
                 success: function(result) {
                     $('input#is_suspend').val(0);
                     if (result.success == 1 || result.success === true) {
-                        $('#confirmSuspendModal').modal('hide');
-                        toastr.success(result.msg);
+                        var afterParkSaved = function () {
+                            $('.row_edit_product_price_model').remove();
+                            $('#pos_table tbody.pos-cart-line').remove();
+                            $('table#pos_table tbody tr.pos-line-edit-row').remove();
+                            $('table#pos_table tbody tr.product_row').remove();
+                            $('input#product_row_count').val(0);
+                            if (typeof pos_sync_empty_state === 'function') {
+                                pos_sync_empty_state();
+                            }
 
-                        // Always clear cart lines after a successful park
-                        $('.row_edit_product_price_model').remove();
-                        $('#pos_table tbody.pos-cart-line').remove();
-                        $('table#pos_table tbody tr.pos-line-edit-row').remove();
-                        $('table#pos_table tbody tr.product_row').remove();
-                        $('input#product_row_count').val(0);
-                        if (typeof pos_sync_empty_state === 'function') {
-                            pos_sync_empty_state();
-                        }
+                            var $addForm = $('#add_pos_sell_form');
+                            if ($addForm.length && $addForm.data('original-action')) {
+                                $addForm.attr('action', $addForm.data('original-action'));
+                                $addForm.find('input[name="_method"]').remove();
+                                $addForm.removeAttr('data-retrieved-id');
+                                $addForm.removeData('retrieved-id');
+                            }
 
-                        var $addForm = $('#add_pos_sell_form');
-                        if ($addForm.length && $addForm.data('original-action')) {
-                            $addForm.attr('action', $addForm.data('original-action'));
-                            $addForm.find('input[name="_method"]').remove();
-                            $addForm.removeAttr('data-retrieved-id');
-                            $addForm.removeData('retrieved-id');
-                        }
+                            reset_pos_form();
 
-                        reset_pos_form();
-
-                        // Parked sale is not a completed invoice — never auto-print
-                        if (typeof refreshPosSuspendedCount === 'function') {
-                            refreshPosSuspendedCount();
-                        }
-                        if (typeof loadPosDraftsPanel === 'function' && $('#pos_drafts_panel').length) {
-                            loadPosDraftsPanel('draft');
-                        }
+                            if (typeof refreshPosSuspendedCount === 'function') {
+                                refreshPosSuspendedCount();
+                            }
+                            if (typeof loadPosDraftsPanel === 'function' && $('#pos_drafts_panel').length) {
+                                loadPosDraftsPanel('draft');
+                            }
+                        };
+                        pos_close_suspend_modal_to_top(afterParkSaved);
                     } else {
                         toastr.error(result.msg || 'Unable to park sale');
                     }
