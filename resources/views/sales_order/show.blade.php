@@ -287,6 +287,7 @@
                                     <th>@lang('sale.amount')</th>
                                     <th>@lang('sale.payment_mode')</th>
                                     <th>@lang('sale.payment_note')</th>
+                                    <th>Signature</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -305,6 +306,7 @@
                                         <td><span class="display_currency" data-currency_symbol="true">{{ $payment_line->amount }}</span></td>
                                         <td>{{ $payment_types[$payment_line->method] ?? $payment_line->method }}</td>
                                         <td>{{ $payment_line->note ? ucfirst($payment_line->note) : '--' }}</td>
+                                        <td>@include('transaction_payment.partials.signature', ['payment' => $payment_line])</td>
                                     </tr>
                                 @endforeach
                             </tbody>

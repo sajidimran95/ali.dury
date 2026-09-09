@@ -67,6 +67,11 @@ class TransactionPayment extends Model
         return $document_name;
     }
 
+    public function getSignatureUrlAttribute()
+    {
+        return ! empty($this->signature) ? asset('/uploads/signatures/'.$this->signature) : null;
+    }
+
     public static function deletePayment($payment)
     {
         //Update parent payment if exists

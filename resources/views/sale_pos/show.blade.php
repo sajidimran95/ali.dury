@@ -226,6 +226,7 @@
               <th>{{ __('sale.amount') }}</th>
               <th>{{ __('sale.payment_mode') }}</th>
               <th>{{ __('sale.payment_note') }}</th>
+              <th>Signature</th>
             </tr>
             @foreach($sell->payment_lines as $payment_line)
               @php
@@ -253,6 +254,7 @@
                   --
                   @endif
                 </td>
+                <td>@include('transaction_payment.partials.signature', ['payment' => $payment_line])</td>
               </tr>
             @endforeach
           </table>

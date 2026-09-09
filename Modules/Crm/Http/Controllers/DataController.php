@@ -65,6 +65,11 @@ class DataController
                             __('crm::lang.customer_groups'),
                             ['icon' => '', 'active' => request()->segment(1) == 'customer-group']
                         );
+                        $sub->url(
+                            route('crm.zero-sales.index'),
+                            __('crm::lang.zero_sales'),
+                            ['icon' => '', 'active' => request()->segment(1) == 'crm' && request()->segment(2) == 'zero-sales']
+                        );
                     }
 
                     $can_leads = auth()->user()->can('crm.lead.view') || $can_crm;

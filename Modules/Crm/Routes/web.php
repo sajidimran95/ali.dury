@@ -8,7 +8,7 @@ use Modules\Crm\Http\Controllers\DashboardController;
 use Modules\Crm\Http\Controllers\InstallController;
 use Modules\Crm\Http\Controllers\LeadController;
 use Modules\Crm\Http\Controllers\PipelineController;
-use Modules\Crm\Http\Controllers\ScheduleController;
+use Modules\Crm\Http\Controllers\ZeroSaleController;
 
 Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 'AdminSidebarMenu', 'CheckUserLogin'])
     ->prefix('crm')
@@ -39,6 +39,8 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
         Route::get('call-logs', [CallLogController::class, 'index'])->name('call-logs.index');
         Route::post('call-logs', [CallLogController::class, 'store'])->name('call-logs.store');
         Route::delete('call-logs/{id}', [CallLogController::class, 'destroy'])->name('call-logs.destroy');
+
+        Route::get('zero-sales', [ZeroSaleController::class, 'index'])->name('zero-sales.index');
 
         Route::get('settings', [CrmSettingsController::class, 'index'])->name('settings');
         Route::post('settings', [CrmSettingsController::class, 'update'])->name('settings.update');

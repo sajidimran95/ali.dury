@@ -52,7 +52,7 @@
         <input type="text" name="amount" id="salePayAmount" class="sale-input" inputmode="decimal" value="0.00">
         <select name="method" class="sale-input">
             @foreach($paymentTypes as $key => $label)
-                <option value="{{ $key }}" {{ $key === 'cash' ? 'selected' : '' }}>{{ $label }}</option>
+                <option value="{{ $key }}" {{ $loop->first ? 'selected' : '' }}>{{ $label }}</option>
             @endforeach
         </select>
     </div>
@@ -175,6 +175,11 @@
         var ref = document.getElementById('salePayRef').value || '';
         var comment = document.getElementById('salePayCommentText').value || '';
         document.getElementById('salePayNoteField').value = [ref, comment].filter(Boolean).join(' | ');
+        var sig = document.getElementById('salePaySigField');
+        var canvas = document.getElementById('saleSigCanvas');
+        if (sig && canvas && canvas.width) {
+            sig.value = canvas.toDataURL('image/png');
+        }
     });
     document.getElementById('salePayCommentsBtn').addEventListener('click', function () { saleOpenSheet('salePayCommentSheet'); });
     document.getElementById('salePayCommentSave').addEventListener('click', function () { saleCloseSheet('salePayCommentSheet'); });

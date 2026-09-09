@@ -146,6 +146,10 @@
                 <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg>
                 History
             </a>
+            <button type="button" class="sale-act-row" onclick="saleOpenSheet('saleZeroSaleSheet'); saleCloseSheet('saleCustMoreSheet');">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M8 12h8"/></svg>
+                Zero Sale
+            </button>
             @if($custAddr !== '')
             <a class="sale-act-row" href="https://www.google.com/maps/dir/?api=1&destination={{ urlencode($custAddr) }}" target="_blank" rel="noopener">
                 <svg viewBox="0 0 24 24"><path d="M12 21s7-4.5 7-11a7 7 0 1 0-14 0c0 6.5 7 11 7 11z"/></svg>
@@ -158,4 +162,5 @@
         </div>
     </div>
 </div>
+@include('sale.customers.partials.zero_sale_sheet')
 @endsection

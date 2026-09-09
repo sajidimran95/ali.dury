@@ -174,6 +174,10 @@
             @endif
             <strong>@lang('purchase.payment_note') :</strong>
               {{ $single_payment_line->note }}
+            <div class="mt-2">
+              <strong>Signature :</strong><br>
+              @include('transaction_payment.partials.signature', ['payment' => $single_payment_line])
+            </div>
           </div>
           <div class="col-xs-6">
             <b>@lang('purchase.ref_no'):</b> 

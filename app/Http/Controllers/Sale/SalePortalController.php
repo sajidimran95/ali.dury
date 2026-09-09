@@ -9,6 +9,8 @@ use App\CustomerGroup;
 use App\EmployeeAttendance;
 use App\Http\Controllers\Controller;
 use App\Product;
+use App\SaleZeroSale;
+use App\SaleZeroSaleReason;
 use App\Transaction;
 use App\TransactionPayment;
 use App\Unit;
@@ -2047,7 +2049,9 @@ class SalePortalController extends Controller
             return $c;
         });
 
-        return view('sale.customers.index', compact('customers', 'term', 'canCreate', 'canList'));
+        $zeroSaleReasons = $this->saleAppZeroSaleReasons();
+
+        return view('sale.customers.index', compact('customers', 'term', 'canCreate', 'canList', 'zeroSaleReasons'));
     }
 
     public function createCustomer()
@@ -2690,6 +2694,38 @@ class SalePortalController extends Controller
         return app(\App\Http\Controllers\StockTransferController::class)->store($request);
     }
 
+    public function storeCustomerZeroSale(Request $request, $id)
+    {
+        $this->saleAppFindCustomer($request, $id);
+        $data = $request->validate([
+            'reason_id' => 'required|integer|exists:sale_zero_sale_reasons,id',
+            'comment' => 'nullable|string|max:2000',
+        ]);
+        $reason = SaleZeroSaleReason::where('id', $data['reason_id'])->where('is_active', 1)->firstOrFail();
+
+        SaleZeroSale::create([
+            'business_id' => $request->session()->get('user.business_id'),
+            'contact_id' => (int) $id,
+            'reason_id' => $reason->id,
+            'created_by' => auth()->id(),
+            'location_id' => $request->session()->get('user.default_location_id'),
+            'comment' => $data['comment'] ?? null,
+        ]);
+
+        return redirect()
+            ->route('sale.customers')
+            ->with('status', ['success' => 1, 'msg' => 'Zero sale saved.']);
+    }
+
+    protected function saleAppZeroSaleReasons()
+    {
+        try {
+            return SaleZeroSaleReason::active()->get(['id', 'name']);
+        } catch (\Throwable $e) {
+            return collect();
+        }
+    }
+
     public function showCustomer(Request $request, $id)
     {
         $data = $this->saleAppCustomerBundle($request, $id);
@@ -2698,6 +2734,7 @@ class SalePortalController extends Controller
             $tab = 'invoices';
         }
         $data['tab'] = $tab;
+        $data['zeroSaleReasons'] = $this->saleAppZeroSaleReasons();
 
         return view('sale.customers.show', $data);
     }
@@ -2733,7 +2770,7 @@ class SalePortalController extends Controller
     public function customerPayment(Request $request, $id)
     {
         $data = $this->saleAppCustomerBundle($request, $id, true);
-        $data['paymentTypes'] = $this->transactionUtil->payment_types(null, false, $request->session()->get('user.business_id'));
+        $data['paymentTypes'] = $this->saleAppActivePaymentTypes($request);
         $data['tabPay'] = $request->get('view', 'amount') === 'payments' ? 'payments' : 'amount';
         $data['preselect'] = (int) $request->get('invoice_id', 0);
 
@@ -2743,13 +2780,18 @@ class SalePortalController extends Controller
     public function storeCustomerPayment(Request $request, $id)
     {
         $this->saleAppFindCustomer($request, $id);
+        $activeMethods = $this->saleAppActivePaymentTypes($request);
         $data = $request->validate([
             'amount' => 'required',
             'method' => 'required|string',
             'paid_on' => 'nullable|string',
             'note' => 'nullable|string|max:500',
+            'signature' => 'nullable|string',
             'pay_mode' => 'nullable|in:pay,credit',
         ]);
+        if (! array_key_exists($data['method'], $activeMethods)) {
+            return back()->with('status', ['success' => 0, 'msg' => 'This payment method is not active for your location.']);
+        }
         $amount = (float) str_replace([',', '$'], '', (string) $data['amount']);
         if ($amount <= 0) {
             return back()->with('status', ['success' => 0, 'msg' => 'Enter a payment amount.']);
@@ -2767,7 +2809,13 @@ class SalePortalController extends Controller
 
         try {
             DB::beginTransaction();
-            $this->transactionUtil->payContact($payRequest, false);
+            $tp = $this->transactionUtil->payContact($payRequest, false);
+            $sigFile = $this->saleAppStorePaymentSignature($request->input('signature'));
+            if ($sigFile && $tp) {
+                $tp->signature = $sigFile;
+                $tp->save();
+                TransactionPayment::where('parent_id', $tp->id)->update(['signature' => $sigFile]);
+            }
             DB::commit();
 
             return redirect()
@@ -2778,6 +2826,43 @@ class SalePortalController extends Controller
 
             return back()->with('status', ['success' => 0, 'msg' => $e->getMessage()]);
         }
+    }
+
+    protected function saleAppActivePaymentTypes(Request $request): array
+    {
+        $business_id = $request->session()->get('user.business_id');
+        $location_id = $request->session()->get('user.default_location_id');
+        $loc = null;
+        if (! empty($location_id)) {
+            $loc = BusinessLocation::where('business_id', $business_id)->find($location_id);
+        }
+        if (empty($loc)) {
+            $loc = BusinessLocation::where('business_id', $business_id)->first();
+        }
+        if (empty($loc)) {
+            return [];
+        }
+
+        return $this->transactionUtil->payment_types($loc, false, $business_id);
+    }
+
+    protected function saleAppStorePaymentSignature(?string $dataUrl): ?string
+    {
+        if (empty($dataUrl) || ! str_starts_with($dataUrl, 'data:image/png;base64,')) {
+            return null;
+        }
+        $raw = base64_decode(substr($dataUrl, strlen('data:image/png;base64,')), true);
+        if ($raw === false || strlen($raw) < 50) {
+            return null;
+        }
+        $dir = public_path('uploads/signatures');
+        if (! is_dir($dir)) {
+            mkdir($dir, 0755, true);
+        }
+        $name = 'sig_'.auth()->id().'_'.time().'_'.bin2hex(random_bytes(4)).'.png';
+        file_put_contents($dir.DIRECTORY_SEPARATOR.$name, $raw);
+
+        return $name;
     }
 
     protected function saleAppFindCustomer(Request $request, $id): Contact

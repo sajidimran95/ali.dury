@@ -82,6 +82,7 @@
                 <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 10h4M7 14h6"/></svg>
                 Create Credit
             </a>
+            @include('sale.customers.partials.zero_sale_option')
             <a id="saleCustHistory" class="sale-act-row" href="#">
                 <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg>
                 History
@@ -109,6 +110,7 @@
         </div>
     </div>
 </div>
+@include('sale.customers.partials.zero_sale_sheet')
 @endsection
 
 @push('scripts')
@@ -178,6 +180,20 @@
     if (sheet) sheet.addEventListener('click', (e) => { if (e.target === sheet) hideSheet(); });
     const detailsBtn = document.getElementById('saleCustDetails');
     const detailsBack = document.getElementById('saleCustDetailsBack');
+    const zeroSaleBase = payBase + '/';
+    const zeroBtn = document.getElementById('saleCustZeroSale');
+    const zeroForm = document.getElementById('saleZeroSaleForm');
+    const zeroWho = document.getElementById('saleZeroSaleWho');
+    if (zeroBtn) zeroBtn.addEventListener('click', function () {
+        var id = sheet.getAttribute('data-open-id') || '';
+        if (!id || !zeroForm) return;
+        zeroForm.action = zeroSaleBase + encodeURIComponent(id) + '/zero-sale';
+        if (zeroWho) zeroWho.textContent = who ? who.textContent : '';
+        document.getElementById('saleZeroSaleReason').value = '';
+        document.getElementById('saleZeroSaleComment').value = '';
+        hideSheet();
+        saleOpenSheet('saleZeroSaleSheet');
+    });
     if (detailsBtn) detailsBtn.addEventListener('click', function () {
         var id = document.querySelector('#saleCustSheet').getAttribute('data-open-id') || '';
         if (id) window.location.href = payBase + '/' + encodeURIComponent(id);
