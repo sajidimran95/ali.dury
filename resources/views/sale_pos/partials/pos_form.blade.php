@@ -246,7 +246,7 @@
 					<th class="pos-th-action tw-sticky tw-top-0 tw-z-10 !tw-bg-[#f8fafc] !tw-border-b !tw-border-[#e2e8f0] !tw-border-t-0 !tw-border-l-0 !tw-border-r-0 !tw-py-1 !tw-pr-2 !tw-pl-0 !tw-text-[11px] tw-font-bold tw-uppercase tw-tracking-[0.4px] !tw-leading-[1.2] tw-whitespace-nowrap tw-overflow-hidden !tw-align-middle tw-w-[52px] !tw-text-center"></th>
 				</tr>
 			</thead>
-			<tbody>
+			<tbody class="pos-cart-empty-body">
 				<tr class="pos-empty-state-row">
 					<td colspan="100" class="!tw-border-0 !tw-p-0 pos-empty-td">
 						<div class="pos-empty-cart tw-flex tw-flex-col tw-items-center tw-justify-center tw-text-center tw-py-10 md:tw-py-14 tw-px-6 tw-gap-3">

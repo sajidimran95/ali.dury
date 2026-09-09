@@ -26,14 +26,40 @@ function pos_line_edit_row($tr) {
         return $();
     }
     var idx = $tr.attr('data-row_index');
+    if (typeof idx !== 'undefined') {
+        var $byIdx = $('table#pos_table tbody tr.pos-line-edit-row[data-row_index="' + idx + '"]');
+        if ($byIdx.length) {
+            return $byIdx.first();
+        }
+    }
     var $next = $tr.next('tr.pos-line-edit-row');
-    if ($next.length) {
+    if ($next.length && (typeof idx === 'undefined' || String($next.attr('data-row_index')) === String(idx))) {
         return $next;
     }
-    if (typeof idx !== 'undefined') {
-        return $('table#pos_table tbody tr.pos-line-edit-row[data-row_index="' + idx + '"]');
-    }
     return $();
+}
+
+function pos_attach_line_edit_after_product($product) {
+    $product = $($product);
+    if (!$product.length || !$product.hasClass('product_row')) {
+        return $();
+    }
+    var $edit = pos_line_edit_row($product);
+    if (!$edit.length) {
+        return $();
+    }
+    var p = $product.get(0);
+    var e = $edit.get(0);
+    if (p && e && p.nextElementSibling !== e && p.parentNode) {
+        p.parentNode.insertBefore(e, p.nextSibling);
+    }
+    return $edit;
+}
+
+function pos_reattach_all_line_edits() {
+    $('table#pos_table tbody tr.product_row').each(function() {
+        pos_attach_line_edit_after_product($(this));
+    });
 }
 
 function pos_close_line_edit($tr) {
@@ -48,8 +74,8 @@ function pos_close_line_edit($tr) {
 }
 
 function pos_close_all_line_edits() {
-    $('table#pos_table tbody tr.pos-line-edit-row').removeClass('is-open');
-    $('table#pos_table tbody tr.product_row').removeClass('is-editing');
+    $('#pos_table tr.pos-line-edit-row').removeClass('is-open');
+    $('#pos_table tr.product_row').removeClass('is-editing is-selected');
 }
 
 function pos_open_line_edit($tr) {
@@ -57,6 +83,7 @@ function pos_open_line_edit($tr) {
     if (!$tr.length) {
         return;
     }
+    pos_attach_line_edit_after_product($tr);
     var $edit = pos_line_edit_row($tr);
     var $panel = pos_row_edit_modal($tr);
     pos_close_all_line_edits();
@@ -85,27 +112,50 @@ function pos_bring_product_row_to_top($row) {
     if (!$row || !$row.length) {
         return $row;
     }
+    pos_close_all_line_edits();
     $row = $($row);
-    var $block = $row;
     var $product = $row.filter ? $row.filter('tr.product_row').first() : $();
     if (!$product.length && $row.hasClass && $row.hasClass('product_row')) {
         $product = $row;
     }
-    if ($product.length) {
-        var $edit = $row.filter ? $row.filter('tr.pos-line-edit-row') : $();
-        if (!$edit.length) {
-            $edit = $product.next('tr.pos-line-edit-row');
-        }
-        $block = $product.add($edit);
+    if (!$product.length && $row.hasClass && $row.hasClass('pos-cart-line')) {
+        $product = $row.find('tr.product_row').first();
     }
-    var $tbody = $('table#pos_table tbody');
+    if (!$product.length) {
+        return $row;
+    }
+    var $line = $product.closest('tbody.pos-cart-line');
+    var $emptyBody = $('#pos_table > tbody.pos-cart-empty-body');
+    if ($line.length) {
+        if ($emptyBody.length) {
+            $emptyBody.after($line);
+        } else {
+            var $thead = $('#pos_table > thead');
+            if ($thead.length) {
+                $thead.after($line);
+            } else {
+                $('#pos_table').prepend($line);
+            }
+        }
+        pos_attach_line_edit_after_product($product);
+        return $product;
+    }
+    var idx = $product.attr('data-row_index');
+    var $edit = $row.filter ? $row.filter('tr.pos-line-edit-row') : $();
+    if (!$edit.length && typeof idx !== 'undefined') {
+        $edit = $('table#pos_table tr.pos-line-edit-row[data-row_index="' + idx + '"]');
+    }
+    var $tbody = $('table#pos_table tbody').first();
     var $empty = $tbody.children('tr.pos-empty-state-row').first();
     if ($empty.length) {
-        $empty.after($block);
+        $empty.after($product);
     } else {
-        $tbody.prepend($block);
+        $tbody.prepend($product);
     }
-    return $product.length ? $product : $row;
+    if ($edit.length) {
+        pos_attach_line_edit_after_product($product);
+    }
+    return $product;
 }
 
 /**
@@ -1447,7 +1497,7 @@ $(document).ready(function() {
     }
 
     //Update line total and check for quantity not greater than max quantity
-    $('table#pos_table tbody').on('change', 'input.pos_quantity', function() {
+    $('table#pos_table').on('change', 'input.pos_quantity', function() {
         pos_play_success_sound();
         // comment line becouse it validate form at increment and decrement item
         // if (sell_form_validator) {
@@ -1530,7 +1580,7 @@ $(document).ready(function() {
     });
 
     //If change in unit price including tax, update unit price
-    $('table#pos_table tbody').on('change', 'input.pos_unit_price_inc_tax', function() {
+    $('table#pos_table').on('change', 'input.pos_unit_price_inc_tax', function() {
         var unit_price_inc_tax = __read_number($(this));
 
         if (iraqi_selling_price_adjustment) {
@@ -1559,7 +1609,7 @@ $(document).ready(function() {
     });
 
     //Change max quantity rule if lot number changes
-    $('table#pos_table tbody').on('change', 'select.lot_number', function() {
+    $('table#pos_table').on('change', 'select.lot_number', function() {
         var qty_element = $(this)
             .closest('tr')
             .find('input.pos_quantity');
@@ -1653,15 +1703,20 @@ $(document).ready(function() {
     );
 
     //Remove row on click on remove row
-    $('table#pos_table tbody').on('click', '.pos_remove_row', function() {
+    $('table#pos_table').on('click', '.pos_remove_row', function() {
         var $tr = $(this).closest('tr.product_row');
+        var $line = $tr.closest('tbody.pos-cart-line');
         var idx = $tr.attr('data-row_index');
         pos_line_edit_row($tr).remove();
         if (typeof idx !== 'undefined') {
             $('#row_edit_product_price_modal_' + idx).closest('tr.pos-line-edit-row').remove();
             $('#row_edit_product_price_modal_' + idx).remove();
         }
-        $tr.remove();
+        if ($line.length) {
+            $line.remove();
+        } else {
+            $tr.remove();
+        }
         pos_total_row();
         pos_sync_empty_state();
     });
@@ -2448,6 +2503,7 @@ function pos_refresh_payment_modal() {
 
                         // Always clear cart lines after a successful park
                         $('.row_edit_product_price_model').remove();
+                        $('#pos_table tbody.pos-cart-line').remove();
                         $('table#pos_table tbody tr.pos-line-edit-row').remove();
                         $('table#pos_table tbody tr.product_row').remove();
                         $('input#product_row_count').val(0);
@@ -4291,21 +4347,25 @@ $(document).ready(function() {
  */
 function pos_insert_product_row(result) {
     pos_play_success_sound();
+    pos_close_all_line_edits();
     var product_row = $('input#product_row_count').val();
     // Newest scanned/selected line stays in the first cart row (create + edit)
-    var $nodes = $('<tbody>' + result.html_content + '</tbody>').children('tr');
-    var $newRows = $nodes.filter('tr');
-    if (!$newRows.length) {
-        $newRows = $(result.html_content);
+    var $tmp = $('<table></table>').append($.parseHTML($.trim(result.html_content), document, true));
+    var $lineBody = $tmp.children('tbody.pos-cart-line');
+    if (!$lineBody.length) {
+        $lineBody = $tmp.find('tbody.pos-cart-line');
     }
-    pos_bring_product_row_to_top($newRows);
+    if ($lineBody.length) {
+        pos_bring_product_row_to_top($lineBody);
+    } else {
+        var $newRows = $tmp.find('tr');
+        pos_bring_product_row_to_top($newRows);
+    }
+    pos_reattach_all_line_edits();
     pos_sync_empty_state();
     //increment row count
     $('input#product_row_count').val(parseInt(product_row) + 1);
-    var this_row = $newRows.filter('tr.product_row').first();
-    if (!this_row.length) {
-        this_row = $('table#pos_table tbody tr.product_row').first();
-    }
+    var this_row = $('#pos_table tr.product_row').first();
     pos_each_row(this_row);
 
     //For initial discount if present
@@ -4317,10 +4377,6 @@ function pos_insert_product_row(result) {
     //Check if multipler is present then multiply it when a new row is added.
     if(__getUnitMultiplier(this_row) > 1){
         this_row.find('select.sub_unit').trigger('change');
-    }
-
-    if (result.enable_sr_no == '1') {
-        pos_open_line_edit(this_row);
     }
 
     round_row_to_iraqi_dinnar(this_row);
@@ -4358,8 +4414,8 @@ function pos_add_product_row_from_data(result) {
             var is_added = false;
             
             // Search for variation id in each row of pos table
-            $('#pos_table tbody')
-                .find('tr')
+            $('#pos_table')
+                .find('tr.product_row')
                 .each(function() {
                     var row_v_id = $(this).find('.row_variation_id').val();
                     var enable_sr_no = $(this).find('.enable_sr_no').val();
@@ -4427,8 +4483,8 @@ function pos_product_row(variation_id = null, purchase_line_id = null, weighing_
         var is_added = false;
 
         //Search for variation id in each row of pos table
-        $('#pos_table tbody')
-            .find('tr')
+        $('#pos_table')
+            .find('tr.product_row')
             .each(function() {
                 var row_v_id = $(this)
                     .find('.row_variation_id')
@@ -4966,6 +5022,7 @@ function pos_load_retrieved_sale_into_cart(row) {
 
     var doLoad = function () {
         // Clear current cart lines
+        $('#pos_table tbody.pos-cart-line').remove();
         $('table#pos_table tbody tr.pos-line-edit-row').remove();
         $('table#pos_table tbody tr.product_row').remove();
         $('input#product_row_count').val(0);
@@ -5158,6 +5215,7 @@ function reset_pos_form(){
 
     // Clear cart lines FIRST (before any optional widgets that may throw)
     $('.row_edit_product_price_model').remove();
+    $('#pos_table tbody.pos-cart-line').remove();
     $('table#pos_table tbody tr.pos-line-edit-row').remove();
     $('table#pos_table tbody tr.product_row').remove();
     $('input#product_row_count').val(0);
@@ -5753,7 +5811,7 @@ function get_unit_price_from_discounted_unit_price(row, discounted_unit_price) {
 }
 
 //Update quantity if line subtotal changes
-$('table#pos_table tbody').on('change', 'input.pos_line_total', function() {
+$('table#pos_table').on('change', 'input.pos_line_total', function() {
 
     var subtotal = __read_number($(this));
     var tr = $(this).parents('tr');

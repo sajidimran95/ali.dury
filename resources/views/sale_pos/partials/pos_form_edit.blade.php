@@ -243,16 +243,7 @@
 					<th class="pos-th-action tw-sticky tw-top-0 tw-z-10 !tw-bg-[#f8fafc] !tw-border-b !tw-border-[#e2e8f0] !tw-border-t-0 !tw-border-l-0 !tw-border-r-0 !tw-py-1 !tw-pr-2 !tw-pl-0 !tw-text-[11px] tw-font-bold tw-uppercase tw-tracking-[0.4px] !tw-leading-[1.2] tw-whitespace-nowrap tw-overflow-hidden !tw-align-middle tw-w-[52px] !tw-text-center"></th>
 				</tr>
 			</thead>
-			<tbody>
-				@foreach($sell_details as $sell_line)
-				@include('sale_pos.product_row', 
-					['product' => $sell_line, 
-					'row_count' => $loop->index, 
-					'tax_dropdown' => $taxes, 
-					'sub_units' => !empty($sell_line->unit_details) ? $sell_line->unit_details : [],
-					'action' => 'edit'
-				])
-				@endforeach
+			<tbody class="pos-cart-empty-body">
 				@if(count($sell_details) === 0)
 				<tr class="pos-empty-state-row">
 					<td colspan="100" class="!tw-border-0 !tw-p-0">
@@ -267,6 +258,15 @@
 				</tr>
 				@endif
 			</tbody>
+			@foreach($sell_details as $sell_line)
+				@include('sale_pos.product_row', 
+					['product' => $sell_line, 
+					'row_count' => $loop->index, 
+					'tax_dropdown' => $taxes, 
+					'sub_units' => !empty($sell_line->unit_details) ? $sell_line->unit_details : [],
+					'action' => 'edit'
+				])
+			@endforeach
 		</table>
 		<style>
 			#pos_table:not(.pos-has-rows) thead { display: none !important; }

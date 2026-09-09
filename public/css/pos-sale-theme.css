@@ -4395,13 +4395,36 @@ body.lockscreen.pos-sale-theme .ui-menu-item-wrapper.ui-state-active {
 }
 
 /* Cart line product edit — compact under the item, no title, not cropped */
-body.lockscreen.pos-sale-theme #pos_table > tbody > tr.pos-line-edit-row {
-  display: none !important;
-}
-body.lockscreen.pos-sale-theme #pos_table > tbody > tr.pos-line-edit-row.is-open {
+body.lockscreen.pos-sale-theme #pos_table > tbody.pos-cart-line > tr.pos-line-edit-row {
   display: table-row !important;
 }
-body.lockscreen.pos-sale-theme #pos_table > tbody > tr.pos-line-edit-row > td {
+body.lockscreen.pos-sale-theme #pos_table > tbody.pos-cart-line > tr.pos-line-edit-row:not(.is-open) > td {
+  padding: 0 !important;
+  border: 0 !important;
+  height: 0 !important;
+  line-height: 0 !important;
+  overflow: hidden !important;
+}
+body.lockscreen.pos-sale-theme #pos_table > tbody.pos-cart-line > tr.pos-line-edit-row:not(.is-open) .pos-line-edit-panel {
+  display: none !important;
+}
+body.lockscreen.pos-sale-theme #pos_table > tbody > tr.pos-line-edit-row {
+  display: table-row !important;
+}
+body.lockscreen.pos-sale-theme #pos_table > tbody > tr.pos-line-edit-row:not(.is-open) {
+  /* keep row in place; hide contents so Chrome does not send it to the bottom */
+}
+body.lockscreen.pos-sale-theme #pos_table > tbody > tr.pos-line-edit-row:not(.is-open) > td {
+  padding: 0 !important;
+  border: 0 !important;
+  height: 0 !important;
+  line-height: 0 !important;
+  overflow: hidden !important;
+}
+body.lockscreen.pos-sale-theme #pos_table > tbody > tr.pos-line-edit-row:not(.is-open) .pos-line-edit-panel {
+  display: none !important;
+}
+body.lockscreen.pos-sale-theme #pos_table > tbody > tr.pos-line-edit-row.is-open > td {
   padding: 0 6px 6px !important;
   background: #151515 !important;
   border-bottom: 1px solid #333 !important;
