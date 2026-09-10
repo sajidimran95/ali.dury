@@ -194,26 +194,20 @@
             </label>
         </div>
         @php
-            $barcodeCode = $isEdit ? ($u->barcode_switch_id ?: '') : '';
-            $showBarcode = $isEdit && !empty($u->barcode_login) && $barcodeCode !== '';
+            $barcodeCode = '';
+            if ($isEdit && !empty($u)) {
+                $barcodeCode = $u->barcode_switch_id ?: (method_exists($u, 'ensureBarcodeSwitchId') ? $u->ensureBarcodeSwitchId() : '');
+            }
+            // Edit page: always show the barcode card so staff can print/copy the ID.
+            $showBarcode = $isEdit && $barcodeCode !== '';
         @endphp
         {!! Form::hidden('barcode_switch_id', $barcodeCode, ['id' => 'barcode_switch_id']) !!}
-        <div class="ls-barcode-card" id="ls_user_barcode_wrap" data-code="{{ $barcodeCode }}" @if(!$showBarcode) style="display:none;" @endif>
-            <div class="ls-barcode-card__body">
-                <div class="ls-barcode-kicker">Your quick switch ID</div>
-                <div class="ls-barcode-id" id="ls_barcode_id">{{ $barcodeCode }}</div>
-                <div class="ls-barcode-img-wrap">
-                    <img src="{{ $showBarcode ? url('/users/barcode-image').'?text='.urlencode($barcodeCode) : '' }}" alt="{{ $barcodeCode }}" class="ls-barcode-img" id="ls_barcode_img">
-                </div>
-            </div>
-            <div class="ls-barcode-foot">
-                <span>Print and attach this barcode to your staff ID</span>
-                <div class="ls-barcode-foot__btns">
-                    <button type="button" class="ls-barcode-print" id="lsPrintBarcode">Print barcode</button>
-                    <button type="button" class="ls-barcode-copy" id="lsCopyId">Copy ID</button>
-                </div>
-            </div>
-        </div>
+        @include('manage_user.partials.barcode_card', [
+            'barcodeCode' => $barcodeCode,
+            'showBarcode' => $showBarcode,
+            'barcodeEditable' => true,
+            'barcodeAlways' => $isEdit,
+        ])
         <div class="ls-check-row">
             <label>
                 {!! Form::checkbox('is_enable_service_staff_pin', 1, $isEdit ? $u->is_enable_service_staff_pin : false, ['class' => 'input-icheck status', 'id' => 'is_enable_service_staff_pin']); !!}

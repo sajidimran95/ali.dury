@@ -80,7 +80,7 @@ class ManageUserController extends Controller
                     $name = e(trim($row->full_name));
                     $email = e($row->email);
 
-                    return '<a class="ls-user-name" href="'.action([\App\Http\Controllers\ManageUserController::class, 'edit'], [$row->id]).'">'.$name.'</a>'
+                    return '<a class="ls-user-name" href="'.action([\App\Http\Controllers\ManageUserController::class, 'show'], [$row->id]).'">'.$name.'</a>'
                         .'<div class="ls-user-email">'.$email.'</div>';
                 })
                 ->editColumn('username', '{{$username}} @if(empty($allow_login)) <span class="label bg-gray">@lang("lang_v1.login_not_allowed")</span>@endif')
@@ -252,7 +252,28 @@ class ManageUserController extends Controller
      */
     public function show($id)
     {
-        return redirect()->action([ManageUserController::class, 'edit'], [$id]);
+        if (! auth()->user()->can('user.view') && ! auth()->user()->can('user.update')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $business_id = request()->session()->get('user.business_id');
+        $user = User::where('business_id', $business_id)
+                    ->with(['contactAccess', 'media', 'roles'])
+                    ->findOrFail($id);
+
+        $locations = BusinessLocation::where('business_id', $business_id)->get();
+        $permitted_locations = $user->permitted_locations();
+        $view_partials = $this->moduleUtil->getModuleData('moduleViewPartials', ['view' => 'manage_user.show', 'user' => $user]);
+        $isLastAdmin = $this->isLastAdmin($user);
+        $isSalesRep = $this->userIsSalesRepresentative($user);
+        $salesStats = $isSalesRep ? $this->userSalesStats((int) $user->id, (int) $business_id) : [];
+        $users = User::forDropdown($business_id, false);
+        $activities = Activity::forSubject($user)->with(['causer', 'subject'])->latest()->get();
+        $user->role_name = $this->moduleUtil->getUserRoleName($user->id);
+        $user->ensureBarcodeSwitchId();
+
+        return view('manage_user.show')
+                ->with(compact('user', 'locations', 'permitted_locations', 'view_partials', 'isLastAdmin', 'isSalesRep', 'salesStats', 'users', 'activities'));
     }
 
     protected function userSalesStats(int $userId, int $businessId): array
@@ -421,9 +442,7 @@ class ManageUserController extends Controller
         $users = User::forDropdown($business_id, false);
         $activities = Activity::forSubject($user)->with(['causer', 'subject'])->latest()->get();
 
-        if (! empty($user->barcode_login)) {
-            $user->ensureBarcodeSwitchId();
-        }
+        $user->ensureBarcodeSwitchId();
 
         return view('manage_user.edit')
                 ->with(compact('roles', 'user', 'contact_access', 'is_checked_checkbox', 'locations', 'permitted_locations', 'form_partials', 'username_ext', 'isLastAdmin', 'isSalesRep', 'salesStats', 'users', 'activities'));

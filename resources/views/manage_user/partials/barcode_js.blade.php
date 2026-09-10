@@ -43,7 +43,8 @@
     var $wrap = $('#ls_user_barcode_wrap');
     if (!$wrap.length) return;
     var on = barcodeEnabled();
-    if (!on) {
+    var always = String($wrap.attr('data-always') || '') === '1';
+    if (!on && !always) {
       $wrap.hide();
       return;
     }

@@ -2,7 +2,7 @@
 
 @section('title', __( 'user.add_user' ))
 @section('css')
-<link rel="stylesheet" href="{{ asset('css/ls-users.css') }}?v=27">
+<link rel="stylesheet" href="{{ asset('css/ls-users.css') }}?v=28">
 @endsection
 
 @section('content')

@@ -2,7 +2,7 @@
 
 @section('title', __( 'lang_v1.view_user' ))
 @section('css')
-<link rel="stylesheet" href="{{ asset('css/ls-users.css') }}">
+<link rel="stylesheet" href="{{ asset('css/ls-users.css') }}?v=28">
 @endsection
 
 @section('content')
@@ -187,20 +187,17 @@
             <div class="ls-ro-input">{{ !empty($user->allow_login) ? 'Yes' : 'No' }}</div>
             <label class="ls-ro-label">Enable barcode</label>
             <div class="ls-ro-input">{{ !empty($user->barcode_login) ? 'On' : 'Off' }}</div>
-            @if(!empty($user->barcode_login))
-                @php $switchId = $user->barcode_switch_id ?: $user->username; @endphp
-                <div class="ls-barcode-card">
-                    <div class="ls-barcode-kicker">Your quick switch ID</div>
-                    <div class="ls-barcode-id">{{ $switchId }}</div>
-                    <div class="ls-barcode-img-wrap">
-                        <img
-                            src="{{ url('/users/barcode-image') }}?text={{ urlencode($switchId) }}"
-                            alt="{{ $switchId }}"
-                            class="ls-barcode-img"
-                        >
-                    </div>
-                </div>
-            @endif
+            @php
+                $barcodeCode = method_exists($user, 'ensureBarcodeSwitchId')
+                    ? $user->ensureBarcodeSwitchId()
+                    : ($user->barcode_switch_id ?: $user->username);
+            @endphp
+            @include('manage_user.partials.barcode_card', [
+                'barcodeCode' => $barcodeCode,
+                'showBarcode' => $barcodeCode !== '',
+                'barcodeEditable' => true,
+                'barcodeAlways' => true,
+            ])
             <label class="ls-ro-label">{{ __('lang_v1.enable_service_staff_pin') }}</label>
             <div class="ls-ro-input">{{ !empty($user->is_enable_service_staff_pin) ? 'On' : 'Off' }}</div>
         </div>
@@ -396,12 +393,6 @@
                     });
                 });
             });
-            $('#lsCopyId').on('click', function () {
-                var t = @json($user->username);
-                if (navigator.clipboard) navigator.clipboard.writeText(t);
-                toastr.success('Copied');
-            });
-
             var days = @json($chartDays);
             function money(n) {
                 return (typeof __currency_trans_from_en === 'function') ? __currency_trans_from_en(n, true) : Number(n).toFixed(2);
@@ -437,4 +428,5 @@
             });
         });
     </script>
+    @include('manage_user.partials.barcode_js')
 @endsection

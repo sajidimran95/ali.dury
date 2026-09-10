@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Sep 10, 2026 at 03:06 PM
+-- Generation Time: Sep 10, 2026 at 03:20 PM
 -- Server version: 8.4.3
 -- PHP Version: 8.4.2
 
@@ -349,7 +349,11 @@ INSERT INTO `activity_log` (`id`, `log_name`, `description`, `subject_id`, `subj
 (239, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-09-09 05:21:16', '2026-09-09 05:21:16'),
 (240, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-09-09 10:27:42', '2026-09-09 10:27:42');
 INSERT INTO `activity_log` (`id`, `log_name`, `description`, `subject_id`, `subject_type`, `event`, `business_id`, `causer_id`, `causer_type`, `properties`, `batch_uuid`, `created_at`, `updated_at`) VALUES
-(241, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-09-10 04:19:13', '2026-09-10 04:19:13');
+(241, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-09-10 04:19:13', '2026-09-10 04:19:13'),
+(242, 'default', 'edited', 3, 'App\\User', NULL, 1, 1, 'App\\User', '{\"name\":\" Sales \"}', NULL, '2026-09-10 05:10:39', '2026-09-10 05:10:39'),
+(243, 'default', 'edited', 3, 'App\\User', NULL, 1, 1, 'App\\User', '{\"name\":\" Sales \"}', NULL, '2026-09-10 05:12:04', '2026-09-10 05:12:04'),
+(244, 'default', 'edited', 3, 'App\\User', NULL, 1, 1, 'App\\User', '{\"name\":\" Sales \"}', NULL, '2026-09-10 05:12:48', '2026-09-10 05:12:48'),
+(245, 'default', 'edited', 1, 'App\\User', NULL, 1, 1, 'App\\User', '{\"name\":\" Japs POS\"}', NULL, '2026-09-10 05:14:45', '2026-09-10 05:14:45');
 
 -- --------------------------------------------------------
 
@@ -2019,7 +2023,8 @@ INSERT INTO `ecom_carts` (`id`, `business_id`, `contact_id`, `session_id`, `coup
 (149, 1, NULL, 'eYZ4lsFVzHQ1ZYXCfVqnnRj3ylbxQ3HdMOV4GoEC', NULL, '2026-09-09 04:23:47', '2026-09-09 04:23:47'),
 (150, 1, NULL, 'F5n6e3015XZ3dz4k0iZ2DFfYI6p37UXBHIdqSn9y', NULL, '2026-09-09 05:21:06', '2026-09-09 05:21:06'),
 (151, 1, NULL, 'I1LoslME5kL69MaJEHKWCsFjud0uYqd5lae8Glwk', NULL, '2026-09-09 09:34:11', '2026-09-09 09:34:11'),
-(152, 1, NULL, 'SyMNgkzNH7dR1gveU9VGszwQwUIOEroUJ3CfWPSw', NULL, '2026-09-10 04:19:02', '2026-09-10 04:19:02');
+(152, 1, NULL, 'SyMNgkzNH7dR1gveU9VGszwQwUIOEroUJ3CfWPSw', NULL, '2026-09-10 04:19:02', '2026-09-10 04:19:02'),
+(153, 1, NULL, 'fzCPnrfUFFhW4rv6ZSKjvQ9ks91WcqeGfHFdx8ku', NULL, '2026-09-10 05:08:16', '2026-09-10 05:08:16');
 
 -- --------------------------------------------------------
 
@@ -2936,6 +2941,7 @@ CREATE TABLE `model_has_permissions` (
 --
 
 INSERT INTO `model_has_permissions` (`permission_id`, `model_type`, `model_id`) VALUES
+(80, 'App\\User', 1),
 (80, 'App\\User', 3);
 
 -- --------------------------------------------------------
@@ -19328,8 +19334,8 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `user_type`, `surname`, `first_name`, `last_name`, `username`, `email`, `password`, `language`, `contact_no`, `address`, `remember_token`, `business_id`, `available_at`, `paused_at`, `max_sales_discount_percent`, `allow_login`, `barcode_login`, `barcode_switch_id`, `status`, `is_enable_service_staff_pin`, `service_staff_pin`, `crm_contact_id`, `is_cmmsn_agnt`, `cmmsn_percent`, `sales_target`, `sales_target_daily`, `sales_target_weekly`, `sales_target_monthly`, `selected_contacts`, `dob`, `gender`, `marital_status`, `blood_group`, `contact_number`, `alt_number`, `family_number`, `fb_link`, `twitter_link`, `social_media_1`, `social_media_2`, `permanent_address`, `current_address`, `guardian_name`, `custom_field_1`, `custom_field_2`, `custom_field_3`, `custom_field_4`, `bank_details`, `id_proof_name`, `id_proof_number`, `deleted_at`, `created_at`, `updated_at`, `pos_quick_keys_enabled`) VALUES
-(1, 'user', NULL, 'Japs', 'POS', 'japspos', 'japspos@gmail.com', '$2y$10$LH3D2XH/82k.Av8HfGb3GOfKM3F7Qi7I86iZLyxhJFtjajS8pKHpK', 'en', NULL, NULL, 'si0L87cZq5yV5jAHVuvfqBO28C0M40Li5wPEIHsGByVo3c28gwLgEtWDo6aX', 1, NULL, NULL, NULL, 1, 0, NULL, 'active', 0, NULL, NULL, 0, 0.00, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '{\"account_holder_name\":null,\"account_number\":null,\"bank_name\":null,\"bank_code\":null,\"branch\":null,\"tax_payer_id\":null}', NULL, NULL, NULL, '2026-06-04 16:29:53', '2026-09-08 07:47:15', 1),
-(3, 'user', NULL, 'Sales', NULL, 'sales', 'sales@japspos.com', '$2y$10$bhjln6gIUl7iQH99RhOHe.SdLfYtmWt46.QAc9EYGCwwKI.apVRG.', 'en', NULL, NULL, NULL, 1, NULL, NULL, NULL, 1, 0, NULL, 'active', 0, NULL, NULL, 0, 0.00, NULL, 20.0000, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '{\"account_holder_name\":null,\"account_number\":null,\"bank_name\":null,\"bank_code\":null,\"branch\":null,\"tax_payer_id\":null}', NULL, NULL, NULL, '2026-08-17 03:13:14', '2026-09-08 07:35:23', 1);
+(1, 'user', NULL, 'Japs', 'POS', 'japspos', 'japspos@gmail.com', '$2y$10$LH3D2XH/82k.Av8HfGb3GOfKM3F7Qi7I86iZLyxhJFtjajS8pKHpK', 'en', NULL, NULL, 'si0L87cZq5yV5jAHVuvfqBO28C0M40Li5wPEIHsGByVo3c28gwLgEtWDo6aX', 1, NULL, NULL, NULL, 1, 1, 'usi:1659d00394bc', 'active', 0, NULL, NULL, 0, 0.00, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '{\"account_holder_name\":null,\"account_number\":null,\"bank_name\":null,\"bank_code\":null,\"branch\":null,\"tax_payer_id\":null}', NULL, NULL, NULL, '2026-06-04 16:29:53', '2026-09-10 05:14:45', 1),
+(3, 'user', NULL, 'Sales', NULL, 'sales', 'sales@japspos.com', '$2y$10$bhjln6gIUl7iQH99RhOHe.SdLfYtmWt46.QAc9EYGCwwKI.apVRG.', 'en', NULL, NULL, NULL, 1, NULL, NULL, NULL, 1, 1, 'usi:79f26ee953f9', 'active', 0, NULL, NULL, 0, 0.00, NULL, 20.0000, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '{\"account_holder_name\":null,\"account_number\":null,\"bank_name\":null,\"bank_code\":null,\"branch\":null,\"tax_payer_id\":null}', NULL, NULL, NULL, '2026-08-17 03:13:14', '2026-09-10 05:19:25', 1);
 
 -- --------------------------------------------------------
 
@@ -25300,7 +25306,7 @@ ALTER TABLE `account_types`
 -- AUTO_INCREMENT for table `activity_log`
 --
 ALTER TABLE `activity_log`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=242;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=246;
 
 --
 -- AUTO_INCREMENT for table `ai_assistance_settings`
@@ -25438,7 +25444,7 @@ ALTER TABLE `ecom_banners`
 -- AUTO_INCREMENT for table `ecom_carts`
 --
 ALTER TABLE `ecom_carts`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=153;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=154;
 
 --
 -- AUTO_INCREMENT for table `ecom_cart_items`

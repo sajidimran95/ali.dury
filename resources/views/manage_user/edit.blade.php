@@ -2,7 +2,7 @@
 
 @section('title', __( 'user.edit_user' ))
 @section('css')
-<link rel="stylesheet" href="{{ asset('css/ls-users.css') }}?v=27">
+<link rel="stylesheet" href="{{ asset('css/ls-users.css') }}?v=28">
 @endsection
 
 @section('content')
@@ -21,6 +21,7 @@
     <nav class="ls-users-tabs">
         <a href="{{ action([\App\Http\Controllers\ManageUserController::class, 'index']) }}">Users</a>
         <a href="{{ action([\App\Http\Controllers\RoleController::class, 'index']) }}">Roles</a>
+        <a href="{{ action([\App\Http\Controllers\ManageUserController::class, 'show'], [$user->id]) }}">View</a>
         <a href="{{ action([\App\Http\Controllers\ManageUserController::class, 'edit'], [$user->id]) }}" class="is-on">Edit user</a>
     </nav>
     @include('manage_user.partials.form_sections', ['user' => $user, 'isSalesRep' => $isSalesRep ?? false, 'salesStats' => $salesStats ?? []])
