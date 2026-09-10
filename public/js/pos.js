@@ -393,6 +393,138 @@ function pos_row_has_manual_discount($tr) {
     return flagged === 1 || flagged === '1' || flagged === true || String($tr.attr('data-pos-manual-discount') || '') === '1';
 }
 
+/**
+ * Catalog / list unit price (ex-tax) for a cart line.
+ * Used to turn a lowered typed price into a line discount.
+ */
+function pos_row_list_price($tr) {
+    $tr = $($tr);
+    var listed = parseFloat($tr.attr('data-pos-list-price'));
+    if (!isNaN(listed) && listed > 0) {
+        return listed;
+    }
+    var base = parseFloat($tr.find('input.hidden_base_unit_sell_price').val());
+    var mult = parseFloat($tr.find('input.base_unit_multiplier').val());
+    if (isNaN(mult) || mult <= 0) {
+        mult = 1;
+    }
+    if (!isNaN(base) && base > 0) {
+        return base * mult;
+    }
+    var current = __read_number(pos_row_field($tr, 'input.pos_unit_price'));
+    return !isNaN(current) && current > 0 ? current : 0;
+}
+
+function pos_set_row_list_price($tr, price) {
+    $tr = $($tr);
+    if (!$tr.length) {
+        return;
+    }
+    var n = parseFloat(price);
+    if (isNaN(n) || n < 0) {
+        return;
+    }
+    $tr.attr('data-pos-list-price', n);
+}
+
+function pos_ensure_row_list_price($tr) {
+    $tr = $($tr);
+    if (!$tr.length) {
+        return;
+    }
+    if (!$tr.attr('data-pos-list-price')) {
+        pos_set_row_list_price($tr, pos_row_list_price($tr));
+    }
+}
+
+/**
+ * Lightspeed-style price edit:
+ * - typed sell price < list  → keep list as unit_price, auto % line discount
+ * - typed sell price >= list → set unit_price to typed, clear line discount
+ *
+ * @param {jQuery} $tr
+ * @param {number} typedExTax  Desired sell price excluding tax
+ * @returns {boolean} true when discount/price fields were rewritten
+ */
+function pos_apply_typed_sell_price($tr, typedExTax) {
+    $tr = $($tr);
+    typedExTax = parseFloat(typedExTax);
+    if (!$tr.length || isNaN(typedExTax) || typedExTax < 0) {
+        return false;
+    }
+
+    pos_ensure_row_list_price($tr);
+    var list = pos_row_list_price($tr);
+    if (!list || list <= 0) {
+        return false;
+    }
+
+    var $unit = pos_row_field($tr, 'input.pos_unit_price');
+    var $type = pos_row_field($tr, 'select.row_discount_type');
+    var $amount = pos_row_field($tr, 'input.row_discount_amount');
+    var eps = 0.0001;
+
+    window.__posPriceLogicLock = true;
+    try {
+        if (typedExTax < list - eps) {
+            // Markdown → keep list price, convert to % discount
+            __write_number($unit, list);
+            var pct = ((list - typedExTax) / list) * 100;
+            if ($type.length) {
+                $type.val('percentage');
+            }
+            if ($amount.length) {
+                __write_number($amount, Math.round(pct * 100) / 100);
+            }
+            pos_mark_row_manual_discount($tr);
+            $tr.removeAttr('data-pos-manual-price').removeData('pos-manual-price');
+        } else {
+            // Same or higher → raise/set unit price, clear line discount
+            __write_number($unit, typedExTax);
+            if ($type.length) {
+                $type.val('fixed');
+            }
+            if ($amount.length) {
+                __write_number($amount, 0);
+            }
+            pos_clear_row_manual_discount($tr);
+            if (typedExTax > list + eps) {
+                pos_mark_row_manual_price($tr);
+                pos_set_row_list_price($tr, typedExTax);
+            }
+        }
+    } finally {
+        window.__posPriceLogicLock = false;
+    }
+    return true;
+}
+
+function pos_recalc_row_after_price_edit($tr) {
+    $tr = $($tr);
+    if (!$tr.length) {
+        return;
+    }
+    var discounted_unit_price = calculate_discounted_unit_price($tr);
+    var tax_rate = pos_row_field($tr, 'select.tax_id').find(':selected').data('rate') || 0;
+    var quantity = __read_number($tr.find('input.pos_quantity'));
+    var unit_price_inc_tax = __add_percent(discounted_unit_price, tax_rate);
+    var line_total = quantity * unit_price_inc_tax;
+
+    __write_number($tr.find('input.pos_unit_price_inc_tax'), unit_price_inc_tax);
+    __write_number($tr.find('input.pos_line_total'), line_total, false);
+    $tr.find('span.pos_line_total_text').text(__currency_trans_from_en(line_total, true));
+    $tr.find('span.pos_line_unit_price_text').text(__currency_trans_from_en(unit_price_inc_tax, true));
+    if (typeof pos_each_row === 'function') {
+        pos_each_row($tr);
+    }
+    if (typeof pos_total_row === 'function') {
+        pos_total_row();
+    }
+    if (typeof round_row_to_iraqi_dinnar === 'function') {
+        round_row_to_iraqi_dinnar($tr);
+    }
+}
+
 /** Apply popup fields to the cart row and recalculate totals. */
 function pos_apply_row_edit_modal($modal, $tr, markManual) {
     $modal = $($modal);
@@ -1642,39 +1774,27 @@ $(document).ready(function() {
     //If change in unit price update price including tax and line total
     // Use document so fields still work when line-edit modal is moved to body
     $(document).on('input change', 'input.pos_unit_price', function(e) {
+        if (window.__posPriceLogicLock) {
+            return;
+        }
         var tr = pos_product_row_from_el($(this));
         if (!tr.length) {
             return;
         }
-        // Keep cashier-typed price when customer / price group changes
-        pos_mark_row_manual_price(tr);
         if (e.type === 'input') {
             return;
         }
-        var unit_price = __read_number($(this));
-
-        //calculate discounted unit price
-        var discounted_unit_price = calculate_discounted_unit_price(tr);
-
-        var tax_rate = pos_row_field(tr, 'select.tax_id')
-            .find(':selected')
-            .data('rate');
-        var quantity = __read_number(tr.find('input.pos_quantity'));
-
-        var unit_price_inc_tax = __add_percent(discounted_unit_price, tax_rate);
-        var line_total = quantity * unit_price_inc_tax;
-
-        __write_number(tr.find('input.pos_unit_price_inc_tax'), unit_price_inc_tax);
-        __write_number(tr.find('input.pos_line_total'), line_total);
-        tr.find('span.pos_line_total_text').text(__currency_trans_from_en(line_total, true));
-        tr.find('span.pos_line_unit_price_text').text(__currency_trans_from_en(unit_price_inc_tax, true));
-        pos_each_row(tr);
-        pos_total_row();
-        round_row_to_iraqi_dinnar(tr);
+        var typed = __read_number($(this));
+        // Lower than list → auto line discount; higher → keep as unit price raise
+        pos_apply_typed_sell_price(tr, typed);
+        pos_recalc_row_after_price_edit(tr);
     });
 
     //If change in tax rate then update unit price according to it.
     $(document).on('change', 'select.tax_id', function() {
+        if (window.__posPriceLogicLock) {
+            return;
+        }
         var tr = pos_product_row_from_el($(this));
         if (!tr.length) {
             return;
@@ -1687,12 +1807,20 @@ $(document).ready(function() {
 
         var discounted_unit_price = __get_principle(unit_price_inc_tax, tax_rate);
         var unit_price = get_unit_price_from_discounted_unit_price(tr, discounted_unit_price);
-        __write_number(pos_row_field(tr, 'input.pos_unit_price'), unit_price);
+        window.__posPriceLogicLock = true;
+        try {
+            __write_number(pos_row_field(tr, 'input.pos_unit_price'), unit_price);
+        } finally {
+            window.__posPriceLogicLock = false;
+        }
         pos_each_row(tr);
     });
 
     //If change in unit price including tax, update unit price
     $('table#pos_table').on('change', 'input.pos_unit_price_inc_tax', function() {
+        if (window.__posPriceLogicLock) {
+            return;
+        }
         var unit_price_inc_tax = __read_number($(this));
 
         if (iraqi_selling_price_adjustment) {
@@ -1701,24 +1829,13 @@ $(document).ready(function() {
         }
 
         var tr = $(this).parents('tr');
-        pos_mark_row_manual_price(tr);
-
         var tax_rate = pos_row_field(tr, 'select.tax_id')
             .find(':selected')
-            .data('rate');
-        var quantity = __read_number(tr.find('input.pos_quantity'));
-
-        var line_total = quantity * unit_price_inc_tax;
-        var discounted_unit_price = __get_principle(unit_price_inc_tax, tax_rate);
-        var unit_price = get_unit_price_from_discounted_unit_price(tr, discounted_unit_price);
-
-        __write_number(pos_row_field(tr, 'input.pos_unit_price'), unit_price);
-        __write_number(tr.find('input.pos_line_total'), line_total, false);
-        tr.find('span.pos_line_total_text').text(__currency_trans_from_en(line_total, true));
-        tr.find('span.pos_line_unit_price_text').text(__currency_trans_from_en(unit_price_inc_tax, true));
-
-        pos_each_row(tr);
-        pos_total_row();
+            .data('rate') || 0;
+        // Convert typed sell price (inc tax) → ex-tax target, then apply list/discount logic
+        var typedExTax = tax_rate ? __get_principle(unit_price_inc_tax, tax_rate) : unit_price_inc_tax;
+        pos_apply_typed_sell_price(tr, typedExTax);
+        pos_recalc_row_after_price_edit(tr);
     });
 
     //Change max quantity rule if lot number changes
@@ -1789,6 +1906,9 @@ $(document).ready(function() {
         'input change',
         'select.row_discount_type, input.row_discount_amount',
         function(e) {
+            if (window.__posPriceLogicLock) {
+                return;
+            }
             var tr = pos_product_row_from_el($(this));
             if (!tr.length) {
                 return;
@@ -3918,7 +4038,13 @@ function pos_refresh_payment_modal() {
         var unit_sp = base_unit_selling_price * multiplier;
 
         var sp_element = pos_row_field(tr, 'input.pos_unit_price');
-        __write_number(sp_element, unit_sp);
+        pos_set_row_list_price(tr, unit_sp);
+        window.__posPriceLogicLock = true;
+        try {
+            __write_number(sp_element, unit_sp);
+        } finally {
+            window.__posPriceLogicLock = false;
+        }
 
         sp_element.change();
 
@@ -4523,6 +4649,7 @@ function pos_insert_product_row(result) {
     //increment row count
     $('input#product_row_count').val(parseInt(product_row) + 1);
     var this_row = $('#pos_table tr.product_row').first();
+    pos_ensure_row_list_price(this_row);
     pos_each_row(this_row);
 
     //For initial discount if present
@@ -5876,7 +6003,13 @@ function pos_refresh_line_discounts() {
                     var $unit = pos_row_field($row, 'input.pos_unit_price');
                     var $inc = $row.find('input.pos_unit_price_inc_tax');
                     if ($unit.length && price.unit_price) {
-                        __write_number($unit, price.unit_price);
+                        window.__posPriceLogicLock = true;
+                        try {
+                            __write_number($unit, price.unit_price);
+                        } finally {
+                            window.__posPriceLogicLock = false;
+                        }
+                        pos_set_row_list_price($row, price.unit_price);
                         // Only refresh MSP floor when it already exists — never introduce a new
                         // min-value rule (that blocks line discounts on finalize).
                         if ($unit.is('[data-rule-min-value]')) {
@@ -5884,7 +6017,12 @@ function pos_refresh_line_discounts() {
                         }
                     }
                     if ($inc.length && price.unit_price_inc_tax) {
-                        __write_number($inc, price.unit_price_inc_tax);
+                        window.__posPriceLogicLock = true;
+                        try {
+                            __write_number($inc, price.unit_price_inc_tax);
+                        } finally {
+                            window.__posPriceLogicLock = false;
+                        }
                         if ($inc.is('[data-rule-min-value]')) {
                             $inc.attr('data-rule-min-value', price.unit_price_inc_tax);
                         }
