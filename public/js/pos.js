@@ -326,7 +326,30 @@ function pos_sync_row_edit_modal_from_cart($modal, $tr) {
     }
 }
 
-/** Remember that this cart line unit price was typed by the cashier. */
+/** Put line-edit fields back in the form and keep MSP from blocking line discounts. */
+function pos_prepare_form_for_submit() {
+    if (typeof pos_restore_all_row_edit_modals === 'function') {
+        pos_restore_all_row_edit_modals();
+    }
+    $('table#pos_table tbody tr.product_row').each(function () {
+        var $row = $(this);
+        var discAmt = __read_number(pos_row_field($row, 'input.row_discount_amount'));
+        var $inc = $row.find('input.pos_unit_price_inc_tax');
+        if (!$inc.length) {
+            return;
+        }
+        // MSP belongs on pre-discount unit price. After a line discount, inc-tax
+        // is intentionally lower — don't fail finalize because of that.
+        if (discAmt && !isNaN(discAmt) && discAmt > 0) {
+            $inc.removeAttr('data-rule-min-value');
+            try {
+                if ($inc.rules) {
+                    $inc.rules('remove', 'min-value');
+                }
+            } catch (err) {}
+        }
+    });
+}
 function pos_mark_row_manual_price($tr) {
     $tr = $($tr);
     if (!$tr.length) {
@@ -344,6 +367,32 @@ function pos_row_has_manual_price($tr) {
     return flagged === 1 || flagged === '1' || flagged === true || String($tr.attr('data-pos-manual-price') || '') === '1';
 }
 
+/** Remember that this cart line discount was typed by the cashier. */
+function pos_mark_row_manual_discount($tr) {
+    $tr = $($tr);
+    if (!$tr.length) {
+        return;
+    }
+    $tr.attr('data-pos-manual-discount', '1').data('pos-manual-discount', 1);
+}
+
+function pos_clear_row_manual_discount($tr) {
+    $tr = $($tr);
+    if (!$tr.length) {
+        return;
+    }
+    $tr.removeAttr('data-pos-manual-discount').removeData('pos-manual-discount');
+}
+
+function pos_row_has_manual_discount($tr) {
+    $tr = $($tr);
+    if (!$tr.length) {
+        return false;
+    }
+    var flagged = $tr.data('pos-manual-discount');
+    return flagged === 1 || flagged === '1' || flagged === true || String($tr.attr('data-pos-manual-discount') || '') === '1';
+}
+
 /** Apply popup fields to the cart row and recalculate totals. */
 function pos_apply_row_edit_modal($modal, $tr, markManual) {
     $modal = $($modal);
@@ -356,6 +405,10 @@ function pos_apply_row_edit_modal($modal, $tr, markManual) {
     }
     if (markManual) {
         pos_mark_row_manual_price($tr);
+        var discAmt = __read_number(pos_row_field($tr, 'input.row_discount_amount'));
+        if (discAmt) {
+            pos_mark_row_manual_discount($tr);
+        }
     }
     pos_each_row($tr);
     pos_total_row();
@@ -1733,11 +1786,17 @@ $(document).ready(function() {
 
     //Change in row discount type or discount amount
     $(document).on(
-        'change',
+        'input change',
         'select.row_discount_type, input.row_discount_amount',
-        function() {
+        function(e) {
             var tr = pos_product_row_from_el($(this));
             if (!tr.length) {
+                return;
+            }
+            // Keep cashier-typed line discount when customer changes
+            // (auto discounts still override when a rule exists)
+            pos_mark_row_manual_discount(tr);
+            if (e.type === 'input') {
                 return;
             }
 
@@ -2031,6 +2090,9 @@ $(document).ready(function() {
         }
         if (typeof pos_form_obj === 'undefined' || !pos_form_obj.length) {
             return false;
+        }
+        if (typeof pos_prepare_form_for_submit === 'function') {
+            pos_prepare_form_for_submit();
         }
         pos_form_obj.submit();
         return false;
@@ -2397,6 +2459,9 @@ function pos_refresh_payment_modal() {
         //If pay method is credit sale submit form
         if (pay_method == 'credit_sale') {
             $('#is_credit_sale').val(1);
+            if (typeof pos_prepare_form_for_submit === 'function') {
+                pos_prepare_form_for_submit();
+            }
             pos_form_obj.submit();
             return true;
         } else {
@@ -2444,6 +2509,9 @@ function pos_refresh_payment_modal() {
         }
 
         // Card / cash / other express methods: finalize immediately (no card details modal)
+        if (typeof pos_prepare_form_for_submit === 'function') {
+            pos_prepare_form_for_submit();
+        }
         pos_form_obj.submit();
     });
 
@@ -2742,6 +2810,10 @@ function pos_refresh_payment_modal() {
             // var total_payble = __read_number($('input#final_total_input'));
             // var total_paying = __read_number($('input#total_paying_input'));
             var cnf = true;
+
+            if (typeof pos_prepare_form_for_submit === 'function') {
+                pos_prepare_form_for_submit();
+            }
 
             // Suspend / park: skip balance-due confirm
             // Credit sale: previous system — due sale, skip paid-amount confirm
@@ -3387,12 +3459,38 @@ function pos_refresh_payment_modal() {
         device_model_id = $("#repair_model_id").val();
     }
 
-    //Show product list — default: All Categories active + all products
+    //Show product list — start on first configured POS category (not All / full catalog)
+    function pos_initial_category_id() {
+        var $first = $('.pos-card-grid-categories .main-category').filter(function () {
+            var v = $(this).data('value');
+            return v !== undefined && v !== null && String(v) !== '' && String(v) !== 'all';
+        }).first();
+        if ($first.length) {
+            return $first.data('value');
+        }
+        return null;
+    }
+
     if ($('#pos_defer_product_list').length && $('#pos_defer_product_list').val() == '1') {
         // Categories-first UI: wait for category click / search
+        if (typeof pos_set_active_category_tile === 'function') {
+            pos_set_active_category_tile('all');
+        }
     } else {
+        var initialCat = pos_initial_category_id();
+        if (initialCat !== null && initialCat !== undefined && String(initialCat) !== '') {
+            global_p_category_id = initialCat;
+            var $initialTile = $('.pos-card-grid-categories .main-category[data-value="' + initialCat + '"]').first();
+            if (typeof pos_set_filter_chip === 'function' && $initialTile.length) {
+                pos_set_filter_chip('category', $initialTile.data('name') || null);
+            }
+        } else {
+            global_p_category_id = null;
+        }
         if (typeof pos_set_active_category_tile === 'function') {
             pos_set_active_category_tile(global_p_category_id || 'all');
+        } else if (global_p_category_id) {
+            $('.pos-card-grid-categories .main-category[data-value="' + global_p_category_id + '"] .pos-card.cat').addClass('is-active');
         } else {
             $('.pos-card-grid-categories .main-category[data-value="all"] .pos-card.cat').addClass('is-active');
         }
@@ -5769,6 +5867,9 @@ function pos_refresh_line_discounts() {
                 var keepManual = typeof pos_row_has_manual_price === 'function'
                     ? pos_row_has_manual_price($row)
                     : !!$row.data('pos-manual-price');
+                var keepManualDiscount = typeof pos_row_has_manual_discount === 'function'
+                    ? pos_row_has_manual_discount($row)
+                    : !!$row.data('pos-manual-discount');
 
                 var price = result.prices ? result.prices[vid] : null;
                 if (!keepManual && price && (price.unit_price || price.unit_price_inc_tax)) {
@@ -5776,64 +5877,75 @@ function pos_refresh_line_discounts() {
                     var $inc = $row.find('input.pos_unit_price_inc_tax');
                     if ($unit.length && price.unit_price) {
                         __write_number($unit, price.unit_price);
-                        $unit.attr('data-rule-min-value', price.unit_price);
+                        // Only refresh MSP floor when it already exists — never introduce a new
+                        // min-value rule (that blocks line discounts on finalize).
+                        if ($unit.is('[data-rule-min-value]')) {
+                            $unit.attr('data-rule-min-value', price.unit_price);
+                        }
                     }
                     if ($inc.length && price.unit_price_inc_tax) {
                         __write_number($inc, price.unit_price_inc_tax);
-                        $inc.attr('data-rule-min-value', price.unit_price_inc_tax);
+                        if ($inc.is('[data-rule-min-value]')) {
+                            $inc.attr('data-rule-min-value', price.unit_price_inc_tax);
+                        }
                     }
                 }
 
-                // Manual unit price should not be wiped by customer discount rules either
-                if (!keepManual) {
-                    var disc = result.discounts ? result.discounts[vid] : null;
-                    var $type = pos_row_field($row, 'select.row_discount_type');
-                    var $amount = pos_row_field($row, 'input.row_discount_amount');
-                    var $discId = $row.find('input.row_discount_id');
+                // Auto discounts override when a rule exists; otherwise keep cashier line discount
+                var disc = result.discounts ? result.discounts[vid] : null;
+                var $type = pos_row_field($row, 'select.row_discount_type');
+                var $amount = pos_row_field($row, 'input.row_discount_amount');
+                var $discId = $row.find('input.row_discount_id');
+                if (!$discId.length) {
+                    $discId = pos_row_field($row, 'input.row_discount_id');
+                }
 
-                    if (disc) {
-                        if ($type.length) {
-                            $type.val(disc.discount_type);
-                        }
-                        if ($amount.length) {
-                            __write_number($amount, disc.discount_amount);
-                        }
-                        if ($discId.length) {
-                            $discId.val(disc.discount_id);
-                        } else {
-                            $row.append(
-                                '<input type="hidden" name="products[' +
-                                    ($row.data('row_index') || '') +
-                                    '][discount_id]" class="row_discount_id" value="' +
-                                    disc.discount_id +
-                                    '">'
-                            );
-                        }
-
-                        // Update help text in row price modal if present
-                        var $help = $row.find('.row_edit_product_price_model .help-block').first();
-                        if ($help.length && disc.name) {
-                            $help.html(
-                                'Discount: <i>' +
-                                    $('<div>').text(disc.name).html() +
-                                    '</i>' +
-                                    (disc.formated_ends_at
-                                        ? ' applied (Ends at: <i>' +
-                                          $('<div>').text(disc.formated_ends_at).html() +
-                                          '</i>)'
-                                        : '')
-                            );
-                        }
+                if (disc) {
+                    if ($type.length) {
+                        $type.val(disc.discount_type);
+                    }
+                    if ($amount.length) {
+                        __write_number($amount, disc.discount_amount);
+                    }
+                    if ($discId.length) {
+                        $discId.val(disc.discount_id);
                     } else {
-                        if ($type.length) {
-                            $type.val('fixed');
-                        }
-                        if ($amount.length) {
-                            __write_number($amount, 0);
-                        }
-                        if ($discId.length) {
-                            $discId.val('');
-                        }
+                        $row.append(
+                            '<input type="hidden" name="products[' +
+                                ($row.data('row_index') || '') +
+                                '][discount_id]" class="row_discount_id" value="' +
+                                disc.discount_id +
+                                '">'
+                        );
+                    }
+                    pos_clear_row_manual_discount($row);
+
+                    // Update help text in row price modal if present
+                    var $help = $row.find('.row_edit_product_price_model .help-block').first();
+                    if (!$help.length) {
+                        $help = pos_row_edit_modal($row).find('.help-block').first();
+                    }
+                    if ($help.length && disc.name) {
+                        $help.html(
+                            'Discount: <i>' +
+                                $('<div>').text(disc.name).html() +
+                                '</i>' +
+                                (disc.formated_ends_at
+                                    ? ' applied (Ends at: <i>' +
+                                      $('<div>').text(disc.formated_ends_at).html() +
+                                      '</i>)'
+                                    : '')
+                        );
+                    }
+                } else if (!keepManualDiscount) {
+                    if ($type.length) {
+                        $type.val('fixed');
+                    }
+                    if ($amount.length) {
+                        __write_number($amount, 0);
+                    }
+                    if ($discId.length) {
+                        $discId.val('');
                     }
                 }
 
@@ -5844,10 +5956,21 @@ function pos_refresh_line_discounts() {
                     var quantity = __read_number($row.find('input.pos_quantity'));
                     var unit_price_inc_tax = __add_percent(discounted_unit_price, tax_rate);
                     var line_total = quantity * unit_price_inc_tax;
-                    __write_number($row.find('input.pos_unit_price_inc_tax'), unit_price_inc_tax);
+                    var $incTax = $row.find('input.pos_unit_price_inc_tax');
+                    __write_number($incTax, unit_price_inc_tax);
                     __write_number($row.find('input.pos_line_total'), line_total, false);
                     $row.find('span.pos_line_total_text').text(__currency_trans_from_en(line_total, true));
                     $row.find('span.pos_line_unit_price_text').text(__currency_trans_from_en(unit_price_inc_tax, true));
+                    // Line discount lowers inc-tax below catalog MSP; don't leave a stale min rule
+                    var appliedDisc = __read_number(pos_row_field($row, 'input.row_discount_amount'));
+                    if (appliedDisc && !isNaN(appliedDisc) && appliedDisc > 0 && $incTax.length) {
+                        $incTax.removeAttr('data-rule-min-value');
+                        try {
+                            if ($incTax.rules) {
+                                $incTax.rules('remove', 'min-value');
+                            }
+                        } catch (err) {}
+                    }
                     if (typeof pos_each_row === 'function') {
                         pos_each_row($row);
                     }

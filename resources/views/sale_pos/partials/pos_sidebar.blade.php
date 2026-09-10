@@ -50,7 +50,7 @@
     <div class="row pos-card-grid pos-card-grid-categories" data-label-all="@lang('messages.all')" style="margin: 0;">
         <div class="col-md-2 col-xs-4 tw-mb-2 tw-cursor-pointer main-category-div main-category no-print"
             data-value="all" data-parent="0" style="padding-left: 4px; padding-right: 4px;">
-            <div class="pos-card cat pos-cat-tile is-active">
+            <div class="pos-card cat pos-cat-tile">
                 <h4 class="pos-card-name">@lang('lang_v1.all_category')</h4>
             </div>
         </div>
