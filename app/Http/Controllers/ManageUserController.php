@@ -267,6 +267,9 @@ class ManageUserController extends Controller
         $users = User::forDropdown($business_id, false);
         $activities = $this->userActivities($user);
         $user->role_name = $this->plainRoleName($user);
+        if (! empty($user->barcode_login)) {
+            $user->ensureBarcodeSwitchId();
+        }
 
         return view('manage_user.show')
                 ->with(compact('user', 'locations', 'permitted_locations', 'view_partials', 'isLastAdmin', 'isSalesRep', 'salesStats', 'users', 'activities'));

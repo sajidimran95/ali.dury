@@ -196,10 +196,8 @@
                     'barcodeCode' => $barcodeCode,
                     'showBarcode' => true,
                     'barcodeEditable' => true,
-                    'barcodeAlways' => false,
+                    'barcodeAlways' => true,
                 ])
-            @elseif(!empty($user->barcode_login))
-                <p class="ls-ro-meta">Barcode is on, but no switch ID is saved yet. Open Edit to generate one.</p>
             @endif
             <label class="ls-ro-label">{{ __('lang_v1.enable_service_staff_pin') }}</label>
             <div class="ls-ro-input">{{ !empty($user->is_enable_service_staff_pin) ? 'On' : 'Off' }}</div>

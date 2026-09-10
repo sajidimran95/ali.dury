@@ -45,6 +45,21 @@
     var on = barcodeEnabled();
     var always = String($wrap.attr('data-always') || '') === '1';
     var hasToggle = !!document.getElementById('barcode_login');
+    if (!hasToggle) {
+      var viewCode = currentSwitchId();
+      if (!viewCode) {
+        $wrap.hide();
+        return;
+      }
+      $wrap.show();
+      $('#ls_barcode_id').text(viewCode);
+      var viewSrc = barcodeUrl + '?text=' + encodeURIComponent(viewCode);
+      var $viewImg = $('#ls_barcode_img');
+      if (($viewImg.attr('src') || '').indexOf(encodeURIComponent(viewCode)) === -1) {
+        $viewImg.attr('src', viewSrc);
+      }
+      return;
+    }
     if (!on && !always) {
       $wrap.hide();
       return;
