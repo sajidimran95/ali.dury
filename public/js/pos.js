@@ -326,6 +326,24 @@ function pos_sync_row_edit_modal_from_cart($modal, $tr) {
     }
 }
 
+/** Remember that this cart line unit price was typed by the cashier. */
+function pos_mark_row_manual_price($tr) {
+    $tr = $($tr);
+    if (!$tr.length) {
+        return;
+    }
+    $tr.attr('data-pos-manual-price', '1').data('pos-manual-price', 1);
+}
+
+function pos_row_has_manual_price($tr) {
+    $tr = $($tr);
+    if (!$tr.length) {
+        return false;
+    }
+    var flagged = $tr.data('pos-manual-price');
+    return flagged === 1 || flagged === '1' || flagged === true || String($tr.attr('data-pos-manual-price') || '') === '1';
+}
+
 /** Apply popup fields to the cart row and recalculate totals. */
 function pos_apply_row_edit_modal($modal, $tr, markManual) {
     $modal = $($modal);
@@ -337,7 +355,7 @@ function pos_apply_row_edit_modal($modal, $tr, markManual) {
         return;
     }
     if (markManual) {
-        $tr.attr('data-pos-manual-price', '1').data('pos-manual-price', 1);
+        pos_mark_row_manual_price($tr);
     }
     pos_each_row($tr);
     pos_total_row();
@@ -1570,12 +1588,17 @@ $(document).ready(function() {
 
     //If change in unit price update price including tax and line total
     // Use document so fields still work when line-edit modal is moved to body
-    $(document).on('change', 'input.pos_unit_price', function() {
-        var unit_price = __read_number($(this));
+    $(document).on('input change', 'input.pos_unit_price', function(e) {
         var tr = pos_product_row_from_el($(this));
         if (!tr.length) {
             return;
         }
+        // Keep cashier-typed price when customer / price group changes
+        pos_mark_row_manual_price(tr);
+        if (e.type === 'input') {
+            return;
+        }
+        var unit_price = __read_number($(this));
 
         //calculate discounted unit price
         var discounted_unit_price = calculate_discounted_unit_price(tr);
@@ -1625,6 +1648,7 @@ $(document).ready(function() {
         }
 
         var tr = $(this).parents('tr');
+        pos_mark_row_manual_price(tr);
 
         var tax_rate = pos_row_field(tr, 'select.tax_id')
             .find(':selected')
@@ -5742,8 +5766,12 @@ function pos_refresh_line_discounts() {
                     return;
                 }
 
+                var keepManual = typeof pos_row_has_manual_price === 'function'
+                    ? pos_row_has_manual_price($row)
+                    : !!$row.data('pos-manual-price');
+
                 var price = result.prices ? result.prices[vid] : null;
-                if (price && (price.unit_price || price.unit_price_inc_tax) && !$row.data('pos-manual-price')) {
+                if (!keepManual && price && (price.unit_price || price.unit_price_inc_tax)) {
                     var $unit = pos_row_field($row, 'input.pos_unit_price');
                     var $inc = $row.find('input.pos_unit_price_inc_tax');
                     if ($unit.length && price.unit_price) {
@@ -5756,53 +5784,56 @@ function pos_refresh_line_discounts() {
                     }
                 }
 
-                var disc = result.discounts ? result.discounts[vid] : null;
-                var $type = pos_row_field($row, 'select.row_discount_type');
-                var $amount = pos_row_field($row, 'input.row_discount_amount');
-                var $discId = $row.find('input.row_discount_id');
+                // Manual unit price should not be wiped by customer discount rules either
+                if (!keepManual) {
+                    var disc = result.discounts ? result.discounts[vid] : null;
+                    var $type = pos_row_field($row, 'select.row_discount_type');
+                    var $amount = pos_row_field($row, 'input.row_discount_amount');
+                    var $discId = $row.find('input.row_discount_id');
 
-                if (disc) {
-                    if ($type.length) {
-                        $type.val(disc.discount_type);
-                    }
-                    if ($amount.length) {
-                        __write_number($amount, disc.discount_amount);
-                    }
-                    if ($discId.length) {
-                        $discId.val(disc.discount_id);
+                    if (disc) {
+                        if ($type.length) {
+                            $type.val(disc.discount_type);
+                        }
+                        if ($amount.length) {
+                            __write_number($amount, disc.discount_amount);
+                        }
+                        if ($discId.length) {
+                            $discId.val(disc.discount_id);
+                        } else {
+                            $row.append(
+                                '<input type="hidden" name="products[' +
+                                    ($row.data('row_index') || '') +
+                                    '][discount_id]" class="row_discount_id" value="' +
+                                    disc.discount_id +
+                                    '">'
+                            );
+                        }
+
+                        // Update help text in row price modal if present
+                        var $help = $row.find('.row_edit_product_price_model .help-block').first();
+                        if ($help.length && disc.name) {
+                            $help.html(
+                                'Discount: <i>' +
+                                    $('<div>').text(disc.name).html() +
+                                    '</i>' +
+                                    (disc.formated_ends_at
+                                        ? ' applied (Ends at: <i>' +
+                                          $('<div>').text(disc.formated_ends_at).html() +
+                                          '</i>)'
+                                        : '')
+                            );
+                        }
                     } else {
-                        $row.append(
-                            '<input type="hidden" name="products[' +
-                                ($row.data('row_index') || '') +
-                                '][discount_id]" class="row_discount_id" value="' +
-                                disc.discount_id +
-                                '">'
-                        );
-                    }
-
-                    // Update help text in row price modal if present
-                    var $help = $row.find('.row_edit_product_price_model .help-block').first();
-                    if ($help.length && disc.name) {
-                        $help.html(
-                            'Discount: <i>' +
-                                $('<div>').text(disc.name).html() +
-                                '</i>' +
-                                (disc.formated_ends_at
-                                    ? ' applied (Ends at: <i>' +
-                                      $('<div>').text(disc.formated_ends_at).html() +
-                                      '</i>)'
-                                    : '')
-                        );
-                    }
-                } else {
-                    if ($type.length) {
-                        $type.val('fixed');
-                    }
-                    if ($amount.length) {
-                        __write_number($amount, 0);
-                    }
-                    if ($discId.length) {
-                        $discId.val('');
+                        if ($type.length) {
+                            $type.val('fixed');
+                        }
+                        if ($amount.length) {
+                            __write_number($amount, 0);
+                        }
+                        if ($discId.length) {
+                            $discId.val('');
+                        }
                     }
                 }
 
