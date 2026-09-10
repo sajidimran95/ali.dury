@@ -43,13 +43,24 @@ class ManageUserController extends Controller
 
         if (request()->ajax()) {
             $business_id = request()->session()->get('user.business_id');
-            $user_id = request()->session()->get('user.id');
+
+            $locationPerms = function ($q) {
+                $q->select('permissions.id', 'permissions.name')
+                    ->where(function ($w) {
+                        $w->where('permissions.name', 'access_all_locations')
+                            ->orWhere('permissions.name', 'like', 'location.%');
+                    });
+            };
 
             $users = User::where('business_id', $business_id)
                         ->user()
                         ->where('is_cmmsn_agnt', 0)
-                        ->with(['roles', 'permissions'])
-                        ->select(['id', 'username', 'first_name', 'last_name', 'email', 'allow_login', 'status',
+                        ->with([
+                            'roles',
+                            'roles.permissions' => $locationPerms,
+                            'permissions' => $locationPerms,
+                        ])
+                        ->select(['id', 'username', 'surname', 'first_name', 'last_name', 'email', 'allow_login', 'status',
                             'sales_target', 'sales_target_daily', 'sales_target_weekly', 'sales_target_monthly', 'updated_at',
                             DB::raw("CONCAT(COALESCE(surname, ''), ' ', COALESCE(first_name, ''), ' ', COALESCE(last_name, '')) as full_name")]);
 
@@ -87,25 +98,11 @@ class ManageUserController extends Controller
                 ->addColumn(
                     'role',
                     function ($row) {
-                        return $this->moduleUtil->getUserRoleName($row->id);
+                        return $this->plainRoleName($row);
                     }
                 )
                 ->addColumn('outlet', function ($row) use ($locations) {
-                    $permitted = $row->permitted_locations();
-                    if ($permitted === 'all') {
-                        return 'All outlets';
-                    }
-                    if (! is_array($permitted) || empty($permitted)) {
-                        return '—';
-                    }
-                    $names = [];
-                    foreach ($permitted as $lid) {
-                        if (isset($locations[$lid])) {
-                            $names[] = $locations[$lid];
-                        }
-                    }
-
-                    return e(implode(', ', $names) ?: '—');
+                    return $this->outletLabelFromLoaded($row, $locations);
                 })
                 ->addColumn('target_daily', function ($row) {
                     if (! $this->userIsSalesRepresentative($row)) {
@@ -268,46 +265,102 @@ class ManageUserController extends Controller
         $isSalesRep = $this->userIsSalesRepresentative($user);
         $salesStats = $isSalesRep ? $this->userSalesStats((int) $user->id, (int) $business_id) : [];
         $users = User::forDropdown($business_id, false);
-        $activities = Activity::forSubject($user)->with(['causer', 'subject'])->latest()->get();
-        $user->role_name = $this->moduleUtil->getUserRoleName($user->id);
+        $activities = $this->userActivities($user);
+        $user->role_name = $this->plainRoleName($user);
         $user->ensureBarcodeSwitchId();
 
         return view('manage_user.show')
                 ->with(compact('user', 'locations', 'permitted_locations', 'view_partials', 'isLastAdmin', 'isSalesRep', 'salesStats', 'users', 'activities'));
     }
 
+    protected function userActivities(User $user)
+    {
+        return Activity::forSubject($user)
+            ->with(['causer'])
+            ->latest()
+            ->paginate(20, ['*'], 'act')
+            ->withQueryString();
+    }
+
+    protected function plainRoleName($user): string
+    {
+        $name = optional($user->roles->first())->name;
+        if (empty($name)) {
+            return '';
+        }
+
+        return trim(explode('#', (string) $name)[0]);
+    }
+
+    protected function outletLabelFromLoaded($user, $locations): string
+    {
+        $permNames = collect();
+        if ($user->relationLoaded('permissions')) {
+            $permNames = $permNames->merge($user->permissions->pluck('name'));
+        }
+        if ($user->relationLoaded('roles')) {
+            foreach ($user->roles as $role) {
+                if ($role->relationLoaded('permissions')) {
+                    $permNames = $permNames->merge($role->permissions->pluck('name'));
+                }
+            }
+        }
+        $permNames = $permNames->unique()->values();
+
+        if ($permNames->contains('access_all_locations')) {
+            return 'All outlets';
+        }
+
+        $names = [];
+        foreach ($locations as $lid => $name) {
+            if ($permNames->contains('location.'.$lid)) {
+                $names[] = $name;
+            }
+        }
+
+        return e(implode(', ', $names) ?: '—');
+    }
+
     protected function userSalesStats(int $userId, int $businessId): array
     {
-        $base = Transaction::where('business_id', $businessId)
+        $from = Carbon::today()->subDays(29)->startOfDay();
+        $today = Carbon::today()->toDateString();
+        $weekStart = Carbon::now()->startOfWeek()->toDateString();
+        $monthStart = Carbon::now()->startOfMonth()->toDateString();
+
+        $byDay = Transaction::where('business_id', $businessId)
             ->where('type', 'sell')
             ->whereIn('status', ['final', 'completed'])
-            ->where('created_by', $userId);
-
-        $todayStart = Carbon::today();
-        $weekStart = Carbon::now()->startOfWeek();
-        $monthStart = Carbon::now()->startOfMonth();
+            ->where('created_by', $userId)
+            ->where('transaction_date', '>=', $from)
+            ->selectRaw('DATE(transaction_date) as d, SUM(final_total) as total')
+            ->groupBy(DB::raw('DATE(transaction_date)'))
+            ->pluck('total', 'd');
 
         $days = [];
+        $todayTotal = 0.0;
+        $weekTotal = 0.0;
+        $monthTotal = 0.0;
         for ($i = 29; $i >= 0; $i--) {
             $day = Carbon::today()->subDays($i);
             $key = $day->toDateString();
+            $total = (float) ($byDay[$key] ?? 0);
             $days[$key] = [
                 'label' => $day->format('M j'),
-                'total' => (float) (clone $base)->whereDate('transaction_date', $key)->sum('final_total'),
+                'total' => $total,
             ];
-        }
-
-        $todayTotal = (float) (clone $base)->whereDate('transaction_date', $todayStart->toDateString())->sum('final_total');
-        $weekTotal = (float) (clone $base)->where('transaction_date', '>=', $weekStart)->sum('final_total');
-        $monthTotal = (float) (clone $base)->where('transaction_date', '>=', $monthStart)->sum('final_total');
-
-        $last7 = array_slice($days, -7, 7, true);
-        $saleCount7 = 0;
-        foreach ($last7 as $row) {
-            if ($row['total'] > 0) {
-                $saleCount7++;
+            if ($key === $today) {
+                $todayTotal = $total;
+            }
+            if ($key >= $weekStart) {
+                $weekTotal += $total;
+            }
+            if ($key >= $monthStart) {
+                $monthTotal += $total;
             }
         }
+
+        $last7 = array_slice($days, -7, 7, true);
 
         return [
             'today' => $todayTotal,
@@ -415,7 +468,7 @@ class ManageUserController extends Controller
 
         $business_id = request()->session()->get('user.business_id');
         $user = User::where('business_id', $business_id)
-                    ->with(['contactAccess', 'media'])
+                    ->with(['contactAccess', 'media', 'roles'])
                     ->findOrFail($id);
 
         $roles = $this->getRolesArray($business_id);
@@ -440,7 +493,7 @@ class ManageUserController extends Controller
         $isSalesRep = $this->userIsSalesRepresentative($user);
         $salesStats = $isSalesRep ? $this->userSalesStats((int) $user->id, (int) $business_id) : [];
         $users = User::forDropdown($business_id, false);
-        $activities = Activity::forSubject($user)->with(['causer', 'subject'])->latest()->get();
+        $activities = $this->userActivities($user);
 
         $user->ensureBarcodeSwitchId();
 

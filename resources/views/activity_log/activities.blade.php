@@ -59,4 +59,7 @@
         </tr>
     @endforelse
 </table>
+@if($activities instanceof \Illuminate\Contracts\Pagination\Paginator)
+    <div class="text-center" style="margin-top:12px;">{{ $activities->links() }}</div>
+@endif
 @endif
