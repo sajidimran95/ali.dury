@@ -1720,6 +1720,9 @@ class Util
 
         $user_details['status'] = ! empty($request->input('is_active')) ? $request->input('is_active') : 'inactive';
         $user_details['barcode_login'] = ! empty($request->input('barcode_login')) ? 1 : 0;
+        if (! empty($user_details['barcode_login'])) {
+            $user_details['barcode_switch_id'] = $request->input('barcode_switch_id') ?: User::makeBarcodeSwitchId();
+        }
         $user_details['sales_target_daily'] = ! empty($request->input('sales_target_daily')) ? $this->num_uf($request->input('sales_target_daily')) : null;
         $user_details['sales_target_weekly'] = ! empty($request->input('sales_target_weekly')) ? $this->num_uf($request->input('sales_target_weekly')) : null;
         $user_details['sales_target_monthly'] = ! empty($request->input('sales_target_monthly')) ? $this->num_uf($request->input('sales_target_monthly')) : null;

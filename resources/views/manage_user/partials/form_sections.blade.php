@@ -42,7 +42,8 @@
                 </div>
                 <label class="ls-ro-label">Username</label>
                 @if($isEdit && !empty($u->username) && !empty($u->allow_login))
-                    {!! Form::text('username_display', $u->username, ['class' => 'form-control', 'readonly' => true]); !!}
+                    {!! Form::text('username_display', $u->username, ['class' => 'form-control', 'readonly' => true, 'id' => 'username_display']); !!}
+                    {!! Form::hidden('username_locked', $u->username, ['id' => 'username_locked']) !!}
                 @elseif(!empty($username_ext))
                     <div class="input-group">
                         {!! Form::text('username', $isEdit ? $u->username : null, ['class' => 'form-control', 'placeholder' => __('business.username'), 'id' => 'username']); !!}
@@ -183,6 +184,33 @@
                 <div>
                     <label class="ls-ro-label">{{ __('business.confirm_password') }} @if(!$isEdit)*@endif</label>
                     {!! Form::password('confirm_password', ['class' => 'form-control', 'placeholder' => __('business.confirm_password'), 'id' => 'confirm_password', 'required' => !$isEdit || empty($u->allow_login)]); !!}
+                </div>
+            </div>
+        </div>
+        <div class="ls-check-row">
+            <label>
+                {!! Form::checkbox('barcode_login', 1, $isEdit ? !empty($u->barcode_login) : false, ['class' => 'input-icheck', 'id' => 'barcode_login']); !!}
+                Enable barcode
+            </label>
+        </div>
+        @php
+            $barcodeCode = $isEdit ? ($u->barcode_switch_id ?: '') : '';
+            $showBarcode = $isEdit && !empty($u->barcode_login) && $barcodeCode !== '';
+        @endphp
+        {!! Form::hidden('barcode_switch_id', $barcodeCode, ['id' => 'barcode_switch_id']) !!}
+        <div class="ls-barcode-card" id="ls_user_barcode_wrap" data-code="{{ $barcodeCode }}" @if(!$showBarcode) style="display:none;" @endif>
+            <div class="ls-barcode-card__body">
+                <div class="ls-barcode-kicker">Your quick switch ID</div>
+                <div class="ls-barcode-id" id="ls_barcode_id">{{ $barcodeCode }}</div>
+                <div class="ls-barcode-img-wrap">
+                    <img src="{{ $showBarcode ? url('/users/barcode-image').'?text='.urlencode($barcodeCode) : '' }}" alt="{{ $barcodeCode }}" class="ls-barcode-img" id="ls_barcode_img">
+                </div>
+            </div>
+            <div class="ls-barcode-foot">
+                <span>Print and attach this barcode to your staff ID</span>
+                <div class="ls-barcode-foot__btns">
+                    <button type="button" class="ls-barcode-print" id="lsPrintBarcode">Print barcode</button>
+                    <button type="button" class="ls-barcode-copy" id="lsCopyId">Copy ID</button>
                 </div>
             </div>
         </div>

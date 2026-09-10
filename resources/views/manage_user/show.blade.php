@@ -187,20 +187,17 @@
             <div class="ls-ro-input">{{ !empty($user->allow_login) ? 'Yes' : 'No' }}</div>
             <label class="ls-ro-label">Enable barcode</label>
             <div class="ls-ro-input">{{ !empty($user->barcode_login) ? 'On' : 'Off' }}</div>
-            @if(!empty($user->username))
+            @if(!empty($user->barcode_login))
+                @php $switchId = $user->barcode_switch_id ?: $user->username; @endphp
                 <div class="ls-barcode-card">
                     <div class="ls-barcode-kicker">Your quick switch ID</div>
-                    <div class="ls-barcode-id">{{ $user->username }}</div>
+                    <div class="ls-barcode-id">{{ $switchId }}</div>
                     <div class="ls-barcode-img-wrap">
                         <img
-                            src="data:image/png;base64,{{ DNS1D::getBarcodePNG($user->username, 'C128', 2, 70, [0, 0, 0], false) }}"
-                            alt="{{ $user->username }}"
+                            src="{{ url('/users/barcode-image') }}?text={{ urlencode($switchId) }}"
+                            alt="{{ $switchId }}"
                             class="ls-barcode-img"
                         >
-                    </div>
-                    <div class="ls-barcode-foot">
-                        <span>Use this ID to switch users faster at the register.</span>
-                        <button type="button" class="ls-users-save" id="lsCopyId">Copy ID</button>
                     </div>
                 </div>
             @endif

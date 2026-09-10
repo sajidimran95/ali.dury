@@ -2,7 +2,7 @@
 
 @section('title', __( 'user.add_user' ))
 @section('css')
-<link rel="stylesheet" href="{{ asset('css/ls-users.css') }}?v=24">
+<link rel="stylesheet" href="{{ asset('css/ls-users.css') }}?v=27">
 @endsection
 
 @section('content')
@@ -113,4 +113,5 @@
     }
   });
 </script>
+@include('manage_user.partials.barcode_js')
 @endsection

@@ -421,6 +421,10 @@ class ManageUserController extends Controller
         $users = User::forDropdown($business_id, false);
         $activities = Activity::forSubject($user)->with(['causer', 'subject'])->latest()->get();
 
+        if (! empty($user->barcode_login)) {
+            $user->ensureBarcodeSwitchId();
+        }
+
         return view('manage_user.edit')
                 ->with(compact('roles', 'user', 'contact_access', 'is_checked_checkbox', 'locations', 'permitted_locations', 'form_partials', 'username_ext', 'isLastAdmin', 'isSalesRep', 'salesStats', 'users', 'activities'));
     }
@@ -468,6 +472,13 @@ class ManageUserController extends Controller
             $user_data['status'] = ! empty($request->input('is_active')) ? 'active' : 'inactive';
 
             $user_data['is_enable_service_staff_pin'] = ! empty($request->input('is_enable_service_staff_pin')) ? true : false;
+            $user_data['barcode_login'] = ! empty($request->input('barcode_login')) ? 1 : 0;
+            if (! empty($user_data['barcode_login'])) {
+                $existingSwitch = User::where('business_id', $business_id)->find($id);
+                $user_data['barcode_switch_id'] = $request->input('barcode_switch_id')
+                    ?: ($existingSwitch->barcode_switch_id ?? null)
+                    ?: User::makeBarcodeSwitchId();
+            }
 
            
 
@@ -743,5 +754,30 @@ class ManageUserController extends Controller
         Auth::loginUsingId($id);
 
         return redirect()->route('home');
+    }
+
+    /**
+     * Dynamic Code128 PNG for a user username / quick-switch ID.
+     */
+    public function barcodeImage(Request $request)
+    {
+        if (! auth()->user()->can('user.view') && ! auth()->user()->can('user.create') && ! auth()->user()->can('user.update')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $text = trim((string) $request->get('text', ''));
+        if ($text === '' || strlen($text) > 80) {
+            abort(422);
+        }
+
+        try {
+            $png = \DNS1D::getBarcodePNG($text, 'C128', 2, 70, [0, 0, 0], false);
+        } catch (\Throwable $e) {
+            abort(422);
+        }
+
+        return response(base64_decode($png))
+            ->header('Content-Type', 'image/png')
+            ->header('Cache-Control', 'no-store');
     }
 }

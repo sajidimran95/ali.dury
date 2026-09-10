@@ -231,12 +231,18 @@ body.zoho-theme .ls-users-page .ls-switch input[type="checkbox"],
 .ls-hist-stats div { margin-bottom: 14px; }
 .ls-hist-stats span { display: block; font-size: 12px; color: #6b7280; }
 .ls-hist-stats strong { font-size: 16px; }
-.ls-barcode-card { border: 1px solid #e5e7eb; border-radius: 10px; padding: 16px 16px 14px; margin: 12px 0; background: #fff; max-width: 520px; }
-.ls-barcode-kicker { font-size: 12px; font-weight: 700; color: #6b7280; margin-bottom: 4px; }
-.ls-barcode-id { font-weight: 800; font-size: 16px; color: #111827; margin-bottom: 12px; letter-spacing: .02em; }
-.ls-barcode-img-wrap { display: flex; justify-content: center; padding: 8px 0 16px; }
-.ls-barcode-img { height: 88px; width: auto; max-width: 220px; image-rendering: pixelated; }
-.ls-barcode-foot { display: flex; justify-content: space-between; gap: 10px; align-items: center; flex-wrap: wrap; padding-top: 12px; border-top: 1px solid #f3f4f6; color: #6b7280; font-size: 12px; }
+.ls-barcode-card { border: 1px solid #e5e7eb; border-radius: 10px; overflow: hidden; padding: 0; margin: 8px 0 16px; background: #fff; max-width: 720px; box-shadow: none; }
+.ls-barcode-card__body { padding: 18px 20px 16px; }
+.ls-barcode-kicker { font-size: 13px; font-weight: 600; color: #6b7280; margin-bottom: 6px; }
+.ls-barcode-id { font-weight: 500; font-size: 14px; color: #374151; margin: 0 0 12px; letter-spacing: 0; }
+.ls-barcode-img-wrap { display: flex; justify-content: flex-start; padding: 0; }
+.ls-barcode-img { height: 78px; width: auto; max-width: 340px; image-rendering: pixelated; border: 2px solid #111; padding: 8px 12px; background: #fff; }
+.ls-barcode-foot { display: flex; justify-content: space-between; gap: 12px; align-items: center; flex-wrap: wrap; padding: 14px 20px; background: #eef0f3; color: #6b7280; font-size: 13px; }
+.ls-barcode-foot__btns { display: flex; gap: 8px; align-items: center; }
+.ls-barcode-print { background: #4f46e5; border: 0; color: #fff; font-weight: 700; font-size: 13px; border-radius: 8px; padding: 8px 16px; cursor: pointer; }
+.ls-barcode-print:hover { background: #4338ca; }
+.ls-barcode-copy { background: #fff; border: 1px solid #d1d5db; color: #111827; font-weight: 700; font-size: 13px; border-radius: 8px; padding: 8px 16px; cursor: pointer; }
+.ls-barcode-copy:hover { background: #f9fafb; }
 .ls-user-del { padding: 20px 0 8px; border-top: 1px solid #e5e7eb; }
 .ls-user-del__btn { background: none; border: 0; color: #dc2626; font-weight: 700; cursor: pointer; }
 .ls-subh { font-size: 11px; letter-spacing: .08em; font-weight: 800; margin: 18px 0 4px; color: #111827; }

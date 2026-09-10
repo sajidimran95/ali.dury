@@ -478,6 +478,7 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
 
     Route::resource('roles', RoleController::class);
 
+    Route::get('/users/barcode-image', [ManageUserController::class, 'barcodeImage']);
     Route::post('/users/{user}/toggle-enabled', [ManageUserController::class, 'toggleEnabled']);
     Route::post('/users/{user}/sales-targets', [ManageUserController::class, 'updateSalesTargets']);
     Route::resource('users', ManageUserController::class);

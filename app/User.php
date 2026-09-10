@@ -324,4 +324,24 @@ class User extends Authenticatable
 
         return $img_src;
     }
+
+    public static function makeBarcodeSwitchId(): string
+    {
+        return 'usi:'.substr(bin2hex(random_bytes(8)), 0, 12);
+    }
+
+    public function ensureBarcodeSwitchId(): string
+    {
+        if (! \Illuminate\Support\Facades\Schema::hasColumn($this->getTable(), 'barcode_switch_id')) {
+            return $this->username ?: '';
+        }
+        if (empty($this->barcode_switch_id)) {
+            $this->barcode_switch_id = self::makeBarcodeSwitchId();
+            if ($this->exists) {
+                $this->save();
+            }
+        }
+
+        return $this->barcode_switch_id;
+    }
 }
