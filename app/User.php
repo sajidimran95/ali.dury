@@ -332,16 +332,24 @@ class User extends Authenticatable
 
     public function ensureBarcodeSwitchId(): string
     {
-        if (! \Illuminate\Support\Facades\Schema::hasColumn($this->getTable(), 'barcode_switch_id')) {
-            return $this->username ?: '';
+        try {
+            if (! \Illuminate\Support\Facades\Schema::hasColumn($this->getTable(), 'barcode_switch_id')) {
+                return (string) ($this->username ?: '');
+            }
+        } catch (\Throwable $e) {
+            return (string) ($this->barcode_switch_id ?: $this->username ?: '');
         }
         if (empty($this->barcode_switch_id)) {
             $this->barcode_switch_id = self::makeBarcodeSwitchId();
             if ($this->exists) {
-                $this->save();
+                try {
+                    $this->save();
+                } catch (\Throwable $e) {
+                    return (string) ($this->barcode_switch_id ?: '');
+                }
             }
         }
 
-        return $this->barcode_switch_id;
+        return (string) ($this->barcode_switch_id ?: '');
     }
 }

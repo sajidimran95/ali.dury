@@ -267,7 +267,6 @@ class ManageUserController extends Controller
         $users = User::forDropdown($business_id, false);
         $activities = $this->userActivities($user);
         $user->role_name = $this->plainRoleName($user);
-        $user->ensureBarcodeSwitchId();
 
         return view('manage_user.show')
                 ->with(compact('user', 'locations', 'permitted_locations', 'view_partials', 'isLastAdmin', 'isSalesRep', 'salesStats', 'users', 'activities'));
@@ -839,13 +838,17 @@ class ManageUserController extends Controller
 
         $text = trim((string) $request->get('text', ''));
         if ($text === '' || strlen($text) > 80) {
-            abort(422);
+            $empty = base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII=');
+
+            return response($empty)->header('Content-Type', 'image/png');
         }
 
         try {
             $png = \DNS1D::getBarcodePNG($text, 'C128', 2, 70, [0, 0, 0], false);
         } catch (\Throwable $e) {
-            abort(422);
+            $empty = base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII=');
+
+            return response($empty)->header('Content-Type', 'image/png');
         }
 
         return response(base64_decode($png))

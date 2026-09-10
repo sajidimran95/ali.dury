@@ -44,15 +44,20 @@
     if (!$wrap.length) return;
     var on = barcodeEnabled();
     var always = String($wrap.attr('data-always') || '') === '1';
+    var hasToggle = !!document.getElementById('barcode_login');
     if (!on && !always) {
       $wrap.hide();
       return;
     }
     var code = currentSwitchId();
-    if (!code) {
+    if (!code && hasToggle) {
       code = makeSwitchId();
       $('#barcode_switch_id').val(code);
       savedCode = code;
+    }
+    if (!code) {
+      $wrap.hide();
+      return;
     }
     $wrap.attr('data-code', code).show();
     $('#ls_barcode_id').text(code);

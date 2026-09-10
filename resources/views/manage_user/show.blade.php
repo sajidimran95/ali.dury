@@ -188,16 +188,19 @@
             <label class="ls-ro-label">Enable barcode</label>
             <div class="ls-ro-input">{{ !empty($user->barcode_login) ? 'On' : 'Off' }}</div>
             @php
-                $barcodeCode = method_exists($user, 'ensureBarcodeSwitchId')
-                    ? $user->ensureBarcodeSwitchId()
-                    : ($user->barcode_switch_id ?: $user->username);
+                $barcodeCode = trim((string) ($user->barcode_switch_id ?? ''));
+                $showBarcode = !empty($user->barcode_login) && $barcodeCode !== '';
             @endphp
-            @include('manage_user.partials.barcode_card', [
-                'barcodeCode' => $barcodeCode,
-                'showBarcode' => $barcodeCode !== '',
-                'barcodeEditable' => true,
-                'barcodeAlways' => true,
-            ])
+            @if($showBarcode)
+                @include('manage_user.partials.barcode_card', [
+                    'barcodeCode' => $barcodeCode,
+                    'showBarcode' => true,
+                    'barcodeEditable' => true,
+                    'barcodeAlways' => false,
+                ])
+            @elseif(!empty($user->barcode_login))
+                <p class="ls-ro-meta">Barcode is on, but no switch ID is saved yet. Open Edit to generate one.</p>
+            @endif
             <label class="ls-ro-label">{{ __('lang_v1.enable_service_staff_pin') }}</label>
             <div class="ls-ro-input">{{ !empty($user->is_enable_service_staff_pin) ? 'On' : 'Off' }}</div>
         </div>

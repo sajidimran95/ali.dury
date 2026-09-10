@@ -9,12 +9,16 @@
         <div class="ls-barcode-kicker">Your quick switch ID</div>
         <div class="ls-barcode-id" id="ls_barcode_id">{{ $barcodeCode }}</div>
         <div class="ls-barcode-img-wrap">
+            @if($barcodeCode !== '')
             <img
-                src="{{ $barcodeCode !== '' ? url('/users/barcode-image').'?text='.urlencode($barcodeCode) : '' }}"
+                src="{{ url('/users/barcode-image').'?text='.urlencode($barcodeCode) }}"
                 alt="{{ $barcodeCode }}"
                 class="ls-barcode-img"
                 id="ls_barcode_img"
             >
+            @else
+            <img alt="" class="ls-barcode-img" id="ls_barcode_img">
+            @endif
         </div>
     </div>
     <div class="ls-barcode-foot">
