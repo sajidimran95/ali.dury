@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Sep 10, 2026 at 02:17 PM
+-- Generation Time: Sep 10, 2026 at 03:06 PM
 -- Server version: 8.4.3
 -- PHP Version: 8.4.2
 
@@ -348,6 +348,8 @@ INSERT INTO `activity_log` (`id`, `log_name`, `description`, `subject_id`, `subj
 (238, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-09-08 09:05:02', '2026-09-08 09:05:02'),
 (239, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-09-09 05:21:16', '2026-09-09 05:21:16'),
 (240, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-09-09 10:27:42', '2026-09-09 10:27:42');
+INSERT INTO `activity_log` (`id`, `log_name`, `description`, `subject_id`, `subject_type`, `event`, `business_id`, `causer_id`, `causer_type`, `properties`, `batch_uuid`, `created_at`, `updated_at`) VALUES
+(241, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-09-10 04:19:13', '2026-09-10 04:19:13');
 
 -- --------------------------------------------------------
 
@@ -2016,7 +2018,8 @@ INSERT INTO `ecom_carts` (`id`, `business_id`, `contact_id`, `session_id`, `coup
 (148, 1, NULL, 'lvSS52lwo3csXH6OfX17jebDxVe07XCWD38kfBS4', NULL, '2026-09-08 09:49:24', '2026-09-08 09:49:24'),
 (149, 1, NULL, 'eYZ4lsFVzHQ1ZYXCfVqnnRj3ylbxQ3HdMOV4GoEC', NULL, '2026-09-09 04:23:47', '2026-09-09 04:23:47'),
 (150, 1, NULL, 'F5n6e3015XZ3dz4k0iZ2DFfYI6p37UXBHIdqSn9y', NULL, '2026-09-09 05:21:06', '2026-09-09 05:21:06'),
-(151, 1, NULL, 'I1LoslME5kL69MaJEHKWCsFjud0uYqd5lae8Glwk', NULL, '2026-09-09 09:34:11', '2026-09-09 09:34:11');
+(151, 1, NULL, 'I1LoslME5kL69MaJEHKWCsFjud0uYqd5lae8Glwk', NULL, '2026-09-09 09:34:11', '2026-09-09 09:34:11'),
+(152, 1, NULL, 'SyMNgkzNH7dR1gveU9VGszwQwUIOEroUJ3CfWPSw', NULL, '2026-09-10 04:19:02', '2026-09-10 04:19:02');
 
 -- --------------------------------------------------------
 
@@ -2913,7 +2916,8 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (327, '2026_09_08_220000_add_sales_target_and_barcode_login_to_users', 24),
 (328, '2026_09_08_230000_add_period_sales_targets_to_users', 24),
 (329, '2026_09_09_204900_create_sale_zero_sales_tables', 25),
-(330, '2026_09_09_211000_add_signature_to_transaction_payments_table', 25);
+(330, '2026_09_09_211000_add_signature_to_transaction_payments_table', 25),
+(331, '2026_09_10_203700_add_barcode_switch_id_to_users', 26);
 
 -- --------------------------------------------------------
 
@@ -19280,6 +19284,7 @@ CREATE TABLE `users` (
   `max_sales_discount_percent` decimal(5,2) DEFAULT NULL,
   `allow_login` tinyint(1) NOT NULL DEFAULT '1',
   `barcode_login` tinyint(1) NOT NULL DEFAULT '0',
+  `barcode_switch_id` varchar(40) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `status` enum('active','inactive','terminated') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'active',
   `is_enable_service_staff_pin` tinyint(1) NOT NULL DEFAULT '0',
   `service_staff_pin` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
@@ -19322,9 +19327,9 @@ CREATE TABLE `users` (
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`id`, `user_type`, `surname`, `first_name`, `last_name`, `username`, `email`, `password`, `language`, `contact_no`, `address`, `remember_token`, `business_id`, `available_at`, `paused_at`, `max_sales_discount_percent`, `allow_login`, `barcode_login`, `status`, `is_enable_service_staff_pin`, `service_staff_pin`, `crm_contact_id`, `is_cmmsn_agnt`, `cmmsn_percent`, `sales_target`, `sales_target_daily`, `sales_target_weekly`, `sales_target_monthly`, `selected_contacts`, `dob`, `gender`, `marital_status`, `blood_group`, `contact_number`, `alt_number`, `family_number`, `fb_link`, `twitter_link`, `social_media_1`, `social_media_2`, `permanent_address`, `current_address`, `guardian_name`, `custom_field_1`, `custom_field_2`, `custom_field_3`, `custom_field_4`, `bank_details`, `id_proof_name`, `id_proof_number`, `deleted_at`, `created_at`, `updated_at`, `pos_quick_keys_enabled`) VALUES
-(1, 'user', NULL, 'Japs', 'POS', 'japspos', 'japspos@gmail.com', '$2y$10$LH3D2XH/82k.Av8HfGb3GOfKM3F7Qi7I86iZLyxhJFtjajS8pKHpK', 'en', NULL, NULL, 'si0L87cZq5yV5jAHVuvfqBO28C0M40Li5wPEIHsGByVo3c28gwLgEtWDo6aX', 1, NULL, NULL, NULL, 1, 0, 'active', 0, NULL, NULL, 0, 0.00, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '{\"account_holder_name\":null,\"account_number\":null,\"bank_name\":null,\"bank_code\":null,\"branch\":null,\"tax_payer_id\":null}', NULL, NULL, NULL, '2026-06-04 16:29:53', '2026-09-08 07:47:15', 1),
-(3, 'user', NULL, 'Sales', NULL, 'sales', 'sales@japspos.com', '$2y$10$bhjln6gIUl7iQH99RhOHe.SdLfYtmWt46.QAc9EYGCwwKI.apVRG.', 'en', NULL, NULL, NULL, 1, NULL, NULL, NULL, 1, 0, 'active', 0, NULL, NULL, 0, 0.00, NULL, 20.0000, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '{\"account_holder_name\":null,\"account_number\":null,\"bank_name\":null,\"bank_code\":null,\"branch\":null,\"tax_payer_id\":null}', NULL, NULL, NULL, '2026-08-17 03:13:14', '2026-09-08 07:35:23', 1);
+INSERT INTO `users` (`id`, `user_type`, `surname`, `first_name`, `last_name`, `username`, `email`, `password`, `language`, `contact_no`, `address`, `remember_token`, `business_id`, `available_at`, `paused_at`, `max_sales_discount_percent`, `allow_login`, `barcode_login`, `barcode_switch_id`, `status`, `is_enable_service_staff_pin`, `service_staff_pin`, `crm_contact_id`, `is_cmmsn_agnt`, `cmmsn_percent`, `sales_target`, `sales_target_daily`, `sales_target_weekly`, `sales_target_monthly`, `selected_contacts`, `dob`, `gender`, `marital_status`, `blood_group`, `contact_number`, `alt_number`, `family_number`, `fb_link`, `twitter_link`, `social_media_1`, `social_media_2`, `permanent_address`, `current_address`, `guardian_name`, `custom_field_1`, `custom_field_2`, `custom_field_3`, `custom_field_4`, `bank_details`, `id_proof_name`, `id_proof_number`, `deleted_at`, `created_at`, `updated_at`, `pos_quick_keys_enabled`) VALUES
+(1, 'user', NULL, 'Japs', 'POS', 'japspos', 'japspos@gmail.com', '$2y$10$LH3D2XH/82k.Av8HfGb3GOfKM3F7Qi7I86iZLyxhJFtjajS8pKHpK', 'en', NULL, NULL, 'si0L87cZq5yV5jAHVuvfqBO28C0M40Li5wPEIHsGByVo3c28gwLgEtWDo6aX', 1, NULL, NULL, NULL, 1, 0, NULL, 'active', 0, NULL, NULL, 0, 0.00, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '{\"account_holder_name\":null,\"account_number\":null,\"bank_name\":null,\"bank_code\":null,\"branch\":null,\"tax_payer_id\":null}', NULL, NULL, NULL, '2026-06-04 16:29:53', '2026-09-08 07:47:15', 1),
+(3, 'user', NULL, 'Sales', NULL, 'sales', 'sales@japspos.com', '$2y$10$bhjln6gIUl7iQH99RhOHe.SdLfYtmWt46.QAc9EYGCwwKI.apVRG.', 'en', NULL, NULL, NULL, 1, NULL, NULL, NULL, 1, 0, NULL, 'active', 0, NULL, NULL, 0, 0.00, NULL, 20.0000, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '{\"account_holder_name\":null,\"account_number\":null,\"bank_name\":null,\"bank_code\":null,\"branch\":null,\"tax_payer_id\":null}', NULL, NULL, NULL, '2026-08-17 03:13:14', '2026-09-08 07:35:23', 1);
 
 -- --------------------------------------------------------
 
@@ -25295,7 +25300,7 @@ ALTER TABLE `account_types`
 -- AUTO_INCREMENT for table `activity_log`
 --
 ALTER TABLE `activity_log`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=241;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=242;
 
 --
 -- AUTO_INCREMENT for table `ai_assistance_settings`
@@ -25433,7 +25438,7 @@ ALTER TABLE `ecom_banners`
 -- AUTO_INCREMENT for table `ecom_carts`
 --
 ALTER TABLE `ecom_carts`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=152;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=153;
 
 --
 -- AUTO_INCREMENT for table `ecom_cart_items`
@@ -25547,7 +25552,7 @@ ALTER TABLE `media`
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=331;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=332;
 
 --
 -- AUTO_INCREMENT for table `notification_templates`
