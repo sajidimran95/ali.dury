@@ -471,7 +471,7 @@ function pos_apply_typed_sell_price($tr, typedExTax) {
             __write_number($unit, list);
             var pct = ((list - typedExTax) / list) * 100;
             if ($type.length) {
-                $type.val('percentage');
+                $type.val('percentage').data('prev-discount-type', 'percentage');
             }
             if ($amount.length) {
                 __write_number($amount, Math.round(pct * 100) / 100);
@@ -482,7 +482,7 @@ function pos_apply_typed_sell_price($tr, typedExTax) {
             // Same or higher → raise/set unit price, clear line discount
             __write_number($unit, typedExTax);
             if ($type.length) {
-                $type.val('fixed');
+                $type.val('fixed').data('prev-discount-type', 'fixed');
             }
             if ($amount.length) {
                 __write_number($amount, 0);
@@ -1901,6 +1901,11 @@ $(document).ready(function() {
         qty_element.trigger('change');
     });
 
+    // Remember previous discount type so % ↔ fixed amount can convert correctly
+    $(document).on('focus', 'select.row_discount_type', function () {
+        $(this).data('prev-discount-type', $(this).val());
+    });
+
     //Change in row discount type or discount amount
     $(document).on(
         'input change',
@@ -1918,6 +1923,38 @@ $(document).ready(function() {
             pos_mark_row_manual_discount(tr);
             if (e.type === 'input') {
                 return;
+            }
+
+            // When switching % ↔ fixed, convert the amount so sell price stays the same
+            if ($(this).is('select.row_discount_type')) {
+                var prevType = $(this).data('prev-discount-type');
+                var nextType = $(this).val();
+                var $amount = pos_row_field(tr, 'input.row_discount_amount');
+                var unitPrice = __read_number(pos_row_field(tr, 'input.pos_unit_price'));
+                var amount = __read_number($amount);
+                if (
+                    prevType &&
+                    nextType &&
+                    prevType !== nextType &&
+                    $amount.length &&
+                    unitPrice > 0 &&
+                    amount &&
+                    !isNaN(amount)
+                ) {
+                    window.__posPriceLogicLock = true;
+                    try {
+                        if (prevType === 'percentage' && nextType === 'fixed') {
+                            // 59.84% of 4.98 → $2.98
+                            __write_number($amount, Math.round(unitPrice * (amount / 100) * 100) / 100);
+                        } else if (prevType === 'fixed' && nextType === 'percentage') {
+                            // $2.98 of 4.98 → 59.84%
+                            __write_number($amount, Math.round((amount / unitPrice) * 10000) / 100);
+                        }
+                    } finally {
+                        window.__posPriceLogicLock = false;
+                    }
+                }
+                $(this).data('prev-discount-type', nextType);
             }
 
             //calculate discounted unit price
