@@ -148,6 +148,8 @@ return [
     'pos_settings' => 'POS settings',
     'disable_discount' => 'Disable Discount',
     'disable_order_tax' => 'Disable order tax',
+    'disable_line_discount' => 'Disable product line discount',
+    'disable_line_discount_help' => 'Hide discount type and amount fields on each POS product line',
     'customer_groups' => 'Customer Groups',
     'customer_group' => 'Customer Group',
     'all_your_customer_groups' => 'All Customer Groups',

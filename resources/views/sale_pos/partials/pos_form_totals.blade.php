@@ -31,7 +31,7 @@
 		</div>
 
 		{{-- Line Item (D/C) — sum of per-line discounts/charges --}}
-		<div class="pos_totals_cell">
+		<div class="pos_totals_cell @if(!empty($pos_settings['disable_line_discount'])) hide @endif">
 			<span class="pos_totals_label">
 				<span class="mobile-only">LINE D/C</span>
 				<span class="desktop-only">@lang('lang_v1.line_item_dc')</span>

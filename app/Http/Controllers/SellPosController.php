@@ -336,7 +336,8 @@ class SellPosController extends Controller
         $invoice_schemes = InvoiceScheme::forDropdown($business_id);
         $default_invoice_schemes = InvoiceScheme::getDefault($business_id);
 
-        $edit_discount = auth()->user()->can('edit_product_discount_from_pos_screen');
+        $edit_discount = auth()->user()->can('edit_product_discount_from_pos_screen')
+            && empty($pos_settings['disable_line_discount']);
         $edit_price = auth()->user()->can('edit_product_price_from_pos_screen');
 
         //Added check because $users is of no use if enable_contact_assign if false
@@ -1399,7 +1400,8 @@ class SellPosController extends Controller
             $redeem_details['points'] -= $transaction->rp_earned;
         }
 
-        $edit_discount = auth()->user()->can('edit_product_discount_from_pos_screen');
+        $edit_discount = auth()->user()->can('edit_product_discount_from_pos_screen')
+            && empty($pos_settings['disable_line_discount']);
         $edit_price = auth()->user()->can('edit_product_price_from_pos_screen');
         $shipping_statuses = $this->transactionUtil->shipping_statuses();
 

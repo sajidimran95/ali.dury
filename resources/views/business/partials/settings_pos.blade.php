@@ -188,6 +188,20 @@
                 <div class="checkbox">
                 <br>
                   <label>
+                    {!! Form::checkbox('pos_settings[disable_line_discount]', 1,
+                    !empty($pos_settings['disable_line_discount']) ? 1 : 0,
+                    [ 'class' => 'input-icheck']); !!} {{ __( 'lang_v1.disable_line_discount' ) }}
+                  </label>
+                  @show_tooltip(__('lang_v1.disable_line_discount_help'))
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-4">
+            <div class="form-group">
+                <div class="checkbox">
+                <br>
+                  <label>
                     {!! Form::checkbox('pos_settings[is_pos_subtotal_editable]', 1,  
                     empty($pos_settings['is_pos_subtotal_editable']) ? 0 : 1 , 
                     [ 'class' => 'input-icheck']); !!} {{ __( 'lang_v1.subtotal_editable' ) }}

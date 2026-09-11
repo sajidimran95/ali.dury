@@ -2750,7 +2750,8 @@ class ProductUtil extends Util
                 $edit_discount = auth()->user()->can('edit_product_discount_from_sale_screen');
                 $edit_price = auth()->user()->can('edit_product_price_from_sale_screen');
             } else {
-                $edit_discount = auth()->user()->can('edit_product_discount_from_pos_screen');
+                $edit_discount = auth()->user()->can('edit_product_discount_from_pos_screen')
+                    && empty($pos_settings['disable_line_discount']);
                 $edit_price = auth()->user()->can('edit_product_price_from_pos_screen');
             }
 

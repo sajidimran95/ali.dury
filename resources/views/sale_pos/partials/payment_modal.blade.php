@@ -38,7 +38,7 @@
                                     <br />
                                     <span class="lead text-bold price_total payment_od_subtotal">0</span>
                                 </div>
-                                <div class="col-md-12">
+                                <div class="col-md-12 @if(!empty($pos_settings['disable_line_discount'])) hide @endif">
                                     <hr>
                                     <strong>@lang('lang_v1.item_discount')(-):</strong>
                                     <br />
