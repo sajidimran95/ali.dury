@@ -397,5 +397,4 @@
     @endif
 
     <div class="modal fade pay_contact_due_modal" tabindex="-1" role="dialog" aria-labelledby="gridSystemModalLabel"></div>
-    @include('contact.partials.customer_options_modal')
 </section>
