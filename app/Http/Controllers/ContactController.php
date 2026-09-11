@@ -1214,6 +1214,7 @@ class ContactController extends Controller
             if (! empty($term)) {
                 $contacts->where(function ($query) use ($term) {
                     $query->where('contacts.name', 'like', '%'.$term.'%')
+                            ->orWhere('contacts.first_name', 'like', '%'.$term.'%')
                             ->orWhere('supplier_business_name', 'like', '%'.$term.'%')
                             ->orWhere('mobile', 'like', '%'.$term.'%')
                             ->orWhere('contacts.contact_id', 'like', '%'.$term.'%');
@@ -1238,6 +1239,8 @@ class ContactController extends Controller
                     IFNULL(contacts.name, '')
                 ) AS name"),
                 'contacts.contact_id',
+                'contacts.first_name',
+                'contacts.name as contact_person',
                 'mobile',
                 'address_line_1',
                 'address_line_2',

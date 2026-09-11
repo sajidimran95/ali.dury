@@ -883,8 +883,20 @@ $(document).ready(function() {
                     var selectionText = displayName;
                     var initials = posCustomerInitials(displayName);
                     var color = posCustomerAvatarColor(displayName);
+                    var personName = (row.first_name || row.contact_person || '').toString().trim();
+                    // Prefer bare first name; if contact_person is "First Last", take first token
+                    if (!row.first_name && personName.indexOf(' ') !== -1) {
+                        personName = personName.split(/\s+/)[0];
+                    }
+                    var code = (row.contact_id || '').toString().trim();
                     var subParts = [];
-                    if (row.contact_id) subParts.push(row.contact_id);
+                    if (personName && code) {
+                        subParts.push(personName + ' - ' + code);
+                    } else if (code) {
+                        subParts.push(code);
+                    } else if (personName) {
+                        subParts.push(personName);
+                    }
                     if (row.mobile) subParts.push(row.mobile);
                     var sub = subParts.join(' | ');
                     var isCurrent = String(row.id) === curId;
