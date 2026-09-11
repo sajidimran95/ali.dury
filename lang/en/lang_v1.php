@@ -150,6 +150,8 @@ return [
     'disable_order_tax' => 'Disable order tax',
     'disable_line_discount' => 'Disable product line discount',
     'disable_line_discount_help' => 'Hide discount type and amount fields on each POS product line',
+    'disable_line_tax' => 'Disable product line tax',
+    'disable_line_tax_help' => 'Hide tax fields on each POS product line',
     'customer_groups' => 'Customer Groups',
     'customer_group' => 'Customer Group',
     'all_your_customer_groups' => 'All Customer Groups',

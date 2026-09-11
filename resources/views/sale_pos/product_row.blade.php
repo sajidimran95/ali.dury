@@ -69,7 +69,7 @@
 
 		@php
 			$hide_tax = 'hide';
-	        if(session()->get('business.enable_inline_tax') == 1){
+	        if(session()->get('business.enable_inline_tax') == 1 && empty($pos_settings['disable_line_tax'])){
 	            $hide_tax = '';
 	        }
 	        

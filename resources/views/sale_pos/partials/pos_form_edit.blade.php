@@ -216,7 +216,7 @@
 			value="{{count($sell_details)}}">
 		@php
 			$hide_tax = '';
-			if( session()->get('business.enable_inline_tax') == 0){
+			if( session()->get('business.enable_inline_tax') == 0 || !empty($pos_settings['disable_line_tax'])){
 				$hide_tax = 'hide';
 			}
 		@endphp
