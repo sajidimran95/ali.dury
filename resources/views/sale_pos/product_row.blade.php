@@ -60,7 +60,9 @@
 					@else
 					<span class="pos-line-name">{!! $product_name !!}</span>
 					@endif
-					<div class="pos-line-sku">{{ $product_sku_brand }}@if($product->enable_stock) · {{ @num_format($product->qty_available) }} {{$product->unit}}@endif</div>
+					@if(!empty($product->sub_sku))
+					<div class="pos-line-sku" title="Barcode / SKU">{{ $product->sub_sku }}</div>
+					@endif
 				</div>
 			@else
 				<div style="display:flex;align-items:flex-start;gap:6px;">
