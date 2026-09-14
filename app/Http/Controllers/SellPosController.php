@@ -2212,13 +2212,18 @@ class SellPosController extends Controller
             $query->where('transactions.location_id', $location_id);
         }
 
-        // Retrieve the limit for displaying recent transactions from the configuration
-        $limit = (int) $request->get('limit', config('constants.pos_recent_transactions_display_limit', 10));
+        // POS recent list: today's transactions only (business timezone when set)
+        $tz = $request->session()->get('business.time_zone', config('app.timezone'));
+        $today = \Carbon\Carbon::now($tz)->toDateString();
+        $query->whereDate('transactions.transaction_date', $today);
+
+        // Enough room for a busy day; modal list is scrollable
+        $limit = (int) $request->get('limit', 300);
         if ($limit < 1) {
-            $limit = 10;
+            $limit = 300;
         }
-        if ($limit > 50) {
-            $limit = 50;
+        if ($limit > 500) {
+            $limit = 500;
         }
         
         $transactions = $query->orderBy('transactions.created_at', 'desc')
