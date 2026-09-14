@@ -68,7 +68,7 @@
         <div class="col-sm-4">
             <div class="form-group">
                 {!! Form::label('secondary_unit_id', __('lang_v1.secondary_unit') . ':') !!} @show_tooltip(__('lang_v1.secondary_unit_help'))
-                {!! Form::select('secondary_unit_id', $units, !empty($duplicate_product->secondary_unit_id) ? $duplicate_product->secondary_unit_id : null, ['class' => 'form-control select2']); !!}
+                {!! Form::select('secondary_unit_id', $units, !empty($duplicate_product->secondary_unit_id) ? $duplicate_product->secondary_unit_id : null, ['class' => 'form-control select2', 'placeholder' => __('messages.please_select')]); !!}
             </div>
         </div>
         @endif
@@ -293,7 +293,9 @@
                 @php
                     $db_field_name = 'product_custom_field' . $loop->iteration;
                     $cf_type = !empty($product_cf_details[$loop->iteration]['type']) ? $product_cf_details[$loop->iteration]['type'] : 'text';
-                    $dropdown = !empty($product_cf_details[$loop->iteration]['dropdown_options']) ? explode(PHP_EOL, $product_cf_details[$loop->iteration]['dropdown_options']) : [];
+                    $dropdown_raw = !empty($product_cf_details[$loop->iteration]['dropdown_options']) ? $product_cf_details[$loop->iteration]['dropdown_options'] : '';
+                    $dropdown = array_values(array_filter(array_map('trim', preg_split('/\r\n|\r|\n/', (string) $dropdown_raw)), 'strlen'));
+                    $cf_selected = trim((string) (!empty($duplicate_product->$db_field_name) ? $duplicate_product->$db_field_name : ''));
                 @endphp
 
                 <div class="col-sm-3">
@@ -305,11 +307,10 @@
                             <input type="{{$cf_type}}" name="{{$db_field_name}}" id="{{$db_field_name}}" value="{{!empty($duplicate_product->$db_field_name) ? $duplicate_product->$db_field_name : null}}" class="form-control" placeholder="{{$cf}}">
 
                         @elseif($cf_type == 'dropdown')
-                            <!-- {!! Form::select($db_field_name, $dropdown, !empty($duplicate_product->$db_field_name) ? $duplicate_product->$db_field_name : null, ['placeholder' => $cf, 'class' => 'form-control select2']); !!} -->
-                            <select name="{{ $db_field_name }}" id="{{ $db_field_name }}" class="form-control select2">
-                                <option value="">{{ $cf }}</option>
+                            <select name="{{ $db_field_name }}" id="{{ $db_field_name }}" class="form-control select2" data-placeholder="{{ $cf }}">
+                                <option value="">{{ __('messages.please_select') }}</option>
                                 @foreach($dropdown as $option)
-                                    <option value="{{ $option }}" @if(!empty($duplicate_product->$db_field_name) && $option == $duplicate_product->$db_field_name) selected @endif>
+                                    <option value="{{ $option }}" @if($cf_selected !== '' && $option === $cf_selected) selected @endif>
                                         {{ $option }}
                                     </option>
                                 @endforeach

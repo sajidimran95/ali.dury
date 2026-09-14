@@ -16,11 +16,18 @@
 @if(empty($is_direct_sell))
 <tbody class="pos-cart-line" data-row_index="{{$row_count}}">
 @endif
-<tr class="product_row" data-row_index="{{$row_count}}" @if(!empty($so_line)) data-so_id="{{$so_line->transaction_id}}" @endif>
+<tr class="product_row" data-row_index="{{$row_count}}" @if(!empty($so_line)) data-so_id="{{$so_line->transaction_id}}" @endif data-pos-list-price="{{ (float) $product->default_sell_price }}">
 	@if(!empty($is_serial_no))
 		<td class="serial_no" ></td>
 	@endif
-	<td>
+	@if(empty($is_direct_sell) && ($edit_price || $edit_discount))
+	<td class="pos-line-chevron-td">
+		<button type="button" class="pos-line-chevron pos-line-open-edit" aria-label="@lang('lang_v1.pos_edit_product_price_help')" title="@lang('lang_v1.pos_edit_product_price_help')">
+			<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"></polyline></svg>
+		</button>
+	</td>
+	@endif
+	<td class="pos-line-name-td">
 		@if(!empty($so_line))
 			<input type="hidden" 
 			name="products[{{$row_count}}][so_line_id]" 
@@ -32,32 +39,50 @@
 			if(!empty($product->brand)){ $product_sku_brand .= ' · ' . e($product->brand); }
 		@endphp
 
-		<div style="display:flex;align-items:flex-start;gap:6px;">
-			@php
-				$pos_default_img = asset('/img/default.png');
-				$pos_row_img = $pos_default_img;
-				if (count($product->media) > 0 && !empty($product->media->first()->display_url)) {
-					$pos_row_img = $product->media->first()->display_url;
-				} elseif (!empty($product->product_image)) {
-					$_img_path = public_path('uploads/' . config('constants.product_img_path') . '/' . $product->product_image);
-					if (is_file($_img_path)) {
-						$pos_row_img = asset('/uploads/' . config('constants.product_img_path') . '/' . rawurlencode($product->product_image));
+		<div class="pos-line-name-wrap">
+			@if(empty($is_direct_sell))
+				@php
+					$pos_default_img = asset('/img/default.png');
+					$pos_row_img = $pos_default_img;
+					if (count($product->media) > 0 && !empty($product->media->first()->display_url)) {
+						$pos_row_img = $product->media->first()->display_url;
+					} elseif (!empty($product->product_image)) {
+						$_img_path = public_path('uploads/' . config('constants.product_img_path') . '/' . $product->product_image);
+						if (is_file($_img_path)) {
+							$pos_row_img = asset('/uploads/' . config('constants.product_img_path') . '/' . rawurlencode($product->product_image));
+						}
 					}
-				}
-			@endphp
-			<img src="{{ $pos_row_img }}" alt="" loading="lazy" style="width:36px;height:36px;flex-shrink:0;border-radius:4px;object-fit:cover;align-self:flex-start;margin-top:1px;" onerror="this.onerror=null;this.src='{{ $pos_default_img }}';">
-			<div style="min-width:0;flex:1;">
-				@if( ($edit_price || $edit_discount) && empty($is_direct_sell) )
-				<div title="@lang('lang_v1.pos_edit_product_price_help')">
-				<span class="text-link text-info tw-cursor-pointer tw-font-semibold tw-text-[13px] tw-leading-snug tw-block tw-truncate md:tw-truncate pos-line-open-edit" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
-					{!! $product_name !!} &nbsp;<i class="fa fa-info-circle"></i>
-				</span>
+				@endphp
+				<img class="pos-line-thumb" src="{{ $pos_row_img }}" alt="" loading="lazy" onerror="this.onerror=null;this.src='{{ $pos_default_img }}';">
+				<div class="pos-line-name-meta">
+					@if( ($edit_price || $edit_discount) )
+					<span class="pos-line-name pos-line-open-edit" title="@lang('lang_v1.pos_edit_product_price_help')">{!! $product_name !!}</span>
+					@else
+					<span class="pos-line-name">{!! $product_name !!}</span>
+					@endif
+					<div class="pos-line-sku">{{ $product_sku_brand }}@if($product->enable_stock) · {{ @num_format($product->qty_available) }} {{$product->unit}}@endif</div>
 				</div>
-				@else
-					<span class="tw-font-semibold tw-text-[13px] tw-leading-snug tw-block" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">{!! $product_name !!}</span>
-				@endif
-				<div class="tw-text-[11px] tw-text-slate-400 tw-leading-[1.3] tw-truncate">{{ $product_sku_brand }}@if($product->enable_stock) &nbsp;·&nbsp; {{ @num_format($product->qty_available) }} {{$product->unit}}@endif</div>
-			</div>
+			@else
+				<div style="display:flex;align-items:flex-start;gap:6px;">
+					@php
+						$pos_default_img = asset('/img/default.png');
+						$pos_row_img = $pos_default_img;
+						if (count($product->media) > 0 && !empty($product->media->first()->display_url)) {
+							$pos_row_img = $product->media->first()->display_url;
+						} elseif (!empty($product->product_image)) {
+							$_img_path = public_path('uploads/' . config('constants.product_img_path') . '/' . $product->product_image);
+							if (is_file($_img_path)) {
+								$pos_row_img = asset('/uploads/' . config('constants.product_img_path') . '/' . rawurlencode($product->product_image));
+							}
+						}
+					@endphp
+					<img src="{{ $pos_row_img }}" alt="" loading="lazy" style="width:36px;height:36px;flex-shrink:0;border-radius:4px;object-fit:cover;align-self:flex-start;margin-top:1px;" onerror="this.onerror=null;this.src='{{ $pos_default_img }}';">
+					<div style="min-width:0;flex:1;">
+						<span class="tw-font-semibold tw-text-[13px] tw-leading-snug tw-block">{!! $product_name !!}</span>
+						<div class="tw-text-[11px] tw-text-slate-400 tw-leading-[1.3] tw-truncate">{{ $product_sku_brand }}@if($product->enable_stock) &nbsp;·&nbsp; {{ @num_format($product->qty_available) }} {{$product->unit}}@endif</div>
+					</div>
+				</div>
+			@endif
 		</div>
 
 
@@ -90,7 +115,7 @@
 				$unit_price_inc_tax = $so_line->unit_price_inc_tax;
 			}
 
-			$discount_type = !empty($product->line_discount_type) ? $product->line_discount_type : 'fixed';
+			$discount_type = !empty($product->line_discount_type) ? $product->line_discount_type : (empty($is_direct_sell) ? 'percentage' : 'fixed');
 			$discount_amount = !empty($product->line_discount_amount) ? $product->line_discount_amount : 0;
 			
 			if(!empty($discount)) {
@@ -207,7 +232,7 @@
 	@endif
 	</td>
 
-	<td class="v-center">
+	<td class="v-center pos-line-qty-td">
 		{{-- If edit then transaction sell lines will be present --}}
 		@if(!empty($product->transaction_sell_lines_id))
 			<input type="hidden" name="products[{{$row_count}}][transaction_sell_lines_id]" class="form-control" value="{{$product->transaction_sell_lines_id}}">
@@ -250,8 +275,8 @@
         		@endphp
         	@endif
         @endforeach
-		<div class="input-group input-number">
-			<span class="input-group-btn !tw-hidden md:!tw-table-cell"><button type="button" class="btn quantity-down !tw-text-red-600 active:tw-scale-95 tw-transition-transform !tw-border-slate-300 !tw-px-3 tw-inline-flex tw-items-center tw-justify-center tw-leading-none"><i class="fa fa-minus"></i></button></span>
+		<div class="input-group input-number pos-line-qty-group">
+			<span class="input-group-btn pos-qty-btn-wrap"><button type="button" class="btn quantity-down !tw-text-red-600 active:tw-scale-95 tw-transition-transform !tw-border-slate-300 !tw-px-3 tw-inline-flex tw-items-center tw-justify-center tw-leading-none"><i class="fa fa-minus"></i></button></span>
 			<input type="text" data-min="1"
 				class="form-control pos_quantity input_number mousetrap input_quantity tw-text-center tw-font-bold !tw-w-full md:!tw-w-auto"
 				value="{{@format_quantity($product->quantity_ordered)}}" name="products[{{$row_count}}][quantity]" data-allow-overselling="@if(empty($pos_settings['allow_overselling'])){{'false'}}@else{{'true'}}@endif"
@@ -269,7 +294,7 @@
 					data-msg_max_default="@lang('validation.custom-messages.quantity_not_available', ['qty'=> $product->formatted_qty_available, 'unit' => $product->unit  ])"
 				@endif
 			>
-			<span class="input-group-btn !tw-hidden md:!tw-table-cell"><button type="button" class="btn quantity-up !tw-text-emerald-600 active:tw-scale-95 tw-transition-transform !tw-border-slate-300 !tw-px-3 tw-inline-flex tw-items-center tw-justify-center tw-leading-none"><i class="fa fa-plus"></i></button></span>
+			<span class="input-group-btn pos-qty-btn-wrap"><button type="button" class="btn quantity-up !tw-text-emerald-600 active:tw-scale-95 tw-transition-transform !tw-border-slate-300 !tw-px-3 tw-inline-flex tw-items-center tw-justify-center tw-leading-none"><i class="fa fa-plus"></i></button></span>
 		</div>
 		
 		<input type="hidden" name="products[{{$row_count}}][product_unit_id]" value="{{$product->unit_id}}">
@@ -419,10 +444,12 @@
 	<td class="text-center pos_line_total_td">
 		@php
 			$subtotal_type = !empty($pos_settings['is_pos_subtotal_editable']) ? 'text' : 'hidden';
-
 		@endphp
 		<input style="width: auto" type="{{$subtotal_type}}" class="form-control pos_line_total @if(!empty($pos_settings['is_pos_subtotal_editable'])) input_number @endif" value="{{@num_format($product->quantity_ordered*$unit_price_inc_tax )}}">
-		<span class="display_currency pos_line_total_text @if(!empty($pos_settings['is_pos_subtotal_editable'])) hide @endif" data-currency_symbol="true">{{$product->quantity_ordered*$unit_price_inc_tax}}</span>
+		<div class="pos-line-price-stack">
+			<span class="display_currency pos_line_total_text @if(!empty($pos_settings['is_pos_subtotal_editable'])) hide @endif" data-currency_symbol="true">{{$product->quantity_ordered*$unit_price_inc_tax}}</span>
+			<span class="pos-line-orig-price hide" aria-hidden="true"></span>
+		</div>
 	</td>
 	<td class="text-center v-center">
 		<button type="button" class="pos_remove_row tw-w-9 tw-h-9 tw-rounded-full tw-bg-red-100 tw-text-red-600 hover:tw-bg-red-200 active:tw-scale-95 tw-transition-transform tw-inline-flex tw-items-center tw-justify-center tw-border-0 tw-cursor-pointer tw-mx-auto" aria-label="Remove item">

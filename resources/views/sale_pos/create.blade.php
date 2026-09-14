@@ -51,7 +51,7 @@
                                     <input type="hidden" id="pos_screen_settings_url" value="{{ url('/sells/pos/screen-settings') }}">
                                     <input type="hidden" id="pos_screen_layout" value="{{ strtolower((string) ($business_details->pos_screen_layout ?? 'ltr')) === 'rtl' ? 'rtl' : 'ltr' }}">
                                     <input type="hidden" id="item_addition_method"
-                                        value="{{ $business_details->item_addition_method }}">
+                                        value="1">
                                     @include('sale_pos.partials.pos_form')
 
                                     @include('sale_pos.partials.pos_form_totals')

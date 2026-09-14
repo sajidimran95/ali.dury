@@ -8,7 +8,7 @@
 				<input type="hidden" id="default_customer_id" 
 				value="{{ $transaction->contact->id }}" >
 				<input type="hidden" id="default_customer_name" 
-				value="{{ $transaction->contact->name }}" >
+				value="{{ trim($transaction->contact->supplier_business_name ?: $transaction->contact->name) }}" >
 				<input type="hidden" id="default_customer_balance" 
 				value="{{$transaction->contact->balance}}" >
 				<input type="hidden" id="default_customer_address" 

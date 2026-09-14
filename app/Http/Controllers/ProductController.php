@@ -1375,35 +1375,40 @@ class ProductController extends Controller
                 ? $this->barcodeScanCandidates($search_term)
                 : ($search_term !== '' ? [$search_term] : []);
 
-            foreach ($scan_terms as $term) {
-                $result = $this->productUtil->filterProduct(
-                    $business_id,
-                    $term,
-                    $location_id,
-                    $not_for_selling,
-                    $price_group_id,
-                    $product_types,
-                    $search_fields,
-                    $check_qty,
-                    'exact'
-                );
+            // Exact SKU/name first — Scan mode only.
+            // Search mode must use partial LIKE so "geek" returns all Geek* products,
+            // not only an exact SKU match like "GEEK".
+            if ($is_scan_mode) {
+                foreach ($scan_terms as $term) {
+                    $result = $this->productUtil->filterProduct(
+                        $business_id,
+                        $term,
+                        $location_id,
+                        $not_for_selling,
+                        $price_group_id,
+                        $product_types,
+                        $search_fields,
+                        $check_qty,
+                        'exact'
+                    );
 
-                if ($result->count() > 1) {
-                    $exactOnly = $result->filter(function ($item) use ($term) {
-                        $sub = html_entity_decode((string) ($item->sub_sku ?? ''), ENT_QUOTES, 'UTF-8');
-                        $sku = html_entity_decode((string) ($item->sku ?? ''), ENT_QUOTES, 'UTF-8');
+                    if ($result->count() > 1) {
+                        $exactOnly = $result->filter(function ($item) use ($term) {
+                            $sub = html_entity_decode((string) ($item->sub_sku ?? ''), ENT_QUOTES, 'UTF-8');
+                            $sku = html_entity_decode((string) ($item->sku ?? ''), ENT_QUOTES, 'UTF-8');
 
-                        return strcasecmp(trim($sub), $term) === 0
-                            || ($sku !== '' && strcasecmp(trim($sku), $term) === 0);
-                    })->values();
+                            return strcasecmp(trim($sub), $term) === 0
+                                || ($sku !== '' && strcasecmp(trim($sku), $term) === 0);
+                        })->values();
 
-                    if ($exactOnly->isNotEmpty()) {
-                        $result = $exactOnly;
+                        if ($exactOnly->isNotEmpty()) {
+                            $result = $exactOnly;
+                        }
                     }
-                }
 
-                if ($result->isNotEmpty()) {
-                    break;
+                    if ($result->isNotEmpty()) {
+                        break;
+                    }
                 }
             }
 
@@ -1432,20 +1437,6 @@ class ProductController extends Controller
                         })->values();
                     } else {
                         $result = $likeResult;
-
-                        if ($auto_add_single && $result->count() > 1) {
-                            $exactOnly = $result->filter(function ($item) use ($term) {
-                                $sub = html_entity_decode((string) ($item->sub_sku ?? ''), ENT_QUOTES, 'UTF-8');
-                                $sku = html_entity_decode((string) ($item->sku ?? ''), ENT_QUOTES, 'UTF-8');
-
-                                return strcasecmp(trim($sub), $term) === 0
-                                    || ($sku !== '' && strcasecmp(trim($sku), $term) === 0);
-                            })->values();
-
-                            if ($exactOnly->count() >= 1) {
-                                $result = $exactOnly;
-                            }
-                        }
                     }
 
                     if ($result->isNotEmpty()) {
