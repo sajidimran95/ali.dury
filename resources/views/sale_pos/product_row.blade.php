@@ -60,8 +60,18 @@
 					@else
 					<span class="pos-line-name">{!! $product_name !!}</span>
 					@endif
-					@if(!empty($product->sub_sku))
-					<div class="pos-line-sku" title="Barcode / SKU">{{ $product->sub_sku }}</div>
+					@php
+						$pos_line_barcode = trim((string) ($product->sub_sku ?? ''));
+						$pos_line_stock_qty = is_numeric($product->qty_available ?? null) ? (float) $product->qty_available : null;
+						$pos_line_show_stock = !empty($product->enable_stock) && $pos_line_stock_qty !== null && $pos_line_stock_qty > 0;
+					@endphp
+					@if($pos_line_barcode !== '' || $pos_line_show_stock)
+					<div class="pos-line-sku" title="Barcode / SKU">
+						@if($pos_line_barcode !== ''){{ $pos_line_barcode }}@endif
+						@if($pos_line_show_stock)
+							@if($pos_line_barcode !== '') · @endif{{ @num_format($pos_line_stock_qty) }} {{ $product->unit }}
+						@endif
+					</div>
 					@endif
 				</div>
 			@else
@@ -81,7 +91,19 @@
 					<img src="{{ $pos_row_img }}" alt="" loading="lazy" style="width:36px;height:36px;flex-shrink:0;border-radius:4px;object-fit:cover;align-self:flex-start;margin-top:1px;" onerror="this.onerror=null;this.src='{{ $pos_default_img }}';">
 					<div style="min-width:0;flex:1;">
 						<span class="tw-font-semibold tw-text-[13px] tw-leading-snug tw-block">{!! $product_name !!}</span>
-						<div class="tw-text-[11px] tw-text-slate-400 tw-leading-[1.3] tw-truncate">{{ $product_sku_brand }}@if($product->enable_stock) &nbsp;·&nbsp; {{ @num_format($product->qty_available) }} {{$product->unit}}@endif</div>
+						@php
+							$pos_line_barcode = trim((string) ($product->sub_sku ?? ''));
+							$pos_line_stock_qty = is_numeric($product->qty_available ?? null) ? (float) $product->qty_available : null;
+							$pos_line_show_stock = !empty($product->enable_stock) && $pos_line_stock_qty !== null && $pos_line_stock_qty > 0;
+						@endphp
+						@if($pos_line_barcode !== '' || $pos_line_show_stock)
+						<div class="tw-text-[11px] tw-text-slate-400 tw-leading-[1.3] tw-truncate">
+							@if($pos_line_barcode !== ''){{ $pos_line_barcode }}@endif
+							@if($pos_line_show_stock)
+								@if($pos_line_barcode !== '') · @endif{{ @num_format($pos_line_stock_qty) }} {{ $product->unit }}
+							@endif
+						</div>
+						@endif
 					</div>
 				</div>
 			@endif

@@ -340,6 +340,7 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::post('/test-sms', [BusinessController::class, 'testSmsConfiguration']);
     Route::get('/business/settings', [BusinessController::class, 'getBusinessSettings'])->name('business.getBusinessSettings');
     Route::post('/business/update', [BusinessController::class, 'postBusinessSettings'])->name('business.postBusinessSettings');
+    Route::post('/business/clear-cache', [BusinessController::class, 'clearApplicationCache'])->name('business.clearCache');
     Route::post('/business/reset-database', [BusinessController::class, 'resetDatabaseToFreshPos'])->name('business.resetDatabase');
     Route::get('/user/profile', [UserController::class, 'getProfile'])->name('user.getProfile');
     Route::post('/user/update', [UserController::class, 'updateProfile'])->name('user.updateProfile');

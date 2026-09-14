@@ -1840,6 +1840,9 @@ return [
     'fresh_pos_reset_type_reset' => 'Type <strong>RESET</strong> below to confirm:',
     'fresh_pos_reset_phrase_invalid' => 'Confirmation text must be exactly RESET.',
     'database_reset_success' => 'Database reset complete. Your POS is blank and ready (location #1 and admin kept).',
+    'clear_cache' => 'Clear Cache',
+    'clear_cache_help' => 'Clears application, view, config, and route caches. Use this after deploying updates so POS and admin screens pick up the latest changes.',
+    'cache_cleared_success' => 'Cache cleared successfully.',
 
     'pos_pwa_settings' => 'POS Progressive Web App (PWA)',
     'pos_pwa_settings_help' => 'Install the POS screen as a native-like app on desktop or mobile. Opens fullscreen without browser tabs/address bar.',

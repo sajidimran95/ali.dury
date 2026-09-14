@@ -255,6 +255,37 @@
             }
         };
 
+        $('#btn_clear_application_cache').click(function() {
+            var $btn = $(this);
+            $.ajax({
+                method: 'POST',
+                url: '{{ route('business.clearCache') }}',
+                dataType: 'json',
+                data: {
+                    _token: '{{ csrf_token() }}',
+                },
+                beforeSend: function() {
+                    $btn.prop('disabled', true);
+                },
+                success: function(result) {
+                    if (result.success == 1) {
+                        toastr.success(result.msg);
+                    } else {
+                        toastr.error(result.msg || '@lang('messages.something_went_wrong')');
+                    }
+                },
+                error: function(xhr) {
+                    var msg = xhr.responseJSON && xhr.responseJSON.message
+                        ? xhr.responseJSON.message
+                        : '@lang('messages.something_went_wrong')';
+                    toastr.error(msg);
+                },
+                complete: function() {
+                    $btn.prop('disabled', false);
+                },
+            });
+        });
+
         $('#btn_reset_database_fresh_pos').click(function() {
             var phrase = $('#fresh_pos_reset_phrase').val();
             if (phrase !== 'RESET') {

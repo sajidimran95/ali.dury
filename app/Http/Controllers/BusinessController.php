@@ -16,6 +16,7 @@ use App\Utils\RestaurantUtil;
 use Carbon\Carbon;
 use DateTimeZone;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Permission;
@@ -712,6 +713,35 @@ class BusinessController extends Controller
             return [
                 'success' => 1,
                 'msg' => __('lang_v1.database_reset_success'),
+            ];
+        } catch (\Exception $e) {
+            \Log::emergency('File:'.$e->getFile().'Line:'.$e->getLine().'Message:'.$e->getMessage());
+
+            return [
+                'success' => 0,
+                'msg' => $e->getMessage(),
+            ];
+        }
+    }
+
+    /**
+     * Clear application / view / config / route caches from admin settings.
+     */
+    public function clearApplicationCache(Request $request)
+    {
+        if (! auth()->user()->can('business_settings.access')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        try {
+            Artisan::call('view:clear');
+            Artisan::call('cache:clear');
+            Artisan::call('config:clear');
+            Artisan::call('route:clear');
+
+            return [
+                'success' => 1,
+                'msg' => __('lang_v1.cache_cleared_success'),
             ];
         } catch (\Exception $e) {
             \Log::emergency('File:'.$e->getFile().'Line:'.$e->getLine().'Message:'.$e->getMessage());

@@ -31,6 +31,22 @@
 
     <div class="row" style="margin-top: 20px;">
         <div class="col-sm-12">
+            <div class="box box-primary">
+                <div class="box-header with-border">
+                    <h3 class="box-title">@lang('lang_v1.clear_cache')</h3>
+                </div>
+                <div class="box-body">
+                    <p class="text-muted">@lang('lang_v1.clear_cache_help')</p>
+                    <button type="button" class="btn btn-primary" id="btn_clear_application_cache">
+                        <i class="fa fa-refresh"></i> @lang('lang_v1.clear_cache')
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row" style="margin-top: 20px;">
+        <div class="col-sm-12">
             <div class="box box-danger">
                 <div class="box-header with-border">
                     <h3 class="box-title">@lang('lang_v1.fresh_pos_reset')</h3>
