@@ -32,6 +32,9 @@
 				<td>
 					{{ $loop->iteration}}.
 				</td>
+				<td class="pos-recent-date text-nowrap">
+					{{ @format_datetime($transaction->transaction_date) }}
+				</td>
 				<td class="col-md-4">
 					{{ $transaction->invoice_no }} ({{ $customerLabel }})
 					@if(!empty($transaction->table))
@@ -41,7 +44,7 @@
 				<td class="display_currency col-md-2">
 					{{ $transaction->final_total }}
 				</td>
-				<td class="col-md-6 tw-flex tw-flex-col md:tw-flex-row tw-space-x-0 md:tw-space-x-2 tw-space-y-1 md:tw-space-y-0">
+				<td class="col-md-5 tw-flex tw-flex-col md:tw-flex-row tw-space-x-0 md:tw-space-x-2 tw-space-y-1 md:tw-space-y-0">
 					@if(auth()->user()->can('sell.update') || auth()->user()->can('direct_sell.update'))
 					<a href="{{ route('pos.edit', ['po' => $transaction->id]) . $subtype }}" class="tw-dw-btn tw-dw-btn-outline tw-dw-btn-info">
 	    				<i class="fas fa-pen text-muted" aria-hidden="true" title="{{__('lang_v1.click_to_edit')}}"></i>

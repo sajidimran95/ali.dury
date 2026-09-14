@@ -4638,14 +4638,23 @@ function get_recent_transactions(status, element_obj) {
         return false;
     }
     var transaction_sub_type = $("#transaction_sub_type").val();
+    var location_id = $('input#location_id').val() || $('#location_id').val() || '';
     $.ajax({
         method: 'GET',
         url: '/sells/pos/get-recent-transactions',
-        data: { status: status , transaction_sub_type: transaction_sub_type},
+        data: {
+            status: status,
+            transaction_sub_type: transaction_sub_type || '',
+            location_id: location_id,
+            limit: 50,
+        },
         dataType: 'html',
         success: function(result) {
             element_obj.html(result);
             __currency_convert_recursively(element_obj);
+        },
+        error: function() {
+            element_obj.html('<p class="text-danger">Unable to load recent transactions.</p>');
         },
     });
 }

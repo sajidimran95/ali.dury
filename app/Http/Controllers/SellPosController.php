@@ -2172,64 +2172,69 @@ class SellPosController extends Controller
         $business_id = $request->session()->get('user.business_id');
         $user_id = $request->session()->get('user.id');
         $transaction_status = $request->get('status');
+        $location_id = $request->get('location_id');
+        $transaction_sub_type = $request->get('transaction_sub_type');
 
-        $register = $this->cashRegisterUtil->getCurrentCashRegister($user_id);
+        $limit = (int) $request->get('limit', 50);
+        if ($limit < 1) {
+            $limit = 50;
+        }
+        if ($limit > 100) {
+            $limit = 100;
+        }
 
-        $query = Transaction::where('business_id', $business_id)
-            ->where('transactions.created_by', $user_id)
-            ->where('transactions.type', 'sell')
+        // Staff always see only their own sales
+        $query = Transaction::query()
+            ->where('business_id', $business_id)
+            ->where('created_by', $user_id)
+            ->where('type', 'sell')
             ->where('is_direct_sale', 0);
 
-        if ($transaction_status == 'final') {
-            //Commented as credit sales not showing
-            // if (!empty($register->id)) {
-            //     $query->leftjoin('cash_register_transactions as crt', 'transactions.id', '=', 'crt.transaction_id')
-            //     ->where('crt.cash_register_id', $register->id);
-            // }
+        if (! empty($location_id)) {
+            $query->where('location_id', $location_id);
         }
 
         if ($transaction_status == 'quotation') {
-            $query->where('transactions.status', 'draft')
+            $query->where('status', 'draft')
                 ->where('sub_status', 'quotation');
         } elseif ($transaction_status == 'draft') {
-            $query->where('transactions.status', 'draft')
-                ->whereNull('sub_status');
+            $query->where('status', 'draft')
+                ->where(function ($q) {
+                    $q->whereNull('sub_status')->orWhere('sub_status', '');
+                });
         } elseif ($transaction_status == 'suspended') {
-            $query->where('transactions.is_suspend', 1);
+            $query->where('is_suspend', 1);
         } else {
-            $query->where('transactions.status', $transaction_status);
+            // Final (and other statuses)
+            $query->where('status', $transaction_status ?: 'final')
+                ->where(function ($q) {
+                    $q->whereNull('is_suspend')->orWhere('is_suspend', 0);
+                });
         }
 
-        $transaction_sub_type = $request->get('transaction_sub_type');
-        if (!empty($transaction_sub_type)) {
-            $query->where('transactions.sub_type', $transaction_sub_type);
+        if (! empty($transaction_sub_type)) {
+            $query->where('sub_type', $transaction_sub_type);
         } else {
-            $query->where('transactions.sub_type', null);
+            $query->where(function ($q) {
+                $q->whereNull('sub_type')->orWhere('sub_type', '');
+            });
         }
 
-        $location_id = $request->get('location_id');
-        if (! empty($location_id)) {
-            $query->where('transactions.location_id', $location_id);
-        }
-
-        // POS recent list: today's transactions only (business timezone when set)
-        $tz = $request->session()->get('business.time_zone', config('app.timezone'));
-        $today = \Carbon\Carbon::now($tz)->toDateString();
-        $query->whereDate('transactions.transaction_date', $today);
-
-        // Enough room for a busy day; modal list is scrollable
-        $limit = (int) $request->get('limit', 300);
-        if ($limit < 1) {
-            $limit = 300;
-        }
-        if ($limit > 500) {
-            $limit = 500;
-        }
-        
-        $transactions = $query->orderBy('transactions.created_at', 'desc')
-            ->groupBy('transactions.id')
-            ->select('transactions.*')
+        // Lean select + simple eager load (avoid columns that may not exist in all DBs)
+        $transactions = $query
+            ->select([
+                'id',
+                'contact_id',
+                'invoice_no',
+                'transaction_date',
+                'final_total',
+                'res_table_id',
+                'created_by',
+                'location_id',
+                'status',
+            ])
             ->with(['contact', 'table'])
+            ->orderByDesc('id')
             ->limit($limit)
             ->get();
 

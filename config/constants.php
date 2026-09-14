@@ -48,7 +48,7 @@ return [
     'currency_exchange_rate' => 1,
     'orders_refresh_interval' => 600, //Auto refresh interval on Kitchen and Orders page in seconds,
 
-    'pos_recent_transactions_display_limit' => env('POS_RECENT_TRANSACTIONS_DISPLAY_LIMIT', 10), //Controls how many recent transactions are shown in POS recent transactions list default is 10
+    'pos_recent_transactions_display_limit' => env('POS_RECENT_TRANSACTIONS_DISPLAY_LIMIT', 50), // POS recent transactions list size
 
     'default_date_format' => 'm/d/Y', //Default date format to be used if session is not set. All valid formats can be found on https://www.php.net/manual/en/function.date.php
 
