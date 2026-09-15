@@ -1417,6 +1417,25 @@ $(document).ready(function() {
         checkboxClass: 'icheckbox_square-blue',
         radioClass: 'iradio_square-blue',
     });
+
+    // Wrapping <label> + iCheck double-toggles on touch (native label + iCheck cancel out).
+    // Stop the native association and toggle once via iCheck when the label text is tapped.
+    $(document).on('click', 'label', function (e) {
+        var $box = $(this).find('.icheckbox_square-blue, .iradio_square-blue').first();
+        if (!$box.length) {
+            return;
+        }
+        var $input = $box.find('input').first();
+        if (!$input.length || $input.is(':disabled') || $box.hasClass('disabled')) {
+            return;
+        }
+        e.preventDefault();
+        if ($(e.target).closest('.icheckbox_square-blue, .iradio_square-blue').length) {
+            return;
+        }
+        $input.iCheck('toggle');
+    });
+
     $(document).on('ifChecked', '.check_all', function() {
         $(this)
             .closest('.check_group')
