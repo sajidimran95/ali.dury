@@ -21,6 +21,10 @@ class SeparateAppSession
             config([
                 'session.cookie' => 'japs_sale_session',
             ]);
+        } elseif ($request->is('delivery') || $request->is('delivery/*')) {
+            config([
+                'session.cookie' => 'japs_delivery_session',
+            ]);
         } else {
             // Admin / main system
             config([

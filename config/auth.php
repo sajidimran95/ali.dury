@@ -47,6 +47,12 @@ return [
             'provider' => 'users',
         ],
 
+        // Delivery PWA — separate session from Admin / Sale
+        'delivery' => [
+            'driver' => 'session',
+            'provider' => 'users',
+        ],
+
         'api' => [
             'driver' => 'passport',
             'provider' => 'users',

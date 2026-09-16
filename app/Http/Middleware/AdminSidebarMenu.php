@@ -218,6 +218,31 @@ class AdminSidebarMenu
             );
         }
 
+        $canDeliveryManage = $is_admin || auth()->user()->can('delivery.manage');
+        if ($canDeliveryManage) {
+            if (! $canFulfillment) {
+                $sub->header(__('lang_v1.menu_fulfillment'));
+            }
+            $sub->url(
+                route('deliveries.assign'),
+                __('delivery.management'),
+                [
+                    'icon' => '',
+                    'active' => request()->segment(1) == 'deliveries',
+                    'data-search-terms' => 'delivery management assign driver route navigate maps',
+                ]
+            );
+            $sub->url(
+                route('deliveries.routes'),
+                __('delivery.todays_routes'),
+                [
+                    'icon' => '',
+                    'active' => request()->segment(1) == 'deliveries' && request()->segment(2) == 'routes',
+                    'data-search-terms' => 'delivery routes today optimize',
+                ]
+            );
+        }
+
         $canReturns = auth()->user()->can('access_sell_return') || auth()->user()->can('access_own_sell_return');
         $canDiscounts = auth()->user()->can('discount.access');
         $canSalesTeam = auth()->user()->can('user.create');

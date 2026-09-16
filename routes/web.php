@@ -274,6 +274,42 @@ Route::any('/sales/{any?}', function ($any = null) {
 
     return redirect($target, 301);
 })->where('any', '.*');
+
+/*
+|--------------------------------------------------------------------------
+| Delivery driver PWA (/delivery)
+|--------------------------------------------------------------------------
+*/
+use App\Http\Controllers\DeliveryApp\DeliveryAppController;
+use App\Http\Controllers\DeliveryApp\DeliveryAuthController;
+use App\Http\Controllers\DeliveryApp\DeliveryPwaController;
+use App\Http\Controllers\DeliveryManagementController;
+
+Route::prefix('delivery')->name('delivery.app.')->middleware(['setData', \App\Http\Middleware\UseDeliveryGuard::class])->group(function () {
+    Route::get('/pwa/manifest.webmanifest', [DeliveryPwaController::class, 'manifest'])->name('pwa.manifest');
+    Route::get('/pwa/sw.js', [DeliveryPwaController::class, 'serviceWorker'])->name('pwa.sw');
+    Route::get('/pwa/offline', [DeliveryPwaController::class, 'offline'])->name('pwa.offline');
+
+    Route::middleware(['guest:delivery', 'language'])->group(function () {
+        Route::get('/login', [DeliveryAuthController::class, 'showLoginForm'])->name('login');
+        Route::post('/login', [DeliveryAuthController::class, 'login'])->name('login.post');
+    });
+    Route::post('/logout', [DeliveryAuthController::class, 'logout'])->name('logout')->middleware('auth:delivery');
+
+    Route::middleware(['auth:delivery', 'SetSessionData', 'language', 'timezone', 'CheckUserLogin', 'delivery.app'])->group(function () {
+        Route::get('/', [DeliveryAppController::class, 'home'])->name('home');
+        Route::get('/route', [DeliveryAppController::class, 'route'])->name('route');
+        Route::get('/assigned', [DeliveryAppController::class, 'assigned'])->name('assigned');
+        Route::get('/all', [DeliveryAppController::class, 'all'])->name('all');
+        Route::get('/delivered', [DeliveryAppController::class, 'history'])->name('history');
+        Route::post('/start', [DeliveryAppController::class, 'start'])->name('start');
+        Route::post('/stops/{stop}/arrived', [DeliveryAppController::class, 'arrived'])->name('arrived')->whereNumber('stop');
+        Route::post('/stops/{stop}/delivered', [DeliveryAppController::class, 'delivered'])->name('delivered')->whereNumber('stop');
+        Route::post('/stops/{stop}/failed', [DeliveryAppController::class, 'failed'])->name('failed')->whereNumber('stop');
+        Route::post('/stops/{stop}/notes', [DeliveryAppController::class, 'notes'])->name('notes')->whereNumber('stop');
+    });
+});
+
 //Routes for authenticated users only
 Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 'AdminSidebarMenu', 'CheckUserLogin'])->group(function () {
     Route::get('pos/payment/{id}', [SellPosController::class, 'edit'])->name('edit-pos-payment');
@@ -722,6 +758,13 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::post('fulfillment/{id}/pick', [FulfillmentController::class, 'pick'])->name('fulfillment.pick');
     Route::post('fulfillment/{id}/pack', [FulfillmentController::class, 'pack'])->name('fulfillment.pack');
     Route::post('fulfillment/{id}/ship', [FulfillmentController::class, 'ship'])->name('fulfillment.ship');
+
+    // Delivery Management (admin assign + auto route)
+    Route::get('deliveries/assign', [DeliveryManagementController::class, 'assign'])->name('deliveries.assign');
+    Route::post('deliveries/assign', [DeliveryManagementController::class, 'assignStore'])->name('deliveries.assign.store');
+    Route::get('deliveries/routes', [DeliveryManagementController::class, 'routes'])->name('deliveries.routes');
+    Route::post('deliveries/generate', [DeliveryManagementController::class, 'generate'])->name('deliveries.generate');
+    Route::get('deliveries/routes/{id}', [DeliveryManagementController::class, 'show'])->name('deliveries.routes.show')->whereNumber('id');
 
     Route::post('upload-module', [ManageModulesController::class, 'uploadModule']);
     Route::delete('manage-modules/destroy/{module_name}', [ManageModulesController::class, 'destroy']);

@@ -84,6 +84,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'sale.rep' => EnsureSaleRepAccess::class,
             'customer.app' => EnsureCustomerAppAccess::class,
             'sale.guard' => \App\Http\Middleware\UseSaleGuard::class,
+            'delivery.app' => \App\Http\Middleware\EnsureDeliveryAppAccess::class,
+            'delivery.guard' => \App\Http\Middleware\UseDeliveryGuard::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

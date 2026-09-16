@@ -31,12 +31,20 @@ class RedirectIfAuthenticated
                 return redirect()->route('customer.home');
             }
 
-            // Admin (web / default) — never send Sale/Customer traffic to Admin from here
+            // Delivery PWA login
+            if ($guard === 'delivery') {
+                return redirect()->route('delivery.app.home');
+            }
+
+            // Admin (web / default) — never send Sale/Customer/Delivery traffic to Admin from here
             if ($request->is('sale') || $request->is('sale/*')) {
                 return redirect()->route('sale.login');
             }
             if ($request->is('customer') || $request->is('customer/*')) {
                 return redirect()->route('customer.login');
+            }
+            if ($request->is('delivery') || $request->is('delivery/*')) {
+                return redirect()->route('delivery.app.login');
             }
 
             return redirect(RouteServiceProvider::HOME);

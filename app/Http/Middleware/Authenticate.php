@@ -23,6 +23,10 @@ class Authenticate extends Middleware
                 return route('customer.login');
             }
 
+            if ($request->is('delivery') || $request->is('delivery/*')) {
+                return route('delivery.app.login');
+            }
+
             $shop = trim((string) config('ecommerce.route_prefix', 'shop'), '/');
             if ($shop !== '' && ($request->is($shop) || $request->is($shop.'/*'))) {
                 return route('ecommerce.login');

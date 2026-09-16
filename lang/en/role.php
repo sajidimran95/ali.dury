@@ -91,6 +91,10 @@ return [
     'shipping_method.update' => 'Edit shipping methods',
     'shipping_method.delete' => 'Delete shipping methods',
 
+    'delivery.manage' => 'Manage delivery assignment & routes',
+    'delivery.driver.view' => 'Delivery driver — view assigned routes',
+    'delivery.driver.edit' => 'Delivery driver — update stop status',
+
     'tax_rate.view' => 'View tax rate',
     'tax_rate.create' => 'Add tax rate',
     'tax_rate.update' => 'Edit tax rate',

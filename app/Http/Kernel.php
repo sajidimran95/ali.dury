@@ -73,5 +73,7 @@ class Kernel extends HttpKernel
         'sale.rep' => \App\Http\Middleware\EnsureSaleRepAccess::class,
         'customer.app' => \App\Http\Middleware\EnsureCustomerAppAccess::class,
         'sale.guard' => \App\Http\Middleware\UseSaleGuard::class,
+        'delivery.app' => \App\Http\Middleware\EnsureDeliveryAppAccess::class,
+        'delivery.guard' => \App\Http\Middleware\UseDeliveryGuard::class,
     ];
 }
