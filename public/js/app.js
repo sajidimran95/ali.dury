@@ -140,19 +140,27 @@ $(document).ready(function() {
         });
     });
 
-    //Brands table
-    var brands_table = $('#brands_table').DataTable({
-        processing: true,
-        serverSide: true,
-        fixedHeader:false,
-        ajax: '/brands',
-        columns: [
-            { data: 'name', name: 'name' },
-            { data: 'description', name: 'description' },
-            { data: 'show_in_pos', name: 'show_in_pos', orderable: false, searchable: false },
-            { data: 'action', name: 'action', orderable: false, searchable: false },
-        ],
-    });
+    //Brands table — /brands is the public store page (HTML), list JSON is /brands/manage
+    var brands_table;
+    if ($('#brands_table').length) {
+        var brandsAjaxUrl = $('#brands_table').data('ajax-url') || '/brands/manage';
+        brands_table = $('#brands_table').DataTable({
+            processing: true,
+            serverSide: true,
+            fixedHeader: false,
+            ajax: {
+                url: brandsAjaxUrl,
+                type: 'GET',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            },
+            columns: [
+                { data: 'name', name: 'name' },
+                { data: 'description', name: 'description' },
+                { data: 'show_in_pos', name: 'show_in_pos', orderable: false, searchable: false },
+                { data: 'action', name: 'action', orderable: false, searchable: false },
+            ],
+        });
+    }
 
     $(document).on('click', 'button.edit_brand_button', function() {
         $('div.brands_modal').load($(this).data('href'), function() {

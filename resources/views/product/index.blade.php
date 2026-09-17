@@ -2,7 +2,8 @@
 @section('title', __('sale.products'))
 
 @section('css')
-    <link rel="stylesheet" href="{{ asset('css/product-list-metrics.css?v=' . ($asset_v ?? '') . '&plm=2') }}">
+    <link rel="stylesheet" href="{{ asset('css/product-list-metrics.css?v=' . ($asset_v ?? '') . '&plm=4') }}">
+    <link rel="stylesheet" href="{{ asset('css/inv-saas-kpis.css?v=' . ($asset_v ?? '') . '&k=6') }}">
 @endsection
 
 @section('content')

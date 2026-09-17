@@ -629,11 +629,11 @@ body.japs-dashboard-premium .inv-dash .inv-health__hint {
   color: var(--inv-hint);
 }
 
-body.japs-dashboard-premium .inv-dash .inv-metric-row {
+body.japs-dashboard-premium .inv-dash .inv-metric-row.inv-saas-kpis {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
-  margin-bottom: 18px;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
 }
 
 body.japs-dashboard-premium .inv-dash .inv-metric {
@@ -1171,7 +1171,7 @@ body.japs-dashboard-premium .ecom-inv-dash .ecom-inv-pill--returned { background
   body.japs-dashboard-premium .inv-dash .inv-pulse__spotlight {
     grid-template-columns: 1fr 1fr;
   }
-  body.japs-dashboard-premium .inv-dash .inv-metric-row {
+  body.japs-dashboard-premium .inv-dash .inv-metric-row.inv-saas-kpis {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
   body.japs-dashboard-premium .inv-dash .inv-bento {
