@@ -427,8 +427,48 @@ body.japs-home-ops .japs-dashboard-page {
     .japs-shot__spark,
     .japs-shot__spark path,
     .japs-shot__avatar,
-    .japs-shot__actions .japs-ops-action {
+    .japs-shot__actions .japs-ops-action,
+    .japs-shot__clock .att-clock-card {
         animation: none !important;
     }
+}
+
+/* Same motion as /sales-dashboard (visual only) */
+@keyframes japsSalesIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: none; }
+}
+@keyframes japsSalesShine {
+    from { transform: translateX(-140%) skewX(-16deg); }
+    to { transform: translateX(230%) skewX(-16deg); }
+}
+body.japs-home-ops .japs-shot__stat,
+body.japs-home-ops .japs-shot__card,
+body.japs-home-ops .japs-shot__clock .att-clock-card,
+body.japs-home-ops .japs-shot__actions .japs-ops-action,
+body.japs-home-ops .japs-shot__feat {
+    animation: japsSalesIn 0.5s ease both !important;
+    transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.22s ease, border-color 0.22s ease !important;
+}
+body.japs-home-ops .japs-shot__stat:nth-child(1) { animation-delay: 0.04s !important; }
+body.japs-home-ops .japs-shot__stat:nth-child(2) { animation-delay: 0.1s !important; }
+body.japs-home-ops .japs-shot__stat:nth-child(3) { animation-delay: 0.16s !important; }
+body.japs-home-ops .japs-shot__bar { animation-delay: 0.18s !important; }
+body.japs-home-ops .japs-shot__insights { animation-delay: 0.24s !important; }
+body.japs-home-ops .japs-shot__donut { animation-delay: 0.2s !important; }
+body.japs-home-ops .japs-shot__line { animation-delay: 0.28s !important; }
+body.japs-home-ops .japs-shot__stat:hover,
+body.japs-home-ops .japs-shot__card:hover,
+body.japs-home-ops .japs-shot__clock .att-clock-card:hover,
+body.japs-home-ops .japs-shot__actions .japs-ops-action:hover {
+    transform: translateY(-3px) !important;
+    border-color: #93c5fd !important;
+    box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.18), 0 12px 24px rgba(37, 99, 235, 0.12) !important;
+}
+body.japs-home-ops .japs-shot__stat:hover::after,
+body.japs-home-ops .japs-shot__card:hover::after,
+body.japs-home-ops .japs-shot__actions .japs-ops-action:hover::after,
+body.japs-home-ops .japs-shot__feat:hover::after {
+    animation: japsSalesShine 0.65s ease;
 }
 

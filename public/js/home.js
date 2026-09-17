@@ -270,7 +270,22 @@ function update_statistics(start, end) {
             // Orders / AOV / avg time-to-payment KPI cards
             $('.total_orders').html(typeof data.total_orders !== 'undefined' ? data.total_orders : 0);
             $('.avg_order_value').html(__currency_trans_from_en(data.avg_order_value || 0, true));
-            $('.avg_payment_hours').html(typeof data.avg_payment_hours !== 'undefined' ? data.avg_payment_hours : 0);
+            $('.avg_payment_hours').html(
+                (typeof data.avg_payment_hours !== 'undefined' ? Number(data.avg_payment_hours) : 0).toFixed(1)
+            );
+            if (data.spark_payment_hours && typeof Highcharts !== 'undefined') {
+                (Highcharts.charts || []).forEach(function (chart) {
+                    if (!chart || !chart.renderTo || !chart.series || !chart.series[0]) {
+                        return;
+                    }
+                    if (!$(chart.renderTo).closest('.japs-dash-kpi-card--amber').length) {
+                        return;
+                    }
+                    try {
+                        chart.series[0].setData(data.spark_payment_hours, true);
+                    } catch (e) {}
+                });
+            }
 
             if (data.change_pct) {
                 japsApplyDelta($('[data-kpi="total_sell"]'), data.change_pct.total_sell);

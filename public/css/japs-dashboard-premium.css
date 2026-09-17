@@ -1344,12 +1344,15 @@ body.japs-dashboard-premium .ecom-dash table.ed-table tbody tr:hover td {
 }
 
 body.japs-dashboard-premium .dataTables_wrapper .dataTables_length,
+body.japs-dashboard-premium .dataTables_wrapper .dataTables_filter {
+  padding: 0 !important;
+}
+body.japs-dashboard-premium .dataTables_wrapper .dataTables_length,
 body.japs-dashboard-premium .dataTables_wrapper .dataTables_filter,
 body.japs-dashboard-premium .dataTables_wrapper .dataTables_info,
 body.japs-dashboard-premium .dataTables_wrapper .dataTables_paginate {
   font-size: 12px !important;
   color: var(--prem-muted) !important;
-  padding: 10px 4px !important;
 }
 
 body.japs-dashboard-premium .dataTables_wrapper .dataTables_paginate .paginate_button > a,

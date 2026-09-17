@@ -158,9 +158,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"></noscript>
 {{-- Premium SaaS theme — final visual layer --}}
-<link rel="stylesheet" href="{{ asset('css/premium-theme.css?v='.$asset_v.'&tb=21') }}">
+<link rel="stylesheet" href="{{ asset('css/premium-theme.css?v='.$asset_v.'&tb=22') }}">
 @if(!empty($dashboard_premium))
-<link rel="stylesheet" href="{{ asset('css/japs-dashboard-premium.css?v='.$asset_v.'&inv=9') }}">
+<link rel="stylesheet" href="{{ asset('css/japs-dashboard-premium.css?v='.$asset_v.'&inv=10') }}">
 @endif
 <link rel="stylesheet" href="{{ asset('css/inv-saas-kpis.css?v='.$asset_v.'&k=7') }}">
 @if(!empty($dashboard_home))
@@ -168,7 +168,7 @@
 @endif
 @if(!empty($home_ops ?? false))
 <link rel="stylesheet" href="{{ asset('css/japs-home-ops.css?v='.$asset_v) }}">
-<link rel="stylesheet" href="{{ asset('css/japs-home-ops-neo.css?v='.$asset_v.'&shot=17') }}">
+<link rel="stylesheet" href="{{ asset('css/japs-home-ops-neo.css?v='.$asset_v.'&shot=18') }}">
 @endif
 @if(!empty($__system_settings['additional_css']))
     {!! $__system_settings['additional_css'] !!}

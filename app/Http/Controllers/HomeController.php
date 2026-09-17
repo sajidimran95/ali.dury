@@ -549,6 +549,22 @@ class HomeController extends Controller
             $permitted_locations = auth()->user()->permitted_locations();
             $pos_orders = $this->getOrdersCount($business_id, $start, $end, $location_id, $created_by, $permitted_locations);
             $output['avg_payment_hours'] = $this->getAvgPaymentHours($business_id, $start, $end, $location_id, $permitted_locations);
+            $spark_end = $end;
+            $spark_start = \Carbon::parse($end)->subDays(13)->format('Y-m-d');
+            if (\Carbon::parse($start)->gt(\Carbon::parse($spark_start))) {
+                $spark_start = $start;
+            }
+            $daily_payment_hours = $this->getDailyAvgPaymentHours($business_id, $spark_start, $spark_end, $permitted_locations, $location_id);
+            $spark_payment_hours = [];
+            $cursor = \Carbon::parse($spark_start);
+            $endC = \Carbon::parse($spark_end);
+            while ($cursor->lte($endC)) {
+                $date = $cursor->format('Y-m-d');
+                $payment_row = $daily_payment_hours->get($date);
+                $spark_payment_hours[] = $payment_row ? round(((float) $payment_row->avg_minutes) / 60, 1) : 0;
+                $cursor->addDay();
+            }
+            $output['spark_payment_hours'] = $spark_payment_hours;
 
             $channel_totals = $this->getOnlineAndFieldTotals($business_id, $start, $end, $location_id, $created_by, $permitted_locations);
             $output['online_orders'] = $channel_totals['online_orders'];
@@ -1806,29 +1822,13 @@ class HomeController extends Controller
             ->whereNull('parent_id')
             ->groupBy('transaction_id');
 
-        $query = Transaction::query()
-            ->joinSub($sub, 'tp_last', function ($join) {
+        $query = $this->dashboardOrdersQuery($business_id, $start, $end, $permitted_locations, $location_id, null, 'transactions')
+            ->leftJoinSub($sub, 'tp_last', function ($join) {
                 $join->on('tp_last.transaction_id', '=', 'transactions.id');
-            })
-            ->where('transactions.business_id', $business_id)
-            ->where('transactions.type', 'sell')
-            ->where('transactions.status', 'final')
-            ->where('transactions.payment_status', 'paid')
-            ->notEcommerce()
-            ->whereNotNull('tp_last.last_paid_on');
-
-        if (! empty($start) && ! empty($end)) {
-            $query->whereBetween('transactions.transaction_date', [$start.' 00:00:00', $end.' 23:59:59']);
-        }
-        if (! empty($permitted_locations) && $permitted_locations != 'all') {
-            $query->whereIn('transactions.location_id', $permitted_locations);
-        }
-        if (! empty($location_id)) {
-            $query->where('transactions.location_id', $location_id);
-        }
+            });
 
         $avg_minutes = (float) $query
-            ->selectRaw('AVG(GREATEST(TIMESTAMPDIFF(MINUTE, transactions.transaction_date, tp_last.last_paid_on), 0)) as avg_minutes')
+            ->selectRaw('AVG(GREATEST(TIMESTAMPDIFF(MINUTE, transactions.transaction_date, COALESCE(tp_last.last_paid_on, transactions.updated_at)), 0)) as avg_minutes')
             ->value('avg_minutes');
 
         return $avg_minutes > 0 ? round($avg_minutes / 60, 1) : 0.0;
@@ -1970,36 +1970,27 @@ class HomeController extends Controller
     /**
      * Daily avg time-to-payment (business-wide) — feeds the Avg. Time to Payment sparkline.
      */
-    private function getDailyAvgPaymentHours($business_id, $start, $end, $permitted_locations = null)
+    private function getDailyAvgPaymentHours($business_id, $start, $end, $permitted_locations = null, $location_id = null)
     {
         $sub = DB::table('transaction_payments')
             ->select('transaction_id', DB::raw('MAX(paid_on) as last_paid_on'))
             ->whereNull('parent_id')
             ->groupBy('transaction_id');
 
-        $query = Transaction::query()
-            ->joinSub($sub, 'tp_last', function ($join) {
+        $query = $this->dashboardOrdersQuery($business_id, $start, $end, $permitted_locations, $location_id, null, 'transactions')
+            ->leftJoinSub($sub, 'tp_last', function ($join) {
                 $join->on('tp_last.transaction_id', '=', 'transactions.id');
-            })
-            ->where('transactions.business_id', $business_id)
-            ->where('transactions.type', 'sell')
-            ->where('transactions.status', 'final')
-            ->where('transactions.payment_status', 'paid')
-            ->notEcommerce()
-            ->whereNotNull('tp_last.last_paid_on')
-            ->whereBetween('transactions.transaction_date', [$start.' 00:00:00', $end.' 23:59:59']);
-
-        if (! empty($permitted_locations) && $permitted_locations != 'all') {
-            $query->whereIn('transactions.location_id', $permitted_locations);
-        }
+            });
 
         return $query->select(
             DB::raw('DATE(transactions.transaction_date) as date'),
-            DB::raw('AVG(GREATEST(TIMESTAMPDIFF(MINUTE, transactions.transaction_date, tp_last.last_paid_on), 0)) as avg_minutes')
+            DB::raw('AVG(GREATEST(TIMESTAMPDIFF(MINUTE, transactions.transaction_date, COALESCE(tp_last.last_paid_on, transactions.updated_at)), 0)) as avg_minutes')
         )
-            ->groupBy(DB::raw('date(transactions.transaction_date)'))
+            ->groupBy(DB::raw('DATE(transactions.transaction_date)'))
             ->get()
-            ->keyBy('date');
+            ->keyBy(function ($row) {
+                return \Carbon::parse($row->date)->format('Y-m-d');
+            });
     }
 
     /**
