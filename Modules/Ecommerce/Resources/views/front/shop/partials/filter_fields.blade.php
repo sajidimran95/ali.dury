@@ -26,10 +26,23 @@
     </div>
 </div>
 <div>
+    <label class="inline-flex items-center gap-2 text-sm font-medium">
+        <input type="checkbox" name="on_sale" value="1" @checked(request('on_sale')) class="rounded"> On Sale
+    </label>
+</div>
+<div>
+    <label class="inline-flex items-center gap-2 text-sm font-medium">
+        <input type="checkbox" name="new_only" value="1" @checked(request('new_only')) class="rounded"> New Only
+    </label>
+</div>
+<div>
     <label class="font-bold block mb-2">Sort</label>
     <select name="sort" class="input-w">
         <option value="newest" @selected(($sort ?? 'newest') === 'newest')>Newest</option>
+        <option value="bestselling" @selected(($sort ?? '') === 'bestselling')>Best Selling</option>
+        <option value="name" @selected(($sort ?? '') === 'name')>Name A–Z</option>
         <option value="price_asc" @selected(($sort ?? '') === 'price_asc')>Price: Low to High</option>
         <option value="price_desc" @selected(($sort ?? '') === 'price_desc')>Price: High to Low</option>
+        <option value="sale" @selected(($sort ?? '') === 'sale')>On Sale</option>
     </select>
 </div>

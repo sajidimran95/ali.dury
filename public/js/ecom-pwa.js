@@ -7,7 +7,6 @@
 
   var cfg = window.__ECOM_PWA__ || {};
   var STORAGE_KEY = 'ecom_pwa_installed';
-  var deferredPrompt = null;
   var bar = null;
 
   function isStandalone() {
@@ -50,26 +49,36 @@
 
   function hideBarPermanently() {
     markInstalled();
-    deferredPrompt = null;
     setBarVisible(false);
   }
 
   function registerSw() {
     if (!('serviceWorker' in navigator)) return;
     var swUrl = cfg.swUrl || '/ecom-pwa/sw.js';
-    navigator.serviceWorker.register(swUrl, { scope: '/' }).catch(function (err) {
+    var keepCache = cfg.cacheName || '';
+    navigator.serviceWorker.register(swUrl, { scope: '/' }).then(function (reg) {
+      if (reg && typeof reg.update === 'function') {
+        reg.update().catch(function () {});
+      }
+      // Drop stale caches that may still hold an old ecom-pwa.js with preventDefault()
+      if (window.caches && caches.keys) {
+        caches.keys().then(function (keys) {
+          keys.forEach(function (k) {
+            if (k.indexOf('japspos-ecom-pwa-') !== 0) return;
+            if (keepCache && k === keepCache) return;
+            caches.delete(k).catch(function () {});
+          });
+        }).catch(function () {});
+      }
+    }).catch(function (err) {
       if (window.console && console.warn) {
         console.warn('Ecommerce PWA SW registration failed', err);
       }
     });
   }
 
-  window.addEventListener('beforeinstallprompt', function (e) {
-    e.preventDefault();
-    deferredPrompt = e;
-    setBarVisible(true);
-  });
-
+  // Do not call preventDefault() on beforeinstallprompt — that suppresses Chrome's
+  // install banner and logs the console warning about needing to call prompt().
   window.addEventListener('appinstalled', function () {
     hideBarPermanently();
   });
@@ -87,19 +96,6 @@
 
     if (!installBtn) return;
     e.preventDefault();
-
-    if (deferredPrompt) {
-      deferredPrompt.prompt();
-      deferredPrompt.userChoice.then(function (choice) {
-        deferredPrompt = null;
-        if (choice && choice.outcome === 'accepted') {
-          hideBarPermanently();
-        }
-      }).catch(function () {
-        deferredPrompt = null;
-      });
-      return;
-    }
 
     if (isStandalone()) {
       hideBarPermanently();

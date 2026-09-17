@@ -6,7 +6,10 @@ use App\Contact;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
 use Modules\Ecommerce\Entities\EcomCustomerAddress;
 use Modules\Ecommerce\Entities\EcomCustomerLicense;
 
@@ -248,6 +251,73 @@ class AuthController extends Controller
         $intended = $request->session()->pull('url.intended');
 
         return $this->isShopUrl($intended) ? $intended : null;
+    }
+
+    public function showForgot()
+    {
+        return view('ecommerce::front.auth.forgot');
+    }
+
+    public function sendReset(Request $request)
+    {
+        $data = $request->validate(['email' => 'required|email']);
+        $business_id = $request->attributes->get('ecommerce_business_id');
+        $contact = Contact::where('business_id', $business_id)->onlyCustomers()->where('email', $data['email'])->first();
+
+        if ($contact && Schema::hasTable('ecom_password_resets')) {
+            $token = Str::random(48);
+            DB::table('ecom_password_resets')->insert([
+                'business_id' => $business_id,
+                'email' => $data['email'],
+                'token' => hash('sha256', $token),
+                'expires_at' => now()->addHours(2),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+            $request->session()->flash('reset_debug_url', route('ecommerce.password.reset', ['token' => $token, 'email' => $data['email']]));
+        }
+
+        return back()->with('success', 'If that email is on file, you can continue with the reset link shown after this message when available.');
+    }
+
+    public function showReset(Request $request, string $token)
+    {
+        return view('ecommerce::front.auth.reset', [
+            'token' => $token,
+            'email' => $request->query('email'),
+        ]);
+    }
+
+    public function updatePassword(Request $request)
+    {
+        $data = $request->validate([
+            'email' => 'required|email',
+            'token' => 'required|string',
+            'password' => 'required|string|min:7|max:16|confirmed',
+        ]);
+        $business_id = $request->attributes->get('ecommerce_business_id');
+        if (! Schema::hasTable('ecom_password_resets')) {
+            return back()->with('error', 'Reset is unavailable.');
+        }
+        $row = DB::table('ecom_password_resets')
+            ->where('business_id', $business_id)
+            ->where('email', $data['email'])
+            ->where('token', hash('sha256', $data['token']))
+            ->where('expires_at', '>', now())
+            ->orderByDesc('id')
+            ->first();
+        if (! $row) {
+            return back()->with('error', 'This reset link is invalid or expired.');
+        }
+        $contact = Contact::where('business_id', $business_id)->onlyCustomers()->where('email', $data['email'])->first();
+        if (! $contact) {
+            return back()->with('error', 'Account not found.');
+        }
+        $contact->password = Hash::make($data['password']);
+        $contact->save();
+        DB::table('ecom_password_resets')->where('id', $row->id)->delete();
+
+        return redirect()->route('ecommerce.login')->with('success', 'Password updated. Sign in.');
     }
 
     protected function usStates(): array

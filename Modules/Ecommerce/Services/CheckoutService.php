@@ -71,6 +71,9 @@ class CheckoutService
         if ($payment_method === 'paypal' && ! $settings->enable_paypal) {
             throw new \RuntimeException(__('ecommerce::lang.payment_not_available'));
         }
+        if (! in_array($payment_method, ['cod', 'stripe', 'paypal', 'ach', 'net30'], true)) {
+            throw new \RuntimeException(__('ecommerce::lang.payment_not_available'));
+        }
 
         $products = [];
         foreach ($cart->items as $item) {

@@ -39,6 +39,11 @@ class SettingsController extends Controller
         $settings->seo_description = $request->input('seo_description');
         $settings->contact_email = $request->input('contact_email');
         $settings->contact_phone = $request->input('contact_phone');
+        $extra = is_array($settings->extra) ? $settings->extra : [];
+        $extra['about_title'] = $request->input('about_title');
+        $extra['about_lede'] = $request->input('about_lede');
+        $extra['about_body'] = $request->input('about_body');
+        $settings->extra = $extra;
 
         if ($request->hasFile('store_logo')) {
             $request->validate([

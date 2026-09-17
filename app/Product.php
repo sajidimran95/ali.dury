@@ -32,6 +32,16 @@ class Product extends Model
         return $query->whereIn('products.sales_channel', ['pos_ecommerce', 'ecommerce_only']);
     }
 
+    public static function storefrontQuery(int $businessId)
+    {
+        $base = static::query()->where('business_id', $businessId)->active();
+        if ((clone $base)->forEcommerce()->exists()) {
+            return $base->forEcommerce();
+        }
+
+        return $base;
+    }
+
     public function scopeForPos($query)
     {
         return $query->where(function ($q) {

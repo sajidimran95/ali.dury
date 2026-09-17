@@ -88,6 +88,29 @@
                     {!! Form::textarea('seo_description', $settings->seo_description, ['class' => 'form-control', 'rows' => 2]) !!}
                 </div>
             </div>
+            <div class="col-md-12">
+                <hr>
+                <h4>About page</h4>
+                <p class="help-block">Shown on the public /shop/about page. Leave blank to generate from store name, SEO description, and fulfillment location.</p>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    {!! Form::label('about_title', 'About title') !!}
+                    {!! Form::text('about_title', data_get($settings->extra, 'about_title'), ['class' => 'form-control']) !!}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    {!! Form::label('about_lede', 'About summary') !!}
+                    {!! Form::text('about_lede', data_get($settings->extra, 'about_lede'), ['class' => 'form-control']) !!}
+                </div>
+            </div>
+            <div class="col-md-12">
+                <div class="form-group">
+                    {!! Form::label('about_body', 'About details') !!}
+                    {!! Form::textarea('about_body', data_get($settings->extra, 'about_body'), ['class' => 'form-control', 'rows' => 6]) !!}
+                </div>
+            </div>
         </div>
         <p><a href="{{ route('ecommerce.admin.shipping_tax') }}">@lang('ecommerce::lang.shipping_tax')</a>
         · Storefront: <a href="{{ url('/shop') }}" target="_blank">/shop</a></p>

@@ -73,7 +73,7 @@ class CheckoutController extends Controller
         $data = $request->validate([
             'email' => 'required|email',
             'phone' => 'nullable|string|max:30',
-            'payment_method' => 'required|in:cod,stripe,paypal',
+            'payment_method' => 'required|in:cod,stripe,paypal,ach,net30',
             'note' => 'nullable|string|max:500',
             'shipping.first_name' => 'required|string|max:100',
             'shipping.last_name' => 'required|string|max:100',

@@ -23,6 +23,7 @@ use Modules\Ecommerce\Http\Controllers\Front\ProductDetailController;
 use Modules\Ecommerce\Http\Controllers\Front\QuickOrderController;
 use Modules\Ecommerce\Http\Controllers\Front\EcomPwaController;
 use Modules\Ecommerce\Http\Controllers\Front\ShopController;
+use Modules\Ecommerce\Http\Controllers\Front\StorePageController;
 use Modules\Ecommerce\Http\Controllers\InstallController;
 
 // Ecommerce storefront PWA (public — customers only; not admin panel)
@@ -91,6 +92,23 @@ Route::prefix(config('ecommerce.route_prefix', 'shop'))
         Route::get('/collections/{slug}', [CollectionFrontController::class, 'show'])->name('collection');
         Route::get('/contact', [ContactPageController::class, 'index'])->name('contact');
         Route::post('/contact', [ContactPageController::class, 'send'])->name('contact.send');
+        Route::post('/subscribe', [StorePageController::class, 'subscribe'])->name('subscribe');
+        Route::get('/categories', [StorePageController::class, 'categories'])->name('categories');
+        Route::get('/brands', [StorePageController::class, 'brands'])->name('brands');
+        Route::get('/brand/{id}', [StorePageController::class, 'brand'])->name('brand.show');
+        Route::post('/brand-request', [StorePageController::class, 'brandRequest'])->name('brand.request');
+        Route::get('/promotions/{id?}', [StorePageController::class, 'promotions'])->name('promotions');
+        Route::get('/new-arrivals/{sub?}', [StorePageController::class, 'newArrivals'])->name('new_arrivals');
+        Route::get('/search', [StorePageController::class, 'search'])->name('search');
+        Route::get('/about', fn () => app(StorePageController::class)->page('about'))->name('about');
+        Route::get('/faq', fn () => app(StorePageController::class)->page('faq'))->name('faq');
+        Route::get('/terms', fn () => app(StorePageController::class)->page('terms'))->name('terms');
+        Route::get('/privacy', fn () => app(StorePageController::class)->page('privacy'))->name('privacy');
+        Route::get('/shipping', fn () => app(StorePageController::class)->page('shipping'))->name('shipping');
+        Route::get('/returns', fn () => app(StorePageController::class)->page('returns'))->name('returns');
+        Route::get('/compliance', fn () => app(StorePageController::class)->page('compliance'))->name('compliance');
+        Route::get('/wholesale-agreement', fn () => app(StorePageController::class)->page('wholesale-agreement'))->name('wholesale_agreement');
+        Route::post('/stock-alert', [ProductDetailController::class, 'stockAlert'])->name('stock_alert');
         Route::get('/cart', [CartController::class, 'index'])->name('cart');
         Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
         Route::post('/cart/update', [CartController::class, 'update'])->name('cart.update');
@@ -106,6 +124,11 @@ Route::prefix(config('ecommerce.route_prefix', 'shop'))
         Route::post('/login', [AuthController::class, 'login'])->name('login.post');
         Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
         Route::post('/register', [AuthController::class, 'register'])->name('register.post');
+        Route::get('/account/apply', [AuthController::class, 'showRegister'])->name('account.apply');
+        Route::get('/forgot-password', [AuthController::class, 'showForgot'])->name('password.request');
+        Route::post('/forgot-password', [AuthController::class, 'sendReset'])->name('password.email');
+        Route::get('/reset-password/{token}', [AuthController::class, 'showReset'])->name('password.reset');
+        Route::post('/reset-password', [AuthController::class, 'updatePassword'])->name('password.update');
         Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
         Route::middleware('auth:customer')->group(function () {
@@ -122,3 +145,29 @@ Route::prefix(config('ecommerce.route_prefix', 'shop'))
             Route::post('/review', [AccountController::class, 'review'])->name('review');
         });
     });
+
+// Figma-site URL aliases at `/` (POS admin routes remain under auth).
+Route::middleware(['setData', 'ecommerce.enabled'])->group(function () {
+    Route::get('/product/{slug}', [ProductDetailController::class, 'show']);
+    Route::get('/category/{slug}', [ShopController::class, 'category']);
+    Route::get('/cart', [CartController::class, 'index']);
+    Route::get('/checkout', [CheckoutController::class, 'index']);
+    Route::get('/brands', [StorePageController::class, 'brands']);
+    Route::get('/brand/{id}', [StorePageController::class, 'brand']);
+    Route::get('/categories', [StorePageController::class, 'categories']);
+    Route::get('/promotions/{id?}', [StorePageController::class, 'promotions']);
+    Route::get('/new-arrivals/{sub?}', [StorePageController::class, 'newArrivals']);
+    Route::get('/search', [StorePageController::class, 'search']);
+    Route::get('/contact', [ContactPageController::class, 'index']);
+    Route::post('/contact', [ContactPageController::class, 'send']);
+    Route::post('/subscribe', [StorePageController::class, 'subscribe']);
+    Route::get('/about', fn () => app(StorePageController::class)->page('about'));
+    Route::get('/faq', fn () => app(StorePageController::class)->page('faq'));
+    Route::get('/terms', fn () => app(StorePageController::class)->page('terms'));
+    Route::get('/privacy', fn () => app(StorePageController::class)->page('privacy'));
+    Route::get('/shipping', fn () => app(StorePageController::class)->page('shipping'));
+    Route::get('/returns', fn () => app(StorePageController::class)->page('returns'));
+    Route::get('/compliance', fn () => app(StorePageController::class)->page('compliance'));
+    Route::get('/wholesale-agreement', fn () => app(StorePageController::class)->page('wholesale-agreement'));
+    Route::get('/forgot-password', [AuthController::class, 'showForgot']);
+});

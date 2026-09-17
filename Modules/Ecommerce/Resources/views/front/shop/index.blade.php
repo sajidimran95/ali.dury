@@ -9,7 +9,7 @@
     }
     $activeCat = $categories->firstWhere('id', (int) request('category'));
     $bannerImg = $activeCat && isset($covers[$activeCat->id])
-        ? asset('uploads/img/'.$covers[$activeCat->id])
+        ? uploadAsset($covers[$activeCat->id], 'uploads/img')
         : ($products->first()->image_url ?? null);
 
     $filterCount = 0;
@@ -34,6 +34,8 @@
         @endif
     </div>
 </section>
+
+@include('ecommerce::front.shop.partials.hub_banner', ['hub' => $hub ?? null])
 
 {{-- Mobile app-style filter trigger (shop only) --}}
 <div class="lg:hidden sticky top-[calc(3.5rem+env(safe-area-inset-top,0px))] z-40 bg-white/95 backdrop-blur border-b border-line">

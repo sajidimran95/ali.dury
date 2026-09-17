@@ -9,6 +9,10 @@
     $covers = $category_covers ?? [];
     $promo = $featured->take(4);
     $navBrands = $nav_brands ?? collect();
+
+    $heroImg = $hero && $hero->image ? uploadAsset($hero->image, 'uploads/img') : null;
+    $bannerImgUrl = fn ($banner) => $banner && $banner->image ? uploadAsset($banner->image, 'uploads/img') : null;
+    $coverImgUrl = fn ($cat) => isset($covers[$cat->id]) ? uploadAsset($covers[$cat->id], 'uploads/img') : null;
 @endphp
 
 {{-- Hero banner grid --}}
@@ -24,8 +28,8 @@
         <div class="lg:col-span-3 hidden lg:block">
             @if($leftBanner)
                 <a href="{{ $leftBanner->button_link ?: route('ecommerce.shop') }}" class="block relative rounded-xl overflow-hidden aspect-[3/4] bg-ink group h-full min-h-[420px]">
-                    @if($leftBanner->image)
-                        <img src="{{ asset('uploads/img/'.$leftBanner->image) }}" alt="" class="absolute inset-0 w-full h-full object-cover transition group-hover:scale-105">
+                    @if($bannerImgUrl($leftBanner))
+                        <img src="{{ $bannerImgUrl($leftBanner) }}" alt="" class="absolute inset-0 w-full h-full object-cover transition group-hover:scale-105">
                     @endif
                     <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
                     <div class="absolute bottom-0 p-4 text-white">
@@ -45,8 +49,8 @@
         {{-- Main / top banner --}}
         <div class="lg:col-span-6">
             <a href="{{ ($hero->button_link ?? null) ?: route('ecommerce.shop') }}" class="block relative rounded-2xl lg:rounded-xl overflow-hidden min-h-[220px] sm:min-h-[280px] md:min-h-[420px] bg-slatebar text-white group">
-                @if($hero && $hero->image)
-                    <img src="{{ asset('uploads/img/'.$hero->image) }}" alt="" class="absolute inset-0 w-full h-full object-cover transition duration-700 group-hover:scale-[1.03]">
+                @if($heroImg)
+                    <img src="{{ $heroImg }}" alt="" class="absolute inset-0 w-full h-full object-cover transition duration-700 group-hover:scale-[1.03]">
                 @elseif($featured->first())
                     <img src="{{ $featured->first()->image_url }}" alt="" class="absolute inset-0 w-full h-full object-cover">
                 @endif
@@ -54,10 +58,10 @@
                 <div class="relative p-5 sm:p-6 md:p-10 max-w-lg h-full flex flex-col justify-end min-h-[220px] sm:min-h-[280px] md:min-h-[420px]">
                     <p class="text-[11px] uppercase tracking-[0.2em] text-brand font-bold mb-2">Wholesale</p>
                     <h1 class="text-2xl sm:text-3xl md:text-5xl font-extrabold leading-tight mb-2 sm:mb-3">
-                        {{ $hero->title ?? 'Big brands. Better wholesale pricing.' }}
+                        {{ $hero->title ?? 'Wisconsin’s Premier Smoke & Vape Wholesale' }}
                     </h1>
                     <p class="text-white/80 text-sm md:text-base mb-4 sm:mb-5 line-clamp-2 sm:line-clamp-none">
-                        {{ $hero->subtitle ?? 'Live POS inventory for candy, snacks, tobacco, and more.' }}
+                        {{ $hero->subtitle ?? 'Licensed retailers. Competitive pricing. Same-day fulfillment before 2 PM CST.' }}
                     </p>
                     <span class="inline-flex self-start btn-brand text-sm">{{ $hero->button_text ?? 'Shop now' }}</span>
                 </div>
@@ -67,8 +71,8 @@
             <div class="grid grid-cols-2 gap-2.5 mt-3 lg:hidden">
                 @forelse($mobileSideBanners as $banner)
                     <a href="{{ $banner->button_link ?: route('ecommerce.shop') }}" class="relative rounded-xl overflow-hidden min-h-[120px] group">
-                        @if($banner->image)
-                            <img src="{{ asset('uploads/img/'.$banner->image) }}" alt="" class="absolute inset-0 w-full h-full object-cover">
+                        @if($bannerImgUrl($banner))
+                            <img src="{{ $bannerImgUrl($banner) }}" alt="" class="absolute inset-0 w-full h-full object-cover">
                         @endif
                         <div class="absolute inset-0 bg-gradient-to-t from-black/75 to-transparent"></div>
                         <div class="absolute bottom-0 p-3 text-white">
@@ -80,7 +84,7 @@
                     </a>
                 @empty
                     @foreach($categories->take(2) as $cat)
-                        @php $thumb = isset($covers[$cat->id]) ? asset('uploads/img/'.$covers[$cat->id]) : null; @endphp
+                        @php $thumb = $coverImgUrl($cat); @endphp
                         <a href="{{ route('ecommerce.category', $cat->id) }}" class="relative rounded-xl overflow-hidden min-h-[120px] bg-mist">
                             @if($thumb)<img src="{{ $thumb }}" class="absolute inset-0 w-full h-full object-cover" alt="">@endif
                             <div class="absolute inset-0 bg-black/40"></div>
@@ -95,8 +99,8 @@
         <div class="hidden lg:grid lg:col-span-3 grid-cols-1 gap-3">
             @forelse($rightBanners as $banner)
                 <a href="{{ $banner->button_link ?: route('ecommerce.shop') }}" class="relative rounded-xl overflow-hidden min-h-[130px] md:min-h-[200px] group">
-                    @if($banner->image)
-                        <img src="{{ asset('uploads/img/'.$banner->image) }}" alt="" class="absolute inset-0 w-full h-full object-cover transition group-hover:scale-105">
+                    @if($bannerImgUrl($banner))
+                        <img src="{{ $bannerImgUrl($banner) }}" alt="" class="absolute inset-0 w-full h-full object-cover transition group-hover:scale-105">
                     @endif
                     <div class="absolute inset-0 bg-gradient-to-t from-black/75 to-transparent"></div>
                     <div class="absolute bottom-0 p-4 text-white">
@@ -106,7 +110,7 @@
                 </a>
             @empty
                 @foreach($categories->take(2) as $cat)
-                    @php $thumb = isset($covers[$cat->id]) ? asset('uploads/img/'.$covers[$cat->id]) : null; @endphp
+                    @php $thumb = $coverImgUrl($cat); @endphp
                     <a href="{{ route('ecommerce.category', $cat->id) }}" class="relative rounded-xl overflow-hidden min-h-[130px] bg-mist">
                         @if($thumb)<img src="{{ $thumb }}" class="absolute inset-0 w-full h-full object-cover" alt="">@endif
                         <div class="absolute inset-0 bg-black/40"></div>
@@ -168,8 +172,8 @@
     <div class="grid md:grid-cols-2 gap-3 md:gap-4">
         @foreach($side->take(2) as $banner)
             <a href="{{ $banner->button_link ?: route('ecommerce.shop') }}" class="relative rounded-xl overflow-hidden min-h-[180px] md:min-h-[220px] group">
-                @if($banner->image)
-                    <img src="{{ asset('uploads/img/'.$banner->image) }}" alt="" class="absolute inset-0 w-full h-full object-cover transition group-hover:scale-105">
+                @if($bannerImgUrl($banner))
+                    <img src="{{ $bannerImgUrl($banner) }}" alt="" class="absolute inset-0 w-full h-full object-cover transition group-hover:scale-105">
                 @endif
                 <div class="absolute inset-0 bg-gradient-to-r from-black/70 to-transparent"></div>
                 <div class="relative p-6 text-white max-w-sm">
@@ -197,15 +201,15 @@
 {{-- Full-width lifestyle CTA --}}
 <section class="max-w-[1400px] mx-auto px-4 py-4">
     <div class="relative rounded-2xl overflow-hidden min-h-[220px] md:min-h-[280px] text-white">
-        @if($hero && $hero->image)
-            <img src="{{ asset('uploads/img/'.$hero->image) }}" alt="" class="absolute inset-0 w-full h-full object-cover">
+        @if($heroImg)
+            <img src="{{ $heroImg }}" alt="" class="absolute inset-0 w-full h-full object-cover">
         @endif
         <div class="absolute inset-0 bg-ink/60"></div>
         <div class="relative p-8 md:p-12 max-w-xl">
-            <p class="text-[11px] uppercase tracking-[0.2em] text-brand font-bold mb-2">Trade partners</p>
-            <h2 class="text-3xl md:text-4xl font-extrabold mb-3">Wholesale pricing. Retail-grade stock.</h2>
-            <p class="text-white/75 text-sm mb-5">Open an account to unlock bulk ordering, live inventory, and fast USA shipping.</p>
-            <a href="{{ route('ecommerce.register') }}" class="inline-flex btn-brand">Open wholesale account</a>
+            <p class="text-[11px] uppercase tracking-[0.2em] text-brand font-bold mb-2">Wholesale Accounts</p>
+            <h2 class="text-3xl md:text-4xl font-extrabold mb-3">Ready to Stock Your Shelves?</h2>
+            <p class="text-white/75 text-sm mb-5">Apply for a verified wholesale account and unlock tiered pricing, exclusive deals, and priority fulfillment.</p>
+            <a href="{{ route('ecommerce.register') }}" class="inline-flex btn-brand">Apply for Wholesale Account</a>
         </div>
     </div>
 </section>
@@ -238,8 +242,7 @@
     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
         @foreach($categories as $cat)
             @php
-                $cover = $covers[$cat->id] ?? null;
-                $thumb = $cover ? asset('uploads/img/'.$cover) : optional($featured->firstWhere('category_id', $cat->id))->image_url;
+                $thumb = $coverImgUrl($cat) ?: optional($featured->firstWhere('category_id', $cat->id))->image_url;
             @endphp
             <a href="{{ route('ecommerce.category', $cat->id) }}" class="group relative aspect-[4/3] rounded-xl overflow-hidden bg-mist border border-line">
                 @if($thumb)

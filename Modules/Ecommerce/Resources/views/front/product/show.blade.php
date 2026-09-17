@@ -37,9 +37,12 @@
                         <img src="{{ $product->image_url }}" class="w-full h-full object-cover" alt="">
                     </button>
                     @foreach($product->ecom_gallery as $img)
-                        <button type="button" onclick="document.getElementById('mainImage').src='{{ asset('uploads/img/'.$img) }}'" class="w-20 h-20 rounded-lg overflow-hidden border border-line shrink-0">
-                            <img src="{{ asset('uploads/img/'.$img) }}" class="w-full h-full object-cover" alt="">
+                        @php $galleryUrl = uploadAsset($img, 'uploads/img'); @endphp
+                        @if($galleryUrl)
+                        <button type="button" onclick="document.getElementById('mainImage').src='{{ $galleryUrl }}'" class="w-20 h-20 rounded-lg overflow-hidden border border-line shrink-0">
+                            <img src="{{ $galleryUrl }}" class="w-full h-full object-cover" alt="">
                         </button>
+                        @endif
                     @endforeach
                 </div>
             @endif
@@ -92,6 +95,18 @@
                 <button type="submit" name="buy_now" value="1" class="rounded-full border border-ink px-6 py-3 text-sm font-semibold hover:bg-mist transition">
                     Buy now
                 </button>
+            </form>
+            @endif
+
+            @if(!($variation && ($stock > 0 || !$product->enable_stock)))
+            <form method="post" action="{{ route('ecommerce.stock_alert') }}" class="mb-6 space-y-2">
+                @csrf
+                <input type="hidden" name="product_id" value="{{ $product->id }}">
+                <p class="text-sm font-semibold">Currently Out of Stock</p>
+                <div class="flex gap-2">
+                    <input type="email" name="email" required placeholder="Email for restock alert" class="flex-1 border rounded-lg px-3 py-2 text-sm" value="{{ optional(auth('customer')->user())->email }}">
+                    <button class="px-4 py-2 rounded-lg text-white text-sm font-bold" style="background:#4CAF79">Notify Me</button>
+                </div>
             </form>
             @endif
 

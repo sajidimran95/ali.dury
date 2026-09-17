@@ -79,28 +79,43 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::middleware(['setData'])->group(function () {
-    $figmaStore = function () {
-        return view('figma-store');
-    };
+    Route::get('/', function (\Illuminate\Http\Request $request) {
+        try {
+            if (class_exists(\Modules\Ecommerce\Entities\EcommerceSetting::class)
+                && \Illuminate\Support\Facades\Schema::hasTable('ecommerce_settings')) {
+                $business_id = \Modules\Ecommerce\Entities\EcommerceSetting::where('is_enabled', 1)->value('business_id');
+                if (! $business_id) {
+                    $business_id = \App\Business::query()->value('id');
+                }
 
-    Route::get('/', $figmaStore)->name('home.public');
+                if ($business_id) {
+                    $settings = \Modules\Ecommerce\Entities\EcommerceSetting::forBusiness((int) $business_id);
+                    if ($settings && $settings->is_enabled) {
+                        // Public homepage = ecommerce storefront (POS staff login remains at /login)
+                        $request->attributes->set('ecommerce_business_id', (int) $business_id);
+                        $request->attributes->set('ecommerce_settings', $settings);
+                        view()->share('ecom_settings', $settings);
+                        view()->share('ecom_business_id', (int) $business_id);
+                        view()->share('cart_totals', [
+                            'count' => 0,
+                            'subtotal' => 0,
+                            'total' => 0,
+                            'shipping' => 0,
+                            'tax' => 0,
+                            'discount' => 0,
+                        ]);
 
-    $figmaPages = [
-        'products', 'brands', 'categories', 'new-arrivals', 'promotions',
-        'cart', 'checkout', 'account', 'search', 'about', 'contact', 'faq',
-        'shipping', 'returns', 'privacy', 'terms', 'compliance',
-        'forgot-password', 'wholesale-agreement',
-    ];
-    foreach ($figmaPages as $page) {
-        Route::get('/'.$page, $figmaStore);
-    }
+                        return app(\Modules\Ecommerce\Http\Controllers\Front\HomeController::class)
+                            ->index(app(\Modules\Ecommerce\Services\CartService::class));
+                    }
+                }
+            }
+        } catch (\Throwable $e) {
+            // Module/DB not ready — fall back to POS welcome
+        }
 
-    Route::get('/product/{id}', $figmaStore);
-    Route::get('/brand/{id}', $figmaStore);
-    Route::get('/category/{id}', $figmaStore)->where('id', '[A-Za-z0-9\-]+');
-    Route::get('/account/{sub}', $figmaStore);
-    Route::get('/promotions/{id}', $figmaStore);
-    Route::get('/new-arrivals/{sub}', $figmaStore);
+        return view('welcome');
+    })->name('home.public');
 
     Auth::routes();
 
@@ -367,8 +382,7 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::post('/user/update', [UserController::class, 'updateProfile'])->name('user.updateProfile');
     Route::post('/user/update-password', [UserController::class, 'updatePassword'])->name('user.updatePassword');
 
-    Route::get('/brands/manage', [BrandController::class, 'index'])->name('brands.index');
-    Route::resource('brands', BrandController::class)->except(['index']);
+    Route::resource('brands', BrandController::class);
     Route::resource('shipping-methods', ShippingMethodController::class)->except(['show']);
 
     // PaymentAccountController removed (legacy); payment account report remains under account routes.
@@ -435,8 +449,7 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::get('/products/get-combo-product-entry-row', [ProductController::class, 'getComboProductEntryRow']);
     Route::post('/products/toggle-woocommerce-sync', [ProductController::class, 'toggleWooCommerceSync']);
 
-    Route::get('/products/manage', [ProductController::class, 'index'])->name('products.index');
-    Route::resource('products', ProductController::class)->except(['index']);
+    Route::resource('products', ProductController::class);
     Route::get('/toggle-subscription/{id}', [SellPosController::class, 'toggleRecurringInvoices']);
     Route::post('/sells/pos/get-types-of-service-details', [SellPosController::class, 'getTypesOfServiceDetails']);
     Route::get('/sells/subscriptions', [SellPosController::class, 'listSubscriptions']);

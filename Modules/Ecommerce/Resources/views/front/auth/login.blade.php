@@ -51,8 +51,11 @@
                 <label class="inline-flex items-center gap-2 text-sm text-black/70">
                     <input type="checkbox" name="remember" value="1" class="rounded"> Remember me
                 </label>
-                <button class="btn-brand w-full">Login</button>
+                <button class="btn-brand w-full">Sign In</button>
             </form>
+            <p class="text-center text-sm mt-4">
+                <a href="{{ route('ecommerce.password.request') }}" class="font-semibold text-brand">Forgot password?</a>
+            </p>
             <p class="text-center text-sm mt-6 text-black/50">
                 <a href="{{ url('/') }}" class="hover:text-brand">← Back to store</a>
             </p>
