@@ -37,7 +37,7 @@
                 'headline' => $i === 0 ? $heroFallbackTitle : ($i === 1 ? "New Arrivals\nJust Dropped" : "Top Products\nin Stock Now"),
                 'sub' => $i === 0 ? $heroFallbackSub : ($i === 1 ? 'Fresh inventory added to the wholesale catalog.' : 'Best-selling brands at wholesale prices.'),
                 'cta' => $i === 0 ? 'Shop All Products' : ($i === 1 ? 'View New Arrivals' : 'Shop Catalog'),
-                'ctaHref' => $i === 1 ? route('ecommerce.new_arrivals') : route('ecommerce.shop'),
+                'ctaHref' => $i === 1 ? route('ecommerce.shop', ['new_only' => 1, 'sort' => 'newest']) : route('ecommerce.shop'),
                 'cta2' => 'Apply for Account',
                 'cta2Href' => route('ecommerce.register'),
                 'image' => asset($path),
@@ -104,13 +104,13 @@
     <div class="max-w-screen-xl mx-auto">
         <div class="flex items-end justify-between mb-6">
             <h2 class="section-title font-display text-xl md:text-2xl font-bold" style="color:#1a1a1a">Current Promotions</h2>
-            <a href="{{ route('ecommerce.promotions') }}" class="text-sm font-semibold transition-colors hover:underline shrink-0" style="color:#1a73e8">View All Promotions →</a>
+            <a href="{{ route('ecommerce.shop', ['on_sale' => 1]) }}" class="text-sm font-semibold transition-colors hover:underline shrink-0" style="color:#1a73e8">View All Promotions →</a>
         </div>
         @if($promoTiles->count())
             <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4 mb-8">
                 @foreach($promoTiles as $tile)
                     @php $timg = $tile->image ? uploadAsset($tile->image, 'uploads/img') : null; @endphp
-                    <a href="{{ $tile->button_link ?: route('ecommerce.promotions') }}" class="tile-hover relative group rounded-xl overflow-hidden aspect-square block">
+                    <a href="{{ $tile->button_link ?: route('ecommerce.shop', ['on_sale' => 1]) }}" class="tile-hover relative group rounded-xl overflow-hidden aspect-square block">
                         @if($timg)
                             <img src="{{ $timg }}" alt="" class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
                         @else
@@ -154,7 +154,7 @@
     <div class="max-w-screen-xl mx-auto">
         <div class="flex items-end justify-between mb-6">
             <h2 class="section-title font-display text-xl md:text-2xl font-bold" style="color:#1a1a1a">New Arrivals</h2>
-            <a href="{{ route('ecommerce.new_arrivals') }}" class="text-sm font-semibold transition-colors hover:underline shrink-0" style="color:#1a73e8">View All →</a>
+            <a href="{{ route('ecommerce.shop', ['new_only' => 1, 'sort' => 'newest']) }}" class="text-sm font-semibold transition-colors hover:underline shrink-0" style="color:#1a73e8">View All →</a>
         </div>
         @include('ecommerce::front.partials.product_grid', [
             'products' => $new_arrivals->take(4),

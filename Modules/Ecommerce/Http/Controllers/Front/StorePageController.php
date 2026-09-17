@@ -73,18 +73,27 @@ class StorePageController extends Controller
         return app(ShopController::class)->index($request, $cartService);
     }
 
-    public function promotions(Request $request, CartService $cartService)
+    public function promotions(Request $request)
     {
-        $request->merge(['on_sale' => 1, 'sort' => 'sale']);
-
-        return app(ShopController::class)->index($request, $cartService);
+        return redirect()->route('ecommerce.shop', array_filter([
+            'on_sale' => 1,
+            'sort' => $request->get('sort', 'featured'),
+            'q' => $request->get('q'),
+            'brand' => $request->get('brand'),
+            'category' => $request->get('category'),
+        ]));
     }
 
-    public function newArrivals(Request $request, CartService $cartService)
+    public function newArrivals(Request $request)
     {
-        $request->merge(['new_only' => 1, 'sort' => 'newest']);
-
-        return app(ShopController::class)->index($request, $cartService);
+        return redirect()->route('ecommerce.shop', array_filter([
+            'new_only' => 1,
+            'sort' => $request->get('sort', 'newest'),
+            'q' => $request->get('q'),
+            'brand' => $request->get('brand'),
+            'category' => $request->get('category'),
+            'on_sale' => $request->get('on_sale'),
+        ]));
     }
 
     public function search(Request $request)

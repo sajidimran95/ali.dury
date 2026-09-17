@@ -50,7 +50,7 @@
                         <span class="inline-flex items-center justify-center w-4 h-4 rounded-full text-white text-xs" style="background:#4CAF79">!</span>
                     @endif
                 </button>
-                <form method="get" action="{{ url()->current() }}" class="inline-flex items-center gap-2">
+                <form method="get" action="{{ route('ecommerce.shop') }}" class="inline-flex items-center gap-2">
                     @foreach(request()->except(['sort', 'page']) as $key => $value)
                         @if(is_scalar($value) && $value !== '' && $value !== null)
                             <input type="hidden" name="{{ $key }}" value="{{ $value }}">
@@ -74,7 +74,7 @@
         <div class="flex gap-6">
             {{-- Desktop sidebar --}}
             <div class="hidden lg:block w-56 shrink-0">
-                <form method="get" action="{{ url()->current() }}" class="bg-white rounded-xl p-5 border border-[#e8e8e8] sticky top-24" aria-label="Product filters">
+                <form method="get" action="{{ route('ecommerce.shop') }}" class="bg-white rounded-xl p-5 border border-[#e8e8e8] sticky top-24" aria-label="Product filters">
                     @include('ecommerce::front.shop.partials.filter_fields', ['sort' => $currentSort])
                 </form>
             </div>
@@ -117,7 +117,7 @@
                 </svg>
             </button>
         </div>
-        <form method="get" action="{{ url()->current() }}">
+        <form method="get" action="{{ route('ecommerce.shop') }}">
             @include('ecommerce::front.shop.partials.filter_fields', ['sort' => $currentSort])
         </form>
     </div>
