@@ -445,6 +445,15 @@ body.japs-dashboard-home .japs-dash-kpi-card__value {
   line-height: 1.1;
   letter-spacing: -0.04em;
 }
+body.japs-dashboard-home .japs-dash-kpi-card__value--hours {
+  white-space: nowrap;
+}
+body.japs-dashboard-home .japs-dash-hrs {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0;
+  color: var(--dash-muted);
+}
 
 body.japs-dashboard-home .japs-dash-kpi-card__trend {
   display: flex;

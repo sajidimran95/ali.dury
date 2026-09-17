@@ -112,7 +112,7 @@
                                 </span>
                                 <p class="japs-dash-kpi-card__label">{{ __('home.fulfillment_time') }}</p>
                             </div>
-                            <p class="japs-dash-kpi-card__value"><span class="avg_payment_hours"></span> {{ __('home.hrs_short') }}</p>
+                            <p class="japs-dash-kpi-card__value japs-dash-kpi-card__value--hours"><span class="avg_payment_hours">0</span> <span class="japs-dash-hrs">hrs</span></p>
                             <p class="japs-dash-kpi-card__trend">
                                 <span class="japs-dash-kpi-card__delta" data-kpi="avg_payment_hours">—</span>
                                 <span class="japs-dash-kpi-card__period">{{ __('lang_v1.from_previous_period') }}</span>
@@ -278,7 +278,7 @@
                                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
                                     </span>
                                     <span class="japs-dash-loc-tile__label">{{ __('home.avg_payment_short') }}</span>
-                                    <span class="japs-dash-loc-tile__value">{{ $location_performance['avg_payment_hours'] }} {{ __('home.hrs_short') }}</span>
+                                    <span class="japs-dash-loc-tile__value">{{ $location_performance['avg_payment_hours'] }} hrs</span>
                                     <span class="japs-dash-loc-tile__trend {{ $dPay['cls'] }}">{{ $dPay['text'] }} <small>{{ __('home.vs_last_period') }}</small></span>
                                 </div>
                                 <div class="japs-dash-loc-tile japs-dash-loc-tile--rose">
