@@ -510,7 +510,7 @@
                 <a href="{{ route('ecommerce.shop') }}" class="hover:text-brand">Shop</a>
                 <a href="{{ route('ecommerce.categories') }}" class="hover:text-brand">Categories</a>
                 <a href="{{ route('ecommerce.brands') }}" class="hover:text-brand">Brands</a>
-                <a href="{{ route('ecommerce.promotions') }}" class="hover:text-brand">🔥 Promotions</a>
+                <a href="{{ route('ecommerce.promotions') }}" class="hover:text-brand">Promotions</a>
                 <div class="relative group z-[80]">
                     <button type="button" class="hover:text-brand inline-flex items-center gap-1">Company
                         <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path d="M5 8l5 5 5-5"/></svg>
