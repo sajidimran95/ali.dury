@@ -319,7 +319,7 @@
                 scrollX: true,
                 scrollCollapse: true,
                 "ajax": {
-                    "url": "/products",
+                    "url": "{{ route('products.index') }}",
                     "data": function(d) {
                         d.type = $('#product_list_filter_type').val();
                         d.category_id = $('#product_list_filter_category_id').val();
