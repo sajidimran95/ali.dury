@@ -1577,6 +1577,38 @@
         }
         .sale-ois-h1 { font-size: 13px; font-weight: 700; color: #e53935; line-height: 1.1; }
         .sale-ois-h2 { font-size: 20px; font-weight: 800; color: #222; line-height: 1.15; }
+        .sale-ois-idbar {
+            display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+            margin-top: 4px; font-size: 11px; color: #64748b; font-weight: 600;
+        }
+        .sale-ois-idbar__sync { color: #16a34a; }
+        .sale-ois-idbar__rep { margin-left: auto; color: #334155; }
+        .sale-ois-chips {
+            display: flex; gap: 8px; overflow-x: auto; padding: 8px 0 4px;
+            -webkit-overflow-scrolling: touch; flex-shrink: 0;
+        }
+        .sale-ois-chip {
+            flex: 0 0 auto; border: 1px solid #e2e8f0; background: #fff; color: #334155;
+            border-radius: 999px; padding: 6px 12px; font-size: 12px; font-weight: 700;
+        }
+        .sale-ois-chip.is-on { background: #e53935; border-color: #e53935; color: #fff; }
+        .sale-ois-toggle {
+            display: inline-flex; border: 1px solid #e2e8f0; border-radius: 999px; overflow: hidden; margin: 6px 0 4px;
+        }
+        .sale-ois-toggle__btn {
+            border: 0; background: #fff; color: #475569; font-size: 11px; font-weight: 800;
+            padding: 5px 12px; min-width: 64px;
+        }
+        .sale-ois-toggle__btn.is-on { background: #111827; color: #fff; }
+        .sale-ois-card.is-oos { opacity: .55; }
+        .sale-ois-card.is-oos .sale-ois-qty button,
+        .sale-ois-card.is-oos .sale-qty-input { pointer-events: none; opacity: .5; }
+        .sale-ois-card__hist {
+            display: block; width: 100%; text-align: left; border: 0; background: transparent;
+            padding: 4px 0 0; font-size: 12px; font-weight: 700; color: #2563eb; cursor: pointer;
+        }
+        .sale-ois-hist { padding: 10px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px; color: #334155; }
+        .sale-ois-card__stock.out { background: #b91c1c; }
         .sale-ois-card {
             display: block;
             background: #fff;

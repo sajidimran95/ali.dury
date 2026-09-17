@@ -252,6 +252,7 @@ Route::prefix('sale')->name('sale.')->middleware(['setData', \App\Http\Middlewar
         Route::get('/api/products', [SalePortalController::class, 'searchProducts'])->name('api.products');
         Route::get('/api/categories', [SalePortalController::class, 'categoriesTree'])->name('api.categories');
         Route::get('/api/last-purchases', [SalePortalController::class, 'lastPurchases'])->name('api.last_purchases');
+        Route::get('/api/product-history', [SalePortalController::class, 'productOrderHistory'])->name('api.product_history');
         Route::get('/api/sync', [SalePortalController::class, 'syncApp'])->name('api.sync');
         Route::post('/api/order-draft', [SalePortalController::class, 'saveOrderDraft'])->name('api.order_draft');
         Route::delete('/api/order-draft', [SalePortalController::class, 'clearOrderDraft'])->name('api.order_draft.clear');

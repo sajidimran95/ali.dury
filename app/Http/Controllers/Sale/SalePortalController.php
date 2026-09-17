@@ -1221,6 +1221,9 @@ class SalePortalController extends Controller
                 'price' => $basePrice * $mult,
                 'base_price' => $basePrice,
                 'quantity' => $qty,
+                'last_qty' => $qty,
+                'last_price' => $basePrice * $mult,
+                'last_date' => null,
                 'stock' => (float) $r->stock,
                 'enable_stock' => (int) $r->enable_stock,
                 'product_type' => $r->product_type,
@@ -1231,6 +1234,59 @@ class SalePortalController extends Controller
                 'units' => $units,
             ];
         }));
+    }
+
+    /**
+     * Past order lines for one product (last-ordered popup).
+     */
+    public function productOrderHistory(Request $request)
+    {
+        $business_id = $request->session()->get('user.business_id');
+        $contact_id = (int) $request->get('contact_id');
+        $variation_id = (int) $request->get('variation_id');
+
+        if ($contact_id < 1 || $variation_id < 1) {
+            return response()->json([]);
+        }
+
+        Contact::where('business_id', $business_id)->onlyCustomers()->findOrFail($contact_id);
+
+        $rows = DB::table('transaction_sell_lines as tsl')
+            ->join('transactions as t', 't.id', '=', 'tsl.transaction_id')
+            ->leftJoin('units as u', 'u.id', '=', 'tsl.sub_unit_id')
+            ->where('t.business_id', $business_id)
+            ->where('t.contact_id', $contact_id)
+            ->where('tsl.variation_id', $variation_id)
+            ->whereNull('tsl.parent_sell_line_id')
+            ->where(function ($q) {
+                $q->where('t.type', 'sales_order')
+                    ->orWhere(function ($inner) {
+                        $inner->where('t.type', 'sell')->where('t.status', 'final');
+                    });
+            })
+            ->orderByDesc('t.transaction_date')
+            ->orderByDesc('t.id')
+            ->limit(20)
+            ->select(
+                't.invoice_no',
+                't.transaction_date',
+                'tsl.quantity',
+                'tsl.unit_price_inc_tax',
+                'u.actual_name as unit_name'
+            )
+            ->get();
+
+        return response()->json($rows->map(function ($r) {
+            $date = $r->transaction_date ? Carbon::parse($r->transaction_date)->format('m/d/Y') : '';
+
+            return [
+                'invoice_no' => $r->invoice_no,
+                'date' => $date,
+                'quantity' => (float) $r->quantity,
+                'unit_price' => (float) $r->unit_price_inc_tax,
+                'unit_name' => $r->unit_name ?: 'Pc',
+            ];
+        })->values());
     }
 
     /**

@@ -21,8 +21,7 @@
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>
             </button>
             <div class="sale-order-build__titles">
-                <div class="sale-ois-h1">Order</div>
-                <div class="sale-ois-h2">Products</div>
+                <div class="sale-ois-h2">Order Products</div>
             </div>
             <span class="hidden" id="orderCustomerName">{{ $default_customer['text'] ?? ($edit_order->contact->supplier_business_name ?? $edit_order->contact->name ?? '') }}</span>
             <span class="sale-order-cart-ico" aria-hidden="true">
@@ -51,6 +50,9 @@
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
                 </button>
             </div>
+            <div class="sale-ois-chips" id="orderCatChips" aria-label="Categories">
+                <button type="button" class="sale-ois-chip is-on" data-cat="">All Items</button>
+            </div>
             <div id="orderResultCount" class="sale-ois-results">Results: 0</div>
             <div id="productResults" class="sale-prod-results hidden"></div>
             <button type="button" id="skuModeScan" class="hidden" tabindex="-1"></button>
@@ -69,7 +71,7 @@
 
             <div class="sale-order-build__total">
                 <div>
-                    <div class="sale-order-build__total-label">TOTAL</div>
+                    <div class="sale-order-build__total-label" id="cartCountLabel">0 items · 0 products</div>
                     <strong id="cartTotal" class="tabular-nums">$0.00</strong>
                 </div>
                 <button type="button" class="sale-order-build__checkout is-off" id="goShippingBtn">Check Out</button>
@@ -187,6 +189,15 @@
             <button type="button" id="catalogCloseBtn" class="sale-catalog__close" aria-label="Close">×</button>
         </div>
         <div id="catalogBody" class="sale-catalog__body"></div>
+    </div>
+</div>
+<div id="orderHistorySheet" class="sale-sheet" hidden>
+    <div class="sale-sheet__panel">
+        <div class="sale-sheet__head is-center">
+            <div class="sale-sheet__title" id="orderHistoryTitle">Last ordered</div>
+            <button type="button" class="sale-sheet__close" onclick="saleCloseSheet('orderHistorySheet')" aria-label="Close">×</button>
+        </div>
+        <div class="sale-sheet__body" id="orderHistoryBody" style="padding:12px 16px 20px"></div>
     </div>
 </div>
 <div id="orderViewSheet" class="sale-sheet" hidden>
@@ -399,6 +410,7 @@
     let orderCatId = '';
     let orderSubId = '';
     let orderCategories = [];
+    let lastBuyMap = {};
     let creditAfterAccept = null;
 
     const catalogModal = document.getElementById('catalogModal');
@@ -517,6 +529,70 @@
         if (!Array.isArray(units) || units.length < 2) return false;
         const ids = new Set(units.map((u) => String(u.id)));
         return ids.size > 1;
+    }
+
+    function isOutOfStock(line) {
+        return Number(line.enable_stock) === 1 && Number(line.stock) <= 0;
+    }
+
+    function qtyExceedsStock(line, qty) {
+        if (Number(line.enable_stock) !== 1) return false;
+        const need = Number(qty) * (Number(line.multiplier) || 1);
+        return need > Number(line.stock) + 0.0001;
+    }
+
+    function packToggleHtml(units, selectedId, idx, cartIdx) {
+        const list = Array.isArray(units) ? units.slice() : [];
+        if (list.length < 2) return '';
+        list.sort((a, b) => Number(a.multiplier || 1) - Number(b.multiplier || 1));
+        const piece = list[0];
+        const cse = list.find((u) => Number(u.multiplier) > Number(piece.multiplier));
+        if (!cse) return '';
+        const btns = [
+            { u: piece, label: 'Piece' },
+            { u: cse, label: 'Case' },
+        ];
+        return `<div class="sale-ois-toggle">${btns.map((b) => {
+            const on = Number(b.u.id) === Number(selectedId);
+            const attr = cartIdx >= 0
+                ? `data-unit-btn="${cartIdx}"`
+                : `data-browse-unit-btn="${idx}"`;
+            return `<button type="button" class="sale-ois-toggle__btn${on ? ' is-on' : ''}" ${attr} data-unit-id="${b.u.id}">${b.label}</button>`;
+        }).join('')}</div>`;
+    }
+
+    async function loadLastBuys() {
+        lastBuyMap = {};
+        if (!contactId || !contactId.value) return;
+        try {
+            const rows = await fetchJson(@json(route('sale.api.last_purchases')) + '?contact_id=' + encodeURIComponent(contactId.value) + '&location_id=' + encodeURIComponent(locationId.value));
+            rows.forEach((r) => { lastBuyMap[String(r.variation_id)] = r; });
+        } catch (e) {}
+    }
+
+    async function openOrderHistory(variationId, name) {
+        const body = document.getElementById('orderHistoryBody');
+        const title = document.getElementById('orderHistoryTitle');
+        if (title) title.textContent = name ? ('Last ordered — ' + name) : 'Last ordered';
+        if (body) body.innerHTML = '<div class="text-sm text-slate-400">Loading…</div>';
+        if (typeof saleOpenSheet === 'function') saleOpenSheet('orderHistorySheet');
+        try {
+            const url = @json(route('sale.api.product_history')) + '?contact_id=' + encodeURIComponent(contactId.value) + '&variation_id=' + encodeURIComponent(variationId);
+            const rows = await fetchJson(url);
+            if (!body) return;
+            if (!rows.length) {
+                body.innerHTML = '<div class="text-sm text-slate-400">No previous orders for this product.</div>';
+                return;
+            }
+            body.innerHTML = rows.map((h) => (
+                `<div class="sale-ois-hist">
+                    <div><b>${escapeHtml(h.date || '')}</b> · ${escapeHtml(h.invoice_no || '')}</div>
+                    <div>${fmtQty(h.quantity)} ${escapeHtml(h.unit_name || '')} @ ${money(h.unit_price)}</div>
+                </div>`
+            )).join('');
+        } catch (e) {
+            if (body) body.innerHTML = '<div class="text-sm text-slate-400">Could not load history.</div>';
+        }
     }
 
     function priceLine(r) {
@@ -657,6 +733,7 @@
 
     function addToCart(r, silent, skipRender) {
         if (!r || !r.variation_id) return;
+        if (isOutOfStock(r)) return;
         const meta = unitMeta(r);
         const vid = Number(r.variation_id);
         const subId = Number(meta.unit.id) || 0;
@@ -742,6 +819,7 @@
             renderCart();
             return;
         }
+        if (qtyExceedsStock(line, next)) return;
         line.quantity = next;
         renderCart();
     }
@@ -756,6 +834,12 @@
         } else {
             q = Math.round(q * 100) / 100;
         }
+        if (q < 1) {
+            cart.splice(i, 1);
+            renderCart();
+            return;
+        }
+        if (qtyExceedsStock(line, q)) q = Math.max(0, Math.floor(Number(line.stock) / (Number(line.multiplier) || 1)));
         if (q < 1) {
             cart.splice(i, 1);
             renderCart();
@@ -899,6 +983,7 @@
             if (goToCart !== false && !isEdit) {
                 showCreditWarning(creditLimit, () => showCartStep());
             }
+            loadLastBuys().then(() => renderCart());
         } else {
             lastCustomer = { id: '', text: '', shipAddr: '', credit: null, acct: '', address: '', display: '' };
             if (customerLabel) customerLabel.textContent = '';
@@ -1055,16 +1140,7 @@
             const qty = cartIdx >= 0 ? cart[cartIdx].quantity : 0;
             const unitPrice = cartIdx >= 0 ? cart[cartIdx].unit_price : line.unit_price;
             const lineTot = qty * unitPrice;
-            const perPc = line.multiplier > 0 ? (unitPrice / line.multiplier) : unitPrice;
             const units = line.units || [];
-            const canPickUnit = hasPackUnits(units);
-            const pack = canPickUnit && Number(line.multiplier) > 1
-                ? '(' + escapeHtml(line.unit_name || 'Unit') + ' x ' + line.multiplier + ')'
-                : '';
-            const unitSelect = canPickUnit
-                ? `<div class="sale-ois-radios">${units.map((u) => `<label class="sale-ois-radio${Number(u.id) === Number(line.sub_unit_id) ? ' is-on' : ''}"><input type="radio" name="u${idx}-${line.variation_id}" value="${u.id}" ${Number(u.id) === Number(line.sub_unit_id) ? 'checked' : ''} ${cartIdx >= 0 ? 'data-unit="'+cartIdx+'"' : 'data-browse-unit="'+idx+'"'}><span>${escapeHtml(u.name)}</span></label>`).join('')}</div>`
-                : '';
-            const packRow = unitSelect ? `<div class="sale-ois-units">${unitSelect}${pack ? `<div class="sale-ois-card__pack">${pack}</div>` : ''}</div>` : '';
             const q = (productSearch.value || '').trim();
             const highlightName = (name) => {
                 const safe = escapeHtml(name);
@@ -1072,14 +1148,23 @@
                 const esc = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
                 return safe.replace(new RegExp(esc, 'ig'), (m) => `<mark class="sale-ois-hit">${m}</mark>`);
             };
-            const inStock = Number(line.enable_stock) !== 1 || Number(line.stock) > 0;
+            const inStock = !isOutOfStock(line);
+            const oos = !inStock;
+            const last = lastBuyMap[String(line.variation_id)] || null;
+            const lastHtml = last
+                ? `<button type="button" class="sale-ois-card__hist" data-hist="${line.variation_id}" data-hist-name="${escapeHtml(line.name)}">Last ordered: ${money(last.last_price || last.price || 0)} × ${fmtQty(last.last_qty || last.quantity || 0)}</button>`
+                : `<button type="button" class="sale-ois-card__hist" data-hist="${line.variation_id}" data-hist-name="${escapeHtml(line.name)}">Last ordered: tap to view</button>`;
             const thumb = line.has_image && line.image
                 ? `<img src="${escapeHtml(line.image)}" alt="">`
                 : `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.6"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m21 15-4.5-4.5L9 18"/></svg>`;
             const catName = (line.category_name || (line._browse && line._browse.category_name) || '').toString().toUpperCase();
             const el = document.createElement('div');
-            el.className = 'sale-ois-card' + (qty > 0 ? ' is-active' : '');
-            const stockHtml = `<span class="sale-ois-card__stock ${inStock ? 'in' : 'out'}">${inStock ? ('In Stock' + (line.stock != null ? ': ' + line.stock : '')) : 'Out Stock'}</span>`;
+            el.className = 'sale-ois-card' + (qty > 0 ? ' is-active' : '') + (oos ? ' is-oos' : '');
+            const stockHtml = oos
+                ? `<span class="sale-ois-card__stock out">OUT OF STOCK</span>`
+                : `<span class="sale-ois-card__stock in">${line.stock != null ? ('In Stock: ' + line.stock) : 'In Stock'}</span>`;
+            const qtyDisabled = oos ? 'disabled' : '';
+            const toggle = packToggleHtml(units, line.sub_unit_id, idx, cartIdx);
             el.innerHTML = `
                 <div class="sale-ois-card__head">
                     <div class="sale-ois-card__name">${highlightName(line.name)}</div>
@@ -1090,26 +1175,31 @@
                     <div class="sale-ois-card__left">
                         <div class="sale-ois-card__price">Price: $ ${Number(unitPrice).toFixed(2)}</div>
                         <div class="sale-ois-card__total">Total: ${money(lineTot)}</div>
-                        <div class="sale-ois-card__unit">Unit Price: ${money(perPc)}</div>
-                        <div class="sale-ois-card__meta">Last price: $0.00 ea x 0</div>
+                        ${toggle}
+                        ${lastHtml}
                         ${line.sku ? `<div class="sale-ois-card__meta"><span class="sale-ois-card__code">Code:</span> ${escapeHtml(line.sku)}</div>` : ''}
                     </div>
                     <div class="sale-ois-card__right">
                         <div class="sale-ois-qty">
-                            <button type="button" class="is-minus" ${cartIdx >= 0 ? 'data-dec="'+cartIdx+'"' : 'disabled'}>−</button>
-                            <input type="text" value="${qty}" ${cartIdx >= 0 ? 'data-qty="'+cartIdx+'"' : ''} class="sale-qty-input" autocomplete="off">
-                            <button type="button" class="is-plus" ${cartIdx >= 0 ? 'data-inc="'+cartIdx+'"' : 'data-add-b="'+idx+'"'}>+</button>
+                            <button type="button" class="is-minus" ${oos || cartIdx < 0 ? 'disabled' : 'data-dec="'+cartIdx+'"'}>−</button>
+                            <input type="text" value="${qty}" ${oos ? 'disabled' : (cartIdx >= 0 ? 'data-qty="'+cartIdx+'"' : '')} class="sale-qty-input" autocomplete="off">
+                            <button type="button" class="is-plus" ${oos ? 'disabled' : (cartIdx >= 0 ? 'data-inc="'+cartIdx+'"' : 'data-add-b="'+idx+'"')}>+</button>
                         </div>
                         ${stockHtml}
-                        <div class="sale-ois-card__meta">Min Qty: 0</div>
                         ${catName ? `<div class="sale-ois-card__cat">${escapeHtml(catName)}</div>` : ''}
                     </div>
-                </div>
-                ${packRow}`;
+                </div>`;
+            cartLines.appendChild(el);
             cartLines.appendChild(el);
         });
         cartTotal.textContent = money(total);
         shipTotal.textContent = money(total);
+        const countLabel = document.getElementById('cartCountLabel');
+        if (countLabel) {
+            const itemN = cart.reduce((s, l) => s + Number(l.quantity || 0), 0);
+            const prodN = cart.filter((l) => Number(l.quantity) > 0).length;
+            countLabel.textContent = fmtQty(itemN) + ' items · ' + prodN + ' products';
+        }
         const checkoutBtn = document.getElementById('goShippingBtn');
         if (checkoutBtn) checkoutBtn.classList.toggle('is-off', total <= 0);
         syncScanUi();
@@ -1118,6 +1208,20 @@
         cartLines.querySelectorAll('[data-add-b]').forEach(b => b.onclick = () => addToCart(browseRows[+b.dataset.addB]));
         cartLines.querySelectorAll('[data-inc]').forEach(b => b.onclick = () => changeQty(+b.dataset.inc, 1));
         cartLines.querySelectorAll('[data-dec]').forEach(b => b.onclick = () => changeQty(+b.dataset.dec, -1));
+        cartLines.querySelectorAll('[data-unit-btn]').forEach((b) => {
+            b.onclick = () => setCartUnit(+b.dataset.unitBtn, b.getAttribute('data-unit-id'));
+        });
+        cartLines.querySelectorAll('[data-browse-unit-btn]').forEach((b) => {
+            b.onclick = () => {
+                const r = browseRows[+b.dataset.browseUnitBtn];
+                if (!r) return;
+                r.sub_unit_id = b.getAttribute('data-unit-id');
+                renderCart();
+            };
+        });
+        cartLines.querySelectorAll('[data-hist]').forEach((b) => {
+            b.onclick = () => openOrderHistory(b.getAttribute('data-hist'), b.getAttribute('data-hist-name') || '');
+        });
         cartLines.querySelectorAll('[data-qty]').forEach(inp => {
             inp.addEventListener('focus', () => inp.select());
             inp.addEventListener('keydown', (e) => {
@@ -1643,6 +1747,26 @@
         renderCart();
     });
 
+    function paintCatChips() {
+        const box = document.getElementById('orderCatChips');
+        if (!box) return;
+        const allOn = !orderCatId;
+        let html = `<button type="button" class="sale-ois-chip${allOn ? ' is-on' : ''}" data-cat="">All Items</button>`;
+        orderCategories.forEach(function (c) {
+            html += `<button type="button" class="sale-ois-chip${String(orderCatId) === String(c.id) ? ' is-on' : ''}" data-cat="${c.id}">${escapeHtml(c.name)}</button>`;
+        });
+        box.innerHTML = html;
+        box.querySelectorAll('.sale-ois-chip').forEach(function (btn) {
+            btn.onclick = function () {
+                orderCatId = btn.getAttribute('data-cat') || '';
+                orderSubId = '';
+                if (filterCat) filterCat.value = orderCatId;
+                fillOrderSubs();
+                paintCatChips();
+                loadBrowse(productSearch ? productSearch.value.trim() : '');
+            };
+        });
+    }
     const filterCat = document.getElementById('orderFilterCat');
     const filterSub = document.getElementById('orderFilterSub');
     function fillOrderSubs() {
@@ -1664,6 +1788,7 @@
         .then(function (r) { return r.json(); })
         .then(function (rows) {
             orderCategories = Array.isArray(rows) ? rows : [];
+            paintCatChips();
             if (!filterCat) return;
             orderCategories.forEach(function (c) {
                 const o = document.createElement('option');
@@ -1678,6 +1803,7 @@
         orderCatId = filterCat ? filterCat.value : '';
         orderSubId = filterSub ? filterSub.value : '';
         saleCloseSheet('orderFilterSheet');
+        paintCatChips();
         loadBrowse(productSearch ? productSearch.value.trim() : '');
     });
     document.getElementById('orderFilterReset')?.addEventListener('click', function () {
@@ -1686,6 +1812,7 @@
         if (filterCat) filterCat.value = '';
         fillOrderSubs();
         saleCloseSheet('orderFilterSheet');
+        paintCatChips();
         loadBrowse(productSearch ? productSearch.value.trim() : '');
     });
 
