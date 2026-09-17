@@ -32,6 +32,13 @@
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg>
             </button>
         </div>
+        <div class="sale-ois-idbar" aria-label="Session">
+            <span class="sale-ois-idbar__biz">{{ session('business.name') }}</span>
+            <span class="sale-ois-idbar__dot" aria-hidden="true"></span>
+            <span class="sale-ois-idbar__sync">Synced</span>
+            <span class="sale-ois-idbar__av">{{ strtoupper(mb_substr((string) session('user.first_name'), 0, 1)) }}</span>
+            <span class="sale-ois-idbar__rep">{{ session('user.first_name') }}</span>
+        </div>
 
         <div class="sale-order-build__body">
             <input type="hidden" name="shipping_method" id="shipping_method" value="{{ old('shipping_method', $edit_order->shipping_method ?? 'Delivery') }}">
@@ -204,7 +211,7 @@
     <div class="sale-sheet__panel">
         <div class="sale-sheet__head is-center">
             <div class="sale-sheet__title">View</div>
-            <button type="button" class="sale-sheet__close" id="orderViewClose" aria-label="Close">×</button>
+            <button type="button" class="sale-sheet__close" id="orderViewClose" onclick="return saleCloseSheet('orderViewSheet')" aria-label="Close">×</button>
         </div>
         <div class="sale-sheet__body sale-view-sheet">
             <button type="button" class="sale-view-opt is-on" data-view="item">Item</button>
@@ -214,7 +221,7 @@
             <button type="button" class="sale-view-opt" data-view="list">List</button>
         </div>
         <div class="sale-sheet__foot">
-            <button type="button" class="sale-more-cancel" id="orderViewCancel">CANCEL</button>
+            <button type="button" class="sale-more-cancel" id="orderViewCancel" onclick="return saleCloseSheet('orderViewSheet')">CANCEL</button>
         </div>
     </div>
 </div>
@@ -509,10 +516,18 @@
             .replace(/'/g, '&#39;');
     }
 
+    function smallestUnit(units) {
+        const list = (Array.isArray(units) ? units.slice() : []).sort(
+            (a, b) => Number(a.multiplier || 1) - Number(b.multiplier || 1)
+        );
+        return list.find((u) => Number(u.multiplier || 1) === 1) || list[0] || null;
+    }
+
     function unitMeta(r) {
         const units = Array.isArray(r.units) ? r.units : [];
-        const defaultId = r.sub_unit_id || r.unit_id || (units[0] && units[0].id);
-        const unit = units.find(u => Number(u.id) === Number(defaultId)) || units[0] || {
+        const piece = smallestUnit(units);
+        const defaultId = r.sub_unit_id || (piece && piece.id) || r.unit_id;
+        const unit = units.find(u => Number(u.id) === Number(defaultId)) || piece || units[0] || {
             id: r.unit_id || 0,
             name: r.unit_name || 'Pc',
             multiplier: 1,
@@ -541,24 +556,68 @@
         return need > Number(line.stock) + 0.0001;
     }
 
-    function packToggleHtml(units, selectedId, idx, cartIdx) {
-        const list = Array.isArray(units) ? units.slice() : [];
+    function applyUnit(variationId, unitId) {
+        const vid = Number(variationId);
+        const uid = Number(unitId);
+        const r = browseRows.find((x) => Number(x.variation_id) === vid);
+        if (r) {
+            r.sub_unit_id = uid;
+            const piece = smallestUnit(r.units);
+            if (!r.units || !r.units.length) {
+                /* keep going */
+            }
+        }
+        cartLines.querySelectorAll('[data-unit-vid]').forEach((btn) => {
+            if (Number(btn.getAttribute('data-unit-vid')) !== vid) return;
+            btn.classList.toggle('is-on', Number(btn.getAttribute('data-unit-id')) === uid);
+        });
+        const i = cart.findIndex((c) => Number(c.variation_id) === vid);
+        if (i >= 0) {
+            if (r && Array.isArray(r.units) && r.units.length) {
+                cart[i].units = r.units;
+                if (cart[i].base_price == null) cart[i].base_price = unitMeta(r).basePrice;
+            }
+            setCartUnit(i, uid);
+            return;
+        }
+        renderCart();
+    }
+
+    let unitTapLock = 0;
+    cartLines.addEventListener('click', function (e) {
+        const b = e.target.closest('[data-unit-vid]');
+        if (!b || !cartLines.contains(b)) return;
+        e.preventDefault();
+        e.stopPropagation();
+        if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
+        const now = Date.now();
+        if (now - unitTapLock < 350) return;
+        unitTapLock = now;
+        applyUnit(b.getAttribute('data-unit-vid'), b.getAttribute('data-unit-id'));
+    }, true);
+
+    function packToggleHtml(units, selectedId, variationId, basePrice) {
+        const seen = new Set();
+        const list = (Array.isArray(units) ? units : []).filter((u) => {
+            const id = String(u.id);
+            if (seen.has(id)) return false;
+            seen.add(id);
+            return true;
+        });
         if (list.length < 2) return '';
         list.sort((a, b) => Number(a.multiplier || 1) - Number(b.multiplier || 1));
         const piece = list[0];
-        const cse = list.find((u) => Number(u.multiplier) > Number(piece.multiplier));
-        if (!cse) return '';
-        const btns = [
-            { u: piece, label: 'Piece' },
-            { u: cse, label: 'Case' },
-        ];
-        return `<div class="sale-ois-toggle">${btns.map((b) => {
-            const on = Number(b.u.id) === Number(selectedId);
-            const attr = cartIdx >= 0
-                ? `data-unit-btn="${cartIdx}"`
-                : `data-browse-unit-btn="${idx}"`;
-            return `<button type="button" class="sale-ois-toggle__btn${on ? ' is-on' : ''}" ${attr} data-unit-id="${b.u.id}">${b.label}</button>`;
-        }).join('')}</div>`;
+        const selected = list.some((u) => Number(u.id) === Number(selectedId))
+            ? selectedId
+            : (piece && piece.id);
+        const base = Number(basePrice) || 0;
+        return `<div class="sale-ois-units"><div class="sale-ois-unitbtns" role="group">${list.map((u, i) => {
+            const on = Number(u.id) === Number(selected);
+            const up = base * (Number(u.multiplier) || 1);
+            const label = escapeHtml((u.name || '').trim() || ('Unit ' + (i + 1)));
+            const kind = i === 0 ? 'piece' : 'pack';
+            return `<button type="button" class="sale-ois-unitbtn sale-ois-unitbtn--${kind}${on ? ' is-on' : ''}" data-unit-vid="${variationId}" data-unit-id="${u.id}"><span>${label}</span><span class="sale-ois-unitbtn__price">${money(up)}</span></button>`;
+        }).join('')}</div></div>`;
     }
 
     async function loadLastBuys() {
@@ -573,7 +632,7 @@
     async function openOrderHistory(variationId, name) {
         const body = document.getElementById('orderHistoryBody');
         const title = document.getElementById('orderHistoryTitle');
-        if (title) title.textContent = name ? ('Last ordered — ' + name) : 'Last ordered';
+        if (title) title.textContent = 'Last ordered';
         if (body) body.innerHTML = '<div class="text-sm text-slate-400">Loading…</div>';
         if (typeof saleOpenSheet === 'function') saleOpenSheet('orderHistorySheet');
         try {
@@ -739,7 +798,9 @@
         const subId = Number(meta.unit.id) || 0;
         const existingIdx = cart.findIndex(c => Number(c.variation_id) === vid && Number(c.sub_unit_id || 0) === subId);
         if (existingIdx >= 0) {
-            cart[existingIdx].quantity = +cart[existingIdx].quantity + (Number(r.quantity) || 1);
+            const next = +cart[existingIdx].quantity + (Number(r.quantity) || 1);
+            if (qtyExceedsStock(cart[existingIdx], next)) return;
+            cart[existingIdx].quantity = next;
             if (typeof r.allow_decimal !== 'undefined') {
                 cart[existingIdx].allow_decimal = !!Number(meta.unit.allow_decimal);
             }
@@ -851,17 +912,45 @@
 
     function setCartUnit(i, unitId) {
         const line = cart[i];
-        if (!line) return;
+        if (!line) return false;
+        if ((!line.units || !line.units.length) && browseRows.length) {
+            const src = browseRows.find((x) => Number(x.variation_id) === Number(line.variation_id));
+            if (src && src.units) {
+                line.units = src.units;
+                if (line.base_price == null) line.base_price = unitMeta(src).basePrice;
+            }
+        }
         const unit = (line.units || []).find(u => Number(u.id) === Number(unitId));
-        if (!unit) return;
+        if (!unit) {
+            renderCart();
+            return false;
+        }
+        if (Number(line.sub_unit_id) === Number(unit.id)) {
+            renderCart();
+            return true;
+        }
+        const oldMult = Number(line.multiplier) || 1;
+        const newMult = Number(unit.multiplier) || 1;
+        const baseQty = Number(line.quantity) * oldMult;
+        let newQty = newMult > 0 ? (baseQty / newMult) : baseQty;
+        if (!Number(unit.allow_decimal)) newQty = Math.round(newQty);
+        else newQty = Math.round(newQty * 100) / 100;
+        if (newQty < 0.0001) newQty = 0;
         const other = cart.findIndex((c, idx) => idx !== i && Number(c.variation_id) === Number(line.variation_id) && Number(c.sub_unit_id) === Number(unit.id));
         line.sub_unit_id = Number(unit.id);
         line.unit_name = unit.name;
-        line.multiplier = Number(unit.multiplier) || 1;
+        line.multiplier = newMult;
         line.allow_decimal = !!Number(unit.allow_decimal);
-        line.unit_price = Number(line.base_price) * line.multiplier;
+        line.unit_price = Number(line.base_price) * newMult;
+        line.quantity = newQty;
+        if (qtyExceedsStock(line, line.quantity)) {
+            const maxQ = Math.floor(Number(line.stock) / (newMult || 1));
+            line.quantity = Math.max(0, maxQ);
+        }
         if (other >= 0) {
             cart[other].quantity = Number(cart[other].quantity) + Number(line.quantity);
+            cart.splice(i, 1);
+        } else if (Number(line.quantity) < 1 && !Number(unit.allow_decimal)) {
             cart.splice(i, 1);
         }
         renderCart();
@@ -940,6 +1029,12 @@
         else if (orderCatId) url += '&category_id=' + encodeURIComponent(orderCatId);
         try {
             browseRows = await fetchJson(url);
+            browseRows.forEach((row) => {
+                const piece = smallestUnit(row.units);
+                if (piece && (row.sub_unit_id == null || row.sub_unit_id === '')) {
+                    row.sub_unit_id = piece.id;
+                }
+            });
         } catch (err) {
             browseRows = [];
         }
@@ -1153,7 +1248,7 @@
             const last = lastBuyMap[String(line.variation_id)] || null;
             const lastHtml = last
                 ? `<button type="button" class="sale-ois-card__hist" data-hist="${line.variation_id}" data-hist-name="${escapeHtml(line.name)}">Last ordered: ${money(last.last_price || last.price || 0)} × ${fmtQty(last.last_qty || last.quantity || 0)}</button>`
-                : `<button type="button" class="sale-ois-card__hist" data-hist="${line.variation_id}" data-hist-name="${escapeHtml(line.name)}">Last ordered: tap to view</button>`;
+                : '';
             const thumb = line.has_image && line.image
                 ? `<img src="${escapeHtml(line.image)}" alt="">`
                 : `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.6"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m21 15-4.5-4.5L9 18"/></svg>`;
@@ -1164,16 +1259,16 @@
                 ? `<span class="sale-ois-card__stock out">OUT OF STOCK</span>`
                 : `<span class="sale-ois-card__stock in">${line.stock != null ? ('In Stock: ' + line.stock) : 'In Stock'}</span>`;
             const qtyDisabled = oos ? 'disabled' : '';
-            const toggle = packToggleHtml(units, line.sub_unit_id, idx, cartIdx);
+            const toggle = packToggleHtml(units, line.sub_unit_id, line.variation_id, line.base_price);
+            const unitLabel = (line.unit_name || '').trim();
             el.innerHTML = `
                 <div class="sale-ois-card__head">
                     <div class="sale-ois-card__name">${highlightName(line.name)}</div>
-                    <span class="sale-ois-card__chev">›</span>
                 </div>
                 <div class="sale-ois-card__photo">${thumb}${stockHtml}</div>
                 <div class="sale-ois-card__body">
                     <div class="sale-ois-card__left">
-                        <div class="sale-ois-card__price">Price: $ ${Number(unitPrice).toFixed(2)}</div>
+                        <div class="sale-ois-card__price">Price: $ ${Number(unitPrice).toFixed(2)}${unitLabel ? ' / ' + escapeHtml(unitLabel) : ''}</div>
                         <div class="sale-ois-card__total">Total: ${money(lineTot)}</div>
                         ${toggle}
                         ${lastHtml}
@@ -1190,14 +1285,13 @@
                     </div>
                 </div>`;
             cartLines.appendChild(el);
-            cartLines.appendChild(el);
         });
         cartTotal.textContent = money(total);
         shipTotal.textContent = money(total);
         const countLabel = document.getElementById('cartCountLabel');
         if (countLabel) {
             const itemN = cart.reduce((s, l) => s + Number(l.quantity || 0), 0);
-            const prodN = cart.filter((l) => Number(l.quantity) > 0).length;
+            const prodN = new Set(cart.filter((l) => Number(l.quantity) > 0).map((l) => String(l.variation_id))).size;
             countLabel.textContent = fmtQty(itemN) + ' items · ' + prodN + ' products';
         }
         const checkoutBtn = document.getElementById('goShippingBtn');
@@ -1205,22 +1299,21 @@
         syncScanUi();
         applyProductView(window.__saleProductView || 'item', false);
 
-        cartLines.querySelectorAll('[data-add-b]').forEach(b => b.onclick = () => addToCart(browseRows[+b.dataset.addB]));
-        cartLines.querySelectorAll('[data-inc]').forEach(b => b.onclick = () => changeQty(+b.dataset.inc, 1));
+        cartLines.querySelectorAll('[data-add-b]').forEach(b => b.onclick = () => {
+            if (Date.now() - unitTapLock < 400) return;
+            addToCart(browseRows[+b.dataset.addB]);
+        });
+        cartLines.querySelectorAll('[data-inc]').forEach(b => b.onclick = () => {
+            if (Date.now() - unitTapLock < 400) return;
+            changeQty(+b.dataset.inc, 1);
+        });
         cartLines.querySelectorAll('[data-dec]').forEach(b => b.onclick = () => changeQty(+b.dataset.dec, -1));
-        cartLines.querySelectorAll('[data-unit-btn]').forEach((b) => {
-            b.onclick = () => setCartUnit(+b.dataset.unitBtn, b.getAttribute('data-unit-id'));
-        });
-        cartLines.querySelectorAll('[data-browse-unit-btn]').forEach((b) => {
-            b.onclick = () => {
-                const r = browseRows[+b.dataset.browseUnitBtn];
-                if (!r) return;
-                r.sub_unit_id = b.getAttribute('data-unit-id');
-                renderCart();
-            };
-        });
         cartLines.querySelectorAll('[data-hist]').forEach((b) => {
-            b.onclick = () => openOrderHistory(b.getAttribute('data-hist'), b.getAttribute('data-hist-name') || '');
+            b.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                openOrderHistory(b.getAttribute('data-hist'), b.getAttribute('data-hist-name') || '');
+            });
         });
         cartLines.querySelectorAll('[data-qty]').forEach(inp => {
             inp.addEventListener('focus', () => inp.select());
@@ -1709,7 +1802,13 @@
     catalogModal?.addEventListener('click', (e) => { if (e.target === catalogModal) closeCatalog(); });
 
     const orderViewSheet = document.getElementById('orderViewSheet');
-    function hideOrderView() { if (orderViewSheet) orderViewSheet.hidden = true; }
+    function hideOrderView() {
+        if (typeof saleCloseSheet === 'function') saleCloseSheet('orderViewSheet');
+        else if (orderViewSheet) {
+            orderViewSheet.hidden = true;
+            orderViewSheet.classList.remove('is-open');
+        }
+    }
     document.getElementById('orderViewBtn')?.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();

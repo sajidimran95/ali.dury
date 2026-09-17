@@ -1148,7 +1148,7 @@ class SalePortalController extends Controller
 
         Contact::where('business_id', $business_id)->onlyCustomers()->findOrFail($contact_id);
 
-        $lastTx = Transaction::where('business_id', $business_id)
+        $txIds = Transaction::where('business_id', $business_id)
             ->where('contact_id', $contact_id)
             ->where(function ($q) {
                 $q->where('type', 'sales_order')
@@ -1157,18 +1157,21 @@ class SalePortalController extends Controller
                     });
             })
             ->orderByDesc('id')
-            ->first(['id']);
+            ->limit(40)
+            ->pluck('id');
 
-        if (! $lastTx) {
+        if ($txIds->isEmpty()) {
             return response()->json([]);
         }
 
         $query = DB::table('transaction_sell_lines as tsl')
+            ->join('transactions as t', 't.id', '=', 'tsl.transaction_id')
             ->join('products as p', 'p.id', '=', 'tsl.product_id')
             ->leftJoin('variations as v', 'v.id', '=', 'tsl.variation_id')
             ->leftJoin('units as u', 'p.unit_id', '=', 'u.id')
-            ->where('tsl.transaction_id', $lastTx->id)
-            ->whereNull('tsl.parent_sell_line_id');
+            ->whereIn('tsl.transaction_id', $txIds)
+            ->whereNull('tsl.parent_sell_line_id')
+            ->orderByDesc('t.id');
 
         if ($location_id > 0) {
             $query->leftJoin('variation_location_details as vld', function ($join) use ($location_id) {
@@ -1183,6 +1186,7 @@ class SalePortalController extends Controller
             'tsl.quantity',
             'tsl.unit_price_inc_tax',
             'tsl.sub_unit_id',
+            't.transaction_date',
             'p.name as product_name',
             'p.type as product_type',
             'p.enable_stock',
@@ -1194,7 +1198,15 @@ class SalePortalController extends Controller
             DB::raw($location_id > 0 ? 'COALESCE(vld.qty_available, 0) as stock' : '0 as stock')
         )->get();
 
-        return response()->json($lines->map(function ($r) use ($business_id) {
+        $seen = [];
+        $out = [];
+        foreach ($lines as $r) {
+            $vid = (int) $r->variation_id;
+            if ($vid < 1 || isset($seen[$vid])) {
+                continue;
+            }
+            $seen[$vid] = true;
+
             $name = $r->product_name;
             if (! empty($r->variation_name) && $r->variation_name !== 'DUMMY') {
                 $name .= ' - '.$r->variation_name;
@@ -1213,9 +1225,9 @@ class SalePortalController extends Controller
                 }
             }
 
-            return [
+            $out[] = [
                 'product_id' => (int) $r->product_id,
-                'variation_id' => (int) $r->variation_id,
+                'variation_id' => $vid,
                 'name' => $name.(! empty($r->sub_sku) ? ' ('.$r->sub_sku.')' : ''),
                 'sku' => $r->sub_sku,
                 'price' => $basePrice * $mult,
@@ -1223,7 +1235,7 @@ class SalePortalController extends Controller
                 'quantity' => $qty,
                 'last_qty' => $qty,
                 'last_price' => $basePrice * $mult,
-                'last_date' => null,
+                'last_date' => $r->transaction_date ? Carbon::parse($r->transaction_date)->format('m/d/Y') : null,
                 'stock' => (float) $r->stock,
                 'enable_stock' => (int) $r->enable_stock,
                 'product_type' => $r->product_type,
@@ -1233,7 +1245,9 @@ class SalePortalController extends Controller
                 'allow_decimal' => (int) $r->allow_decimal,
                 'units' => $units,
             ];
-        }));
+        }
+
+        return response()->json($out);
     }
 
     /**
