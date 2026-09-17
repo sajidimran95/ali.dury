@@ -208,6 +208,20 @@ window.__posQkLayouts = @json($posQkLayoutsJson);
                 '<div class="pos-card cat pos-cat-tile' + extra + '><h4 class="pos-card-name">' + c.name + '</h4></div></div>';
         });
         if (allTile) allTile.insertAdjacentHTML('afterend', html);
+        if (typeof window.pos_set_active_category_tile === 'function') {
+            window.pos_set_active_category_tile('all');
+        } else {
+            grid.querySelectorAll('.pos-card.cat').forEach(function (el) { el.classList.remove('is-active'); });
+            var allCard = grid.querySelector('.main-category[data-value="all"] .pos-card.cat');
+            if (allCard) allCard.classList.add('is-active');
+        }
+        if (typeof window.global_p_category_id !== 'undefined') {
+            window.global_p_category_id = null;
+        }
+        if (typeof window.get_product_suggestion_list === 'function' && document.querySelector('input#location_id')) {
+            var loc = document.querySelector('input#location_id').value;
+            window.get_product_suggestion_list(null, window.global_brand_id || null, loc, null);
+        }
     }
     function renderList() {
         var box = document.getElementById('posQkLayouts');
@@ -386,15 +400,34 @@ window.__posQkLayouts = @json($posQkLayoutsJson);
             };
         });
     }
+    function slotCount() {
+        return Math.max(30, (cats.length || (window.__posQkCats || []).length || 0));
+    }
+    function keysForAllCategories() {
+        var list = cats.length ? cats : (window.__posQkCats || []);
+        return list.map(function (c, i) {
+            return {
+                slot: i,
+                category_id: parseInt(c.id, 10),
+                label: c.name || '',
+                color: colorForCat(c.id)
+            };
+        });
+    }
     function openEditor(layout) {
         document.getElementById('posQkEditId').value = layout.id;
         document.getElementById('posQkName').value = layout.name || '';
         document.getElementById('posQkKeepOpen').checked = layout.keep_folder_open !== false;
+        var keys = (layout.keys || []).slice();
+        if (!keys.length) {
+            keys = keysForAllCategories();
+        }
         var bySlot = {};
-        (layout.keys || []).forEach(function (k) { bySlot[parseInt(k.slot, 10)] = k; });
+        keys.forEach(function (k) { bySlot[parseInt(k.slot, 10)] = k; });
         var grid = document.getElementById('posQkGrid');
         var html = '';
-        for (var i = 0; i < SLOTS; i++) html += '<div class="qk-cell is-empty" data-slot="' + i + '"></div>';
+        var n = Math.max(slotCount(), keys.length);
+        for (var i = 0; i < n; i++) html += '<div class="qk-cell is-empty" data-slot="' + i + '"></div>';
         grid.innerHTML = html;
         gridCells().forEach(function (el) {
             var d = bySlot[el.getAttribute('data-slot')];
@@ -403,7 +436,23 @@ window.__posQkLayouts = @json($posQkLayoutsJson);
         bindGrid();
         showEdit();
         document.getElementById('posQuickKeysTitle').textContent = layout.name || 'New layout';
-        loadCats();
+        loadCats().then(function () {
+            if (!(layout.keys || []).length) {
+                keys = keysForAllCategories();
+                bySlot = {};
+                keys.forEach(function (k) { bySlot[parseInt(k.slot, 10)] = k; });
+                n = Math.max(slotCount(), keys.length);
+                html = '';
+                for (var j = 0; j < n; j++) html += '<div class="qk-cell is-empty" data-slot="' + j + '"></div>';
+                grid.innerHTML = html;
+                gridCells().forEach(function (el) {
+                    var d = bySlot[el.getAttribute('data-slot')];
+                    if (d) paintCell(el, d);
+                });
+                bindGrid();
+            }
+            paintCats(document.getElementById('posQkSearch') ? document.getElementById('posQkSearch').value : '');
+        });
     }
     function post(url, body) {
         var fd = body instanceof FormData ? body : new FormData();

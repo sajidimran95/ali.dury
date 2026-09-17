@@ -104,7 +104,7 @@ class PosQuickKeyController extends Controller
             'business_id' => $businessId,
             'user_id' => $userId,
             'name' => $name,
-            'keys' => [],
+            'keys' => $this->defaultKeysAllCategories($businessId),
             'keep_folder_open' => true,
             'is_current' => false,
         ]);
@@ -152,6 +152,28 @@ class PosQuickKeyController extends Controller
         }
 
         return $clean;
+    }
+
+    protected function defaultKeysAllCategories(int $businessId): array
+    {
+        $palette = ['#3a3f4b', '#e67e22', '#2980b9', '#e53935', '#16a34a', '#7c3aed', '#db2777', '#0f766e'];
+        $rows = Category::where('business_id', $businessId)
+            ->where('category_type', 'product')
+            ->where('parent_id', 0)
+            ->orderBy('name')
+            ->get(['id', 'name']);
+
+        $keys = [];
+        foreach ($rows as $i => $category) {
+            $keys[] = [
+                'slot' => $i,
+                'category_id' => (int) $category->id,
+                'label' => (string) $category->name,
+                'color' => $palette[$i % count($palette)],
+            ];
+        }
+
+        return $keys;
     }
 
     public function update(Request $request, $id)
@@ -215,6 +237,12 @@ class PosQuickKeyController extends Controller
     public function setCurrent($id)
     {
         $layout = $this->ownedLayout($id);
+        $keys = $this->normalizedKeys($layout->keys);
+        if (count($keys) === 0) {
+            [$businessId] = $this->userContext();
+            $layout->keys = $this->defaultKeysAllCategories($businessId);
+            $layout->save();
+        }
         $layout->markCurrent();
 
         if (request()->ajax() || request()->wantsJson()) {

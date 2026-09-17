@@ -3764,16 +3764,9 @@ function pos_refresh_payment_modal() {
         device_model_id = $("#repair_model_id").val();
     }
 
-    //Show product list — start on first configured POS category (not All / full catalog)
+    //Show product list — start with All Categories selected
     function pos_initial_category_id() {
-        var $first = $('.pos-card-grid-categories .main-category').filter(function () {
-            var v = $(this).data('value');
-            return v !== undefined && v !== null && String(v) !== '' && String(v) !== 'all';
-        }).first();
-        if ($first.length) {
-            return $first.data('value');
-        }
-        return null;
+        return 'all';
     }
 
     if ($('#pos_defer_product_list').length && $('#pos_defer_product_list').val() == '1') {
@@ -3782,20 +3775,12 @@ function pos_refresh_payment_modal() {
             pos_set_active_category_tile('all');
         }
     } else {
-        var initialCat = pos_initial_category_id();
-        if (initialCat !== null && initialCat !== undefined && String(initialCat) !== '') {
-            global_p_category_id = initialCat;
-            var $initialTile = $('.pos-card-grid-categories .main-category[data-value="' + initialCat + '"]').first();
-            if (typeof pos_set_filter_chip === 'function' && $initialTile.length) {
-                pos_set_filter_chip('category', $initialTile.data('name') || null);
-            }
-        } else {
-            global_p_category_id = null;
+        global_p_category_id = null;
+        if (typeof pos_set_filter_chip === 'function') {
+            pos_set_filter_chip('category', null);
         }
         if (typeof pos_set_active_category_tile === 'function') {
-            pos_set_active_category_tile(global_p_category_id || 'all');
-        } else if (global_p_category_id) {
-            $('.pos-card-grid-categories .main-category[data-value="' + global_p_category_id + '"] .pos-card.cat').addClass('is-active');
+            pos_set_active_category_tile('all');
         } else {
             $('.pos-card-grid-categories .main-category[data-value="all"] .pos-card.cat').addClass('is-active');
         }
@@ -3892,6 +3877,7 @@ function pos_refresh_payment_modal() {
             : '.main-category[data-value="' + value + '"] .pos-card.cat';
         $grid.find(sel).first().addClass('is-active');
     }
+    window.pos_set_active_category_tile = pos_set_active_category_tile;
 
     // on click sub category in category drawer
     $('.product_category').on('click', function(e) {
