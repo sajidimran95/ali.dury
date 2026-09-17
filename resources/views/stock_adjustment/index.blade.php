@@ -2,7 +2,7 @@
 @section('title', __('stock_adjustment.stock_adjustments'))
 
 @section('css')
-    <link rel="stylesheet" href="{{ asset('css/product-list-metrics.css?v=' . ($asset_v ?? '') . '&plm=4') }}">
+    <link rel="stylesheet" href="{{ asset('css/product-list-metrics.css?v=' . ($asset_v ?? '') . '&plm=5') }}">
 @endsection
 
 @section('content')

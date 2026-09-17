@@ -2027,13 +2027,13 @@ body.japs-dashboard-premium.japs-dashboard-home .japs-dash-reports-grid {
 }
 
 /* ── display_currency flash prevention — show placeholder until JS converts ── */
-body.japs-dashboard-premium .inv-dash .display_currency,
+body.japs-dashboard-premium .inv-dash:not(.product-list-dash) .display_currency,
 body.japs-dashboard-premium .crm-dash .display_currency {
     visibility: hidden;
     opacity: 0;
     transition: opacity 0.15s ease;
 }
-body.japs-dashboard-premium .inv-dash .display_currency.currency-converted,
+body.japs-dashboard-premium .inv-dash:not(.product-list-dash) .display_currency.currency-converted,
 body.japs-dashboard-premium .crm-dash .display_currency.currency-converted {
     visibility: visible;
     opacity: 1;

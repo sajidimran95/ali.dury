@@ -167,6 +167,16 @@ body.japs-dashboard-premium .product-list-dash.inv-dash {
   line-height: 1.35;
 }
 
+.product-list-dash .inv-metric__money {
+  display: inline-block;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.product-list-dash .inv-metric__value .inv-metric__money {
+  color: #2d927b;
+}
+
 .product-list-dash .inv-metric__hint strong {
   color: var(--inv-muted);
   font-weight: 600;

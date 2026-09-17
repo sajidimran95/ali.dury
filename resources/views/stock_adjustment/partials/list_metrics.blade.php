@@ -55,9 +55,9 @@
             </span>
             <div>
                 <div class="inv-metric__label">@lang('stock_adjustment.total_amount')</div>
-                <div class="inv-metric__value">
+                <div class="inv-metric__value is-sum">
                     @can('view_purchase_price')
-                        <span class="display_currency" data-currency_symbol="true" data-orig-value="{{ $totalAmount }}">{{ $totalAmount }}</span>
+                        <span class="inv-metric__money">@format_currency($totalAmount)</span>
                     @else
                         —
                     @endcan
@@ -65,9 +65,7 @@
                 <div class="inv-metric__hint">
                     @lang('stock_adjustment.total_amount_recovered'):
                     @can('view_purchase_price')
-                        <strong>
-                            <span class="display_currency" data-currency_symbol="true" data-orig-value="{{ $recovered }}">{{ $recovered }}</span>
-                        </strong>
+                        <strong class="inv-metric__money is-sum">@format_currency($recovered)</strong>
                     @else
                         —
                     @endcan
