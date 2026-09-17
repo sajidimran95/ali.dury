@@ -55,7 +55,8 @@
   flex-shrink: 0;
 }
 
-.product-list-dash {
+.product-list-dash,
+body.japs-dashboard-premium .product-list-dash.inv-dash {
   --inv-ink: #0f172a;
   --inv-muted: #64748b;
   --inv-hint: #94a3b8;
@@ -63,15 +64,16 @@
   --inv-teal: #2d927b;
   --inv-amber: #d97706;
   --inv-money: #2d927b;
-  margin: 0 0 18px;
+  margin: 0 0 6px !important;
+  padding: 0 0 0 !important;
 }
 
 .product-list-dash .product-list-metrics,
 .product-list-dash .inv-metric-row {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 14px;
-  margin: 0;
+  gap: 8px;
+  margin: 0 0 4px;
 }
 
 .product-list-dash .inv-metric {

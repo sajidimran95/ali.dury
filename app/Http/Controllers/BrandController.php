@@ -37,7 +37,7 @@ class BrandController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
-        if (request()->ajax()) {
+        if (request()->ajax() || request()->filled('draw')) {
             $business_id = request()->session()->get('user.business_id');
 
             $brands = Brands::where('business_id', $business_id)

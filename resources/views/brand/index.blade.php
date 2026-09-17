@@ -40,7 +40,8 @@
         @component('components.widget', ['class' => 'box-primary', 'title' => __('brand.all_your_brands')])
             @can('brand.view')
                 <div class="table-responsive">
-                    <table class="table table-bordered table-striped" id="brands_table">
+                    <table class="table table-bordered table-striped" id="brands_table"
+                        data-ajax-url="{{ action([\App\Http\Controllers\BrandController::class, 'index']) }}">
                         <thead>
                             <tr>
                                 <th>@lang('brand.brands')</th>

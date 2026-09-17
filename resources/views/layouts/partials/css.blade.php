@@ -162,6 +162,7 @@
 @if(!empty($dashboard_premium))
 <link rel="stylesheet" href="{{ asset('css/japs-dashboard-premium.css?v='.$asset_v.'&inv=9') }}">
 @endif
+<link rel="stylesheet" href="{{ asset('css/inv-saas-kpis.css?v='.$asset_v.'&k=7') }}">
 @if(!empty($dashboard_home))
 <link rel="stylesheet" href="{{ asset('css/japs-dashboard-home.css?v='.$asset_v) }}">
 @endif

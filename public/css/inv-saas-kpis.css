@@ -1,0 +1,259 @@
+/* Compact summary cards — visual only, all list pages */
+@keyframes invKpiIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes invKpiShine {
+  from { transform: translateX(-130%) skewX(-14deg); }
+  to { transform: translateX(220%) skewX(-14deg); }
+}
+@keyframes invHealthPulse {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.18); }
+}
+
+.inv-saas-kpis,
+.product-list-dash .inv-metric-row,
+body.japs-dashboard-premium .inv-dash .inv-metric-row.inv-saas-kpis,
+body.japs-dashboard-premium .product-list-dash.inv-dash .inv-metric-row {
+  display: grid !important;
+  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+  gap: 8px !important;
+  margin: 0 0 4px !important;
+  align-items: stretch;
+}
+
+.inv-saas-kpis > .inv-metric,
+.product-list-dash .inv-metric,
+body.japs-dashboard-premium .inv-dash .inv-saas-kpis > .inv-metric,
+body.japs-dashboard-premium .product-list-dash.inv-dash .inv-metric {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  min-width: 0;
+  padding: 8px 10px !important;
+  background: #fff !important;
+  border: 1px solid #e8eef6 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 3px 10px rgba(15, 23, 42, 0.04) !important;
+  text-decoration: none !important;
+  color: inherit !important;
+  position: relative;
+  overflow: hidden;
+  animation: invKpiIn .45s ease both;
+  transition: transform .22s cubic-bezier(.22,1,.36,1), box-shadow .22s ease, border-color .22s ease;
+}
+
+.inv-saas-kpis > .inv-metric:nth-child(1),
+.product-list-dash .inv-metric:nth-child(1) { animation-delay: .04s; }
+.inv-saas-kpis > .inv-metric:nth-child(2),
+.product-list-dash .inv-metric:nth-child(2) { animation-delay: .1s; }
+.inv-saas-kpis > .inv-metric:nth-child(3),
+.product-list-dash .inv-metric:nth-child(3) { animation-delay: .16s; }
+.inv-saas-kpis > .inv-metric:nth-child(4),
+.product-list-dash .inv-metric:nth-child(4) { animation-delay: .22s; }
+.inv-saas-kpis > .inv-metric:nth-child(5),
+.product-list-dash .inv-metric:nth-child(5) { animation-delay: .28s; }
+
+.inv-saas-kpis > .inv-metric::after,
+.product-list-dash .inv-metric::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.65), transparent);
+  transform: translateX(-140%) skewX(-16deg);
+  pointer-events: none;
+}
+
+.inv-saas-kpis > .inv-metric:hover,
+.product-list-dash .inv-metric:hover,
+body.japs-dashboard-premium .inv-dash .inv-saas-kpis > .inv-metric:hover,
+body.japs-dashboard-premium .product-list-dash.inv-dash .inv-metric:hover {
+  transform: translateY(-3px) scale(1.03);
+  border-color: #93c5fd !important;
+  box-shadow: 0 0 0 1px rgba(59,130,246,.2), 0 10px 20px rgba(37, 99, 235, 0.14) !important;
+  color: inherit !important;
+  text-decoration: none !important;
+}
+
+.inv-saas-kpis > .inv-metric:hover::after,
+.product-list-dash .inv-metric:hover::after {
+  animation: invKpiShine .65s ease;
+}
+
+.inv-saas-kpis .inv-metric__icon,
+.product-list-dash .inv-metric__icon,
+body.japs-dashboard-premium .inv-dash .inv-saas-kpis .inv-metric__icon,
+body.japs-dashboard-premium .product-list-dash.inv-dash .inv-metric__icon {
+  width: 28px !important;
+  height: 28px !important;
+  border-radius: 8px !important;
+  flex-shrink: 0;
+  transition: transform .22s ease;
+}
+
+.inv-saas-kpis > .inv-metric:hover .inv-metric__icon,
+.product-list-dash .inv-metric:hover .inv-metric__icon {
+  transform: scale(1.08);
+}
+
+.inv-saas-kpis .inv-metric__icon svg,
+.product-list-dash .inv-metric__icon svg,
+body.japs-dashboard-premium .inv-dash .inv-saas-kpis .inv-metric__icon svg,
+body.japs-dashboard-premium .product-list-dash.inv-dash .inv-metric__icon svg {
+  width: 14px !important;
+  height: 14px !important;
+}
+
+.inv-saas-kpis .inv-metric__label,
+.product-list-dash .inv-metric__label,
+body.japs-dashboard-premium .inv-dash .inv-saas-kpis .inv-metric__label,
+body.japs-dashboard-premium .product-list-dash.inv-dash .inv-metric__label {
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #64748b !important;
+  margin-bottom: 0 !important;
+}
+
+.inv-saas-kpis .inv-metric__value,
+.product-list-dash .inv-metric__value,
+body.japs-dashboard-premium .inv-dash .inv-saas-kpis .inv-metric__value,
+body.japs-dashboard-premium .product-list-dash.inv-dash .inv-metric__value {
+  font-size: 15px !important;
+  font-weight: 800 !important;
+  color: #0f172a !important;
+  letter-spacing: -0.03em;
+  line-height: 1.15 !important;
+  word-break: break-word;
+}
+
+.inv-saas-kpis .inv-metric__value--sm,
+.product-list-dash .inv-metric__value--sm {
+  font-size: 13px !important;
+}
+
+.inv-saas-kpis .inv-metric__hint,
+.product-list-dash .inv-metric__hint,
+body.japs-dashboard-premium .inv-dash .inv-saas-kpis .inv-metric__hint,
+body.japs-dashboard-premium .product-list-dash.inv-dash .inv-metric__hint {
+  margin-top: 2px !important;
+  font-size: 10px !important;
+  color: #94a3b8 !important;
+  line-height: 1.25;
+}
+
+.inv-saas-kpis .inv-metric__hint .display_currency,
+.inv-saas-kpis .inv-metric--violet .inv-metric__value .display_currency {
+  color: #0d9488 !important;
+  font-weight: 800;
+}
+
+.product-list-dash,
+body.japs-dashboard-premium .product-list-dash.inv-dash {
+  margin: 0 0 6px !important;
+  padding: 0 !important;
+}
+
+@media (max-width: 1200px) {
+  .inv-saas-kpis,
+  .product-list-dash .inv-metric-row,
+  body.japs-dashboard-premium .inv-dash .inv-metric-row.inv-saas-kpis,
+  body.japs-dashboard-premium .product-list-dash.inv-dash .inv-metric-row {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 767px) {
+  .inv-saas-kpis,
+  .product-list-dash .inv-metric-row,
+  body.japs-dashboard-premium .inv-dash .inv-metric-row.inv-saas-kpis,
+  body.japs-dashboard-premium .product-list-dash.inv-dash .inv-metric-row {
+    grid-template-columns: 1fr 1fr !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .inv-saas-kpis > .inv-metric,
+  .product-list-dash .inv-metric,
+  body.japs-dashboard-premium .inv-dash .inv-spotlight,
+  body.japs-dashboard-premium .inv-dash .inv-health {
+    animation: none !important;
+  }
+  body.japs-dashboard-premium .inv-dash .inv-health__fill {
+    animation: none !important;
+  }
+}
+
+/* Hero Inventory value + Low stock — same compact height */
+body.japs-dashboard-premium .inv-dash .inv-pulse__spotlight {
+  gap: 8px !important;
+  margin-top: 10px;
+}
+body.japs-dashboard-premium .inv-dash .inv-spotlight,
+body.japs-dashboard-premium .inv-dash .inv-health {
+  padding: 8px 12px !important;
+  border-radius: 12px !important;
+  min-height: 0 !important;
+  position: relative;
+  overflow: hidden;
+  animation: invKpiIn .5s ease both;
+  transition: transform .22s cubic-bezier(.22,1,.36,1), box-shadow .22s ease, border-color .22s ease;
+}
+body.japs-dashboard-premium .inv-dash .inv-spotlight { animation-delay: .12s; }
+body.japs-dashboard-premium .inv-dash .inv-health { animation-delay: .2s; }
+body.japs-dashboard-premium .inv-dash .inv-spotlight::after,
+body.japs-dashboard-premium .inv-dash .inv-health::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 38%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.7), transparent);
+  transform: translateX(-140%) skewX(-16deg);
+  pointer-events: none;
+}
+body.japs-dashboard-premium .inv-dash .inv-spotlight:hover,
+body.japs-dashboard-premium .inv-dash .inv-health:hover {
+  transform: translateY(-3px) scale(1.02);
+  border-color: #93c5fd;
+  box-shadow: 0 0 0 1px rgba(59,130,246,.2), 0 10px 20px rgba(37, 99, 235, 0.14);
+}
+body.japs-dashboard-premium .inv-dash .inv-spotlight:hover::after,
+body.japs-dashboard-premium .inv-dash .inv-health:hover::after {
+  animation: invKpiShine .65s ease;
+}
+body.japs-dashboard-premium .inv-dash .inv-health__fill {
+  animation: invHealthPulse 2.4s ease-in-out infinite;
+}
+body.japs-dashboard-premium .inv-dash .inv-spotlight__value {
+  margin-top: 2px !important;
+  font-size: 18px !important;
+  line-height: 1.2 !important;
+}
+body.japs-dashboard-premium .inv-dash .inv-spotlight__meta {
+  margin-top: 2px !important;
+  font-size: 11px !important;
+}
+body.japs-dashboard-premium .inv-dash .inv-health__head strong {
+  font-size: 18px !important;
+}
+body.japs-dashboard-premium .inv-dash .inv-health__track {
+  margin-top: 6px !important;
+  height: 5px !important;
+}
+body.japs-dashboard-premium .inv-dash .inv-health__hint {
+  margin-top: 4px !important;
+  font-size: 10px !important;
+}
+
+.inv-saas-kpis > .inv-metric--violet,
+.inv-saas-kpis > .inv-metric--amber {
+  min-height: 0 !important;
+  align-items: center !important;
+}

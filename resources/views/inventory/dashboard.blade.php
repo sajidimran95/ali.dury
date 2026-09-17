@@ -1,6 +1,10 @@
 @extends('layouts.app')
 @section('title', __('lang_v1.inventory_dashboard'))
 
+@section('css')
+    <link rel="stylesheet" href="{{ asset('css/inv-saas-kpis.css?v=' . ($asset_v ?? '') . '&k=6') }}">
+@endsection
+
 @section('content')
 @php
     $catMax = 0;
@@ -78,7 +82,7 @@
     </div>
 
     {{-- Quick metrics --}}
-    <div class="inv-metric-row">
+    <div class="inv-metric-row inv-saas-kpis">
         <a href="{{ action([\App\Http\Controllers\ProductController::class, 'index']) }}" class="inv-metric inv-metric--blue">
             <span class="inv-metric__icon" aria-hidden="true">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.27 6.96L12 12.01l8.73-5.05"/><path d="M12 22.08V12"/></svg>
@@ -87,6 +91,24 @@
                 <div class="inv-metric__label">@lang('lang_v1.total_products')</div>
                 <div class="inv-metric__value">{{ @num_format($stats['total_products']) }}</div>
                 <div class="inv-metric__hint">{{ @num_format($stats['stock_tracked']) }} @lang('lang_v1.stock_tracked')</div>
+            </div>
+        </a>
+
+        <a href="{{ action([\App\Http\Controllers\ReportController::class, 'getStockReport']) }}" class="inv-metric inv-metric--violet">
+            <span class="inv-metric__icon" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            </span>
+            <div>
+                <div class="inv-metric__label">@lang('lang_v1.inventory_value')</div>
+                <div class="inv-metric__value">
+                    <span class="display_currency" data-currency_symbol="true" data-orig-value="{{ $stats['inventory_value'] }}">{{ $stats['inventory_value'] }}</span>
+                </div>
+                <div class="inv-metric__hint">
+                    @lang('lang_v1.at_selling_price')
+                    <strong>
+                        <span class="display_currency" data-currency_symbol="true" data-orig-value="{{ $stats['sell_value'] }}">{{ $stats['sell_value'] }}</span>
+                    </strong>
+                </div>
             </div>
         </a>
 
@@ -119,6 +141,17 @@
         @else
         </div>
         @endcan
+
+        <div class="inv-metric inv-metric--slate">
+            <span class="inv-metric__icon" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            </span>
+            <div>
+                <div class="inv-metric__label">@lang('unit.units')</div>
+                <div class="inv-metric__value">{{ @num_format($stats['units']) }}</div>
+                <div class="inv-metric__hint">{{ @num_format($stats['brands']) }} @lang('brand.brands')</div>
+            </div>
+        </div>
     </div>
 
     {{-- Insight bento --}}
