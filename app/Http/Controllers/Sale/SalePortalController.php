@@ -2596,6 +2596,28 @@ class SalePortalController extends Controller
                 'allow_decimal' => (int) $u['allow_decimal'],
             ];
         }
+
+        if ($related !== []) {
+            $extra = Unit::where('business_id', $business_id)->whereIn('id', $related)->get();
+            foreach ($extra as $row) {
+                $id = (int) $row->id;
+                if (isset($seen[$id])) {
+                    continue;
+                }
+                $seen[$id] = true;
+                $mult = (float) ($row->base_unit_multiplier ?: 1);
+                $out[] = [
+                    'id' => $id,
+                    'name' => $row->actual_name ?: ($row->short_name ?: 'Unit'),
+                    'multiplier' => $mult > 0 ? $mult : 1.0,
+                    'allow_decimal' => (int) $row->allow_decimal,
+                ];
+            }
+        }
+
+        usort($out, function ($a, $b) {
+            return ($a['multiplier'] <=> $b['multiplier']);
+        });
         if ($out === []) {
             $out[] = ['id' => $unit_id, 'name' => 'Pc', 'multiplier' => 1.0, 'allow_decimal' => 0];
         }

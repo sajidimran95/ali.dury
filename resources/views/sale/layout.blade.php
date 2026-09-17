@@ -1639,7 +1639,8 @@
             gap: 0;
             box-sizing: border-box;
             overflow: hidden;
-            vertical-align: middle;
+            flex-wrap: wrap;
+            row-gap: 2px;
         }
         .sale-ois-unitbtn {
             flex: 0 0 auto;
