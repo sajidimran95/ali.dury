@@ -115,11 +115,11 @@ return new class extends Migration
 
     private function seedPermissionsAndRoles(): void
     {
+        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+
         $perms = ['delivery.manage', 'delivery.driver.view', 'delivery.driver.edit'];
         foreach ($perms as $name) {
-            if (! Permission::where('name', $name)->where('guard_name', 'web')->exists()) {
-                Permission::create(['name' => $name, 'guard_name' => 'web']);
-            }
+            Permission::findOrCreate($name, 'web');
         }
 
         $businessIds = DB::table('business')->pluck('id');
