@@ -244,7 +244,7 @@
 
 @section('javascript')
     <script src="{{ asset('js/home.js?v=' . $asset_v) }}"></script>
-    <script src="{{ asset('js/home-ops.js?v=' . $asset_v . '&shot=5') }}"></script>
+    <script src="{{ asset('js/home-ops.js?v=' . $asset_v . '&shot=7') }}"></script>
     <script src="{{ asset('js/payment.js?v=' . $asset_v) }}"></script>
     @include('home.partials.attendance_clock_js')
     <script>

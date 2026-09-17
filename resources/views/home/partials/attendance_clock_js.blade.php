@@ -86,7 +86,7 @@
 
         function loadStatus() {
             $.ajax({
-                url: @json(action([\App\Http\Controllers\AttendanceController::class, 'status'])),
+                url: @json(route('attendance.status')),
                 method: 'GET',
                 dataType: 'json',
                 success: function (resp) {
@@ -161,19 +161,19 @@
 
         $(document).off('click.attClock').on('click.attClock', '#att_btn_clock_in', function (e) {
             e.preventDefault();
-            withGeoThen(@json(action([\App\Http\Controllers\AttendanceController::class, 'clockIn'])));
+            withGeoThen(@json(route('attendance.clock_in')));
         });
         $(document).on('click.attClock', '#att_btn_start_break', function (e) {
             e.preventDefault();
-            postAction(@json(action([\App\Http\Controllers\AttendanceController::class, 'startBreak'])));
+            postAction(@json(route('attendance.start_break')));
         });
         $(document).on('click.attClock', '#att_btn_end_break', function (e) {
             e.preventDefault();
-            postAction(@json(action([\App\Http\Controllers\AttendanceController::class, 'endBreak'])));
+            postAction(@json(route('attendance.end_break')));
         });
         $(document).on('click.attClock', '#att_btn_clock_out', function (e) {
             e.preventDefault();
-            withGeoThen(@json(action([\App\Http\Controllers\AttendanceController::class, 'clockOut'])));
+            withGeoThen(@json(route('attendance.clock_out')));
         });
 
         prefetchGeo();

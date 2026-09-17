@@ -345,11 +345,11 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::get('/inventory/dashboard', [\App\Http\Controllers\InventoryDashboardController::class, 'index']);
 
     // Employee attendance (clock in / out / break / report / manage)
-    Route::get('/attendance/status', [AttendanceController::class, 'status']);
-    Route::post('/attendance/clock-in', [AttendanceController::class, 'clockIn']);
-    Route::post('/attendance/start-break', [AttendanceController::class, 'startBreak']);
-    Route::post('/attendance/end-break', [AttendanceController::class, 'endBreak']);
-    Route::post('/attendance/clock-out', [AttendanceController::class, 'clockOut']);
+    Route::get('/attendance/status', [AttendanceController::class, 'status'])->name('attendance.status');
+    Route::post('/attendance/clock-in', [AttendanceController::class, 'clockIn'])->name('attendance.clock_in');
+    Route::post('/attendance/start-break', [AttendanceController::class, 'startBreak'])->name('attendance.start_break');
+    Route::post('/attendance/end-break', [AttendanceController::class, 'endBreak'])->name('attendance.end_break');
+    Route::post('/attendance/clock-out', [AttendanceController::class, 'clockOut'])->name('attendance.clock_out');
     Route::get('/attendance/report', [AttendanceController::class, 'report']);
     Route::get('/attendance/calendar-events', [AttendanceController::class, 'calendarEvents']);
     Route::get('/attendance/{id}', [AttendanceController::class, 'show'])->where('id', '[0-9]+');

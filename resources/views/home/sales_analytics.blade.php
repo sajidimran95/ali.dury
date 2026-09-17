@@ -4,7 +4,7 @@
 @section('content')
 
     @if (auth()->user()->can('dashboard.data'))
-        <div class="japs-dashboard-page">
+        <div class="japs-dashboard-page japs-sales-dash">
         <div class="zoho-dashboard__layout">
             <div class="zoho-dashboard__main">
     @endif
@@ -46,6 +46,7 @@
                             </button>
                         @endif
                     </div>
+                </div>
 
                 @if (auth()->user()->can('dashboard.data') && $is_admin)
                     @php
@@ -351,6 +352,7 @@
 
 @section('css')
     <link href="{{ asset('css/japs-ui.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/japs-sales-dash.css?v=' . ($asset_v ?? '') . '&sd=1') }}" rel="stylesheet">
     <style>
         .select2-container {
             width: 100% !important;
@@ -483,7 +485,7 @@
                             },
                             plotOptions: {
                                 bar: { borderWidth: 0, borderRadius: 5, groupPadding: 0.16, pointPadding: 0.06 },
-                                series: { animation: false }
+                                series: { animation: { duration: 700 } }
                             },
                             tooltip: {
                                 backgroundColor: '#3b82f6',
@@ -608,7 +610,7 @@
                                 },
                                 series: {
                                     borderWidth: 0,
-                                    animation: false,
+                                    animation: { duration: 650 },
                                     color: '#3b82f6',
                                     fillColor: {
                                         linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },

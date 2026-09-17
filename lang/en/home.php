@@ -117,5 +117,6 @@ return [
     'source' => 'Source',
     'source_pos' => 'POS',
     'source_online' => 'Online Store',
+    'hrs_short' => 'hrs',
     'source_field' => 'Field Sales',
 ];

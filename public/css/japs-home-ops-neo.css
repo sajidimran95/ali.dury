@@ -201,6 +201,7 @@ body.japs-home-ops .japs-dashboard-page {
 .japs-shot__gauge {
     position: relative;
     height: 168px;
+    overflow: visible;
 }
 .japs-shot__gauge-value {
     position: absolute;
@@ -212,7 +213,16 @@ body.japs-home-ops .japs-dashboard-page {
     color: #0f172a;
     line-height: 1;
     pointer-events: none;
-    z-index: 2;
+    z-index: 1;
+}
+.japs-shot .highcharts-container {
+    z-index: 5 !important;
+    overflow: visible !important;
+}
+.japs-shot .highcharts-contextmenu,
+.japs-shot .highcharts-menu,
+.japs-shot .highcharts-exporting-group {
+    z-index: 50 !important;
 }
 
 .japs-shot__side-top {
