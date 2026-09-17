@@ -1,5 +1,18 @@
 <?php
 
+if (! function_exists('uploadAsset')) {
+    function uploadAsset($path, $directory = 'uploads')
+    {
+        $file = public_path($directory.'/'.$path);
+
+        if (! is_string($path) || $path === '' || ! file_exists($file)) {
+            return null;
+        }
+
+        return asset($directory.'/'.$path);
+    }
+}
+
 if (! function_exists('humanFilesize')) {
     function humanFilesize($size, $precision = 2)
     {

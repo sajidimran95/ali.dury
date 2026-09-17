@@ -37,9 +37,12 @@
                         <img src="{{ $product->image_url }}" class="w-full h-full object-cover" alt="">
                     </button>
                     @foreach($product->ecom_gallery as $img)
-                        <button type="button" onclick="document.getElementById('mainImage').src='{{ asset('uploads/img/'.$img) }}'" class="w-20 h-20 rounded-lg overflow-hidden border border-line shrink-0">
-                            <img src="{{ asset('uploads/img/'.$img) }}" class="w-full h-full object-cover" alt="">
+                        @php $galleryUrl = uploadAsset($img, 'uploads/img'); @endphp
+                        @if($galleryUrl)
+                        <button type="button" onclick="document.getElementById('mainImage').src='{{ $galleryUrl }}'" class="w-20 h-20 rounded-lg overflow-hidden border border-line shrink-0">
+                            <img src="{{ $galleryUrl }}" class="w-full h-full object-cover" alt="">
                         </button>
+                        @endif
                     @endforeach
                 </div>
             @endif

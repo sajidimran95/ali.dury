@@ -263,6 +263,24 @@ self.addEventListener('fetch', (event) => {
   }
 
   if (isStatic) {
+    // Network-first for JS/CSS so install-script updates are not stuck behind stale SW cache
+    // (cache-first previously kept an old ecom-pwa.js that called beforeinstallprompt.preventDefault()).
+    const isScriptOrStyle = /\\.(?:js|css)(?:\\?|$)/i.test(url.pathname);
+    if (isScriptOrStyle) {
+      event.respondWith(
+        fetch(req)
+          .then((res) => {
+            if (res && res.ok) {
+              const copy = res.clone();
+              caches.open(CACHE_NAME).then((c) => c.put(req, copy)).catch(() => {});
+            }
+            return res;
+          })
+          .catch(() => caches.match(req))
+      );
+      return;
+    }
+
     event.respondWith(
       caches.match(req).then((cached) => {
         const network = fetch(req).then((res) => {

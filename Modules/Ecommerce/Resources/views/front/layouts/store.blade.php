@@ -591,8 +591,8 @@
                                         @foreach($megaBrands as $brand)
                                             <a href="{{ route('ecommerce.shop', ['category' => $cat->id, 'brand' => $brand->id]) }}"
                                                class="brand-tile" title="{{ $brand->name }}">
-                                                @if(!empty($brand->image))
-                                                    <img src="{{ asset('uploads/img/'.$brand->image) }}" alt="{{ $brand->name }}"
+                                                @if(uploadAsset($brand->image, 'uploads/img'))
+                                                    <img src="{{ uploadAsset($brand->image, 'uploads/img') }}" alt="{{ $brand->name }}"
                                                          class="max-h-10 max-w-full object-contain">
                                                 @else
                                                     <span class="text-[11px] font-bold text-ink leading-tight px-1">{{ $brand->name }}</span>
@@ -838,15 +838,24 @@ document.querySelectorAll('.product-card-form').forEach(form => {
 });
 </script>
 @stack('scripts')
+@php
+    $ecomPwaAssetVersion = preg_replace(
+        '/[^a-zA-Z0-9._-]/',
+        '',
+        (string) config('app.asset_version', config('constants.asset_version', '1'))
+    );
+    $ecomPwaCacheName = 'japspos-ecom-pwa-v'.$ecomPwaAssetVersion;
+@endphp
 <script>
 window.__ECOM_PWA__ = {
     swUrl: @json(url('/ecom-pwa/sw.js')),
     manifestUrl: @json(url('/ecom-pwa/manifest.webmanifest')),
+    cacheName: @json($ecomPwaCacheName),
     iosHint: 'On iPhone/iPad: tap Share → Add to Home Screen.',
     installHint: 'Use your browser menu → Install app / Add to Home Screen.'
 };
 </script>
-<script src="{{ asset('js/ecom-pwa.js') }}?v={{ config('app.asset_version', config('constants.asset_version', '1')) }}" defer></script>
+<script src="{{ asset('js/ecom-pwa.js') }}?v={{ $ecomPwaAssetVersion }}" defer></script>
 <script>
 (function () {
     const key = 'gc_age_ok';

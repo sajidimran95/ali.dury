@@ -19,7 +19,7 @@
 @foreach($banners as $banner)
 <tr>
 <td>{{ $banner->title }}</td>
-<td>@if($banner->image)<img src="{{ asset('uploads/img/'.$banner->image) }}" height="40">@endif</td>
+<td>@if(uploadAsset($banner->image, 'uploads/img'))<img src="{{ uploadAsset($banner->image, 'uploads/img') }}" height="40">@endif</td>
 <td>
 <form method="post" action="{{ route('ecommerce.admin.banners.destroy', $banner->id) }}">@csrf @method('DELETE')
 <button class="btn btn-danger btn-xs">Delete</button></form>

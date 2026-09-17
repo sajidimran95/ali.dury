@@ -9,7 +9,7 @@
     }
     $activeCat = $categories->firstWhere('id', (int) request('category'));
     $bannerImg = $activeCat && isset($covers[$activeCat->id])
-        ? asset('uploads/img/'.$covers[$activeCat->id])
+        ? uploadAsset($covers[$activeCat->id], 'uploads/img')
         : ($products->first()->image_url ?? null);
 
     $filterCount = 0;
