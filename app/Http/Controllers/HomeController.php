@@ -1238,7 +1238,10 @@ class HomeController extends Controller
         $location_id = request()->input('location_id');
         $permitted_locations = auth()->user()->permitted_locations();
 
-        $sells = $this->dashboardOrdersQuery($business_id, null, null, $permitted_locations, $location_id, null, 'transactions')
+        $start = request()->input('start');
+        $end = request()->input('end');
+
+        $sells = $this->dashboardOrdersQuery($business_id, $start, $end, $permitted_locations, $location_id, null, 'transactions')
             ->leftJoin('contacts', 'transactions.contact_id', '=', 'contacts.id')
             ->select(
                 'transactions.id',
@@ -1397,13 +1400,23 @@ class HomeController extends Controller
 
         $prev_awaiting = 0;
         $prev_open = 0;
+        $prev_orders_sum = 0;
+        $prev_revenue_sum = 0;
         try {
             $prev_awaiting = $this->countAwaitingFulfillment($business_id, $permitted_locations, $location_id, $prev_start, $prev_end_str);
             $prev_open = $this->countDelayedShipments($business_id, $permitted_locations, $location_id, $prev_start, $prev_end_str)
                 + $this->countInvoiceDue($business_id, $permitted_locations, $location_id);
+            $prev_daily = $this->getDailyOrdersAndRevenue($business_id, $prev_start, $prev_end_str, $permitted_locations);
+            foreach ($prev_daily as $row) {
+                $prev_orders_sum += (int) $row->orders_count;
+                $prev_revenue_sum += (float) $row->revenue;
+            }
         } catch (\Throwable $e) {
             // ignore prior-period comparison errors
         }
+
+        $orders_sum = (int) array_sum($orders);
+        $revenue_sum = (float) array_sum($revenue);
 
         $attention = [
             [
@@ -1439,6 +1452,8 @@ class HomeController extends Controller
                 'change_pct' => [
                     'awaiting_fulfillment' => $this->percentChange($awaiting, $prev_awaiting),
                     'open_issues' => $this->percentChange($open_issues, $prev_open),
+                    'orders' => $this->percentChange($orders_sum, $prev_orders_sum),
+                    'revenue' => $this->percentChange($revenue_sum, $prev_revenue_sum),
                 ],
                 'prev_period_label' => \Carbon::parse($prev_start)->format('M j').' – '.\Carbon::parse($prev_end_str)->format('M j'),
             ],
