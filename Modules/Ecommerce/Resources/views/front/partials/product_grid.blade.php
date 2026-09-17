@@ -1,6 +1,6 @@
 @php
     $products = $products ?? collect();
-    $gridClass = $gridClass ?? 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4';
+    $gridClass = $gridClass ?? 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4';
 @endphp
 <div class="{{ $gridClass }}">
     @forelse($products as $product)
@@ -10,54 +10,58 @@
             $compare = $product->ecom_online_price;
             $slug = $product->ecom_slug ?: $product->id;
             $onSale = $compare && $compare > $price;
+            $displayPrice = $onSale ? $price : $price;
+            $brandName = optional($product->brand)->name;
         @endphp
-        <article class="product-card group rounded-xl bg-white border border-line overflow-hidden flex flex-col">
-            <a href="{{ route('ecommerce.product', $slug) }}" class="block relative aspect-square bg-mist overflow-hidden">
-                <img src="{{ $product->image_url }}" alt="{{ $product->name }}" loading="lazy"
-                     class="w-full h-full object-cover transition duration-500 group-hover:scale-[1.04]"
-                     onerror="this.onerror=null;this.src='{{ asset('img/default.png') }}';">
-                @if($onSale)
-                    <span class="absolute top-2 left-2 rounded bg-brand text-white text-[10px] font-bold uppercase px-2 py-1">${{ number_format($price, 2) }}</span>
-                @elseif($product->ecom_is_new_arrival)
-                    <span class="absolute top-2 left-2 rounded bg-ink text-white text-[10px] font-bold uppercase px-2 py-1">New</span>
-                @else
-                    <span class="absolute top-2 left-2 rounded bg-brand text-white text-[10px] font-bold px-2 py-1">${{ number_format($price, 2) }}</span>
-                @endif
-            </a>
-            <div class="p-3 md:p-3.5 flex flex-col flex-1">
-                <a href="{{ route('ecommerce.product', $slug) }}" class="font-semibold text-sm leading-snug line-clamp-2 min-h-[2.5rem] text-ink hover:text-brand">
-                    {{ $product->name }}
-                </a>
-                <div class="mt-1 text-[11px] text-black/40">SKU {{ $product->sku }}</div>
-                <div class="mt-1.5 flex items-baseline gap-2">
-                    <span class="font-extrabold tabular-nums text-brand">${{ number_format($price, 2) }}</span>
+        <article class="tile-hover bg-white rounded-xl overflow-hidden border border-[#e8e8e8] flex flex-col h-full group">
+            <a href="{{ route('ecommerce.product', $slug) }}" class="block relative overflow-hidden" aria-label="View {{ $product->name }}">
+                <div class="w-full bg-[#f0f0f0] overflow-hidden h-48">
+                    <img src="{{ $product->image_url }}" alt="{{ $product->name }}" loading="lazy"
+                         class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                         onerror="this.onerror=null;this.src='{{ asset('img/default.png') }}';">
+                </div>
+                <div class="absolute top-2 left-2 flex flex-col gap-1">
+                    @if($product->ecom_is_new_arrival)
+                        <span class="text-xs font-bold text-white px-2 py-0.5 rounded" style="background:#4CAF79">NEW</span>
+                    @endif
                     @if($onSale)
-                        <span class="text-xs text-black/35 line-through tabular-nums">${{ number_format($compare, 2) }}</span>
+                        <span class="text-xs font-bold text-white px-2 py-0.5 rounded" style="background:#e53e3e">SALE</span>
                     @endif
                 </div>
-
-                @if($variation)
-                <form action="{{ route('ecommerce.cart.add', absolute: false) }}" method="post" class="mt-auto pt-3 product-card-form">
-                    @csrf
-                    <input type="hidden" name="product_id" value="{{ $product->id }}">
-                    <input type="hidden" name="variation_id" value="{{ $variation->id }}">
-                    <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
-                        <div class="inline-flex items-center justify-between sm:justify-start border border-line rounded-md bg-white w-full sm:w-auto shrink-0">
-                            <button type="button" class="pc-qty-minus h-10 w-10 sm:h-9 sm:w-8 text-ink text-lg sm:text-base leading-none hover:bg-mist" aria-label="Decrease">−</button>
-                            <input type="number" name="quantity" value="1" min="1" step="1"
-                                   class="pc-qty-input w-12 sm:w-8 h-10 sm:h-9 border-0 text-center text-sm font-semibold tabular-nums outline-none appearance-none [-moz-appearance:textfield]">
-                            <button type="button" class="pc-qty-plus h-10 w-10 sm:h-9 sm:w-8 text-ink text-lg sm:text-base leading-none hover:bg-mist" aria-label="Increase">+</button>
-                        </div>
-                        <button type="submit" class="w-full sm:flex-1 rounded-md bg-ink text-white text-xs font-bold py-2.5 sm:py-2.5 hover:bg-black transition">
-                            Add to Cart
-                        </button>
-                    </div>
-                </form>
+            </a>
+            <div class="p-3 flex flex-col flex-1 gap-1">
+                @if($brandName)
+                    <a href="{{ route('ecommerce.shop', ['brand' => $product->brand_id]) }}"
+                       class="text-xs font-semibold uppercase tracking-wide hover:underline" style="color:#2E6A49">{{ $brandName }}</a>
                 @endif
+                <a href="{{ route('ecommerce.product', $slug) }}"
+                   class="font-medium text-sm leading-snug line-clamp-2 hover:text-[#4CAF79] transition-colors" style="color:#1a1a1a">
+                    {{ $product->name }}
+                </a>
+                @if($product->sku)
+                    <p class="text-xs" style="color:#999">SKU {{ $product->sku }}</p>
+                @endif
+                <div class="mt-auto pt-2 flex items-end justify-between gap-2">
+                    <div>
+                        <span class="text-base font-bold" style="color: {{ $onSale ? '#e53e3e' : '#1a1a1a' }}">${{ number_format($displayPrice, 2) }}</span>
+                        @if($onSale)
+                            <span class="text-xs line-through ml-1" style="color:#999">${{ number_format($compare, 2) }}</span>
+                        @endif
+                    </div>
+                    @if($variation)
+                    <form action="{{ route('ecommerce.cart.add', absolute: false) }}" method="post" class="shrink-0">
+                        @csrf
+                        <input type="hidden" name="product_id" value="{{ $product->id }}">
+                        <input type="hidden" name="variation_id" value="{{ $variation->id }}">
+                        <input type="hidden" name="quantity" value="1">
+                        <button type="submit" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-white" style="background:#4CAF79">+ Add</button>
+                    </form>
+                    @endif
+                </div>
             </div>
         </article>
     @empty
-        <div class="col-span-full rounded-xl bg-white border border-dashed border-line p-10 text-center text-sm text-black/50">
+        <div class="col-span-full rounded-xl bg-white border border-dashed border-[#e8e8e8] p-10 text-center text-sm" style="color:#666">
             No products found in this catalog.
         </div>
     @endforelse

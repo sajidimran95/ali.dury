@@ -220,7 +220,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Only allow redirects back into the storefront (never /login, /home, /pos, etc.).
+     * Only allow redirects back into the storefront (never admin /login, /home, /pos, etc.).
      */
     protected function isShopUrl(?string $url): bool
     {
@@ -234,8 +234,30 @@ class AuthController extends Controller
         }
 
         $prefix = $this->shopPrefix();
+        if ($path === $prefix || str_starts_with($path, $prefix.'/')) {
+            return true;
+        }
 
-        return $path === $prefix || str_starts_with($path, $prefix.'/');
+        // Figma-site root aliases that share storefront controllers
+        // (exclude /login /register /account /products — those belong to POS)
+        $rootAliases = [
+            '/cart', '/checkout', '/categories', '/promotions',
+            '/new-arrivals', '/search', '/contact', '/about', '/faq', '/terms',
+            '/privacy', '/shipping', '/returns', '/compliance', '/wholesale-agreement',
+            '/forgot-password',
+        ];
+
+        foreach ($rootAliases as $alias) {
+            if ($path === $alias || str_starts_with($path, $alias.'/')) {
+                return true;
+            }
+        }
+
+        return str_starts_with($path, '/product/')
+            || str_starts_with($path, '/category/')
+            || str_starts_with($path, '/brand/')
+            || str_starts_with($path, '/collections/')
+            || $path === '/account/apply';
     }
 
     protected function forgetNonShopIntended(Request $request): void

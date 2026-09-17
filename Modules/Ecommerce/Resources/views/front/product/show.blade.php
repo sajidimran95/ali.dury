@@ -124,6 +124,27 @@
             </div>
         </div>
     </div>
+
+    @if(isset($reviews) && $reviews->count())
+    <section class="mt-12 pt-10 border-t border-line">
+        <h2 class="text-2xl font-extrabold mb-5">Customer reviews</h2>
+        <div class="space-y-4">
+            @foreach($reviews as $review)
+                <article class="rounded-xl border border-line bg-white p-5">
+                    <div class="flex items-center justify-between gap-3 mb-2">
+                        <div class="font-bold text-sm">{{ $review->author_name ?: 'Verified retailer' }}</div>
+                        <div class="text-brand text-sm" aria-label="{{ (int) $review->rating }} out of 5 stars">
+                            @for($i = 1; $i <= 5; $i++)
+                                <span>{{ $i <= (int) $review->rating ? '★' : '☆' }}</span>
+                            @endfor
+                        </div>
+                    </div>
+                    <p class="text-sm text-black/70 leading-relaxed">{{ $review->review }}</p>
+                </article>
+            @endforeach
+        </div>
+    </section>
+    @endif
 </div>
 
 @if($related->count())

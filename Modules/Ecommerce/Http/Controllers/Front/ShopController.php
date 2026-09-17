@@ -46,16 +46,17 @@ class ShopController extends Controller
             });
         }
 
-        $sort = $request->get('sort', 'newest');
+        $sort = $request->get('sort', 'featured');
         match ($sort) {
             'price_asc' => $query->orderByRaw('COALESCE(ecom_discount_price, ecom_online_price, 0) ASC'),
             'price_desc' => $query->orderByRaw('COALESCE(ecom_discount_price, ecom_online_price, 0) DESC'),
             'name' => $query->orderBy('name'),
             'bestselling' => $query->orderByDesc('id'),
-            default => $query->orderByDesc('id'),
+            'newest' => $query->orderByDesc('id'),
+            default => $query->orderByDesc('ecom_is_featured')->orderByDesc('id'),
         };
 
-        $products = $query->paginate(16)->withQueryString();
+        $products = $query->paginate(24)->withQueryString();
         $categories = Category::where('business_id', $business_id)
             ->where('category_type', 'product')
             ->where(function ($q) {
@@ -88,7 +89,10 @@ class ShopController extends Controller
         if ($category) {
             $request->merge(['category' => $category->id]);
         } elseif (! $hub) {
-            abort(404);
+            // Stale banner/menu links (deleted category IDs) → soft-land on shop
+            return redirect()
+                ->route('ecommerce.shop')
+                ->with('error', 'That category is no longer available. Browse the full catalog instead.');
         }
 
         return $this->index($request, $cartService);

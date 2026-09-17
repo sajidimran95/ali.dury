@@ -146,21 +146,25 @@ Route::prefix(config('ecommerce.route_prefix', 'shop'))
         });
     });
 
-// Figma-site URL aliases at `/` (POS admin routes remain under auth).
+// Figma-site URL aliases at `/` (do NOT claim /login, /register, /account, /products — POS owns those).
 Route::middleware(['setData', 'ecommerce.enabled'])->group(function () {
     Route::get('/product/{slug}', [ProductDetailController::class, 'show']);
     Route::get('/category/{slug}', [ShopController::class, 'category']);
     Route::get('/cart', [CartController::class, 'index']);
+    Route::post('/cart/add', [CartController::class, 'add']);
+    Route::post('/cart/update', [CartController::class, 'update']);
+    Route::post('/cart/remove', [CartController::class, 'remove']);
+    Route::post('/cart/coupon', [CartController::class, 'applyCoupon']);
     Route::get('/checkout', [CheckoutController::class, 'index']);
-    Route::get('/brands', [StorePageController::class, 'brands']);
-    Route::get('/brand/{id}', [StorePageController::class, 'brand']);
-    Route::get('/categories', [StorePageController::class, 'categories']);
+    Route::post('/checkout', [CheckoutController::class, 'place']);
     Route::get('/promotions/{id?}', [StorePageController::class, 'promotions']);
     Route::get('/new-arrivals/{sub?}', [StorePageController::class, 'newArrivals']);
     Route::get('/search', [StorePageController::class, 'search']);
     Route::get('/contact', [ContactPageController::class, 'index']);
     Route::post('/contact', [ContactPageController::class, 'send']);
     Route::post('/subscribe', [StorePageController::class, 'subscribe']);
+    // Note: /brands and /brand/{id} are owned by POS BrandController — use /shop/brands
+    Route::get('/categories', [StorePageController::class, 'categories']);
     Route::get('/about', fn () => app(StorePageController::class)->page('about'));
     Route::get('/faq', fn () => app(StorePageController::class)->page('faq'));
     Route::get('/terms', fn () => app(StorePageController::class)->page('terms'));
@@ -170,4 +174,7 @@ Route::middleware(['setData', 'ecommerce.enabled'])->group(function () {
     Route::get('/compliance', fn () => app(StorePageController::class)->page('compliance'));
     Route::get('/wholesale-agreement', fn () => app(StorePageController::class)->page('wholesale-agreement'));
     Route::get('/forgot-password', [AuthController::class, 'showForgot']);
+    Route::post('/forgot-password', [AuthController::class, 'sendReset']);
+    // Figma uses /account/apply — map to storefront register without touching POS /account
+    Route::get('/account/apply', [AuthController::class, 'showRegister']);
 });

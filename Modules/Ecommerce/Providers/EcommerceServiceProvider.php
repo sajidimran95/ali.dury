@@ -50,7 +50,7 @@ class EcommerceServiceProvider extends ServiceProvider
                         $q->orderBy('name');
                     }])
                     ->orderBy('name')
-                    ->limit(12)
+                    ->limit(16)
                     ->get();
 
                 // Brands + sample product image for mega menu tiles

@@ -19,7 +19,7 @@
     <link rel="stylesheet" href="{{ asset('fonts/greencloud/fonts.css') }}">
     <link rel="stylesheet" href="{{ asset('css/greencloud-store.css') }}">
     <link rel="stylesheet" href="{{ asset('css/greencloud-utilities.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/greencloud-theme.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/greencloud-theme.css') }}?v={{ config('app.asset_version', config('constants.asset_version', '1')) }}">
     <style>
         body { font-family: Poppins, system-ui, sans-serif; background: #f4f4f4; color: #1a1a1a; }
         .cat-nav-wrap { position: relative; }
@@ -34,15 +34,101 @@
             z-index: 60;
             width: 100%;
             background: #fff;
-            border: 1px solid #e5e5e5;
-            border-top: none;
-            box-shadow: 0 16px 40px rgba(0,0,0,.12);
-            border-radius: 0 0 12px 12px;
-            grid-template-columns: 1.4fr 0.9fr;
+            border-top: 2px solid #4CAF79;
+            box-shadow: 0 16px 40px rgba(0,0,0,.18);
         }
-        .mega-panel.is-open { display: grid; }
-        .mega.is-active > .cat-link,
-        .cat-link:hover { color: #4CAF79; }
+        .mega-panel.is-open { display: block; }
+        .section-title { position: relative; padding-bottom: 0.6rem; }
+        .section-title:after {
+            content: ''; position: absolute; left: 0; bottom: 0;
+            width: 48px; height: 3px; background: #4CAF79;
+        }
+        .tile-hover { transition: transform .2s, box-shadow .2s; }
+        .tile-hover:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,.12); }
+        .img-overlay { background: linear-gradient(#0000 0%, #0000001a 40%, #000000a6 100%); }
+        .scroll-row-wrap {
+            position: relative;
+            max-width: 100%;
+            min-width: 0;
+        }
+        .scroll-row {
+            display: flex;
+            flex-wrap: nowrap;
+            gap: 1rem;
+            overflow-x: auto;
+            overflow-y: hidden;
+            scroll-behavior: smooth;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: 0.75rem;
+            max-width: 100%;
+            min-width: 0;
+        }
+        .scroll-row::-webkit-scrollbar { display: none; }
+        .scroll-row-btn {
+            position: absolute;
+            top: 50%;
+            z-index: 10;
+            width: 2.25rem;
+            height: 2.25rem;
+            margin-top: -1.125rem;
+            border-radius: 9999px;
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 4px 12px rgba(0,0,0,.1);
+            align-items: center;
+            justify-content: center;
+            color: #1a1a1a;
+            cursor: pointer;
+            display: none;
+            transition: border-color .2s, color .2s;
+        }
+        .scroll-row-btn.is-visible { display: flex; }
+        .scroll-row-btn:hover { border-color: #4CAF79; color: #4CAF79; }
+        .scroll-row-btn--left { left: 0; transform: translateX(-0.75rem); }
+        .scroll-row-btn--right { right: 0; transform: translateX(0.75rem); }
+        .age-gate-overlay {
+            z-index: 9999; backdrop-filter: blur(4px); background: #000000bf;
+            display: flex; justify-content: center; align-items: center;
+            position: fixed; inset: 0;
+        }
+        .max-w-screen-xl { max-width: 1280px; }
+        #storeHeader.is-scrolled { box-shadow: 0 10px 30px rgba(0,0,0,.12); }
+        .cat-nav-bar {
+            background: #2E6A49;
+            overflow: visible;
+        }
+        .cat-nav-bar .cat-nav-track {
+            display: flex;
+            align-items: center;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            overflow-y: hidden;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        .cat-nav-bar .cat-nav-track::-webkit-scrollbar { display: none; }
+        .cat-nav-bar .cat-nav-track > li { flex: 0 0 auto; }
+        .cat-nav-bar a.cat-link,
+        .cat-nav-bar a.promo-link {
+            color: #fff !important;
+            font-weight: 600;
+            font-size: 0.8125rem;
+            padding: 0.85rem 0.85rem;
+            white-space: nowrap;
+            transition: background 0.15s;
+        }
+        .cat-nav-bar a.cat-link svg { opacity: 0.7; }
+        .cat-nav-bar a.promo-link:hover,
+        .cat-nav-bar a.cat-link:hover,
+        .cat-nav-bar .mega.is-active > a.cat-link {
+            background: rgba(255,255,255,0.12);
+            color: #fff !important;
+        }
+        .cat-nav-bar a.cat-link.is-current {
+            background: rgba(76,175,121,0.35);
+        }
         .brand-tile {
             display: flex; align-items: center; justify-content: center;
             min-height: 64px; border: 1px solid #ececec; border-radius: 8px;
@@ -432,196 +518,217 @@
 <body class="antialiased app-mobile{{ ! empty($isAccountPanel) ? ' ecom-account-panel' : '' }}">
 <a class="skip-link" href="#main-content">Skip to main content</a>
 <div id="ageGate" class="age-gate-overlay" hidden>
-    <div class="bg-white rounded-2xl p-8 max-w-md mx-4 text-center shadow-2xl">
-        <p class="font-display text-2xl font-bold mb-2">Age Verification Required</p>
-        <p class="text-sm text-[#555] mb-6">You must be 21 years of age or older to enter this site. This site sells tobacco, nicotine, hemp and age-restricted products for licensed retailers only.</p>
-        <p class="font-semibold mb-4">Are you 21 or older?</p>
+    <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4 text-center">
+        <div class="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center text-white text-2xl font-bold" style="background:#2E6A49">{{ mb_substr($store,0,1) }}</div>
+        <p class="font-display text-2xl font-bold mb-1" style="color:#2E6A49">{{ $store }}</p>
+        <p class="text-sm mb-4" style="color:#666">Age Verification Required</p>
+        <div class="rounded-xl p-4 mb-5 text-sm" style="background:#f4f4f4;color:#555">You must be 21 years of age or older to enter this site. Products are for licensed retailers only.</div>
+        <p class="font-semibold mb-4" style="color:#1a1a1a">Are you 21 or older?</p>
         <div class="flex gap-3 justify-center">
             <button type="button" id="ageYes" class="px-6 py-3 rounded-lg text-white font-bold text-sm" style="background:#4CAF79">Yes, I am 21+</button>
-            <a href="https://www.google.com" class="px-6 py-3 rounded-lg border font-semibold text-sm">No, Exit</a>
+            <a href="https://www.google.com" class="px-6 py-3 rounded-lg border font-semibold text-sm" style="border-color:#e0e0e0;color:#1a1a1a">No, Exit</a>
         </div>
-        <p class="text-xs text-[#888] mt-4"><a href="{{ route('ecommerce.terms') }}" class="underline">Terms of Service</a> · <a href="{{ route('ecommerce.privacy') }}" class="underline">Privacy Policy</a></p>
+        <p class="text-xs mt-4" style="color:#888"><a href="{{ route('ecommerce.terms') }}" class="underline" style="color:#1a73e8">Terms of Service</a> · <a href="{{ route('ecommerce.privacy') }}" class="underline" style="color:#1a73e8">Privacy Policy</a></p>
     </div>
 </div>
 
-{{-- Desktop promo bars --}}
-<div class="hidden lg:block text-white text-[11px] sm:text-xs tracking-wide" style="background:#2E6A49">
-    <div class="max-w-[1400px] mx-auto px-4 py-2 flex flex-wrap items-center justify-between gap-2">
-        <p class="font-semibold">{{ $store }} · Wholesale</p>
-        <p class="opacity-95">{{ $ecom_settings->contact_email ?: $store }} · Wholesale accounts</p>
+
+@php
+    $layoutAnnouncements = [];
+    $layoutExtra = is_array($ecom_settings->extra ?? null)
+        ? $ecom_settings->extra
+        : (json_decode($ecom_settings->extra ?? '{}', true) ?: []);
+    if (! empty($layoutExtra['announcements']) && is_array($layoutExtra['announcements'])) {
+        $layoutAnnouncements = $layoutExtra['announcements'];
+    } else {
+        $layoutAnnouncements = [
+            ['text' => 'Free shipping on qualifying wholesale orders', 'href' => route('ecommerce.promotions'), 'cta' => 'Shop Clearance'],
+            ['text' => 'New arrivals just added to the catalog', 'href' => route('ecommerce.new_arrivals'), 'cta' => 'View New Arrivals'],
+            ['text' => 'Apply for a wholesale account — unlock tiered pricing', 'href' => route('ecommerce.register'), 'cta' => 'Apply Now'],
+        ];
+    }
+    $tagline = $ecom_settings->seo_title ?: ($store.' — Wholesale Distribution');
+    $contactEmail = $ecom_settings->contact_email ?: 'info@'.(parse_url(config('app.url'), PHP_URL_HOST) ?: 'japspos.test');
+    $contactPhone = $ecom_settings->contact_phone ?: '';
+    $hours = $layoutExtra['hours'] ?? 'Mon–Fri 9:30AM–5:30PM  |  Sat 10AM–4PM';
+    $storeShort = \Illuminate\Support\Str::upper(\Illuminate\Support\Str::limit(preg_replace('/\s+Wholesale.*/i', '', $store) ?: $store, 16, ''));
+@endphp
+
+{{-- PromoBanner (above sticky header, Figma Kr) --}}
+<div class="relative flex items-center justify-center text-white text-sm py-2.5 px-10" style="background:#2E6A49" role="region" aria-label="Promotional announcements" aria-live="polite" id="layoutPromoAnnounce">
+    <button type="button" class="absolute left-2 top-1/2 -translate-y-1/2 h-7 w-7 rounded-full hover:bg-white/10 flex items-center justify-center" data-announce-prev aria-label="Previous">‹</button>
+    <div class="max-w-screen-xl mx-auto text-center px-6">
+        @foreach($layoutAnnouncements as $i => $ann)
+            <p class="announce-slide {{ $i === 0 ? '' : 'hidden' }}" data-announce-slide>
+                <span class="font-medium">{{ $ann['text'] ?? '' }}</span>
+                @if(!empty($ann['href']))
+                    <a href="{{ $ann['href'] }}" class="ml-2 shrink-0 bg-white text-xs font-semibold px-3 py-1 rounded-full inline-block" style="color:#2E6A49">{{ ($ann['cta'] ?? 'Learn more') }} →</a>
+                @endif
+            </p>
+        @endforeach
     </div>
-</div>
-<div class="hidden lg:block bg-[#ececec] text-[#444] text-[11px] sm:text-xs text-center px-4 py-2 border-b border-black/5">
-    <strong>WARNING:</strong> This product contains nicotine. Nicotine is an addictive chemical. Wholesale accounts only — age verification required (21+).
+    <button type="button" class="absolute right-2 top-1/2 -translate-y-1/2 h-7 w-7 rounded-full hover:bg-white/10 flex items-center justify-center" data-announce-next aria-label="Next">›</button>
 </div>
 
-{{-- Mobile app header --}}
-<header class="app-mobile-only sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-line pt-[env(safe-area-inset-top,0)]">
-    <div class="px-3 h-14 flex items-center gap-2">
-        <a href="{{ url('/') }}" class="shrink-0 flex items-center" aria-label="{{ $store }}">
-            @if($storeLogoUrl)
-                <img src="{{ $storeLogoUrl }}" alt="{{ $store }}" class="h-9 w-auto max-w-[140px] object-contain object-left">
-            @else
-                <span class="h-9 w-9 rounded-full bg-brand text-white flex items-center justify-center font-extrabold text-sm">J</span>
-            @endif
-        </a>
-        <form action="{{ route('ecommerce.shop') }}" method="get" class="flex-1 min-w-0">
-            <div class="flex items-center rounded-full bg-mist border border-line px-3 h-10">
-                <svg width="16" height="16" class="text-black/40 shrink-0" fill="none" stroke="currentColor" stroke-width="2"><circle cx="7" cy="7" r="5"/><path d="M11 11l3.5 3.5"/></svg>
-                <input type="search" name="q" value="{{ request('q') }}" placeholder="Search SKU, brands..."
-                       class="flex-1 bg-transparent border-0 outline-none text-[13px] px-2 min-w-0">
+<header class="sticky top-0 z-50 shadow-sm" role="banner" id="storeHeader">
+    {{-- Utility bar --}}
+    <div class="hidden md:block text-xs py-1.5 px-4 text-white" style="background:#1a3d2b">
+        <div class="max-w-screen-xl mx-auto flex items-center justify-between">
+            <span class="opacity-80">{{ $tagline }}</span>
+            <div class="flex items-center gap-6 opacity-90">
+                @if($contactPhone)
+                    <a href="tel:{{ preg_replace('/\D+/', '', $contactPhone) }}" class="hover:opacity-100 transition-opacity">{{ $contactPhone }}</a>
+                @endif
+                <a href="mailto:{{ $contactEmail }}" class="hover:opacity-100 transition-opacity">{{ $contactEmail }}</a>
+                <span>{{ $hours }}</span>
             </div>
-        </form>
-        {{-- Cart only in bottom nav on mobile (no header cart icon) --}}
-    </div>
-    @if($nav_categories->count())
-        <div class="app-chip-scroll">
-            <a href="{{ route('ecommerce.shop') }}" class="app-chip {{ $routeName === 'ecommerce.shop' && ! request('category') ? 'active' : '' }}">All</a>
-            @foreach($nav_categories as $cat)
-                <a href="{{ route('ecommerce.category', $cat->id) }}"
-                   class="app-chip {{ (request('category') == $cat->id || (string) request()->route('slug') === (string) $cat->id) ? 'active' : '' }}">
-                    {{ $cat->name }}
-                </a>
-            @endforeach
         </div>
-    @endif
-</header>
+    </div>
 
-{{-- Desktop header --}}
-<header class="hidden lg:block bg-white border-b border-line sticky top-0 z-50">
-    <div class="max-w-[1400px] mx-auto px-4">
-        <div class="h-[72px] flex items-center gap-4 lg:gap-6 relative z-[60]">
-            <a href="{{ url('/') }}" class="shrink-0 flex items-center" aria-label="{{ $store }}">
+    {{-- Main bar: logo | search | account/cart --}}
+    <div class="bg-white px-4 py-3">
+        <div class="max-w-screen-xl mx-auto flex items-center gap-4">
+            <button type="button" class="lg:hidden p-2 rounded-lg hover:bg-[#f0f9f4] open-cat-sheet" aria-label="Open menu" style="color:#2E6A49">
+                <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+            </button>
+
+            <a href="{{ url('/') }}" class="flex items-center gap-2.5 shrink-0" aria-label="{{ $store }} homepage">
                 @if($storeLogoUrl)
-                    <img src="{{ $storeLogoUrl }}" alt="{{ $store }}" class="h-11 sm:h-12 w-auto max-w-[220px] object-contain object-left">
+                    <img src="{{ $storeLogoUrl }}" alt="{{ $store }}" class="h-10 w-auto max-w-[160px] object-contain object-left">
                 @else
-                    <span class="flex items-center gap-2">
-                        <span class="h-9 w-9 rounded-full bg-brand text-white flex items-center justify-center font-extrabold text-sm">J</span>
-                        <span class="leading-tight">
-                            <span class="block font-extrabold text-[15px] text-ink">{{ $store }}</span>
-                            <span class="block text-[10px] uppercase tracking-wider text-black/45">Wholesale Distribution</span>
-                        </span>
+                    <span class="h-10 w-10 rounded-full flex items-center justify-center text-white font-bold" style="background:#2E6A49">{{ mb_substr($store,0,1) }}</span>
+                    <span class="hidden sm:block leading-tight">
+                        <span class="block font-display font-bold" style="color:#2E6A49;font-size:1.1rem;letter-spacing:0.06em">{{ $storeShort }}</span>
+                        <span class="block text-xs font-semibold tracking-[0.2em] uppercase" style="color:#4CAF79">Wholesale</span>
                     </span>
                 @endif
             </a>
 
-            <nav class="flex items-center gap-6 text-[17px] xl:text-[18px] font-bold tracking-tight relative z-[70]">
-                <a href="{{ url('/') }}" class="hover:text-brand">Home</a>
-                <a href="{{ route('ecommerce.shop') }}" class="hover:text-brand">Shop</a>
-                <a href="{{ route('ecommerce.categories') }}" class="hover:text-brand">Categories</a>
-                <a href="{{ route('ecommerce.brands') }}" class="hover:text-brand">Brands</a>
-                <a href="{{ route('ecommerce.promotions') }}" class="hover:text-brand">Promotions</a>
-                <div class="relative group z-[80]">
-                    <button type="button" class="hover:text-brand inline-flex items-center gap-1">Company
-                        <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path d="M5 8l5 5 5-5"/></svg>
-                    </button>
-                    <div class="invisible opacity-0 pointer-events-none group-hover:visible group-hover:opacity-100 group-hover:pointer-events-auto absolute left-0 top-full pt-1 z-[90] transition">
-                        <div class="bg-white border border-line rounded-lg shadow-xl py-2 min-w-[200px] text-sm font-medium">
-                            <a href="{{ route('ecommerce.about') }}" class="block px-4 py-2 hover:bg-mist">About</a>
-                            <a href="{{ route('ecommerce.compliance') }}" class="block px-4 py-2 hover:bg-mist">Compliance</a>
-                            <a href="{{ route('ecommerce.faq') }}" class="block px-4 py-2 hover:bg-mist">FAQ</a>
-                            <a href="{{ route('ecommerce.shipping') }}" class="block px-4 py-2 hover:bg-mist">Shipping</a>
-                            <a href="{{ route('ecommerce.contact') }}" class="block px-4 py-2 hover:bg-mist">Contact</a>
-                            <a href="{{ route('ecommerce.account') }}" class="block px-4 py-2 hover:bg-mist">My account</a>
-                        </div>
-                    </div>
-                </div>
-            </nav>
-
-            <form action="{{ route('ecommerce.shop') }}" method="get" class="flex flex-1 max-w-xl mx-auto">
-                <div class="flex w-full rounded-full border border-line overflow-hidden bg-mist focus-within:bg-white focus-within:border-brand">
-                    <input type="search" name="q" value="{{ request('q') }}" placeholder="Search"
-                           class="flex-1 bg-transparent border-0 outline-none text-[13px] px-4 py-2.5">
-                    <button class="bg-brand text-white px-4 hover:bg-[#c44d03]" aria-label="Search">
+            <form action="{{ route('ecommerce.shop') }}" method="get" class="flex-1 hidden sm:block">
+                <div class="relative">
+                    <input type="search" name="q" value="{{ request('q') }}" placeholder="Search products, brands, categories..."
+                           class="w-full border-2 rounded-lg px-4 py-2.5 pr-11 text-sm outline-none"
+                           style="border-color:#e0e0e0"
+                           onfocus="this.style.borderColor='#4CAF79'" onblur="this.style.borderColor='#e0e0e0'">
+                    <button type="submit" class="absolute right-3 top-1/2 -translate-y-1/2" style="color:#2E6A49" aria-label="Search">
                         <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="5.5"/><path d="M12 12l4 4"/></svg>
                     </button>
                 </div>
             </form>
 
-            <div class="ml-auto flex items-center gap-3 sm:gap-4 text-[15px] font-semibold shrink-0">
-                @auth('customer')
-                    <a href="{{ route('ecommerce.wishlist') }}" class="inline-flex items-center gap-1.5 hover:text-brand" title="Wishlist">
-                        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 15s-6-3.8-6-7.2A3.3 3.3 0 019 4.8a3.3 3.3 0 016 3C15 11.2 9 15 9 15z"/></svg>
-                        <span class="hidden xl:inline">Wishlist</span>
-                    </a>
-                    <a href="{{ route('ecommerce.account') }}" class="inline-flex items-center gap-1.5 hover:text-brand" title="Account">
-                        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="6" r="3"/><path d="M3 16c1.5-3 10.5-3 12 0"/></svg>
-                        <span class="hidden xl:inline">Account</span>
-                    </a>
-                @else
-                    <div class="inline-flex items-center gap-1.5">
-                        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" class="opacity-70"><circle cx="9" cy="6" r="3"/><path d="M3 16c1.5-3 10.5-3 12 0"/></svg>
-                        <a href="{{ route('ecommerce.login') }}" class="hover:text-brand">Login</a>
-                        <span class="text-black/35 font-normal">or</span>
-                        <a href="{{ route('ecommerce.register') }}" class="hover:text-brand">Sign Up</a>
-                    </div>
-                @endauth
-                <a href="{{ route('ecommerce.cart') }}" class="inline-flex items-center gap-2 hover:text-brand">
-                    <span class="relative">
-                        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 4h12l-1 9H4L3 4z"/><path d="M7 7V4a2 2 0 014 0v3"/></svg>
-                        <span class="absolute -top-2 -right-2 bg-brand text-white text-[10px] rounded-full min-w-[16px] h-[16px] inline-flex items-center justify-center px-1">{{ $cart_totals['count'] ?? 0 }}</span>
-                    </span>
-                    <span>View Cart</span>
-                    <span class="tabular-nums text-black/55">${{ number_format($cart_totals['subtotal'] ?? 0, 2) }}</span>
+            <div class="flex items-center gap-2 shrink-0">
+                <a href="{{ auth('customer')->check() ? route('ecommerce.account') : route('ecommerce.login') }}"
+                   class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg hover:bg-[#f0f9f4] text-sm font-semibold" style="color:#2E6A49">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="7" r="3"/><path d="M3 16c1.5-3 10.5-3 12 0"/></svg>
+                    <span class="hidden md:inline">Account</span>
+                </a>
+                <a href="{{ route('ecommerce.cart') }}"
+                   class="relative inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 hover:opacity-90 active:scale-95"
+                   style="background:#4CAF79;color:white" aria-label="Cart — {{ $cart_totals['count'] ?? 0 }} items">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 4h12l-1 9H4L3 4z"/><path d="M7 7V4a2 2 0 014 0v3"/></svg>
+                    <span class="hidden md:inline">Cart</span>
+                    @if(($cart_totals['count'] ?? 0) > 0)
+                        <span class="absolute -top-2 -right-2 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center" style="background:#e53e3e" aria-hidden="true">{{ ($cart_totals['count'] ?? 0) > 99 ? '99+' : $cart_totals['count'] }}</span>
+                    @endif
                 </a>
             </div>
         </div>
     </div>
 
-    <div class="border-t border-line bg-white relative z-10">
-        <div class="max-w-[1400px] mx-auto px-4 cat-nav-wrap" id="catNavWrap">
-            <ul class="flex items-stretch gap-0 text-[15px] xl:text-[16px] font-bold">
-                @foreach($nav_categories as $cat)
+    {{-- Mobile search --}}
+    <div class="sm:hidden bg-white border-b border-[#e0e0e0] px-4 py-2">
+        <form action="{{ route('ecommerce.shop') }}" method="get">
+            <input type="search" name="q" value="{{ request('q') }}" placeholder="Search products..."
+                   class="w-full border-2 rounded-lg px-4 py-2 text-sm outline-none" style="border-color:#e0e0e0">
+        </form>
+    </div>
+
+    {{-- Dark green menubar (Figma-style: few top items, rest under More) --}}
+    @php
+        $navBarCategories = ($nav_categories ?? collect())->take(6);
+        $navMoreCategories = ($nav_categories ?? collect())->slice(6)->values();
+    @endphp
+    <nav class="hidden lg:block relative cat-nav-bar" style="background:#2E6A49" aria-label="Main navigation" id="catNavWrap">
+        <div class="max-w-screen-xl mx-auto px-4">
+            <ul class="cat-nav-track" role="menubar">
+                <li role="none">
+                    <a href="{{ route('ecommerce.promotions') }}" role="menuitem"
+                       class="promo-link inline-flex items-center gap-1.5"
+                       style="color:white">🔥 Promotions</a>
+                </li>
+                <li role="none">
+                    <a href="{{ route('ecommerce.new_arrivals') }}" role="menuitem"
+                       class="cat-link inline-flex items-center gap-1.5"
+                       style="color:white">New Arrivals</a>
+                </li>
+                @foreach($navBarCategories as $cat)
                     @php
                         $subs = $cat->sub_categories ?? collect();
                         $megaBrands = $cat->mega_brands ?? collect();
                     @endphp
-                    <li class="mega">
-                        <a href="{{ route('ecommerce.category', $cat->id) }}"
-                           class="cat-link inline-flex items-center gap-1 px-3.5 py-3.5 whitespace-nowrap {{ (request('category') == $cat->id || (string) request()->route('slug') === (string) $cat->id) ? 'text-brand' : '' }}">
+                    <li class="mega" role="none">
+                        <a href="{{ route('ecommerce.category', $cat->id) }}" role="menuitem"
+                           class="cat-link inline-flex items-center gap-1.5 {{ (request('category') == $cat->id || (string) request()->route('slug') === (string) $cat->id) ? 'is-current' : '' }}"
+                           style="color:white"
+                           @if($subs->count() || $megaBrands->count()) aria-haspopup="menu" @endif>
                             {{ $cat->name }}
-                            <svg width="11" height="11" viewBox="0 0 20 20" fill="currentColor" class="opacity-50"><path d="M5 8l5 5 5-5"/></svg>
+                            @if($subs->count() || $megaBrands->count())
+                                <svg width="11" height="11" viewBox="0 0 20 20" fill="currentColor" class="opacity-70"><path d="M5 8l5 5 5-5"/></svg>
+                            @endif
                         </a>
-
+                        @if($subs->count() || $megaBrands->count())
                         <div class="mega-panel">
-                            <div class="p-5 border-r border-line">
-                                <div class="text-brand text-lg font-extrabold mb-4">Brands</div>
-                                @if($megaBrands->count())
-                                    <div class="grid grid-cols-3 sm:grid-cols-4 gap-2.5">
-                                        @foreach($megaBrands as $brand)
-                                            <a href="{{ route('ecommerce.shop', ['category' => $cat->id, 'brand' => $brand->id]) }}"
-                                               class="brand-tile" title="{{ $brand->name }}">
-                                                @if(uploadAsset($brand->image, 'uploads/img'))
-                                                    <img src="{{ uploadAsset($brand->image, 'uploads/img') }}" alt="{{ $brand->name }}"
-                                                         class="max-h-10 max-w-full object-contain">
-                                                @else
-                                                    <span class="text-[11px] font-bold text-ink leading-tight px-1">{{ $brand->name }}</span>
-                                                @endif
-                                            </a>
+                            <div class="max-w-screen-xl mx-auto px-4 py-6 grid gap-6" style="grid-template-columns: 1.2fr {{ $megaBrands->count() ? '0.8fr' : '' }};">
+                                <div>
+                                    <div class="font-bold text-xs uppercase tracking-widest mb-3 pb-2 border-b" style="color:#2E6A49;border-color:#e8f5ee">{{ $cat->name }}</div>
+                                    <div class="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
+                                        <a href="{{ route('ecommerce.category', $cat->id) }}" class="block font-semibold hover:text-[#4CAF79]" style="color:#1a1a1a">All {{ $cat->name }}</a>
+                                        @foreach($subs->take(14) as $sub)
+                                            <a href="{{ route('ecommerce.category', $sub->id) }}" class="block hover:text-[#4CAF79]" style="color:#555">{{ $sub->name }}</a>
                                         @endforeach
                                     </div>
-                                @else
-                                    <p class="text-sm text-black/45">Brands coming soon for this department.</p>
+                                </div>
+                                @if($megaBrands->count())
+                                <div>
+                                    <div class="font-bold text-xs uppercase tracking-widest mb-3 pb-2 border-b" style="color:#2E6A49;border-color:#e8f5ee">Brands</div>
+                                    <div class="space-y-2 text-sm">
+                                        @foreach($megaBrands->take(8) as $brand)
+                                            <a href="{{ route('ecommerce.shop', ['category' => $cat->id, 'brand' => $brand->id]) }}" class="block hover:text-[#4CAF79]" style="color:#555">{{ $brand->name }}</a>
+                                        @endforeach
+                                    </div>
+                                </div>
                                 @endif
                             </div>
-                            <div class="p-5 bg-[#fcfcfc]">
-                                <div class="text-ink text-base font-extrabold mb-3">{{ $cat->name }}</div>
-                                <div class="space-y-2 text-sm">
-                                    <a href="{{ route('ecommerce.category', $cat->id) }}" class="block font-semibold hover:text-brand">All {{ $cat->name }}</a>
-                                    @forelse($subs as $sub)
-                                        <a href="{{ route('ecommerce.category', $sub->id) }}" class="block text-black/70 hover:text-brand">{{ $sub->name }}</a>
-                                    @empty
-                                        <a href="{{ route('ecommerce.shop', ['category' => $cat->id, 'sort' => 'newest']) }}" class="block text-black/70 hover:text-brand">New arrivals</a>
-                                        <a href="{{ route('ecommerce.shop', ['category' => $cat->id, 'sort' => 'price_asc']) }}" class="block text-black/70 hover:text-brand">Best value</a>
-                                    @endforelse
+                            <div class="max-w-screen-xl mx-auto px-4 pb-4">
+                                <a href="{{ route('ecommerce.category', $cat->id) }}" class="text-sm font-semibold" style="color:#1a73e8">View all in {{ $cat->name }} →</a>
+                            </div>
+                        </div>
+                        @endif
+                    </li>
+                @endforeach
+                @if($navMoreCategories->count())
+                    <li class="mega" role="none">
+                        <a href="{{ route('ecommerce.categories') }}" role="menuitem"
+                           class="cat-link inline-flex items-center gap-1.5" style="color:white" aria-haspopup="menu">
+                            More
+                            <svg width="11" height="11" viewBox="0 0 20 20" fill="currentColor" class="opacity-70"><path d="M5 8l5 5 5-5"/></svg>
+                        </a>
+                        <div class="mega-panel">
+                            <div class="max-w-screen-xl mx-auto px-4 py-6">
+                                <div class="font-bold text-xs uppercase tracking-widest mb-3 pb-2 border-b" style="color:#2E6A49;border-color:#e8f5ee">More categories</div>
+                                <div class="grid grid-cols-3 md:grid-cols-4 gap-x-6 gap-y-2 text-sm">
+                                    @foreach($navMoreCategories as $cat)
+                                        <a href="{{ route('ecommerce.category', $cat->id) }}" class="block hover:text-[#4CAF79]" style="color:#555">{{ $cat->name }}</a>
+                                    @endforeach
+                                    <a href="{{ route('ecommerce.categories') }}" class="block font-semibold" style="color:#1a73e8">View all categories →</a>
                                 </div>
                             </div>
                         </div>
                     </li>
-                @endforeach
+                @endif
             </ul>
         </div>
-    </div>
+    </nav>
 </header>
 
 @if(session('success'))
@@ -636,69 +743,81 @@
 
 <main id="main-content">@yield('content')</main>
 
-<footer class="desktop-footer mt-16 bg-slatebar text-white">
-    <div class="max-w-[1400px] mx-auto px-4 py-12 grid md:grid-cols-4 gap-8">
-        <div class="md:col-span-2">
-            @if($storeLogoUrl)
-                <a href="{{ url('/') }}" class="inline-block mb-3">
-                    <img src="{{ $storeLogoUrl }}" alt="{{ $store }}" class="h-10 w-auto max-w-[200px] object-contain brightness-0 invert">
-                </a>
-            @else
-                <div class="font-extrabold text-xl mb-2">{{ $store }}</div>
-            @endif
-            <p class="text-white/65 text-sm max-w-md leading-relaxed">
-                {{ $ecom_settings->seo_description ?? 'Professional wholesale distribution with live inventory, bulk-ready catalog, and secure checkout.' }}
-            </p>
-            <div class="flex flex-wrap gap-2 mt-5">
-                <a href="{{ route('ecommerce.register') }}" class="btn-brand text-xs">Open account</a>
-                <a href="{{ route('ecommerce.contact') }}" class="rounded-lg border border-white/25 px-4 py-2 text-xs font-semibold hover:bg-white/10">Contact</a>
+
+<footer style="background:#1a3d2b;color:#d1e8da">
+    <div class="max-w-screen-xl mx-auto px-4 py-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
+        <div class="lg:col-span-2">
+            <a href="{{ url('/') }}" class="inline-flex items-center gap-2 mb-4" aria-label="{{ $store }}">
+                @if($storeLogoUrl)
+                    <img src="{{ $storeLogoUrl }}" alt="{{ $store }}" class="h-10 w-auto max-w-[180px] object-contain brightness-0 invert">
+                @else
+                    <span class="h-10 w-10 rounded-full flex items-center justify-center text-white font-bold" style="background:#4CAF79">{{ mb_substr($store,0,1) }}</span>
+                    <span>
+                        <span class="block font-display font-bold text-white">{{ $storeShort ?? $store }}</span>
+                        <span class="block text-xs tracking-[0.2em] uppercase" style="color:#4CAF79">Wholesale</span>
+                    </span>
+                @endif
+            </a>
+            <p class="text-sm opacity-80 leading-relaxed max-w-md mb-4">{{ $ecom_settings->seo_description ?? 'Professional wholesale distribution with live inventory and secure checkout.' }}</p>
+            @if($contactPhone)<p class="text-sm opacity-80 mb-1"><a href="tel:{{ preg_replace('/\D+/', '', $contactPhone) }}" class="hover:text-white">{{ $contactPhone }}</a></p>@endif
+            <p class="text-sm opacity-80 mb-1"><a href="mailto:{{ $contactEmail }}" class="hover:text-white">{{ $contactEmail }}</a></p>
+            <p class="text-sm opacity-80">{{ $hours }}</p>
+        </div>
+        <div>
+            <h3 class="font-display font-semibold text-white text-sm mb-4 tracking-wide">Shop</h3>
+            <div class="space-y-2">
+                <a class="text-sm opacity-80 hover:opacity-100 hover:text-white transition-all hover:pl-1 block" href="{{ route('ecommerce.shop') }}">All Products</a>
+                <a class="text-sm opacity-80 hover:opacity-100 hover:text-white transition-all hover:pl-1 block" href="{{ route('ecommerce.categories') }}">Categories</a>
+                <a class="text-sm opacity-80 hover:opacity-100 hover:text-white transition-all hover:pl-1 block" href="{{ route('ecommerce.brands') }}">All Brands</a>
+                <a class="text-sm opacity-80 hover:opacity-100 hover:text-white transition-all hover:pl-1 block" href="{{ route('ecommerce.promotions') }}">Promotions & Deals</a>
+                <a class="text-sm opacity-80 hover:opacity-100 hover:text-white transition-all hover:pl-1 block" href="{{ route('ecommerce.new_arrivals') }}">New Arrivals</a>
             </div>
         </div>
         <div>
-            <div class="text-xs font-bold uppercase tracking-wider text-brand mb-3">Shop</div>
-            <div class="space-y-2 text-sm text-white/80">
-                <a class="block hover:text-white" href="{{ route('ecommerce.shop') }}">All Products</a>
-                <a class="block hover:text-white" href="{{ route('ecommerce.categories') }}">Categories</a>
-                <a class="block hover:text-white" href="{{ route('ecommerce.brands') }}">All Brands</a>
-                <a class="block hover:text-white" href="{{ route('ecommerce.promotions') }}">Promotions & Deals</a>
-                <a class="block hover:text-white" href="{{ route('ecommerce.new_arrivals') }}">New Arrivals</a>
+            <h3 class="font-display font-semibold text-white text-sm mb-4 tracking-wide">Account</h3>
+            <div class="space-y-2">
+                <a class="text-sm opacity-80 hover:opacity-100 hover:text-white transition-all hover:pl-1 block" href="{{ route('ecommerce.account') }}">My Account</a>
+                <a class="text-sm opacity-80 hover:opacity-100 hover:text-white transition-all hover:pl-1 block" href="{{ route('ecommerce.account.orders') }}">Order History</a>
+                <a class="text-sm opacity-80 hover:opacity-100 hover:text-white transition-all hover:pl-1 block" href="{{ route('ecommerce.register') }}">Wholesale Application</a>
+                <a class="text-sm opacity-80 hover:opacity-100 hover:text-white transition-all hover:pl-1 block" href="{{ route('ecommerce.cart') }}">Shopping Cart</a>
+                <a class="text-sm opacity-80 hover:opacity-100 hover:text-white transition-all hover:pl-1 block" href="{{ route('ecommerce.checkout') }}">Checkout</a>
             </div>
         </div>
         <div>
-            <div class="text-xs font-bold uppercase tracking-wider text-brand mb-3">Company</div>
-            <div class="space-y-2 text-sm text-white/80">
-                <a class="block hover:text-white" href="{{ route('ecommerce.about') }}">About</a>
-                <a class="block hover:text-white" href="{{ route('ecommerce.faq') }}">FAQ</a>
-                <a class="block hover:text-white" href="{{ route('ecommerce.compliance') }}">Compliance</a>
-                <a class="block hover:text-white" href="{{ route('ecommerce.shipping') }}">Shipping</a>
-                <a class="block hover:text-white" href="{{ route('ecommerce.terms') }}">Terms of Service</a>
-                <a class="block hover:text-white" href="{{ route('ecommerce.privacy') }}">Privacy Policy</a>
-                <a class="block hover:text-white" href="{{ route('ecommerce.contact') }}">Contact</a>
+            <h3 class="font-display font-semibold text-white text-sm mb-4 tracking-wide">Company</h3>
+            <div class="space-y-2">
+                <a class="text-sm opacity-80 hover:opacity-100 hover:text-white transition-all hover:pl-1 block" href="{{ route('ecommerce.about') }}">About Us</a>
+                <a class="text-sm opacity-80 hover:opacity-100 hover:text-white transition-all hover:pl-1 block" href="{{ route('ecommerce.faq') }}">Wholesale FAQ</a>
+                <a class="text-sm opacity-80 hover:opacity-100 hover:text-white transition-all hover:pl-1 block" href="{{ route('ecommerce.shipping') }}">Shipping Policy</a>
+                <a class="text-sm opacity-80 hover:opacity-100 hover:text-white transition-all hover:pl-1 block" href="{{ route('ecommerce.returns') }}">Return Policy</a>
+                <a class="text-sm opacity-80 hover:opacity-100 hover:text-white transition-all hover:pl-1 block" href="{{ route('ecommerce.privacy') }}">Privacy Policy</a>
+                <a class="text-sm opacity-80 hover:opacity-100 hover:text-white transition-all hover:pl-1 block" href="{{ route('ecommerce.terms') }}">Terms of Service</a>
+                <a class="text-sm opacity-80 hover:opacity-100 hover:text-white transition-all hover:pl-1 block" href="{{ route('ecommerce.compliance') }}">Age Compliance</a>
+                <a class="text-sm opacity-80 hover:opacity-100 hover:text-white transition-all hover:pl-1 block" href="{{ route('ecommerce.contact') }}">Contact Us</a>
             </div>
-            <form method="post" action="{{ route('ecommerce.subscribe') }}" class="mt-5 space-y-2">
+        </div>
+    </div>
+    <div style="background:#15301f;border-top:1px solid rgba(255,255,255,0.08)">
+        <div class="max-w-screen-xl mx-auto px-4 py-8 flex flex-col md:flex-row md:items-center gap-4 justify-between">
+            <div>
+                <h3 class="font-display font-semibold text-white text-sm mb-1">Stay informed</h3>
+                <p class="text-xs opacity-70">New arrivals, deals & industry news for licensed accounts</p>
+            </div>
+            <form method="post" action="{{ route('ecommerce.subscribe') }}" class="flex gap-2 w-full md:w-auto">
                 @csrf
-                <p class="text-xs text-white/70">Stay informed — new arrivals, deals & industry news</p>
-                <div class="flex gap-2">
-                    <input type="email" name="email" required placeholder="Email address" class="flex-1 rounded-lg px-3 py-2 text-sm text-ink">
-                    <button class="btn-brand text-xs px-3">Subscribe</button>
-                </div>
-                <p class="text-[10px] text-white/40">For licensed wholesale accounts only.</p>
+                <input type="email" name="email" required placeholder="Email address" class="flex-1 md:w-64 rounded-lg px-3 py-2 text-sm text-[#1a1a1a]">
+                <button class="px-5 py-2 rounded-lg text-sm font-semibold text-white" style="background:#4CAF79">Subscribe</button>
             </form>
         </div>
     </div>
-    <div class="border-t border-white/10">
-        <div class="max-w-[1400px] mx-auto px-4 py-4 text-xs text-white/45 flex flex-wrap items-center justify-between gap-3">
-            <span>© {{ date('Y') }} {{ $store }}. All rights reserved. · Wholesale</span>
-            <div class="flex items-center gap-2 text-[10px] font-bold tracking-wide">
-                <span class="px-2 py-1 rounded bg-white/10">VISA</span>
-                <span class="px-2 py-1 rounded bg-white/10">MC</span>
-                <span class="px-2 py-1 rounded bg-white/10">AMEX</span>
-                <span class="px-2 py-1 rounded bg-white/10">DISC</span>
-                <span class="px-2 py-1 rounded bg-white/10">COD</span>
-            </div>
+    <div style="background:#0f2418">
+        <div class="max-w-screen-xl mx-auto px-4 py-4 text-xs opacity-60 flex flex-wrap items-center justify-between gap-3">
+            <span>© {{ date('Y') }} {{ $store }}. All rights reserved. &nbsp;|&nbsp; For wholesale inquiries only</span>
+            <span>21+ only — age-restricted products</span>
         </div>
     </div>
 </footer>
+
 
 {{-- Mobile bottom tabs --}}
 <nav class="app-bottom-nav app-mobile-only" aria-label="Primary">
@@ -711,7 +830,7 @@
             <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
             Shop
         </a>
-        <button type="button" id="openCatSheet" class="app-tab">
+        <button type="button" class="app-tab open-cat-sheet">
             <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
             Menu
         </button>
@@ -787,7 +906,6 @@
 <script>
 (function () {
     const sheet = document.getElementById('catSheet');
-    const openBtn = document.getElementById('openCatSheet');
     const open = () => {
         if (!sheet) return;
         sheet.classList.add('is-open');
@@ -800,8 +918,16 @@
         sheet.setAttribute('aria-hidden', 'true');
         document.body.style.overflow = '';
     };
-    openBtn?.addEventListener('click', open);
+    document.querySelectorAll('.open-cat-sheet').forEach(btn => btn.addEventListener('click', open));
     sheet?.querySelectorAll('[data-close-sheet]').forEach(el => el.addEventListener('click', close));
+})();
+
+(function () {
+    const header = document.getElementById('storeHeader');
+    if (!header) return;
+    const onScroll = () => header.classList.toggle('is-scrolled', window.scrollY > 4);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
 })();
 
 (function () {
@@ -870,6 +996,20 @@ window.__ECOM_PWA__ = {
         gate.hidden = true;
         document.body.style.overflow = '';
     });
+})();
+(function () {
+    const root = document.getElementById('layoutPromoAnnounce');
+    if (!root) return;
+    const slides = [...root.querySelectorAll('[data-announce-slide]')];
+    if (slides.length < 2) return;
+    let i = 0;
+    const show = (n) => {
+        slides.forEach((el, idx) => el.classList.toggle('hidden', idx !== n));
+        i = n;
+    };
+    root.querySelector('[data-announce-next]')?.addEventListener('click', () => show((i + 1) % slides.length));
+    root.querySelector('[data-announce-prev]')?.addEventListener('click', () => show((i - 1 + slides.length) % slides.length));
+    setInterval(() => show((i + 1) % slides.length), 5500);
 })();
 </script>
 </body>

@@ -17,14 +17,14 @@ class HomeController extends Controller
     {
         $business_id = request()->attributes->get('ecommerce_business_id');
         $banners = EcomBanner::where('business_id', $business_id)->where('is_active', 1)->orderBy('sort_order')->get();
-        $featured = Product::storefrontQuery((int) $business_id)->where('ecom_is_featured', 1)->with(['variations', 'category'])->limit(8)->get();
+        $featured = Product::storefrontQuery((int) $business_id)->where('ecom_is_featured', 1)->with(['variations', 'category', 'brand'])->limit(8)->get();
         if ($featured->isEmpty()) {
-            $featured = Product::storefrontQuery((int) $business_id)->with(['variations', 'category'])->orderByDesc('id')->limit(8)->get();
+            $featured = Product::storefrontQuery((int) $business_id)->with(['variations', 'category', 'brand'])->orderByDesc('id')->limit(8)->get();
         }
 
-        $new_arrivals = Product::storefrontQuery((int) $business_id)->where('ecom_is_new_arrival', 1)->with(['variations', 'category'])->limit(8)->get();
+        $new_arrivals = Product::storefrontQuery((int) $business_id)->where('ecom_is_new_arrival', 1)->with(['variations', 'category', 'brand'])->limit(8)->get();
         if ($new_arrivals->isEmpty()) {
-            $new_arrivals = Product::storefrontQuery((int) $business_id)->with(['variations', 'category'])->orderByDesc('id')->limit(8)->get();
+            $new_arrivals = Product::storefrontQuery((int) $business_id)->with(['variations', 'category', 'brand'])->orderByDesc('id')->limit(8)->get();
         }
 
         $best_seller_ids = DB::table('transaction_sell_lines as tsl')
@@ -40,7 +40,7 @@ class HomeController extends Controller
 
         $best_sellers = Product::storefrontQuery((int) $business_id)
             ->whereIn('id', $best_seller_ids)
-            ->with(['variations', 'category'])
+            ->with(['variations', 'category', 'brand'])
             ->get();
 
         if ($best_sellers->isEmpty()) {
@@ -60,6 +60,35 @@ class HomeController extends Controller
         $cart = $cartService->getOrCreateCart($business_id);
         $cart_totals = $cartService->totals($cart);
 
+        // Brand tiles with a representative product image (brands table has no logo column)
+        $brandIds = Product::storefrontQuery((int) $business_id)
+            ->whereNotNull('brand_id')
+            ->where('brand_id', '>', 0)
+            ->select('brand_id')
+            ->distinct()
+            ->limit(24)
+            ->pluck('brand_id');
+
+        $home_brands = \App\Brands::where('business_id', $business_id)
+            ->whereIn('id', $brandIds)
+            ->orderBy('name')
+            ->limit(12)
+            ->get()
+            ->map(function ($brand) use ($business_id) {
+                $product = Product::storefrontQuery((int) $business_id)
+                    ->where('brand_id', $brand->id)
+                    ->whereNotNull('image')
+                    ->where('image', '!=', '')
+                    ->orderByDesc('id')
+                    ->first(['id', 'image', 'name']);
+
+                return (object) [
+                    'id' => $brand->id,
+                    'name' => $brand->name,
+                    'image' => $product->image ?? null,
+                ];
+            });
+
         $category_covers = [];
         $coverFile = storage_path('app/ecom_category_covers.json');
         if (is_file($coverFile)) {
@@ -75,7 +104,8 @@ class HomeController extends Controller
             'collections',
             'reviews',
             'cart_totals',
-            'category_covers'
+            'category_covers',
+            'home_brands'
         ));
     }
 }
