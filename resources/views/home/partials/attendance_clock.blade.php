@@ -6,8 +6,8 @@
             <i class="fas fa-user-clock"></i>
         </div>
         <div>
-            <p class="att-clock-card__title">@lang('attendance.today_status')</p>
             <p class="att-clock-card__state" id="att_state_label">@lang('attendance.not_clocked_in')</p>
+            <p class="att-clock-card__title">@lang('attendance.today_status')</p>
             <p class="att-clock-card__meta" id="att_meta_label"></p>
         </div>
     </div>
