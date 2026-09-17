@@ -14,7 +14,7 @@ class ShopController extends Controller
     public function index(Request $request, CartService $cartService)
     {
         $business_id = $request->attributes->get('ecommerce_business_id');
-        $query = Product::storefrontQuery((int) $business_id)->with(['variations', 'brand', 'category']);
+        $query = Product::storefrontQuery((int) $business_id)->with(['variations', 'brand', 'category', 'unit']);
 
         if ($request->filled('category')) {
             $query->where(function ($q) use ($request) {

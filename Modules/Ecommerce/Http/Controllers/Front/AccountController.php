@@ -175,7 +175,7 @@ class AccountController extends Controller
 
     public function wishlist(CartService $cartService)
     {
-        $items = EcomWishlist::where('contact_id', auth('customer')->id())->with(['product.variations'])->get();
+        $items = EcomWishlist::where('contact_id', auth('customer')->id())->with(['product.variations', 'product.brand', 'product.unit'])->get();
         $cart_totals = $cartService->totals($cartService->getOrCreateCart(request()->attributes->get('ecommerce_business_id')));
 
         return view('ecommerce::front.account.wishlist', compact('items', 'cart_totals'));

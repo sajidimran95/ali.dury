@@ -17,14 +17,14 @@ class HomeController extends Controller
     {
         $business_id = request()->attributes->get('ecommerce_business_id');
         $banners = EcomBanner::where('business_id', $business_id)->where('is_active', 1)->orderBy('sort_order')->get();
-        $featured = Product::storefrontQuery((int) $business_id)->where('ecom_is_featured', 1)->with(['variations', 'category', 'brand'])->limit(8)->get();
+        $featured = Product::storefrontQuery((int) $business_id)->where('ecom_is_featured', 1)->with(['variations', 'category', 'brand', 'unit'])->limit(8)->get();
         if ($featured->isEmpty()) {
-            $featured = Product::storefrontQuery((int) $business_id)->with(['variations', 'category', 'brand'])->orderByDesc('id')->limit(8)->get();
+            $featured = Product::storefrontQuery((int) $business_id)->with(['variations', 'category', 'brand', 'unit'])->orderByDesc('id')->limit(8)->get();
         }
 
-        $new_arrivals = Product::storefrontQuery((int) $business_id)->where('ecom_is_new_arrival', 1)->with(['variations', 'category', 'brand'])->limit(8)->get();
+        $new_arrivals = Product::storefrontQuery((int) $business_id)->where('ecom_is_new_arrival', 1)->with(['variations', 'category', 'brand', 'unit'])->limit(8)->get();
         if ($new_arrivals->isEmpty()) {
-            $new_arrivals = Product::storefrontQuery((int) $business_id)->with(['variations', 'category', 'brand'])->orderByDesc('id')->limit(8)->get();
+            $new_arrivals = Product::storefrontQuery((int) $business_id)->with(['variations', 'category', 'brand', 'unit'])->orderByDesc('id')->limit(8)->get();
         }
 
         $best_seller_ids = DB::table('transaction_sell_lines as tsl')
@@ -40,7 +40,7 @@ class HomeController extends Controller
 
         $best_sellers = Product::storefrontQuery((int) $business_id)
             ->whereIn('id', $best_seller_ids)
-            ->with(['variations', 'category', 'brand'])
+            ->with(['variations', 'category', 'brand', 'unit'])
             ->get();
 
         if ($best_sellers->isEmpty()) {

@@ -113,6 +113,7 @@ Route::prefix(config('ecommerce.route_prefix', 'shop'))
         Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
         Route::post('/cart/update', [CartController::class, 'update'])->name('cart.update');
         Route::post('/cart/remove', [CartController::class, 'remove'])->name('cart.remove');
+        Route::post('/cart/clear', [CartController::class, 'clear'])->name('cart.clear');
         Route::post('/cart/coupon', [CartController::class, 'applyCoupon'])->name('cart.coupon');
 
         Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
@@ -154,6 +155,7 @@ Route::middleware(['setData', 'ecommerce.enabled'])->group(function () {
     Route::post('/cart/add', [CartController::class, 'add']);
     Route::post('/cart/update', [CartController::class, 'update']);
     Route::post('/cart/remove', [CartController::class, 'remove']);
+    Route::post('/cart/clear', [CartController::class, 'clear']);
     Route::post('/cart/coupon', [CartController::class, 'applyCoupon']);
     Route::get('/checkout', [CheckoutController::class, 'index']);
     Route::post('/checkout', [CheckoutController::class, 'place']);

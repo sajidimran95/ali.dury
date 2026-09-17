@@ -38,7 +38,7 @@ class CartService
             $cart->save();
         }
 
-        return $cart->load(['items.product', 'items.variation']);
+        return $cart->load(['items.product.brand', 'items.variation']);
     }
 
     public function add(int $business_id, int $product_id, int $variation_id, float $qty = 1): EcomCart

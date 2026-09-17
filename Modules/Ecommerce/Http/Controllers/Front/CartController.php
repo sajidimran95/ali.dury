@@ -21,7 +21,32 @@ class CartController extends Controller
         $tax_amt = $tax->calculate($business_id, $sub['subtotal']);
         $totals = $cartService->totals($cart, $ship, $tax_amt);
 
-        return view('ecommerce::front.cart.index', compact('cart', 'totals'));
+        $freeShipMin = \Modules\Ecommerce\Entities\EcomShippingRule::where('business_id', $business_id)
+            ->where('is_active', 1)
+            ->where('type', 'free')
+            ->whereNotNull('min_order_amount')
+            ->orderBy('min_order_amount')
+            ->value('min_order_amount');
+        $freeShipMin = $freeShipMin !== null ? (float) $freeShipMin : 500.0;
+
+        $taxRateLabel = null;
+        $taxRule = \Modules\Ecommerce\Entities\EcomTaxRule::where('business_id', $business_id)
+            ->where('is_active', 1)
+            ->orderByDesc('rate')
+            ->first();
+        if ($taxRule && (float) $taxRule->rate > 0) {
+            $taxRateLabel = rtrim(rtrim(number_format((float) $taxRule->rate, 2), '0'), '.');
+        }
+
+        return view('ecommerce::front.cart.index', compact('cart', 'totals', 'freeShipMin', 'taxRateLabel'));
+    }
+
+    public function clear(CartService $cartService)
+    {
+        $business_id = request()->attributes->get('ecommerce_business_id');
+        $cartService->clear((int) $business_id);
+
+        return redirect()->route('ecommerce.cart')->with('success', 'Cart cleared.');
     }
 
     public function add(Request $request, CartService $cartService)

@@ -34,7 +34,7 @@ class ProductDetailController extends Controller
         $related = Product::storefrontQuery((int) $business_id)
             ->where('id', '!=', $product->id)
             ->where('category_id', $product->category_id)
-            ->with(['variations', 'category'])
+            ->with(['variations', 'category', 'brand', 'unit'])
             ->limit(4)
             ->get();
 
@@ -49,7 +49,7 @@ class ProductDetailController extends Controller
         $recently_viewed = Product::storefrontQuery((int) $business_id)
             ->whereIn('id', session('ecom_recently_viewed', []))
             ->where('id', '!=', $product->id)
-            ->with(['variations', 'category'])
+            ->with(['variations', 'category', 'brand', 'unit'])
             ->get();
 
         $product->loadMissing('category');

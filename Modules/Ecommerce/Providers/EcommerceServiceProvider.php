@@ -40,6 +40,7 @@ class EcommerceServiceProvider extends ServiceProvider
                 $cartService = app(\Modules\Ecommerce\Services\CartService::class);
                 $cart = $cartService->getOrCreateCart((int) $business_id);
                 $view->with('cart_totals', $cartService->totals($cart));
+                $view->with('cart_product_ids', $cart->items->pluck('product_id')->unique()->values()->all());
 
                 $nav_categories = \App\Category::where('business_id', $business_id)
                     ->where('category_type', 'product')

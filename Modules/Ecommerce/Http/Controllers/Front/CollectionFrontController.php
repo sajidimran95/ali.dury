@@ -14,7 +14,7 @@ class CollectionFrontController extends Controller
         $collection = EcomCollection::where('business_id', $business_id)
             ->where('slug', $slug)
             ->where('is_active', 1)
-            ->with(['products.variations'])
+            ->with(['products.variations', 'products.brand', 'products.unit'])
             ->firstOrFail();
         $cart = $cartService->getOrCreateCart($business_id);
         $cart_totals = $cartService->totals($cart);
