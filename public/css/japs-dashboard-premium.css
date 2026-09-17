@@ -138,11 +138,127 @@ body.japs-dashboard-premium .ecom-dash .ed-alert {
   flex-wrap: wrap;
 }
 
+body.japs-dashboard-premium .ecom-dash .ed-eyebrow {
+  margin: 0 0 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #94a3b8;
+}
+
+body.japs-dashboard-premium .ecom-dash .ed-spotlight {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(240px, 0.9fr);
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+body.japs-dashboard-premium .ecom-dash .ed-spot {
+  --kpi-accent: #4f8fce;
+  position: relative;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  padding: 22px 22px 20px;
+  min-height: 148px;
+  box-sizing: border-box;
+  box-shadow: 0 4px 18px rgba(15, 23, 42, 0.04);
+  text-decoration: none !important;
+  color: inherit;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+body.japs-dashboard-premium .ecom-dash .ed-spot::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  border-radius: 20px 20px 0 0;
+  background: var(--kpi-accent);
+}
+
+body.japs-dashboard-premium .ecom-dash .ed-spot--sales { --kpi-accent: #4f8fce; }
+body.japs-dashboard-premium .ecom-dash .ed-spot--due { --kpi-accent: #d5aa35; }
+
+body.japs-dashboard-premium .ecom-dash .ed-spot:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+  color: inherit;
+}
+
+body.japs-dashboard-premium .ecom-dash .ed-spot__label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ed-muted);
+}
+
+body.japs-dashboard-premium .ecom-dash .ed-spot__value {
+  margin-top: 6px;
+  font-size: clamp(28px, 3vw, 40px);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1.1;
+  color: #4f8fce;
+}
+
+body.japs-dashboard-premium .ecom-dash .ed-spot--due .ed-spot__value { color: var(--ed-ink); }
+body.japs-dashboard-premium .ecom-dash .ed-spot__value.is-warn { color: #d97706; }
+
+body.japs-dashboard-premium .ecom-dash .ed-spot__meta {
+  margin-top: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #4f8fce;
+}
+
+body.japs-dashboard-premium .ecom-dash .ed-spot--due .ed-spot__meta {
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+body.japs-dashboard-premium .ecom-dash .ed-spot__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+body.japs-dashboard-premium .ecom-dash .ed-spot__head .ed-spot__value {
+  margin-top: 0;
+  font-size: 28px;
+}
+
+body.japs-dashboard-premium .ecom-dash .ed-spot__track {
+  margin-top: 14px;
+  height: 8px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  overflow: hidden;
+}
+
+body.japs-dashboard-premium .ecom-dash .ed-spot__fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+}
+
+body.japs-dashboard-premium .ecom-dash .ed-spot__fill.is-ok {
+  background: linear-gradient(90deg, #0d9488, #2dd4bf);
+}
+
+body.japs-dashboard-premium .ecom-dash .ed-spot__fill.is-warn {
+  background: linear-gradient(90deg, #f59e0b, #fbbf24);
+}
+
 body.japs-dashboard-premium .ecom-dash .ed-kpis {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 16px;
-  margin-bottom: 16px;
+  gap: 14px;
+  margin-bottom: 18px;
 }
 
 body.japs-dashboard-premium .ecom-dash .ed-kpi {
@@ -151,18 +267,18 @@ body.japs-dashboard-premium .ecom-dash .ed-kpi {
   position: relative;
   overflow: hidden;
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
+  align-items: center;
   gap: 14px;
+  padding: 20px 18px 18px;
+  min-height: 108px;
+  box-sizing: border-box;
   background: #fff;
-  border: 1px solid #e7eaf0;
-  border-radius: var(--prem-radius) !important;
-  padding: 22px 20px 18px;
-  min-height: 112px;
-  box-shadow: var(--prem-shadow) !important;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px !important;
+  box-shadow: 0 4px 18px rgba(15, 23, 42, 0.04) !important;
   text-decoration: none !important;
   color: inherit;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
 }
 
 body.japs-dashboard-premium .ecom-dash .ed-kpi::before {
@@ -172,13 +288,14 @@ body.japs-dashboard-premium .ecom-dash .ed-kpi::before {
   left: 0;
   right: 0;
   height: 4px;
-  border-radius: 18px 18px 0 0;
+  border-radius: 20px 20px 0 0;
   background: var(--kpi-accent);
 }
 
 body.japs-dashboard-premium .ecom-dash .ed-kpi:hover {
   transform: translateY(-2px);
-  box-shadow: var(--prem-shadow-hover) !important;
+  border-color: #dbe3ee;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08) !important;
   color: inherit;
 }
 
@@ -188,17 +305,17 @@ body.japs-dashboard-premium .ecom-dash .ed-kpi--amber { --kpi-accent: #d5aa35; -
 body.japs-dashboard-premium .ecom-dash .ed-kpi--violet { --kpi-accent: #7c72c9; --kpi-soft: #f5f0fc; }
 
 body.japs-dashboard-premium .ecom-dash .ed-kpi-label {
-  font-size: 14px;
-  color: #7a8495;
-  font-weight: 500;
-  margin: 0 0 10px;
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 600;
+  margin: 0 0 4px;
 }
 
 body.japs-dashboard-premium .ecom-dash .ed-kpi-value {
-  font-size: 26px;
-  font-weight: 700;
-  color: #151b2b;
-  line-height: 1.15;
+  font-size: clamp(22px, 2vw, 28px);
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.1;
   letter-spacing: -0.03em;
   margin: 0;
 }
@@ -207,14 +324,14 @@ body.japs-dashboard-premium .ecom-dash .ed-kpi-value.is-money { color: #2d927b; 
 body.japs-dashboard-premium .ecom-dash .ed-kpi-value.is-warn { color: #b78616; }
 
 body.japs-dashboard-premium .ecom-dash .ed-kpi-hint {
-  margin-top: 8px;
+  margin-top: 4px;
   font-size: 12px;
   color: #94a3b8;
 }
 
 body.japs-dashboard-premium .ecom-dash .ed-kpi-icon {
-  width: 48px;
-  height: 48px;
+  width: 44px;
+  height: 44px;
   border-radius: 14px;
   flex-shrink: 0;
   background: var(--kpi-soft);
@@ -222,7 +339,12 @@ body.japs-dashboard-premium .ecom-dash .ed-kpi-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
+}
+
+body.japs-dashboard-premium .ecom-dash .ed-kpi-icon svg {
+  width: 20px;
+  height: 20px;
+  display: block;
 }
 
 body.japs-dashboard-premium .ecom-dash .ed-grid {
@@ -232,41 +354,85 @@ body.japs-dashboard-premium .ecom-dash .ed-grid {
   margin-bottom: 16px;
 }
 
+body.japs-dashboard-premium .ecom-dash .ed-grid--3 {
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.9fr) minmax(0, 1fr);
+  align-items: stretch;
+}
+
 body.japs-dashboard-premium .ecom-dash .ed-card {
+  --kpi-accent: #4f8fce;
+  position: relative;
+  display: flex;
+  flex-direction: column;
   background: #fff;
-  border: 1px solid var(--prem-border) !important;
-  border-radius: var(--prem-radius) !important;
-  box-shadow: var(--prem-shadow) !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 22px !important;
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04) !important;
   overflow: hidden;
+  min-height: 360px;
   transition: box-shadow 0.18s ease;
 }
 
+body.japs-dashboard-premium .ecom-dash .ed-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  border-radius: 22px 22px 0 0;
+  background: var(--kpi-accent);
+  z-index: 1;
+}
+
+body.japs-dashboard-premium .ecom-dash .ed-card--chart { --kpi-accent: #4f8fce; }
+body.japs-dashboard-premium .ecom-dash .ed-card--teal { --kpi-accent: #4db39e; }
+body.japs-dashboard-premium .ecom-dash .ed-card--amber { --kpi-accent: #d5aa35; }
+
 body.japs-dashboard-premium .ecom-dash .ed-card:hover {
-  box-shadow: var(--prem-shadow-hover) !important;
+  box-shadow: 0 14px 34px rgba(15, 23, 42, 0.08) !important;
 }
 
 body.japs-dashboard-premium .ecom-dash .ed-card-h {
-  padding: 16px 20px;
-  border-bottom: 1px solid #eef2f7;
+  padding: 18px 20px 10px;
+  border-bottom: 0;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  gap: 8px;
+  gap: 12px;
 }
 
 body.japs-dashboard-premium .ecom-dash .ed-card-h h3 {
   margin: 0;
-  font-size: 16px !important;
-  font-weight: 700 !important;
+  font-size: 17px !important;
+  font-weight: 800 !important;
   letter-spacing: -0.02em;
-  color: var(--prem-ink);
+  color: #0f172a;
 }
+
+body.japs-dashboard-premium .ecom-dash .ed-chip {
+  display: inline-flex;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border-radius: 999px;
+  padding: 4px 8px;
+  margin-bottom: 8px;
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+body.japs-dashboard-premium .ecom-dash .ed-chip--blue { background: #eef6fd; color: #4f8fce; }
+body.japs-dashboard-premium .ecom-dash .ed-chip--teal { background: #ecf8f4; color: #4db39e; }
+body.japs-dashboard-premium .ecom-dash .ed-chip--amber { background: #fff8e6; color: #d5aa35; }
 
 body.japs-dashboard-premium .ecom-dash .ed-card-h a {
   font-size: 13px;
-  font-weight: 600;
-  color: var(--prem-blue);
-  text-decoration: none;
+  font-weight: 700;
+  color: #4f8fce;
+  text-decoration: none !important;
+  white-space: nowrap;
 }
 
 body.japs-dashboard-premium .ecom-dash .ed-revenue-hero {
@@ -309,6 +475,81 @@ body.japs-dashboard-premium .ecom-dash .ed-card--recent {
 
 body.japs-dashboard-premium .ecom-dash table.ed-table { width: 100%; margin: 0; }
 
+body.japs-dashboard-premium .ecom-dash .ed-table > thead > tr > th {
+  border-bottom: 1px solid #e2e8f0 !important;
+  border-top: 0 !important;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ed-muted);
+  background: transparent;
+  padding: 10px 12px;
+}
+
+body.japs-dashboard-premium .ecom-dash .ed-table > tbody > tr > td {
+  border-top: 1px solid #f1f5f9 !important;
+  padding: 12px;
+  font-size: 13px;
+  color: var(--ed-ink);
+  vertical-align: middle;
+}
+
+body.japs-dashboard-premium .ecom-dash .ed-table a {
+  font-weight: 700;
+  color: var(--ed-blue);
+  text-decoration: none !important;
+}
+
+body.japs-dashboard-premium .ecom-dash .ed-pipe {
+  padding: 10px 4px;
+}
+
+body.japs-dashboard-premium .ecom-dash .ed-pipe__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+body.japs-dashboard-premium .ecom-dash .ed-pipe__name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ed-ink);
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+body.japs-dashboard-premium .ecom-dash .ed-pipe__count {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--ed-ink);
+  flex-shrink: 0;
+}
+
+body.japs-dashboard-premium .ecom-dash .ed-bar {
+  height: 7px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  overflow: hidden;
+}
+
+body.japs-dashboard-premium .ecom-dash .ed-bar span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #4db39e, #7dd3c0);
+}
+
+body.japs-dashboard-premium .ecom-dash .ed-pipe__meta {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #94a3b8;
+}
+
 body.japs-dashboard-premium .ecom-dash .ed-pill {
   display: inline-flex;
   align-items: center;
@@ -339,15 +580,24 @@ body.japs-dashboard-premium .ecom-dash .ed-empty {
   body.japs-dashboard-premium .ecom-dash {
     padding: 20px 18px 28px;
   }
-  body.japs-dashboard-premium .ecom-dash .ed-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  body.japs-dashboard-premium .ecom-dash .ed-grid { grid-template-columns: 1fr; }
+  body.japs-dashboard-premium .ecom-dash .ed-kpis,
+  body.japs-dashboard-premium .ecom-dash .ed-grid,
+  body.japs-dashboard-premium .ecom-dash .ed-grid--3,
+  body.japs-dashboard-premium .ecom-dash .ed-spotlight {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 767px) {
   body.japs-dashboard-premium .ecom-dash {
     padding: 16px 14px 24px;
   }
-  body.japs-dashboard-premium .ecom-dash .ed-kpis { grid-template-columns: 1fr; }
+  body.japs-dashboard-premium .ecom-dash .ed-kpis,
+  body.japs-dashboard-premium .ecom-dash .ed-grid,
+  body.japs-dashboard-premium .ecom-dash .ed-grid--3,
+  body.japs-dashboard-premium .ecom-dash .ed-spotlight {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
   body.japs-dashboard-premium .ecom-dash .ed-title { font-size: 22px; }
 }
 
@@ -1898,6 +2148,8 @@ body.japs-dashboard-premium .crm-dash .crm-spot {
   border: 1px solid var(--crm-line);
   border-radius: 20px;
   padding: 22px 22px 20px;
+  min-height: 148px;
+  box-sizing: border-box;
   box-shadow: 0 4px 18px rgba(15, 23, 42, 0.04);
   text-decoration: none !important;
   color: inherit;
@@ -2006,6 +2258,8 @@ body.japs-dashboard-premium .crm-dash .crm-metric {
   align-items: center;
   gap: 14px;
   padding: 20px 18px 18px;
+  min-height: 108px;
+  box-sizing: border-box;
   background: #fff;
   border: 1px solid var(--crm-line);
   border-radius: 20px;
@@ -2035,6 +2289,7 @@ body.japs-dashboard-premium .crm-dash .crm-metric:hover {
 
 body.japs-dashboard-premium .crm-dash .crm-metric--blue { --m-accent: #4f8fce; --m-soft: #eef6fd; }
 body.japs-dashboard-premium .crm-dash .crm-metric--teal { --m-accent: #4db39e; --m-soft: #ecf8f4; }
+body.japs-dashboard-premium .crm-dash .crm-metric--amber { --m-accent: #d5aa35; --m-soft: #fffbeb; }
 body.japs-dashboard-premium .crm-dash .crm-metric--violet { --m-accent: #7c72c9; --m-soft: #f5f0fc; }
 
 body.japs-dashboard-premium .crm-dash .crm-metric__icon {
@@ -2068,6 +2323,14 @@ body.japs-dashboard-premium .crm-dash .crm-metric__value {
   color: var(--crm-ink);
   letter-spacing: -0.03em;
   line-height: 1.1;
+}
+
+body.japs-dashboard-premium .crm-dash .crm-metric__value.is-warn { color: var(--crm-amber); }
+
+body.japs-dashboard-premium .crm-dash .crm-metric__hint {
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--crm-hint);
 }
 
 body.japs-dashboard-premium .crm-dash .crm-bento {
@@ -2317,8 +2580,315 @@ body.japs-dashboard-premium .crm-dash .crm-empty {
   body.japs-dashboard-premium .crm-dash .crm-spotlight,
   body.japs-dashboard-premium .crm-dash .crm-metric-row,
   body.japs-dashboard-premium .crm-dash .crm-bento {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
+/* Compact CRM + Ecommerce cards */
+body.japs-dashboard-premium .crm-dash .crm-spotlight,
+body.japs-dashboard-premium .ecom-dash .ed-spotlight,
+body.japs-dashboard-premium .crm-dash .crm-metric-row,
+body.japs-dashboard-premium .ecom-dash .ed-kpis,
+body.japs-dashboard-premium .crm-dash .crm-bento,
+body.japs-dashboard-premium .ecom-dash .ed-grid {
+  gap: 10px !important;
+  margin-bottom: 12px !important;
+}
+
+body.japs-dashboard-premium .crm-dash .crm-spot,
+body.japs-dashboard-premium .ecom-dash .ed-spot {
+  padding: 12px 14px 11px !important;
+  min-height: 0 !important;
+  border-radius: 14px !important;
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04) !important;
+}
+
+body.japs-dashboard-premium .crm-dash .crm-spot::before,
+body.japs-dashboard-premium .ecom-dash .ed-spot::before,
+body.japs-dashboard-premium .crm-dash .crm-metric::before,
+body.japs-dashboard-premium .ecom-dash .ed-kpi::before,
+body.japs-dashboard-premium .crm-dash .crm-panel::before,
+body.japs-dashboard-premium .ecom-dash .ed-card::before {
+  height: 3px;
+  border-radius: 14px 14px 0 0;
+}
+
+body.japs-dashboard-premium .crm-dash .crm-spot__value,
+body.japs-dashboard-premium .ecom-dash .ed-spot__value {
+  margin-top: 2px;
+  font-size: clamp(20px, 2vw, 26px) !important;
+}
+
+body.japs-dashboard-premium .crm-dash .crm-spot__head .crm-spot__value,
+body.japs-dashboard-premium .ecom-dash .ed-spot__head .ed-spot__value {
+  font-size: 22px !important;
+}
+
+body.japs-dashboard-premium .crm-dash .crm-spot__meta,
+body.japs-dashboard-premium .ecom-dash .ed-spot__meta {
+  margin-top: 6px;
+  font-size: 12px;
+}
+
+body.japs-dashboard-premium .crm-dash .crm-spot__track,
+body.japs-dashboard-premium .ecom-dash .ed-spot__track {
+  margin-top: 8px;
+  height: 6px;
+}
+
+body.japs-dashboard-premium .crm-dash .crm-metric,
+body.japs-dashboard-premium .ecom-dash .ed-kpi {
+  padding: 10px 12px 9px !important;
+  min-height: 0 !important;
+  gap: 10px !important;
+  border-radius: 14px !important;
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04) !important;
+}
+
+body.japs-dashboard-premium .crm-dash .crm-metric__icon,
+body.japs-dashboard-premium .ecom-dash .ed-kpi-icon {
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 10px !important;
+}
+
+body.japs-dashboard-premium .crm-dash .crm-metric__icon svg,
+body.japs-dashboard-premium .ecom-dash .ed-kpi-icon svg {
+  width: 15px !important;
+  height: 15px !important;
+}
+
+body.japs-dashboard-premium .crm-dash .crm-metric__label,
+body.japs-dashboard-premium .ecom-dash .ed-kpi-label {
+  font-size: 11px !important;
+  margin-bottom: 2px !important;
+}
+
+body.japs-dashboard-premium .crm-dash .crm-metric__value,
+body.japs-dashboard-premium .ecom-dash .ed-kpi-value {
+  font-size: clamp(16px, 1.5vw, 20px) !important;
+}
+
+body.japs-dashboard-premium .crm-dash .crm-metric__hint,
+body.japs-dashboard-premium .ecom-dash .ed-kpi-hint {
+  margin-top: 2px !important;
+  font-size: 11px !important;
+}
+
+body.japs-dashboard-premium .crm-dash .crm-panel,
+body.japs-dashboard-premium .ecom-dash .ed-card {
+  min-height: 0 !important;
+  border-radius: 16px !important;
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04) !important;
+}
+
+body.japs-dashboard-premium .crm-dash .crm-panel__header,
+body.japs-dashboard-premium .ecom-dash .ed-card-h {
+  padding: 12px 14px 6px !important;
+}
+
+body.japs-dashboard-premium .crm-dash .crm-panel__title,
+body.japs-dashboard-premium .ecom-dash .ed-card-h h3 {
+  font-size: 14px !important;
+}
+
+body.japs-dashboard-premium .crm-dash .crm-panel__chip,
+body.japs-dashboard-premium .ecom-dash .ed-chip {
+  padding: 2px 6px !important;
+  margin-bottom: 4px !important;
+  font-size: 9px !important;
+}
+
+body.japs-dashboard-premium .crm-dash .crm-panel__body,
+body.japs-dashboard-premium .ecom-dash .ed-card-b {
+  padding: 4px 10px 10px !important;
+}
+
+body.japs-dashboard-premium .crm-dash .crm-lead,
+body.japs-dashboard-premium .crm-dash .crm-pipe {
+  padding: 8px !important;
+}
+
+body.japs-dashboard-premium .crm-dash .crm-lead__avatar {
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 9px !important;
+  font-size: 12px !important;
+}
+
+body.japs-dashboard-premium .crm-dash .crm-empty,
+body.japs-dashboard-premium .ecom-dash .ed-empty {
+  padding: 20px 8px !important;
+}
+
+body.japs-dashboard-premium .ecom-dash .ed-chart { height: 220px !important; }
+body.japs-dashboard-premium .ecom-dash .ed-chart-sm { height: 160px !important; }
+body.japs-dashboard-premium .ecom-dash .ed-revenue-hero__value { font-size: 16px !important; }
+
+/* Big screen: card copy on 1 line. Small: max 2 lines, 2 cards per row */
+body.japs-dashboard-premium .crm-dash .crm-metric,
+body.japs-dashboard-premium .ecom-dash .ed-kpi {
+  flex-wrap: nowrap;
+  align-items: center;
+}
+
+body.japs-dashboard-premium .crm-dash .crm-metric > div,
+body.japs-dashboard-premium .ecom-dash .ed-kpi > div {
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+body.japs-dashboard-premium .crm-dash .crm-metric__label,
+body.japs-dashboard-premium .ecom-dash .ed-kpi-label,
+body.japs-dashboard-premium .crm-dash .crm-metric__value,
+body.japs-dashboard-premium .ecom-dash .ed-kpi-value,
+body.japs-dashboard-premium .crm-dash .crm-metric__hint,
+body.japs-dashboard-premium .ecom-dash .ed-kpi-hint {
+  margin: 0 !important;
+  flex-shrink: 0;
+}
+
+body.japs-dashboard-premium .crm-dash .crm-metric__hint,
+body.japs-dashboard-premium .ecom-dash .ed-kpi-hint {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+body.japs-dashboard-premium .crm-dash .crm-spot,
+body.japs-dashboard-premium .ecom-dash .ed-spot {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 10px;
+}
+
+body.japs-dashboard-premium .crm-dash .crm-spot__label,
+body.japs-dashboard-premium .ecom-dash .ed-spot__label,
+body.japs-dashboard-premium .crm-dash .crm-spot__value,
+body.japs-dashboard-premium .ecom-dash .ed-spot__value,
+body.japs-dashboard-premium .crm-dash .crm-spot__meta,
+body.japs-dashboard-premium .ecom-dash .ed-spot__meta {
+  margin: 0 !important;
+  white-space: nowrap;
+}
+
+body.japs-dashboard-premium .crm-dash .crm-spot__head,
+body.japs-dashboard-premium .ecom-dash .ed-spot__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+body.japs-dashboard-premium .crm-dash .crm-spot__track,
+body.japs-dashboard-premium .ecom-dash .ed-spot__track {
+  margin: 0 !important;
+  flex: 1 1 80px;
+  min-width: 64px;
+}
+
+body.japs-dashboard-premium .crm-dash .crm-spot__meta,
+body.japs-dashboard-premium .ecom-dash .ed-spot__meta {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+body.japs-dashboard-premium .crm-dash .crm-lead__name,
+body.japs-dashboard-premium .crm-dash .crm-lead__meta,
+body.japs-dashboard-premium .crm-dash .crm-pipe__name,
+body.japs-dashboard-premium .ecom-dash .ed-pipe__name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (min-width: 1200px) {
+  body.japs-dashboard-premium .crm-dash .crm-metric-row {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+  body.japs-dashboard-premium .ecom-dash .ed-kpis {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+  body.japs-dashboard-premium .crm-dash .crm-spotlight,
+  body.japs-dashboard-premium .ecom-dash .ed-spotlight {
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.9fr) !important;
+  }
+  body.japs-dashboard-premium .crm-dash .crm-bento {
+    grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.9fr) !important;
+  }
+  body.japs-dashboard-premium .ecom-dash .ed-grid--3 {
+    grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.9fr) minmax(0, 1fr) !important;
+  }
+}
+
+@media (max-width: 1199px) {
+  body.japs-dashboard-premium .crm-dash .crm-metric-row,
+  body.japs-dashboard-premium .crm-dash .crm-spotlight,
+  body.japs-dashboard-premium .crm-dash .crm-bento,
+  body.japs-dashboard-premium .ecom-dash .ed-kpis,
+  body.japs-dashboard-premium .ecom-dash .ed-spotlight,
+  body.japs-dashboard-premium .ecom-dash .ed-grid,
+  body.japs-dashboard-premium .ecom-dash .ed-grid--3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  body.japs-dashboard-premium .crm-dash .crm-metric > div,
+  body.japs-dashboard-premium .ecom-dash .ed-kpi > div {
+    flex-wrap: wrap;
+    white-space: normal;
+    max-height: 2.7em;
+    overflow: hidden;
+  }
+
+  body.japs-dashboard-premium .crm-dash .crm-metric__label,
+  body.japs-dashboard-premium .ecom-dash .ed-kpi-label,
+  body.japs-dashboard-premium .crm-dash .crm-metric__value,
+  body.japs-dashboard-premium .ecom-dash .ed-kpi-value,
+  body.japs-dashboard-premium .crm-dash .crm-metric__hint,
+  body.japs-dashboard-premium .ecom-dash .ed-kpi-hint {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+
+  body.japs-dashboard-premium .crm-dash .crm-metric__label,
+  body.japs-dashboard-premium .ecom-dash .ed-kpi-label {
+    flex: 1 1 100%;
+  }
+
+  body.japs-dashboard-premium .crm-dash .crm-spot,
+  body.japs-dashboard-premium .ecom-dash .ed-spot {
+    flex-wrap: wrap;
+    align-content: flex-start;
+  }
+
+  body.japs-dashboard-premium .crm-dash .crm-spot__label,
+  body.japs-dashboard-premium .ecom-dash .ed-spot__label {
+    flex: 1 1 auto;
+  }
+
+  body.japs-dashboard-premium .crm-dash .crm-spot__meta,
+  body.japs-dashboard-premium .ecom-dash .ed-spot__meta {
+    flex: 1 1 100%;
+  }
+
+  body.japs-dashboard-premium .crm-dash .crm-spot__track,
+  body.japs-dashboard-premium .ecom-dash .ed-spot__track {
+    display: none;
+  }
+
+  body.japs-dashboard-premium .crm-dash .crm-spot__meta,
+  body.japs-dashboard-premium .ecom-dash .ed-spot__meta {
+    flex: 1 1 100%;
+  }
 }
