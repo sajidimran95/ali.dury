@@ -25,7 +25,7 @@
                 @endif
             </a>
             <div class="p-3 md:p-3.5 flex flex-col flex-1">
-                <a href="{{ route('ecommerce.product', $slug) }}" class="font-semibold text-sm leading-snug line-clamp-2 min-h-[2.5rem] hover:text-brand">
+                <a href="{{ route('ecommerce.product', $slug) }}" class="font-semibold text-sm leading-snug line-clamp-2 min-h-[2.5rem] text-ink hover:text-brand">
                     {{ $product->name }}
                 </a>
                 <div class="mt-1 text-[11px] text-black/40">SKU {{ $product->sku }}</div>

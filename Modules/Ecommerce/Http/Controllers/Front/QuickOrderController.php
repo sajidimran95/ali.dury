@@ -35,9 +35,7 @@ class QuickOrderController extends Controller
                 continue;
             }
 
-            $product = Product::where('business_id', $business_id)
-                ->active()
-                ->forEcommerce()
+            $product = Product::storefrontQuery((int) $business_id)
                 ->where(function ($q) use ($sku) {
                     $q->where('sku', $sku)->orWhere('sku', strtoupper($sku));
                 })
@@ -51,7 +49,7 @@ class QuickOrderController extends Controller
                 $variation = Variation::where('sub_sku', $sku)
                     ->orWhere('sub_sku', strtoupper($sku))
                     ->whereHas('product', function ($q) use ($business_id) {
-                        $q->where('business_id', $business_id)->active()->forEcommerce();
+                        $q->where('business_id', $business_id)->active();
                     })
                     ->with('product')
                     ->first();

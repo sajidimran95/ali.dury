@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <meta name="theme-color" content="#e85d04">
+    <meta name="theme-color" content="#4CAF79">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="{{ $ecom_settings->store_name ?? 'Store' }}">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -16,31 +16,12 @@
     <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('pwa/ecom-apple-touch-icon.png') }}">
     <title>@yield('title', $ecom_settings->seo_title ?? $ecom_settings->store_name ?? 'Wholesale Store')</title>
     <meta name="description" content="@yield('meta_description', $ecom_settings->seo_description ?? '')">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        brand: '#e85d04',
-                        brandDark: '#d00000',
-                        ink: '#1a1a1a',
-                        slatebar: '#2b2b2b',
-                        mist: '#f5f5f5',
-                        line: '#e5e5e5'
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'system-ui', 'sans-serif']
-                    }
-                }
-            }
-        }
-    </script>
+    <link rel="stylesheet" href="{{ asset('fonts/greencloud/fonts.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/greencloud-store.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/greencloud-utilities.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/greencloud-theme.css') }}">
     <style>
-        body { font-family: Inter, system-ui, sans-serif; background: #f7f7f7; color: #1a1a1a; }
+        body { font-family: Poppins, system-ui, sans-serif; background: #f4f4f4; color: #1a1a1a; }
         .cat-nav-wrap { position: relative; }
         .mega { position: static; }
         .mega > a { position: relative; z-index: 2; }
@@ -61,24 +42,24 @@
         }
         .mega-panel.is-open { display: grid; }
         .mega.is-active > .cat-link,
-        .cat-link:hover { color: #e85d04; }
+        .cat-link:hover { color: #4CAF79; }
         .brand-tile {
             display: flex; align-items: center; justify-content: center;
             min-height: 64px; border: 1px solid #ececec; border-radius: 8px;
             background: #fafafa; padding: 8px; text-align: center;
             transition: border-color .15s, box-shadow .15s;
         }
-        .brand-tile:hover { border-color: #e85d04; box-shadow: 0 2px 10px rgba(232,93,4,.12); }
+        .brand-tile:hover { border-color: #4CAF79; box-shadow: 0 2px 10px rgba(76,175,121,.12); }
         .input-w {
             width: 100%; border: 1px solid #d4d4d4; border-radius: 8px; padding: .7rem .9rem; font-size: .875rem;
             background: #fff; outline: none;
         }
-        .input-w:focus { border-color: #e85d04; box-shadow: 0 0 0 3px rgba(232,93,4,.15); }
+        .input-w:focus { border-color: #4CAF79; box-shadow: 0 0 0 3px rgba(76,175,121,.15); }
         .btn-brand {
-            background: #e85d04; color: #fff; font-weight: 600; border-radius: 8px;
+            background: #4CAF79; color: #fff; font-weight: 600; border-radius: 8px;
             padding: .7rem 1.25rem; transition: background .15s;
         }
-        .btn-brand:hover { background: #c44d03; }
+        .btn-brand:hover { background: #2E6A49; }
         .pc-qty-input::-webkit-outer-spin-button,
         .pc-qty-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         .pc-qty-input { -moz-appearance: textfield; }
@@ -99,7 +80,7 @@
             text-decoration: none; background: transparent; border: 0; cursor: pointer;
             -webkit-tap-highlight-color: transparent;
         }
-        .app-tab.active, .app-tab:active { color: #e85d04; }
+        .app-tab.active, .app-tab:active { color: #4CAF79; }
         .app-chip-scroll {
             display: flex; gap: 8px; overflow-x: auto; -webkit-overflow-scrolling: touch;
             scrollbar-width: none; padding: 0 16px 10px;
@@ -110,7 +91,7 @@
             font-size: 13px; font-weight: 600; color: #1a1a1a; white-space: nowrap;
             border: 1px solid transparent; text-decoration: none;
         }
-        .app-chip.active { background: #fff4ec; color: #e85d04; border-color: #f4c7a8; }
+        .app-chip.active { background: #e8f5ee; color: #2E6A49; border-color: #cce4eb; }
         .app-sheet {
             position: fixed; inset: 0; z-index: 90; display: none;
         }
@@ -173,7 +154,7 @@
             height: 48px;
             border-radius: 12px;
             object-fit: cover;
-            background: #e85d04;
+            background: #4CAF79;
             display: block;
         }
         .ecom-pwa-install-bar__text { flex: 1; min-width: 0; }
@@ -185,7 +166,7 @@
             display: block; font-size: 13px; color: rgba(255,255,255,.78); margin-top: 4px; line-height: 1.35;
         }
         .ecom-pwa-install-bar__btn {
-            flex-shrink: 0; background: #e85d04; color: #fff; border: 0;
+            flex-shrink: 0; background: #4CAF79; color: #fff; border: 0;
             border-radius: 10px;
             padding: 12px 18px;
             font-size: 14px; font-weight: 800;
@@ -337,7 +318,7 @@
             body.ecom-account-panel .ecom-acc-list__icon {
                 width: 34px; height: 34px; border-radius: 10px;
                 display: inline-flex; align-items: center; justify-content: center;
-                background: #fff4ec; color: #e85d04; flex-shrink: 0;
+                background: #e8f5ee; color: #2E6A49; flex-shrink: 0;
                 font-size: 14px;
             }
             body.ecom-account-panel .ecom-acc-list__chev {
@@ -449,16 +430,29 @@
     }
 @endphp
 <body class="antialiased app-mobile{{ ! empty($isAccountPanel) ? ' ecom-account-panel' : '' }}">
+<a class="skip-link" href="#main-content">Skip to main content</a>
+<div id="ageGate" class="age-gate-overlay" hidden>
+    <div class="bg-white rounded-2xl p-8 max-w-md mx-4 text-center shadow-2xl">
+        <p class="font-display text-2xl font-bold mb-2">Age Verification Required</p>
+        <p class="text-sm text-[#555] mb-6">You must be 21 years of age or older to enter this site. This site sells tobacco, nicotine, hemp and age-restricted products for licensed retailers only.</p>
+        <p class="font-semibold mb-4">Are you 21 or older?</p>
+        <div class="flex gap-3 justify-center">
+            <button type="button" id="ageYes" class="px-6 py-3 rounded-lg text-white font-bold text-sm" style="background:#4CAF79">Yes, I am 21+</button>
+            <a href="https://www.google.com" class="px-6 py-3 rounded-lg border font-semibold text-sm">No, Exit</a>
+        </div>
+        <p class="text-xs text-[#888] mt-4"><a href="{{ route('ecommerce.terms') }}" class="underline">Terms of Service</a> · <a href="{{ route('ecommerce.privacy') }}" class="underline">Privacy Policy</a></p>
+    </div>
+</div>
 
 {{-- Desktop promo bars --}}
-<div class="hidden lg:block bg-brand text-white text-[11px] sm:text-xs tracking-wide">
+<div class="hidden lg:block text-white text-[11px] sm:text-xs tracking-wide" style="background:#2E6A49">
     <div class="max-w-[1400px] mx-auto px-4 py-2 flex flex-wrap items-center justify-between gap-2">
-        <p class="font-semibold uppercase">Welcome to {{ $store }}</p>
-        <p class="opacity-95">Wholesale distribution · USA · <a href="{{ route('ecommerce.contact') }}" class="underline underline-offset-2">Contact us</a></p>
+        <p class="font-semibold">{{ $store }} · Wholesale</p>
+        <p class="opacity-95">{{ $ecom_settings->contact_email ?: $store }} · Wholesale accounts</p>
     </div>
 </div>
 <div class="hidden lg:block bg-[#ececec] text-[#444] text-[11px] sm:text-xs text-center px-4 py-2 border-b border-black/5">
-    <strong>WARNING:</strong> This product contains nicotine. Nicotine is an addictive chemical. Wholesale accounts only — age verification required.
+    <strong>WARNING:</strong> This product contains nicotine. Nicotine is an addictive chemical. Wholesale accounts only — age verification required (21+).
 </div>
 
 {{-- Mobile app header --}}
@@ -514,14 +508,19 @@
             <nav class="flex items-center gap-6 text-[17px] xl:text-[18px] font-bold tracking-tight relative z-[70]">
                 <a href="{{ url('/') }}" class="hover:text-brand">Home</a>
                 <a href="{{ route('ecommerce.shop') }}" class="hover:text-brand">Shop</a>
-                <a href="{{ route('ecommerce.quick_order') }}" class="hover:text-brand">Quick Order</a>
+                <a href="{{ route('ecommerce.categories') }}" class="hover:text-brand">Categories</a>
+                <a href="{{ route('ecommerce.brands') }}" class="hover:text-brand">Brands</a>
+                <a href="{{ route('ecommerce.promotions') }}" class="hover:text-brand">🔥 Promotions</a>
                 <div class="relative group z-[80]">
-                    <button type="button" class="hover:text-brand inline-flex items-center gap-1">More
+                    <button type="button" class="hover:text-brand inline-flex items-center gap-1">Company
                         <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path d="M5 8l5 5 5-5"/></svg>
                     </button>
                     <div class="invisible opacity-0 pointer-events-none group-hover:visible group-hover:opacity-100 group-hover:pointer-events-auto absolute left-0 top-full pt-1 z-[90] transition">
-                        <div class="bg-white border border-line rounded-lg shadow-xl py-2 min-w-[180px] text-sm font-medium">
-                            <a href="{{ route('ecommerce.track') }}" class="block px-4 py-2 hover:bg-mist">Track order</a>
+                        <div class="bg-white border border-line rounded-lg shadow-xl py-2 min-w-[200px] text-sm font-medium">
+                            <a href="{{ route('ecommerce.about') }}" class="block px-4 py-2 hover:bg-mist">About</a>
+                            <a href="{{ route('ecommerce.compliance') }}" class="block px-4 py-2 hover:bg-mist">Compliance</a>
+                            <a href="{{ route('ecommerce.faq') }}" class="block px-4 py-2 hover:bg-mist">FAQ</a>
+                            <a href="{{ route('ecommerce.shipping') }}" class="block px-4 py-2 hover:bg-mist">Shipping</a>
                             <a href="{{ route('ecommerce.contact') }}" class="block px-4 py-2 hover:bg-mist">Contact</a>
                             <a href="{{ route('ecommerce.account') }}" class="block px-4 py-2 hover:bg-mist">My account</a>
                         </div>
@@ -635,7 +634,7 @@
     <div class="bg-rose-50 text-rose-900 text-sm text-center py-2.5 border-b border-rose-100">{{ $errors->first() }}</div>
 @endif
 
-<main>@yield('content')</main>
+<main id="main-content">@yield('content')</main>
 
 <footer class="desktop-footer mt-16 bg-slatebar text-white">
     <div class="max-w-[1400px] mx-auto px-4 py-12 grid md:grid-cols-4 gap-8">
@@ -656,28 +655,40 @@
             </div>
         </div>
         <div>
-            <div class="text-xs font-bold uppercase tracking-wider text-brand mb-3">Information</div>
+            <div class="text-xs font-bold uppercase tracking-wider text-brand mb-3">Shop</div>
             <div class="space-y-2 text-sm text-white/80">
-                <a class="block hover:text-white" href="{{ route('ecommerce.shop') }}">Shop all</a>
-                @foreach($nav_categories->take(5) as $cat)
-                    <a class="block hover:text-white" href="{{ route('ecommerce.category', $cat->id) }}">{{ $cat->name }}</a>
-                @endforeach
+                <a class="block hover:text-white" href="{{ route('ecommerce.shop') }}">All Products</a>
+                <a class="block hover:text-white" href="{{ route('ecommerce.categories') }}">Categories</a>
+                <a class="block hover:text-white" href="{{ route('ecommerce.brands') }}">All Brands</a>
+                <a class="block hover:text-white" href="{{ route('ecommerce.promotions') }}">Promotions & Deals</a>
+                <a class="block hover:text-white" href="{{ route('ecommerce.new_arrivals') }}">New Arrivals</a>
             </div>
         </div>
         <div>
-            <div class="text-xs font-bold uppercase tracking-wider text-brand mb-3">Customer Service</div>
+            <div class="text-xs font-bold uppercase tracking-wider text-brand mb-3">Company</div>
             <div class="space-y-2 text-sm text-white/80">
-                <a class="block hover:text-white" href="{{ route('ecommerce.login') }}">Login</a>
-                <a class="block hover:text-white" href="{{ route('ecommerce.register') }}">Wholesale sign up</a>
-                <a class="block hover:text-white" href="{{ route('ecommerce.track') }}">Track order</a>
-                <a class="block hover:text-white" href="{{ route('ecommerce.contact') }}">Contact us</a>
-                <a class="block hover:text-white" href="{{ route('ecommerce.account') }}">My account</a>
+                <a class="block hover:text-white" href="{{ route('ecommerce.about') }}">About</a>
+                <a class="block hover:text-white" href="{{ route('ecommerce.faq') }}">FAQ</a>
+                <a class="block hover:text-white" href="{{ route('ecommerce.compliance') }}">Compliance</a>
+                <a class="block hover:text-white" href="{{ route('ecommerce.shipping') }}">Shipping</a>
+                <a class="block hover:text-white" href="{{ route('ecommerce.terms') }}">Terms of Service</a>
+                <a class="block hover:text-white" href="{{ route('ecommerce.privacy') }}">Privacy Policy</a>
+                <a class="block hover:text-white" href="{{ route('ecommerce.contact') }}">Contact</a>
             </div>
+            <form method="post" action="{{ route('ecommerce.subscribe') }}" class="mt-5 space-y-2">
+                @csrf
+                <p class="text-xs text-white/70">Stay informed — new arrivals, deals & industry news</p>
+                <div class="flex gap-2">
+                    <input type="email" name="email" required placeholder="Email address" class="flex-1 rounded-lg px-3 py-2 text-sm text-ink">
+                    <button class="btn-brand text-xs px-3">Subscribe</button>
+                </div>
+                <p class="text-[10px] text-white/40">For licensed wholesale accounts only.</p>
+            </form>
         </div>
     </div>
     <div class="border-t border-white/10">
         <div class="max-w-[1400px] mx-auto px-4 py-4 text-xs text-white/45 flex flex-wrap items-center justify-between gap-3">
-            <span>© {{ date('Y') }} {{ $store }}. All rights reserved. · Wholesale · Age-restricted products</span>
+            <span>© {{ date('Y') }} {{ $store }}. All rights reserved. · Wholesale</span>
             <div class="flex items-center gap-2 text-[10px] font-bold tracking-wide">
                 <span class="px-2 py-1 rounded bg-white/10">VISA</span>
                 <span class="px-2 py-1 rounded bg-white/10">MC</span>
@@ -746,7 +757,9 @@
             </div>
             <div class="grid grid-cols-2 gap-2 mb-4">
                 <a href="{{ route('ecommerce.quick_order') }}" class="rounded-xl border border-line bg-mist px-3 py-3 font-semibold text-sm">Quick Order</a>
-                <a href="{{ route('ecommerce.track') }}" class="rounded-xl border border-line bg-mist px-3 py-3 font-semibold text-sm">Track order</a>
+                <a href="{{ route('ecommerce.promotions') }}" class="rounded-xl border border-line bg-mist px-3 py-3 font-semibold text-sm">Promotions</a>
+                <a href="{{ route('ecommerce.brands') }}" class="rounded-xl border border-line bg-mist px-3 py-3 font-semibold text-sm">Brands</a>
+                <a href="{{ route('ecommerce.contact') }}" class="rounded-xl border border-line bg-mist px-3 py-3 font-semibold text-sm">Contact</a>
                 @auth('customer')
                     <a href="{{ route('ecommerce.account') }}" class="rounded-xl border border-line bg-mist px-3 py-3 font-semibold text-sm">My account</a>
                     <a href="{{ route('ecommerce.contact') }}" class="rounded-xl border border-line bg-mist px-3 py-3 font-semibold text-sm">Contact</a>
@@ -834,5 +847,21 @@ window.__ECOM_PWA__ = {
 };
 </script>
 <script src="{{ asset('js/ecom-pwa.js') }}?v={{ config('app.asset_version', config('constants.asset_version', '1')) }}" defer></script>
+<script>
+(function () {
+    const key = 'gc_age_ok';
+    const gate = document.getElementById('ageGate');
+    if (!gate) return;
+    if (!localStorage.getItem(key)) {
+        gate.hidden = false;
+        document.body.style.overflow = 'hidden';
+    }
+    document.getElementById('ageYes')?.addEventListener('click', function () {
+        localStorage.setItem(key, '1');
+        gate.hidden = true;
+        document.body.style.overflow = '';
+    });
+})();
+</script>
 </body>
 </html>

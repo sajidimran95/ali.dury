@@ -54,10 +54,10 @@
                 <div class="relative p-5 sm:p-6 md:p-10 max-w-lg h-full flex flex-col justify-end min-h-[220px] sm:min-h-[280px] md:min-h-[420px]">
                     <p class="text-[11px] uppercase tracking-[0.2em] text-brand font-bold mb-2">Wholesale</p>
                     <h1 class="text-2xl sm:text-3xl md:text-5xl font-extrabold leading-tight mb-2 sm:mb-3">
-                        {{ $hero->title ?? 'Big brands. Better wholesale pricing.' }}
+                        {{ $hero->title ?? 'Wisconsin’s Premier Smoke & Vape Wholesale' }}
                     </h1>
                     <p class="text-white/80 text-sm md:text-base mb-4 sm:mb-5 line-clamp-2 sm:line-clamp-none">
-                        {{ $hero->subtitle ?? 'Live POS inventory for candy, snacks, tobacco, and more.' }}
+                        {{ $hero->subtitle ?? 'Licensed retailers. Competitive pricing. Same-day fulfillment before 2 PM CST.' }}
                     </p>
                     <span class="inline-flex self-start btn-brand text-sm">{{ $hero->button_text ?? 'Shop now' }}</span>
                 </div>
@@ -202,10 +202,10 @@
         @endif
         <div class="absolute inset-0 bg-ink/60"></div>
         <div class="relative p-8 md:p-12 max-w-xl">
-            <p class="text-[11px] uppercase tracking-[0.2em] text-brand font-bold mb-2">Trade partners</p>
-            <h2 class="text-3xl md:text-4xl font-extrabold mb-3">Wholesale pricing. Retail-grade stock.</h2>
-            <p class="text-white/75 text-sm mb-5">Open an account to unlock bulk ordering, live inventory, and fast USA shipping.</p>
-            <a href="{{ route('ecommerce.register') }}" class="inline-flex btn-brand">Open wholesale account</a>
+            <p class="text-[11px] uppercase tracking-[0.2em] text-brand font-bold mb-2">Wholesale Accounts</p>
+            <h2 class="text-3xl md:text-4xl font-extrabold mb-3">Ready to Stock Your Shelves?</h2>
+            <p class="text-white/75 text-sm mb-5">Apply for a verified wholesale account and unlock tiered pricing, exclusive deals, and priority fulfillment.</p>
+            <a href="{{ route('ecommerce.register') }}" class="inline-flex btn-brand">Apply for Wholesale Account</a>
         </div>
     </div>
 </section>

@@ -95,6 +95,18 @@
             </form>
             @endif
 
+            @if(!($variation && ($stock > 0 || !$product->enable_stock)))
+            <form method="post" action="{{ route('ecommerce.stock_alert') }}" class="mb-6 space-y-2">
+                @csrf
+                <input type="hidden" name="product_id" value="{{ $product->id }}">
+                <p class="text-sm font-semibold">Currently Out of Stock</p>
+                <div class="flex gap-2">
+                    <input type="email" name="email" required placeholder="Email for restock alert" class="flex-1 border rounded-lg px-3 py-2 text-sm" value="{{ optional(auth('customer')->user())->email }}">
+                    <button class="px-4 py-2 rounded-lg text-white text-sm font-bold" style="background:#4CAF79">Notify Me</button>
+                </div>
+            </form>
+            @endif
+
             @auth('customer')
             <form action="{{ route('ecommerce.wishlist.toggle', absolute: false) }}" method="post" class="mb-6">
                 @csrf

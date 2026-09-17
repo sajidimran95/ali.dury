@@ -43,7 +43,7 @@ class CartService
 
     public function add(int $business_id, int $product_id, int $variation_id, float $qty = 1): EcomCart
     {
-        $product = Product::where('business_id', $business_id)->forEcommerce()->findOrFail($product_id);
+        $product = Product::storefrontQuery($business_id)->findOrFail($product_id);
         $variation = Variation::where('product_id', $product->id)->findOrFail($variation_id);
         $settings = EcommerceSetting::forBusiness($business_id);
         $location_id = $settings->location_id;

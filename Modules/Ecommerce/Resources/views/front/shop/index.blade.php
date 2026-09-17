@@ -35,6 +35,8 @@
     </div>
 </section>
 
+@include('ecommerce::front.shop.partials.hub_banner', ['hub' => $hub ?? null])
+
 {{-- Mobile app-style filter trigger (shop only) --}}
 <div class="lg:hidden sticky top-[calc(3.5rem+env(safe-area-inset-top,0px))] z-40 bg-white/95 backdrop-blur border-b border-line">
     <div class="px-3 py-2.5 flex items-center gap-2">

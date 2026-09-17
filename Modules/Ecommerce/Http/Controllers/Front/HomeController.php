@@ -17,14 +17,14 @@ class HomeController extends Controller
     {
         $business_id = request()->attributes->get('ecommerce_business_id');
         $banners = EcomBanner::where('business_id', $business_id)->where('is_active', 1)->orderBy('sort_order')->get();
-        $featured = Product::where('business_id', $business_id)->active()->forEcommerce()->where('ecom_is_featured', 1)->with(['variations', 'category'])->limit(8)->get();
+        $featured = Product::storefrontQuery((int) $business_id)->where('ecom_is_featured', 1)->with(['variations', 'category'])->limit(8)->get();
         if ($featured->isEmpty()) {
-            $featured = Product::where('business_id', $business_id)->active()->forEcommerce()->with(['variations', 'category'])->orderByDesc('id')->limit(8)->get();
+            $featured = Product::storefrontQuery((int) $business_id)->with(['variations', 'category'])->orderByDesc('id')->limit(8)->get();
         }
 
-        $new_arrivals = Product::where('business_id', $business_id)->active()->forEcommerce()->where('ecom_is_new_arrival', 1)->with(['variations', 'category'])->limit(8)->get();
+        $new_arrivals = Product::storefrontQuery((int) $business_id)->where('ecom_is_new_arrival', 1)->with(['variations', 'category'])->limit(8)->get();
         if ($new_arrivals->isEmpty()) {
-            $new_arrivals = Product::where('business_id', $business_id)->active()->forEcommerce()->with(['variations', 'category'])->orderByDesc('id')->limit(8)->get();
+            $new_arrivals = Product::storefrontQuery((int) $business_id)->with(['variations', 'category'])->orderByDesc('id')->limit(8)->get();
         }
 
         $best_seller_ids = DB::table('transaction_sell_lines as tsl')
@@ -38,9 +38,7 @@ class HomeController extends Controller
             ->limit(8)
             ->pluck('product_id');
 
-        $best_sellers = Product::where('business_id', $business_id)
-            ->active()
-            ->forEcommerce()
+        $best_sellers = Product::storefrontQuery((int) $business_id)
             ->whereIn('id', $best_seller_ids)
             ->with(['variations', 'category'])
             ->get();
