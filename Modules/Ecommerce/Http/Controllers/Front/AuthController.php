@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Modules\Ecommerce\Entities\EcomCustomerAddress;
 use Modules\Ecommerce\Entities\EcomCustomerLicense;
+use Modules\Ecommerce\Services\CartService;
 
 class AuthController extends Controller
 {
@@ -41,7 +42,12 @@ class AuthController extends Controller
             return back()->withInput()->with('error', __('ecommerce::lang.invalid_credentials'));
         }
 
+        // Capture before Auth::login() — SessionGuard regenerates the session id.
+        $guestSessionId = $request->session()->getId();
+
         Auth::guard('customer')->login($contact, $request->boolean('remember'));
+
+        app(CartService::class)->claimGuestCart((int) $business_id, $guestSessionId);
 
         // Never send storefront customers to admin/POS intended URLs
         // (same browser session may still hold url.intended from /login).
@@ -158,7 +164,11 @@ class AuthController extends Controller
 
         $this->storeLicenses($request, (int) $business_id, (int) $contact->id);
 
+        $guestSessionId = $request->session()->getId();
+
         Auth::guard('customer')->login($contact);
+
+        app(CartService::class)->claimGuestCart((int) $business_id, $guestSessionId);
 
         return redirect()->route('ecommerce.account')->with('success', 'Account created. Your wholesale account is pending approval — you can upload/view licenses while we review.');
     }

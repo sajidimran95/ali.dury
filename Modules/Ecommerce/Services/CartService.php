@@ -35,10 +35,79 @@ class CartService
             ]);
         } elseif ($contact_id && ! $cart->contact_id) {
             $cart->contact_id = $contact_id;
+            $cart->session_id = $session_id;
             $cart->save();
+        } elseif ($contact_id && $cart->contact_id) {
+            // Keep session id current so later guest lookups stay consistent.
+            if ($cart->session_id !== $session_id) {
+                $cart->session_id = $session_id;
+                $cart->save();
+            }
         }
 
         return $cart->load(['items.product.brand', 'items.variation']);
+    }
+
+    /**
+     * Merge a pre-login guest cart into the authenticated customer cart.
+     * Must receive the session id from BEFORE Auth::login() (login regenerates it).
+     */
+    public function claimGuestCart(int $business_id, string $guestSessionId): EcomCart
+    {
+        $contact_id = auth('customer')->id();
+        if (! $contact_id) {
+            return $this->getOrCreateCart($business_id);
+        }
+
+        $guestCart = EcomCart::where('business_id', $business_id)
+            ->where('session_id', $guestSessionId)
+            ->where(function ($q) use ($contact_id) {
+                $q->whereNull('contact_id')->orWhere('contact_id', $contact_id);
+            })
+            ->with('items')
+            ->first();
+
+        $userCart = EcomCart::where('business_id', $business_id)
+            ->where('contact_id', $contact_id)
+            ->with('items')
+            ->first();
+
+        if (! $guestCart) {
+            return $this->getOrCreateCart($business_id);
+        }
+
+        // No existing customer cart — adopt the guest cart.
+        if (! $userCart || $userCart->id === $guestCart->id) {
+            $guestCart->contact_id = $contact_id;
+            $guestCart->session_id = Session::getId();
+            $guestCart->save();
+
+            return $guestCart->load(['items.product.brand', 'items.variation']);
+        }
+
+        // Merge line items into the customer cart.
+        foreach ($guestCart->items as $guestItem) {
+            $existing = $userCart->items->firstWhere('variation_id', $guestItem->variation_id);
+            if ($existing) {
+                $existing->quantity = (float) $existing->quantity + (float) $guestItem->quantity;
+                $existing->unit_price = $guestItem->unit_price;
+                $existing->save();
+                $guestItem->delete();
+            } else {
+                $guestItem->cart_id = $userCart->id;
+                $guestItem->save();
+            }
+        }
+
+        if ($guestCart->coupon_code && ! $userCart->coupon_code) {
+            $userCart->coupon_code = $guestCart->coupon_code;
+        }
+
+        $userCart->session_id = Session::getId();
+        $userCart->save();
+        $guestCart->delete();
+
+        return $userCart->load(['items.product.brand', 'items.variation']);
     }
 
     public function add(int $business_id, int $product_id, int $variation_id, float $qty = 1): EcomCart

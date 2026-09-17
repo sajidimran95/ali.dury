@@ -25,8 +25,16 @@ class ProductDetailController extends Controller
 
         $stock = 0;
         $variation = $product->variations->first();
-        if ($variation && $settings->location_id) {
-            $stock = $inventory->availableQty($product->id, $variation->id, $settings->location_id);
+        $variant_stocks = [];
+        foreach ($product->variations as $v) {
+            if ($settings->location_id && $product->enable_stock) {
+                $variant_stocks[$v->id] = $inventory->availableQty($product->id, $v->id, $settings->location_id);
+            } else {
+                $variant_stocks[$v->id] = $product->enable_stock ? 0 : 999;
+            }
+        }
+        if ($variation) {
+            $stock = (int) ($variant_stocks[$variation->id] ?? 0);
         } elseif (! $product->enable_stock) {
             $stock = 999;
         }
@@ -39,22 +47,43 @@ class ProductDetailController extends Controller
             ->get();
 
         $reviews = EcomReview::where('product_id', $product->id)->where('status', 'approved')->latest()->get();
+        $rating_avg = $reviews->count() ? round((float) $reviews->avg('rating'), 1) : 0.0;
+        $review_count = $reviews->count();
+
         $cart = $cartService->getOrCreateCart($business_id);
         $cart_totals = $cartService->totals($cart);
+        $cart_product_ids = $cart->items->pluck('product_id')->unique()->values()->all();
 
         $recent = session()->get('ecom_recently_viewed', []);
         array_unshift($recent, $product->id);
         session()->put('ecom_recently_viewed', array_values(array_unique(array_slice($recent, 0, 8))));
 
-        $recently_viewed = Product::storefrontQuery((int) $business_id)
-            ->whereIn('id', session('ecom_recently_viewed', []))
-            ->where('id', '!=', $product->id)
-            ->with(['variations', 'category', 'brand', 'unit'])
-            ->get();
+        $brand_image = null;
+        if ($product->brand_id) {
+            $brandProduct = Product::storefrontQuery((int) $business_id)
+                ->where('brand_id', $product->brand_id)
+                ->whereNotNull('image')
+                ->where('image', '!=', '')
+                ->orderByDesc('id')
+                ->first();
+            $brand_image = $brandProduct?->image_url;
+        }
 
         $product->loadMissing('category');
 
-        return view('ecommerce::front.product.show', compact('product', 'variation', 'stock', 'related', 'reviews', 'cart_totals', 'recently_viewed'));
+        return view('ecommerce::front.product.show', compact(
+            'product',
+            'variation',
+            'stock',
+            'variant_stocks',
+            'related',
+            'reviews',
+            'rating_avg',
+            'review_count',
+            'cart_totals',
+            'cart_product_ids',
+            'brand_image'
+        ));
     }
 
     public function stockAlert(Request $request)

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Sep 17, 2026 at 08:19 PM
+-- Generation Time: Sep 17, 2026 at 08:38 PM
 -- Server version: 8.4.11-0ubuntu0.26.04.1
 -- PHP Version: 8.5.4
 
@@ -130,7 +130,10 @@ INSERT INTO `activity_log` (`id`, `log_name`, `description`, `subject_id`, `subj
 (20, 'default', 'edited', 3, 'App\\Contact', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-09-15 07:56:41', '2026-09-15 07:56:41'),
 (21, 'default', 'login', 7, 'App\\User', NULL, 1, 7, 'App\\User', '[]', NULL, '2026-09-17 03:50:17', '2026-09-17 03:50:17'),
 (22, 'default', 'logout', 7, 'App\\User', NULL, 1, 7, 'App\\User', '[]', NULL, '2026-09-17 03:50:26', '2026-09-17 03:50:26'),
-(23, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-09-17 03:52:21', '2026-09-17 03:52:21');
+(23, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-09-17 03:52:21', '2026-09-17 03:52:21'),
+(24, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-09-17 09:34:31', '2026-09-17 09:34:31'),
+(25, 'default', 'edited', 4, 'App\\Contact', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-09-17 09:36:27', '2026-09-17 09:36:27'),
+(26, 'default', 'edited', 4, 'App\\Contact', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-09-17 09:37:28', '2026-09-17 09:37:28');
 
 -- --------------------------------------------------------
 
@@ -604,7 +607,7 @@ INSERT INTO `contacts` (`id`, `business_id`, `type`, `contact_type`, `land_mark`
 (1, 1, 'customer', NULL, NULL, NULL, NULL, NULL, NULL, 'Walk-In Customer', NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, 'CO0001', 'active', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '', NULL, NULL, NULL, NULL, NULL, 1, 0.0000, 0, 0, 0, 1, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 'RETAIL', NULL, 'Y', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-26 19:47:20', '2026-08-26 19:47:20', NULL),
 (2, 1, 'supplier', 'business', NULL, NULL, NULL, NULL, 'Meredith Gutierrez', 'Consectetur dolor r Bruno Patricia Mooney Ballard', 'Consectetur dolor r', 'Bruno', 'Patricia Mooney', 'Ballard', 'zogewo@mailinator.com', NULL, 0, NULL, NULL, NULL, 'Fugiat nisi eos ab', 'active', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Possimus aut aliqua', 'Maiores quidem ipsa', '946', NULL, NULL, NULL, 1, 0.0000, 0, 0, 0, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-09-15 07:08:02', '2026-09-15 07:08:02', NULL),
 (3, 1, 'customer', 'business', NULL, NULL, NULL, NULL, 'Test Customer', 'Mr test Customer', 'Mr', 'test', 'Customer', NULL, 'testcustomer@gmail.com', '$2y$10$6PUCF8J4LvUUNiDxjtlz7ek.P4i/iKrzfgaOGGCEtYvbIgcka3YXC', 1, NULL, NULL, NULL, NULL, 'active', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '+123456789', NULL, '925', NULL, NULL, NULL, 1, 0.0000, 0, 0, 0, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-09-15 07:08:36', '2026-09-15 07:56:41', NULL),
-(4, 1, 'customer', NULL, NULL, NULL, NULL, NULL, 'Whole Sale Business', 'Whole Saler', NULL, NULL, NULL, NULL, 'wholesale@japspos.com', '$2y$10$8n4YYz/nJSMon3tGYCAh8uhr4ptr1o06lzcsT3mq.2fRI4p/W0tdm', 0, 'Whole', 'Saler', NULL, NULL, 'active', NULL, NULL, NULL, 'Dhaka', 'CO', 'United States', 'Badda', NULL, '1212', NULL, '12345698563', NULL, NULL, NULL, NULL, NULL, 1, 0.0000, 0, 0, 0, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'wholesale@japspos.com', NULL, NULL, NULL, 'pending', NULL, NULL, NULL, NULL, NULL, '2026-09-17 10:15:44', '2026-09-17 10:15:44', NULL);
+(4, 1, 'customer', 'business', NULL, NULL, NULL, NULL, 'Whole Sale Business', 'Whole Saller', NULL, 'Whole Saller', NULL, NULL, 'wholesale@japspos.com', '$2y$10$uqC2FN.vXTVpiwaPK/iBi.TyXXpm5..Vb6q3Js1tfg2gPw/MHUpDi', 1, 'Whole', 'Saler', NULL, NULL, 'active', NULL, NULL, NULL, 'Dhaka', 'CO', 'United States', 'Badda', NULL, '1212', NULL, '12345698563', NULL, NULL, NULL, NULL, NULL, 1, 0.0000, 0, 0, 0, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'wholesale@japspos.com', NULL, NULL, NULL, 'pending', NULL, NULL, NULL, NULL, NULL, '2026-09-17 10:15:44', '2026-09-17 09:37:28', NULL);
 
 -- --------------------------------------------------------
 
@@ -1100,7 +1103,9 @@ INSERT INTO `ecom_carts` (`id`, `business_id`, `contact_id`, `session_id`, `coup
 (7, 1, NULL, 'IGZ7XYnsO91815bWLaUPVqpnrFUQvGSCPNKN78Nd', NULL, '2026-09-17 14:15:45', '2026-09-17 14:15:45'),
 (8, 1, NULL, '2zwXwnPxQSbl2tVkSkjYk1Jy2UMADGFF7BzDGP7S', NULL, '2026-09-17 14:30:28', '2026-09-17 14:30:28'),
 (9, 1, 1882, 'TXzr4fpPlWngRnRwAeKOjAAqt6wgn8NjedES4xca', NULL, '2026-09-17 10:12:22', '2026-09-17 10:12:22'),
-(10, 1, 4, 'fWrZAamtLhADAQiiOnoojxawGMhjkKDguFQFMtgF', NULL, '2026-09-17 10:15:44', '2026-09-17 10:15:44');
+(10, 1, 4, 'eK1nJo2wP9EZ0Rvqou8STzc5ar5Ifk0VVzZJ3qKN', NULL, '2026-09-17 10:15:44', '2026-09-17 10:37:32'),
+(11, 1, NULL, 'fWrZAamtLhADAQiiOnoojxawGMhjkKDguFQFMtgF', NULL, '2026-09-17 10:29:18', '2026-09-17 10:29:18'),
+(13, 1, 3, 'ZR8Oz3lQM5dAX04t7Yw3u36eY0FfvIEOobDsoROq', NULL, '2026-09-17 10:30:17', '2026-09-17 10:30:17');
 
 -- --------------------------------------------------------
 
@@ -1118,6 +1123,15 @@ CREATE TABLE `ecom_cart_items` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `ecom_cart_items`
+--
+
+INSERT INTO `ecom_cart_items` (`id`, `cart_id`, `product_id`, `variation_id`, `quantity`, `unit_price`, `created_at`, `updated_at`) VALUES
+(3, 10, 1, 1, 1.0000, 18.0000, '2026-09-17 10:27:09', '2026-09-17 10:27:09'),
+(4, 13, 1, 1, 2.0000, 10.0000, '2026-09-17 10:30:17', '2026-09-17 10:30:17'),
+(5, 11, 1, 1, 2.0000, 18.0000, '2026-09-17 10:30:45', '2026-09-17 10:30:49');
 
 -- --------------------------------------------------------
 
@@ -3447,7 +3461,8 @@ CREATE TABLE `user_contact_access` (
 INSERT INTO `user_contact_access` (`id`, `user_id`, `contact_id`) VALUES
 (1, 4, 2),
 (2, 6, 2),
-(3, 7, 2);
+(3, 7, 2),
+(4, 4, 4);
 
 -- --------------------------------------------------------
 
@@ -4496,7 +4511,7 @@ ALTER TABLE `account_types`
 -- AUTO_INCREMENT for table `activity_log`
 --
 ALTER TABLE `activity_log`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
 
 --
 -- AUTO_INCREMENT for table `ai_assistance_settings`
@@ -4652,13 +4667,13 @@ ALTER TABLE `ecom_banners`
 -- AUTO_INCREMENT for table `ecom_carts`
 --
 ALTER TABLE `ecom_carts`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT for table `ecom_cart_items`
 --
 ALTER TABLE `ecom_cart_items`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `ecom_collections`
@@ -4976,7 +4991,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `user_contact_access`
 --
 ALTER TABLE `user_contact_access`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `variations`
