@@ -139,7 +139,7 @@
                             <span>{{ __('home.stage_packing') }}</span>
                             <strong id="ops_pack">0</strong>
                         </div>
-                        <div class="hide">
+                        <div>
                             <span>{{ __('home.stage_shipment') }}</span>
                             <strong id="ops_ship">0</strong>
                         </div>

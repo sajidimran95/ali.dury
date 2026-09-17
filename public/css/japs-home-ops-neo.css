@@ -12,8 +12,8 @@
     50% { transform: translateY(-5px); }
 }
 @keyframes japsShotGlow {
-    0%, 100% { box-shadow: 0 12px 24px rgba(37,99,235,.25); }
-    50% { box-shadow: 0 16px 32px rgba(37,99,235,.4); }
+    0%, 100% { box-shadow: 0 8px 16px rgba(59,130,246,.16); }
+    50% { box-shadow: 0 10px 20px rgba(147,197,253,.28); }
 }
 @keyframes japsShotDraw {
     from { stroke-dashoffset: 180; }
@@ -26,6 +26,10 @@
 @keyframes japsShotBorderRun {
     0% { background-position: 0% 50%; }
     100% { background-position: 200% 50%; }
+}
+@keyframes japsShotLightPulse {
+    0%, 100% { border-color: #e8eef4; box-shadow: 0 1px 3px rgba(15, 23, 42, .04); }
+    50% { border-color: #cfe4fb; box-shadow: 0 2px 10px rgba(147, 197, 253, .18); }
 }
 
 html.tw-bg-white body.japs-home-ops,
@@ -47,7 +51,7 @@ body.japs-home-ops .japs-dashboard-page {
     border: 1px solid rgba(255,255,255,.95);
     border-radius: 28px;
     padding: 20px 20px 16px;
-    box-shadow: 0 18px 50px rgba(59, 130, 246, .12);
+    box-shadow: 0 8px 24px rgba(15, 23, 42, .04);
     backdrop-filter: blur(18px);
     animation: japsShotRise .55s ease both;
 }
@@ -103,11 +107,9 @@ body.japs-home-ops .japs-dashboard-page {
     padding: 14px 16px !important;
     text-decoration: none !important;
     color: #0f172a !important;
-    box-shadow: 0 6px 18px rgba(59,130,246,.07);
-    animation: japsShotRise .55s ease both;
-    position: relative;
-    overflow: hidden;
-    border: 2px solid transparent !important;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, .04);
+    border: 1px solid #e8eef4 !important;
+    animation: japsShotRise .55s ease both, japsShotLightPulse 5.5s ease-in-out infinite;
     transition: transform .28s cubic-bezier(.22,1,.36,1), box-shadow .28s ease, border-color .28s ease;
 }
 .japs-shot__stat::before {
@@ -115,13 +117,14 @@ body.japs-home-ops .japs-dashboard-page {
     position: absolute;
     inset: 0;
     border-radius: 16px;
-    padding: 2px;
-    background: linear-gradient(90deg, #93c5fd, #2563eb, #38bdf8, #2563eb, #93c5fd);
+    padding: 1px;
+    background: linear-gradient(90deg, #dbeafe, #e0f2fe, #ede9fe, #dbeafe);
     background-size: 220% 100%;
     -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor;
     mask-composite: exclude;
-    opacity: 0;
+    opacity: 0.55;
+    animation: japsShotBorderRun 7s linear infinite;
     pointer-events: none;
     z-index: 2;
 }
@@ -141,12 +144,12 @@ body.japs-home-ops .japs-dashboard-page {
 .japs-shot__stat:nth-child(3) { animation-delay: .24s; }
 .japs-shot__stat:hover {
     color: #0f172a !important;
-    transform: translateY(-4px) scale(1.045);
-    box-shadow: 0 0 0 1px rgba(37,99,235,.25), 0 0 22px rgba(59,130,246,.45), 0 16px 30px rgba(59,130,246,.16);
+    transform: translateY(-2px);
+    border-color: #dbe4ee !important;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, .06);
 }
 .japs-shot__stat:hover::before {
-    opacity: 1;
-    animation: japsShotBorderRun 1.1s linear infinite;
+    opacity: 0.9;
 }
 .japs-shot__stat:hover::after { animation: japsShotShine .7s ease; }
 .japs-shot .japs-ops-kpi__label { font-size: 12px; font-weight: 600; color: #64748b; }
@@ -158,10 +161,11 @@ body.japs-home-ops .japs-dashboard-page {
     background: #fff;
     border-radius: 18px;
     padding: 14px 16px 8px;
-    box-shadow: 0 6px 18px rgba(59,130,246,.07);
+    border: 1px solid #e8eef4;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, .04);
     min-width: 0;
     margin-bottom: 14px;
-    animation: japsShotRise .6s ease both;
+    animation: japsShotRise .6s ease both, japsShotLightPulse 6s ease-in-out infinite;
     position: relative;
     z-index: 1;
     transition: transform .28s cubic-bezier(.22,1,.36,1), box-shadow .28s ease;
@@ -171,24 +175,23 @@ body.japs-home-ops .japs-dashboard-page {
     position: absolute;
     inset: 0;
     border-radius: 18px;
-    padding: 2px;
-    background: linear-gradient(90deg, #93c5fd, #2563eb, #38bdf8, #2563eb, #93c5fd);
+    padding: 1px;
+    background: linear-gradient(90deg, #dbeafe, #e0f2fe, #ede9fe, #dbeafe);
     background-size: 220% 100%;
     -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor;
     mask-composite: exclude;
-    opacity: 0;
+    opacity: 0.5;
+    animation: japsShotBorderRun 8s linear infinite;
     pointer-events: none;
     z-index: 3;
 }
-.japs-shot__card:hover {
-    transform: translateY(-4px) scale(1.035);
-    box-shadow: 0 0 0 1px rgba(37,99,235,.2), 0 0 24px rgba(59,130,246,.4), 0 18px 34px rgba(59,130,246,.14);
-    z-index: 4;
-}
 .japs-shot__card:hover::before {
-    opacity: 1;
-    animation: japsShotBorderRun 1.1s linear infinite;
+    opacity: 0.85;
+}
+.japs-shot__card:hover {
+    transform: translateY(-2px);
+    z-index: 4;
 }
 .japs-shot__card:last-child { margin-bottom: 0; }
 .japs-shot .japs-ops-card__head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
@@ -267,9 +270,9 @@ body.japs-home-ops .japs-dashboard-page {
     pointer-events: none;
 }
 .japs-shot__feat:hover {
-    transform: translateY(-4px) scale(1.04);
+    transform: translateY(-2px);
     color: #fff !important;
-    box-shadow: 0 0 0 2px #93c5fd, 0 0 26px rgba(147,197,253,.7), 0 18px 36px rgba(37,99,235,.38);
+    box-shadow: 0 8px 18px rgba(37,99,235,.22);
 }
 .japs-shot__feat:hover::after { animation: japsShotShine .65s ease; }
 .japs-shot__feat .japs-ops-kpi__label,
@@ -299,7 +302,7 @@ body.japs-home-ops .japs-dashboard-page {
 
 .japs-shot__donut-stats {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
     gap: 8px;
     padding: 0 6px 12px;
 }
@@ -324,14 +327,15 @@ body.japs-home-ops .japs-dashboard-page {
 .japs-shot__clock { margin: 0 0 16px; }
 .japs-shot__clock .att-clock-card {
     background: #fff !important;
-    border: 0 !important;
+    border: 1px solid #e8eef4 !important;
     border-radius: 18px !important;
-    box-shadow: 0 6px 18px rgba(59,130,246,.07) !important;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, .04) !important;
+    animation: japsShotLightPulse 6.5s ease-in-out infinite;
     transition: transform .28s cubic-bezier(.22,1,.36,1), box-shadow .28s ease !important;
 }
 .japs-shot__clock .att-clock-card:hover {
-    transform: translateY(-3px) scale(1.02);
-    box-shadow: 0 0 0 2px #3b82f6, 0 0 20px rgba(59,130,246,.4), 0 14px 28px rgba(59,130,246,.14) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, .06) !important;
 }
 
 .japs-shot__rest {
@@ -361,7 +365,8 @@ body.japs-home-ops .japs-dashboard-page {
     color: #0f172a;
     font-weight: 700;
     text-decoration: none;
-    box-shadow: 0 6px 18px rgba(59,130,246,.07);
+    border: 1px solid #e8eef4;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, .04);
     animation: japsShotRise .55s ease both;
     position: relative;
     overflow: hidden;
@@ -381,8 +386,8 @@ body.japs-home-ops .japs-dashboard-page {
 .japs-shot__actions .japs-ops-action:hover {
     color: #0f172a;
     background: #f8fbff;
-    transform: translateY(-4px) scale(1.04);
-    box-shadow: 0 0 0 2px #3b82f6, 0 0 18px rgba(59,130,246,.4), 0 14px 26px rgba(59,130,246,.16);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, .06);
 }
 .japs-shot__actions .japs-ops-action:hover::after { animation: japsShotShine .65s ease; }
 .japs-shot__actions .japs-ops-action:hover .japs-ops-action__ico {

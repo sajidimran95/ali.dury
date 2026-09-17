@@ -168,7 +168,7 @@
 @endif
 @if(!empty($home_ops ?? false))
 <link rel="stylesheet" href="{{ asset('css/japs-home-ops.css?v='.$asset_v) }}">
-<link rel="stylesheet" href="{{ asset('css/japs-home-ops-neo.css?v='.$asset_v.'&shot=13') }}">
+<link rel="stylesheet" href="{{ asset('css/japs-home-ops-neo.css?v='.$asset_v.'&shot=17') }}">
 @endif
 @if(!empty($__system_settings['additional_css']))
     {!! $__system_settings['additional_css'] !!}
