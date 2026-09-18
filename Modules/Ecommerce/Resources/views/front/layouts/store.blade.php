@@ -441,6 +441,7 @@
 </head>
 @php
     $nav_categories = $nav_categories ?? collect();
+    $new_arrivals_category = $new_arrivals_category ?? null;
     $has_new_arrivals = $has_new_arrivals ?? false;
     $has_promotions = $has_promotions ?? false;
     $store = $ecom_settings->store_name ?? 'Greencloud Wholesale';
@@ -512,13 +513,10 @@
         </form>
     </div>
         <div class="app-chip-scroll">
-            <a href="{{ route('ecommerce.shop') }}" class="app-chip {{ $routeName === 'ecommerce.shop' && ! request('category') && ! request()->boolean('new_only') && ! request()->boolean('featured') ? 'active' : '' }}">All</a>
             @if(!empty($has_promotions))
                 <a href="{{ route('ecommerce.promotions') }}" class="app-chip {{ $routeName === 'ecommerce.promotions' || request()->boolean('featured') ? 'active' : '' }}">Promotions</a>
             @endif
-            @if(!empty($has_new_arrivals))
-                <a href="{{ route('ecommerce.shop', ['sort' => 'newest', 'new_only' => 1]) }}" class="app-chip {{ request()->boolean('new_only') ? 'active' : '' }}">New Arrivals</a>
-            @endif
+            <a href="{{ route('ecommerce.shop', ['sort' => 'newest', 'new_only' => 1]) }}" class="app-chip {{ request()->boolean('new_only') ? 'active' : '' }}">New Arrivals</a>
             @foreach($nav_categories as $cat)
                 @php
                     $subIds = ($cat->sub_categories ?? collect())->pluck('id')->map(fn ($id) => (string) $id)->all();
@@ -609,18 +607,17 @@
                     </a>
                 </li>
                 @endif
-                <li>
-                    <a href="{{ route('ecommerce.shop') }}" class="cat-link gc-nav-item">
-                        <span>All</span>
-                    </a>
-                </li>
-                @if(!empty($has_new_arrivals))
-                <li>
+                <li class="mega">
                     <a href="{{ route('ecommerce.shop', ['sort' => 'newest', 'new_only' => 1]) }}" class="cat-link gc-nav-item">
-                        <span>New Arrivals</span>
+                        <span class="gc-nav-text">New{{ "\n" }}Arrivals</span>
+                        <svg width="11" height="11" viewBox="0 0 20 20" fill="currentColor" class="opacity-80 shrink-0"><path d="M5 8l5 5 5-5"/></svg>
                     </a>
+                    <div class="mega-panel">
+                        <a href="{{ route('ecommerce.shop', ['sort' => 'newest', 'new_only' => 1]) }}">All New Arrivals</a>
+                        <a href="{{ route('ecommerce.shop', ['sort' => 'newest', 'new_only' => 1]) }}">New arrivals</a>
+                        <a href="{{ route('ecommerce.shop', ['sort' => 'price_asc', 'new_only' => 1]) }}">Best value</a>
+                    </div>
                 </li>
-                @endif
                 @foreach($nav_categories as $cat)
                     @php $subs = $cat->sub_categories ?? collect(); @endphp
                     <li class="{{ $subs->count() ? 'mega' : '' }}">
@@ -676,9 +673,9 @@
         <div>
             <h3 class="font-serif text-lg mb-3">Shop</h3>
             <div class="space-y-2 text-sm text-white/80">
-                @if(!empty($has_new_arrivals))
-                    <a class="block hover:text-white" href="{{ route('ecommerce.shop', ['sort'=>'newest', 'new_only' => 1]) }}">New Arrivals</a>
-                @endif
+                <a class="block hover:text-white" href="{{ route('ecommerce.shop', ['sort'=>'newest', 'new_only' => 1]) }}">All New Arrivals</a>
+                <a class="block hover:text-white" href="{{ route('ecommerce.shop', ['sort'=>'newest', 'new_only' => 1]) }}">New arrivals</a>
+                <a class="block hover:text-white" href="{{ route('ecommerce.shop', ['sort'=>'price_asc', 'new_only' => 1]) }}">Best value</a>
                 @foreach($nav_categories as $cat)
                     <a class="block hover:text-white" href="{{ route('ecommerce.category', $cat->id) }}">{{ $cat->name }}</a>
                 @endforeach
@@ -802,12 +799,12 @@
                         <span class="text-black/30">›</span>
                     </a>
                 @endif
-                @if(!empty($has_new_arrivals))
-                    <a href="{{ route('ecommerce.shop', ['sort' => 'newest', 'new_only' => 1]) }}" class="flex items-center justify-between px-4 py-3.5 font-semibold text-[15px] active:bg-mist">
-                        <span>New Arrivals</span>
-                        <span class="text-black/30">›</span>
-                    </a>
-                @endif
+                <a href="{{ route('ecommerce.shop', ['sort' => 'newest', 'new_only' => 1]) }}" class="flex items-center justify-between px-4 py-3.5 font-semibold text-[15px] active:bg-mist">
+                    <span>All New Arrivals</span>
+                    <span class="text-black/30">›</span>
+                </a>
+                <a href="{{ route('ecommerce.shop', ['sort' => 'newest', 'new_only' => 1]) }}" class="block px-8 py-2.5 text-sm text-black/70 active:bg-mist">New arrivals</a>
+                <a href="{{ route('ecommerce.shop', ['sort' => 'price_asc', 'new_only' => 1]) }}" class="block px-8 py-2.5 text-sm text-black/70 active:bg-mist">Best value</a>
                 @foreach($nav_categories as $cat)
                     @php $subs = $cat->sub_categories ?? collect(); @endphp
                     <a href="{{ route('ecommerce.category', $cat->id) }}" class="flex items-center justify-between px-4 py-3.5 font-semibold text-[15px] active:bg-mist">

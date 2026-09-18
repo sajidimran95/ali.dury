@@ -14,7 +14,11 @@ class ShopController extends Controller
     public function index(Request $request, CartService $cartService)
     {
         $business_id = $request->attributes->get('ecommerce_business_id');
-        $query = Product::storefrontQuery((int) $business_id)->with(['variations', 'brand', 'category', 'unit']);
+        $query = Product::query()
+            ->where('business_id', $business_id)
+            ->active()
+            ->forEcommerce()
+            ->with(['variations', 'brand', 'category', 'unit']);
 
         if ($request->filled('category')) {
             $catId = (int) $request->category;
@@ -47,9 +51,7 @@ class ShopController extends Controller
             $query->where('ecom_is_featured', 1);
         }
         if ($request->boolean('new_only')) {
-            $query->where(function ($q) {
-                $q->where('ecom_is_new_arrival', 1)->orWhere('created_at', '>=', now()->subDays(21));
-            });
+            $query->where('ecom_is_new_arrival', 1);
         }
 
         $sort = $request->get('sort', 'newest');
@@ -60,6 +62,15 @@ class ShopController extends Controller
         };
 
         $products = $query->paginate(16)->withQueryString();
+
+        $ecomRows = Product::query()
+            ->where('business_id', $business_id)
+            ->active()
+            ->forEcommerce()
+            ->select('category_id', 'sub_category_id', 'brand_id')
+            ->get();
+        $usedCatIds = $ecomRows->pluck('category_id')->merge($ecomRows->pluck('sub_category_id'))->filter()->unique()->values();
+
         $categories = Category::where('business_id', $business_id)
             ->where('category_type', 'product')
             ->where(function ($q) {
@@ -69,8 +80,17 @@ class ShopController extends Controller
                 $q->orderBy('name');
             }])
             ->orderBy('name')
-            ->get();
-        $brands = Brands::where('business_id', $business_id)->get();
+            ->get()
+            ->filter(function ($cat) use ($usedCatIds) {
+                return $usedCatIds->contains($cat->id)
+                    || $cat->sub_categories->contains(fn ($sub) => $usedCatIds->contains($sub->id));
+            })
+            ->values();
+
+        $brandIds = $ecomRows->pluck('brand_id')->filter()->unique()->all();
+        $brands = $brandIds
+            ? Brands::where('business_id', $business_id)->whereIn('id', $brandIds)->orderBy('name')->get()
+            : collect();
         $cart = $cartService->getOrCreateCart($business_id);
         $cart_totals = $cartService->totals($cart);
         return view('ecommerce::front.shop.index', compact('products', 'categories', 'brands', 'cart_totals', 'sort'));

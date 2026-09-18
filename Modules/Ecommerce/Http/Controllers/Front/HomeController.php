@@ -47,14 +47,31 @@ class HomeController extends Controller
             $best_sellers = $featured;
         }
 
-        $categories = Category::where('business_id', $business_id)
-            ->where('category_type', 'product')
-            ->where(function ($q) {
-                $q->whereNull('parent_id')->orWhere('parent_id', 0);
-            })
-            ->orderBy('name')
-            ->limit(12)
+        $ecomCatIds = Product::query()
+            ->where('business_id', $business_id)
+            ->active()
+            ->forEcommerce()
+            ->select('category_id', 'sub_category_id')
             ->get();
+        $usedCatIds = $ecomCatIds->pluck('category_id')->merge($ecomCatIds->pluck('sub_category_id'))->filter()->unique();
+
+        $categories = collect();
+        if ($usedCatIds->isNotEmpty()) {
+            $categories = Category::where('business_id', $business_id)
+                ->where('category_type', 'product')
+                ->where(function ($q) {
+                    $q->whereNull('parent_id')->orWhere('parent_id', 0);
+                })
+                ->where(function ($q) use ($usedCatIds) {
+                    $q->whereIn('id', $usedCatIds->all())
+                        ->orWhereHas('sub_categories', function ($qq) use ($usedCatIds) {
+                            $qq->whereIn('id', $usedCatIds->all());
+                        });
+                })
+                ->orderBy('name')
+                ->limit(12)
+                ->get();
+        }
         $collections = EcomCollection::where('business_id', $business_id)->where('is_active', 1)->orderBy('sort_order')->limit(4)->get();
         $reviews = EcomReview::where('business_id', $business_id)->where('status', 'approved')->with('product')->latest()->limit(6)->get();
         $cart = $cartService->getOrCreateCart($business_id);

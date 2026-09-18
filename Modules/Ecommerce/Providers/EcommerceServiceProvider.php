@@ -42,6 +42,19 @@ class EcommerceServiceProvider extends ServiceProvider
                 $view->with('cart_totals', $cartService->totals($cart));
                 $view->with('cart_product_ids', $cart->items->pluck('product_id')->unique()->values()->all());
 
+                $ecomProducts = \App\Product::query()
+                    ->where('business_id', $business_id)
+                    ->active()
+                    ->forEcommerce()
+                    ->select('id', 'category_id', 'sub_category_id', 'brand_id', 'ecom_is_new_arrival', 'ecom_is_featured')
+                    ->get();
+
+                $usedCatIds = $ecomProducts->pluck('category_id')
+                    ->merge($ecomProducts->pluck('sub_category_id'))
+                    ->filter()
+                    ->unique()
+                    ->values();
+
                 $nav_categories = \App\Category::where('business_id', $business_id)
                     ->where('category_type', 'product')
                     ->where(function ($q) {
@@ -53,60 +66,50 @@ class EcommerceServiceProvider extends ServiceProvider
                         })->orderBy('name');
                     }])
                     ->orderBy('name')
-                    ->limit(6)
-                    ->get();
+                    ->get()
+                    ->filter(function ($cat) use ($usedCatIds) {
+                        $isNewArrivals = strcasecmp(trim((string) $cat->name), 'New Arrivals') === 0;
+                        if ($isNewArrivals && $cat->sub_categories->isNotEmpty()) {
+                            return true;
+                        }
+                        if ($usedCatIds->contains($cat->id)) {
+                            return true;
+                        }
 
-                $view->with('has_new_arrivals', \App\Product::storefrontQuery((int) $business_id)->where('ecom_is_new_arrival', 1)->exists());
-                $view->with('has_promotions', \App\Product::storefrontQuery((int) $business_id)->where('ecom_is_featured', 1)->exists());
+                        return $cat->sub_categories->contains(fn ($sub) => $usedCatIds->contains($sub->id));
+                    })
+                    ->values();
 
-                // Brands + sample product image for mega menu tiles
-                foreach ($nav_categories as $cat) {
-                    $subIds = $cat->sub_categories->pluck('id')->all();
-                    $catIds = array_merge([$cat->id], $subIds);
-
-                    $brandRows = \App\Product::query()
-                        ->where('business_id', $business_id)
-                        ->whereIn('sales_channel', ['pos_ecommerce', 'ecommerce_only'])
-                        ->where(function ($q) use ($catIds) {
-                            $q->whereIn('category_id', $catIds)->orWhereIn('sub_category_id', $catIds);
+                $new_arrivals_category = $nav_categories->first(function ($cat) {
+                    return strcasecmp(trim((string) $cat->name), 'New Arrivals') === 0;
+                });
+                if (! $new_arrivals_category) {
+                    $new_arrivals_category = \App\Category::where('business_id', $business_id)
+                        ->where('category_type', 'product')
+                        ->where(function ($q) {
+                            $q->whereNull('parent_id')->orWhere('parent_id', 0);
                         })
-                        ->whereNotNull('brand_id')
-                        ->select('brand_id', 'image')
-                        ->orderByDesc('id')
-                        ->get()
-                        ->groupBy('brand_id');
-
-                    $megaBrands = collect();
-                    foreach ($brandRows as $brandId => $rows) {
-                        $brand = \App\Brands::find($brandId);
-                        if (! $brand) {
-                            continue;
-                        }
-                        $img = optional($rows->first(fn ($r) => ! empty($r->image)))->image;
-                        $megaBrands->push((object) [
-                            'id' => $brand->id,
-                            'name' => $brand->name,
-                            'image' => $img,
-                        ]);
-                        if ($megaBrands->count() >= 12) {
-                            break;
-                        }
-                    }
-
-                    // Fallback: any brands if category has none yet
-                    if ($megaBrands->isEmpty()) {
-                        $megaBrands = \App\Brands::where('business_id', $business_id)
-                            ->orderBy('name')
-                            ->limit(8)
-                            ->get()
-                            ->map(fn ($b) => (object) ['id' => $b->id, 'name' => $b->name, 'image' => null]);
-                    }
-
-                    $cat->setAttribute('mega_brands', $megaBrands);
+                        ->whereRaw('LOWER(name) = ?', ['new arrivals'])
+                        ->with(['sub_categories' => function ($q) {
+                            $q->orderBy('name');
+                        }])
+                        ->first();
                 }
 
+                $nav_categories = $nav_categories
+                    ->reject(fn ($cat) => strcasecmp(trim((string) $cat->name), 'New Arrivals') === 0)
+                    ->take(8)
+                    ->values();
+
+                $view->with('has_new_arrivals', $ecomProducts->contains(fn ($p) => (int) $p->ecom_is_new_arrival === 1) || $new_arrivals_category);
+                $view->with('has_promotions', $ecomProducts->contains(fn ($p) => (int) $p->ecom_is_featured === 1));
+                $view->with('new_arrivals_category', $new_arrivals_category);
                 $view->with('nav_categories', $nav_categories);
-                $view->with('nav_brands', \App\Brands::where('business_id', $business_id)->orderBy('name')->limit(20)->get());
+
+                $ecomBrandIds = $ecomProducts->pluck('brand_id')->filter()->unique()->all();
+                $view->with('nav_brands', $ecomBrandIds
+                    ? \App\Brands::where('business_id', $business_id)->whereIn('id', $ecomBrandIds)->orderBy('name')->limit(20)->get()
+                    : collect());
             } catch (\Throwable $e) {
                 // keep existing shared defaults
             }
