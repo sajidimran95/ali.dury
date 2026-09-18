@@ -74,6 +74,11 @@
                             ['label' => 'Failed', 'count' => $status_failed, 'color' => '#ef4444'],
                         ];
                         $top_product_name = !empty($top_products[0]) ? $top_products[0]->product : null;
+                        $sale_edit_insights = $sale_edit_insights ?? [];
+                        $sale_edit_activities = $sale_edit_activities ?? [];
+                        $show_all_edits = $show_all_edits ?? false;
+                        $view_all_edits_url = $view_all_edits_url ?? '#japs-sf-activity';
+                        $activity_log_url = $activity_log_url ?? '#';
                     @endphp
 
                     @if ((auth()->user()->can('sell.view') || auth()->user()->can('direct_sell.view')) && !empty($all_locations))
@@ -247,19 +252,31 @@
                     </div>
 
                     <aside class="japs-sf-aside">
-                        <div class="japs-dash-chart-card japs-sf-insights">
+                        <div class="japs-dash-chart-card japs-sf-activity" id="japs-sf-activity">
                             <div class="japs-dash-chart-card__header">
                                 <h3 class="japs-dash-chart-card__title">{{ __('home.insights_actions') }}</h3>
+                                <a href="{{ $view_all_edits_url }}" class="japs-dash-period-chip">{{ __('home.view_all') }}</a>
                             </div>
-                            <p class="japs-sf-insights__kicker">{{ __('home.ai_key_insights') }}</p>
-                            <ul class="japs-sf-insights__list">
-                                <li class="is-up"><span>{{ number_format($pipe_delivered) }} delivered</span> this window.</li>
-                                <li class="is-warn"><span>{{ number_format($status_pending) }} orders</span> still open in the pipeline.</li>
-                                @if ($top_product_name)
-                                    <li class="is-info">Top product: <b>{{ \Illuminate\Support\Str::limit($top_product_name, 28) }}</b>.</li>
-                                @else
-                                    <li class="is-info">No product sales in this date range yet.</li>
-                                @endif
+                            <ul class="japs-sf-activity__list">
+                                @forelse ($sale_edit_activities as $act)
+                                    <li>
+                                        <span class="japs-sf-activity__dot {{ $act->dot }}"></span>
+                                        <span class="japs-sf-activity__text">
+                                            {{ $act->when }}
+                                            · <b>{{ $act->kind }} {{ $act->invoice_no }}</b>
+                                            · {{ $act->product }}
+                                            · {{ $act->change }}
+                                            · by {{ $act->editor }}
+                                        </span>
+                                        @if (!empty($act->view_url))
+                                            <a href="{{ $act->view_url }}" class="japs-sf-activity__view" title="{{ __('messages.view') }}">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                            </a>
+                                        @endif
+                                    </li>
+                                @empty
+                                    <li class="japs-sf-activity__empty">{{ __('lang_v1.no_data') }}</li>
+                                @endforelse
                             </ul>
                         </div>
                         <div class="japs-dash-chart-card japs-sf-channels">
@@ -300,42 +317,6 @@
                                     @endforeach
                                 </ul>
                             </div>
-                        </div>
-                        <div class="japs-dash-chart-card japs-sf-activity">
-                            <div class="japs-dash-chart-card__header">
-                                <h3 class="japs-dash-chart-card__title">{{ __('home.recent_activity') }}</h3>
-                                <a href="{{ $card_sells }}" class="japs-dash-period-chip">{{ __('home.view_all_orders') }}</a>
-                            </div>
-                            <ul class="japs-sf-activity__list">
-                                @forelse ($recent_activity as $act)
-                                    @php
-                                        $inv = $act->invoice_no ?: ('#'.$act->id);
-                                        if ($act->type === 'sell_return') {
-                                            $actText = 'Refund issued for '.$inv;
-                                            $dot = 'is-refund';
-                                        } elseif ($act->payment_status === 'paid') {
-                                            $actText = 'Order '.$inv.' was fulfilled';
-                                            $dot = 'is-done';
-                                        } elseif (in_array($act->status, ['final', 'completed', 'received'], true)) {
-                                            $actText = 'Order '.$inv.' was placed';
-                                            $dot = 'is-place';
-                                        } else {
-                                            $actText = 'Order '.$inv.' is '.$act->status;
-                                            $dot = 'is-info';
-                                        }
-                                        $when = $act->transaction_date
-                                            ? \Carbon\Carbon::parse($act->transaction_date)->format('M j, g:i A')
-                                            : '';
-                                    @endphp
-                                    <li>
-                                        <span class="japs-sf-activity__dot {{ $dot }}"></span>
-                                        <span class="japs-sf-activity__text">{{ $actText }}</span>
-                                        <span class="japs-sf-activity__time">{{ $when }}</span>
-                                    </li>
-                                @empty
-                                    <li class="japs-sf-activity__empty">{{ __('lang_v1.no_data') }}</li>
-                                @endforelse
-                            </ul>
                         </div>
                     </aside>
                     </div>
@@ -400,7 +381,7 @@
 
 @section('css')
     <link href="{{ asset('css/japs-ui.css') }}" rel="stylesheet">
-    <link href="{{ asset('css/japs-sales-dash.css?v=' . ($asset_v ?? '') . '&sd=19') }}" rel="stylesheet">
+    <link href="{{ asset('css/japs-sales-dash.css?v=' . ($asset_v ?? '') . '&sd=27') }}" rel="stylesheet">
     <style>
         .select2-container {
             width: 100% !important;

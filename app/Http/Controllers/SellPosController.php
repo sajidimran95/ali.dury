@@ -1746,6 +1746,10 @@ class SellPosController extends Controller
                 }
 
                 //Update Sell lines
+                $lines_before_edit = \App\TransactionSellLine::where('transaction_id', $transaction->id)
+                    ->whereNull('parent_sell_line_id')
+                    ->with('product')
+                    ->get();
                 $deleted_lines = $this->transactionUtil->createOrUpdateSellLines($transaction, $input['products'], $input['location_id'], true, $status_before);
 
                 //Update update lines
@@ -1828,7 +1832,48 @@ class SellPosController extends Controller
 
                 Media::uploadMedia($business_id, $transaction, $request, 'documents');
 
-                $this->transactionUtil->activityLog($transaction, 'edited', $transaction_before);
+                $removed_items = [];
+                $deleted_ids = collect($deleted_lines ?? [])->map(function ($row) {
+                    if (is_array($row)) {
+                        return (int) ($row['id'] ?? 0);
+                    }
+
+                    return (int) (is_object($row) ? ($row->id ?? 0) : $row);
+                })->filter()->values()->all();
+                if (! empty($deleted_ids) && ! empty($lines_before_edit)) {
+                    foreach ($lines_before_edit as $old_line) {
+                        if (in_array((int) $old_line->id, $deleted_ids, true)) {
+                            $removed_items[] = $old_line->product->name ?? ('Item #'.$old_line->product_id);
+                        }
+                    }
+                }
+
+                $edit_lines = [];
+                foreach (array_values(array_unique($removed_items)) as $pname) {
+                    $edit_lines[] = ['product' => $pname, 'change' => 'removed'];
+                }
+                if (empty($edit_lines)) {
+                    $kept = \App\TransactionSellLine::where('transaction_id', $transaction->id)
+                        ->whereNull('parent_sell_line_id')
+                        ->with('product')
+                        ->get();
+                    foreach ($kept as $kl) {
+                        $edit_lines[] = ['product' => $kl->product->name ?? 'Item', 'change' => 'edited'];
+                    }
+                }
+                if (empty($edit_lines)) {
+                    $edit_lines[] = ['product' => '—', 'change' => 'edited'];
+                }
+
+                $this->transactionUtil->activityLog($transaction, 'edited', $transaction_before, [
+                    'invoice_no' => $transaction->invoice_no,
+                    'doc_type' => $transaction->type === 'sales_order' ? 'sales_order' : 'invoice',
+                    'edited_by' => trim((auth()->user()->first_name ?? '').' '.(auth()->user()->last_name ?? '')) ?: (auth()->user()->username ?? 'Staff'),
+                    'edited_by_id' => auth()->id(),
+                    'removed_items' => array_values(array_unique($removed_items)),
+                    'removed_count' => count($removed_items),
+                    'lines' => $edit_lines,
+                ]);
 
                 SellCreatedOrModified::dispatch($transaction);
 

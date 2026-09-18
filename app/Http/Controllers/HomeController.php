@@ -446,6 +446,17 @@ class HomeController extends Controller
             ->limit(5)
             ->get(['id', 'invoice_no', 'type', 'status', 'payment_status', 'transaction_date', 'created_at']);
 
+        $sale_edit_feed = $this->salesDashboardEditFeed(
+            $business_id,
+            $widgets_start,
+            $widgets_end,
+            5
+        );
+        $sale_edit_insights = $sale_edit_feed['insights'];
+        $sale_edit_activities = $sale_edit_feed['items'];
+        $activity_log_url = action([\App\Http\Controllers\HomeController::class, 'salesDashboardActivity']);
+        $view_all_edits_url = $activity_log_url;
+
         // KPI sparklines (last 14 days from the same 30-day channel series)
         $daily_payment_hours = $this->getDailyAvgPaymentHours($business_id, \Carbon::now()->subDays(13)->format('Y-m-d'), $widgets_end, $permitted_locations);
 
@@ -500,11 +511,111 @@ class HomeController extends Controller
             'top_products_max',
             'location_performance',
             'recent_activity',
+            'sale_edit_insights',
+            'sale_edit_activities',
+            'activity_log_url',
+            'view_all_edits_url',
             'kpi_sparkline_orders',
             'kpi_sparkline_revenue',
             'kpi_sparkline_aov',
             'kpi_sparkline_payment_hours'
         ));
+    }
+
+    /**
+     * Full-page list of invoice / sales-order edit activity.
+     */
+    public function salesDashboardActivity()
+    {
+        $user = auth()->user();
+        if ($user->user_type == 'user_customer') {
+            return redirect()->action([\Modules\Crm\Http\Controllers\DashboardController::class, 'index']);
+        }
+        if (! auth()->user()->can('dashboard.data')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $business_id = request()->session()->get('user.business_id');
+        $feed = $this->salesDashboardEditFeed(
+            $business_id,
+            '2000-01-01',
+            \Carbon::now()->format('Y-m-d'),
+            2000
+        );
+
+        return view('home.sales_edit_activity', [
+            'items' => $feed['items'],
+            'dashboard_url' => action([\App\Http\Controllers\HomeController::class, 'salesDashboard']),
+        ]);
+    }
+
+    /**
+     * Full details for one invoice / sales-order activity row.
+     */
+    public function salesDashboardActivityShow($id)
+    {
+        $user = auth()->user();
+        if ($user->user_type == 'user_customer') {
+            return redirect()->action([\Modules\Crm\Http\Controllers\DashboardController::class, 'index']);
+        }
+        if (! auth()->user()->can('dashboard.data')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $business_id = request()->session()->get('user.business_id');
+        $activity = \Spatie\Activitylog\Models\Activity::with(['subject', 'causer'])
+            ->where('business_id', $business_id)
+            ->findOrFail($id);
+
+        $props = $activity->properties;
+        if (is_object($props) && method_exists($props, 'toArray')) {
+            $props = $props->toArray();
+        }
+        if (! is_array($props)) {
+            $props = [];
+        }
+        if (! empty($props['attributes']) && is_array($props['attributes'])) {
+            $props = array_merge($props['attributes'], $props);
+        }
+
+        $tx = $activity->subject;
+        $kind = (($props['doc_type'] ?? null) === 'sales_order' || ($tx && $tx->type === 'sales_order'))
+            ? 'Sales order'
+            : 'Invoice';
+        $invoice_no = $props['invoice_no'] ?? ($tx && $tx->invoice_no ? $tx->invoice_no : ('#'.$activity->subject_id));
+        $editor = $props['edited_by'] ?? '';
+        if ($editor === '' && $activity->causer) {
+            $editor = trim(($activity->causer->first_name ?? '').' '.($activity->causer->last_name ?? ''));
+            if ($editor === '') {
+                $editor = $activity->causer->username ?? '';
+            }
+        }
+        if ($editor === '') {
+            $editor = 'Staff';
+        }
+
+        $lines = $props['lines'] ?? [];
+        if (empty($lines) && ! empty($props['removed_items']) && is_array($props['removed_items'])) {
+            foreach ($props['removed_items'] as $pname) {
+                $lines[] = ['product' => $pname, 'change' => 'removed'];
+            }
+        }
+
+        $doc_url = $activity->subject_id
+            ? action([\App\Http\Controllers\SellController::class, 'show'], [$activity->subject_id])
+            : null;
+
+        return view('home.sales_edit_activity_show', [
+            'activity' => $activity,
+            'kind' => $kind,
+            'invoice_no' => $invoice_no,
+            'editor' => $editor,
+            'lines' => $lines,
+            'props' => $props,
+            'doc_url' => $doc_url,
+            'list_url' => action([\App\Http\Controllers\HomeController::class, 'salesDashboardActivity']),
+            'dashboard_url' => action([\App\Http\Controllers\HomeController::class, 'salesDashboard']),
+        ]);
     }
 
     /**
@@ -1509,6 +1620,111 @@ class HomeController extends Controller
             ],
             'low_stock' => $low_stock,
         ]);
+    }
+
+    private function salesDashboardEditFeed($business_id, $start, $end, $limit = 8): array
+    {
+        $query = \Spatie\Activitylog\Models\Activity::query()
+            ->with(['subject', 'causer'])
+            ->where('activity_log.business_id', $business_id)
+            ->where('activity_log.subject_type', Transaction::class)
+            ->whereIn('activity_log.description', ['edited', 'added', 'sell_deleted', 'so_deleted', 'payment_edited'])
+            ->whereDate('activity_log.created_at', '>=', $start)
+            ->whereDate('activity_log.created_at', '<=', $end)
+            ->orderByDesc('activity_log.id');
+
+        $activity_cap = $limit >= 100 ? min(2000, (int) $limit) : max(80, $limit * 4);
+        $items = [];
+        foreach ($query->limit($activity_cap)->get() as $activity) {
+            $props = $activity->properties;
+            if (is_object($props) && method_exists($props, 'toArray')) {
+                $props = $props->toArray();
+            }
+            if (! is_array($props)) {
+                $props = [];
+            }
+            if (! empty($props['attributes']) && is_array($props['attributes'])) {
+                $props = array_merge($props['attributes'], $props);
+            }
+            $tx = $activity->subject;
+            if ($tx && ! in_array($tx->type, ['sell', 'sales_order'], true)) {
+                continue;
+            }
+            $kind = (($props['doc_type'] ?? null) === 'sales_order' || ($tx && $tx->type === 'sales_order'))
+                ? 'SO'
+                : 'Invoice';
+            $inv = $props['invoice_no'] ?? ($tx && $tx->invoice_no ? $tx->invoice_no : ('#'.$activity->subject_id));
+            $when = $activity->created_at ? $activity->created_at->format('M j, Y g:i A') : '';
+            $editor = $props['edited_by'] ?? '';
+            if ($editor === '' && $activity->causer) {
+                $editor = trim(($activity->causer->first_name ?? '').' '.($activity->causer->last_name ?? ''));
+                if ($editor === '') {
+                    $editor = $activity->causer->username ?? '';
+                }
+            }
+            if ($editor === '') {
+                $editor = 'Staff';
+            }
+
+            $lines = $props['lines'] ?? [];
+            if (empty($lines) && ! empty($props['removed_items']) && is_array($props['removed_items'])) {
+                foreach ($props['removed_items'] as $pname) {
+                    $lines[] = ['product' => $pname, 'change' => 'removed'];
+                }
+            }
+            if (empty($lines)) {
+                $change = 'edited';
+                if (in_array($activity->description, ['sell_deleted', 'so_deleted'], true)) {
+                    $change = 'deleted';
+                } elseif ($activity->description === 'added') {
+                    $change = 'created';
+                } elseif ($activity->description === 'payment_edited') {
+                    $change = 'payment';
+                }
+                $lines[] = ['product' => '—', 'change' => $change];
+            }
+
+            $view_url = action([\App\Http\Controllers\HomeController::class, 'salesDashboardActivityShow'], [$activity->id]);
+            foreach ($lines as $line) {
+                $product = is_array($line) ? ($line['product'] ?? '—') : (string) $line;
+                $change = is_array($line) ? ($line['change'] ?? 'edited') : 'removed';
+                $dot = $change === 'removed' || $change === 'deleted' ? 'is-warn' : 'is-info';
+                $text = $when.' · '.$kind.' '.$inv.' · '.$product.' · '.$change.' · by '.$editor;
+                $items[] = (object) [
+                    'activity_id' => $activity->id,
+                    'transaction_id' => $activity->subject_id,
+                    'view_url' => $view_url,
+                    'invoice_no' => $inv,
+                    'kind' => $kind,
+                    'product' => $product,
+                    'change' => $change,
+                    'date' => $when,
+                    'when' => $when,
+                    'editor' => $editor,
+                    'text' => $text,
+                    'dot' => $dot,
+                ];
+                if (count($items) >= $limit) {
+                    break 2;
+                }
+            }
+        }
+
+        $insights = [];
+        foreach (array_slice($items, 0, 6) as $row) {
+            $insights[] = [
+                'class' => $row->dot,
+                'html' => '<span>'.e($row->when).'</span> · <b>'.e($row->kind).' '.e($row->invoice_no).'</b> · '.e($row->product).' · '.e($row->change).' · by '.e($row->editor),
+            ];
+        }
+        if (empty($insights)) {
+            $insights[] = [
+                'class' => 'is-info',
+                'html' => 'No invoice or sales-order edits in this window.',
+            ];
+        }
+
+        return ['insights' => $insights, 'items' => $items, 'edited_count' => count($items)];
     }
 
     private function safeCount(callable $fn): int

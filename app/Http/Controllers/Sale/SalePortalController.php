@@ -1683,15 +1683,29 @@ class SalePortalController extends Controller
                     false
                 );
 
-                $this->transactionUtil->createOrUpdateSellLines(
+                $lines_before_edit = $order->sell_lines()->whereNull('parent_sell_line_id')->with('product')->get();
+                $deleted_lines = $this->transactionUtil->createOrUpdateSellLines(
                     $order->fresh(),
                     $products,
                     $data['location_id'],
-                    false,
+                    true,
                     'draft',
                     [],
                     false
                 );
+                $deleted_ids = collect($deleted_lines ?? [])->map(function ($row) {
+                    if (is_array($row)) {
+                        return (int) ($row['id'] ?? 0);
+                    }
+
+                    return (int) (is_object($row) ? ($row->id ?? 0) : $row);
+                })->filter()->values()->all();
+                $removed_items = [];
+                foreach ($lines_before_edit as $old_line) {
+                    if (in_array((int) $old_line->id, $deleted_ids, true)) {
+                        $removed_items[] = $old_line->product->name ?? ('Item #'.$old_line->product_id);
+                    }
+                }
 
                 $fresh = $order->fresh();
                 $fresh->prefer_payment_method = $this->saleAppPreferPayment($data['payment_type'] ?? 'due');
@@ -1699,6 +1713,30 @@ class SalePortalController extends Controller
                     $fresh->payment_status = 'due';
                 }
                 $fresh->save();
+                $this->transactionUtil->activityLog($fresh, 'edited', $order, [
+                    'invoice_no' => $fresh->invoice_no,
+                    'doc_type' => 'sales_order',
+                    'edited_by' => trim((auth()->user()->first_name ?? '').' '.(auth()->user()->last_name ?? '')) ?: (auth()->user()->username ?? 'Staff'),
+                    'edited_by_id' => auth()->id(),
+                    'removed_items' => array_values(array_unique($removed_items)),
+                    'removed_count' => count($removed_items),
+                    'lines' => (function () use ($removed_items, $fresh) {
+                        $edit_lines = [];
+                        foreach (array_values(array_unique($removed_items)) as $pname) {
+                            $edit_lines[] = ['product' => $pname, 'change' => 'removed'];
+                        }
+                        if (empty($edit_lines)) {
+                            foreach ($fresh->sell_lines()->whereNull('parent_sell_line_id')->with('product')->get() as $kl) {
+                                $edit_lines[] = ['product' => $kl->product->name ?? 'Item', 'change' => 'edited'];
+                            }
+                        }
+                        if (empty($edit_lines)) {
+                            $edit_lines[] = ['product' => '—', 'change' => 'edited'];
+                        }
+
+                        return $edit_lines;
+                    })(),
+                ]);
             });
 
             $request->session()->forget($this->saleAppDraftSessionKey());

@@ -327,6 +327,8 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
 
     Route::get('/home', [HomeController::class, 'index'])->name('home');
     Route::get('/sales-dashboard', [HomeController::class, 'salesDashboard'])->name('sales.dashboard');
+    Route::get('/sales-dashboard/activity', [HomeController::class, 'salesDashboardActivity'])->name('sales.dashboard.activity');
+    Route::get('/sales-dashboard/activity/{id}', [HomeController::class, 'salesDashboardActivityShow'])->name('sales.dashboard.activity.show')->where('id', '[0-9]+');
     Route::get('/home/get-totals', [HomeController::class, 'getTotals']);
     Route::get('/home/ops-overview', [HomeController::class, 'getHomeOpsOverview']);
     Route::get('/home/product-stock-alert', [HomeController::class, 'getProductStockAlert']);
