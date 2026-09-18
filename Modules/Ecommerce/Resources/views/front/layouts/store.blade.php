@@ -482,7 +482,7 @@
 </head>
 @php
     $nav_categories = $nav_categories ?? collect();
-    $store = $ecom_settings->store_name ?? 'Japs Wholesale';
+    $store = $ecom_settings->store_name ?? 'Store';
     $routeName = optional(request()->route())->getName();
     $isHome = request()->is('/') || $routeName === 'ecommerce.home';
     $isShop = in_array($routeName, ['ecommerce.shop', 'ecommerce.category', 'ecommerce.product', 'ecommerce.collection'], true);
@@ -497,10 +497,8 @@
     if (! empty($ecom_settings->store_logo)) {
         $storeLogoCandidates[] = $ecom_settings->store_logo;
     }
-    $storeLogoCandidates[] = 'ecommerce/japs-wholesale-logo.svg';
     try {
-        $bizLogo = \App\Business::where('id', $ecom_business_id ?? null)->value('logo')
-            ?: \App\Business::whereNotNull('logo')->where('logo', '!=', '')->orderBy('id')->value('logo');
+        $bizLogo = \App\Business::where('id', $ecom_business_id ?? null)->value('logo');
         if (! empty($bizLogo)) {
             $storeLogoCandidates[] = 'business_logos/'.$bizLogo;
         }
@@ -539,14 +537,30 @@
         ? $ecom_settings->extra
         : (json_decode($ecom_settings->extra ?? '{}', true) ?: []);
     if (! empty($layoutExtra['announcements']) && is_array($layoutExtra['announcements'])) {
-        $layoutAnnouncements = $layoutExtra['announcements'];
-    } else {
+        foreach ($layoutExtra['announcements'] as $ann) {
+            $text = trim((string) ($ann['text'] ?? $ann['t'] ?? ''));
+            if ($text === '') {
+                continue;
+            }
+            $cta = trim((string) ($ann['cta'] ?? $ann['a'] ?? 'Learn more'));
+            if ($cta !== '' && ! str_ends_with($cta, '→') && ! str_ends_with($cta, '->')) {
+                $cta .= ' →';
+            }
+            $layoutAnnouncements[] = [
+                't' => $text,
+                'a' => $cta !== '' ? $cta : 'Learn more →',
+                'href' => $ann['href'] ?? route('ecommerce.shop'),
+            ];
+        }
+    }
+    if ($layoutAnnouncements === []) {
         $layoutAnnouncements = [
-            ['text' => 'Free shipping on qualifying wholesale orders', 'href' => route('ecommerce.shop', ['on_sale' => 1]), 'cta' => 'Shop Clearance'],
-            ['text' => 'New arrivals just added to the catalog', 'href' => route('ecommerce.shop', ['new_only' => 1, 'sort' => 'newest']), 'cta' => 'View New Arrivals'],
-            ['text' => 'Apply for a wholesale account — unlock tiered pricing', 'href' => route('ecommerce.register'), 'cta' => 'Apply Now'],
+            ['t' => 'Summer Clearance — Up to 40% Off Select Items', 'a' => 'Shop Clearance →', 'href' => route('ecommerce.shop', ['on_sale' => 1])],
+            ['t' => 'Now Carrying Lost Mary, RAZ & HQD — Top-Selling Disposables', 'a' => 'Shop Disposables →', 'href' => route('ecommerce.shop')],
+            ['t' => 'New THCA & Delta-8 Arrivals — Premium Quality at Wholesale Prices', 'a' => 'View New Arrivals →', 'href' => route('ecommerce.shop', ['new_only' => 1, 'sort' => 'newest'])],
         ];
     }
+    $announceFirst = $layoutAnnouncements[0];
     $tagline = $ecom_settings->seo_title ?: ($store.' — Wholesale Distribution');
     $contactEmail = $ecom_settings->contact_email ?: 'info@'.(parse_url(config('app.url'), PHP_URL_HOST) ?: 'japspos.test');
     $contactPhone = $ecom_settings->contact_phone ?: '';
@@ -565,23 +579,17 @@
     ];
 @endphp
 
-{{-- PromoBanner (above sticky header, Figma Kr) --}}
-<div class="relative flex items-center justify-center text-white text-sm py-2.5 px-10" style="background:#2E6A49" role="region" aria-label="Promotional announcements" aria-live="polite" id="layoutPromoAnnounce">
-    <button type="button" class="absolute left-2 top-1/2 -translate-y-1/2 h-7 w-7 rounded-full hover:bg-white/10 flex items-center justify-center" data-announce-prev aria-label="Previous">‹</button>
-    <div class="max-w-screen-xl mx-auto text-center px-6">
-        @foreach($layoutAnnouncements as $i => $ann)
-            <p class="announce-slide {{ $i === 0 ? '' : 'hidden' }}" data-announce-slide>
-                <span class="font-medium">{{ $ann['text'] ?? '' }}</span>
-                @if(!empty($ann['href']))
-                    <a href="{{ $ann['href'] }}" class="ml-2 shrink-0 bg-white text-xs font-semibold px-3 py-1 rounded-full inline-block" style="color:#2E6A49">{{ ($ann['cta'] ?? 'Learn more') }} →</a>
-                @endif
-            </p>
-        @endforeach
-    </div>
-    <button type="button" class="absolute right-2 top-1/2 -translate-y-1/2 h-7 w-7 rounded-full hover:bg-white/10 flex items-center justify-center" data-announce-next aria-label="Next">›</button>
-</div>
-
 <header class="sticky top-0 z-50 shadow-sm" role="banner" id="storeHeader">
+    {{-- Promotional announcements (matches Greencloud reference chrome) --}}
+    <div class="text-white" style="background:#2E6A49" role="region" aria-label="Promotional announcements" aria-live="polite" id="layoutPromoAnnounce">
+        <div class="max-w-screen-xl mx-auto px-4 h-[44px] flex items-center justify-center gap-3 text-sm font-semibold">
+            <button type="button" class="opacity-70 hover:opacity-100" data-ann-prev aria-label="Previous announcement">‹</button>
+            <a href="{{ $announceFirst['href'] }}" class="text-white no-underline truncate max-w-[min(100%,42rem)]" data-ann-text>{{ $announceFirst['t'] }}</a>
+            <a href="{{ $announceFirst['href'] }}" class="rounded-full bg-white text-xs font-bold px-3 py-1 shrink-0" style="color:#2E6A49" data-ann-cta>{{ $announceFirst['a'] }}</a>
+            <button type="button" class="opacity-70 hover:opacity-100" data-ann-next aria-label="Next announcement">›</button>
+        </div>
+    </div>
+
     {{-- Utility bar --}}
     <div class="hidden md:block text-xs py-1.5 px-4 text-white" style="background:#1a3d2b">
         <div class="max-w-screen-xl mx-auto flex items-center justify-between">
@@ -621,7 +629,7 @@
                            class="w-full border-2 rounded-lg px-4 py-2.5 pr-11 text-sm outline-none"
                            style="border-color:#e0e0e0"
                            onfocus="this.style.borderColor='#4CAF79'" onblur="this.style.borderColor='#e0e0e0'">
-                    <button type="submit" class="absolute right-3 top-1/2 -translate-y-1/2" style="color:#2E6A49" aria-label="Search">
+                    <button type="submit" class="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer" style="color:#2E6A49" aria-label="Search">
                         <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="5.5"/><path d="M12 12l4 4"/></svg>
                     </button>
                 </div>
@@ -762,19 +770,14 @@
             <div class="lg:col-span-2">
                 <a href="{{ url('/') }}" class="flex items-center gap-3 mb-4" aria-label="{{ $store }} homepage">
                     @if($storeLogoUrl)
-                        <img src="{{ $storeLogoUrl }}" alt="" class="h-11 w-auto max-w-[160px] object-contain brightness-0 invert">
+                        <img src="{{ $storeLogoUrl }}" alt="{{ $store }}" class="h-11 w-auto max-w-[160px] object-contain">
                     @else
-                        <svg width="44" height="44" viewBox="0 0 40 40" fill="none" aria-hidden="true">
-                            <circle cx="20" cy="20" r="20" fill="#4CAF79"/>
-                            <path d="M20 8C20 8 12 16 12 22C12 26.418 15.582 30 20 30C24.418 30 28 26.418 28 22C28 16 20 8 20 8Z" fill="white"/>
-                            <path d="M20 12V28" stroke="#2E6A49" stroke-width="1.5" stroke-linecap="round"/>
-                            <path d="M16 19L20 16L24 19" stroke="#2E6A49" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
+                        <span class="h-11 w-11 rounded-full flex items-center justify-center text-white font-bold shrink-0" style="background:#4CAF79" aria-hidden="true">{{ mb_substr($store,0,1) }}</span>
+                        <div>
+                            <div class="font-display font-bold text-white text-lg tracking-wide">{{ $storeShort ?? $store }}</div>
+                            <div class="text-xs tracking-[0.18em] uppercase" style="color:#4CAF79">Wholesale</div>
+                        </div>
                     @endif
-                    <div>
-                        <div class="font-display font-bold text-white text-lg tracking-wide">{{ $storeShort ?? $store }}</div>
-                        <div class="text-xs tracking-[0.18em] uppercase" style="color:#4CAF79">Wholesale</div>
-                    </div>
                 </a>
                 <p class="text-sm leading-relaxed mb-6 opacity-80 max-w-xs">{{ $footerBlurb }}</p>
 
@@ -1074,18 +1077,26 @@ window.__ECOM_PWA__ = {
     });
 })();
 (function () {
-    const root = document.getElementById('layoutPromoAnnounce');
-    if (!root) return;
-    const slides = [...root.querySelectorAll('[data-announce-slide]')];
-    if (slides.length < 2) return;
+    const msgs = @json($layoutAnnouncements);
     let i = 0;
-    const show = (n) => {
-        slides.forEach((el, idx) => el.classList.toggle('hidden', idx !== n));
-        i = n;
+    const text = document.querySelector('#layoutPromoAnnounce [data-ann-text]');
+    const cta = document.querySelector('#layoutPromoAnnounce [data-ann-cta]');
+    if (!text || !cta || !msgs.length) return;
+    const show = () => {
+        const m = msgs[i];
+        text.textContent = m.t;
+        text.setAttribute('href', m.href || '#');
+        cta.textContent = m.a;
+        cta.setAttribute('href', m.href || '#');
     };
-    root.querySelector('[data-announce-next]')?.addEventListener('click', () => show((i + 1) % slides.length));
-    root.querySelector('[data-announce-prev]')?.addEventListener('click', () => show((i - 1 + slides.length) % slides.length));
-    setInterval(() => show((i + 1) % slides.length), 5500);
+    document.querySelector('#layoutPromoAnnounce [data-ann-next]')?.addEventListener('click', () => {
+        i = (i + 1) % msgs.length;
+        show();
+    });
+    document.querySelector('#layoutPromoAnnounce [data-ann-prev]')?.addEventListener('click', () => {
+        i = (i + msgs.length - 1) % msgs.length;
+        show();
+    });
 })();
 </script>
 </body>

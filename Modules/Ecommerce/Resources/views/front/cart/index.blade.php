@@ -174,7 +174,7 @@
                         @csrf
                         <input type="text" name="coupon_code" value="{{ $cart->coupon_code }}" placeholder="Coupon code"
                                class="flex-1 border border-[#e0e0e0] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#4CAF79]">
-                        <button type="submit" class="px-3 py-2 rounded-lg text-sm font-semibold border border-[#e0e0e0] hover:border-[#4CAF79] hover:text-[#4CAF79] transition-all">Apply</button>
+                        <button type="submit" class="px-3 py-2 rounded-lg text-sm font-semibold border border-[#e0e0e0] hover:border-[#4CAF79] hover:text-[#4CAF79] transition-all cursor-pointer">Apply</button>
                     </form>
 
                     <a href="{{ route('ecommerce.checkout') }}"

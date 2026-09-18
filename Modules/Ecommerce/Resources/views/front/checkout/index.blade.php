@@ -43,26 +43,18 @@
 
             <section class="rounded-2xl bg-white border border-black/5 p-6 space-y-3">
                 <h2 class="font-display text-2xl">Payment</h2>
-                <label class="flex items-start gap-2 text-sm p-3 border rounded-lg">
-                    <input type="radio" name="payment_method" value="ach" checked class="mt-1">
-                    <span><strong>ACH Bank Transfer</strong><br><span class="text-xs text-[#666]">We’ll email transfer instructions after confirmation. Processed on receipt (1–2 business days).</span></span>
-                </label>
-                <label class="flex items-start gap-2 text-sm p-3 border rounded-lg">
-                    <input type="radio" name="payment_method" value="net30" class="mt-1">
-                    <span><strong>Net-30 Terms</strong><br><span class="text-xs text-[#666]">For approved wholesale accounts with positive payment history.</span></span>
-                </label>
                 @if($settings->enable_cod)
-                    <label class="flex items-center gap-2 text-sm p-3 border rounded-lg"><input type="radio" name="payment_method" value="cod"> Invoice / pay later</label>
+                    <label class="flex items-center gap-2 text-sm"><input type="radio" name="payment_method" value="cod" checked> Cash on Delivery</label>
                 @endif
                 @if($settings->enable_stripe)
-                    <label class="flex items-center gap-2 text-sm p-3 border rounded-lg"><input type="radio" name="payment_method" value="stripe"> Card (Stripe)</label>
+                    <label class="flex items-center gap-2 text-sm"><input type="radio" name="payment_method" value="stripe"> Stripe</label>
                 @endif
                 @if($settings->enable_paypal)
-                    <label class="flex items-center gap-2 text-sm p-3 border rounded-lg"><input type="radio" name="payment_method" value="paypal"> PayPal</label>
+                    <label class="flex items-center gap-2 text-sm"><input type="radio" name="payment_method" value="paypal"> PayPal</label>
                 @endif
                 <textarea name="note" rows="2" placeholder="Order note" class="w-full border border-black/10 rounded-xl px-4 py-2.5 text-sm bg-mist/40 focus:bg-white outline-none">{{ old('note') }}</textarea>
                 <input type="hidden" name="coupon_code" value="{{ $cart->coupon_code }}">
-                <button class="w-full rounded-full bg-ink text-white py-3.5 mt-2 text-sm font-semibold hover:bg-accent transition">Place order</button>
+                <button class="w-full rounded-full bg-ink text-white py-3.5 mt-2 text-sm font-semibold hover:bg-accent transition cursor-pointer">Place order</button>
             </section>
         </form>
 
