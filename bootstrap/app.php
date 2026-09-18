@@ -51,15 +51,54 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         // Separate Admin / Sale / Customer sessions on the same device
-        $middleware->web(prepend: [
-            SeparateAppSession::class,
-        ]);
+        $middleware->replace(
+            \Illuminate\Foundation\Http\Middleware\PreventRequestForgery::class,
+            \App\Http\Middleware\VerifyCsrfToken::class
+        );
+
+        $middleware->web(
+            prepend: [
+                SeparateAppSession::class,
+            ],
+            remove: [
+                \Illuminate\Foundation\Http\Middleware\PreventRequestForgery::class,
+                \Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class,
+            ],
+            append: [
+                \App\Http\Middleware\VerifyCsrfToken::class,
+            ],
+            replace: [
+                \Illuminate\Foundation\Http\Middleware\PreventRequestForgery::class => \App\Http\Middleware\VerifyCsrfToken::class,
+                \Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class => \App\Http\Middleware\VerifyCsrfToken::class,
+            ],
+        );
 
         $middleware->preventRequestForgery(except: [
             '/api/ecom/customers',
             '/api/ecom/orders',
             '/webhook/*',
-        ]);
+            'shop',
+            'shop/*',
+            '*/shop',
+            '*/shop/*',
+            'cart',
+            'cart/*',
+            '*/cart',
+            '*/cart/*',
+            'checkout',
+            '*/checkout',
+            'contact',
+            'subscribe',
+            'forgot-password',
+            'reset-password',
+            'reset-password/*',
+            'account/apply',
+            'stock-alert',
+            'brand-request',
+            'wishlist',
+            'review',
+            'quick-order',
+        ], originOnly: false, allowSameSite: true);
 
         $middleware->alias([
             'auth' => Authenticate::class,

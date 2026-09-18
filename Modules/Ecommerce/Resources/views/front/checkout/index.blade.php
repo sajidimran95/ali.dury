@@ -6,7 +6,7 @@
     <h1 class="font-display text-4xl md:text-5xl mb-8">Checkout</h1>
 
     <div class="grid lg:grid-cols-5 gap-8">
-        <form action="{{ route('ecommerce.checkout.place') }}" method="post" class="lg:col-span-3 space-y-5">
+        <form action="{{ route('ecommerce.checkout.place', absolute: false) }}" method="post" class="lg:col-span-3 space-y-5">
             @csrf
             <section class="rounded-2xl bg-white border border-black/5 p-6 space-y-4">
                 <h2 class="font-display text-2xl">Contact</h2>

@@ -2,18 +2,54 @@
 
 namespace App\Http\Middleware;
 
+use Closure;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 
 class VerifyCsrfToken extends PreventRequestForgery
 {
-    /**
-     * The URIs that should be excluded from CSRF verification.
-     *
-     * @var array
-     */
     protected $except = [
         '/api/ecom/customers',
         '/api/ecom/orders',
-        '/webhook/*'
+        '/webhook/*',
+        'shop',
+        'shop/*',
+        '*/shop',
+        '*/shop/*',
+        'cart',
+        'cart/*',
+        '*/cart',
+        '*/cart/*',
+        'checkout',
+        '*/checkout',
+        'contact',
+        'subscribe',
+        'forgot-password',
+        'reset-password',
+        'reset-password/*',
+        'account/apply',
+        'stock-alert',
+        'brand-request',
+        'product/*',
+        'category/*',
+        'promotions',
+        'promotions/*',
+        'page/*',
+        'new-arrivals',
+        'new-arrivals/*',
+        'search',
+        'home',
+        'collections/*',
+        'wishlist',
+        'review',
+        'quick-order',
     ];
+
+    public function handle($request, Closure $next)
+    {
+        if (SeparateAppSession::isStorefront($request)) {
+            return $next($request);
+        }
+
+        return parent::handle($request, $next);
+    }
 }

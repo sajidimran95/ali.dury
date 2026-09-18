@@ -43,5 +43,15 @@
 @endif
 @yield('content')
 @stack('scripts')
+<script>
+document.querySelectorAll('form[method="post"], form[method="POST"]').forEach(function (form) {
+    form.addEventListener('submit', function () {
+        var meta = document.querySelector('meta[name="csrf-token"]');
+        if (!meta) return;
+        var input = form.querySelector('input[name="_token"]');
+        if (input) input.value = meta.getAttribute('content');
+    });
+});
+</script>
 </body>
 </html>

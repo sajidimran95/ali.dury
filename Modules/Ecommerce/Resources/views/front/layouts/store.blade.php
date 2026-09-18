@@ -896,6 +896,15 @@ document.querySelectorAll('.gc-menubar .mega').forEach(function (item) {
     item.addEventListener('mouseleave', function () { item.classList.remove('is-open'); });
 });
 
+document.querySelectorAll('form[method="post"], form[method="POST"]').forEach(function (form) {
+    form.addEventListener('submit', function () {
+        var meta = document.querySelector('meta[name="csrf-token"]');
+        if (!meta) return;
+        var input = form.querySelector('input[name="_token"]');
+        if (input) input.value = meta.getAttribute('content');
+    });
+});
+
 document.querySelectorAll('.product-card-form').forEach(form => {
     const input = form.querySelector('.pc-qty-input');
     const minus = form.querySelector('.pc-qty-minus');

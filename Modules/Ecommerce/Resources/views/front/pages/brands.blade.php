@@ -18,7 +18,7 @@
     </div>
     <div class="max-w-lg bg-white border border-[#e0e0e0] rounded-2xl p-6">
         <h2 class="font-display text-xl font-bold mb-4">Request a Brand</h2>
-        <form method="post" action="{{ route('ecommerce.brand.request') }}" class="space-y-3">
+        <form method="post" action="{{ route('ecommerce.brand.request', absolute: false) }}" class="space-y-3">
             @csrf
             <input name="name" required placeholder="Your name" class="w-full border border-[#e0e0e0] rounded-lg px-3 py-2.5 text-sm">
             <input type="email" name="email" required placeholder="Business email" class="w-full border border-[#e0e0e0] rounded-lg px-3 py-2.5 text-sm">
