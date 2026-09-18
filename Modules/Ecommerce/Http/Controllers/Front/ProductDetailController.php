@@ -16,7 +16,9 @@ class ProductDetailController extends Controller
         $business_id = $request->attributes->get('ecommerce_business_id');
         $settings = $request->attributes->get('ecommerce_settings');
 
-        $product = Product::storefrontQuery((int) $business_id)
+        $product = Product::where('business_id', $business_id)
+            ->active()
+            ->forEcommerce()
             ->where(function ($q) use ($slug) {
                 $q->where('ecom_slug', $slug)->orWhere('id', $slug);
             })
@@ -39,12 +41,39 @@ class ProductDetailController extends Controller
             $stock = 999;
         }
 
-        $related = Product::storefrontQuery((int) $business_id)
+        $related = Product::where('business_id', $business_id)
+            ->active()
+            ->forEcommerce()
             ->where('id', '!=', $product->id)
-            ->where('category_id', $product->category_id)
+            ->where(function ($q) use ($product) {
+                $q->where('category_id', $product->category_id);
+                if ($product->sub_category_id) {
+                    $q->orWhere('sub_category_id', $product->sub_category_id)
+                        ->orWhere('category_id', $product->sub_category_id);
+                }
+            })
             ->with(['variations', 'category', 'brand', 'unit'])
             ->limit(4)
             ->get();
+        if ($related->isEmpty() && $product->brand_id) {
+            $related = Product::where('business_id', $business_id)
+                ->active()
+                ->forEcommerce()
+                ->where('id', '!=', $product->id)
+                ->where('brand_id', $product->brand_id)
+                ->with(['variations', 'category', 'brand', 'unit'])
+                ->limit(4)
+                ->get();
+        }
+        if ($related->isEmpty()) {
+            $related = Product::where('business_id', $business_id)
+                ->active()
+                ->forEcommerce()
+                ->where('id', '!=', $product->id)
+                ->with(['variations', 'category', 'brand', 'unit'])
+                ->limit(4)
+                ->get();
+        }
 
         $reviews = EcomReview::where('product_id', $product->id)->where('status', 'approved')->latest()->get();
         $rating_avg = $reviews->count() ? round((float) $reviews->avg('rating'), 1) : 0.0;
@@ -54,15 +83,30 @@ class ProductDetailController extends Controller
         $cart_totals = $cartService->totals($cart);
         $cart_product_ids = $cart->items->pluck('product_id')->unique()->values()->all();
 
-        $recent = session()->get('ecom_recently_viewed', []);
-        array_unshift($recent, $product->id);
-        session()->put('ecom_recently_viewed', array_values(array_unique(array_slice($recent, 0, 8))));
+        $recent = array_values(array_filter(array_map('intval', session()->get('ecom_recently_viewed', []))));
+        array_unshift($recent, (int) $product->id);
+        $recent = array_values(array_unique(array_slice($recent, 0, 12)));
+        session()->put('ecom_recently_viewed', $recent);
 
-        $recently_viewed = Product::storefrontQuery((int) $business_id)
-            ->whereIn('id', session('ecom_recently_viewed', []))
-            ->where('id', '!=', $product->id)
-            ->with(['variations', 'category', 'brand', 'unit'])
-            ->get();
+        $otherIds = array_values(array_filter($recent, fn ($id) => $id !== (int) $product->id));
+        $recently_viewed = collect();
+        if ($otherIds) {
+            $recently_viewed = Product::storefrontQuery((int) $business_id)
+                ->whereIn('id', $otherIds)
+                ->with(['variations', 'category', 'brand', 'unit'])
+                ->limit(4)
+                ->get()
+                ->sortBy(fn ($p) => array_search((int) $p->id, $otherIds, true))
+                ->values();
+        }
+        if ($recently_viewed->isEmpty()) {
+            $recently_viewed = Product::storefrontQuery((int) $business_id)
+                ->where('id', '!=', $product->id)
+                ->with(['variations', 'category', 'brand', 'unit'])
+                ->orderByDesc('id')
+                ->limit(4)
+                ->get();
+        }
 
         $brand_image = null;
         if ($product->brand_id) {

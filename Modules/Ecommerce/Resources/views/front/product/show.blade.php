@@ -60,14 +60,14 @@
                 @endif
             </div>
             <div class="gc-price-box text-sm mb-5">
-                <p class="text-black/60">Min. order: 1 display · Pack: {{ $product->ecom_short_description ?: '1 display' }}</p>
+                <p class="text-black/60">Min. order: 1 display · Pack: {{ strip_tags($product->ecom_short_description ?: '1 display') }}</p>
             </div>
 
             <p class="text-sm mb-4 {{ ($stock > 0 || !$product->enable_stock) ? 'text-emerald-700' : 'text-rose-600' }}">
                 {{ ($stock > 0 || !$product->enable_stock) ? '● In stock — ready to ship' : 'Out of stock' }}
             </p>
 
-            <p class="text-black/65 leading-relaxed mb-6">{{ $product->ecom_short_description }}</p>
+            <p class="text-black/65 leading-relaxed mb-6">{{ strip_tags((string) $product->ecom_short_description) }}</p>
 
             @if($variation && ($stock > 0 || !$product->enable_stock))
             <div class="mb-2">
@@ -79,17 +79,23 @@
                 <input type="hidden" name="product_id" value="{{ $product->id }}">
                 <input type="hidden" name="variation_id" value="{{ $variation->id }}">
 
-                <div class="gc-qty">
-                    <button type="button" id="qtyMinus" aria-label="Decrease quantity">−</button>
+                <div class="inline-flex items-center gap-2 rounded-full bg-[#f0f0f0] px-1.5 py-1.5">
+                    <button type="button" id="qtyMinus"
+                            class="h-9 w-9 rounded-full bg-white border border-[#ddd] text-ink text-lg leading-none flex items-center justify-center hover:bg-mist"
+                            aria-label="Decrease quantity">−</button>
                     <input type="number" name="quantity" id="qtyInput" value="1" min="1" step="1"
                            class="w-10 bg-transparent border-0 text-center text-sm font-medium tabular-nums outline-none appearance-none [-moz-appearance:textfield]">
-                    <button type="button" id="qtyPlus" aria-label="Increase quantity">+</button>
+                    <button type="button" id="qtyPlus"
+                            class="h-9 w-9 rounded-full bg-white border border-[#ddd] text-ink text-lg leading-none flex items-center justify-center hover:bg-mist"
+                            aria-label="Increase quantity">+</button>
                 </div>
 
-                <button type="submit" class="ecom-add-cart rounded-lg bg-[#3d9b6d] text-white px-8 py-3 text-sm font-bold hover:bg-[#2d7a54]">
+                <button type="submit" class="rounded-lg bg-[#3d9b6d] text-white px-8 py-3 text-sm font-semibold hover:bg-[#2d7a54] transition">
                     Add to Cart
                 </button>
-                <button type="submit" name="buy_now" value="1" class="btn-brand-dark">Buy Now</button>
+                <button type="submit" name="buy_now" value="1" class="rounded-lg bg-[#1f6b45] text-white px-6 py-3 text-sm font-semibold hover:bg-[#143d2c] transition">
+                    Buy Now
+                </button>
             </form>
             @endif
 
@@ -102,26 +108,32 @@
             </form>
             @endauth
 
-            <div class="rounded-xl bg-white border border-line p-5 text-sm text-black/70 leading-relaxed whitespace-pre-line">
-                {!! nl2br(e($product->ecom_long_description ?: $product->product_description)) !!}
+            @php
+                $detailHtml = $product->ecom_long_description ?: $product->product_description;
+                $detailIsHtml = is_string($detailHtml) && preg_match('/<\s*\w+/', $detailHtml);
+            @endphp
+            <div class="rounded-xl bg-white border border-line p-5 text-sm text-black/70 leading-relaxed {{ $detailIsHtml ? 'ecom-html' : 'whitespace-pre-line' }}">
+                @if($detailIsHtml)
+                    {!! $detailHtml !!}
+                @else
+                    {!! nl2br(e($detailHtml)) !!}
+                @endif
             </div>
         </div>
     </div>
 </div>
 
-@if($related->count())
+@if(($related ?? collect())->count())
 <section class="max-w-[1400px] mx-auto px-4 pb-10">
     <h2 class="text-2xl font-extrabold mb-5">You may also like</h2>
     @include('ecommerce::front.partials.product_grid', ['products' => $related])
 </section>
 @endif
 
-@if($recently_viewed->count())
 <section class="max-w-[1400px] mx-auto px-4 pb-14">
     <h2 class="text-2xl font-extrabold mb-5">Recently viewed</h2>
-    @include('ecommerce::front.partials.product_grid', ['products' => $recently_viewed])
+    @include('ecommerce::front.partials.product_grid', ['products' => $recently_viewed ?? collect()])
 </section>
-@endif
 
 @push('head')
 <style>
