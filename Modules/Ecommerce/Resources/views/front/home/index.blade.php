@@ -94,8 +94,8 @@
                 <button type="button" class="hero-dot rounded-full transition-all duration-300 {{ $i === 0 ? 'w-6 h-2.5 bg-white' : 'w-2.5 h-2.5 bg-white/50' }}" data-hero-dot aria-label="Slide {{ $i + 1 }}"></button>
             @endforeach
         </div>
-        <button type="button" class="absolute left-3 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-black/40 text-white" data-hero-prev aria-label="Previous slide cursor-pointer">‹</button>
-        <button type="button" class="absolute right-3 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-black/40 text-white" data-hero-next aria-label="Next slide cursor-pointer">›</button>
+        <button type="button" class="absolute left-3 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-black/40 text-white cursor-pointer" data-hero-prev aria-label="Previous slide">‹</button>
+        <button type="button" class="absolute right-3 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-black/40 text-white cursor-pointer" data-hero-next aria-label="Next slide">›</button>
     @endif
 </section>
 
