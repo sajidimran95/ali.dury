@@ -482,7 +482,7 @@
 </head>
 @php
     $nav_categories = $nav_categories ?? collect();
-    $store = $ecom_settings->store_name ?? 'Store';
+    $store = $ecom_settings->store_name ?? 'Japs Wholesale';
     $routeName = optional(request()->route())->getName();
     $isHome = request()->is('/') || $routeName === 'ecommerce.home';
     $isShop = in_array($routeName, ['ecommerce.shop', 'ecommerce.category', 'ecommerce.product', 'ecommerce.collection'], true);
