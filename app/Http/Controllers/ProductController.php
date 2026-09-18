@@ -9,6 +9,7 @@ use App\Category;
 use App\Exports\ProductsExport;
 use App\Media;
 use App\Product;
+use App\ProductBarcode;
 use App\ProductVariation;
 use App\PurchaseLine;
 use App\SellingPriceGroup;
@@ -457,8 +458,22 @@ class ProductController extends Controller
         $enable_expiry = request()->session()->get('business.enable_product_expiry');
         $enable_lot = request()->session()->get('business.enable_lot_number');
 
+        $product_barcodes = collect();
+        $packaging_helper = [];
+        if (! empty($duplicate_product)) {
+            $product_barcodes = ProductBarcode::where('product_id', $duplicate_product->id)
+                ->orderBy('id')
+                ->get()
+                ->map(function ($row) {
+                    $row->id = null; // create fresh rows on save
+
+                    return $row;
+                });
+            $packaging_helper = $this->getPackagingHelperForProduct($business_id, $duplicate_product);
+        }
+
         return view('product.create')
-            ->with(compact('categories', 'brands', 'units', 'taxes', 'barcode_types', 'default_profit_percent', 'tax_attributes', 'barcode_default', 'business_locations', 'duplicate_product', 'sub_categories', 'rack_details', 'selling_price_group_count', 'module_form_parts', 'product_types', 'common_settings', 'warranties', 'pos_module_data', 'enable_expiry', 'enable_lot'));
+            ->with(compact('categories', 'brands', 'units', 'taxes', 'barcode_types', 'default_profit_percent', 'tax_attributes', 'barcode_default', 'business_locations', 'duplicate_product', 'sub_categories', 'rack_details', 'selling_price_group_count', 'module_form_parts', 'product_types', 'common_settings', 'warranties', 'pos_module_data', 'enable_expiry', 'enable_lot', 'product_barcodes', 'packaging_helper'));
     }
 
     private function product_types()
@@ -591,6 +606,8 @@ class ProductController extends Controller
             }
 
             Media::uploadMedia($product->business_id, $product, $request, 'product_brochure', true);
+
+            $this->syncProductBarcodesFromRequest($request, $product, $business_id);
 
             $has_inline_opening_stock = false;
             if (
@@ -735,9 +752,10 @@ class ProductController extends Controller
         $alert_quantity = ! is_null($product->alert_quantity) ? $this->productUtil->num_f($product->alert_quantity, false, null, true) : null;
 
         $packaging_helper = $this->getPackagingHelperForProduct($business_id, $product);
+        $product_barcodes = ProductBarcode::where('product_id', $product->id)->orderBy('id')->get();
 
         return view('product.edit')
-                ->with(compact('categories', 'brands', 'units', 'sub_units', 'taxes', 'tax_attributes', 'barcode_types', 'product', 'sub_categories', 'default_profit_percent', 'business_locations', 'rack_details', 'selling_price_group_count', 'module_form_parts', 'product_types', 'common_settings', 'warranties', 'pos_module_data', 'alert_quantity', 'packaging_helper'));
+                ->with(compact('categories', 'brands', 'units', 'sub_units', 'taxes', 'tax_attributes', 'barcode_types', 'product', 'sub_categories', 'default_profit_percent', 'business_locations', 'rack_details', 'selling_price_group_count', 'module_form_parts', 'product_types', 'common_settings', 'warranties', 'pos_module_data', 'alert_quantity', 'packaging_helper', 'product_barcodes'));
     }
 
     /**
@@ -965,6 +983,8 @@ class ProductController extends Controller
             }
 
             Media::uploadMedia($product->business_id, $product, $request, 'product_brochure', true);
+
+            $this->syncProductBarcodesFromRequest($request, $product, $business_id);
 
             DB::commit();
             $output = ['success' => 1,
@@ -1375,6 +1395,9 @@ class ProductController extends Controller
                 ? $this->barcodeScanCandidates($search_term)
                 : ($search_term !== '' ? [$search_term] : []);
 
+            $alt_variation_ids = $this->variationIdsForBarcodeTerms($business_id, $scan_terms);
+            $matched_barcode = $this->findProductBarcodeMatch($business_id, $scan_terms);
+
             // Exact SKU/name first — Scan mode only.
             // Search mode must use partial LIKE so "geek" returns all Geek* products,
             // not only an exact SKU match like "GEEK".
@@ -1393,12 +1416,13 @@ class ProductController extends Controller
                     );
 
                     if ($result->count() > 1) {
-                        $exactOnly = $result->filter(function ($item) use ($term) {
+                        $exactOnly = $result->filter(function ($item) use ($term, $alt_variation_ids) {
                             $sub = html_entity_decode((string) ($item->sub_sku ?? ''), ENT_QUOTES, 'UTF-8');
                             $sku = html_entity_decode((string) ($item->sku ?? ''), ENT_QUOTES, 'UTF-8');
 
                             return strcasecmp(trim($sub), $term) === 0
-                                || ($sku !== '' && strcasecmp(trim($sku), $term) === 0);
+                                || ($sku !== '' && strcasecmp(trim($sku), $term) === 0)
+                                || in_array((int) $item->variation_id, $alt_variation_ids, true);
                         })->values();
 
                         if ($exactOnly->isNotEmpty()) {
@@ -1428,12 +1452,13 @@ class ProductController extends Controller
                     );
 
                     if ($is_scan_mode) {
-                        $result = $likeResult->filter(function ($item) use ($term) {
+                        $result = $likeResult->filter(function ($item) use ($term, $alt_variation_ids) {
                             $sub = html_entity_decode((string) ($item->sub_sku ?? ''), ENT_QUOTES, 'UTF-8');
                             $sku = html_entity_decode((string) ($item->sku ?? ''), ENT_QUOTES, 'UTF-8');
 
                             return strcasecmp(trim($sub), $term) === 0
-                                || ($sku !== '' && strcasecmp(trim($sku), $term) === 0);
+                                || ($sku !== '' && strcasecmp(trim($sku), $term) === 0)
+                                || in_array((int) $item->variation_id, $alt_variation_ids, true);
                         })->values();
                     } else {
                         $result = $likeResult;
@@ -1451,16 +1476,35 @@ class ProductController extends Controller
             if (count($result) == 1 && ! empty($location_id) && $auto_add_single) {
                 
                 $variation_id = $result[0]->variation_id;
+
+                if (! empty($matched_barcode) && (int) $matched_barcode->variation_id === (int) $variation_id
+                    && $matched_barcode->type === 'pack' && ! empty($matched_barcode->unit_id)) {
+                    request()->merge(['sub_unit_id' => $matched_barcode->unit_id]);
+                }
                         
                 $row_data = $this->productUtil->getPosProductRow($variation_id, $location_id);
                 
                 // Add variation_id to row_data for duplicate checking
                 $row_data['variation_id'] = $variation_id;
+                if (! empty($matched_barcode) && $matched_barcode->type === 'pack' && ! empty($matched_barcode->unit_id)) {
+                    $row_data['matched_sub_unit_id'] = $matched_barcode->unit_id;
+                }
                 
                 return response()->json([
                     'auto_add' => true,
                     'row_data' => $row_data
                 ], 200, $noStore);
+            }
+
+            // Attach pack unit hint for client-side single-product add
+            if ($result->isNotEmpty() && ! empty($matched_barcode) && $matched_barcode->type === 'pack') {
+                $result = $result->map(function ($item) use ($matched_barcode) {
+                    if ((int) $item->variation_id === (int) $matched_barcode->variation_id) {
+                        $item->matched_sub_unit_id = $matched_barcode->unit_id;
+                    }
+
+                    return $item;
+                });
             }
 
             // POS auto_add requests always get a stable envelope
@@ -1603,6 +1647,17 @@ class ProductController extends Controller
             }
             $count = $query2->count();
         }
+
+        // Also block barcodes already mapped as additional barcodes on other products
+        if ($count == 0) {
+            $altQuery = ProductBarcode::where('business_id', $business_id)
+                ->where('barcode', $sku);
+            if (! empty($product_id)) {
+                $altQuery->where('product_id', '!=', $product_id);
+            }
+            $count = $altQuery->count();
+        }
+
         if ($count == 0) {
             echo 'true';
             exit;
@@ -2700,6 +2755,181 @@ class ProductController extends Controller
             'factor' => $packaging->base_unit_multiplier,
             'unit_id' => $packaging->id,
         ];
+    }
+
+    /**
+     * Save additional barcodes / SKUs from the product form.
+     */
+    protected function syncProductBarcodesFromRequest(Request $request, Product $product, $business_id): void
+    {
+        $rows = $request->input('product_barcodes', []);
+        if (! is_array($rows)) {
+            $rows = [];
+        }
+
+        $default_variation_id = Variation::where('product_id', $product->id)
+            ->whereNull('deleted_at')
+            ->orderBy('id')
+            ->value('id');
+
+        $pack_unit_id = $request->input('packaging_unit_id');
+        if (empty($pack_unit_id) && ! empty($product->sub_unit_ids) && is_array($product->sub_unit_ids)) {
+            $pack = Unit::where('business_id', $business_id)
+                ->whereIn('id', $product->sub_unit_ids)
+                ->whereNotNull('base_unit_id')
+                ->where('base_unit_id', $product->unit_id)
+                ->orderBy('id')
+                ->first();
+            $pack_unit_id = $pack->id ?? null;
+        }
+
+        $keep_ids = [];
+        $seen = [];
+
+        foreach ($rows as $row) {
+            if (! is_array($row)) {
+                continue;
+            }
+            $code = trim((string) ($row['barcode'] ?? ''));
+            if ($code === '') {
+                continue;
+            }
+
+            $code_key = mb_strtolower($code);
+            if (isset($seen[$code_key])) {
+                continue;
+            }
+            $seen[$code_key] = true;
+
+            // Don't duplicate the primary SKU as an alternate row
+            if (strcasecmp($code, trim((string) $product->sku)) === 0) {
+                continue;
+            }
+
+            $type = (($row['type'] ?? 'alternate') === 'pack') ? 'pack' : 'alternate';
+            $label = trim((string) ($row['label'] ?? ''));
+            $unit_id = null;
+
+            if ($type === 'pack') {
+                $unit_id = ! empty($row['unit_id']) ? $row['unit_id'] : $pack_unit_id;
+                if (empty($unit_id)) {
+                    $type = 'alternate';
+                    $unit_id = null;
+                }
+            }
+
+            $variation_id = ! empty($row['variation_id']) ? $row['variation_id'] : $default_variation_id;
+            if (empty($variation_id)) {
+                continue;
+            }
+
+            // Unique across business (other products' primary SKU / sub_sku / alt barcodes)
+            $taken = Product::where('business_id', $business_id)
+                ->where('sku', $code)
+                ->where('id', '!=', $product->id)
+                ->exists();
+
+            if (! $taken) {
+                $taken = Variation::where('sub_sku', $code)
+                    ->join('products', 'variations.product_id', '=', 'products.id')
+                    ->where('products.business_id', $business_id)
+                    ->where('products.id', '!=', $product->id)
+                    ->exists();
+            }
+
+            if (! $taken) {
+                $taken = ProductBarcode::where('business_id', $business_id)
+                    ->where('barcode', $code)
+                    ->where('product_id', '!=', $product->id)
+                    ->exists();
+            }
+
+            if ($taken) {
+                throw new \Exception(__('lang_v1.barcode_already_used', ['code' => $code]));
+            }
+
+            $payload = [
+                'business_id' => $business_id,
+                'product_id' => $product->id,
+                'variation_id' => $variation_id,
+                'barcode' => $code,
+                'type' => $type,
+                'unit_id' => $unit_id,
+                'label' => $label !== '' ? $label : null,
+            ];
+
+            $existing_id = $row['id'] ?? null;
+            if (! empty($existing_id)) {
+                $existing = ProductBarcode::where('business_id', $business_id)
+                    ->where('product_id', $product->id)
+                    ->where('id', $existing_id)
+                    ->first();
+                if (! empty($existing)) {
+                    $existing->fill($payload);
+                    $existing->save();
+                    $keep_ids[] = $existing->id;
+                    continue;
+                }
+            }
+
+            $created = ProductBarcode::create($payload);
+            $keep_ids[] = $created->id;
+        }
+
+        $delete_query = ProductBarcode::where('product_id', $product->id);
+        if (! empty($keep_ids)) {
+            $delete_query->whereNotIn('id', $keep_ids);
+        }
+        $delete_query->delete();
+    }
+
+    /**
+     * @param  array<int, string>  $terms
+     * @return array<int, int>
+     */
+    private function variationIdsForBarcodeTerms($business_id, array $terms): array
+    {
+        $terms = array_values(array_filter(array_map('strval', $terms), function ($t) {
+            return $t !== '';
+        }));
+        if (empty($terms)) {
+            return [];
+        }
+
+        return ProductBarcode::where('business_id', $business_id)
+            ->whereIn('barcode', $terms)
+            ->whereNotNull('variation_id')
+            ->pluck('variation_id')
+            ->map(function ($id) {
+                return (int) $id;
+            })
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    /**
+     * @param  array<int, string>  $terms
+     */
+    private function findProductBarcodeMatch($business_id, array $terms): ?ProductBarcode
+    {
+        $terms = array_values(array_filter(array_map('strval', $terms), function ($t) {
+            return $t !== '';
+        }));
+        if (empty($terms)) {
+            return null;
+        }
+
+        foreach ($terms as $term) {
+            $match = ProductBarcode::where('business_id', $business_id)
+                ->where('barcode', $term)
+                ->first();
+            if (! empty($match)) {
+                return $match;
+            }
+        }
+
+        return null;
     }
 
     /**

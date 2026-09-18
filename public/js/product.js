@@ -1068,3 +1068,90 @@ $(document).on('change', '.variation-file-input', function() {
         });
     });
 })();
+
+// --- Additional barcodes / SKUs (Add/Edit Product) ---
+(function () {
+    function syncPackUnitIds() {
+        var packId = $('#packaging_unit_id').val() || '';
+        $('#product_barcodes_list .product-barcode-row').each(function () {
+            var $row = $(this);
+            if ($row.find('.product-barcode-type').val() === 'pack') {
+                $row.find('.product-barcode-unit-id').val(packId);
+            }
+        });
+    }
+
+    function togglePackFields($row) {
+        var isPack = $row.find('.product-barcode-type').val() === 'pack';
+        $row.find('.product-barcode-pack-unit').toggleClass('hide', !isPack);
+        if (isPack) {
+            syncPackUnitIds();
+        } else {
+            $row.find('.product-barcode-unit-id').val('');
+        }
+    }
+
+    function updateEmptyState() {
+        var hasRows = $('#product_barcodes_list .product-barcode-row').length > 0;
+        $('#product_barcodes_empty').toggleClass('hide', hasRows);
+    }
+
+    function nextIndex() {
+        var max = -1;
+        $('#product_barcodes_list .product-barcode-row').each(function () {
+            var i = parseInt($(this).attr('data-index'), 10);
+            if (!isNaN(i) && i > max) max = i;
+        });
+        return max + 1;
+    }
+
+    function addBarcodeRow() {
+        var tplEl = document.getElementById('product_barcode_row_template');
+        var tpl = '';
+        if (tplEl && tplEl.content) {
+            var tmp = document.createElement('div');
+            tmp.appendChild(tplEl.content.cloneNode(true));
+            tpl = tmp.innerHTML;
+        }
+        if (!tpl) {
+            tpl = $('#product_barcode_row_template_html').html() || '';
+        }
+        if (!tpl) return;
+        var idx = nextIndex();
+        var html = tpl.split('__INDEX__').join(String(idx));
+        var $row = $(html);
+        $row.attr('data-index', idx);
+        $('#product_barcodes_list').append($row);
+        togglePackFields($row);
+        updateEmptyState();
+        $row.find('.product-barcode-input').focus();
+    }
+
+    $(document).ready(function () {
+        if (!$('#product_additional_barcodes').length) return;
+
+        $('#btn_add_product_barcode').on('click', function (e) {
+            e.preventDefault();
+            addBarcodeRow();
+        });
+
+        $(document).on('click', '.btn-remove-product-barcode', function (e) {
+            e.preventDefault();
+            $(this).closest('.product-barcode-row').remove();
+            updateEmptyState();
+        });
+
+        $(document).on('change', '.product-barcode-type', function () {
+            togglePackFields($(this).closest('.product-barcode-row'));
+        });
+
+        $(document).on('change', '#enable_packaging_unit, #packaging_unit_id, #packaging_unit_name, #packaging_conversion_factor', function () {
+            syncPackUnitIds();
+        });
+
+        $('#product_barcodes_list .product-barcode-row').each(function () {
+            togglePackFields($(this));
+        });
+        updateEmptyState();
+    });
+})();

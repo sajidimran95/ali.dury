@@ -1425,14 +1425,14 @@ $(document).ready(function() {
             }
         }
 
-        function posAddVariationQty(variation_id, qty) {
+        function posAddVariationQty(variation_id, qty, sub_unit_id) {
             qty = parseInt(qty, 10) || 1;
             if (qty < 1) {
                 qty = 1;
             }
             // Prefer qty-aware row addition
             if (typeof pos_product_row === 'function') {
-                pos_product_row(variation_id, null, null, qty);
+                pos_product_row(variation_id, null, null, qty, sub_unit_id || null);
             }
         }
 
@@ -1501,7 +1501,7 @@ $(document).ready(function() {
                                         $qty.change();
                                         pos_bring_product_row_to_top($row);
                                     } else {
-                                        posAddVariationQty(data.row_data.variation_id, extra);
+                                        posAddVariationQty(data.row_data.variation_id, extra, data.row_data.matched_sub_unit_id || null);
                                     }
                                 }
                             } else {
@@ -1511,7 +1511,7 @@ $(document).ready(function() {
                             // No auto_add envelope — handle product list
                             var products = (data && data.products) ? data.products : ($.isArray(data) ? data : []);
                             if (products.length === 1 && products[0].variation_id) {
-                                posAddVariationQty(products[0].variation_id, times);
+                                posAddVariationQty(products[0].variation_id, times, products[0].matched_sub_unit_id || null);
                             } else if (products.length === 0) {
                                 if (silentIfMiss) {
                                     $inp.val(parsed.code);
@@ -1538,7 +1538,7 @@ $(document).ready(function() {
                                     }
                                 }
                                 if (exact && exact.variation_id) {
-                                    posAddVariationQty(exact.variation_id, times);
+                                    posAddVariationQty(exact.variation_id, times, exact.matched_sub_unit_id || null);
                                 } else if (posIsScanMode()) {
                                     if (silentIfMiss) {
                                         $inp.val(parsed.code);
@@ -4931,7 +4931,7 @@ function pos_add_product_row_from_data(result) {
     }
 }
 
-function pos_product_row(variation_id = null, purchase_line_id = null, weighing_scale_barcode = null, quantity = 1) {
+function pos_product_row(variation_id = null, purchase_line_id = null, weighing_scale_barcode = null, quantity = 1, sub_unit_id = null) {
 
     //Get item addition method
     var item_addtn_method = 0;
@@ -4960,11 +4960,16 @@ function pos_product_row(variation_id = null, purchase_line_id = null, weighing_
                 if ($(this).find('input.modifiers_exist').length > 0) {
                     modifiers_exist = true;
                 }
+                var row_sub_unit = $(this).find('select.sub_unit').val()
+                    || $(this).find('input[name*="[sub_unit_id]"]').val()
+                    || null;
+                var unit_matches = !sub_unit_id || String(row_sub_unit || '') === String(sub_unit_id);
 
                 if (
                     row_v_id == variation_id &&
                     enable_sr_no !== '1' &&
                     !modifiers_exist &&
+                    unit_matches &&
                     !is_added
                 ) {
                     add_via_ajax = false;
@@ -5061,7 +5066,8 @@ function pos_product_row(variation_id = null, purchase_line_id = null, weighing_
                 quantity: quantity,
                 is_sales_order: is_sales_order,
                 disable_qty_alert: disable_qty_alert,
-                is_draft: is_draft
+                is_draft: is_draft,
+                sub_unit_id: sub_unit_id || null
             },
             dataType: 'json',
             success: function(result) {

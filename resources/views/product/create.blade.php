@@ -75,6 +75,7 @@
 
         <div class="clearfix"></div>
         @include('product.partials.packaging_unit_helper', ['packaging_helper' => $packaging_helper ?? []])
+        @include('product.partials.additional_barcodes', ['product_barcodes' => $product_barcodes ?? []])
 
         <div class="col-sm-4 @if(!session('business.enable_brand')) hide @endif">
             <div class="form-group">

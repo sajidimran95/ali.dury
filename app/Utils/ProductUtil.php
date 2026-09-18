@@ -1756,6 +1756,16 @@ class ProductUtil extends Util
                         $query->orWhere('sub_sku', 'like', '%'.$search_term.'%');
                     }
 
+                    if (in_array('sku', $search_fields) || in_array('sub_sku', $search_fields)) {
+                        $query->orWhereExists(function ($q) use ($search_term, $business_id) {
+                            $q->select(DB::raw(1))
+                                ->from('product_barcodes')
+                                ->whereColumn('product_barcodes.variation_id', 'variations.id')
+                                ->where('product_barcodes.business_id', $business_id)
+                                ->where('product_barcodes.barcode', 'like', '%'.$search_term.'%');
+                        });
+                    }
+
                     if (in_array('lot', $search_fields)) {
                         $query->orWhere('pl.lot_number', 'like', '%'.$search_term.'%');
                     }
@@ -1799,6 +1809,27 @@ class ProductUtil extends Util
                             $query->orWhere('variations.sub_sku', $search_term);
                         } else {
                             $query->where('variations.sub_sku', $search_term);
+                            $has_condition = true;
+                        }
+                    }
+
+                    if (in_array('sku', $search_fields) || in_array('sub_sku', $search_fields)) {
+                        if ($has_condition) {
+                            $query->orWhereExists(function ($q) use ($search_term, $business_id) {
+                                $q->select(DB::raw(1))
+                                    ->from('product_barcodes')
+                                    ->whereColumn('product_barcodes.variation_id', 'variations.id')
+                                    ->where('product_barcodes.business_id', $business_id)
+                                    ->where('product_barcodes.barcode', $search_term);
+                            });
+                        } else {
+                            $query->whereExists(function ($q) use ($search_term, $business_id) {
+                                $q->select(DB::raw(1))
+                                    ->from('product_barcodes')
+                                    ->whereColumn('product_barcodes.variation_id', 'variations.id')
+                                    ->where('product_barcodes.business_id', $business_id)
+                                    ->where('product_barcodes.barcode', $search_term);
+                            });
                             $has_condition = true;
                         }
                     }
@@ -2696,6 +2727,12 @@ class ProductUtil extends Util
         $product->formatted_qty_available = $this->num_f($product->qty_available, false, null, true);
 
         $sub_units = $this->getSubUnits($business_id, $product->unit_id, false, $product->product_id);
+
+        // Prefer unit from pack barcode scan (or explicit request)
+        $request_sub_unit_id = request()->get('sub_unit_id', null);
+        if (! empty($request_sub_unit_id) && isset($sub_units[$request_sub_unit_id])) {
+            $product->sub_unit_id = $request_sub_unit_id;
+        }
 
         //Get customer group and change the price accordingly
         $customer_id = request()->get('customer_id', null);

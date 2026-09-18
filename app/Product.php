@@ -159,6 +159,14 @@ class Product extends Model
     }
 
     /**
+     * Extra barcodes/SKUs that resolve to this product (vendor codes, pack barcodes).
+     */
+    public function barcodes()
+    {
+        return $this->hasMany(\App\ProductBarcode::class);
+    }
+
+    /**
      * If product type is modifier get products associated with it.
      */
     public function modifier_products()
