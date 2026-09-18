@@ -109,11 +109,11 @@
                                 <form action="{{ route('ecommerce.cart.update', absolute: false) }}" method="post" class="cart-qty-form flex items-center border border-[#e0e0e0] rounded-lg overflow-hidden">
                                     @csrf
                                     <input type="hidden" name="item_id" value="{{ $item->id }}">
-                                    <button type="button" class="qty-minus px-2.5 py-1.5 hover:bg-[#f5f5f5] transition-colors text-sm font-bold" style="color:#2E6A49" aria-label="Decrease quantity">−</button>
+                                    <button type="button" class="qty-minus px-2.5 py-1.5 hover:bg-[#f5f5f5] transition-colors text-sm font-bold" style="color:#2E6A49" aria-label="Decrease quantity cursor-pointer">−</button>
                                     <input type="number" name="quantity" value="{{ (int) $item->quantity }}" min="1"
                                            class="qty-input w-10 text-center text-sm font-semibold focus:outline-none border-0 bg-transparent appearance-none [-moz-appearance:textfield]"
                                            aria-label="Quantity">
-                                    <button type="button" class="qty-plus px-2.5 py-1.5 hover:bg-[#f5f5f5] transition-colors text-sm font-bold" style="color:#2E6A49" aria-label="Increase quantity">+</button>
+                                    <button type="button" class="qty-plus px-2.5 py-1.5 hover:bg-[#f5f5f5] transition-colors text-sm font-bold cursor-pointer" style="color:#2E6A49" aria-label="Increase quantity">+</button>
                                 </form>
                                 <div class="text-right">
                                     <p class="font-bold text-base" style="color:{{ $onSale ? '#e53e3e' : '#1a1a1a' }}">${{ number_format($lineTotal, 2) }}</p>
@@ -124,7 +124,7 @@
                         <form action="{{ route('ecommerce.cart.remove', absolute: false) }}" method="post" class="shrink-0 self-start">
                             @csrf
                             <input type="hidden" name="item_id" value="{{ $item->id }}">
-                            <button type="submit" class="p-1.5 rounded-lg hover:bg-red-50 hover:text-red-500 transition-colors" style="color:#999" aria-label="Remove item">
+                            <button type="submit" class="p-1.5 rounded-lg hover:bg-red-50 hover:text-red-500 transition-colors cursor-pointer" style="color:#999" aria-label="Remove item">
                                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4l8 8M12 4L4 12"/></svg>
                             </button>
                         </form>
@@ -134,7 +134,7 @@
                 <div class="flex justify-end">
                     <form action="{{ route('ecommerce.cart.clear', absolute: false) }}" method="post" onsubmit="return confirm('Clear all items from your cart?');">
                         @csrf
-                        <button type="submit" class="text-xs font-semibold hover:underline transition-colors" style="color:#e53e3e">Clear Cart</button>
+                        <button type="submit" class="text-xs font-semibold hover:underline transition-colors cursor-pointer" style="color:#e53e3e">Clear Cart</button>
                     </form>
                 </div>
             </div>
