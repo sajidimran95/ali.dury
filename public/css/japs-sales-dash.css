@@ -320,41 +320,9 @@ body.japs-dashboard-home .japs-sales-dash .japs-dash-chart-card--status .japs-da
   align-items: center;
   justify-content: center;
 }
-<body.japs-dashboard-home .japs-sales-dash .japs-dash-chart-card--status .japs-dash-donut-center {
+body.japs-dashboard-home .japs-sales-dash .japs-dash-chart-card--status .japs-dash-donut-center {
   display: none;
 }
-body.japs-dashboard-home .japs-sales-dash .japs-sf-insights__kicker {
-  margin: 0 16px 8px;
-  font-size: 12px;
-  font-weight: 700;
-  color: #64748b;
-}
-body.japs-dashboard-home .japs-sales-dash .japs-sf-insights__list {
-  list-style: none;
-  margin: 0 16px 16px;
-  padding: 0;
-  font-size: 13px;
-  color: #334155;
-  line-height: 1.4;
-}
-body.japs-dashboard-home .japs-sales-dash .japs-sf-insights__list li {
-  position: relative;
-  padding: 0 0 10px 14px;
-}
-body.japs-dashboard-home .japs-sales-dash .japs-sf-insights__list li:last-child { padding-bottom: 0; }
-body.japs-dashboard-home .japs-sales-dash .japs-sf-insights__list li::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 7px;
-  width: 7px;
-  height: 7px;
-  border-radius: 999px;
-  background: #94a3b8;
-}
-body.japs-dashboard-home .japs-sales-dash .japs-sf-insights__list li.is-up::before { background: #22c55e; }
-body.japs-dashboard-home .japs-sales-dash .japs-sf-insights__list li.is-warn::before { background: #f59e0b; }
-body.japs-dashboard-home .japs-sales-dash .japs-sf-insights__list li.is-info::before { background: #3b82f6; }
 body.japs-dashboard-home .japs-sales-dash .japs-sf-actions {
   display: flex;
   flex-direction: column;
@@ -450,33 +418,40 @@ body.japs-dashboard-home .japs-sales-dash .japs-sf-activity__list {
 }
 body.japs-dashboard-home .japs-sales-dash .japs-sf-activity__list li {
   display: grid;
-  grid-template-columns: 10px minmax(0, 1fr) 22px;
+  grid-template-columns: 22px minmax(0, 1fr) 22px;
   gap: 8px;
   align-items: start;
   padding: 8px 0;
   border-bottom: 1px solid #f1f5f9;
   min-width: 0;
+  list-style: none;
+  position: relative;
+}
+body.japs-dashboard-home .japs-sales-dash .japs-sf-activity__list li::before,
+body.japs-dashboard-home .japs-sales-dash .japs-sf-activity__list li::marker {
+  content: none !important;
+  display: none !important;
+  background: none !important;
 }
 body.japs-dashboard-home .japs-sales-dash .japs-sf-activity__view {
-  color: #64748b;
+  color: #0f172a;
   display: inline-flex;
   margin-top: 2px;
 }
 body.japs-dashboard-home .japs-sales-dash .japs-sf-activity__view:hover {
-  color: #2563eb;
+  color: #0f172a;
 }
 body.japs-dashboard-home .japs-sales-dash .japs-sf-activity__list li:last-child { border-bottom: 0; }
-body.japs-dashboard-home .japs-sales-dash .japs-sf-activity__dot {
-  width: 8px;
-  height: 8px;
-  margin-top: 5px;
-  border-radius: 99px;
-  background: #94a3b8;
+body.japs-dashboard-home .japs-sales-dash .japs-sf-activity__n {
+  font-size: 11px;
+  font-weight: 700;
+  color: #0f172a;
+  padding-top: 2px;
+  width: auto;
+  height: auto;
+  border-radius: 0;
+  background: none;
 }
-body.japs-dashboard-home .japs-sales-dash .japs-sf-activity__dot.is-done { background: #22c55e; }
-body.japs-dashboard-home .japs-sales-dash .japs-sf-activity__dot.is-refund { background: #f59e0b; }
-body.japs-dashboard-home .japs-sales-dash .japs-sf-activity__dot.is-place { background: #3b82f6; }
-body.japs-dashboard-home .japs-sales-dash .japs-sf-activity__dot.is-info { background: #8b5cf6; }
 body.japs-dashboard-home .japs-sales-dash .japs-sf-activity__text {
   font-size: 12px;
   font-weight: 600;
@@ -497,6 +472,11 @@ body.japs-dashboard-home .japs-sales-dash .japs-sf-activity__l2 {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  color: #0f172a;
+}
+body.japs-dashboard-home .japs-sales-dash .japs-sf-activity__l1 b {
+  color: inherit;
+  font-weight: 600;
 }
 body.japs-dashboard-home .japs-sales-dash .japs-sf-activity__time {
   font-size: 11px;

@@ -257,11 +257,11 @@
                                 <h3 class="japs-dash-chart-card__title">{{ __('home.insights_actions') }}</h3>
                                 <a href="{{ $view_all_edits_url }}" class="japs-dash-period-chip">{{ __('home.view_all') }}</a>
                             </div>
-                            <div class="japs-sf-activity__viewport">
+                            <div class="japs-sf-activity__viewport" id="japs-sf-activity-viewport">
                             <ul class="japs-sf-activity__list" id="japs-sf-activity-list">
-                                @forelse ($sale_edit_activities as $act)
+                                @forelse ($sale_edit_activities as $i => $act)
                                     <li>
-                                        <span class="japs-sf-activity__dot {{ $act->dot }}"></span>
+                                        <span class="japs-sf-activity__n">{{ $i + 1 }}.</span>
                                         <span class="japs-sf-activity__text">
                                             <span class="japs-sf-activity__l1">{{ $act->when }} · <b>{{ $act->kind }} {{ $act->invoice_no }}</b></span>
                                             <span class="japs-sf-activity__l2">{{ $act->product }} · {{ $act->change }} · by {{ $act->editor }}</span>
@@ -380,7 +380,7 @@
 
 @section('css')
     <link href="{{ asset('css/japs-ui.css') }}" rel="stylesheet">
-    <link href="{{ asset('css/japs-sales-dash.css?v=' . ($asset_v ?? '') . '&sd=29') }}" rel="stylesheet">
+    <link href="{{ asset('css/japs-sales-dash.css?v=' . ($asset_v ?? '') . '&sd=33') }}" rel="stylesheet">
     <style>
         .select2-container {
             width: 100% !important;
