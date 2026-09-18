@@ -215,6 +215,7 @@ class HomeController extends Controller
 
         $sells_chart_1->labels($short_labels)
                         ->options($sells_chart_1_options);
+        $sells_chart_1->height(180);
 
         // Single combined sales series (column)
         $sells_chart_1->dataset(__('home.total_sell'), 'areaspline', $all_sell_values);
@@ -356,7 +357,7 @@ class HomeController extends Controller
             ],
             'series' => ['borderWidth' => 0, 'animation' => false],
         ];
-        $orders_chart->height(260);
+        $orders_chart->height(200);
         $orders_chart->labels($orders_short_labels)->options($orders_chart_options);
         foreach ($orders_series_by_channel as $series) {
             $orders_chart->dataset($series['label'], 'spline', $series['values'])
@@ -427,6 +428,24 @@ class HomeController extends Controller
         // Location Performance mini stats (last 30 days)
         $location_performance = $this->buildLocationPerformance($business_id, $permitted_locations, $all_locations, $widgets_start, $widgets_end);
 
+        $recent_activity_q = Transaction::where('business_id', $business_id)
+            ->where(function ($q) {
+                $q->where('type', 'sell')
+                    ->orWhere(function ($other) {
+                        $other->whereIn('source', ['ecommerce', 'sale_app'])
+                            ->whereIn('type', ['sales_order', 'sell']);
+                    })
+                    ->orWhere('type', 'sell_return');
+            })
+            ->where('status', '!=', 'cancelled');
+        if (! empty($permitted_locations) && $permitted_locations != 'all') {
+            $recent_activity_q->whereIn('location_id', $permitted_locations);
+        }
+        $recent_activity = $recent_activity_q
+            ->orderByDesc('id')
+            ->limit(5)
+            ->get(['id', 'invoice_no', 'type', 'status', 'payment_status', 'transaction_date', 'created_at']);
+
         // KPI sparklines (last 14 days from the same 30-day channel series)
         $daily_payment_hours = $this->getDailyAvgPaymentHours($business_id, \Carbon::now()->subDays(13)->format('Y-m-d'), $widgets_end, $permitted_locations);
 
@@ -480,6 +499,7 @@ class HomeController extends Controller
             'top_products',
             'top_products_max',
             'location_performance',
+            'recent_activity',
             'kpi_sparkline_orders',
             'kpi_sparkline_revenue',
             'kpi_sparkline_aov',
@@ -601,6 +621,12 @@ class HomeController extends Controller
             $prev_avg_payment_hours = $this->getAvgPaymentHours($business_id, $prev_start, $prev_end_str, $location_id, $permitted_locations);
             $prev_net = $prev_total_sell - $prev_invoice_due - (float) ($prev_txn['total_expense'] ?? 0);
 
+            $output['refund_rate'] = $output['total_sell'] > 0
+                ? round(($output['total_sell_return'] / $output['total_sell']) * 100, 1)
+                : 0.0;
+            $prev_sell_return = (float) ($prev_txn['total_sell_return_inc_tax'] ?? 0);
+            $prev_refund_rate = $prev_total_sell > 0 ? round(($prev_sell_return / $prev_total_sell) * 100, 1) : 0.0;
+
             $output['change_pct'] = [
                 'total_sell' => $this->percentChange($output['total_sell'], $prev_total_sell),
                 'total_purchase' => $this->percentChange($output['total_purchase'], $prev_total_purchase),
@@ -609,6 +635,7 @@ class HomeController extends Controller
                 'total_orders' => $this->percentChange($output['total_orders'], $prev_total_orders),
                 'avg_order_value' => $this->percentChange($output['avg_order_value'], $prev_avg_order_value),
                 'avg_payment_hours' => $this->percentChange($output['avg_payment_hours'], $prev_avg_payment_hours),
+                'refund_rate' => $this->percentChange($output['refund_rate'], $prev_refund_rate),
             ];
             $output['prev_period_label'] = \Carbon::parse($prev_start)->format('M j').' – '.\Carbon::parse($prev_end_str)->format('M j');
 

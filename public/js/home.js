@@ -240,6 +240,7 @@ function update_statistics(start, end) {
     $('.total_orders').html(loader);
     $('.avg_order_value').html(loader);
     $('.avg_payment_hours').html(loader);
+    $('.refund_rate').html(loader);
     $.ajax({
         method: 'get',
         url: '/home/get-totals',
@@ -273,6 +274,8 @@ function update_statistics(start, end) {
             $('.avg_payment_hours').html(
                 (typeof data.avg_payment_hours !== 'undefined' ? Number(data.avg_payment_hours) : 0).toFixed(1)
             );
+            var refundRate = typeof data.refund_rate !== 'undefined' ? Number(data.refund_rate) : 0;
+            $('.refund_rate').html(refundRate.toFixed(1) + '%');
             if (data.spark_payment_hours && typeof Highcharts !== 'undefined') {
                 (Highcharts.charts || []).forEach(function (chart) {
                     if (!chart || !chart.renderTo || !chart.series || !chart.series[0]) {
@@ -294,6 +297,7 @@ function update_statistics(start, end) {
                 japsApplyDelta($('[data-kpi="total_purchase"]'), data.change_pct.total_purchase);
                 japsApplyDelta($('[data-kpi="total_orders"]'), data.change_pct.total_orders);
                 japsApplyDelta($('[data-kpi="avg_order_value"]'), data.change_pct.avg_order_value);
+                japsApplyDelta($('[data-kpi="refund_rate"]'), data.change_pct.refund_rate, true);
                 // invert=true: a lower avg payment time is the good direction
                 japsApplyDelta($('[data-kpi="avg_payment_hours"]'), data.change_pct.avg_payment_hours, true);
             }
@@ -325,7 +329,7 @@ function update_statistics(start, end) {
             // Revenue Insights + Sales Overview are NOT updated by Filter by date
         },
         error: function () {
-            $('.total_purchase, .purchase_due, .total_sell, .invoice_due, .total_expense, .total_purchase_return, .total_sell_return, .net, .total_orders, .avg_order_value, .avg_payment_hours').html('—');
+            $('.total_purchase, .purchase_due, .total_sell, .invoice_due, .total_expense, .total_purchase_return, .total_sell_return, .net, .total_orders, .avg_order_value, .avg_payment_hours, .refund_rate').html('—');
             $('.online_orders').html('0');
         },
     });

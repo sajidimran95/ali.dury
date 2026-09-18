@@ -51,25 +51,37 @@
                 @if (auth()->user()->can('dashboard.data') && $is_admin)
                     @php
                         $card_sells = action([\App\Http\Controllers\SellController::class, 'index']);
-                        $pipeline_stage_meta = [
-                            'draft' => ['label' => __('sale.draft'), 'color' => '#3b82f6'],
-                            'quotation' => ['label' => __('lang_v1.quotation'), 'color' => '#8b5cf6'],
-                            'proforma' => ['label' => __('lang_v1.proforma'), 'color' => '#14b8a6'],
-                            'final_due' => ['label' => __('lang_v1.due'), 'color' => '#f59e0b'],
-                            'final_partial' => ['label' => __('lang_v1.partial'), 'color' => '#f97316'],
-                            'final_paid' => ['label' => __('lang_v1.paid'), 'color' => '#22c55e'],
+                        $pipe_ordered = (int) (($fulfillment_pipeline['draft'] ?? 0) + ($fulfillment_pipeline['quotation'] ?? 0));
+                        $pipe_processing = (int) ($fulfillment_pipeline['proforma'] ?? 0);
+                        $pipe_shipped = (int) ($fulfillment_pipeline['final_due'] ?? 0);
+                        $pipe_delivered = (int) ($fulfillment_pipeline['final_paid'] ?? 0);
+                        $pipe_returned = (int) ($fulfillment_pipeline['final_partial'] ?? 0);
+                        $pipeline_rows = [
+                            ['label' => 'Ordered', 'count' => $pipe_ordered, 'color' => '#60a5fa'],
+                            ['label' => 'Processing', 'count' => $pipe_processing, 'color' => '#fbbf24'],
+                            ['label' => 'Shipped', 'count' => $pipe_shipped, 'color' => '#fb923c'],
+                            ['label' => 'Delivered', 'count' => $pipe_delivered, 'color' => '#34d399'],
+                            ['label' => 'Returned', 'count' => $pipe_returned, 'color' => '#f87171'],
                         ];
+                        $pipeline_max = max(1, max(array_column($pipeline_rows, 'count')));
+                        $status_paid = $pipe_delivered;
+                        $status_pending = $pipe_ordered + $pipe_processing + $pipe_shipped;
+                        $status_failed = $pipe_returned;
+                        $status_total = max(1, $status_paid + $status_pending + $status_failed);
+                        $status_slices = [
+                            ['label' => 'Paid', 'count' => $status_paid, 'color' => '#3b82f6'],
+                            ['label' => 'Pending', 'count' => $status_pending, 'color' => '#f59e0b'],
+                            ['label' => 'Failed', 'count' => $status_failed, 'color' => '#ef4444'],
+                        ];
+                        $top_product_name = !empty($top_products[0]) ? $top_products[0]->product : null;
                     @endphp
 
                     @if ((auth()->user()->can('sell.view') || auth()->user()->can('direct_sell.view')) && !empty($all_locations))
+                    <div class="japs-sf-shell">
+                    <div class="japs-sf-main">
                     <div class="japs-dash-kpi-row">
                         <a href="{{ $card_sells }}" class="japs-dash-kpi-card japs-dash-kpi-card--blue" title="{{ __('home.total_orders') }}">
-                            <div class="japs-dash-kpi-card__top">
-                                <span class="japs-dash-kpi-card__icon" aria-hidden="true">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M9 4H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-3"/><path d="M9 12h6M9 16h6M9 8h1"/></svg>
-                                </span>
-                                <p class="japs-dash-kpi-card__label">{{ __('home.total_orders') }}</p>
-                            </div>
+                            <p class="japs-dash-kpi-card__label">{{ __('home.total_orders') }}</p>
                             <p class="japs-dash-kpi-card__value total_orders"></p>
                             <p class="japs-dash-kpi-card__trend">
                                 <span class="japs-dash-kpi-card__delta" data-kpi="total_orders">—</span>
@@ -77,13 +89,8 @@
                             </p>
                             <div class="japs-dash-kpi-card__sparkline">{!! $kpi_sparkline_orders->container() !!}</div>
                         </a>
-                        <a href="{{ $card_sells }}" class="japs-dash-kpi-card japs-dash-kpi-card--violet" title="{{ __('home.total_revenue') }}">
-                            <div class="japs-dash-kpi-card__top">
-                                <span class="japs-dash-kpi-card__icon" aria-hidden="true">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-                                </span>
-                                <p class="japs-dash-kpi-card__label">{{ __('home.total_revenue') }}</p>
-                            </div>
+                        <a href="{{ $card_sells }}" class="japs-dash-kpi-card japs-dash-kpi-card--violet" title="{{ __('home.total_sales') }}">
+                            <p class="japs-dash-kpi-card__label">{{ __('home.total_sales') }}</p>
                             <p class="japs-dash-kpi-card__value total_sell"></p>
                             <p class="japs-dash-kpi-card__trend">
                                 <span class="japs-dash-kpi-card__delta" data-kpi="total_sell">—</span>
@@ -92,12 +99,7 @@
                             <div class="japs-dash-kpi-card__sparkline">{!! $kpi_sparkline_revenue->container() !!}</div>
                         </a>
                         <a href="{{ $card_sells }}" class="japs-dash-kpi-card japs-dash-kpi-card--teal" title="{{ __('home.average_order_value') }}">
-                            <div class="japs-dash-kpi-card__top">
-                                <span class="japs-dash-kpi-card__icon" aria-hidden="true">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-                                </span>
-                                <p class="japs-dash-kpi-card__label">{{ __('home.average_order_value') }}</p>
-                            </div>
+                            <p class="japs-dash-kpi-card__label">{{ __('home.average_order_value') }}</p>
                             <p class="japs-dash-kpi-card__value avg_order_value"></p>
                             <p class="japs-dash-kpi-card__trend">
                                 <span class="japs-dash-kpi-card__delta" data-kpi="avg_order_value">—</span>
@@ -105,16 +107,11 @@
                             </p>
                             <div class="japs-dash-kpi-card__sparkline">{!! $kpi_sparkline_aov->container() !!}</div>
                         </a>
-                        <div class="japs-dash-kpi-card japs-dash-kpi-card--amber" title="{{ __('home.fulfillment_time') }}">
-                            <div class="japs-dash-kpi-card__top">
-                                <span class="japs-dash-kpi-card__icon" aria-hidden="true">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
-                                </span>
-                                <p class="japs-dash-kpi-card__label">{{ __('home.fulfillment_time') }}</p>
-                            </div>
-                            <p class="japs-dash-kpi-card__value japs-dash-kpi-card__value--hours"><span class="avg_payment_hours">0</span> <span class="japs-dash-hrs">hrs</span></p>
+                        <div class="japs-dash-kpi-card japs-dash-kpi-card--amber" title="{{ __('home.refund_rate') }}">
+                            <p class="japs-dash-kpi-card__label">{{ __('home.refund_rate') }}</p>
+                            <p class="japs-dash-kpi-card__value refund_rate">0%</p>
                             <p class="japs-dash-kpi-card__trend">
-                                <span class="japs-dash-kpi-card__delta" data-kpi="avg_payment_hours">—</span>
+                                <span class="japs-dash-kpi-card__delta" data-kpi="refund_rate">—</span>
                                 <span class="japs-dash-kpi-card__period">{{ __('lang_v1.from_previous_period') }}</span>
                             </p>
                             <div class="japs-dash-kpi-card__sparkline">{!! $kpi_sparkline_payment_hours->container() !!}</div>
@@ -122,27 +119,81 @@
                     </div>
 
                     <div class="japs-dash-row-3col">
-                        <div class="japs-dash-chart-card japs-dash-chart-card--orders-trend">
+                        <div class="japs-dash-chart-card japs-dash-chart-card--sales japs-dash-chart-card--revenue zoho-dashboard__main-chart">
                             <div class="japs-dash-chart-card__header">
-                                <h3 class="japs-dash-chart-card__title">{{ __('home.orders_over_time') }}</h3>
-                                <span class="japs-dash-period-chip">{{ __('home.last_30_days') }}</span>
+                                <h3 class="japs-dash-chart-card__title">{{ __('home.sales_over_time') }}</h3>
+                                <span class="japs-dash-period-chip">Daily</span>
                             </div>
                             <div class="japs-dash-chart-card__canvas">
-                                {!! $orders_chart->container() !!}
+                                {!! $sells_chart_1->container() !!}
                             </div>
                         </div>
+                        <div class="japs-dash-chart-card japs-dash-chart-card--status">
+                            <div class="japs-dash-chart-card__header">
+                                <h3 class="japs-dash-chart-card__title">{{ __('home.orders_by_status') }}</h3>
+                            </div>
+                            <div class="japs-dash-source-body">
+                                <div class="japs-dash-payment-chart-wrap">
+                                    <svg class="japs-sf-donut" viewBox="0 0 42 42" aria-hidden="true">
+                                        @php
+                                            $circ = 2 * 3.1416 * 15.5;
+                                            $off = 0;
+                                        @endphp
+                                        <circle cx="21" cy="21" r="15.5" fill="none" stroke="#eef2f7" stroke-width="5"></circle>
+                                        @foreach ($status_slices as $slice)
+                                            @php
+                                                $len = $status_total > 0 ? ($slice['count'] / $status_total) * $circ : 0;
+                                            @endphp
+                                            <circle cx="21" cy="21" r="15.5" fill="none" stroke="{{ $slice['color'] }}" stroke-width="5"
+                                                stroke-dasharray="{{ $len }} {{ $circ }}" stroke-dashoffset="{{ -$off }}" transform="rotate(-90 21 21)"></circle>
+                                            @php $off += $len; @endphp
+                                        @endforeach
+                                        <text x="21" y="20" text-anchor="middle" dominant-baseline="middle" fill="#0f172a" font-size="7" font-weight="800">{{ number_format($status_paid + $status_pending + $status_failed) }}</text>
+                                        <text x="21" y="25.8" text-anchor="middle" fill="#64748b" font-size="3.2" font-weight="500">Total</text>
+                                    </svg>
+                                </div>
+                                <ul class="japs-dash-source-legend">
+                                    @foreach ($status_slices as $slice)
+                                        <li class="japs-dash-source-legend__item">
+                                            <span class="japs-dash-source-legend__swatch" style="background: {{ $slice['color'] }}"></span>
+                                            <span class="japs-dash-source-legend__name">{{ $slice['label'] }}</span>
+                                            <span class="japs-dash-source-legend__nums">
+                                                <b>{{ number_format($slice['count']) }}</b>
+                                                <em>{{ $status_total > 0 ? round(($slice['count'] / $status_total) * 100, 1) : 0 }}%</em>
+                                            </span>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="japs-dash-chart-card japs-dash-chart-card--pipeline">
+                            <div class="japs-dash-chart-card__header">
+                                <h3 class="japs-dash-chart-card__title">{{ __('home.fulfillment_pipeline') }}</h3>
+                            </div>
+                            <div class="japs-dash-bar-list">
+                                @foreach ($pipeline_rows as $row)
+                                    <div class="japs-dash-bar-list__row">
+                                        <span class="japs-dash-bar-list__label">{{ $row['label'] }}</span>
+                                        <span class="japs-dash-bar-list__track">
+                                            <span class="japs-dash-bar-list__fill" style="width: {{ round(($row['count'] / $pipeline_max) * 100, 1) }}%; background: {{ $row['color'] }};"></span>
+                                        </span>
+                                        <span class="japs-dash-bar-list__value">{{ number_format($row['count']) }}</span>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="japs-dash-row-3col japs-sf-bottom">
                         <div class="japs-dash-chart-card japs-dash-chart-card--orders-source">
                             <div class="japs-dash-chart-card__header">
                                 <h3 class="japs-dash-chart-card__title">{{ __('home.orders_by_source') }}</h3>
+                                <span class="japs-dash-period-chip">{{ __('home.by_sales') }}</span>
                             </div>
                             <div class="japs-dash-source-body">
                                 <div class="japs-dash-payment-chart-wrap">
                                     <div class="japs-dash-payment-chart">
                                         {!! $location_donut->container() !!}
-                                    </div>
-                                    <div class="japs-dash-donut-center">
-                                        <div class="japs-dash-donut-center__amount">{{ number_format(collect($orders_by_location)->sum('count')) }}</div>
-                                        <div class="japs-dash-donut-center__label">{{ __('home.total_orders') }}</div>
                                     </div>
                                 </div>
                                 <ul class="japs-dash-source-legend">
@@ -161,57 +212,20 @@
                                 </ul>
                             </div>
                         </div>
-                        <div class="japs-dash-chart-card japs-dash-chart-card--pipeline">
-                            <div class="japs-dash-chart-card__header">
-                                <h3 class="japs-dash-chart-card__title">{{ __('home.fulfillment_pipeline') }}</h3>
-                            </div>
-                            <div class="japs-dash-bar-list">
-                                @foreach ($pipeline_stage_meta as $stage_key => $stage_meta)
-                                    @php $stage_count = $fulfillment_pipeline[$stage_key] ?? 0; @endphp
-                                    <div class="japs-dash-bar-list__row">
-                                        <span class="japs-dash-bar-list__label">{{ $stage_meta['label'] }}</span>
-                                        <span class="japs-dash-bar-list__track">
-                                            <span class="japs-dash-bar-list__fill" style="width: {{ $fulfillment_pipeline_max > 0 ? round(($stage_count / $fulfillment_pipeline_max) * 100, 1) : 0 }}%; background: {{ $stage_meta['color'] }};"></span>
-                                        </span>
-                                        <span class="japs-dash-bar-list__value">{{ number_format($stage_count) }}</span>
-                                    </div>
-                                @endforeach
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="japs-dash-row-4col">
-                        <div class="japs-dash-chart-card japs-dash-chart-card--status">
-                            <div class="japs-dash-chart-card__header">
-                                <h3 class="japs-dash-chart-card__title">{{ __('home.orders_by_status') }}</h3>
-                            </div>
-                            <div class="japs-dash-chart-card__canvas">
-                                <div id="orders_status_weekly_chart" style="min-height:240px;height:100%;"></div>
-                            </div>
-                        </div>
                         <div class="japs-dash-chart-card japs-dash-chart-card--top-products">
                             <div class="japs-dash-chart-card__header">
                                 <h3 class="japs-dash-chart-card__title">{{ __('home.top_products') }}</h3>
-                                <span class="japs-dash-period-chip">{{ __('home.by_units_sold') }}</span>
+                                <span class="japs-dash-period-chip">{{ __('home.by_sales') }}</span>
                             </div>
                             <div class="japs-dash-bar-list">
                                 @forelse ($top_products as $tp_idx => $product)
                                     @php
-                                        $tp_img = asset('/img/default.png');
-                                        if (! empty($product->product_image)) {
-                                            $tp_path = public_path('uploads/'.config('constants.product_img_path').'/'.$product->product_image);
-                                            if (is_file($tp_path)) {
-                                                $tp_img = asset('/uploads/'.config('constants.product_img_path').'/'.rawurlencode($product->product_image));
-                                            }
-                                        }
+                                        $bar_colors = ['#3b82f6', '#8b5cf6', '#14b8a6', '#22c55e', '#94a3b8'];
                                     @endphp
-                                    <div class="japs-dash-bar-list__row japs-dash-bar-list__row--product">
-                                        <span class="japs-dash-product-avatar">
-                                            <img src="{{ $tp_img }}" alt="" onerror="this.src='{{ asset('/img/default.png') }}'">
-                                        </span>
-                                        <span class="japs-dash-bar-list__label" title="{{ $product->product }}">{{ \Illuminate\Support\Str::limit($product->product, 22) }}</span>
+                                    <div class="japs-dash-bar-list__row">
+                                        <span class="japs-dash-bar-list__label" title="{{ $product->product }}">{{ ($tp_idx + 1) }}. {{ \Illuminate\Support\Str::limit($product->product, 22) }}</span>
                                         <span class="japs-dash-bar-list__track">
-                                            <span class="japs-dash-bar-list__fill" style="width: {{ $top_products_max > 0 ? round(($product->total_unit_sold / $top_products_max) * 100, 1) : 0 }}%; background: #3b82f6;"></span>
+                                            <span class="japs-dash-bar-list__fill" style="width: {{ $top_products_max > 0 ? round(($product->total_unit_sold / $top_products_max) * 100, 1) : 0 }}%; background: {{ $bar_colors[$tp_idx % 5] }};"></span>
                                         </span>
                                         <span class="japs-dash-bar-list__value">{{ @format_quantity($product->total_unit_sold) }}</span>
                                     </div>
@@ -220,79 +234,113 @@
                                 @endforelse
                             </div>
                         </div>
-                        <div class="japs-dash-chart-card japs-dash-chart-card--sales japs-dash-chart-card--revenue zoho-dashboard__main-chart">
+                        <div class="japs-dash-chart-card japs-dash-chart-card--orders-trend">
                             <div class="japs-dash-chart-card__header">
-                                <h3 class="japs-dash-chart-card__title">{{ __('home.revenue_trend') }}</h3>
-                                <span class="japs-dash-period-chip">{{ __('home.last_30_days') }}</span>
+                                <h3 class="japs-dash-chart-card__title">{{ __('home.orders_per_day') }}</h3>
+                                <span class="japs-dash-period-chip">Daily</span>
                             </div>
-                            <div class="japs-dash-chart-panes">
-                                <div class="japs-dash-chart-pane is-active" id="japs_dash_main_chart_wrap" data-period="30d">
-                                    {!! $sells_chart_1->container() !!}
-                                </div>
-                                @if (!empty($sells_chart_2))
-                                <div class="japs-dash-chart-pane" id="japs_dash_fy_chart_wrap" data-period="fy" hidden>
-                                    {!! $sells_chart_2->container() !!}
-                                </div>
-                                @endif
-                            </div>
-                        </div>
-                        <div class="japs-dash-chart-card japs-dash-chart-card--location-perf">
-                            <div class="japs-dash-chart-card__header">
-                                <h3 class="japs-dash-chart-card__title">{{ __('home.location_performance') }}</h3>
-                            </div>
-                            <div class="japs-dash-loc-grid">
-                                @php
-                                    $loc_chg = $location_performance['change_pct'] ?? [];
-                                    $fmtLocDelta = function ($pct, $invert = false) {
-                                        $num = (float) $pct;
-                                        $arrow = $num >= 0 ? '↑' : '↓';
-                                        $good = $invert ? ($num <= 0) : ($num >= 0);
-                                        return [
-                                            'text' => $arrow.' '.abs($num).'%',
-                                            'cls' => $good ? 'is-up' : 'is-down',
-                                        ];
-                                    };
-                                    $dActive = $fmtLocDelta($loc_chg['active_locations'] ?? 0);
-                                    $dSales = $fmtLocDelta($loc_chg['sales_today'] ?? 0);
-                                    $dPay = $fmtLocDelta($loc_chg['avg_payment_hours'] ?? 0, true);
-                                    $dColl = $fmtLocDelta($loc_chg['collection_rate'] ?? 0);
-                                @endphp
-                                <div class="japs-dash-loc-tile japs-dash-loc-tile--blue">
-                                    <span class="japs-dash-loc-tile__icon" aria-hidden="true">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-5.686-7-11a7 7 0 0 1 14 0c0 5.314-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>
-                                    </span>
-                                    <span class="japs-dash-loc-tile__label">{{ __('home.active_locations') }}</span>
-                                    <span class="japs-dash-loc-tile__value">{{ $location_performance['active_locations'] }}/{{ $location_performance['total_locations'] }}</span>
-                                    <span class="japs-dash-loc-tile__trend {{ $dActive['cls'] }}">{{ $dActive['text'] }} <small>{{ __('home.vs_last_period') }}</small></span>
-                                </div>
-                                <div class="japs-dash-loc-tile japs-dash-loc-tile--teal">
-                                    <span class="japs-dash-loc-tile__icon" aria-hidden="true">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-                                    </span>
-                                    <span class="japs-dash-loc-tile__label">{{ __('home.sales_today') }}</span>
-                                    <span class="japs-dash-loc-tile__value">{{ number_format($location_performance['sales_today']) }}</span>
-                                    <span class="japs-dash-loc-tile__trend {{ $dSales['cls'] }}">{{ $dSales['text'] }} <small>{{ __('home.vs_yesterday') }}</small></span>
-                                </div>
-                                <div class="japs-dash-loc-tile japs-dash-loc-tile--amber">
-                                    <span class="japs-dash-loc-tile__icon" aria-hidden="true">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
-                                    </span>
-                                    <span class="japs-dash-loc-tile__label">{{ __('home.avg_payment_short') }}</span>
-                                    <span class="japs-dash-loc-tile__value">{{ $location_performance['avg_payment_hours'] }} hrs</span>
-                                    <span class="japs-dash-loc-tile__trend {{ $dPay['cls'] }}">{{ $dPay['text'] }} <small>{{ __('home.vs_last_period') }}</small></span>
-                                </div>
-                                <div class="japs-dash-loc-tile japs-dash-loc-tile--rose">
-                                    <span class="japs-dash-loc-tile__icon" aria-hidden="true">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg>
-                                    </span>
-                                    <span class="japs-dash-loc-tile__label">{{ __('home.collection_rate') }}</span>
-                                    <span class="japs-dash-loc-tile__value">{{ $location_performance['collection_rate'] }}%</span>
-                                    <span class="japs-dash-loc-tile__trend {{ $dColl['cls'] }}">{{ $dColl['text'] }} <small>{{ __('home.vs_last_period') }}</small></span>
-                                </div>
+                            <div class="japs-dash-chart-card__canvas">
+                                {!! $orders_chart->container() !!}
                             </div>
                         </div>
                     </div>
+                    </div>
+
+                    <aside class="japs-sf-aside">
+                        <div class="japs-dash-chart-card japs-sf-insights">
+                            <div class="japs-dash-chart-card__header">
+                                <h3 class="japs-dash-chart-card__title">{{ __('home.insights_actions') }}</h3>
+                            </div>
+                            <p class="japs-sf-insights__kicker">{{ __('home.ai_key_insights') }}</p>
+                            <ul class="japs-sf-insights__list">
+                                <li class="is-up"><span>{{ number_format($pipe_delivered) }} delivered</span> this window.</li>
+                                <li class="is-warn"><span>{{ number_format($status_pending) }} orders</span> still open in the pipeline.</li>
+                                @if ($top_product_name)
+                                    <li class="is-info">Top product: <b>{{ \Illuminate\Support\Str::limit($top_product_name, 28) }}</b>.</li>
+                                @else
+                                    <li class="is-info">No product sales in this date range yet.</li>
+                                @endif
+                            </ul>
+                        </div>
+                        <div class="japs-dash-chart-card japs-sf-channels">
+                            <div class="japs-dash-chart-card__header">
+                                <h3 class="japs-dash-chart-card__title">{{ __('home.top_products_channels') }}</h3>
+                                <span class="japs-dash-period-chip">{{ __('home.by_sales') }}</span>
+                            </div>
+                            <div class="japs-sf-channels__body">
+                                @php
+                                    $side_colors = ['#3b82f6', '#8b5cf6', '#14b8a6', '#22c55e', '#94a3b8'];
+                                    $side_units_total = max(1, (float) collect($top_products)->sum('total_unit_sold'));
+                                    $side_products = collect($top_products)->take(4);
+                                    $side_ch_total = max(1, collect($orders_by_location)->sum('count'));
+                                @endphp
+                                <ul class="japs-sf-rank">
+                                    @forelse ($side_products as $i => $product)
+                                        @php $pct = round(((float) $product->total_unit_sold / $side_units_total) * 100, 1); @endphp
+                                        <li>
+                                            <span class="japs-sf-rank__n">{{ $i + 1 }}.</span>
+                                            <span class="japs-sf-rank__name" title="{{ $product->product }}">{{ \Illuminate\Support\Str::limit($product->product, 22) }}</span>
+                                            <span class="japs-sf-rank__val">{{ @format_quantity($product->total_unit_sold) }}</span>
+                                            <span class="japs-sf-rank__pct">{{ $pct }}%</span>
+                                            <span class="japs-sf-rank__bar"><i style="width: {{ $pct }}%; background: {{ $side_colors[$i % 5] }};"></i></span>
+                                        </li>
+                                    @empty
+                                        <li class="japs-sf-rank__empty">{{ __('lang_v1.no_data') }}</li>
+                                    @endforelse
+                                </ul>
+                                <p class="japs-sf-channels__kicker">Channels</p>
+                                <ul class="japs-sf-rank japs-sf-rank--ch">
+                                    @foreach ($orders_by_location as $ch)
+                                        <li>
+                                            <span class="japs-sf-rank__dot" style="background: {{ $ch['color'] }}"></span>
+                                            <span class="japs-sf-rank__name">{{ $ch['label'] }}</span>
+                                            <span class="japs-sf-rank__val">{{ number_format($ch['count']) }}</span>
+                                            <span class="japs-sf-rank__pct">{{ $ch['pct'] }}%</span>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="japs-dash-chart-card japs-sf-activity">
+                            <div class="japs-dash-chart-card__header">
+                                <h3 class="japs-dash-chart-card__title">{{ __('home.recent_activity') }}</h3>
+                                <a href="{{ $card_sells }}" class="japs-dash-period-chip">{{ __('home.view_all_orders') }}</a>
+                            </div>
+                            <ul class="japs-sf-activity__list">
+                                @forelse ($recent_activity as $act)
+                                    @php
+                                        $inv = $act->invoice_no ?: ('#'.$act->id);
+                                        if ($act->type === 'sell_return') {
+                                            $actText = 'Refund issued for '.$inv;
+                                            $dot = 'is-refund';
+                                        } elseif ($act->payment_status === 'paid') {
+                                            $actText = 'Order '.$inv.' was fulfilled';
+                                            $dot = 'is-done';
+                                        } elseif (in_array($act->status, ['final', 'completed', 'received'], true)) {
+                                            $actText = 'Order '.$inv.' was placed';
+                                            $dot = 'is-place';
+                                        } else {
+                                            $actText = 'Order '.$inv.' is '.$act->status;
+                                            $dot = 'is-info';
+                                        }
+                                        $when = $act->transaction_date
+                                            ? \Carbon\Carbon::parse($act->transaction_date)->format('M j, g:i A')
+                                            : '';
+                                    @endphp
+                                    <li>
+                                        <span class="japs-sf-activity__dot {{ $dot }}"></span>
+                                        <span class="japs-sf-activity__text">{{ $actText }}</span>
+                                        <span class="japs-sf-activity__time">{{ $when }}</span>
+                                    </li>
+                                @empty
+                                    <li class="japs-sf-activity__empty">{{ __('lang_v1.no_data') }}</li>
+                                @endforelse
+                            </ul>
+                        </div>
+                    </aside>
+                    </div>
                     @endif
+
                 @endif
             </div>
         </div>
@@ -352,7 +400,7 @@
 
 @section('css')
     <link href="{{ asset('css/japs-ui.css') }}" rel="stylesheet">
-    <link href="{{ asset('css/japs-sales-dash.css?v=' . ($asset_v ?? '') . '&sd=1') }}" rel="stylesheet">
+    <link href="{{ asset('css/japs-sales-dash.css?v=' . ($asset_v ?? '') . '&sd=19') }}" rel="stylesheet">
     <style>
         .select2-container {
             width: 100% !important;
@@ -364,6 +412,7 @@
     <script src="{{ asset('js/home.js?v=' . $asset_v) }}"></script>
     <script src="{{ asset('js/payment.js?v=' . $asset_v) }}"></script>
     @if (!empty($all_locations))
+        <div hidden>{!! $sells_chart_2->container() !!}</div>
         {!! $sells_chart_1->script() !!}
         {!! $sells_chart_2->script() !!}
         {!! $orders_chart->script() !!}
@@ -384,13 +433,24 @@
                             return;
                         }
                         var $el = $(chart.renderTo);
-                        if (
-                            $el.closest('.japs-dash-kpi-card__sparkline').length ||
-                            $el.closest('.japs-dash-chart-card--orders-source').length
-                        ) {
+                        if ($el.closest('.japs-dash-kpi-card__sparkline').length) {
+                            try {
+                                var w = $el.parent().width() || $el.width() || null;
+                                chart.setSize(w, 44, false);
+                            } catch (e) {}
+                            return;
+                        }
+                        if ($el.closest('.japs-dash-chart-card--orders-source').length) {
                             try {
                                 chart.setSize(null, null, false);
                                 chart.reflow();
+                            } catch (e) {}
+                            return;
+                        }
+                        if ($el.closest('.japs-dash-chart-card--orders-trend').length) {
+                            try {
+                                var $box = $el.closest('.japs-dash-chart-card__canvas');
+                                chart.setSize($box.width() || null, 200, false);
                             } catch (e) {}
                         }
                     });

@@ -30,7 +30,7 @@ body.japs-dashboard-home .japs-sales-dash .japs-dash-row-3col,
 body.japs-dashboard-home .japs-sales-dash .japs-dash-row-4col {
   width: 100% !important;
   max-width: none !important;
-  flex: 1 1 100%;
+  flex: 0 0 auto;
 }
 
 body.japs-dashboard-home .japs-sales-dash .japs-dash-kpi-row {
@@ -132,5 +132,427 @@ body.japs-dashboard-home .japs-sales-dash .japs-dash-loc-tile:hover {
   body.japs-dashboard-home .japs-sales-dash .japs-dash-bar-list__fill,
   body.japs-dashboard-home .japs-sales-dash .japs-dash-loc-tile {
     animation: none !important;
+  }
+}
+
+body.japs-dashboard-home .japs-sales-dash .japs-sf-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  gap: 16px;
+  align-items: stretch;
+  margin-top: 8px;
+}
+body.japs-dashboard-home .japs-sales-dash .japs-sf-main {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+body.japs-dashboard-home .japs-sales-dash .japs-sf-main .japs-dash-kpi-row,
+body.japs-dashboard-home .japs-sales-dash .japs-sf-main .japs-dash-row-3col {
+  margin-top: 0;
+}
+body.japs-dashboard-home .japs-sales-dash .japs-sf-main .japs-dash-kpi-row {
+  flex: 0 0 auto;
+  align-items: stretch;
+}
+body.japs-dashboard-home .japs-sales-dash .japs-sf-main .japs-dash-row-3col:not(.japs-sf-bottom) {
+  flex: 0 0 auto;
+  min-height: 0;
+}
+body.japs-dashboard-home .japs-sales-dash .japs-sf-main .japs-dash-row-3col:not(.japs-sf-bottom) > .japs-dash-chart-card {
+  height: auto;
+}
+body.japs-dashboard-home .japs-sales-dash .japs-sf-main .japs-sf-bottom {
+  flex: 1 1 auto;
+  min-height: 0;
+  align-items: stretch;
+}
+body.japs-dashboard-home .japs-sales-dash .japs-sf-main .japs-sf-bottom > .japs-dash-chart-card {
+  height: 100% !important;
+  min-height: 0 !important;
+}
+body.japs-dashboard-home .japs-sales-dash .japs-sf-aside {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+  align-self: stretch;
+}
+body.japs-dashboard-home .japs-sales-dash .japs-sf-aside .japs-sf-insights,
+body.japs-dashboard-home .japs-sales-dash .japs-sf-aside .japs-sf-channels,
+body.japs-dashboard-home .japs-sales-dash .japs-sf-aside .japs-sf-activity,
+body.japs-dashboard-home .japs-sales-dash .japs-sf-aside .japs-sf-quick {
+  flex: 0 0 auto;
+  min-height: 0 !important;
+  height: auto !important;
+}
+body.japs-dashboard-home .japs-sales-dash .japs-sf-bottom {
+  width: 100% !important;
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 16px;
+}
+body.japs-dashboard-home .japs-sales-dash .japs-dash-kpi-card__icon,
+body.japs-dashboard-home .japs-sales-dash .japs-dash-kpi-card__top {
+  display: none !important;
+}
+body.japs-dashboard-home .japs-sales-dash .japs-dash-kpi-card__label {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  color: #64748b !important;
+  margin: 0 0 8px !important;
+}
+body.japs-dashboard-home .japs-sales-dash .japs-dash-kpi-card {
+  min-height: 112px !important;
+  height: 100% !important;
+  align-self: stretch !important;
+  display: flex !important;
+  flex-direction: column !important;
+  padding: 12px 14px 8px !important;
+  border-radius: 14px !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+body.japs-dashboard-home .japs-sales-dash .japs-dash-kpi-card__label {
+  margin: 0 0 2px !important;
+}
+body.japs-dashboard-home .japs-sales-dash .japs-dash-kpi-card__value {
+  font-size: 24px !important;
+  line-height: 1.15 !important;
+  margin: 0 !important;
+  white-space: nowrap;
+}
+body.japs-dashboard-home .japs-sales-dash .japs-dash-kpi-card__trend {
+  margin: 2px 0 0 !important;
+  gap: 6px !important;
+}
+body.japs-dashboard-home .japs-sales-dash .japs-dash-kpi-card__sparkline {
+  height: 44px !important;
+  flex: 0 0 44px !important;
+  width: 100% !important;
+  margin: auto 0 0 !important;
+  overflow: hidden;
+}
+body.japs-dashboard-home .japs-sales-dash .japs-dash-kpi-card__sparkline .highcharts-container,
+body.japs-dashboard-home .japs-sales-dash .japs-dash-kpi-card__sparkline > div {
+  height: 44px !important;
+  width: 100% !important;
+  max-width: 100% !important;
+}
+body.japs-dashboard-home .japs-sales-dash .japs-dash-chart-card--sales,
+body.japs-dashboard-home .japs-sales-dash .japs-dash-chart-card--status,
+body.japs-dashboard-home .japs-sales-dash .japs-dash-chart-card--pipeline {
+  display: flex !important;
+  flex-direction: column;
+  overflow: hidden;
+}
+body.japs-dashboard-home .japs-sales-dash .japs-dash-chart-card--sales .japs-dash-chart-card__header,
+body.japs-dashboard-home .japs-sales-dash .japs-dash-chart-card--status .japs-dash-chart-card__header,
+body.japs-dashboard-home .japs-sales-dash .japs-dash-chart-card--pipeline .japs-dash-chart-card__header {
+  flex: 0 0 auto;
+  align-items: center;
+  min-height: 30px;
+  margin: 0 0 8px;
+}
+body.japs-dashboard-home .japs-sales-dash .japs-dash-chart-card--sales .japs-dash-chart-card__canvas {
+  overflow: hidden;
+  max-width: 100%;
+}
+body.japs-dashboard-home .japs-sales-dash .japs-sf-donut {
+  width: 120px;
+  height: 120px;
+  display: block;
+}
+body.japs-dashboard-home .japs-sales-dash .japs-dash-chart-card--status .japs-dash-source-body {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+}
+body.japs-dashboard-home .japs-sales-dash .japs-dash-chart-card--status .japs-dash-source-legend {
+  flex: 0 0 auto !important;
+  width: auto;
+  min-width: 0;
+}
+body.japs-dashboard-home .japs-sales-dash .japs-dash-chart-card--status .japs-dash-payment-chart-wrap {
+  position: relative;
+  flex: 0 0 120px;
+  width: 120px;
+  height: 120px;
+  min-width: 120px;
+  min-height: 120px;
+  max-width: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+<body.japs-dashboard-home .japs-sales-dash .japs-dash-chart-card--status .japs-dash-donut-center {
+  display: none;
+}
+body.japs-dashboard-home .japs-sales-dash .japs-sf-insights__kicker {
+  margin: 0 16px 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #64748b;
+}
+body.japs-dashboard-home .japs-sales-dash .japs-sf-insights__list {
+  list-style: none;
+  margin: 0 16px 16px;
+  padding: 0;
+  font-size: 13px;
+  color: #334155;
+  line-height: 1.4;
+}
+body.japs-dashboard-home .japs-sales-dash .japs-sf-insights__list li {
+  position: relative;
+  padding: 0 0 10px 14px;
+}
+body.japs-dashboard-home .japs-sales-dash .japs-sf-insights__list li:last-child { padding-bottom: 0; }
+body.japs-dashboard-home .japs-sales-dash .japs-sf-insights__list li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 7px;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #94a3b8;
+}
+body.japs-dashboard-home .japs-sales-dash .japs-sf-insights__list li.is-up::before { background: #22c55e; }
+body.japs-dashboard-home .japs-sales-dash .japs-sf-insights__list li.is-warn::before { background: #f59e0b; }
+body.japs-dashboard-home .japs-sales-dash .japs-sf-insights__list li.is-info::before { background: #3b82f6; }
+body.japs-dashboard-home .japs-sales-dash .japs-sf-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 14px 14px;
+}
+body.japs-dashboard-home .japs-sales-dash .japs-sf-actions__btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-align: center;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  color: #334155;
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  width: 100%;
+  line-height: 1.2;
+}
+body.japs-dashboard-home .japs-sales-dash .japs-sf-actions__btn svg {
+  flex-shrink: 0;
+}
+body.japs-dashboard-home .japs-sales-dash .japs-sf-channels__body {
+  padding: 0 14px 14px;
+}
+body.japs-dashboard-home .japs-sales-dash .japs-sf-channels__kicker {
+  margin: 12px 0 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: #94a3b8;
+}
+body.japs-dashboard-home .japs-sales-dash .japs-sf-rank {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+body.japs-dashboard-home .japs-sales-dash .japs-sf-rank li {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr) auto auto;
+  grid-template-areas: "n name val pct" "bar bar bar bar";
+  column-gap: 6px;
+  row-gap: 4px;
+  align-items: baseline;
+  padding: 7px 0;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 12px;
+}
+body.japs-dashboard-home .japs-sales-dash .japs-sf-rank li:last-child { border-bottom: 0; }
+body.japs-dashboard-home .japs-sales-dash .japs-sf-rank__n { grid-area: n; color: #94a3b8; font-weight: 700; }
+body.japs-dashboard-home .japs-sales-dash .japs-sf-rank__name { grid-area: name; font-weight: 600; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+body.japs-dashboard-home .japs-sales-dash .japs-sf-rank__val { grid-area: val; font-weight: 700; color: #334155; }
+body.japs-dashboard-home .japs-sales-dash .japs-sf-rank__pct { grid-area: pct; color: #64748b; font-size: 11px; }
+body.japs-dashboard-home .japs-sales-dash .japs-sf-rank__bar {
+  grid-area: bar;
+  display: block;
+  height: 4px;
+  background: #f1f5f9;
+  border-radius: 99px;
+  overflow: hidden;
+}
+body.japs-dashboard-home .japs-sales-dash .japs-sf-rank__bar i {
+  display: block;
+  height: 100%;
+  border-radius: 99px;
+}
+body.japs-dashboard-home .japs-sales-dash .japs-sf-rank--ch li {
+  grid-template-columns: 10px minmax(0, 1fr) auto auto;
+  grid-template-areas: "n name val pct";
+}
+body.japs-dashboard-home .japs-sales-dash .japs-sf-rank__dot {
+  grid-area: n;
+  width: 8px;
+  height: 8px;
+  border-radius: 99px;
+  align-self: center;
+}
+body.japs-dashboard-home .japs-sales-dash .japs-sf-rank__empty {
+  color: #94a3b8;
+  font-size: 12px;
+  border: 0 !important;
+}
+body.japs-dashboard-home .japs-sales-dash .japs-sf-activity__list {
+  list-style: none;
+  margin: 0;
+  padding: 4px 14px 12px;
+}
+body.japs-dashboard-home .japs-sales-dash .japs-sf-activity__list li {
+  display: grid;
+  grid-template-columns: 10px minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: start;
+  padding: 8px 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+body.japs-dashboard-home .japs-sales-dash .japs-sf-activity__list li:last-child { border-bottom: 0; }
+body.japs-dashboard-home .japs-sales-dash .japs-sf-activity__dot {
+  width: 8px;
+  height: 8px;
+  margin-top: 5px;
+  border-radius: 99px;
+  background: #94a3b8;
+}
+body.japs-dashboard-home .japs-sales-dash .japs-sf-activity__dot.is-done { background: #22c55e; }
+body.japs-dashboard-home .japs-sales-dash .japs-sf-activity__dot.is-refund { background: #f59e0b; }
+body.japs-dashboard-home .japs-sales-dash .japs-sf-activity__dot.is-place { background: #3b82f6; }
+body.japs-dashboard-home .japs-sales-dash .japs-sf-activity__dot.is-info { background: #8b5cf6; }
+body.japs-dashboard-home .japs-sales-dash .japs-sf-activity__text {
+  font-size: 12px;
+  font-weight: 600;
+  color: #0f172a;
+  line-height: 1.35;
+}
+body.japs-dashboard-home .japs-sales-dash .japs-sf-activity__time {
+  font-size: 11px;
+  color: #94a3b8;
+  white-space: nowrap;
+}
+body.japs-dashboard-home .japs-sales-dash .japs-sf-activity__empty {
+  color: #94a3b8;
+  font-size: 12px;
+  border: 0 !important;
+  display: block !important;
+}
+body.japs-dashboard-home .japs-sales-dash .japs-sf-actions__btn:hover {
+  border-color: #93c5fd;
+  color: #2563eb;
+}
+
+body.japs-dashboard-home .japs-sales-dash .japs-dash-chart-card {
+  min-height: 0 !important;
+  height: auto !important;
+  padding: 12px 14px 10px !important;
+}
+body.japs-dashboard-home .japs-sales-dash .japs-dash-chart-card__canvas,
+body.japs-dashboard-home .japs-sales-dash .zoho-dashboard__main-chart-canvas {
+  min-height: 180px !important;
+  flex: 0 0 auto !important;
+}
+body.japs-dashboard-home .japs-sales-dash .japs-dash-chart-card--revenue .japs-dash-chart-card__canvas .highcharts-container,
+body.japs-dashboard-home .japs-sales-dash .japs-dash-chart-card--revenue .japs-dash-chart-card__canvas > div {
+  height: 180px !important;
+}
+body.japs-dashboard-home .japs-sales-dash .japs-dash-chart-card--orders-trend {
+  display: flex !important;
+  flex-direction: column;
+  overflow: hidden;
+}
+body.japs-dashboard-home .japs-sales-dash .japs-dash-chart-card--orders-trend .japs-dash-chart-card__header {
+  flex: 0 0 auto;
+  min-width: 0;
+}
+body.japs-dashboard-home .japs-sales-dash .japs-dash-chart-card--orders-trend .japs-dash-chart-card__title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+body.japs-dashboard-home .japs-sales-dash .japs-dash-chart-card--orders-trend .japs-dash-chart-card__canvas {
+  flex: 1 1 auto !important;
+  min-height: 200px !important;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+}
+body.japs-dashboard-home .japs-sales-dash .japs-dash-chart-card--orders-trend .japs-dash-chart-card__canvas .highcharts-container,
+body.japs-dashboard-home .japs-sales-dash .japs-dash-chart-card--orders-trend .japs-dash-chart-card__canvas > div {
+  width: 100% !important;
+  height: 200px !important;
+  max-width: 100%;
+}
+body.japs-dashboard-home .japs-sales-dash .japs-sf-donut {
+  width: 120px;
+  height: 120px;
+}
+body.japs-dashboard-home .japs-sales-dash .japs-dash-source-body {
+  min-height: 0 !important;
+  flex: 1 1 auto !important;
+  justify-content: center;
+  align-items: center;
+}
+body.japs-dashboard-home .japs-sales-dash .japs-dash-chart-card--orders-source {
+  display: flex !important;
+  flex-direction: column;
+}
+body.japs-dashboard-home .japs-sales-dash .japs-dash-chart-card--orders-source .japs-dash-payment-chart-wrap,
+body.japs-dashboard-home .japs-sales-dash .japs-dash-chart-card--orders-source .japs-dash-payment-chart {
+  margin: 0 auto;
+}
+body.japs-dashboard-home .japs-sales-dash .japs-sf-insights__list {
+  margin: 0 12px 10px;
+}
+body.japs-dashboard-home .japs-sales-dash .japs-sf-insights__kicker {
+  margin: 0 12px 6px;
+}
+body.japs-dashboard-home .japs-sales-dash .japs-sf-actions {
+  padding: 0 12px 10px;
+  gap: 6px;
+}
+body.japs-dashboard-home .japs-sales-dash .japs-sf-actions__btn {
+  padding: 6px 10px;
+}
+body.japs-dashboard-home .japs-sales-dash .japs-sf-activity__list {
+  padding: 0 12px 8px;
+}
+body.japs-dashboard-home .japs-sales-dash .japs-sf-activity__list li {
+  padding: 5px 0;
+}
+body.japs-dashboard-home .japs-sales-dash .japs-sf-channels__body {
+  padding: 0 12px 10px;
+}
+@media (max-width: 1199px) {
+  body.japs-dashboard-home .japs-sales-dash .japs-sf-shell {
+    grid-template-columns: 1fr;
+  }
+  body.japs-dashboard-home .japs-sales-dash .japs-sf-main,
+  body.japs-dashboard-home .japs-sales-dash .japs-sf-aside,
+  body.japs-dashboard-home .japs-sales-dash .japs-sf-bottom {
+    grid-column: 1;
+    grid-row: auto;
   }
 }
