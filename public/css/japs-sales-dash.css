@@ -192,13 +192,30 @@ body.japs-dashboard-home .japs-sales-dash .japs-sf-aside .japs-sf-activity {
   height: auto !important;
   display: flex !important;
   flex-direction: column;
-  overflow: visible;
+  overflow: hidden;
   padding: 12px 14px 10px !important;
+}
+body.japs-dashboard-home .japs-sales-dash .japs-sf-activity__viewport {
+  height: 210px;
+  overflow: hidden;
+  position: relative;
 }
 body.japs-dashboard-home .japs-sales-dash .japs-sf-aside .japs-sf-activity .japs-sf-activity__list {
   flex: 0 0 auto;
   overflow: visible;
   min-height: 0;
+  margin: 0;
+  will-change: transform;
+}
+body.japs-dashboard-home .japs-sales-dash .japs-sf-activity__list.is-ticker {
+  animation: japsActUp 45s linear infinite;
+}
+body.japs-dashboard-home .japs-sales-dash .japs-sf-activity__viewport:hover .japs-sf-activity__list.is-ticker {
+  animation-play-state: paused;
+}
+@keyframes japsActUp {
+  from { transform: translateY(0); }
+  to { transform: translateY(-50%); }
 }
 body.japs-dashboard-home .japs-sales-dash .japs-sf-bottom {
   width: 100% !important;
@@ -438,6 +455,7 @@ body.japs-dashboard-home .japs-sales-dash .japs-sf-activity__list li {
   align-items: start;
   padding: 8px 0;
   border-bottom: 1px solid #f1f5f9;
+  min-width: 0;
 }
 body.japs-dashboard-home .japs-sales-dash .japs-sf-activity__view {
   color: #64748b;
@@ -464,12 +482,21 @@ body.japs-dashboard-home .japs-sales-dash .japs-sf-activity__text {
   font-weight: 600;
   color: #0f172a;
   line-height: 1.35;
+  min-width: 0;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
   white-space: normal;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
   overflow: hidden;
+}
+body.japs-dashboard-home .japs-sales-dash .japs-sf-activity__l1,
+body.japs-dashboard-home .japs-sales-dash .japs-sf-activity__l2 {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 body.japs-dashboard-home .japs-sales-dash .japs-sf-activity__time {
   font-size: 11px;
@@ -574,12 +601,21 @@ body.japs-dashboard-home .japs-sales-dash .japs-sf-activity__text {
   font-weight: 600;
   color: #0f172a;
   line-height: 1.35;
+  min-width: 0;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
   white-space: normal;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
   overflow: hidden;
+}
+body.japs-dashboard-home .japs-sales-dash .japs-sf-activity__l1,
+body.japs-dashboard-home .japs-sales-dash .japs-sf-activity__l2 {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 body.japs-dashboard-home .japs-sales-dash .japs-sf-channels__body {
   padding: 0 12px 10px;

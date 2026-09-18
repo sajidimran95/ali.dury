@@ -257,16 +257,14 @@
                                 <h3 class="japs-dash-chart-card__title">{{ __('home.insights_actions') }}</h3>
                                 <a href="{{ $view_all_edits_url }}" class="japs-dash-period-chip">{{ __('home.view_all') }}</a>
                             </div>
-                            <ul class="japs-sf-activity__list">
+                            <div class="japs-sf-activity__viewport">
+                            <ul class="japs-sf-activity__list" id="japs-sf-activity-list">
                                 @forelse ($sale_edit_activities as $act)
                                     <li>
                                         <span class="japs-sf-activity__dot {{ $act->dot }}"></span>
                                         <span class="japs-sf-activity__text">
-                                            {{ $act->when }}
-                                            · <b>{{ $act->kind }} {{ $act->invoice_no }}</b>
-                                            · {{ $act->product }}
-                                            · {{ $act->change }}
-                                            · by {{ $act->editor }}
+                                            <span class="japs-sf-activity__l1">{{ $act->when }} · <b>{{ $act->kind }} {{ $act->invoice_no }}</b></span>
+                                            <span class="japs-sf-activity__l2">{{ $act->product }} · {{ $act->change }} · by {{ $act->editor }}</span>
                                         </span>
                                         @if (!empty($act->view_url))
                                             <a href="{{ $act->view_url }}" class="japs-sf-activity__view" title="{{ __('messages.view') }}">
@@ -278,6 +276,7 @@
                                     <li class="japs-sf-activity__empty">{{ __('lang_v1.no_data') }}</li>
                                 @endforelse
                             </ul>
+                            </div>
                         </div>
                         <div class="japs-dash-chart-card japs-sf-channels">
                             <div class="japs-dash-chart-card__header">
@@ -381,7 +380,7 @@
 
 @section('css')
     <link href="{{ asset('css/japs-ui.css') }}" rel="stylesheet">
-    <link href="{{ asset('css/japs-sales-dash.css?v=' . ($asset_v ?? '') . '&sd=27') }}" rel="stylesheet">
+    <link href="{{ asset('css/japs-sales-dash.css?v=' . ($asset_v ?? '') . '&sd=29') }}" rel="stylesheet">
     <style>
         .select2-container {
             width: 100% !important;
@@ -824,5 +823,19 @@
         });
     </script>
     @endif
+
+    <script>
+        $(function () {
+            var $list = $('#japs-sf-activity-list');
+            if (!$list.length) {
+                return;
+            }
+            var $rows = $list.children('li').not('.japs-sf-activity__empty');
+            if ($rows.length > 4) {
+                $list.append($rows.clone());
+                $list.addClass('is-ticker');
+            }
+        });
+    </script>
 
 @endsection

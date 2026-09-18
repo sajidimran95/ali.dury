@@ -450,7 +450,7 @@ class HomeController extends Controller
             $business_id,
             $widgets_start,
             $widgets_end,
-            5
+            20
         );
         $sale_edit_insights = $sale_edit_feed['insights'];
         $sale_edit_activities = $sale_edit_feed['items'];
