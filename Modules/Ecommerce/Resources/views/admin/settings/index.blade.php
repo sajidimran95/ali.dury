@@ -44,6 +44,12 @@
                     {!! Form::email('contact_email', $settings->contact_email, ['class' => 'form-control']) !!}
                 </div>
             </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    {!! Form::label('contact_phone', 'Contact Phone') !!}
+                    {!! Form::text('contact_phone', $settings->contact_phone, ['class' => 'form-control']) !!}
+                </div>
+            </div>
         </div>
         <div class="row">
             <div class="col-md-4"><label>{!! Form::checkbox('enable_cod', 1, $settings->enable_cod) !!} Cash on Delivery</label></div>

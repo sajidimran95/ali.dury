@@ -444,7 +444,40 @@
     $new_arrivals_category = $new_arrivals_category ?? null;
     $has_new_arrivals = $has_new_arrivals ?? false;
     $has_promotions = $has_promotions ?? false;
-    $store = $ecom_settings->store_name ?? 'Greencloud Wholesale';
+    $store = $ecom_settings->store_name ?? 'Store';
+    $storeEmail = trim((string) ($ecom_settings->contact_email ?? ''));
+    $storePhone = trim((string) ($ecom_settings->contact_phone ?? ''));
+    $storeLogoUrl = null;
+    $storeLogoCandidates = [];
+    if (! empty($ecom_settings->store_logo)) {
+        $storeLogoCandidates[] = $ecom_settings->store_logo;
+    }
+    try {
+        $loc = null;
+        if (! empty($ecom_settings->location_id)) {
+            $loc = \App\BusinessLocation::find($ecom_settings->location_id);
+        }
+        if ($storePhone === '' && $loc) {
+            $storePhone = trim((string) ($loc->mobile ?: $loc->alternate_number ?: ''));
+        }
+        if ($storeEmail === '' && $loc && ! empty($loc->email)) {
+            $storeEmail = trim((string) $loc->email);
+        }
+        $biz = \App\Business::find($ecom_settings->business_id ?? null);
+        if ($biz && ! empty($biz->logo)) {
+            $storeLogoCandidates[] = 'business_logos/'.$biz->logo;
+        }
+    } catch (\Throwable $e) {
+        // ignore
+    }
+    $storePhoneHref = $storePhone !== '' ? preg_replace('/[^0-9+]/', '', $storePhone) : '';
+    foreach ($storeLogoCandidates as $rel) {
+        $rel = ltrim(str_replace('\\', '/', (string) $rel), '/');
+        if ($rel !== '' && file_exists(public_path('uploads/'.$rel))) {
+            $storeLogoUrl = asset('uploads/'.$rel);
+            break;
+        }
+    }
     $routeName = optional(request()->route())->getName();
     $isHome = request()->is('/') || $routeName === 'ecommerce.home';
     $isShop = in_array($routeName, ['ecommerce.shop', 'ecommerce.category', 'ecommerce.product', 'ecommerce.collection'], true);
@@ -453,27 +486,6 @@
         || in_array($routeName, ['ecommerce.login', 'ecommerce.register', 'ecommerce.wishlist'], true);
     $isAccountPanel = str_starts_with((string) $routeName, 'ecommerce.account')
         || in_array($routeName, ['ecommerce.wishlist', 'ecommerce.quick_order'], true);
-
-    $storeLogoUrl = null;
-    $storeLogoCandidates = [];
-    if (! empty($ecom_settings->store_logo)) {
-        $storeLogoCandidates[] = $ecom_settings->store_logo;
-    }
-    try {
-        $bizLogo = null;
-        if (! empty($bizLogo)) {
-            $storeLogoCandidates[] = 'business_logos/'.$bizLogo;
-        }
-    } catch (\Throwable $e) {
-        // ignore
-    }
-    foreach ($storeLogoCandidates as $rel) {
-        $rel = ltrim(str_replace('\\', '/', (string) $rel), '/');
-        if ($rel !== '' && file_exists(public_path('uploads/'.$rel))) {
-            $storeLogoUrl = asset('uploads/'.$rel);
-            break;
-        }
-    }
 @endphp
 <body class="antialiased app-mobile gc-store{{ ! empty($isAccountPanel) ? ' ecom-account-panel' : '' }}">
 
@@ -544,11 +556,14 @@
 </div>
 <div class="gc-util">
     <div class="max-w-[1400px] mx-auto px-4 h-[28px] flex flex-wrap items-center justify-between gap-2">
-        <span>Wisconsin’s Premier Smoke &amp; Vape Wholesale Distributor</span>
+        <span>{{ $store }}</span>
         <div class="flex flex-wrap items-center gap-4">
-            <a href="tel:4142520586" class="text-white/85 hover:text-white">(414) 252-0586</a>
-            <a href="mailto:info@greencloudwholesale.com" class="text-white/85 hover:text-white">info@greencloudwholesale.com</a>
-            <span>Mon–Fri 9:30AM–5:30PM &nbsp;|&nbsp; Sat 10AM–4PM</span>
+            @if($storePhone !== '')
+                <a href="tel:{{ $storePhoneHref }}" class="text-white/85 hover:text-white">{{ $storePhone }}</a>
+            @endif
+            @if($storeEmail !== '')
+                <a href="mailto:{{ $storeEmail }}" class="text-white/85 hover:text-white">{{ $storeEmail }}</a>
+            @endif
         </div>
     </div>
 </div>
@@ -659,16 +674,24 @@
     <div class="max-w-[1400px] mx-auto px-4 py-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-10 gc-footer-grid">
         <div>
             <div class="flex items-center gap-2 mb-3">
-                <span class="h-10 w-10 rounded-full bg-[#3d9b6d] flex items-center justify-center">🌲</span>
-                <span>
-                    <span class="block font-extrabold tracking-[0.12em] text-xs">GREENCLOUD</span>
-                    <span class="block text-[10px] tracking-[0.28em] text-[#8fd0ab]">WHOLESALE</span>
-                </span>
+                @if($storeLogoUrl)
+                    <img src="{{ $storeLogoUrl }}" alt="{{ $store }}" class="h-10 w-auto max-w-[180px] object-contain object-left">
+                @else
+                    <span class="h-10 w-10 rounded-full bg-[#3d9b6d] flex items-center justify-center text-white font-extrabold">{{ mb_strtoupper(mb_substr($store, 0, 1)) }}</span>
+                    <span class="block font-extrabold tracking-[0.08em] text-sm">{{ $store }}</span>
+                @endif
             </div>
-            <p class="text-white/65 text-sm leading-relaxed">Wisconsin’s premier smoke &amp; vape wholesale distributor. Serving licensed retailers with quality products at competitive prices since 2018.</p>
-            <p class="text-xs text-white/50 mt-3">Hours<br>Mon–Fri 9:30AM–5:30PM<br>Sat 10AM–4PM</p>
-            <p class="text-sm mt-3 break-all"><a class="text-white" href="tel:4142520586">(414) 252-0586</a><br>
-            <a class="text-white/80" href="mailto:info@greencloudwholesale.com">info@greencloudwholesale.com</a></p>
+            @if(!empty($ecom_settings->seo_description))
+                <p class="text-white/65 text-sm leading-relaxed">{{ $ecom_settings->seo_description }}</p>
+            @endif
+            <p class="text-sm mt-3 break-all">
+                @if($storePhone !== '')
+                    <a class="text-white" href="tel:{{ $storePhoneHref }}">{{ $storePhone }}</a><br>
+                @endif
+                @if($storeEmail !== '')
+                    <a class="text-white/80" href="mailto:{{ $storeEmail }}">{{ $storeEmail }}</a>
+                @endif
+            </p>
         </div>
         <div>
             <h3 class="font-serif text-lg mb-3">Shop</h3>
@@ -720,7 +743,7 @@
     </div>
     <div class="border-t border-white/10">
         <div class="max-w-[1400px] mx-auto px-4 py-4 text-xs text-white/45">
-            © {{ date('Y') }} Greencloud Wholesale LLC. All rights reserved. | Wauwatosa, WI 53213
+            © {{ date('Y') }} {{ $store }}. All rights reserved.
         </div>
     </div>
 </footer>
