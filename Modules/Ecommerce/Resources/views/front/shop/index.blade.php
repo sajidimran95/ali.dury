@@ -31,6 +31,10 @@
             <div class="hidden sm:block w-full sm:w-48 h-24 rounded-xl overflow-hidden border border-line">
                 <img src="{{ $bannerImg }}" alt="" class="w-full h-full object-cover">
             </div>
+        @else
+            <div class="hidden sm:block w-full sm:w-48 h-24 rounded-xl overflow-hidden border border-line bg-mist">
+                <img src="{{ asset('img/default.png') }}" alt="" class="w-full h-full object-cover opacity-70">
+            </div>
         @endif
     </div>
 </section>
@@ -73,7 +77,7 @@
         </aside>
 
         <div class="lg:col-span-9">
-            @include('ecommerce::front.partials.product_grid', ['products' => $products])
+            @include('ecommerce::front.partials.product_grid', ['products' => $products, 'minCards' => 16])
             <div class="mt-8">
                 {{ $products->links('ecommerce::front.partials.pagination') }}
             </div>

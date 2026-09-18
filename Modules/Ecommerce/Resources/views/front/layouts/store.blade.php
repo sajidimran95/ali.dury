@@ -513,7 +513,7 @@
             @if($storeLogoUrl)
                 <img src="{{ $storeLogoUrl }}" alt="{{ $store }}" class="h-9 w-auto max-w-[140px] object-contain object-left">
             @else
-                <span class="h-9 w-9 rounded-full bg-brandDark text-white flex items-center justify-center font-extrabold text-sm">🌲</span>
+                <span class="font-extrabold text-[15px] tracking-tight text-[#1a1a1a] leading-none max-w-[140px] truncate">{{ $store }}</span>
             @endif
         </a>
         <form action="{{ route('ecommerce.shop') }}" method="get" class="flex-1 min-w-0">
@@ -525,11 +525,9 @@
         </form>
     </div>
         <div class="app-chip-scroll">
-            @if(!empty($has_promotions))
-                <a href="{{ route('ecommerce.promotions') }}" class="app-chip {{ $routeName === 'ecommerce.promotions' || request()->boolean('featured') ? 'active' : '' }}">Promotions</a>
-            @endif
+            <a href="{{ route('ecommerce.promotions') }}" class="app-chip {{ $routeName === 'ecommerce.promotions' || request()->boolean('featured') ? 'active' : '' }}">Promotions</a>
             <a href="{{ route('ecommerce.shop', ['sort' => 'newest', 'new_only' => 1]) }}" class="app-chip {{ request()->boolean('new_only') ? 'active' : '' }}">New Arrivals</a>
-            @foreach($nav_categories as $cat)
+            @forelse($nav_categories as $cat)
                 @php
                     $subIds = ($cat->sub_categories ?? collect())->pluck('id')->map(fn ($id) => (string) $id)->all();
                     $chipOn = request('category') == $cat->id
@@ -540,7 +538,12 @@
                 <a href="{{ route('ecommerce.category', $cat->id) }}" class="app-chip {{ $chipOn ? 'active' : '' }}">
                     {{ $cat->name }}
                 </a>
-            @endforeach
+            @empty
+                <a href="{{ route('ecommerce.shop') }}" class="app-chip">Shop</a>
+                <a href="{{ route('ecommerce.brands') }}" class="app-chip">Brands</a>
+                <a href="{{ route('ecommerce.shop') }}" class="app-chip">Categories</a>
+                <a href="{{ route('ecommerce.promotions') }}" class="app-chip">Featured</a>
+            @endforelse
         </div>
 </header>
 
@@ -576,13 +579,7 @@
                 @if($storeLogoUrl)
                     <img src="{{ $storeLogoUrl }}" alt="{{ $store }}" class="h-10 w-auto max-w-[220px] object-contain object-left">
                 @else
-                    <span class="flex items-center gap-2">
-                        <span class="h-10 w-10 rounded-full bg-[#2e6a49] text-white flex items-center justify-center text-lg">🌲</span>
-                        <span class="leading-tight">
-                            <span class="block font-extrabold tracking-[0.12em] text-[13px] text-[#1a1a1a]">GREENCLOUD</span>
-                            <span class="block text-[12px] tracking-[0.28em] text-[#4caf79]">WHOLESALE</span>
-                        </span>
-                    </span>
+                    <span class="font-extrabold text-[18px] tracking-tight text-[#1a1a1a] leading-none max-w-[220px]">{{ $store }}</span>
                 @endif
             </a>
 
@@ -615,13 +612,11 @@
     <div class="gc-nav relative z-[80] text-white overflow-visible">
         <div class="max-w-[1400px] mx-auto px-4 cat-nav-wrap" id="catNavWrap">
             <ul class="gc-menubar">
-                @if(!empty($has_promotions))
                 <li>
                     <a href="{{ route('ecommerce.promotions') }}" class="cat-link gc-nav-item">
                         <span>Promotions</span>
                     </a>
                 </li>
-                @endif
                 <li class="mega">
                     <a href="{{ route('ecommerce.shop', ['sort' => 'newest', 'new_only' => 1]) }}" class="cat-link gc-nav-item">
                         <span class="gc-nav-text">New{{ "\n" }}Arrivals</span>
@@ -652,6 +647,20 @@
                         @endif
                     </li>
                 @endforeach
+                @if($nav_categories->isEmpty())
+                    <li>
+                        <a href="{{ route('ecommerce.shop') }}" class="cat-link gc-nav-item"><span>Shop</span></a>
+                    </li>
+                    <li>
+                        <a href="{{ route('ecommerce.brands') }}" class="cat-link gc-nav-item"><span>Brands</span></a>
+                    </li>
+                    <li>
+                        <a href="{{ route('ecommerce.shop') }}" class="cat-link gc-nav-item"><span>Categories</span></a>
+                    </li>
+                    <li>
+                        <a href="{{ route('ecommerce.promotions') }}" class="cat-link gc-nav-item"><span>Featured</span></a>
+                    </li>
+                @endif
             </ul>
         </div>
     </div>
@@ -674,12 +683,7 @@
     <div class="max-w-[1400px] mx-auto px-4 py-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-10 gc-footer-grid">
         <div>
             <div class="flex items-center gap-2 mb-3">
-                @if($storeLogoUrl)
-                    <img src="{{ $storeLogoUrl }}" alt="{{ $store }}" class="h-10 w-auto max-w-[180px] object-contain object-left">
-                @else
-                    <span class="h-10 w-10 rounded-full bg-[#3d9b6d] flex items-center justify-center text-white font-extrabold">{{ mb_strtoupper(mb_substr($store, 0, 1)) }}</span>
-                    <span class="block font-extrabold tracking-[0.08em] text-sm">{{ $store }}</span>
-                @endif
+                <span class="font-extrabold text-[18px] tracking-tight text-white leading-none">{{ $store }}</span>
             </div>
             @if(!empty($ecom_settings->seo_description))
                 <p class="text-white/65 text-sm leading-relaxed">{{ $ecom_settings->seo_description }}</p>
@@ -702,10 +706,13 @@
                 @foreach($nav_categories as $cat)
                     <a class="block hover:text-white" href="{{ route('ecommerce.category', $cat->id) }}">{{ $cat->name }}</a>
                 @endforeach
-                <a class="block hover:text-white" href="{{ route('ecommerce.brands') }}">All Brands</a>
-                @if(!empty($has_promotions))
-                    <a class="block hover:text-white" href="{{ route('ecommerce.promotions') }}">Promotions &amp; Deals</a>
+                @if($nav_categories->isEmpty())
+                    <a class="block hover:text-white" href="{{ route('ecommerce.shop') }}">Shop</a>
+                    <a class="block hover:text-white" href="{{ route('ecommerce.brands') }}">Brands</a>
+                    <a class="block hover:text-white" href="{{ route('ecommerce.shop') }}">Categories</a>
                 @endif
+                <a class="block hover:text-white" href="{{ route('ecommerce.brands') }}">All Brands</a>
+                <a class="block hover:text-white" href="{{ route('ecommerce.promotions') }}">Promotions &amp; Deals</a>
             </div>
         </div>
         <div>
@@ -816,19 +823,17 @@
             </div>
             <div class="text-xs font-bold uppercase tracking-wider text-black/40 mb-2">Departments</div>
             <div class="divide-y divide-line rounded-xl border border-line overflow-hidden bg-white">
-                @if(!empty($has_promotions))
-                    <a href="{{ route('ecommerce.promotions') }}" class="flex items-center justify-between px-4 py-3.5 font-semibold text-[15px] active:bg-mist">
-                        <span>Promotions</span>
-                        <span class="text-black/30">›</span>
-                    </a>
-                @endif
+                <a href="{{ route('ecommerce.promotions') }}" class="flex items-center justify-between px-4 py-3.5 font-semibold text-[15px] active:bg-mist">
+                    <span>Promotions</span>
+                    <span class="text-black/30">›</span>
+                </a>
                 <a href="{{ route('ecommerce.shop', ['sort' => 'newest', 'new_only' => 1]) }}" class="flex items-center justify-between px-4 py-3.5 font-semibold text-[15px] active:bg-mist">
                     <span>All New Arrivals</span>
                     <span class="text-black/30">›</span>
                 </a>
                 <a href="{{ route('ecommerce.shop', ['sort' => 'newest', 'new_only' => 1]) }}" class="block px-8 py-2.5 text-sm text-black/70 active:bg-mist">New arrivals</a>
                 <a href="{{ route('ecommerce.shop', ['sort' => 'price_asc', 'new_only' => 1]) }}" class="block px-8 py-2.5 text-sm text-black/70 active:bg-mist">Best value</a>
-                @foreach($nav_categories as $cat)
+                @forelse($nav_categories as $cat)
                     @php $subs = $cat->sub_categories ?? collect(); @endphp
                     <a href="{{ route('ecommerce.category', $cat->id) }}" class="flex items-center justify-between px-4 py-3.5 font-semibold text-[15px] active:bg-mist">
                         <span>{{ $cat->name }}</span>
@@ -837,7 +842,20 @@
                     @foreach($subs as $sub)
                         <a href="{{ route('ecommerce.category', $sub->id) }}" class="block px-8 py-2.5 text-sm text-black/70 active:bg-mist">{{ $sub->name }}</a>
                     @endforeach
-                @endforeach
+                @empty
+                    <a href="{{ route('ecommerce.shop') }}" class="flex items-center justify-between px-4 py-3.5 font-semibold text-[15px] active:bg-mist">
+                        <span>Shop</span>
+                        <span class="text-black/30">›</span>
+                    </a>
+                    <a href="{{ route('ecommerce.brands') }}" class="flex items-center justify-between px-4 py-3.5 font-semibold text-[15px] active:bg-mist">
+                        <span>Brands</span>
+                        <span class="text-black/30">›</span>
+                    </a>
+                    <a href="{{ route('ecommerce.shop') }}" class="flex items-center justify-between px-4 py-3.5 font-semibold text-[15px] active:bg-mist">
+                        <span>Categories</span>
+                        <span class="text-black/30">›</span>
+                    </a>
+                @endforelse
             </div>
             <p class="text-[11px] text-black/40 text-center mt-4 px-2">
                 WARNING: This product contains nicotine. Nicotine is an addictive chemical.

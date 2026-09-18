@@ -1,13 +1,15 @@
 @extends('ecommerce::front.layouts.store')
 
-@section('title', 'Greencloud Wholesale | Wisconsin Smoke & Vape Distributor')
+@section('title', ($ecom_settings->seo_title ?? $ecom_settings->store_name ?? 'Wholesale Store'))
 
 @section('content')
 @php
     $navBrands = $nav_brands ?? collect();
+    $categories = $categories ?? collect();
+    $store = $store ?? ($ecom_settings->store_name ?? 'Wholesale Store');
     $heroSlides = [
         [
-            'kicker' => 'Wholesale only — licensed retailers',
+            'kicker' => $store,
             'title_html' => "Wisconsin's Premier<br>Wholesale<br>Distributor",
             'sub' => 'Smoke, vape, hemp & accessories — competitive pricing for licensed retailers.',
             'cta' => 'Shop All Products',
@@ -17,7 +19,7 @@
             'img' => 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1600&q=70',
         ],
         [
-            'kicker' => 'Wholesale only — licensed retailers',
+            'kicker' => $store,
             'title_html' => 'Top Disposable Vapes<br>in Stock Now',
             'sub' => 'Lost Mary, RAZ, HQD and more — best-selling brands at wholesale prices.',
             'cta' => 'Shop Disposables',
@@ -27,7 +29,7 @@
             'img' => 'https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?auto=format&fit=crop&w=1600&q=70',
         ],
         [
-            'kicker' => 'Wholesale only — licensed retailers',
+            'kicker' => $store,
             'title_html' => 'Glass, Papers & Accessories<br>Ready to Ship',
             'sub' => 'RAW, GRAV, Clipper and more — stock your shelves today.',
             'cta' => 'Shop Accessories',
@@ -37,19 +39,24 @@
             'img' => 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=1600&q=70',
         ],
     ];
-    $brandImages = [
-        'default' => 'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&w=400&q=60',
-    ];
-    $catImages = [
-        'default' => 'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=400&q=60',
-    ];
-    $promos = [
-        ['tag' => '40% OFF', 'title' => 'Summer Clearance', 'sub' => 'Up to 40% off', 'img' => 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=600&q=60'],
-        ['tag' => 'NEW', 'title' => 'New Disposable Vapes', 'sub' => 'Latest arrivals in stock', 'img' => 'https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?auto=format&fit=crop&w=600&q=60'],
-        ['tag' => 'HOT', 'title' => 'Delta & THCA Collection', 'sub' => 'Premium hemp-derived', 'img' => 'https://images.unsplash.com/photo-1556740749-887f6717d7e4?auto=format&fit=crop&w=600&q=60'],
-        ['tag' => 'SALE', 'title' => 'Glass & Water Pipes', 'sub' => 'Top-quality borosilicate', 'img' => 'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=600&q=60'],
-        ['tag' => 'BUNDLE', 'title' => 'RAW Bundle Deals', 'sub' => 'Papers, trays & more', 'img' => 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=600&q=60'],
-    ];
+    $brandImages = ['default' => 'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&w=400&q=60'];
+    $catImages = ['default' => 'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=400&q=60'];
+    $promos = collect();
+    foreach (($featured ?? collect())->where('ecom_is_featured', 1)->take(5) as $fp) {
+        $promos->push([
+            'tag' => 'SALE',
+            'title' => $fp->name,
+            'sub' => optional($fp->brand)->name ?: 'Featured',
+            'href' => route('ecommerce.product', $fp->ecom_slug ?: $fp->id),
+            'img' => $fp->image_url ?? $brandImages['default'],
+        ]);
+    }
+    $fallbackBrands = $navBrands->count()
+        ? $navBrands
+        : collect(range(1, 8))->map(fn ($n) => (object) ['id' => 0, 'name' => 'Brand '.$n]);
+    $fallbackCats = $categories->count()
+        ? $categories
+        : collect(range(1, 8))->map(fn ($n) => (object) ['id' => 0, 'name' => 'Category '.$n]);
 @endphp
 
 <section class="gc-hero" id="gcHero">
@@ -76,6 +83,7 @@
     </div>
 </section>
 
+@if($promos->count())
 <section class="bg-white py-12">
     <div class="max-w-[1400px] mx-auto px-4">
         <div class="flex items-end justify-between mb-6">
@@ -87,7 +95,7 @@
         </div>
         <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
             @foreach($promos as $p)
-                <a href="{{ route('ecommerce.promotions') }}" class="gc-promo-card min-h-[170px]">
+                <a href="{{ $p['href'] ?? route('ecommerce.promotions') }}" class="gc-promo-card min-h-[170px]">
                     <img src="{{ $p['img'] }}" alt="">
                     <div class="absolute inset-0 bg-black/35"></div>
                     <span class="absolute top-2 left-2 text-[10px] font-bold bg-[#4caf79] px-2 py-0.5 rounded">{{ $p['tag'] }}</span>
@@ -100,6 +108,7 @@
         </div>
     </div>
 </section>
+@endif
 
 <section class="py-10">
     <div class="max-w-[1400px] mx-auto px-4">
@@ -127,7 +136,6 @@
     </div>
 </section>
 
-@if($navBrands->count())
 <section class="py-10">
     <div class="max-w-[1400px] mx-auto px-4">
         <div class="flex items-end justify-between mb-6">
@@ -138,21 +146,19 @@
             <a href="{{ route('ecommerce.brands') }}" class="text-sm font-semibold text-[#2e6a49]">View All Brands →</a>
         </div>
         <div class="flex gap-3 overflow-x-auto pb-2">
-            @foreach($navBrands as $brand)
-                <a href="{{ route('ecommerce.shop', ['brand' => $brand->id]) }}" class="gc-brand-tile">
+            @foreach($fallbackBrands as $brand)
+                <a href="{{ !empty($brand->id) ? route('ecommerce.shop', ['brand' => $brand->id]) : route('ecommerce.brands') }}" class="gc-brand-tile">
                     <img src="{{ $brandImages[$brand->name] ?? $brandImages['default'] }}" alt="{{ $brand->name }}">
                     <div class="px-2 py-3">
                         <div class="font-bold text-sm">{{ $brand->name }}</div>
-                        <div class="text-xs text-black/45 mt-0.5">{{ $brand->products_count ?? '' }}{{ isset($brand->products_count) ? ' products' : 'Shop now' }}</div>
+                        <div class="text-xs text-black/45 mt-0.5">Shop now</div>
                     </div>
                 </a>
             @endforeach
         </div>
     </div>
 </section>
-@endif
 
-@if($categories->count())
 <section class="bg-white py-10">
     <div class="max-w-[1400px] mx-auto px-4">
         <div class="flex items-end justify-between mb-6">
@@ -163,8 +169,8 @@
             <a href="{{ route('ecommerce.shop') }}" class="text-sm font-semibold text-[#2e6a49]">View All Categories →</a>
         </div>
         <div class="flex gap-3 overflow-x-auto pb-2">
-            @foreach($categories as $cat)
-                <a href="{{ route('ecommerce.category', $cat->id) }}" class="gc-cat-tile">
+            @foreach($fallbackCats as $cat)
+                <a href="{{ !empty($cat->id) ? route('ecommerce.category', $cat->id) : route('ecommerce.shop') }}" class="gc-cat-tile">
                     <img src="{{ $catImages[$cat->name] ?? $catImages['default'] }}" alt="{{ $cat->name }}">
                     <div class="px-2 py-3">
                         <div class="font-bold text-sm">{{ $cat->name }}</div>
@@ -175,7 +181,6 @@
         </div>
     </div>
 </section>
-@endif
 
 <section class="gc-cta-band">
     <div class="max-w-[1400px] mx-auto px-4 py-12 md:flex md:items-center md:justify-between gap-6">

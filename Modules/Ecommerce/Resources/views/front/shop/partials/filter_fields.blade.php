@@ -2,25 +2,27 @@
     <label class="font-bold block mb-2">Category</label>
     <select name="category" class="input-w">
         <option value="">All categories</option>
-        @foreach($categories as $cat)
+        @forelse($categories ?? [] as $cat)
             <option value="{{ $cat->id }}" @selected(request('category') == $cat->id)>{{ $cat->name }}</option>
             @foreach(($cat->sub_categories ?? []) as $sub)
                 <option value="{{ $sub->id }}" @selected(request('category') == $sub->id)>&nbsp;&nbsp;{{ $sub->name }}</option>
             @endforeach
-        @endforeach
+        @empty
+            <option value="" disabled>Category</option>
+        @endforelse
     </select>
 </div>
-@if($brands->count())
 <div>
     <label class="font-bold block mb-2">Brand</label>
     <select name="brand" class="input-w">
         <option value="">All brands</option>
-        @foreach($brands as $brand)
+        @forelse($brands ?? [] as $brand)
             <option value="{{ $brand->id }}" @selected(request('brand') == $brand->id)>{{ $brand->name }}</option>
-        @endforeach
+        @empty
+            <option value="" disabled>Brand</option>
+        @endforelse
     </select>
 </div>
-@endif
 <div>
     <label class="font-bold block mb-2">Price</label>
     <div class="grid grid-cols-2 gap-2">

@@ -1,9 +1,10 @@
 @php
     $products = $products ?? collect();
     $gridClass = $gridClass ?? 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4';
+    $minCards = (int) ($minCards ?? 8);
 @endphp
 <div class="{{ $gridClass }}">
-    @forelse($products as $product)
+    @foreach($products as $product)
         @php
             $variation = $product->variations->first();
             $price = $product->ecom_price;
@@ -47,12 +48,29 @@
                     <button type="submit" class="ecom-add-cart w-full rounded-lg bg-[#4caf79] text-[#1a1a1a] text-xs font-bold py-2.5 hover:bg-[#3d9b68]"
                             aria-label="Add {{ $product->name }} to cart">Add to Cart</button>
                 </form>
+                @else
+                    <a href="{{ route('ecommerce.shop') }}" class="ecom-add-cart mt-auto pt-3 w-full rounded-lg bg-[#4caf79] text-[#1a1a1a] text-xs font-bold py-2.5 text-center">Add to Cart</a>
                 @endif
             </div>
         </article>
-    @empty
-        <div class="col-span-full rounded-xl bg-white border border-dashed border-line p-10 text-center text-sm text-black/50">
-            No products found in this catalog.
-        </div>
-    @endforelse
+    @endforeach
+    @if($products->isEmpty())
+        @for($i = 0; $i < $minCards; $i++)
+        <article class="gc-card product-card flex flex-col bg-white">
+            <a href="{{ route('ecommerce.shop') }}" class="block relative aspect-[4/3] bg-mist overflow-hidden">
+                <img src="{{ asset('img/default.png') }}" alt="" class="w-full h-full object-cover opacity-70">
+            </a>
+            <div class="p-3 md:p-3.5 flex flex-col flex-1">
+                <span class="text-[11px] font-bold tracking-wide text-[#2e6a49] uppercase">Brand</span>
+                <a href="{{ route('ecommerce.shop') }}" class="font-semibold text-sm leading-snug line-clamp-2 min-h-[2.5rem] mt-0.5">Product</a>
+                <div class="mt-1 text-[11px] text-black/45">1 display</div>
+                <div class="mt-1 text-[11px] text-black/40">Min. qty: 1 display</div>
+                <div class="mt-2 flex items-baseline gap-2">
+                    <span class="font-extrabold tabular-nums text-ink">$0.00</span>
+                </div>
+                <a href="{{ route('ecommerce.shop') }}" class="ecom-add-cart mt-auto pt-3 w-full rounded-lg bg-[#4caf79] text-[#1a1a1a] text-xs font-bold py-2.5 text-center">Add to Cart</a>
+            </div>
+        </article>
+        @endfor
+    @endif
 </div>
