@@ -43,6 +43,7 @@ class SettingsController extends Controller
         $extra['about_title'] = $request->input('about_title');
         $extra['about_lede'] = $request->input('about_lede');
         $extra['about_body'] = $request->input('about_body');
+        $extra['store_hours'] = $request->input('store_hours');
         $settings->extra = $extra;
 
         if ($request->hasFile('store_logo')) {

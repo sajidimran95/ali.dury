@@ -471,6 +471,11 @@
         // ignore
     }
     $storePhoneHref = $storePhone !== '' ? preg_replace('/[^0-9+]/', '', $storePhone) : '';
+    $extra = is_array($ecom_settings->extra ?? null) ? $ecom_settings->extra : [];
+    $storeHours = trim((string) ($extra['store_hours'] ?? ''));
+    if ($storeHours === '') {
+        $storeHours = 'Mon–Fri 9:30AM–5:30PM  |  Sat 10AM–4PM';
+    }
     foreach ($storeLogoCandidates as $rel) {
         $rel = ltrim(str_replace('\\', '/', (string) $rel), '/');
         if ($rel !== '' && file_exists(public_path('uploads/'.$rel))) {
@@ -567,6 +572,7 @@
             @if($storeEmail !== '')
                 <a href="mailto:{{ $storeEmail }}" class="text-white/85 hover:text-white">{{ $storeEmail }}</a>
             @endif
+            <span>{{ $storeHours }}</span>
         </div>
     </div>
 </div>
@@ -688,6 +694,7 @@
             @if(!empty($ecom_settings->seo_description))
                 <p class="text-white/65 text-sm leading-relaxed">{{ $ecom_settings->seo_description }}</p>
             @endif
+            <p class="text-xs text-white/50 mt-3">Hours<br>{!! nl2br(e($storeHours)) !!}</p>
             <p class="text-sm mt-3 break-all">
                 @if($storePhone !== '')
                     <a class="text-white" href="tel:{{ $storePhoneHref }}">{{ $storePhone }}</a><br>

@@ -50,6 +50,12 @@
                     {!! Form::text('contact_phone', $settings->contact_phone, ['class' => 'form-control']) !!}
                 </div>
             </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    {!! Form::label('store_hours', 'Store Hours') !!}
+                    {!! Form::text('store_hours', data_get($settings->extra, 'store_hours', 'Mon–Fri 9:30AM–5:30PM | Sat 10AM–4PM'), ['class' => 'form-control']) !!}
+                </div>
+            </div>
         </div>
         <div class="row">
             <div class="col-md-4"><label>{!! Form::checkbox('enable_cod', 1, $settings->enable_cod) !!} Cash on Delivery</label></div>
