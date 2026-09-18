@@ -583,10 +583,10 @@
     {{-- Promotional announcements (matches Greencloud reference chrome) --}}
     <div class="text-white" style="background:#2E6A49" role="region" aria-label="Promotional announcements" aria-live="polite" id="layoutPromoAnnounce">
         <div class="max-w-screen-xl mx-auto px-4 h-[44px] flex items-center justify-center gap-3 text-sm font-semibold">
-            <button type="button" class="opacity-70 hover:opacity-100" data-ann-prev aria-label="Previous announcement">‹</button>
+            <button type="button" class="opacity-70 hover:opacity-100 cursor-pointer" data-ann-prev aria-label="Previous announcement">‹</button>
             <a href="{{ $announceFirst['href'] }}" class="text-white no-underline truncate max-w-[min(100%,42rem)]" data-ann-text>{{ $announceFirst['t'] }}</a>
             <a href="{{ $announceFirst['href'] }}" class="rounded-full bg-white text-xs font-bold px-3 py-1 shrink-0" style="color:#2E6A49" data-ann-cta>{{ $announceFirst['a'] }}</a>
-            <button type="button" class="opacity-70 hover:opacity-100" data-ann-next aria-label="Next announcement">›</button>
+            <button type="button" class="opacity-70 hover:opacity-100 cursor-pointer" data-ann-next aria-label="Next announcement">›</button>
         </div>
     </div>
 
