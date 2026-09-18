@@ -67,7 +67,7 @@
             </div>
             <input type="hidden" name="country" value="United States">
             <label class="text-sm flex items-center gap-2"><input type="checkbox" name="is_default" value="1"> Default shipping</label>
-            <button class="rounded-full bg-ink text-white px-6 py-2.5 text-sm">Save address</button>
+            <button class="btn-brand">Save address</button>
         </form>
     </div>
 </div>

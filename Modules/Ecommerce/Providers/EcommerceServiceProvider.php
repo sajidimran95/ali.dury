@@ -48,11 +48,16 @@ class EcommerceServiceProvider extends ServiceProvider
                         $q->whereNull('parent_id')->orWhere('parent_id', 0);
                     })
                     ->with(['sub_categories' => function ($q) {
-                        $q->orderBy('name');
+                        $q->where(function ($qq) {
+                            $qq->where('category_type', 'product')->orWhereNull('category_type');
+                        })->orderBy('name');
                     }])
                     ->orderBy('name')
-                    ->limit(16)
+                    ->limit(6)
                     ->get();
+
+                $view->with('has_new_arrivals', \App\Product::storefrontQuery((int) $business_id)->where('ecom_is_new_arrival', 1)->exists());
+                $view->with('has_promotions', \App\Product::storefrontQuery((int) $business_id)->where('ecom_is_featured', 1)->exists());
 
                 // Brands + sample product image for mega menu tiles
                 foreach ($nav_categories as $cat) {

@@ -58,6 +58,12 @@ class ProductDetailController extends Controller
         array_unshift($recent, $product->id);
         session()->put('ecom_recently_viewed', array_values(array_unique(array_slice($recent, 0, 8))));
 
+        $recently_viewed = Product::storefrontQuery((int) $business_id)
+            ->whereIn('id', session('ecom_recently_viewed', []))
+            ->where('id', '!=', $product->id)
+            ->with(['variations', 'category', 'brand', 'unit'])
+            ->get();
+
         $brand_image = null;
         if ($product->brand_id) {
             $brandProduct = Product::storefrontQuery((int) $business_id)
@@ -82,7 +88,8 @@ class ProductDetailController extends Controller
             'review_count',
             'cart_totals',
             'cart_product_ids',
-            'brand_image'
+            'brand_image',
+            'recently_viewed'
         ));
     }
 

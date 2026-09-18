@@ -23,6 +23,7 @@ use Modules\Ecommerce\Http\Controllers\Front\ProductDetailController;
 use Modules\Ecommerce\Http\Controllers\Front\QuickOrderController;
 use Modules\Ecommerce\Http\Controllers\Front\EcomPwaController;
 use Modules\Ecommerce\Http\Controllers\Front\ShopController;
+use Modules\Ecommerce\Http\Controllers\Front\PageController;
 use Modules\Ecommerce\Http\Controllers\Front\StorePageController;
 use Modules\Ecommerce\Http\Controllers\InstallController;
 
@@ -86,6 +87,9 @@ Route::prefix(config('ecommerce.route_prefix', 'shop'))
             return redirect('/shop', 301);
         });
 
+        Route::get('/page/{slug}', [PageController::class, 'show'])->name('page');
+        Route::get('/brands', [ShopController::class, 'brands'])->name('brands');
+        Route::get('/promotions', [ShopController::class, 'promotions'])->name('promotions');
         Route::get('/home', [HomeController::class, 'index'])->name('home');
         Route::get('/c/{slug}', [ShopController::class, 'category'])->name('category');
         Route::get('/p/{slug}', [ProductDetailController::class, 'show'])->name('product');
@@ -94,10 +98,8 @@ Route::prefix(config('ecommerce.route_prefix', 'shop'))
         Route::post('/contact', [ContactPageController::class, 'send'])->name('contact.send');
         Route::post('/subscribe', [StorePageController::class, 'subscribe'])->name('subscribe');
         Route::get('/categories', [StorePageController::class, 'categories'])->name('categories');
-        Route::get('/brands', [StorePageController::class, 'brands'])->name('brands');
         Route::get('/brand/{id}', [StorePageController::class, 'brand'])->name('brand.show');
         Route::post('/brand-request', [StorePageController::class, 'brandRequest'])->name('brand.request');
-        Route::get('/promotions/{id?}', [StorePageController::class, 'promotions'])->name('promotions');
         Route::get('/new-arrivals/{sub?}', [StorePageController::class, 'newArrivals'])->name('new_arrivals');
         Route::get('/search', [StorePageController::class, 'search'])->name('search');
         Route::get('/about', fn () => app(StorePageController::class)->page('about'))->name('about');
@@ -159,7 +161,8 @@ Route::middleware(['setData', 'ecommerce.enabled'])->group(function () {
     Route::post('/cart/coupon', [CartController::class, 'applyCoupon']);
     Route::get('/checkout', [CheckoutController::class, 'index']);
     Route::post('/checkout', [CheckoutController::class, 'place']);
-    Route::get('/promotions/{id?}', [StorePageController::class, 'promotions']);
+    Route::get('/promotions/{id?}', [ShopController::class, 'promotions']);
+    Route::get('/page/{slug}', [PageController::class, 'show']);
     Route::get('/new-arrivals/{sub?}', [StorePageController::class, 'newArrivals']);
     Route::get('/search', [StorePageController::class, 'search']);
     Route::get('/contact', [ContactPageController::class, 'index']);

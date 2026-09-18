@@ -23,7 +23,7 @@
             <input name="name" required placeholder="Your name" class="w-full border border-[#e0e0e0] rounded-lg px-3 py-2.5 text-sm">
             <input type="email" name="email" required placeholder="Business email" class="w-full border border-[#e0e0e0] rounded-lg px-3 py-2.5 text-sm">
             <textarea name="message" required rows="3" placeholder="Brand name and pack sizes you need" class="w-full border border-[#e0e0e0] rounded-lg px-3 py-2.5 text-sm"></textarea>
-            <button class="px-5 py-2.5 rounded-lg text-white text-sm font-bold" style="background:#4CAF79">Submit request</button>
+            <button class="btn-brand">Submit request</button>
         </form>
     </div>
 </div>

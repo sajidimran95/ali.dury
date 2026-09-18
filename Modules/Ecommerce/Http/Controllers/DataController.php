@@ -108,6 +108,7 @@ class DataController
 
                     $sub->url(route('ecommerce.admin.reports'), __('ecommerce::lang.reports'), ['icon' => 'fa fas fa-chart-line', 'active' => $isEcom && request()->segment(2) == 'reports']);
                     $sub->url(route('ecommerce.admin.settings'), __('ecommerce::lang.settings'), ['icon' => 'fa fas fa-cog', 'active' => $isEcom && request()->segment(2) == 'settings']);
+                    $sub->url(route('ecommerce.admin.shipping_tax'), __('ecommerce::lang.shipping_tax'), ['icon' => 'fa fas fa-truck', 'active' => $isEcom && request()->segment(2) == 'shipping-tax']);
                 },
                 ['icon' => '<svg aria-hidden="true" class="tw-size-5 tw-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9h18l-1 11H4L3 9Z"/><path d="M8 9V7a4 4 0 0 1 8 0v2"/><path d="M9 13h6"/></svg>', 'active' => $isEcom]
             )->order(60);

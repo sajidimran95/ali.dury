@@ -17,8 +17,11 @@ class ShopController extends Controller
         $query = Product::storefrontQuery((int) $business_id)->with(['variations', 'brand', 'category', 'unit']);
 
         if ($request->filled('category')) {
-            $query->where(function ($q) use ($request) {
-                $q->where('category_id', $request->category)->orWhere('sub_category_id', $request->category);
+            $catId = (int) $request->category;
+            $childIds = Category::where('parent_id', $catId)->pluck('id')->all();
+            $ids = array_merge([$catId], $childIds);
+            $query->where(function ($q) use ($ids) {
+                $q->whereIn('category_id', $ids)->orWhereIn('sub_category_id', $ids);
             });
         }
         if ($request->filled('brand')) {
@@ -40,36 +43,37 @@ class ShopController extends Controller
             $query->whereNotNull('ecom_discount_price')
                 ->whereColumn('ecom_discount_price', '<', 'ecom_online_price');
         }
+        if ($request->boolean('featured')) {
+            $query->where('ecom_is_featured', 1);
+        }
         if ($request->boolean('new_only')) {
             $query->where(function ($q) {
                 $q->where('ecom_is_new_arrival', 1)->orWhere('created_at', '>=', now()->subDays(21));
             });
         }
 
-        $sort = $request->get('sort', 'featured');
+        $sort = $request->get('sort', 'newest');
         match ($sort) {
             'price_asc' => $query->orderByRaw('COALESCE(ecom_discount_price, ecom_online_price, 0) ASC'),
             'price_desc' => $query->orderByRaw('COALESCE(ecom_discount_price, ecom_online_price, 0) DESC'),
-            'name' => $query->orderBy('name'),
-            'bestselling' => $query->orderByDesc('id'),
-            'newest' => $query->orderByDesc('id'),
-            default => $query->orderByDesc('ecom_is_featured')->orderByDesc('id'),
+            default => $query->orderByDesc('id'),
         };
 
-        $products = $query->paginate(24)->withQueryString();
+        $products = $query->paginate(16)->withQueryString();
         $categories = Category::where('business_id', $business_id)
             ->where('category_type', 'product')
             ->where(function ($q) {
                 $q->whereNull('parent_id')->orWhere('parent_id', 0);
             })
+            ->with(['sub_categories' => function ($q) {
+                $q->orderBy('name');
+            }])
             ->orderBy('name')
             ->get();
         $brands = Brands::where('business_id', $business_id)->get();
         $cart = $cartService->getOrCreateCart($business_id);
         $cart_totals = $cartService->totals($cart);
-        $hub = $request->attributes->get('ecom_hub');
-
-        return view('ecommerce::front.shop.index', compact('products', 'categories', 'brands', 'cart_totals', 'sort', 'hub'));
+        return view('ecommerce::front.shop.index', compact('products', 'categories', 'brands', 'cart_totals', 'sort'));
     }
 
     public function category($slug, Request $request, CartService $cartService)
@@ -81,20 +85,31 @@ class ShopController extends Controller
             })
             ->first();
 
-        $hub = \Modules\Ecommerce\Support\Storefront::hub(strtolower((string) $slug));
-        if ($hub) {
-            $request->attributes->set('ecom_hub', $hub);
-        }
-
         if ($category) {
             $request->merge(['category' => $category->id]);
-        } elseif (! $hub) {
-            // Stale banner/menu links (deleted category IDs) → soft-land on shop
+        } else {
             return redirect()
                 ->route('ecommerce.shop')
                 ->with('error', 'That category is no longer available. Browse the full catalog instead.');
         }
 
         return $this->index($request, $cartService);
+    }
+
+    public function promotions(Request $request, CartService $cartService)
+    {
+        $request->merge(['featured' => 1]);
+
+        return $this->index($request, $cartService);
+    }
+
+    public function brands(Request $request, CartService $cartService)
+    {
+        $business_id = $request->attributes->get('ecommerce_business_id');
+        $brands = Brands::where('business_id', $business_id)->orderBy('name')->get();
+        $cart = $cartService->getOrCreateCart($business_id);
+        $cart_totals = $cartService->totals($cart);
+
+        return view('ecommerce::front.shop.brands', compact('brands', 'cart_totals'));
     }
 }

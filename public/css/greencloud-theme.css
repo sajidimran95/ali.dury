@@ -5,7 +5,7 @@
     --color-bg: #f4f4f4;
 }
 .bg-brand { background-color: #4CAF79 !important; }
-.btn-brand { background-color: #4CAF79 !important; color: #fff; }
+.btn-brand { background-color: #4CAF79 !important; color: #1a1a1a !important; }
 .btn-brand:hover { background-color: #2E6A49 !important; }
 .text-brand { color: #4CAF79 !important; }
 .bg-mist { background-color: #f5f5f5; }

@@ -18,7 +18,7 @@
         <input type="password" name="current_password" placeholder="Current password" required class="w-full border rounded-xl px-4 py-2.5 text-sm">
         <input type="password" name="password" placeholder="New password" required class="w-full border rounded-xl px-4 py-2.5 text-sm">
         <input type="password" name="password_confirmation" placeholder="Confirm password" required class="w-full border rounded-xl px-4 py-2.5 text-sm">
-        <button class="w-full rounded-full bg-ink text-white py-2.5">Update</button>
+        <button class="btn-brand w-full">Update</button>
     </form>
 </div>
 @endsection

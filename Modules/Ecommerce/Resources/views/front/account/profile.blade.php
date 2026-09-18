@@ -20,7 +20,7 @@
         <input name="last_name" value="{{ old('last_name', $contact->ecom_last_name) }}" placeholder="Last name" class="w-full border rounded-xl px-4 py-2.5 text-sm" required>
         <input name="email" type="email" value="{{ old('email', $contact->email) }}" class="w-full border rounded-xl px-4 py-2.5 text-sm" required>
         <input name="mobile" value="{{ old('mobile', $contact->mobile) }}" class="w-full border rounded-xl px-4 py-2.5 text-sm" required>
-        <button class="w-full rounded-full bg-ink text-white py-2.5">Save</button>
+        <button class="btn-brand w-full">Save</button>
     </form>
 </div>
 @endsection

@@ -53,41 +53,12 @@ class HomeController extends Controller
                 $q->whereNull('parent_id')->orWhere('parent_id', 0);
             })
             ->orderBy('name')
-            ->limit(10)
+            ->limit(12)
             ->get();
         $collections = EcomCollection::where('business_id', $business_id)->where('is_active', 1)->orderBy('sort_order')->limit(4)->get();
         $reviews = EcomReview::where('business_id', $business_id)->where('status', 'approved')->with('product')->latest()->limit(6)->get();
         $cart = $cartService->getOrCreateCart($business_id);
         $cart_totals = $cartService->totals($cart);
-
-        // Brand tiles with a representative product image (brands table has no logo column)
-        $brandIds = Product::storefrontQuery((int) $business_id)
-            ->whereNotNull('brand_id')
-            ->where('brand_id', '>', 0)
-            ->select('brand_id')
-            ->distinct()
-            ->limit(24)
-            ->pluck('brand_id');
-
-        $home_brands = \App\Brands::where('business_id', $business_id)
-            ->whereIn('id', $brandIds)
-            ->orderBy('name')
-            ->limit(12)
-            ->get()
-            ->map(function ($brand) use ($business_id) {
-                $product = Product::storefrontQuery((int) $business_id)
-                    ->where('brand_id', $brand->id)
-                    ->whereNotNull('image')
-                    ->where('image', '!=', '')
-                    ->orderByDesc('id')
-                    ->first(['id', 'image', 'name']);
-
-                return (object) [
-                    'id' => $brand->id,
-                    'name' => $brand->name,
-                    'image' => $product->image ?? null,
-                ];
-            });
 
         $category_covers = [];
         $coverFile = storage_path('app/ecom_category_covers.json');
@@ -104,8 +75,7 @@ class HomeController extends Controller
             'collections',
             'reviews',
             'cart_totals',
-            'category_covers',
-            'home_brands'
+            'category_covers'
         ));
     }
 }

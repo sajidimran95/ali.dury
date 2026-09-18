@@ -11,7 +11,7 @@
     <h1 class="text-2xl font-semibold mb-6">@lang('ecommerce::lang.track_order')</h1>
     <form method="get" class="flex gap-2 mb-8">
         <input name="token" value="{{ $token }}" placeholder="Tracking token" class="flex-1 border rounded-full px-4 py-2.5 text-sm">
-        <button class="rounded-full bg-ink text-white px-5 text-sm">Track</button>
+        <button class="btn-brand">Track</button>
     </form>
     @if($meta && $order)
         <div class="rounded-2xl border bg-white p-6 space-y-5">

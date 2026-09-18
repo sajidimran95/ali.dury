@@ -1,290 +1,245 @@
 @extends('ecommerce::front.layouts.store')
 
-@section('title', $ecom_settings->seo_title ?: ($ecom_settings->store_name ?? 'Wholesale Store'))
+@section('title', 'Greencloud Wholesale | Wisconsin Smoke & Vape Distributor')
 
 @section('content')
 @php
-    $storeName = $ecom_settings->store_name ?: ($store ?? 'Wholesale');
-    $heroFallbackTitle = $ecom_settings->seo_title ?: ($storeName."\nWholesale Distributor");
-    $heroFallbackSub = $ecom_settings->seo_description
-        ?: 'Competitive pricing for licensed retailers.';
-
-    $heroSlides = collect();
-    foreach ($banners as $banner) {
-        $img = $banner->image ? uploadAsset($banner->image, 'uploads/img') : null;
-        if (! $img && ! $banner->title) {
-            continue;
-        }
-        $heroSlides->push((object) [
-            'headline' => $banner->title ?: $heroFallbackTitle,
-            'sub' => $banner->subtitle ?: $heroFallbackSub,
-            'cta' => $banner->button_text ?: 'Shop All Products',
-            'ctaHref' => $banner->button_link ?: route('ecommerce.shop'),
+    $navBrands = $nav_brands ?? collect();
+    $heroSlides = [
+        [
+            'kicker' => 'Wholesale only — licensed retailers',
+            'title_html' => "Wisconsin's Premier<br>Wholesale<br>Distributor",
+            'sub' => 'Smoke, vape, hemp & accessories — competitive pricing for licensed retailers.',
+            'cta' => 'Shop All Products',
             'cta2' => 'Apply for Account',
-            'cta2Href' => route('ecommerce.register'),
-            'image' => $img,
-            'overlay' => 'rgba(26,61,43,0.7)',
-        ]);
-    }
-    if ($heroSlides->isEmpty()) {
-        $localHeroes = [
-            ['uploads/img/greencloud/photo-1556742049-0cfed4f6a45d.jpg', 'rgba(26,61,43,0.7)'],
-            ['uploads/img/greencloud/photo-1461532257246-777de18cd58b.jpg', 'rgba(30,70,40,0.72)'],
-            ['uploads/img/greencloud/photo-1585435465945-bef5a93f8849.jpg', 'rgba(20,40,60,0.72)'],
-        ];
-        foreach ($localHeroes as $i => [$path, $overlay]) {
-            $heroSlides->push((object) [
-                'headline' => $i === 0 ? $heroFallbackTitle : ($i === 1 ? "New Arrivals\nJust Dropped" : "Top Products\nin Stock Now"),
-                'sub' => $i === 0 ? $heroFallbackSub : ($i === 1 ? 'Fresh inventory added to the wholesale catalog.' : 'Best-selling brands at wholesale prices.'),
-                'cta' => $i === 0 ? 'Shop All Products' : ($i === 1 ? 'View New Arrivals' : 'Shop Catalog'),
-                'ctaHref' => $i === 1 ? route('ecommerce.shop', ['new_only' => 1, 'sort' => 'newest']) : route('ecommerce.shop'),
-                'cta2' => 'Apply for Account',
-                'cta2Href' => route('ecommerce.register'),
-                'image' => asset($path),
-                'overlay' => $overlay,
-            ]);
-        }
-    }
-
-    $promoTiles = $banners->take(5);
-    $promoProducts = $featured->filter(fn ($p) => $p->ecom_online_price && $p->ecom_online_price > $p->ecom_price)->take(5);
-    if ($promoProducts->isEmpty()) {
-        $promoProducts = $featured->take(5);
-    }
-    $navBrands = (isset($home_brands) && $home_brands instanceof \Illuminate\Support\Collection && $home_brands->count())
-        ? $home_brands
-        : ($nav_brands ?? collect());
-    $covers = $category_covers ?? [];
-    $coverImgUrl = fn ($cat) => isset($covers[$cat->id]) ? uploadAsset($covers[$cat->id], 'uploads/img') : null;
-
-    $trustItems = [
-        ['icon' => '🏭', 'title' => 'Direct Wholesale', 'sub' => 'Factory-direct pricing'],
-        ['icon' => '📦', 'title' => 'Fast Fulfillment', 'sub' => 'Same-day orders before 2PM'],
-        ['icon' => '✅', 'title' => 'Verified Products', 'sub' => 'Quality-checked inventory'],
-        ['icon' => '🔒', 'title' => 'Licensed Retailers', 'sub' => 'Verified B2B accounts only'],
-        ['icon' => '🚚', 'title' => 'Free Shipping', 'sub' => 'On qualifying orders'],
+            'href' => route('ecommerce.shop'),
+            'href2' => route('ecommerce.register'),
+            'img' => 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1600&q=70',
+        ],
+        [
+            'kicker' => 'Wholesale only — licensed retailers',
+            'title_html' => 'Top Disposable Vapes<br>in Stock Now',
+            'sub' => 'Lost Mary, RAZ, HQD and more — best-selling brands at wholesale prices.',
+            'cta' => 'Shop Disposables',
+            'cta2' => 'View All Brands',
+            'href' => route('ecommerce.shop'),
+            'href2' => route('ecommerce.brands'),
+            'img' => 'https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?auto=format&fit=crop&w=1600&q=70',
+        ],
+        [
+            'kicker' => 'Wholesale only — licensed retailers',
+            'title_html' => 'Glass, Papers & Accessories<br>Ready to Ship',
+            'sub' => 'RAW, GRAV, Clipper and more — stock your shelves today.',
+            'cta' => 'Shop Accessories',
+            'cta2' => 'View Promotions',
+            'href' => route('ecommerce.shop'),
+            'href2' => route('ecommerce.promotions'),
+            'img' => 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=1600&q=70',
+        ],
+    ];
+    $brandImages = [
+        'default' => 'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&w=400&q=60',
+    ];
+    $catImages = [
+        'default' => 'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=400&q=60',
+    ];
+    $promos = [
+        ['tag' => '40% OFF', 'title' => 'Summer Clearance', 'sub' => 'Up to 40% off', 'img' => 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=600&q=60'],
+        ['tag' => 'NEW', 'title' => 'New Disposable Vapes', 'sub' => 'Latest arrivals in stock', 'img' => 'https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?auto=format&fit=crop&w=600&q=60'],
+        ['tag' => 'HOT', 'title' => 'Delta & THCA Collection', 'sub' => 'Premium hemp-derived', 'img' => 'https://images.unsplash.com/photo-1556740749-887f6717d7e4?auto=format&fit=crop&w=600&q=60'],
+        ['tag' => 'SALE', 'title' => 'Glass & Water Pipes', 'sub' => 'Top-quality borosilicate', 'img' => 'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=600&q=60'],
+        ['tag' => 'BUNDLE', 'title' => 'RAW Bundle Deals', 'sub' => 'Papers, trays & more', 'img' => 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=600&q=60'],
     ];
 @endphp
 
-{{-- Hero carousel (Figma ei) --}}
-<section class="relative h-[480px] md:h-[560px] overflow-hidden" aria-label="Featured promotions carousel" id="homeHero">
+<section class="gc-hero" id="gcHero">
     @foreach($heroSlides as $i => $slide)
-        <div class="hero-slide absolute inset-0 bg-center bg-cover transition-opacity duration-700 {{ $i === 0 ? 'opacity-100' : 'opacity-0' }}"
-             data-hero-slide
-             style="background-image:url('{{ $slide->image }}');background-color:#1a3d2b"
-             aria-hidden="{{ $i === 0 ? 'false' : 'true' }}"></div>
-    @endforeach
-    <div class="absolute inset-0" style="background:rgba(26,61,43,0.7)" aria-hidden="true"></div>
-    <div class="relative h-full max-w-screen-xl mx-auto px-6 flex flex-col justify-center">
-        @foreach($heroSlides as $i => $slide)
-            <div class="hero-copy max-w-xl transition-all duration-500 {{ $i === 0 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3 absolute' }}" data-hero-copy>
-                <span class="inline-block text-xs font-bold uppercase tracking-[0.2em] mb-3 px-3 py-1 rounded-full" style="background:#4CAF79;color:white">Wholesale Only — Licensed Retailers</span>
-                <h1 class="font-display text-3xl md:text-5xl font-bold text-white mb-4 leading-tight whitespace-pre-line">{{ $slide->headline }}</h1>
-                <p class="text-base md:text-lg text-white opacity-90 mb-7 max-w-md">{{ $slide->sub }}</p>
-                <div class="flex flex-wrap gap-3">
-                    <a href="{{ $slide->ctaHref }}" class="px-6 py-3 rounded-lg font-semibold text-sm text-white transition-all hover:opacity-90 active:scale-95" style="background:#4CAF79">{{ $slide->cta }}</a>
-                    <a href="{{ $slide->cta2Href }}" class="px-6 py-3 rounded-lg font-semibold text-sm border-2 text-white transition-all hover:bg-white hover:text-[#2E6A49]" style="border-color:white">{{ $slide->cta2 }}</a>
+        <div class="absolute inset-0 {{ $i === 0 ? '' : 'hidden' }}" data-hero-slide>
+            <img src="{{ $slide['img'] }}" alt="">
+            <div class="gc-hero__inner">
+                <span class="gc-badge">{{ $slide['kicker'] }}</span>
+                <h1 class="gc-serif font-bold text-[40px] md:text-[48px] max-w-xl mt-5 leading-[1.15] tracking-wide">{!! $slide['title_html'] !!}</h1>
+                <p class="max-w-xl mt-4 text-white/85 text-[16px]">{{ $slide['sub'] }}</p>
+                <div class="flex flex-wrap gap-3 mt-8">
+                    <a href="{{ $slide['href'] }}" class="btn-brand">{{ $slide['cta'] }}</a>
+                    <a href="{{ $slide['href2'] }}" class="rounded-lg border border-white/50 text-white font-semibold px-5 py-3 min-h-[44px] inline-flex items-center">{{ $slide['cta2'] }}</a>
                 </div>
             </div>
+        </div>
+    @endforeach
+    <button type="button" class="absolute left-3 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-black/40 text-white" data-hero-prev>‹</button>
+    <button type="button" class="absolute right-3 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-black/40 text-white" data-hero-next>›</button>
+    <div class="absolute bottom-5 left-0 right-0 z-10 flex justify-center gap-2" id="gcHeroDots">
+        @foreach($heroSlides as $i => $slide)
+            <button type="button" class="h-2.5 w-2.5 rounded-full {{ $i === 0 ? 'bg-white' : 'bg-white/40' }}" data-hero-dot="{{ $i }}" aria-label="Slide {{ $i + 1 }}"></button>
         @endforeach
     </div>
-    @if($heroSlides->count() > 1)
-        <div class="absolute bottom-5 left-1/2 -translate-x-1/2 flex gap-2" role="tablist" aria-label="Hero slides">
-            @foreach($heroSlides as $i => $slide)
-                <button type="button" class="hero-dot rounded-full transition-all duration-300 {{ $i === 0 ? 'w-6 h-2.5 bg-white' : 'w-2.5 h-2.5 bg-white/50' }}" data-hero-dot aria-label="Slide {{ $i + 1 }}"></button>
+</section>
+
+<section class="bg-white py-12">
+    <div class="max-w-[1400px] mx-auto px-4">
+        <div class="flex items-end justify-between mb-6">
+            <div>
+                <h2 class="gc-section-title uppercase">Current Promotions</h2>
+                <div class="gc-underline"></div>
+            </div>
+            <a href="{{ route('ecommerce.promotions') }}" class="text-sm font-semibold text-[#2e6a49]">View All Promotions →</a>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+            @foreach($promos as $p)
+                <a href="{{ route('ecommerce.promotions') }}" class="gc-promo-card min-h-[170px]">
+                    <img src="{{ $p['img'] }}" alt="">
+                    <div class="absolute inset-0 bg-black/35"></div>
+                    <span class="absolute top-2 left-2 text-[10px] font-bold bg-[#4caf79] px-2 py-0.5 rounded">{{ $p['tag'] }}</span>
+                    <span class="absolute bottom-3 left-3 right-3">
+                        <span class="block font-bold">{{ $p['title'] }}</span>
+                        <span class="block text-xs text-white/80">{{ $p['sub'] }}</span>
+                    </span>
+                </a>
             @endforeach
         </div>
-        <button type="button" class="absolute left-3 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-black/40 text-white cursor-pointer" data-hero-prev aria-label="Previous slide">‹</button>
-        <button type="button" class="absolute right-3 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-black/40 text-white cursor-pointer" data-hero-next aria-label="Next slide">›</button>
-    @endif
+    </div>
 </section>
 
-{{-- Current Promotions --}}
-<section class="py-10 md:py-14 px-4 bg-white">
-    <div class="max-w-screen-xl mx-auto">
+<section class="py-10">
+    <div class="max-w-[1400px] mx-auto px-4">
         <div class="flex items-end justify-between mb-6">
-            <h2 class="section-title font-display text-xl md:text-2xl font-bold" style="color:#1a1a1a">Current Promotions</h2>
-            <a href="{{ route('ecommerce.shop', ['on_sale' => 1]) }}" class="text-sm font-semibold transition-colors hover:underline shrink-0" style="color:#1a73e8">View All Promotions →</a>
-        </div>
-        @if($promoTiles->count())
-            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4 mb-8">
-                @foreach($promoTiles as $tile)
-                    @php $timg = $tile->image ? uploadAsset($tile->image, 'uploads/img') : null; @endphp
-                    <a href="{{ $tile->button_link ?: route('ecommerce.shop', ['on_sale' => 1]) }}" class="tile-hover relative group rounded-xl overflow-hidden aspect-square block">
-                        @if($timg)
-                            <img src="{{ $timg }}" alt="" class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
-                        @else
-                            <div class="absolute inset-0" style="background:#2E6A49"></div>
-                        @endif
-                        <div class="img-overlay absolute inset-0"></div>
-                        @if($tile->button_text)
-                            <span class="absolute top-2 left-2 text-white text-xs font-bold px-2 py-0.5 rounded" style="background:#e53e3e">{{ $tile->button_text }}</span>
-                        @endif
-                        <div class="absolute bottom-0 left-0 right-0 p-3">
-                            <div class="text-white font-display font-bold text-sm leading-snug drop-shadow">{{ $tile->title }}</div>
-                            @if($tile->subtitle)
-                                <div class="text-white text-xs opacity-90 mt-0.5">{{ $tile->subtitle }}</div>
-                            @endif
-                        </div>
-                    </a>
-                @endforeach
+            <div>
+                <h2 class="gc-section-title uppercase">Featured Products</h2>
+                <div class="gc-underline"></div>
             </div>
-        @endif
-        @include('ecommerce::front.partials.product_grid', [
-            'products' => $promoProducts,
-            'gridClass' => 'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4',
-        ])
-    </div>
-</section>
-
-{{-- Featured Products --}}
-<section class="py-10 md:py-14 px-4" style="background:#F4F4F4">
-    <div class="max-w-screen-xl mx-auto">
-        <div class="flex items-end justify-between mb-6">
-            <h2 class="section-title font-display text-xl md:text-2xl font-bold" style="color:#1a1a1a">Featured Products</h2>
-            <a href="{{ route('ecommerce.shop') }}" class="text-sm font-semibold transition-colors hover:underline shrink-0" style="color:#1a73e8">View All →</a>
+            <a href="{{ route('ecommerce.shop') }}" class="text-sm font-semibold text-[#2e6a49]">View All Products →</a>
         </div>
-        @include('ecommerce::front.partials.product_grid', ['products' => $featured->take(8)])
+        @include('ecommerce::front.partials.product_grid', ['products' => $featured])
     </div>
 </section>
 
-{{-- New Arrivals --}}
-@if($new_arrivals->count())
-<section class="py-10 md:py-12 px-4 bg-white">
-    <div class="max-w-screen-xl mx-auto">
+<section class="bg-white py-10">
+    <div class="max-w-[1400px] mx-auto px-4">
         <div class="flex items-end justify-between mb-6">
-            <h2 class="section-title font-display text-xl md:text-2xl font-bold" style="color:#1a1a1a">New Arrivals</h2>
-            <a href="{{ route('ecommerce.shop', ['new_only' => 1, 'sort' => 'newest']) }}" class="text-sm font-semibold transition-colors hover:underline shrink-0" style="color:#1a73e8">View All →</a>
+            <div>
+                <h2 class="gc-section-title uppercase">New Arrivals</h2>
+                <div class="gc-underline"></div>
+            </div>
+            <a href="{{ route('ecommerce.shop', ['sort' => 'newest']) }}" class="text-sm font-semibold text-[#2e6a49]">View All New Arrivals →</a>
         </div>
-        @include('ecommerce::front.partials.product_grid', [
-            'products' => $new_arrivals->take(4),
-            'gridClass' => 'grid grid-cols-2 md:grid-cols-4 gap-4',
-        ])
+        @include('ecommerce::front.partials.product_grid', ['products' => $new_arrivals])
     </div>
 </section>
-@endif
 
-{{-- Shop by Brand --}}
 @if($navBrands->count())
-<section class="py-10 md:py-14 px-4" style="background:#F4F4F4">
-    <div class="max-w-screen-xl mx-auto">
+<section class="py-10">
+    <div class="max-w-[1400px] mx-auto px-4">
         <div class="flex items-end justify-between mb-6">
-            <h2 class="section-title font-display text-xl md:text-2xl font-bold" style="color:#1a1a1a">Shop by Brand</h2>
-            <a href="{{ route('ecommerce.brands') }}" class="text-sm font-semibold transition-colors hover:underline shrink-0" style="color:#1a73e8">View All Brands →</a>
-        </div>
-        <div class="scroll-row-wrap" data-scroll-row>
-            <button type="button" class="scroll-row-btn scroll-row-btn--left" data-scroll-left aria-label="Scroll left">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M10 12L6 8l4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </button>
-            <div class="scroll-row" data-scroll-track>
-                @foreach($navBrands->take(10) as $brand)
-                    @php
-                        $brandImg = uploadAsset($brand->image ?? null, 'uploads/img');
-                    @endphp
-                    <a href="{{ route('ecommerce.shop', ['brand' => $brand->id]) }}"
-                       class="tile-hover shrink-0 bg-white rounded-xl overflow-hidden border border-[#e8e8e8] flex flex-col items-center group"
-                       style="width:180px;min-width:180px">
-                        <div class="w-full h-[110px] bg-[#f5f5f5] overflow-hidden flex items-center justify-center">
-                            @if($brandImg)
-                                <img src="{{ $brandImg }}" alt="{{ $brand->name }}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
-                            @else
-                                <span class="font-display font-bold text-sm px-3 text-center" style="color:#2E6A49">{{ $brand->name }}</span>
-                            @endif
-                        </div>
-                        <div class="p-3 text-center w-full">
-                            <div class="font-display font-bold text-sm" style="color:#2E6A49">{{ $brand->name }}</div>
-                        </div>
-                    </a>
-                @endforeach
+            <div>
+                <h2 class="gc-section-title uppercase">Shop by Brand</h2>
+                <div class="gc-underline"></div>
             </div>
-            <button type="button" class="scroll-row-btn scroll-row-btn--right" data-scroll-right aria-label="Scroll right">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </button>
+            <a href="{{ route('ecommerce.brands') }}" class="text-sm font-semibold text-[#2e6a49]">View All Brands →</a>
         </div>
-    </div>
-</section>
-@endif
-
-{{-- Shop by Category --}}
-@if($categories->count())
-<section class="py-10 md:py-14 px-4 bg-white">
-    <div class="max-w-screen-xl mx-auto">
-        <div class="flex items-end justify-between mb-6">
-            <h2 class="section-title font-display text-xl md:text-2xl font-bold" style="color:#1a1a1a">Shop by Category</h2>
-            <a href="{{ route('ecommerce.categories') }}" class="text-sm font-semibold transition-colors hover:underline shrink-0" style="color:#1a73e8">View All →</a>
-        </div>
-        <div class="scroll-row-wrap" data-scroll-row>
-            <button type="button" class="scroll-row-btn scroll-row-btn--left" data-scroll-left aria-label="Scroll left">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M10 12L6 8l4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </button>
-            <div class="scroll-row" data-scroll-track>
-                @foreach($categories->take(10) as $cat)
-                    @php
-                        $thumb = $coverImgUrl($cat) ?: optional($featured->firstWhere('category_id', $cat->id))->image_url;
-                    @endphp
-                    <a href="{{ route('ecommerce.category', $cat->id) }}"
-                       class="tile-hover shrink-0 bg-white rounded-xl overflow-hidden border border-[#e8e8e8] flex flex-col items-center group"
-                       style="width:180px;min-width:180px">
-                        <div class="w-full h-[110px] bg-[#f5f5f5] overflow-hidden">
-                            @if($thumb)
-                                <img src="{{ $thumb }}" alt="{{ $cat->name }}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
-                            @endif
-                        </div>
-                        <div class="p-3 text-center w-full">
-                            <div class="font-semibold text-sm" style="color:#1a1a1a">{{ $cat->name }}</div>
-                        </div>
-                    </a>
-                @endforeach
-            </div>
-            <button type="button" class="scroll-row-btn scroll-row-btn--right" data-scroll-right aria-label="Scroll right">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </button>
-        </div>
-    </div>
-</section>
-@endif
-
-{{-- CTA band --}}
-<section class="py-14 md:py-20 px-4 text-white" style="background:#2E6A49">
-    <div class="max-w-screen-xl mx-auto text-center">
-        <span class="inline-block text-xs font-bold uppercase tracking-[0.2em] mb-4 px-3 py-1 rounded-full" style="background:#4CAF79;color:white">Wholesale Accounts</span>
-        <h2 class="font-display text-3xl md:text-4xl font-bold mb-4">Ready to Stock Your Shelves?</h2>
-        <p class="text-white/85 text-base md:text-lg max-w-2xl mx-auto mb-8">Apply for a verified wholesale account and unlock tiered pricing, exclusive deals, and priority fulfillment.</p>
-        <div class="flex flex-wrap gap-3 justify-center">
-            <a href="{{ route('ecommerce.register') }}" class="px-6 py-3 rounded-lg font-semibold text-sm transition-all hover:opacity-90" style="background:#4CAF79;color:white">Apply for Wholesale Account</a>
-            <a href="{{ route('ecommerce.contact') }}" class="px-6 py-3 rounded-lg font-semibold text-sm border-2 text-white transition-all hover:bg-white/10" style="border-color:rgba(255,255,255,0.5)">Contact Sales Team</a>
-        </div>
-    </div>
-</section>
-
-{{-- Trust strip --}}
-<section class="bg-white border-y border-[#e8e8e8] py-5" aria-label="Why buy from us">
-    <div class="max-w-screen-xl mx-auto px-4">
-        <div class="flex flex-wrap items-center justify-center md:justify-between gap-4">
-            @foreach($trustItems as $item)
-                <div class="flex items-center gap-2.5 min-w-[140px]">
-                    <span class="text-xl" aria-hidden="true">{{ $item['icon'] }}</span>
-                    <div>
-                        <div class="text-xs font-bold" style="color:#1a1a1a">{{ $item['title'] }}</div>
-                        <div class="text-xs" style="color:#666">{{ $item['sub'] }}</div>
+        <div class="flex gap-3 overflow-x-auto pb-2">
+            @foreach($navBrands as $brand)
+                <a href="{{ route('ecommerce.shop', ['brand' => $brand->id]) }}" class="gc-brand-tile">
+                    <img src="{{ $brandImages[$brand->name] ?? $brandImages['default'] }}" alt="{{ $brand->name }}">
+                    <div class="px-2 py-3">
+                        <div class="font-bold text-sm">{{ $brand->name }}</div>
+                        <div class="text-xs text-black/45 mt-0.5">{{ $brand->products_count ?? '' }}{{ isset($brand->products_count) ? ' products' : 'Shop now' }}</div>
                     </div>
-                </div>
+                </a>
             @endforeach
         </div>
     </div>
 </section>
+@endif
 
-{{-- Best Sellers --}}
-<section class="py-10 md:py-14 px-4" style="background:#F4F4F4">
-    <div class="max-w-screen-xl mx-auto">
+@if($categories->count())
+<section class="bg-white py-10">
+    <div class="max-w-[1400px] mx-auto px-4">
         <div class="flex items-end justify-between mb-6">
-            <h2 class="section-title font-display text-xl md:text-2xl font-bold" style="color:#1a1a1a">Best Sellers</h2>
-            <a href="{{ route('ecommerce.shop', ['sort' => 'bestselling']) }}" class="text-sm font-semibold transition-colors hover:underline shrink-0" style="color:#1a73e8">View All →</a>
+            <div>
+                <h2 class="gc-section-title uppercase">Shop by Category</h2>
+                <div class="gc-underline"></div>
+            </div>
+            <a href="{{ route('ecommerce.shop') }}" class="text-sm font-semibold text-[#2e6a49]">View All Categories →</a>
         </div>
-        @include('ecommerce::front.partials.product_grid', [
-            'products' => $best_sellers->take(5),
-            'gridClass' => 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4',
-        ])
+        <div class="flex gap-3 overflow-x-auto pb-2">
+            @foreach($categories as $cat)
+                <a href="{{ route('ecommerce.category', $cat->id) }}" class="gc-cat-tile">
+                    <img src="{{ $catImages[$cat->name] ?? $catImages['default'] }}" alt="{{ $cat->name }}">
+                    <div class="px-2 py-3">
+                        <div class="font-bold text-sm">{{ $cat->name }}</div>
+                        <div class="text-xs text-black/45 mt-0.5">Shop now</div>
+                    </div>
+                </a>
+            @endforeach
+        </div>
+    </div>
+</section>
+@endif
+
+<section class="gc-cta-band">
+    <div class="max-w-[1400px] mx-auto px-4 py-12 md:flex md:items-center md:justify-between gap-6">
+        <div>
+            <h2 class="gc-serif text-3xl md:text-4xl">Ready to Stock Your Shelves?</h2>
+            <p class="text-white/80 mt-2 max-w-xl">Apply for a verified wholesale account and unlock tiered pricing, exclusive deals, and priority fulfillment.</p>
+        </div>
+        <div class="flex flex-wrap gap-3 mt-6 md:mt-0">
+            <a href="{{ route('ecommerce.register') }}" class="btn-brand">Apply for Wholesale Account</a>
+            <a href="{{ route('ecommerce.contact') }}" class="rounded-lg border border-white/40 px-5 py-3 font-semibold">Contact Sales Team</a>
+        </div>
+    </div>
+</section>
+
+<section class="gc-why py-10">
+    <div class="max-w-[1400px] mx-auto px-4 grid grid-cols-2 md:grid-cols-5 gap-6 text-center text-sm">
+        <div>
+            <div class="mx-auto mb-2 h-10 w-10 rounded-full bg-[#edf7f1] text-[#2e6a49] flex items-center justify-center">
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9h12M9 3v12"/></svg>
+            </div>
+            <div class="font-bold">Direct Wholesale</div>
+            <div class="text-black/50">Factory-direct pricing</div>
+        </div>
+        <div>
+            <div class="mx-auto mb-2 h-10 w-10 rounded-full bg-[#edf7f1] text-[#2e6a49] flex items-center justify-center">
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 13h12l2-6H5L3 13z"/><circle cx="7" cy="16" r="1.4"/><circle cx="14" cy="16" r="1.4"/></svg>
+            </div>
+            <div class="font-bold">Fast Fulfillment</div>
+            <div class="text-black/50">Same-day orders before 2PM</div>
+        </div>
+        <div>
+            <div class="mx-auto mb-2 h-10 w-10 rounded-full bg-[#edf7f1] text-[#2e6a49] flex items-center justify-center">
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 2l7 3v5c0 4-3 7-7 8-4-1-7-4-7-8V5l7-3z"/></svg>
+            </div>
+            <div class="font-bold">Verified Products</div>
+            <div class="text-black/50">COAs on all hemp products</div>
+        </div>
+        <div>
+            <div class="mx-auto mb-2 h-10 w-10 rounded-full bg-[#edf7f1] text-[#2e6a49] flex items-center justify-center">
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="8" width="12" height="8" rx="1"/><path d="M6 8V6a3 3 0 016 0v2"/></svg>
+            </div>
+            <div class="font-bold">Licensed Retailers</div>
+            <div class="text-black/50">Verified B2B accounts only</div>
+        </div>
+        <div>
+            <div class="mx-auto mb-2 h-10 w-10 rounded-full bg-[#edf7f1] text-[#2e6a49] flex items-center justify-center">
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9h12M9 4l6 5-6 5"/></svg>
+            </div>
+            <div class="font-bold">Free Shipping</div>
+            <div class="text-black/50">On orders over $500</div>
+        </div>
+    </div>
+</section>
+
+<section class="py-10 pb-16">
+    <div class="max-w-[1400px] mx-auto px-4">
+        <div class="flex items-end justify-between mb-6">
+            <div>
+                <h2 class="gc-section-title uppercase">Best Sellers</h2>
+                <div class="gc-underline"></div>
+            </div>
+            <a href="{{ route('ecommerce.shop') }}" class="text-sm font-semibold text-[#2e6a49]">View All →</a>
+        </div>
+        @include('ecommerce::front.partials.product_grid', ['products' => $best_sellers])
     </div>
 </section>
 @endsection
@@ -292,80 +247,20 @@
 @push('scripts')
 <script>
 (function () {
-    document.querySelectorAll('[data-scroll-row]').forEach((wrap) => {
-        const track = wrap.querySelector('[data-scroll-track]');
-        const btnL = wrap.querySelector('[data-scroll-left]');
-        const btnR = wrap.querySelector('[data-scroll-right]');
-        if (!track || !btnL || !btnR) return;
-
-        const sync = () => {
-            const max = Math.max(0, track.scrollWidth - track.clientWidth);
-            btnL.classList.toggle('is-visible', track.scrollLeft > 4);
-            btnR.classList.toggle('is-visible', max > 8 && track.scrollLeft < max - 4);
-        };
-
-        const scrollByDir = (dir) => {
-            track.scrollBy({ left: dir === 'right' ? 600 : -600, behavior: 'smooth' });
-        };
-
-        btnL.addEventListener('click', (e) => { e.preventDefault(); scrollByDir('left'); });
-        btnR.addEventListener('click', (e) => { e.preventDefault(); scrollByDir('right'); });
-        track.addEventListener('scroll', sync, { passive: true });
-        window.addEventListener('resize', sync);
-
-        // Shift+wheel or trackpad horizontal → native; map vertical wheel to horizontal when over row
-        track.addEventListener('wheel', (e) => {
-            if (Math.abs(e.deltaY) > Math.abs(e.deltaX) && track.scrollWidth > track.clientWidth + 8) {
-                e.preventDefault();
-                track.scrollLeft += e.deltaY;
-                sync();
-            }
-        }, { passive: false });
-
-        track.querySelectorAll('img').forEach((img) => {
-            if (!img.complete) img.addEventListener('load', sync);
-        });
-
-        sync();
-        requestAnimationFrame(sync);
-        setTimeout(sync, 100);
-        setTimeout(sync, 500);
-    });
-})();
-
-(function () {
-    const root = document.getElementById('homeHero');
-    if (!root) return;
-    const slides = [...root.querySelectorAll('[data-hero-slide]')];
-    const copies = [...root.querySelectorAll('[data-hero-copy]')];
-    const dots = [...root.querySelectorAll('[data-hero-dot]')];
-    if (slides.length < 2) return;
+    const slides = [...document.querySelectorAll('[data-hero-slide]')];
+    if (!slides.length) return;
     let i = 0;
     const show = (n) => {
-        slides.forEach((el, idx) => {
-            el.classList.toggle('opacity-100', idx === n);
-            el.classList.toggle('opacity-0', idx !== n);
-            el.setAttribute('aria-hidden', idx === n ? 'false' : 'true');
+        slides.forEach((s, idx) => s.classList.toggle('hidden', idx !== n));
+        document.querySelectorAll('[data-hero-dot]').forEach((d, idx) => {
+            d.classList.toggle('bg-white', idx === n);
+            d.classList.toggle('bg-white/40', idx !== n);
         });
-        copies.forEach((el, idx) => {
-            el.classList.toggle('opacity-100', idx === n);
-            el.classList.toggle('translate-y-0', idx === n);
-            el.classList.toggle('opacity-0', idx !== n);
-            el.classList.toggle('translate-y-3', idx !== n);
-            el.classList.toggle('absolute', idx !== n);
-        });
-        dots.forEach((el, idx) => {
-            el.classList.toggle('w-6', idx === n);
-            el.classList.toggle('bg-white', idx === n);
-            el.classList.toggle('w-2.5', idx !== n);
-            el.classList.toggle('bg-white/50', idx !== n);
-        });
-        i = n;
     };
-    root.querySelector('[data-hero-next]')?.addEventListener('click', () => show((i + 1) % slides.length));
-    root.querySelector('[data-hero-prev]')?.addEventListener('click', () => show((i - 1 + slides.length) % slides.length));
-    dots.forEach((el, idx) => el.addEventListener('click', () => show(idx)));
-    setInterval(() => show((i + 1) % slides.length), 6000);
+    document.querySelector('[data-hero-next]')?.addEventListener('click', () => { i = (i + 1) % slides.length; show(i); });
+    document.querySelector('[data-hero-prev]')?.addEventListener('click', () => { i = (i + slides.length - 1) % slides.length; show(i); });
+    document.querySelectorAll('[data-hero-dot]').forEach((d) => d.addEventListener('click', () => { i = Number(d.dataset.heroDot); show(i); }));
+    setInterval(() => { i = (i + 1) % slides.length; show(i); }, 7000);
 })();
 </script>
 @endpush

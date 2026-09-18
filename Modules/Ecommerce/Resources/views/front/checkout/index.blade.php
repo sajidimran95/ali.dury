@@ -54,7 +54,7 @@
                 @endif
                 <textarea name="note" rows="2" placeholder="Order note" class="w-full border border-black/10 rounded-xl px-4 py-2.5 text-sm bg-mist/40 focus:bg-white outline-none">{{ old('note') }}</textarea>
                 <input type="hidden" name="coupon_code" value="{{ $cart->coupon_code }}">
-                <button class="w-full rounded-full bg-ink text-white py-3.5 mt-2 text-sm font-semibold hover:bg-accent transition cursor-pointer">Place order</button>
+                <button class="btn-brand w-full mt-2">Place order</button>
             </section>
         </form>
 
