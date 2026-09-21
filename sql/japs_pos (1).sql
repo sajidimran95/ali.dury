@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Sep 18, 2026 at 02:05 PM
+-- Generation Time: Sep 21, 2026 at 03:23 PM
 -- Server version: 8.4.3
 -- PHP Version: 8.4.5
 
@@ -368,7 +368,10 @@ INSERT INTO `activity_log` (`id`, `log_name`, `description`, `subject_id`, `subj
 (257, 'default', 'login', 3, 'App\\User', NULL, 1, 3, 'App\\User', '[]', NULL, '2026-09-17 08:21:23', '2026-09-17 08:21:23'),
 (258, 'default', 'added', 441, 'App\\Transaction', NULL, 1, 1, 'App\\User', '{\"attributes\":{\"type\":\"sell\",\"status\":\"final\",\"shipping_status\":\"ordered\",\"payment_status\":\"paid\",\"final_total\":51.96}}', NULL, '2026-09-17 08:29:45', '2026-09-17 08:29:45'),
 (259, 'default', 'added', 442, 'App\\Transaction', NULL, 1, 1, 'App\\User', '{\"attributes\":{\"type\":\"sell\",\"status\":\"final\",\"payment_status\":\"due\",\"final_total\":32.99}}', NULL, '2026-09-17 09:32:06', '2026-09-17 09:32:06'),
-(260, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-09-18 02:53:16', '2026-09-18 02:53:16');
+(260, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-09-18 02:53:16', '2026-09-18 02:53:16'),
+(261, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-09-21 04:19:13', '2026-09-21 04:19:13'),
+(262, 'default', 'logout', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-09-21 04:22:34', '2026-09-21 04:22:34'),
+(263, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-09-21 04:22:57', '2026-09-21 04:22:57');
 
 -- --------------------------------------------------------
 
@@ -847,22 +850,22 @@ INSERT INTO `categories` (`id`, `name`, `business_id`, `short_code`, `parent_id`
 (91, 'Medicine', 1, NULL, 0, 1, 'product', 1, NULL, NULL, NULL, '2026-09-10 04:13:46', '2026-09-10 04:13:46'),
 (92, 'Pet Supplies', 1, NULL, 0, 1, 'product', 1, NULL, NULL, NULL, '2026-09-10 04:13:46', '2026-09-10 04:13:46'),
 (93, 'ZYN', 1, NULL, 0, 1, 'product', 1, NULL, NULL, NULL, '2026-09-10 04:13:46', '2026-09-10 04:13:46'),
-(94, 'Deli & Rest', 1, NULL, 0, 1, 'product', 1, NULL, NULL, NULL, '2026-09-10 04:13:46', '2026-09-10 04:13:46'),
-(95, 'Noodles', 1, NULL, 0, 1, 'product', 1, NULL, NULL, NULL, '2026-09-10 04:13:46', '2026-09-10 04:13:46'),
-(96, 'Toys', 1, NULL, 0, 1, 'product', 1, NULL, NULL, NULL, '2026-09-10 04:13:46', '2026-09-10 04:13:46'),
-(97, 'Honey', 1, NULL, 0, 1, 'product', 1, NULL, NULL, NULL, '2026-09-10 04:13:46', '2026-09-10 04:13:46'),
-(98, 'Frozen Desserts', 1, NULL, 0, 1, 'product', 1, NULL, NULL, NULL, '2026-09-10 04:13:46', '2026-09-10 04:13:46'),
-(99, 'Water', 1, NULL, 0, 1, 'product', 1, NULL, NULL, NULL, '2026-09-10 04:13:46', '2026-09-10 04:13:46'),
-(100, 'Clothings', 1, NULL, 0, 1, 'product', 1, NULL, NULL, NULL, '2026-09-10 04:13:46', '2026-09-10 04:13:46'),
-(101, 'Preventative', 1, NULL, 0, 1, 'product', 1, NULL, NULL, NULL, '2026-09-10 04:13:46', '2026-09-10 04:13:46'),
-(102, 'Phone Accessories', 1, NULL, 0, 1, 'product', 1, NULL, NULL, NULL, '2026-09-10 04:13:46', '2026-09-10 04:13:46'),
-(103, 'Tape', 1, NULL, 0, 1, 'product', 1, NULL, NULL, NULL, '2026-09-10 04:13:46', '2026-09-10 04:13:46'),
-(104, 'Napkins', 1, NULL, 0, 1, 'product', 1, NULL, NULL, NULL, '2026-09-10 04:13:46', '2026-09-10 04:13:46'),
-(105, 'CLOTHES', 1, NULL, 0, 1, 'product', 1, NULL, NULL, NULL, '2026-09-10 04:13:46', '2026-09-10 04:13:46'),
-(106, 'Lighter', 1, NULL, 0, 1, 'product', 1, NULL, NULL, NULL, '2026-09-10 04:13:46', '2026-09-10 04:13:46'),
-(107, 'CAT AND DOG FOOD', 1, NULL, 0, 1, 'product', 1, NULL, NULL, NULL, '2026-09-10 04:13:46', '2026-09-10 04:13:46'),
-(108, 'Nuts', 1, NULL, 0, 1, 'product', 1, NULL, NULL, NULL, '2026-09-10 04:13:46', '2026-09-10 04:13:46'),
-(109, 'Battery', 1, NULL, 0, 1, 'product', 1, NULL, NULL, NULL, '2026-09-10 04:13:46', '2026-09-10 04:13:46');
+(94, 'Deli & Rest', 1, NULL, 0, 1, 'product', 1, NULL, NULL, '2026-09-18 09:16:14', '2026-09-10 04:13:46', '2026-09-18 09:16:14'),
+(95, 'Noodles', 1, NULL, 0, 1, 'product', 1, NULL, NULL, '2026-09-18 09:16:12', '2026-09-10 04:13:46', '2026-09-18 09:16:12'),
+(96, 'Toys', 1, NULL, 0, 1, 'product', 1, NULL, NULL, '2026-09-18 09:16:09', '2026-09-10 04:13:46', '2026-09-18 09:16:09'),
+(97, 'Honey', 1, NULL, 0, 1, 'product', 1, NULL, NULL, '2026-09-18 09:16:07', '2026-09-10 04:13:46', '2026-09-18 09:16:07'),
+(98, 'Frozen Desserts', 1, NULL, 0, 1, 'product', 1, NULL, NULL, '2026-09-18 09:16:04', '2026-09-10 04:13:46', '2026-09-18 09:16:04'),
+(99, 'Water', 1, NULL, 0, 1, 'product', 1, NULL, NULL, '2026-09-18 09:16:00', '2026-09-10 04:13:46', '2026-09-18 09:16:00'),
+(100, 'Clothings', 1, NULL, 0, 1, 'product', 1, NULL, NULL, '2026-09-18 09:15:58', '2026-09-10 04:13:46', '2026-09-18 09:15:58'),
+(101, 'Preventative', 1, NULL, 0, 1, 'product', 1, NULL, NULL, '2026-09-18 09:15:56', '2026-09-10 04:13:46', '2026-09-18 09:15:56'),
+(102, 'Phone Accessories', 1, NULL, 0, 1, 'product', 1, NULL, NULL, '2026-09-18 09:15:53', '2026-09-10 04:13:46', '2026-09-18 09:15:53'),
+(103, 'Tape', 1, NULL, 0, 1, 'product', 1, NULL, NULL, '2026-09-18 09:15:51', '2026-09-10 04:13:46', '2026-09-18 09:15:51'),
+(104, 'Napkins', 1, NULL, 0, 1, 'product', 1, NULL, NULL, '2026-09-18 09:15:49', '2026-09-10 04:13:46', '2026-09-18 09:15:49'),
+(105, 'CLOTHES', 1, NULL, 0, 1, 'product', 1, NULL, NULL, '2026-09-18 09:15:46', '2026-09-10 04:13:46', '2026-09-18 09:15:46'),
+(106, 'Lighter', 1, NULL, 0, 1, 'product', 1, NULL, NULL, '2026-09-18 09:15:42', '2026-09-10 04:13:46', '2026-09-18 09:15:42'),
+(107, 'CAT AND DOG FOOD', 1, NULL, 0, 1, 'product', 1, NULL, NULL, '2026-09-18 09:15:39', '2026-09-10 04:13:46', '2026-09-18 09:15:39'),
+(108, 'Nuts', 1, NULL, 0, 1, 'product', 1, NULL, NULL, '2026-09-18 09:15:18', '2026-09-10 04:13:46', '2026-09-18 09:15:18'),
+(109, 'Battery', 1, NULL, 0, 1, 'product', 1, NULL, NULL, '2026-09-18 09:15:23', '2026-09-10 04:13:46', '2026-09-18 09:15:23');
 
 -- --------------------------------------------------------
 
@@ -1459,7 +1462,8 @@ INSERT INTO `contacts` (`id`, `business_id`, `type`, `contact_type`, `land_mark`
 (1878, 1, 'customer', NULL, NULL, NULL, NULL, NULL, 'YVETTA MITCHNR', 'YVETTA MITCHNR', NULL, 'YVETTA MITCHNR', NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, 'C00490', 'active', NULL, NULL, NULL, NULL, NULL, NULL, '87- COMMECK RD MASTIC BEACH NY11951', NULL, NULL, NULL, '16313949929', NULL, NULL, NULL, NULL, 0.0000, 1, 0.0000, 0, 0, 0, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '17467278908487-AST6', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-09-10 04:13:43', '2026-09-10 04:13:43', NULL),
 (1879, 1, 'customer', NULL, NULL, NULL, NULL, NULL, 'ZAM ZAM', 'ZAM ZAM', NULL, 'ZAM ZAM', NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, 'C00491', 'active', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '0000000000', NULL, NULL, NULL, NULL, 0.0000, 1, 0.0000, 0, 0, 0, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '17246987989193-AST6', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-09-10 04:13:43', '2026-09-10 04:13:43', NULL),
 (1880, 1, 'customer', NULL, NULL, NULL, NULL, NULL, 'ZAZA CONVINANCE', 'ZAZA CONVINANCE', NULL, 'ZAZA CONVINANCE', NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, 'C00492', 'active', NULL, NULL, NULL, NULL, NULL, NULL, '109-23 SPRINGFIELD BUVD.', NULL, NULL, NULL, '13476564847', NULL, NULL, NULL, NULL, 0.0000, 1, 0.0000, 0, 0, 0, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '17435411622037-AST6', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-09-10 04:13:43', '2026-09-10 04:13:43', NULL),
-(1881, 1, 'customer', NULL, NULL, NULL, NULL, NULL, 'ZOE FITNESS', 'ZOE FITNESS', NULL, 'ZOE FITNESS', NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, '834074409', 'active', NULL, NULL, '834074409', NULL, NULL, NULL, '134-47 166 PLACE JAMICA', NULL, NULL, NULL, '16465808520', NULL, NULL, NULL, NULL, 0.0000, 1, 0.0000, 0, 0, 0, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '1756835569551a6d369-AST6', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-09-10 04:13:43', '2026-09-10 04:13:43', NULL);
+(1881, 1, 'customer', NULL, NULL, NULL, NULL, NULL, 'ZOE FITNESS', 'ZOE FITNESS', NULL, 'ZOE FITNESS', NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, '834074409', 'active', NULL, NULL, '834074409', NULL, NULL, NULL, '134-47 166 PLACE JAMICA', NULL, NULL, NULL, '16465808520', NULL, NULL, NULL, NULL, 0.0000, 1, 0.0000, 0, 0, 0, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '1756835569551a6d369-AST6', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-09-10 04:13:43', '2026-09-10 04:13:43', NULL),
+(1882, 1, 'customer', NULL, NULL, NULL, NULL, NULL, 'Unity Carter', 'Desirae Mcmillan', NULL, NULL, NULL, NULL, 'test@test.com', '$2y$10$bIPJ7LWA8OtVGogS47WnvumTrHipLfyVY/5CtY9gqzHMKFKePEsjy', 0, 'Desirae', 'Mcmillan', NULL, NULL, 'active', NULL, NULL, '107', 'Doloribus voluptas f', 'VT', 'United States', '35 West New Court', 'Cupiditate illo aute', '26973', NULL, 'Illo et porro archit', NULL, NULL, NULL, NULL, NULL, 1, 0.0000, 0, 0, 0, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Enim et earum ullam', 'test@test.com', NULL, NULL, NULL, 'approved', NULL, NULL, NULL, NULL, NULL, '2026-09-18 20:03:51', '2026-09-18 10:38:09', 'NLRy7tc3a1yVteEAILLk1VGwJfC2dlODVIIWfIdLFbzElUZZaiPXikQrttyv');
 
 -- --------------------------------------------------------
 
@@ -1921,7 +1925,7 @@ CREATE TABLE `ecommerce_settings` (
 --
 
 INSERT INTO `ecommerce_settings` (`id`, `business_id`, `is_enabled`, `store_name`, `store_logo`, `location_id`, `enable_cod`, `enable_stripe`, `enable_paypal`, `stripe_key`, `stripe_secret`, `paypal_client_id`, `paypal_secret`, `default_country`, `seo_title`, `seo_description`, `contact_email`, `contact_phone`, `extra`, `created_at`, `updated_at`) VALUES
-(1, 1, 1, 'Japs Wholesale', NULL, 1, 1, 0, 0, NULL, NULL, NULL, NULL, 'United States', 'Japs Wholesale Distribution', 'Shop curated snacks, beverages, personal care and home essentials. Live POS inventory, secure checkout, USA shipping.', NULL, NULL, NULL, '2026-07-21 20:26:19', '2026-07-23 05:24:06');
+(1, 1, 1, 'Japs Wholesale', 'ecommerce/store_logo_1789759644.png', 1, 1, 0, 0, NULL, NULL, NULL, NULL, 'United States', 'Japs Wholesale Distribution', 'Shop curated snacks, beverages, personal care and home essentials. Live POS inventory, secure checkout, USA shipping.', 'japspos@gmail.com', '+123436589789o', '{\"about_body\": \"rgvbtnjhu,mjk,jk,.lo;/p\'\", \"about_lede\": null, \"about_title\": null, \"store_hours\": \"Mon–Fri 9:30AM–5:30PM | Sat 10AM–4PM\"}', '2026-07-21 20:26:19', '2026-09-18 10:12:32');
 
 -- --------------------------------------------------------
 
@@ -2145,7 +2149,80 @@ INSERT INTO `ecom_carts` (`id`, `business_id`, `contact_id`, `session_id`, `coup
 (156, 1, NULL, 'd8sHQj0RNbH9LTljqfQ4PVaAlfqSZwyu4J7ATb1h', NULL, '2026-09-15 17:01:48', '2026-09-15 17:01:48'),
 (157, 1, NULL, 'Z3DGMPSWgCC2dHmh83jw3x36REOYBGDxnOp7ehSa', NULL, '2026-09-16 13:24:42', '2026-09-16 13:24:42'),
 (158, 1, NULL, 'QzzZd02zD4heOFpUEq7WKkI3Fs9oMZwiLLMoxhor', NULL, '2026-09-17 14:09:48', '2026-09-17 14:09:48'),
-(159, 1, NULL, '2riWZie82rJPVI61U4seVjNtlOFDt8wc8nXNxRvW', NULL, '2026-09-18 12:22:54', '2026-09-18 12:22:54');
+(159, 1, NULL, '2riWZie82rJPVI61U4seVjNtlOFDt8wc8nXNxRvW', NULL, '2026-09-18 12:22:54', '2026-09-18 12:22:54'),
+(160, 1, NULL, 'pVyrXjZyEZosF4hVtI2t8NdNPiAtgtXbaTxJ9EVf', NULL, '2026-09-18 18:00:47', '2026-09-18 18:00:47'),
+(161, 1, NULL, 'MCVKfzbqGj3nQSuSWflEfcMdrgjifkSUYdpb205y', NULL, '2026-09-18 19:32:16', '2026-09-18 19:32:16'),
+(162, 1, NULL, 'CsFRIyf41wWUlDblTvBKLSsTsSXfk7IVhTkhBghc', NULL, '2026-09-18 19:32:21', '2026-09-18 19:32:21'),
+(163, 1, NULL, 'rGM041IRb2b9MmfCAx98bdxVd323XpWJsdvKAv5m', NULL, '2026-09-18 19:32:22', '2026-09-18 19:32:22'),
+(164, 1, NULL, 'zPu1vG7LSMIFF9ycPjPfwjLwOYU80lq1pTsGLfMM', NULL, '2026-09-18 19:32:25', '2026-09-18 19:32:25'),
+(165, 1, NULL, 'bmWVoxW1OtFKNDSfDEEOo64d5GDxSOmHgkKxYn0O', NULL, '2026-09-18 19:33:01', '2026-09-18 19:33:01'),
+(166, 1, NULL, 'OJk6q8AVi2NBSbEMzKWXwoCSkK95wk5wDusjZE0R', NULL, '2026-09-18 19:33:48', '2026-09-18 19:33:48'),
+(167, 1, NULL, 'dJcWzjMthxRt5Ua1hJgBfH7Ay32U9U5NMDQzRn2a', NULL, '2026-09-18 19:33:51', '2026-09-18 19:33:51'),
+(168, 1, NULL, 'O87SBAflBZdZqENVlnnX53xx0vf4nLaIGqJ8BpIn', NULL, '2026-09-18 19:33:55', '2026-09-18 19:33:55'),
+(169, 1, NULL, 'uzliwT1REEMCvHYtmneuh2QTSNTZDS0ZyIYzHud9', NULL, '2026-09-18 19:34:16', '2026-09-18 19:34:16'),
+(170, 1, NULL, 'retxdqRsgS5qNRHGEuscTjNIlqmnQISI6jl1X2T4', NULL, '2026-09-18 19:34:19', '2026-09-18 19:34:19'),
+(171, 1, NULL, 'P0ev0rOYZHEKTqLkiwkwamnblWsMHOb2xU6MqKBg', NULL, '2026-09-18 19:34:22', '2026-09-18 19:34:22'),
+(172, 1, NULL, 'NZ6U9VcXtiAtMUQU1WSeZsbcKMLR9ixq61LLCvS5', NULL, '2026-09-18 19:34:25', '2026-09-18 19:34:25'),
+(173, 1, NULL, 'IDKubMt1UvfqWlYEBvkiYBnbiVvcxI56aC6dcXpx', NULL, '2026-09-18 19:34:27', '2026-09-18 19:34:27'),
+(174, 1, NULL, 'ALeR878iY3CbYonqflML5p6CbLjAlKhR0aVOEIgM', NULL, '2026-09-18 19:34:47', '2026-09-18 19:34:47'),
+(175, 1, NULL, 'Z3Gfop3RnNddEoAon3tdTiwUMoKgI3aWUWmNwRKY', NULL, '2026-09-18 19:34:49', '2026-09-18 19:34:49'),
+(176, 1, NULL, 'rqGk47UrNfn0ZjbvMAt5WEffWLSx4pih7tMbDTYu', NULL, '2026-09-18 19:34:55', '2026-09-18 19:34:55'),
+(177, 1, NULL, 'f029EaLWtjc0B9qhdZNJ3dCzPUEf6r1WHuG1N1OQ', NULL, '2026-09-18 19:35:56', '2026-09-18 19:35:56'),
+(178, 1, NULL, 'NPHVIP5ym1cHolPFJ9Vc5armsYEpen0QKsdQJ4Lp', NULL, '2026-09-18 19:36:03', '2026-09-18 19:36:03'),
+(179, 1, NULL, 'FNJLqwnlboh47Im4qZqn7WnG9VhQW1I2SGcPync7', NULL, '2026-09-18 19:36:04', '2026-09-18 19:36:04'),
+(180, 1, NULL, 'NFxISGOc49n8cYa7onRtfc4omHaPm36WhhUJyx30', NULL, '2026-09-18 19:36:11', '2026-09-18 19:36:11'),
+(181, 1, NULL, 'BJmbmmx7dx3B2oDPDUi9ziwtlb9cGRV2B19K3NKl', NULL, '2026-09-18 19:36:19', '2026-09-18 19:36:19'),
+(182, 1, NULL, 'djeYeMIVDG6vPQ4uE2F5eM9BYcti30Q6jyWLZ4oJ', NULL, '2026-09-18 19:36:21', '2026-09-18 19:36:21'),
+(183, 1, NULL, 'fVNJahn5tBzf5tXv9InKTUp5AZmIpH5z9WgfeDGE', NULL, '2026-09-18 19:36:23', '2026-09-18 19:36:23'),
+(184, 1, NULL, '6E4oU7MIHBmYibgjJqEyt50SdDhnYr07RvW2LcAc', NULL, '2026-09-18 19:36:35', '2026-09-18 19:36:35'),
+(185, 1, NULL, '8q5QIpwJut1svEC2j1695Zz21livqYrc4tViuhWK', NULL, '2026-09-18 19:36:37', '2026-09-18 19:36:37'),
+(186, 1, NULL, 'c2ri8jRieN39nmjVHRdCr93TGtd28oFhIw087ZKD', NULL, '2026-09-18 19:42:35', '2026-09-18 19:42:35'),
+(187, 1, NULL, 'GvptlWbXiEZapujg8UZ6NYjwME243Y5y0BMF6xPJ', NULL, '2026-09-18 19:42:36', '2026-09-18 19:42:36'),
+(188, 1, NULL, 'pErP0GmJVGfqrykOfbjSZdncCznEj42KWY5TEwoM', NULL, '2026-09-18 19:42:55', '2026-09-18 19:42:55'),
+(189, 1, NULL, '66FKtEPbUN9rqX2z0RKnzR7WqRQWBL5R6PgqNMmw', NULL, '2026-09-18 19:43:01', '2026-09-18 19:43:01'),
+(190, 1, NULL, 'YQM65vwu2SuYK3aGrx01ypLXkByrxaJcsFQahFCT', NULL, '2026-09-18 19:43:03', '2026-09-18 19:43:03'),
+(191, 1, NULL, 'FATxVbr49yDrxyYCRf6fiI12ikrXxgDNO2mbTBFe', NULL, '2026-09-18 19:44:49', '2026-09-18 19:44:49'),
+(192, 1, NULL, 'e9XVXbC8eGitZsGAzkFhc6hFgRPW90s9Fn8fAX8q', NULL, '2026-09-18 19:46:36', '2026-09-18 19:46:36'),
+(193, 1, NULL, 'Uo3S5U5IWg1TdzRt8fPYSOhbFELJOFTtlFpqHJLK', NULL, '2026-09-18 19:46:46', '2026-09-18 19:46:46'),
+(194, 1, NULL, 'txDmOzRcYMRDbmXg2kw4TwvA469S7aqNUxxtAbCm', NULL, '2026-09-18 19:46:48', '2026-09-18 19:46:48'),
+(195, 1, NULL, 'eEowWI693UsHY0JAwX5r4yyYoqQM6zfOZublYFNj', NULL, '2026-09-18 19:47:07', '2026-09-18 19:47:07'),
+(196, 1, NULL, 'KLfKQMu8THn8Ai0pNyHthA4KVqVbMJmPhZ0RSJLl', NULL, '2026-09-18 19:47:09', '2026-09-18 19:47:09'),
+(197, 1, NULL, 'VFm9BVfCxq3A6MDZMdd4lqXKj6QeJsFzRbjtx1zM', NULL, '2026-09-18 19:47:11', '2026-09-18 19:47:11'),
+(198, 1, NULL, 'tFLIlUDB4mblSXiJ6oGIek092GLFO0ediQyKdaEH', NULL, '2026-09-18 19:47:13', '2026-09-18 19:47:13'),
+(199, 1, NULL, 'z9vfvfwUPGG1XEMQyOzskEokoFOPEZBi4fSBArSd', NULL, '2026-09-18 19:47:17', '2026-09-18 19:47:17'),
+(200, 1, NULL, 'W1XCeJfXWnf3gWbHxyTlc3l316y9Tovr5ASc5p4w', NULL, '2026-09-18 19:47:23', '2026-09-18 19:47:23'),
+(201, 1, NULL, 'WpyMn7mm5W8Kr57wnzfBKPBoE9klBSNqJ4r6PVFN', NULL, '2026-09-18 19:49:05', '2026-09-18 19:49:05'),
+(202, 1, NULL, 'yTg25x3n5NJIqy8FVwzcx0a25MHfkun2q30Z3EuB', NULL, '2026-09-18 19:49:27', '2026-09-18 19:49:27'),
+(203, 1, NULL, '0FZt13I59Q7KuhiHc1GWtLQmRer2dlTVZppo2gjb', NULL, '2026-09-18 19:50:01', '2026-09-18 19:50:01'),
+(204, 1, NULL, 'hLijlo2tZbqjFPukqyzQvVeZwSduoXMrPzBJwyjA', NULL, '2026-09-18 19:50:21', '2026-09-18 19:50:21'),
+(205, 1, NULL, '7SgA4l4J1eBVkwMGdvOTJfLvK1y3SpO69emVjI3W', NULL, '2026-09-18 19:50:40', '2026-09-18 19:50:40'),
+(206, 1, NULL, 'A9cMGfUWnQZzOuhya7sazDm1gNNAXJHFLEKneDy6', NULL, '2026-09-18 19:50:44', '2026-09-18 19:50:44'),
+(207, 1, NULL, 'tOXr1o7uT8bUgXpxkSU3UahY3U6sjYfr4G0NqHL9', NULL, '2026-09-18 19:50:50', '2026-09-18 19:50:50'),
+(208, 1, NULL, 'BNEY5qFATi5OPhjbcxMQDomDrrSBxyWbb9EdaCia', NULL, '2026-09-18 19:50:52', '2026-09-18 19:50:52'),
+(209, 1, NULL, '409l5pOjoR7WlDw6eE4klCeY1oPe5fIwMSLvTD4h', NULL, '2026-09-18 19:50:53', '2026-09-18 19:50:53'),
+(210, 1, NULL, 'mfVcdjqmvtRhuB1k6vf3dQkkvbkhl3cLeh8WOTiV', NULL, '2026-09-18 19:50:55', '2026-09-18 19:50:55'),
+(211, 1, NULL, 'zT4pjqPnJPkZqXsJZXNpmPC4avjtzZC9eyZDuPCX', NULL, '2026-09-18 19:50:59', '2026-09-18 19:50:59'),
+(212, 1, NULL, '6lmSDDVEaFXfalWJXVtKmy3qKvZ8ZJsL0cOyLUuJ', NULL, '2026-09-18 19:51:02', '2026-09-18 19:51:02'),
+(213, 1, NULL, '9ch08CAJHORAPRAslntecKaYmjKSvofbo75DvqKz', NULL, '2026-09-18 19:51:11', '2026-09-18 19:51:11'),
+(214, 1, NULL, 'm1InapwYJq06ogwH5WIrkVgWLSYPXS0USBdgzSSp', NULL, '2026-09-18 19:52:27', '2026-09-18 19:52:27'),
+(215, 1, NULL, 'QZYgv74tSS1fYkDiQtAh8xarR7RFyPqNZ23dNK8j', NULL, '2026-09-18 19:52:31', '2026-09-18 19:52:31'),
+(216, 1, NULL, 'we6uco49fsEXhMEeDESDGN4PXSm3DuY41DegE7OY', NULL, '2026-09-18 19:52:33', '2026-09-18 19:52:33'),
+(217, 1, NULL, 'DV4TW1B87T1aCzc3qh7oIrpTS6mhUep6cQbLvhyh', NULL, '2026-09-18 19:58:45', '2026-09-18 19:58:45'),
+(218, 1, NULL, 'hfXUHvj8yPg94Io9RxljUyT3P0amh043VosYGjSf', NULL, '2026-09-18 19:58:47', '2026-09-18 19:58:47'),
+(219, 1, NULL, 'JtAImiCHdvsGNvqY30dUs4eOgm5RRHWRltsQJA7N', NULL, '2026-09-18 19:59:38', '2026-09-18 19:59:38'),
+(220, 1, NULL, 'JX3cq9JLZRCOihy5UX0EPk3HVrsR10V1CqRGawkF', NULL, '2026-09-18 19:59:40', '2026-09-18 19:59:40'),
+(221, 1, NULL, 'by80kcgXo6diZ9U5sqWsZePRXiJgpLh4LWdq43UQ', NULL, '2026-09-18 19:59:40', '2026-09-18 19:59:40'),
+(222, 1, NULL, 'flyyrW7gbKvZKNefz1VDVFVJ4JxpIUbPilA5aWlf', NULL, '2026-09-18 19:59:47', '2026-09-18 19:59:47'),
+(223, 1, NULL, '8tc0CkeesugvZU71cqpqUGdZTHIkB8b7wzTd5oio', NULL, '2026-09-18 20:00:29', '2026-09-18 20:00:29'),
+(224, 1, NULL, 'GJ2aS89C9I8t2hUEgxYOWlke098sb56yTp8cBc5C', NULL, '2026-09-18 20:00:33', '2026-09-18 20:00:33'),
+(225, 1, NULL, 'x2rGzY9rEKgGz4jsRcXITNUs6d5ayIirrS6huZlk', NULL, '2026-09-18 20:02:20', '2026-09-18 20:02:20'),
+(226, 1, NULL, 'OVfa3PotoZifZhHt1Mm3Vs7kmwAvagGQ6ND37QYK', NULL, '2026-09-18 20:03:11', '2026-09-18 20:03:11'),
+(227, 1, 1882, 'IMPecRHXju69Qmn9WVYuZbrmVfgf934O8qj3ZugO', NULL, '2026-09-18 20:03:52', '2026-09-18 20:10:34'),
+(228, 1, NULL, 'NCbEInEXg24G142CluOnm3LVFSm672Lqx7BgCT66', NULL, '2026-09-18 20:03:52', '2026-09-18 20:03:52'),
+(229, 1, NULL, 'BBpSPoFLSmBF7pJpgND0q8UCjhuYBKZJ24H2u6Km', NULL, '2026-09-18 20:03:58', '2026-09-18 20:03:58'),
+(230, 1, NULL, 'LNGdqFToKJjmSZJiCBFsKH4ZhVU0Hz1qf8lYcwtg', NULL, '2026-09-18 20:10:37', '2026-09-18 20:10:37'),
+(231, 1, NULL, 'veMBFUVYyHi6MUwLqVIFa2SC5HrAYi8M9b0XZzNH', NULL, '2026-09-18 20:10:46', '2026-09-18 20:10:46'),
+(232, 1, NULL, '4QNYMh2MGgCfOC4mvboDp9XWAdKusftOc7kjTW4u', NULL, '2026-09-21 13:49:02', '2026-09-21 13:49:02');
 
 -- --------------------------------------------------------
 
@@ -2176,7 +2253,11 @@ INSERT INTO `ecom_cart_items` (`id`, `cart_id`, `product_id`, `variation_id`, `q
 (9, 64, 40, 40, 11.0000, 14.5000, '2026-07-23 13:21:02', '2026-07-23 13:21:02'),
 (10, 64, 39, 39, 1.0000, 12.0000, '2026-07-23 13:21:12', '2026-07-23 13:21:12'),
 (13, 72, 40, 40, 2.0000, 14.5000, '2026-07-24 17:49:48', '2026-07-24 17:49:48'),
-(14, 93, 7, 7, 1.0000, 12.0000, '2026-08-13 15:18:04', '2026-08-13 15:18:04');
+(14, 93, 7, 7, 1.0000, 12.0000, '2026-08-13 15:18:04', '2026-08-13 15:18:04'),
+(17, 160, 5644, 5644, 2.0000, 11.9900, '2026-09-18 18:02:24', '2026-09-18 18:26:45'),
+(18, 160, 5641, 5641, 1.0000, 21.9900, '2026-09-18 18:47:54', '2026-09-18 18:47:54'),
+(19, 160, 5645, 5645, 1.0000, 14.4900, '2026-09-18 18:47:59', '2026-09-18 18:47:59'),
+(20, 225, 5537, 5537, 1.0000, 11.9900, '2026-09-18 20:02:24', '2026-09-18 20:02:24');
 
 -- --------------------------------------------------------
 
@@ -2289,7 +2370,8 @@ CREATE TABLE `ecom_customer_addresses` (
 
 INSERT INTO `ecom_customer_addresses` (`id`, `business_id`, `contact_id`, `first_name`, `last_name`, `company`, `address_line_1`, `address_line_2`, `city`, `state`, `zip_code`, `country`, `phone`, `is_default`, `created_at`, `updated_at`) VALUES
 (1, 1, 7, 'Owen', 'Cummings', 'TaShya Mercado', '26 Wood Ave Mansfield, USA', '333', '33', 'IN', '333', 'United States', 'Atque architecto nul', 1, '2026-07-23 13:14:17', '2026-07-23 13:14:17'),
-(2, 1, 8, 'Demo', 'Buyer', 'Demo Wholesale LLC', '100 Demo Street', NULL, 'Dallas', 'TX', '75001', 'United States', '5551234567', 1, '2026-07-23 13:57:24', '2026-07-23 13:57:24');
+(2, 1, 8, 'Demo', 'Buyer', 'Demo Wholesale LLC', '100 Demo Street', NULL, 'Dallas', 'TX', '75001', 'United States', '5551234567', 1, '2026-07-23 13:57:24', '2026-07-23 13:57:24'),
+(3, 1, 1882, 'Desirae', 'Mcmillan', 'Unity Carter', '35 West New Court', 'Cupiditate illo aute', 'Doloribus voluptas f', 'VT', '26973', 'United States', 'Illo et porro archit', 1, '2026-09-18 20:03:51', '2026-09-18 20:03:51');
 
 -- --------------------------------------------------------
 
@@ -2310,6 +2392,14 @@ CREATE TABLE `ecom_customer_licenses` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `ecom_customer_licenses`
+--
+
+INSERT INTO `ecom_customer_licenses` (`id`, `business_id`, `contact_id`, `license_type`, `label`, `certificate_number`, `expires_at`, `file_path`, `original_name`, `created_at`, `updated_at`) VALUES
+(1, 1, 1882, 'business', 'Business Certificate', NULL, NULL, 'ecom_licenses/1882/lic_6aada112e65345.15649918.png', 'loho.png', '2026-09-18 20:07:38', '2026-09-18 20:07:38'),
+(2, 1, 1882, 'business', 'Business Certificate', NULL, NULL, 'ecom_licenses/1882/lic_6aada117b1bf43.96888106.png', 'loho.png', '2026-09-18 20:07:43', '2026-09-18 20:07:43');
 
 -- --------------------------------------------------------
 
@@ -2361,7 +2451,8 @@ INSERT INTO `ecom_order_meta` (`id`, `business_id`, `transaction_id`, `tracking_
 (1, 1, 9, '5SXIcacoqkyiF00X7iwAxamfqMgAO6OdNtYrBpvI', 'confirmed', '[{\"at\": \"2026-07-22 19:10:15\", \"label\": \"Order Received\", \"status\": \"pending\"}, {\"at\": \"2026-07-22 13:34:04\", \"note\": null, \"label\": \"Confirmed\", \"status\": \"confirmed\"}]', '{\"city\": \"33\", \"state\": \"KS\", \"country\": \"United States\", \"zip_code\": \"333\", \"last_name\": \"333\", \"first_name\": \"Nash\", \"address_line_1\": \"33\", \"address_line_2\": \"333\"}', '{\"city\": \"33\", \"state\": \"KS\", \"country\": \"United States\", \"zip_code\": \"333\", \"last_name\": \"333\", \"first_name\": \"Nash\", \"address_line_1\": \"33\", \"address_line_2\": \"333\"}', NULL, 'cod', 'admin@gmail.com', '333', '2026-07-22 13:10:15', '2026-07-22 07:34:04'),
 (2, 1, 10, 'vpbEu1BelcEE1iFvw1lUcTduMW8x3C9By4pU6DPp', 'pending', '[{\"at\": \"2026-07-22 23:34:04\", \"label\": \"Order Received\", \"status\": \"pending\"}]', '{\"city\": \"33\", \"state\": \"KS\", \"country\": \"United States\", \"zip_code\": \"333\", \"last_name\": \"333\", \"first_name\": \"Nash\", \"address_line_1\": \"33\", \"address_line_2\": \"333\"}', '{\"city\": \"33\", \"state\": \"KS\", \"country\": \"United States\", \"zip_code\": \"333\", \"last_name\": \"333\", \"first_name\": \"Nash\", \"address_line_1\": \"33\", \"address_line_2\": \"333\"}', NULL, 'cod', 'admin@gmail.com', '333', '2026-07-22 17:34:04', '2026-07-22 17:34:04'),
 (3, 1, 142, 'w1FfTA301k2i1PNnI1EAUGdSI0HznwX7vNweaJKx', 'pending', '[{\"at\": \"2026-08-13 21:20:58\", \"label\": \"Order Received\", \"status\": \"pending\"}, {\"at\": \"2026-08-13 11:54:27\", \"note\": null, \"label\": \"Confirmed\", \"status\": \"confirmed\"}, {\"at\": \"2026-08-13 12:12:23\", \"note\": null, \"label\": \"Pending\", \"status\": \"pending\"}]', '{\"city\": \"Harum in sunt rerum\", \"state\": \"TX\", \"country\": \"United States\", \"zip_code\": \"68209\", \"last_name\": \"Morin\", \"first_name\": \"Prescott\", \"address_line_1\": \"95 Nobel Lane\", \"address_line_2\": \"Qui dolorem similiqu\"}', '{\"city\": \"Harum in sunt rerum\", \"state\": \"TX\", \"country\": \"United States\", \"zip_code\": \"68209\", \"last_name\": \"Morin\", \"first_name\": \"Prescott\", \"address_line_1\": \"95 Nobel Lane\", \"address_line_2\": \"Qui dolorem similiqu\"}', NULL, 'cod', 'vasicece@mailinator.com', '+1 (648) 492-7019', '2026-08-13 15:20:58', '2026-08-13 06:12:23'),
-(4, 1, 146, 'obz7AXHYfcIiuQNJHJxqTHwZ8xjFkmWngsOjPlUw', 'confirmed', '[{\"at\": \"2026-08-13 22:00:56\", \"label\": \"Order Received\", \"status\": \"pending\"}, {\"at\": \"2026-08-13 12:41:02\", \"note\": null, \"label\": \"Confirmed\", \"status\": \"confirmed\"}, {\"at\": \"2026-08-13 22:51:32\", \"label\": \"Converted to invoice 0099\", \"status\": \"invoiced\", \"invoice_id\": 147, \"invoice_no\": \"0099\"}]', '{\"city\": \"333\", \"state\": \"HI\", \"country\": \"United States\", \"zip_code\": \"33\", \"last_name\": \"sadasfas\", \"first_name\": \"Nash\", \"address_line_1\": \"eeee\", \"address_line_2\": null}', '{\"city\": \"333\", \"state\": \"HI\", \"country\": \"United States\", \"zip_code\": \"33\", \"last_name\": \"sadasfas\", \"first_name\": \"Nash\", \"address_line_1\": \"eeee\", \"address_line_2\": null}', NULL, 'cod', 'demo@japswholesale.test', '5551234567', '2026-08-13 16:00:56', '2026-08-13 16:51:32');
+(4, 1, 146, 'obz7AXHYfcIiuQNJHJxqTHwZ8xjFkmWngsOjPlUw', 'confirmed', '[{\"at\": \"2026-08-13 22:00:56\", \"label\": \"Order Received\", \"status\": \"pending\"}, {\"at\": \"2026-08-13 12:41:02\", \"note\": null, \"label\": \"Confirmed\", \"status\": \"confirmed\"}, {\"at\": \"2026-08-13 22:51:32\", \"label\": \"Converted to invoice 0099\", \"status\": \"invoiced\", \"invoice_id\": 147, \"invoice_no\": \"0099\"}]', '{\"city\": \"333\", \"state\": \"HI\", \"country\": \"United States\", \"zip_code\": \"33\", \"last_name\": \"sadasfas\", \"first_name\": \"Nash\", \"address_line_1\": \"eeee\", \"address_line_2\": null}', '{\"city\": \"333\", \"state\": \"HI\", \"country\": \"United States\", \"zip_code\": \"33\", \"last_name\": \"sadasfas\", \"first_name\": \"Nash\", \"address_line_1\": \"eeee\", \"address_line_2\": null}', NULL, 'cod', 'demo@japswholesale.test', '5551234567', '2026-08-13 16:00:56', '2026-08-13 16:51:32'),
+(5, 1, 443, 'TgASSiHzznAmTJti5usLk6WJwXHMZwd1Teq18Igk', 'pending', '[{\"at\": \"2026-09-19 02:08:51\", \"label\": \"Order Received\", \"status\": \"pending\"}]', '{\"city\": \"Tempora laboriosam\", \"state\": \"ME\", \"country\": \"United States\", \"zip_code\": \"65929\", \"last_name\": \"Cantu\", \"first_name\": \"Britanni\", \"address_line_1\": \"233 Clarendon Avenue\", \"address_line_2\": \"Officia enim sed et\"}', '{\"city\": \"Tempora laboriosam\", \"state\": \"ME\", \"country\": \"United States\", \"zip_code\": \"65929\", \"last_name\": \"Cantu\", \"first_name\": \"Britanni\", \"address_line_1\": \"233 Clarendon Avenue\", \"address_line_2\": \"Officia enim sed et\"}', NULL, 'cod', 'datakel@mailinator.com', '+1 (906) 242-2234', '2026-09-18 20:08:51', '2026-09-18 20:08:51');
 
 -- --------------------------------------------------------
 
@@ -3113,7 +3204,8 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (330, '2026_09_09_211000_add_signature_to_transaction_payments_table', 25),
 (331, '2026_09_10_203700_add_barcode_switch_id_to_users', 26),
 (332, '2026_09_16_200000_add_delivery_management_module', 27),
-(333, '2026_09_17_210000_create_ecom_storefront_tables', 28);
+(333, '2026_09_17_210000_create_ecom_storefront_tables', 28),
+(334, '2026_03_19_120000_create_product_barcodes_table', 29);
 
 -- --------------------------------------------------------
 
@@ -8180,7 +8272,7 @@ INSERT INTO `products` (`id`, `name`, `business_id`, `type`, `unit_id`, `seconda
 (5493, '16 OZ CLEAR HINGED SAFESEAL TAMPER (CH16DEF) CONTAINERS 240/CS', 1, 'single', 1, NULL, NULL, NULL, 94, NULL, NULL, 'exclusive', 0, NULL, '0041594836132', 'C128', NULL, NULL, 0, NULL, '1719778557981-AST6K', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'BCP26/25/T', 1, NULL, NULL, 0, 0, 'pos_only', NULL, '2026-09-10 04:14:39', '2026-09-10 04:14:39', NULL, NULL, NULL, NULL, 0, 0, NULL, NULL, NULL),
 (5494, '9\" PAPER PLATE 10/100', 1, 'single', 1, NULL, NULL, NULL, 94, NULL, NULL, 'exclusive', 0, NULL, '018026100260', 'C128', NULL, NULL, 0, NULL, '1719778460981-AST6K', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'BCP19/T', 1, NULL, NULL, 0, 0, 'pos_only', NULL, '2026-09-10 04:14:39', '2026-09-10 04:14:39', NULL, NULL, NULL, NULL, 0, 0, NULL, NULL, NULL),
 (5495, '9\" WHITE PLASTIC PLATE 400/CS', 1, 'single', 1, NULL, NULL, NULL, 94, NULL, NULL, 'exclusive', 0, NULL, '4711061695956', 'C128', NULL, NULL, 0, NULL, '1719778398211-AST6K', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'bcp26/t', 1, NULL, NULL, 0, 0, 'pos_only', NULL, '2026-09-10 04:14:39', '2026-09-10 04:14:39', NULL, NULL, NULL, NULL, 0, 0, NULL, NULL, NULL),
-(5496, '#10 BROWN IND-IMPORT BAGS 500/CS', 1, 'single', 1, NULL, NULL, NULL, 94, NULL, NULL, 'exclusive', 0, NULL, 'SKU4580', 'C128', NULL, NULL, 0, NULL, '1719778336356-AST6K', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, NULL, NULL, 0, 0, 'pos_only', NULL, '2026-09-10 04:14:39', '2026-09-10 04:14:39', NULL, NULL, NULL, NULL, 0, 0, NULL, NULL, NULL),
+(5496, '#10 BROWN IND-IMPORT BAGS 500/CS', 1, 'single', 1, NULL, NULL, NULL, 86, NULL, NULL, 'exclusive', 0, NULL, 'SKU4580', 'C128', NULL, NULL, 0, NULL, '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', NULL, NULL, 1, NULL, NULL, 0, 0, 'pos_ecommerce', NULL, '2026-09-10 04:14:39', '2026-09-18 09:36:00', NULL, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL),
 (5497, '24OZ PET CLEAR CUPS 600/CS', 1, 'single', 1, NULL, NULL, NULL, 94, NULL, NULL, 'exclusive', 0, NULL, 'SKU4581', 'C128', NULL, NULL, 0, NULL, '1719778284763-AST6K', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'bcp32/t', 1, NULL, NULL, 0, 0, 'pos_only', NULL, '2026-09-10 04:14:39', '2026-09-10 04:14:39', NULL, NULL, NULL, NULL, 0, 0, NULL, NULL, NULL),
 (5498, '600 CT- 20 OZ PET CLEAR CUPS', 1, 'single', 1, NULL, NULL, NULL, 94, NULL, NULL, 'exclusive', 0, NULL, '057845119206', 'C128', NULL, NULL, 0, NULL, '1719778126580-AST6K', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'BCP31/TR', 1, NULL, NULL, 0, 0, 'pos_only', NULL, '2026-09-10 04:14:39', '2026-09-10 04:14:39', NULL, NULL, NULL, NULL, 0, 0, NULL, NULL, NULL),
 (5499, '2 PLY INTERFOLD KRAFT 6000/CS', 1, 'single', 1, NULL, NULL, NULL, 104, NULL, NULL, 'exclusive', 0, NULL, '018026203008', 'C128', NULL, NULL, 0, NULL, '1719778071881-AST6K', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, NULL, NULL, 0, 0, 'pos_only', NULL, '2026-09-10 04:14:39', '2026-09-10 04:14:39', NULL, NULL, NULL, NULL, 0, 0, NULL, NULL, NULL),
@@ -8221,14 +8313,14 @@ INSERT INTO `products` (`id`, `name`, `business_id`, `type`, `unit_id`, `seconda
 (5533, '2 1/4 X 50 THERMAL ROLL 50/CS', 1, 'single', 1, NULL, NULL, NULL, 94, NULL, NULL, 'exclusive', 0, NULL, '644216568208', 'C128', NULL, NULL, 0, NULL, '1719772287172-AST6K', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'B/9.50', 1, NULL, NULL, 0, 0, 'pos_only', NULL, '2026-09-10 04:14:40', '2026-09-10 04:14:40', NULL, NULL, NULL, NULL, 0, 0, NULL, NULL, NULL),
 (5534, '2 1/4 X 85 THERMAL ROLL 50/CS', 1, 'single', 1, NULL, NULL, NULL, 94, NULL, NULL, 'exclusive', 0, NULL, '34412940428989', 'C128', NULL, NULL, 0, NULL, '1719772117002-AST6K', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'BCP13', 1, NULL, NULL, 0, 0, 'pos_only', NULL, '2026-09-10 04:14:40', '2026-09-10 04:14:40', NULL, NULL, NULL, NULL, 0, 0, NULL, NULL, NULL),
 (5535, '3 1/8 X 230 THERMAL ROLL', 1, 'single', 1, NULL, NULL, NULL, 94, NULL, NULL, 'exclusive', 0, NULL, '10501100201.00170', 'C128', NULL, NULL, 0, NULL, '1719772040787-AST6K', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'BCP38/T\nNBCP33/T', 1, NULL, NULL, 0, 0, 'pos_only', NULL, '2026-09-10 04:14:40', '2026-09-10 04:14:40', NULL, NULL, NULL, NULL, 0, 0, NULL, NULL, NULL),
-(5536, '#1 BROWN IND-IMPORT PAPER BAGS  500/CS', 1, 'single', 1, NULL, '[3]', NULL, 94, NULL, NULL, 'exclusive', 0, NULL, '878507435386', 'C128', NULL, NULL, 0, NULL, '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', NULL, '<p>T/5.50</p>', 1, NULL, NULL, 0, 0, 'pos_only', NULL, '2026-09-10 04:14:40', '2026-09-17 08:36:06', NULL, NULL, NULL, NULL, 0, 0, NULL, NULL, NULL),
-(5537, '#2 BROWN IND-IMPORT PAPER BAGS  500/CS', 1, 'single', 1, NULL, NULL, NULL, 94, NULL, NULL, 'exclusive', 0, NULL, '878507435388', 'C128', NULL, NULL, 0, NULL, '1719771924747-AST6K', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, NULL, NULL, 0, 0, 'pos_only', NULL, '2026-09-10 04:14:40', '2026-09-10 04:14:40', NULL, NULL, NULL, NULL, 0, 0, NULL, NULL, NULL),
+(5536, '#1 BROWN IND-IMPORT PAPER BAGS  500/CS', 1, 'single', 1, NULL, '[\"3\"]', 1, 84, NULL, NULL, 'exclusive', 0, NULL, '878507435386', 'C128', NULL, NULL, 0, NULL, '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '1789760124_4362304e-d5ac-40e3-847b-11d69ba4fc6ab0da4c9adc19dc2b0f0c8a166b514d4f-ezgifcom-avif-to-jpg-converter.jpg', '<p>T/5.50</p>', 1, NULL, NULL, 0, 0, 'pos_ecommerce', NULL, '2026-09-10 04:14:40', '2026-09-18 09:59:48', NULL, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL),
+(5537, '#2 BROWN IND-IMPORT PAPER BAGS  500/CS', 1, 'single', 1, NULL, NULL, NULL, NULL, NULL, NULL, 'exclusive', 0, NULL, '878507435388', 'C128', NULL, NULL, 0, NULL, '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', NULL, NULL, 1, NULL, NULL, 0, 0, 'pos_ecommerce', NULL, '2026-09-10 04:14:40', '2026-09-18 09:37:17', NULL, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL),
 (5538, '#8 BROWN IND-IMPORT GROCERY BAGS  500/CS', 1, 'single', 1, NULL, NULL, NULL, 94, NULL, NULL, 'exclusive', 0, NULL, 'SKU4622', 'C128', NULL, NULL, 0, NULL, '1719771878578-AST6K', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, NULL, NULL, 0, 0, 'pos_only', NULL, '2026-09-10 04:14:40', '2026-09-10 04:14:40', NULL, NULL, NULL, NULL, 0, 0, NULL, NULL, NULL),
-(5539, '#12 BROWN IND-IMPORT BAGS 500/CS', 1, 'single', 1, NULL, NULL, NULL, 94, NULL, NULL, 'exclusive', 0, NULL, 'SKU4623', 'C128', NULL, NULL, 0, NULL, '1719771836243-AST6K', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'D12.5BCP', 1, NULL, NULL, 0, 0, 'pos_only', NULL, '2026-09-10 04:14:40', '2026-09-10 04:14:40', NULL, NULL, NULL, NULL, 0, 0, NULL, NULL, NULL),
+(5539, '#12 BROWN IND-IMPORT BAGS 500/CS', 1, 'single', 1, NULL, NULL, NULL, NULL, NULL, NULL, 'exclusive', 0, NULL, 'SKU4623', 'C128', NULL, NULL, 0, NULL, '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', NULL, '<p>D12.5BCP</p>', 1, NULL, NULL, 0, 0, 'pos_ecommerce', NULL, '2026-09-10 04:14:40', '2026-09-18 09:37:04', NULL, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL),
 (5540, '12\" CORRUGATED BROWN PIZZA BOX 50/CS', 1, 'single', 1, NULL, NULL, NULL, 94, NULL, NULL, 'exclusive', 0, NULL, 'SKU4624', 'C128', NULL, NULL, 0, NULL, '1719771787914-AST6K', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, NULL, NULL, 0, 0, 'pos_only', NULL, '2026-09-10 04:14:40', '2026-09-10 04:14:40', NULL, NULL, NULL, NULL, 0, 0, NULL, NULL, NULL),
-(5541, '#16 BROWN IMPORT-IND BAGS 500/CS', 1, 'single', 1, NULL, NULL, NULL, 94, NULL, NULL, 'exclusive', 0, NULL, 'SKU4625', 'C128', NULL, NULL, 0, NULL, '1719771741210-AST6K', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'PAT16', 1, NULL, NULL, 0, 0, 'pos_only', NULL, '2026-09-10 04:14:40', '2026-09-10 04:14:40', NULL, NULL, NULL, NULL, 0, 0, NULL, NULL, NULL),
+(5541, '#16 BROWN IMPORT-IND BAGS 500/CS', 1, 'single', 1, NULL, NULL, NULL, NULL, NULL, NULL, 'exclusive', 0, NULL, 'SKU4625', 'C128', NULL, NULL, 0, NULL, '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', NULL, '<p>PAT16</p>', 1, NULL, NULL, 0, 0, 'pos_ecommerce', NULL, '2026-09-10 04:14:40', '2026-09-18 09:31:39', NULL, NULL, NULL, NULL, 0, 0, NULL, NULL, NULL),
 (5542, '10\" CORRUGATED BROWN PIZZA BOX 50/CS', 1, 'single', 1, NULL, NULL, NULL, 94, NULL, NULL, 'exclusive', 0, NULL, 'SKU4626', 'C128', NULL, NULL, 0, NULL, '1719771665613-AST6K', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, NULL, NULL, 0, 0, 'pos_only', NULL, '2026-09-10 04:14:40', '2026-09-10 04:14:40', NULL, NULL, NULL, NULL, 0, 0, NULL, NULL, NULL),
-(5543, '#20 BROWN GROCERY BAGS 500/CS', 1, 'single', 1, NULL, NULL, NULL, 94, NULL, NULL, 'exclusive', 0, NULL, 'SKU4627', 'C128', NULL, NULL, 0, NULL, '1719771614884-AST6K', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'PDK17/C', 1, NULL, NULL, 0, 0, 'pos_only', NULL, '2026-09-10 04:14:40', '2026-09-10 04:14:40', NULL, NULL, NULL, NULL, 0, 0, NULL, NULL, NULL),
+(5543, '#20 BROWN GROCERY BAGS 500/CS', 1, 'single', 1, NULL, NULL, NULL, NULL, NULL, NULL, 'exclusive', 0, NULL, 'SKU4627', 'C128', NULL, NULL, 0, NULL, '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', NULL, '<p>PDK17/C</p>', 1, NULL, NULL, 0, 0, 'pos_ecommerce', NULL, '2026-09-10 04:14:40', '2026-09-18 09:31:59', NULL, NULL, NULL, NULL, 0, 0, NULL, NULL, NULL),
 (5544, 'CAFE PAPER SHOPPING BAG FLAT  HANDLE 250/CS', 1, 'single', 1, NULL, NULL, NULL, 94, NULL, NULL, 'exclusive', 0, NULL, '763352124106', 'C128', NULL, NULL, 0, NULL, '1719770741467-AST6K', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, NULL, NULL, 0, 0, 'pos_only', NULL, '2026-09-10 04:14:40', '2026-09-10 04:14:40', NULL, NULL, NULL, NULL, 0, 0, NULL, NULL, NULL),
 (5545, '8X4X10 BROWN PAPER BAG WITH  HANDLE 250/CS', 1, 'single', 1, NULL, NULL, NULL, 94, NULL, NULL, 'exclusive', 0, NULL, 'SKU4629', 'C128', NULL, NULL, 0, NULL, '1719770628155-AST6K', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'BCP22/T', 1, NULL, NULL, 0, 1, 'pos_only', NULL, '2026-09-10 04:14:40', '2026-09-10 04:14:40', NULL, NULL, NULL, NULL, 0, 0, NULL, NULL, NULL),
 (5546, '10X7X12 BROWN PAPER BAG HANDLE 250/CS', 1, 'single', 1, NULL, NULL, NULL, 94, NULL, NULL, 'exclusive', 0, NULL, '040328650525', 'C128', NULL, NULL, 0, NULL, '1719770547797-AST6K', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'BCP21/23', 1, NULL, NULL, 0, 0, 'pos_only', NULL, '2026-09-10 04:14:40', '2026-09-10 04:14:40', NULL, NULL, NULL, NULL, 0, 0, NULL, NULL, NULL),
@@ -8332,7 +8424,26 @@ INSERT INTO `products` (`id`, `name`, `business_id`, `type`, `unit_id`, `seconda
 (5643, 'POLAND SPRING 16OZ 24PK', 1, 'single', 1, NULL, NULL, NULL, 99, NULL, NULL, 'exclusive', 0, NULL, '0075720004096', 'C128', NULL, NULL, 0, NULL, '1719320634909-AST6K', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, NULL, NULL, 0, 1, 'pos_only', NULL, '2026-09-10 04:14:41', '2026-09-10 04:14:41', NULL, NULL, NULL, NULL, 0, 0, NULL, NULL, NULL),
 (5644, 'POLAND SPRING GALLON', 1, 'single', 1, NULL, NULL, NULL, 99, NULL, NULL, 'exclusive', 0, NULL, '075720005048', 'C128', NULL, NULL, 0, NULL, '1719320593764-AST6K', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'BCP8.5/SP', 1, NULL, NULL, 0, 0, 'pos_only', NULL, '2026-09-10 04:14:41', '2026-09-10 04:14:41', NULL, NULL, NULL, NULL, 0, 0, NULL, NULL, NULL),
 (5645, 'POLAND SPRING SPORTS CAP', 1, 'single', 1, NULL, NULL, NULL, 99, NULL, NULL, 'exclusive', 0, NULL, '075720710034', 'C128', NULL, NULL, 0, NULL, '1719319926929-AST6K', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'BCP7.5/SP/BCP11.75/ESJ', 1, NULL, NULL, 0, 0, 'pos_only', NULL, '2026-09-10 04:14:41', '2026-09-10 04:14:41', NULL, NULL, NULL, NULL, 0, 0, NULL, NULL, NULL),
-(5646, 'Poland Spring 16oz 40pk', 1, 'single', 1, NULL, NULL, NULL, 99, NULL, NULL, 'exclusive', 0, NULL, '075720904501', 'C128', NULL, NULL, 0, NULL, '1718974026956-AST6K', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, NULL, NULL, 0, 1, 'pos_only', NULL, '2026-09-10 04:14:41', '2026-09-10 04:14:41', NULL, NULL, NULL, NULL, 0, 0, NULL, NULL, NULL);
+(5646, 'Poland Spring 16oz 40pk', 1, 'single', 1, NULL, NULL, NULL, NULL, NULL, NULL, 'exclusive', 0, NULL, '075720904501', 'C128', NULL, NULL, 0, NULL, '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '1789759841_4362304e-d5ac-40e3-847b-11d69ba4fc6ab0da4c9adc19dc2b0f0c8a166b514d4f-ezgifcom-avif-to-jpg-converter.jpg', NULL, 1, NULL, NULL, 0, 1, 'pos_ecommerce', NULL, '2026-09-10 04:14:41', '2026-09-18 09:30:41', NULL, NULL, NULL, NULL, 0, 0, NULL, NULL, NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `product_barcodes`
+--
+
+CREATE TABLE `product_barcodes` (
+  `id` bigint UNSIGNED NOT NULL,
+  `business_id` int UNSIGNED NOT NULL,
+  `product_id` int UNSIGNED NOT NULL,
+  `variation_id` int UNSIGNED DEFAULT NULL,
+  `barcode` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `type` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'alternate',
+  `unit_id` int UNSIGNED DEFAULT NULL,
+  `label` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -18173,7 +18284,7 @@ INSERT INTO `reference_counts` (`id`, `ref_type`, `ref_count`, `business_id`, `c
 (1, 'contacts', 6, 1, '2026-07-18 18:56:53', '2026-07-23 07:27:00'),
 (4, 'sell_payment', 99, 1, '2026-07-24 10:13:56', '2026-09-17 08:29:45'),
 (5, 'draft', 9, 1, '2026-07-27 05:47:31', '2026-07-27 10:11:34'),
-(6, 'sales_order', 5, 1, '2026-08-13 15:20:58', '2026-09-17 08:29:11'),
+(6, 'sales_order', 6, 1, '2026-08-13 15:20:58', '2026-09-18 20:08:51'),
 (10, 'opening_balance', 1, 1, '2026-09-10 04:13:42', '2026-09-10 04:13:42');
 
 -- --------------------------------------------------------
@@ -19102,7 +19213,8 @@ INSERT INTO `transactions` (`id`, `business_id`, `location_id`, `is_kitchen_orde
 (439, 1, 1, 0, NULL, NULL, NULL, 'sell', NULL, 'final', NULL, 0, 'paid', NULL, 1, NULL, '0111', '', NULL, NULL, NULL, NULL, '2026-09-17 12:12:00', 11.9900, NULL, 0.0000, 'percentage', 0.0000, 0, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, 'shipped', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, 11.9900, NULL, NULL, NULL, NULL, NULL, 1, 0, 0, 1.000, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, '[\"438\"]', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL, 0, 1.0000, 'days', 0, NULL, NULL, NULL, NULL, NULL, NULL, '2026-09-17 06:12:11', '2026-09-17 06:12:11'),
 (440, 1, 1, 0, NULL, NULL, NULL, 'sales_order', NULL, 'completed', NULL, 0, 'due', NULL, 1390, NULL, '2026/0005', '', 'sale_app', 'sale_app', NULL, NULL, '2026-09-17 14:29:11', 51.9600, NULL, 0.0000, 'fixed', 0.0000, 0, 0.0000, 'Delivery', 'Delivery', '206-06JAMAICA AVE QUEENS VILLAGE NY 11428', NULL, NULL, NULL, 'ordered', 'picking', '{\"timeline\": [{\"at\": \"2026-09-17 14:29:11\", \"by\": \"System\", \"event\": \"entered_fulfillment\", \"label\": \"Entered Fulfillment\"}]}', NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, 51.9600, NULL, NULL, NULL, NULL, NULL, 1, 0, 0, 1.000, NULL, NULL, NULL, NULL, 3, NULL, 'cash', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL, 0, 1.0000, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, '2026-09-17 08:29:11', '2026-09-17 08:29:45'),
 (441, 1, 1, 0, NULL, NULL, NULL, 'sell', NULL, 'final', NULL, 0, 'paid', NULL, 1390, NULL, '0112', '', NULL, NULL, NULL, NULL, '2026-09-17 14:29:00', 51.9600, NULL, 0.0000, 'percentage', 0.0000, 0, 0.0000, 'Delivery', NULL, '206-06JAMAICA AVE QUEENS VILLAGE NY 11428', NULL, NULL, NULL, 'ordered', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, 51.9600, NULL, NULL, NULL, NULL, NULL, 1, 0, 0, 1.000, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, '[\"440\"]', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL, 0, 1.0000, 'days', 0, NULL, NULL, NULL, NULL, NULL, NULL, '2026-09-17 08:29:45', '2026-09-17 08:29:45'),
-(442, 1, 1, 0, NULL, NULL, NULL, 'sell', NULL, 'final', NULL, 0, 'due', NULL, 1, NULL, '0113', '', NULL, NULL, NULL, NULL, '2026-09-17 15:32:06', 32.9900, NULL, 0.0000, 'percentage', 0.0000, 0, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, 'xx', NULL, 0, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, 32.9900, NULL, NULL, NULL, NULL, NULL, 0, 0, 1, 1.000, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL, 0, 1.0000, 'days', 0, NULL, NULL, NULL, NULL, NULL, 0, '2026-09-17 09:32:06', '2026-09-17 09:32:06');
+(442, 1, 1, 0, NULL, NULL, NULL, 'sell', NULL, 'final', NULL, 0, 'due', NULL, 1, NULL, '0113', '', NULL, NULL, NULL, NULL, '2026-09-17 15:32:06', 32.9900, NULL, 0.0000, 'percentage', 0.0000, 0, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, 'xx', NULL, 0, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, 32.9900, NULL, NULL, NULL, NULL, NULL, 0, 0, 1, 1.000, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL, 0, 1.0000, 'days', 0, NULL, NULL, NULL, NULL, NULL, 0, '2026-09-17 09:32:06', '2026-09-17 09:32:06'),
+(443, 1, 1, 0, NULL, NULL, NULL, 'sales_order', NULL, 'ordered', NULL, 0, 'due', NULL, 1882, NULL, '2026/0006', '', 'ecommerce', 'ecommerce', NULL, NULL, '2026-09-19 02:08:51', 23.9800, NULL, 0.0000, NULL, 0.0000, 0, 0.0000, '233 Clarendon Avenue', NULL, '233 Clarendon Avenue, Officia enim sed et, Tempora laboriosam, ME 65929, United States', NULL, NULL, NULL, 'ordered', 'picking', '{\"timeline\": [{\"at\": \"2026-09-19 02:08:51\", \"by\": \"System\", \"event\": \"entered_fulfillment\", \"label\": \"Entered Fulfillment\"}]}', NULL, NULL, NULL, 'Britanni Cantu', NULL, NULL, 5.9900, NULL, NULL, NULL, NULL, NULL, 'Facere nulla beatae', NULL, 0, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, 29.9700, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 1.000, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL, 0, 1.0000, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, '2026-09-18 20:08:51', '2026-09-18 20:08:51');
 
 -- --------------------------------------------------------
 
@@ -19308,7 +19420,8 @@ INSERT INTO `transaction_sell_lines` (`id`, `transaction_id`, `product_id`, `var
 (186, 440, 5536, 5536, 2.0000, 0.0000, 0.0000, 0.0000, 0.0000, 11.9900, 11.9900, 'fixed', 0.0000, 11.9900, 0.0000, NULL, NULL, NULL, '', NULL, 2.0000, NULL, NULL, NULL, '', NULL, '2026-09-17 08:29:11', '2026-09-17 08:29:45'),
 (187, 441, 5496, 5496, 2.0000, 0.0000, 0.0000, 0.0000, 0.0000, 13.9900, 13.9900, 'fixed', 0.0000, 13.9900, 0.0000, NULL, NULL, NULL, '', 185, 0.0000, NULL, NULL, NULL, '', NULL, '2026-09-17 08:29:45', '2026-09-17 08:29:45'),
 (188, 441, 5536, 5536, 2.0000, 0.0000, 0.0000, 0.0000, 0.0000, 11.9900, 11.9900, 'fixed', 0.0000, 11.9900, 0.0000, NULL, NULL, NULL, '', 186, 0.0000, NULL, NULL, NULL, '', NULL, '2026-09-17 08:29:45', '2026-09-17 08:29:45'),
-(189, 442, 2891, 2891, 1.0000, 0.0000, 0.0000, 0.0000, 0.0000, 32.9900, 32.9900, 'percentage', 0.0000, 32.9900, 0.0000, NULL, NULL, NULL, '', NULL, 0.0000, NULL, NULL, NULL, '', NULL, '2026-09-17 09:32:06', '2026-09-17 09:32:06');
+(189, 442, 2891, 2891, 1.0000, 0.0000, 0.0000, 0.0000, 0.0000, 32.9900, 32.9900, 'percentage', 0.0000, 32.9900, 0.0000, NULL, NULL, NULL, '', NULL, 0.0000, NULL, NULL, NULL, '', NULL, '2026-09-17 09:32:06', '2026-09-17 09:32:06'),
+(190, 443, 5536, 5536, 2.0000, 0.0000, 0.0000, 0.0000, 0.0000, 11.9900, 11.9900, NULL, 0.0000, 11.9900, 0.0000, NULL, NULL, NULL, '', NULL, 0.0000, NULL, NULL, NULL, '', NULL, '2026-09-18 20:08:51', '2026-09-18 20:08:51');
 
 -- --------------------------------------------------------
 
@@ -19563,7 +19676,7 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `user_type`, `surname`, `first_name`, `last_name`, `username`, `email`, `password`, `language`, `contact_no`, `address`, `remember_token`, `business_id`, `available_at`, `paused_at`, `max_sales_discount_percent`, `allow_login`, `barcode_login`, `barcode_switch_id`, `status`, `is_enable_service_staff_pin`, `service_staff_pin`, `crm_contact_id`, `is_cmmsn_agnt`, `cmmsn_percent`, `sales_target`, `sales_target_daily`, `sales_target_weekly`, `sales_target_monthly`, `selected_contacts`, `dob`, `gender`, `marital_status`, `blood_group`, `contact_number`, `alt_number`, `family_number`, `fb_link`, `twitter_link`, `social_media_1`, `social_media_2`, `permanent_address`, `current_address`, `guardian_name`, `custom_field_1`, `custom_field_2`, `custom_field_3`, `custom_field_4`, `bank_details`, `id_proof_name`, `id_proof_number`, `deleted_at`, `created_at`, `updated_at`, `pos_quick_keys_enabled`) VALUES
-(1, 'user', NULL, 'Japs', 'POS', 'japspos', 'japspos@gmail.com', '$2y$10$LH3D2XH/82k.Av8HfGb3GOfKM3F7Qi7I86iZLyxhJFtjajS8pKHpK', 'en', NULL, NULL, 'si0L87cZq5yV5jAHVuvfqBO28C0M40Li5wPEIHsGByVo3c28gwLgEtWDo6aX', 1, NULL, NULL, NULL, 1, 1, 'usi:1659d00394bc', 'active', 0, NULL, NULL, 0, 0.00, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '{\"account_holder_name\":null,\"account_number\":null,\"bank_name\":null,\"bank_code\":null,\"branch\":null,\"tax_payer_id\":null}', NULL, NULL, NULL, '2026-06-04 16:29:53', '2026-09-10 05:14:45', 1),
+(1, 'user', NULL, 'Japs', 'POS', 'japspos', 'japspos@gmail.com', '$2y$10$LH3D2XH/82k.Av8HfGb3GOfKM3F7Qi7I86iZLyxhJFtjajS8pKHpK', 'en', NULL, NULL, 'GUQyLDxUHdQFDp62UCisSYOXQYdfVW7FaNrhZV3hj0b41XPZ63a0p1M63I5v', 1, NULL, NULL, NULL, 1, 1, 'usi:1659d00394bc', 'active', 0, NULL, NULL, 0, 0.00, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '{\"account_holder_name\":null,\"account_number\":null,\"bank_name\":null,\"bank_code\":null,\"branch\":null,\"tax_payer_id\":null}', NULL, NULL, NULL, '2026-06-04 16:29:53', '2026-09-10 05:14:45', 1),
 (3, 'user', NULL, 'Sales', NULL, 'sales', 'sales@japspos.com', '$2y$10$bhjln6gIUl7iQH99RhOHe.SdLfYtmWt46.QAc9EYGCwwKI.apVRG.', 'en', NULL, NULL, NULL, 1, NULL, NULL, NULL, 1, 1, 'usi:79f26ee953f9', 'active', 0, NULL, NULL, 0, 0.00, NULL, 20.0000, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '{\"account_holder_name\":null,\"account_number\":null,\"bank_name\":null,\"bank_code\":null,\"branch\":null,\"tax_payer_id\":null}', NULL, NULL, NULL, '2026-08-17 03:13:14', '2026-09-10 05:19:25', 1),
 (4, 'user', 'Delivery', 'Delivery', 'Man', 'delivery', 'delivery@gmail.com', '$2y$10$PuoHB9TgIQJgKwIArsx3lOhXxy3adR/3vIStKn9WY7ANbA0rP24o.', 'en', NULL, NULL, NULL, 1, NULL, NULL, NULL, 1, 0, 'usi:33bb86fe0b35', 'active', 0, NULL, NULL, 0, 0.00, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '{\"account_holder_name\":null,\"account_number\":null,\"bank_name\":null,\"bank_code\":null,\"branch\":null,\"tax_payer_id\":null}', NULL, NULL, NULL, '2026-09-16 05:26:26', '2026-09-16 05:54:03', 1);
 
@@ -24200,7 +24313,7 @@ INSERT INTO `variations` (`id`, `name`, `product_id`, `sub_sku`, `product_variat
 (5493, 'DUMMY', 5493, '0041594836132', 5493, NULL, 22.0000, 22.0000, 59.0455, 34.9900, 34.9900, '2026-09-10 04:14:39', '2026-09-10 04:14:39', NULL, '[]'),
 (5494, 'DUMMY', 5494, '018026100260', 5494, NULL, 16.5000, 16.5000, 45.3939, 23.9900, 23.9900, '2026-09-10 04:14:39', '2026-09-10 04:14:39', NULL, '[]'),
 (5495, 'DUMMY', 5495, '4711061695956', 5495, NULL, 22.0000, 22.0000, 68.1364, 36.9900, 36.9900, '2026-09-10 04:14:39', '2026-09-10 04:14:39', NULL, '[]'),
-(5496, 'DUMMY', 5496, 'SKU4580', 5496, NULL, 11.0000, 11.0000, 27.1818, 13.9900, 13.9900, '2026-09-10 04:14:39', '2026-09-10 04:14:39', NULL, '[]'),
+(5496, 'DUMMY', 5496, 'SKU4580', 5496, NULL, 11.0000, 11.0000, 27.1800, 13.9900, 13.9900, '2026-09-10 04:14:39', '2026-09-18 09:36:00', NULL, '[]'),
 (5497, 'DUMMY', 5497, 'SKU4581', 5497, NULL, 30.0000, 30.0000, 46.6333, 43.9900, 43.9900, '2026-09-10 04:14:39', '2026-09-10 04:14:39', NULL, '[]'),
 (5498, 'DUMMY', 5498, '057845119206', 5498, NULL, 29.0000, 29.0000, 44.7931, 41.9900, 41.9900, '2026-09-10 04:14:39', '2026-09-10 04:14:39', NULL, '[]'),
 (5499, 'DUMMY', 5499, '018026203008', 5499, NULL, 22.0000, 22.0000, 36.3182, 29.9900, 29.9900, '2026-09-10 04:14:39', '2026-09-10 04:14:39', NULL, '[]'),
@@ -24240,15 +24353,15 @@ INSERT INTO `variations` (`id`, `name`, `product_id`, `sub_sku`, `product_variat
 (5533, 'DUMMY', 5533, '644216568208', 5533, NULL, 9.0000, 9.0000, 88.7778, 16.9900, 16.9900, '2026-09-10 04:14:40', '2026-09-10 04:14:40', NULL, '[]'),
 (5534, 'DUMMY', 5534, '34412940428989', 5534, NULL, 12.5000, 12.5000, 51.9200, 18.9900, 18.9900, '2026-09-10 04:14:40', '2026-09-10 04:14:40', NULL, '[]'),
 (5535, 'DUMMY', 5535, '10501100201.00170', 5535, NULL, 36.0000, 36.0000, 30.5278, 46.9900, 46.9900, '2026-09-10 04:14:40', '2026-09-10 04:14:40', NULL, '[]'),
-(5536, 'DUMMY', 5536, '878507435386', 5536, NULL, 4.5000, 4.5000, 166.4400, 11.9900, 11.9900, '2026-09-10 04:14:40', '2026-09-17 08:36:06', NULL, '[]'),
-(5537, 'DUMMY', 5537, '878507435388', 5537, NULL, 4.5000, 4.5000, 166.4444, 11.9900, 11.9900, '2026-09-10 04:14:40', '2026-09-10 04:14:40', NULL, '[]'),
+(5536, 'DUMMY', 5536, '878507435386', 5536, NULL, 4.5000, 4.5000, 166.4400, 11.9900, 11.9900, '2026-09-10 04:14:40', '2026-09-18 09:59:48', NULL, '[]'),
+(5537, 'DUMMY', 5537, '878507435388', 5537, NULL, 4.5000, 4.5000, 166.4400, 11.9900, 11.9900, '2026-09-10 04:14:40', '2026-09-18 09:37:17', NULL, '[]'),
 (5538, 'DUMMY', 5538, 'SKU4622', 5538, NULL, 11.0000, 11.0000, 31.7273, 14.4900, 14.4900, '2026-09-10 04:14:40', '2026-09-10 04:14:40', NULL, '[]'),
-(5539, 'DUMMY', 5539, 'SKU4623', 5539, NULL, 15.0000, 15.0000, 59.9333, 23.9900, 23.9900, '2026-09-10 04:14:40', '2026-09-10 04:14:40', NULL, '[]');
+(5539, 'DUMMY', 5539, 'SKU4623', 5539, NULL, 15.0000, 15.0000, 59.9300, 23.9900, 23.9900, '2026-09-10 04:14:40', '2026-09-18 09:37:04', NULL, '[]');
 INSERT INTO `variations` (`id`, `name`, `product_id`, `sub_sku`, `product_variation_id`, `variation_value_id`, `default_purchase_price`, `dpp_inc_tax`, `profit_percent`, `default_sell_price`, `sell_price_inc_tax`, `created_at`, `updated_at`, `deleted_at`, `combo_variations`) VALUES
 (5540, 'DUMMY', 5540, 'SKU4624', 5540, NULL, 15.0000, 15.0000, 19.9333, 17.9900, 17.9900, '2026-09-10 04:14:40', '2026-09-10 04:14:40', NULL, '[]'),
-(5541, 'DUMMY', 5541, 'SKU4625', 5541, NULL, 16.0000, 16.0000, 31.1875, 20.9900, 20.9900, '2026-09-10 04:14:40', '2026-09-10 04:14:40', NULL, '[]'),
+(5541, 'DUMMY', 5541, 'SKU4625', 5541, NULL, 16.0000, 16.0000, 31.1900, 20.9900, 20.9900, '2026-09-10 04:14:40', '2026-09-18 09:31:39', NULL, '[]'),
 (5542, 'DUMMY', 5542, 'SKU4626', 5542, NULL, 13.0000, 13.0000, 30.6923, 16.9900, 16.9900, '2026-09-10 04:14:40', '2026-09-10 04:14:40', NULL, '[]'),
-(5543, 'DUMMY', 5543, 'SKU4627', 5543, NULL, 19.0000, 19.0000, 26.2632, 23.9900, 23.9900, '2026-09-10 04:14:40', '2026-09-10 04:14:40', NULL, '[]'),
+(5543, 'DUMMY', 5543, 'SKU4627', 5543, NULL, 19.0000, 19.0000, 26.2600, 23.9900, 23.9900, '2026-09-10 04:14:40', '2026-09-18 09:31:59', NULL, '[]'),
 (5544, 'DUMMY', 5544, '763352124106', 5544, NULL, 12.0000, 12.0000, 91.5833, 22.9900, 22.9900, '2026-09-10 04:14:40', '2026-09-10 04:14:40', NULL, '[]'),
 (5545, 'DUMMY', 5545, 'SKU4629', 5545, NULL, 19.9900, 19.9900, 50.0250, 29.9900, 29.9900, '2026-09-10 04:14:40', '2026-09-10 04:14:40', NULL, '[]'),
 (5546, 'DUMMY', 5546, '040328650525', 5546, NULL, 22.0000, 22.0000, 45.4091, 31.9900, 31.9900, '2026-09-10 04:14:40', '2026-09-10 04:14:40', NULL, '[]'),
@@ -24351,7 +24464,7 @@ INSERT INTO `variations` (`id`, `name`, `product_id`, `sub_sku`, `product_variat
 (5643, 'DUMMY', 5643, '0075720004096', 5643, NULL, 6.0000, 6.0000, 16.5000, 6.9900, 6.9900, '2026-09-10 04:14:41', '2026-09-10 04:14:41', NULL, '[]'),
 (5644, 'DUMMY', 5644, '075720005048', 5644, NULL, 9.2500, 9.2500, 29.6216, 11.9900, 11.9900, '2026-09-10 04:14:41', '2026-09-10 04:14:41', NULL, '[]'),
 (5645, 'DUMMY', 5645, '075720710034', 5645, NULL, 9.6000, 9.6000, 50.9375, 14.4900, 14.4900, '2026-09-10 04:14:41', '2026-09-10 04:14:41', NULL, '[]'),
-(5646, 'DUMMY', 5646, '075720904501', 5646, NULL, 8.5000, 8.5000, 29.2941, 10.9900, 10.9900, '2026-09-10 04:14:41', '2026-09-10 04:14:41', NULL, '[]');
+(5646, 'DUMMY', 5646, '075720904501', 5646, NULL, 8.5000, 8.5000, 29.2900, 10.9900, 10.9900, '2026-09-10 04:14:41', '2026-09-18 09:30:41', NULL, '[]');
 
 -- --------------------------------------------------------
 
@@ -25251,6 +25364,16 @@ ALTER TABLE `products`
   ADD KEY `products_business_id_ecom_slug_index` (`business_id`,`ecom_slug`);
 
 --
+-- Indexes for table `product_barcodes`
+--
+ALTER TABLE `product_barcodes`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `product_barcodes_business_id_barcode_unique` (`business_id`,`barcode`),
+  ADD KEY `product_barcodes_product_id_index` (`product_id`),
+  ADD KEY `product_barcodes_variation_id_index` (`variation_id`),
+  ADD KEY `product_barcodes_business_id_type_index` (`business_id`,`type`);
+
+--
 -- Indexes for table `product_locations`
 --
 ALTER TABLE `product_locations`
@@ -25591,7 +25714,7 @@ ALTER TABLE `account_types`
 -- AUTO_INCREMENT for table `activity_log`
 --
 ALTER TABLE `activity_log`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=261;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=264;
 
 --
 -- AUTO_INCREMENT for table `ai_assistance_settings`
@@ -25657,7 +25780,7 @@ ALTER TABLE `categories`
 -- AUTO_INCREMENT for table `contacts`
 --
 ALTER TABLE `contacts`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1882;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1883;
 
 --
 -- AUTO_INCREMENT for table `crm_call_logs`
@@ -25747,13 +25870,13 @@ ALTER TABLE `ecom_banners`
 -- AUTO_INCREMENT for table `ecom_carts`
 --
 ALTER TABLE `ecom_carts`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=160;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=233;
 
 --
 -- AUTO_INCREMENT for table `ecom_cart_items`
 --
 ALTER TABLE `ecom_cart_items`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
 
 --
 -- AUTO_INCREMENT for table `ecom_collections`
@@ -25783,13 +25906,13 @@ ALTER TABLE `ecom_coupon_usages`
 -- AUTO_INCREMENT for table `ecom_customer_addresses`
 --
 ALTER TABLE `ecom_customer_addresses`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `ecom_customer_licenses`
 --
 ALTER TABLE `ecom_customer_licenses`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `ecom_inquiries`
@@ -25801,7 +25924,7 @@ ALTER TABLE `ecom_inquiries`
 -- AUTO_INCREMENT for table `ecom_order_meta`
 --
 ALTER TABLE `ecom_order_meta`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `ecom_password_resets`
@@ -25885,7 +26008,7 @@ ALTER TABLE `media`
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=334;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=335;
 
 --
 -- AUTO_INCREMENT for table `notification_templates`
@@ -25928,6 +26051,12 @@ ALTER TABLE `printers`
 --
 ALTER TABLE `products`
   MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5647;
+
+--
+-- AUTO_INCREMENT for table `product_barcodes`
+--
+ALTER TABLE `product_barcodes`
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `product_racks`
@@ -26029,7 +26158,7 @@ ALTER TABLE `time_off_requests`
 -- AUTO_INCREMENT for table `transactions`
 --
 ALTER TABLE `transactions`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=443;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=444;
 
 --
 -- AUTO_INCREMENT for table `transaction_payments`
@@ -26041,7 +26170,7 @@ ALTER TABLE `transaction_payments`
 -- AUTO_INCREMENT for table `transaction_sell_lines`
 --
 ALTER TABLE `transaction_sell_lines`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=190;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=191;
 
 --
 -- AUTO_INCREMENT for table `transaction_sell_lines_purchase_lines`
