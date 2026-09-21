@@ -381,6 +381,9 @@ class BusinessController extends Controller
                 'rp_expiry_type', 'custom_labels', 'weighing_scale_setting',
                 'code_label_1', 'code_1', 'code_label_2', 'code_2', 'currency_precision', 'quantity_precision', ]);
 
+            // Monetary values must use exactly 2 decimal places.
+            $business_details['currency_precision'] = 2;
+
             if (! empty($request->input('enable_rp')) && $request->input('enable_rp') == 1) {
                 $business_details['enable_rp'] = 1;
             } else {

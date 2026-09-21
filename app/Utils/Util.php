@@ -66,6 +66,9 @@ class Util
 
         if ($is_quantity) {
             $currency_precision = ! empty($business_details) ? $business_details->quantity_precision : session('business.quantity_precision', 2);
+        } else {
+            // Monetary values must use exactly 2 decimal places.
+            $currency_precision = 2;
         }
 
         $formatted = number_format($input_number, $currency_precision, $decimal_separator, $thousand_separator);

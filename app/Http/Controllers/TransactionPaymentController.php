@@ -75,6 +75,11 @@ class TransactionPaymentController extends Controller
                 abort(403, 'Unauthorized action.');
             }
 
+            if (in_array($transaction->type, ['sell', 'sell_return', 'opening_balance'])) {
+                app(\App\Services\CreditControlService::class)
+                    ->assertCanSettleOutstanding((int) $transaction->contact_id, auth()->user());
+            }
+
             if ($transaction->payment_status != 'paid') {
                 $inputs = $request->only(['amount', 'method', 'note', 'card_number', 'card_holder_name',
                     'card_transaction_number', 'card_type', 'card_month', 'card_year', 'card_security',
@@ -137,6 +142,9 @@ class TransactionPaymentController extends Controller
 
                 $this->transactionUtil->activityLog($transaction, 'payment_edited', $transaction_before);
 
+                app(\App\Services\CreditControlService::class)
+                    ->releaseHoldsIfCleared((int) $transaction->contact_id);
+
                 DB::commit();
             }
 
@@ -148,6 +156,8 @@ class TransactionPaymentController extends Controller
             $msg = __('messages.something_went_wrong');
 
             if (get_class($e) == \App\Exceptions\AdvanceBalanceNotAvailable::class) {
+                $msg = $e->getMessage();
+            } elseif ($e instanceof \App\Exceptions\CreditSettlementUnauthorizedException) {
                 $msg = $e->getMessage();
             } else {
                 \Log::emergency('File:'.$e->getFile().'Line:'.$e->getLine().'Message:'.$e->getMessage());
@@ -549,6 +559,12 @@ class TransactionPaymentController extends Controller
             DB::beginTransaction();
 
             $business_id = request()->session()->get('business.id');
+            $contact_id = (int) $request->input('contact_id');
+            if ($contact_id) {
+                app(\App\Services\CreditControlService::class)
+                    ->assertCanSettleOutstanding($contact_id, auth()->user());
+            }
+
             $tp = $this->transactionUtil->payContact($request);
 
             // Record advance/due payment in the open cash register when called from POS.
@@ -579,6 +595,11 @@ class TransactionPaymentController extends Controller
             }
 
             DB::commit();
+
+            if ($contact_id) {
+                app(\App\Services\CreditControlService::class)->releaseHoldsIfCleared($contact_id);
+            }
+
             $output = ['success' => true,
                 'msg' => __('purchase.payment_added_success'),
             ];
@@ -586,8 +607,12 @@ class TransactionPaymentController extends Controller
             DB::rollBack();
             \Log::emergency('File:'.$e->getFile().'Line:'.$e->getLine().'Message:'.$e->getMessage());
 
+            $msg = $e instanceof \App\Exceptions\CreditSettlementUnauthorizedException
+                ? $e->getMessage()
+                : ('File:'.$e->getFile().'Line:'.$e->getLine().'Message:'.$e->getMessage());
+
             $output = ['success' => false,
-                'msg' => 'File:'.$e->getFile().'Line:'.$e->getLine().'Message:'.$e->getMessage(),
+                'msg' => $msg,
             ];
         }
 

@@ -463,22 +463,18 @@ class SellPosController extends Controller
                 unset($input['payment']['change_return']);
             }
 
-            //Check Customer credit limit (skipped for parked sales)
-            $is_credit_limit_exeeded = !empty($input['is_suspend'])
-                ? false
-                : $this->transactionUtil->isCustomerCreditLimitExeeded($input);
-
-            if ($is_credit_limit_exeeded !== false) {
-                $credit_limit_amount = $this->transactionUtil->num_f($is_credit_limit_exeeded, true);
-                $output = ['success' => 0,
-                    'msg' => __('lang_v1.cutomer_credit_limit_exeeded', ['credit_limit' => $credit_limit_amount]),
-                ];
-                if (!$is_direct_sale) {
-                    return $output;
-                } else {
-                    return redirect()
-                        ->action([\App\Http\Controllers\SellController::class, 'index'])
-                        ->with('status', $output);
+            // Credit limit / overdue: allow order placement; hold shipment + notify customer.
+            $credit_hold_warning = null;
+            $credit_control_active_before = false;
+            $creditControl = app(\App\Services\CreditControlService::class);
+            if (empty($input['is_suspend']) && ! empty($input['contact_id'])) {
+                $credit_control_active_before = $creditControl->isCreditControlActive((int) $input['contact_id']);
+                $will_exceed = $creditControl->isCreditLimitExceeded((int) $input['contact_id'])
+                    || $this->transactionUtil->isCustomerCreditLimitExeeded($input) !== false;
+                $is_overdue = $creditControl->hasOverdueOutstanding((int) $input['contact_id']);
+                if ($will_exceed || $is_overdue) {
+                    $input['credit_shipment_hold'] = 1;
+                    $credit_hold_warning = __('lang_v1.credit_shipment_hold_warning');
                 }
             }
 
@@ -607,6 +603,32 @@ class SellPosController extends Controller
 
                 $transaction = $this->transactionUtil->createSellTransaction($business_id, $input, $invoice_total, $user_id);
 
+                // Credit control: ensure hold + notify customer when limit exceeded or overdue.
+                $creditControl = app(\App\Services\CreditControlService::class);
+                if (! empty($input['credit_shipment_hold'])) {
+                    $transaction->credit_shipment_hold = 1;
+                    $transaction->save();
+                } else {
+                    $creditControl->applyHoldToTransaction($transaction);
+                }
+                $creditControl->notifyCustomerCreditIssues($business_id, (int) $transaction->contact_id, $transaction);
+
+                // Settlement of outstanding while credit control was already active is restricted.
+                if (! empty($input['payment']) && ! empty($credit_control_active_before)) {
+                    $has_payment = false;
+                    foreach ($input['payment'] as $payment_line) {
+                        if (! empty($payment_line['amount']) && $this->transactionUtil->num_uf($payment_line['amount']) > 0
+                            && ($payment_line['method'] ?? '') !== ''
+                            && (int) ($payment_line['is_return'] ?? 0) !== 1) {
+                            $has_payment = true;
+                            break;
+                        }
+                    }
+                    if ($has_payment) {
+                        $creditControl->assertCanSettleOutstanding((int) $transaction->contact_id, auth()->user());
+                    }
+                }
+
                 //Upload Shipping documents
                 Media::uploadMedia($business_id, $transaction, $request, 'shipping_documents', false, 'shipping_document');
 
@@ -621,6 +643,8 @@ class SellPosController extends Controller
 
                 if (!$transaction->is_suspend && !empty($input['payment']) && !$is_credit_sale) {
                     $this->transactionUtil->createOrUpdatePaymentLines($transaction, $input['payment']);
+                    app(\App\Services\CreditControlService::class)
+                        ->releaseHoldsIfCleared((int) $transaction->contact_id);
                 }
 
                 //Check for final and do some processing.
@@ -745,6 +769,9 @@ class SellPosController extends Controller
                 }
 
                 $msg = trans('sale.pos_sale_added');
+                if (! empty($credit_hold_warning)) {
+                    $msg .= ' '.$credit_hold_warning;
+                }
                 $receipt = '';
                 $invoice_layout_id = $request->input('invoice_layout_id');
                 $print_invoice = false;
@@ -805,6 +832,10 @@ class SellPosController extends Controller
                 $msg = $e->getMessage();
             }
             if (get_class($e) == \App\Exceptions\AdvanceBalanceNotAvailable::class) {
+                $msg = $e->getMessage();
+            }
+            if ($e instanceof \App\Exceptions\CreditSettlementUnauthorizedException
+                || $e instanceof \App\Exceptions\CreditShipmentHoldException) {
                 $msg = $e->getMessage();
             }
 
@@ -1529,22 +1560,18 @@ class SellPosController extends Controller
                     unset($input['payment']['change_return']);
                 }
 
-                //Check Customer credit limit (skipped for parked sales)
-                $is_credit_limit_exeeded = (!empty($input['is_suspend']) || $transaction_before->type != 'sell')
-                    ? false
-                    : $this->transactionUtil->isCustomerCreditLimitExeeded($input, $id);
-
-                if ($is_credit_limit_exeeded !== false) {
-                    $credit_limit_amount = $this->transactionUtil->num_f($is_credit_limit_exeeded, true);
-                    $output = ['success' => 0,
-                        'msg' => __('lang_v1.cutomer_credit_limit_exeeded', ['credit_limit' => $credit_limit_amount]),
-                    ];
-                    if (!$is_direct_sale) {
-                        return $output;
-                    } else {
-                        return redirect()
-                            ->action([\App\Http\Controllers\SellController::class, 'index'])
-                            ->with('status', $output);
+                // Credit limit / overdue: allow update; hold shipment + notify.
+                $credit_hold_warning = null;
+                $credit_control_active_before = false;
+                $creditControl = app(\App\Services\CreditControlService::class);
+                if (empty($input['is_suspend']) && $transaction_before->type == 'sell' && ! empty($input['contact_id'])) {
+                    $credit_control_active_before = $creditControl->isCreditControlActive((int) $input['contact_id']);
+                    $will_exceed = $this->transactionUtil->isCustomerCreditLimitExeeded($input, $id) !== false
+                        || $creditControl->isCreditLimitExceeded((int) $input['contact_id']);
+                    $is_overdue = $creditControl->hasOverdueOutstanding((int) $input['contact_id']);
+                    if ($will_exceed || $is_overdue) {
+                        $input['credit_shipment_hold'] = 1;
+                        $credit_hold_warning = __('lang_v1.credit_shipment_hold_warning');
                     }
                 }
 
@@ -1700,6 +1727,22 @@ class SellPosController extends Controller
                 DB::beginTransaction();
 
                 $transaction = $this->transactionUtil->updateSellTransaction($id, $business_id, $input, $invoice_total, $user_id);
+
+                $creditControl = app(\App\Services\CreditControlService::class);
+                if (! empty($input['credit_shipment_hold'])) {
+                    $transaction->credit_shipment_hold = 1;
+                    $transaction->save();
+                }
+                $creditControl->notifyCustomerCreditIssues($business_id, (int) $transaction->contact_id, $transaction);
+                if (! empty($credit_control_active_before) && ! empty($input['payment'])) {
+                    foreach ($input['payment'] as $payment_line) {
+                        if (! empty($payment_line['amount']) && $this->transactionUtil->num_uf($payment_line['amount']) > 0
+                            && (int) ($payment_line['is_return'] ?? 0) !== 1) {
+                            $creditControl->assertCanSettleOutstanding((int) $transaction->contact_id, auth()->user());
+                            break;
+                        }
+                    }
+                }
 
                 //update service staff timer
                 if (!$is_direct_sale && $transaction->status == 'final') {
@@ -1938,8 +1981,13 @@ class SellPosController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::emergency('File:' . $e->getFile() . 'Line:' . $e->getLine() . 'Message:' . $e->getMessage());
+            $msg = __('messages.something_went_wrong');
+            if ($e instanceof \App\Exceptions\CreditSettlementUnauthorizedException
+                || $e instanceof \App\Exceptions\CreditShipmentHoldException) {
+                $msg = $e->getMessage();
+            }
             $output = ['success' => 0,
-                'msg' => __('messages.something_went_wrong'),
+                'msg' => $msg,
             ];
         }
 
@@ -3265,23 +3313,16 @@ class SellPosController extends Controller
 
             $transaction_before = $transaction->replicate();
             $is_direct_sale = $transaction->is_direct_sale;
-            //Check Customer credit limit
+            // Credit limit / overdue: allow conversion; hold shipment if needed.
+            $creditControl = app(\App\Services\CreditControlService::class);
             $data = [
                 'final_total' => $transaction->final_total,
                 'contact_id' => $transaction->contact_id,
                 'status' => 'final',
             ];
-            $is_credit_limit_exeeded = $this->transactionUtil->isCustomerCreditLimitExeeded($data, $id);
-
-            if ($is_credit_limit_exeeded !== false) {
-                $credit_limit_amount = $this->transactionUtil->num_f($is_credit_limit_exeeded, true);
-                $output = ['success' => 0,
-                    'msg' => __('lang_v1.cutomer_credit_limit_exeeded', ['credit_limit' => $credit_limit_amount]),
-                ];
-
-                return redirect()
-                    ->back()
-                    ->with('status', $output);
+            if ($creditControl->isCreditControlActive((int) $transaction->contact_id)
+                || $this->transactionUtil->isCustomerCreditLimitExeeded($data, $id) !== false) {
+                $transaction->credit_shipment_hold = 1;
             }
 
             DB::beginTransaction();

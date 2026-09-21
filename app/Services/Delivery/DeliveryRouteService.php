@@ -436,6 +436,8 @@ class DeliveryRouteService
         }
         $tx->delivery_status = $status;
         if ($status === 'delivered') {
+            app(\App\Services\CreditControlService::class)
+                ->assertCanAdvanceShippingStatus($tx, 'delivered');
             $tx->shipping_status = 'delivered';
         }
         $tx->save();

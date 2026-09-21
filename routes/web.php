@@ -425,6 +425,8 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::get('/products/inventory-timeline/{id}', [ProductController::class, 'inventoryTimeline']);
     Route::get('/delete-media/{media_id}', [ProductController::class, 'deleteMedia']);
     Route::post('/products/mass-deactivate', [ProductController::class, 'massDeactivate']);
+    Route::post('/products/{id}/retain-sku', [ProductController::class, 'retainSku']);
+    Route::post('/products/{id}/archive-sku', [ProductController::class, 'archiveSku']);
     Route::get('/products/activate/{id}', [ProductController::class, 'activate']);
     Route::get('/products/view-product-group-price/{id}', [ProductController::class, 'viewGroupPrice']);
     Route::get('/products/add-selling-prices/{id}', [ProductController::class, 'addSellingPrices']);

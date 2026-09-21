@@ -129,7 +129,7 @@
         <div class="col-sm-4">
             <div class="form-group">
                 {!! Form::label('currency_precision', __('lang_v1.currency_precision') . ':*') !!} @show_tooltip(__('lang_v1.currency_precision_help'))
-                {!! Form::select('currency_precision', [0 =>0, 1=>1, 2=>2, 3=>3,4=>4], $business->currency_precision, ['class' => 'form-control select2', 'required']); !!}
+                {!! Form::select('currency_precision', [2 => 2], 2, ['class' => 'form-control select2', 'required', 'readonly']); !!}
             </div>
         </div>
         <div class="col-sm-4">

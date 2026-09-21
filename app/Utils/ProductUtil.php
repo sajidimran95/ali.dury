@@ -2486,12 +2486,28 @@ class ProductUtil extends Util
     }
 
     /**
-     * Return the products less than alert quntity.
+     * Return the products less than alert quantity, or below open order demand.
      *
      * @return array
      */
     public function getProductAlert($business_id, $permitted_locations = null)
     {
+        $demandSub = DB::table('transaction_sell_lines as tsl')
+            ->join('transactions as t', 'tsl.transaction_id', '=', 't.id')
+            ->where('t.business_id', $business_id)
+            ->where('t.type', 'sales_order')
+            ->whereNotIn('t.status', ['completed', 'cancelled'])
+            ->where(function ($q) {
+                $q->whereNull('t.shipping_status')
+                    ->orWhereNotIn('t.shipping_status', ['delivered', 'cancelled']);
+            })
+            ->groupBy('tsl.variation_id', 't.location_id')
+            ->select(
+                'tsl.variation_id',
+                't.location_id',
+                DB::raw('SUM(tsl.quantity - COALESCE(tsl.so_quantity_invoiced, 0)) as open_demand')
+            );
+
         $query = VariationLocationDetails::join(
             'product_variations as pv',
             'variation_location_details.product_variation_id',
@@ -2517,12 +2533,20 @@ class ProductUtil extends Util
                     'l.id'
                 )
                 ->leftjoin('units as u', 'p.unit_id', '=', 'u.id')
+                ->leftJoinSub($demandSub, 'od', function ($join) {
+                    $join->on('od.variation_id', '=', 'variation_location_details.variation_id')
+                        ->on('od.location_id', '=', 'variation_location_details.location_id');
+                })
                 ->where('p.business_id', $business_id)
                 ->where('p.enable_stock', 1)
                 ->where('p.is_inactive', 0)
                 ->whereNull('v.deleted_at')
-                ->whereNotNull('p.alert_quantity')
-                ->whereRaw('variation_location_details.qty_available <= p.alert_quantity');
+                ->where(function ($q) {
+                    $q->where(function ($q2) {
+                        $q2->whereNotNull('p.alert_quantity')
+                            ->whereRaw('variation_location_details.qty_available <= p.alert_quantity');
+                    })->orWhereRaw('variation_location_details.qty_available < COALESCE(od.open_demand, 0)');
+                });
 
              //Check for permitted locations of a user
              if(!empty($permitted_locations)){
@@ -2546,7 +2570,8 @@ class ProductUtil extends Util
             'v.sub_sku',
             'l.name as location',
             'variation_location_details.qty_available as stock',
-            'u.short_name as unit'
+            'u.short_name as unit',
+            DB::raw('COALESCE(od.open_demand, 0) as open_order_demand')
         )
                 ->groupBy('variation_location_details.id')
                 ->orderBy('stock', 'asc');
@@ -2842,6 +2867,20 @@ class ProductUtil extends Util
             }
 
             $output = $this->getSellLineRow($variation_id, $location_id, $quantity, $row_count, $is_direct_sell, $is_serial_no);
+
+            // Track POS scan activity and prompt for SKUs inactive 180+ days.
+            if (! empty($output['success'])) {
+                try {
+                    $variation = \App\Variation::find($variation_id);
+                    if ($variation) {
+                        $inactivity = app(\App\Services\SkuInactivityService::class)
+                            ->recordScanAndCheckPrompt((int) $variation->product_id);
+                        $output['sku_inactivity'] = $inactivity;
+                    }
+                } catch (\Exception $e) {
+                    // Non-fatal: do not block POS line add.
+                }
+            }
 
             // Add modifiers if restaurant module is enabled
             $transaction_util = new TransactionUtil();
