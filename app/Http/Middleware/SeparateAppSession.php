@@ -4,7 +4,6 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\URL;
 
 /**
  * Separate session cookies for Admin / Sale / Customer on the same browser.
@@ -14,10 +13,6 @@ class SeparateAppSession
 {
     public function handle(Request $request, Closure $next)
     {
-        // Keep generated form actions on the same host/scheme the browser is using.
-        URL::forceRootUrl($request->root());
-        URL::forceScheme($request->getScheme());
-
         if ($request->is('customer') || $request->is('customer/*')) {
             config(['session.cookie' => 'japs_customer_session']);
         } elseif ($request->is('sale') || $request->is('sale/*')) {
@@ -27,10 +22,9 @@ class SeparateAppSession
         } elseif (self::isStorefront($request)) {
             config([
                 'session.cookie' => 'japs_ecom_session',
-                'session.secure' => false,
+                'session.secure' => $request->isSecure(),
                 'session.same_site' => 'lax',
                 'session.domain' => null,
-                'session.http_only' => true,
             ]);
         } else {
             config(['session.cookie' => 'japs_admin_session']);
@@ -41,6 +35,11 @@ class SeparateAppSession
 
     public static function isStorefront(Request $request): bool
     {
+        // POS dashboard is /home — never treat it as the shop.
+        if ($request->is('home') || $request->is('home/*')) {
+            return false;
+        }
+
         $path = trim($request->path(), '/');
         $prefix = trim((string) config('ecommerce.route_prefix', 'shop'), '/');
         if ($prefix !== '' && (
@@ -56,7 +55,6 @@ class SeparateAppSession
         }
 
         return $request->is('/')
-            || $request->is('home')
             || $request->is('product/*')
             || $request->is('category/*')
             || $request->is('collections/*')

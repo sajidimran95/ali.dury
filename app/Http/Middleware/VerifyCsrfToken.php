@@ -37,7 +37,6 @@ class VerifyCsrfToken extends PreventRequestForgery
         'new-arrivals',
         'new-arrivals/*',
         'search',
-        'home',
         'collections/*',
         'wishlist',
         'review',
