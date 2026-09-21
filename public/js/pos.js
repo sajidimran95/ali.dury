@@ -1326,6 +1326,27 @@ $(document).ready(function() {
             if (/^\][A-Za-z0-9]{2}/.test(term)) {
                 term = term.substring(3);
             }
+            // QR often stores a URL or JSON instead of a raw SKU
+            try {
+                if (term.charAt(0) === '{') {
+                    var js = JSON.parse(term);
+                    term = (js.sku || js.barcode || js.code || js.sub_sku || term).toString().trim();
+                }
+            } catch (eJson) {}
+            var urlMatch = term.match(/https?:\/\/[^\s]+/i);
+            if (urlMatch) {
+                try {
+                    var u = new URL(urlMatch[0]);
+                    term = u.searchParams.get('sku')
+                        || u.searchParams.get('barcode')
+                        || u.searchParams.get('code')
+                        || decodeURIComponent((u.pathname.split('/').filter(Boolean).pop() || '')).trim()
+                        || term;
+                } catch (eUrl) {}
+            }
+            if (term.indexOf('|') !== -1 || term.indexOf(',') !== -1) {
+                term = term.split(/[|,]/)[0].trim();
+            }
             return term;
         }
 
@@ -1516,7 +1537,7 @@ $(document).ready(function() {
                                 if (silentIfMiss) {
                                     $inp.val(parsed.code);
                                 } else {
-                                    toastr.error(LANG.no_products_found);
+                                    toastr.error((data && data.msg) || LANG.no_products_found);
                                 }
                             } else {
                                 var scanned = String(parsed.code || '').trim().toLowerCase();

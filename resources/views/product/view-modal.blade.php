@@ -10,6 +10,36 @@
 	      			<div class="col-sm-4 invoice-col">
 	      				<b>@lang('product.sku'):</b>
 						{{$product->sku }}<br>
+						<b>@lang('lang_v1.all_barcodes'):</b>
+						@php
+							$all_codes = collect([$product->sku])
+								->merge($product->variations->pluck('sub_sku'))
+								->merge(optional($product->barcodes)->pluck('barcode') ?? collect())
+								->map(fn ($c) => trim((string) $c))
+								->filter()
+								->unique(fn ($c) => mb_strtolower($c))
+								->values();
+						@endphp
+						@if($all_codes->isNotEmpty())
+							<span class="d-inline-block" style="display:block; margin-top:2px;">
+								@foreach($all_codes as $code)
+									<code style="display:inline-block; margin:0 4px 4px 0; padding:2px 6px; background:#f4f4f4; border:1px solid #ddd;">{{ $code }}</code>
+								@endforeach
+							</span>
+						@else
+							--
+						@endif
+						<br>
+						@if(optional($product->barcodes)->isNotEmpty())
+							<b>@lang('lang_v1.additional_barcodes'):</b>
+							@foreach($product->barcodes as $bc)
+								<br>
+								<code>{{ $bc->barcode }}</code>
+								@if($bc->type === 'pack') <span class="label label-default">@lang('lang_v1.barcode_type_pack')</span> @endif
+								@if($bc->label) <small class="text-muted">({{ $bc->label }})</small> @endif
+							@endforeach
+							<br>
+						@endif
 						<b>@lang('product.brand'): </b>
 						{{$product->brand->name ?? '--' }}<br>
 						<b>@lang('product.unit'): </b>

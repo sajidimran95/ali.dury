@@ -25,6 +25,7 @@ use App\Warranty;
 use Excel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Yajra\DataTables\Facades\DataTables;
 use App\Events\ProductsCreatedOrModified;
@@ -653,7 +654,7 @@ class ProductController extends Controller
             \Log::emergency('File:'.$e->getFile().'Line:'.$e->getLine().'Message:'.$e->getMessage());
 
             $output = ['success' => 0,
-                'msg' => __('messages.something_went_wrong'),
+                'msg' => $this->productFormErrorMessage($e),
             ];
 
             return redirect('products')->with('status', $output);
@@ -995,7 +996,7 @@ class ProductController extends Controller
             \Log::emergency('File:'.$e->getFile().'Line:'.$e->getLine().'Message:'.$e->getMessage());
 
             $output = ['success' => 0,
-                'msg' => $e->getMessage(),
+                'msg' => $this->productFormErrorMessage($e),
             ];
         }
 
@@ -1393,7 +1394,7 @@ class ProductController extends Controller
             $result = collect();
             $scan_terms = $is_scan_mode
                 ? $this->barcodeScanCandidates($search_term)
-                : ($search_term !== '' ? [$search_term] : []);
+                : ($search_term !== '' ? $this->barcodeScanCandidates($search_term) : []);
 
             $alt_variation_ids = $this->variationIdsForBarcodeTerms($business_id, $scan_terms);
             $matched_barcode = $this->findProductBarcodeMatch($business_id, $scan_terms);
@@ -1470,6 +1471,35 @@ class ProductController extends Controller
                 }
             }
 
+            // Alternate / QR barcode matched a row even if SKU text did not
+            if ($result->isEmpty() && ! empty($matched_barcode) && ! empty($matched_barcode->variation_id)) {
+                $posOk = Product::where('business_id', $business_id)
+                    ->where('id', $matched_barcode->product_id)
+                    ->forPos()
+                    ->exists();
+                if ($posOk) {
+                    $sku = Product::where('id', $matched_barcode->product_id)->value('sku');
+                    if (! empty($sku)) {
+                        $result = $this->productUtil->filterProduct(
+                            $business_id,
+                            $sku,
+                            $location_id,
+                            $not_for_selling,
+                            $price_group_id,
+                            $product_types,
+                            ['sku', 'sub_sku'],
+                            $check_qty,
+                            'exact'
+                        );
+                        if ($result->count() > 1) {
+                            $result = $result->filter(function ($item) use ($matched_barcode) {
+                                return (int) $item->variation_id === (int) $matched_barcode->variation_id;
+                            })->values();
+                        }
+                    }
+                }
+            }
+
             $noStore = ['Cache-Control' => 'no-store, no-cache, must-revalidate'];
 
             // If only one result and location_id is provided (POS context), auto-fetch the product row
@@ -1509,9 +1539,15 @@ class ProductController extends Controller
 
             // POS auto_add requests always get a stable envelope
             if ($auto_add_single) {
+                $msg = null;
+                if ($result->isEmpty() && ! empty($matched_barcode)) {
+                    $msg = __('lang_v1.product_not_for_pos');
+                }
+
                 return response()->json([
                     'auto_add' => false,
                     'products' => $result->values()->all(),
+                    'msg' => $msg,
                 ], 200, $noStore);
             }
 
@@ -1621,50 +1657,16 @@ class ProductController extends Controller
     public function checkProductSku(Request $request)
     {
         $business_id = $request->session()->get('user.business_id');
-        $sku = $request->input('sku');
+        $sku = trim((string) $request->input('sku'));
         $product_id = $request->input('product_id');
 
-        //check in products table
-        $query = Product::where('business_id', $business_id)
-                        ->where('sku', $sku);
-        if (! empty($product_id)) {
-            $query->where('id', '!=', $product_id);
-        }
-        $count = $query->count();
-
-        //check in variation table if $count = 0
-        if ($count == 0) {
-            $query2 = Variation::where('sub_sku', $sku)
-                            ->join('products', 'variations.product_id', '=', 'products.id')
-                            ->where('business_id', $business_id);
-
-            if (! empty($product_id)) {
-                $query2->where('product_id', '!=', $product_id);
-            }
-
-            if (! empty($request->input('variation_id'))) {
-                $query2->where('variations.id', '!=', $request->input('variation_id'));
-            }
-            $count = $query2->count();
+        if ($sku === '') {
+            return response()->json(true);
         }
 
-        // Also block barcodes already mapped as additional barcodes on other products
-        if ($count == 0) {
-            $altQuery = ProductBarcode::where('business_id', $business_id)
-                ->where('barcode', $sku);
-            if (! empty($product_id)) {
-                $altQuery->where('product_id', '!=', $product_id);
-            }
-            $count = $altQuery->count();
-        }
+        $taken = $this->barcodeIsTaken($business_id, $sku, $product_id ?: null, $request->input('variation_id'));
 
-        if ($count == 0) {
-            echo 'true';
-            exit;
-        } else {
-            echo 'false';
-            exit;
-        }
+        return response()->json(! $taken);
     }
 
      /**
@@ -2823,29 +2825,8 @@ class ProductController extends Controller
                 continue;
             }
 
-            // Unique across business (other products' primary SKU / sub_sku / alt barcodes)
-            $taken = Product::where('business_id', $business_id)
-                ->where('sku', $code)
-                ->where('id', '!=', $product->id)
-                ->exists();
-
-            if (! $taken) {
-                $taken = Variation::where('sub_sku', $code)
-                    ->join('products', 'variations.product_id', '=', 'products.id')
-                    ->where('products.business_id', $business_id)
-                    ->where('products.id', '!=', $product->id)
-                    ->exists();
-            }
-
-            if (! $taken) {
-                $taken = ProductBarcode::where('business_id', $business_id)
-                    ->where('barcode', $code)
-                    ->where('product_id', '!=', $product->id)
-                    ->exists();
-            }
-
-            if ($taken) {
-                throw new \Exception(__('lang_v1.barcode_already_used', ['code' => $code]));
+            if ($this->barcodeIsTaken($business_id, $code, $product->id)) {
+                throw new \InvalidArgumentException(__('lang_v1.barcode_already_used', ['code' => $code]));
             }
 
             $payload = [
@@ -2892,7 +2873,7 @@ class ProductController extends Controller
         $terms = array_values(array_filter(array_map('strval', $terms), function ($t) {
             return $t !== '';
         }));
-        if (empty($terms)) {
+        if (empty($terms) || ! $this->productBarcodesReady()) {
             return [];
         }
 
@@ -2916,13 +2897,16 @@ class ProductController extends Controller
         $terms = array_values(array_filter(array_map('strval', $terms), function ($t) {
             return $t !== '';
         }));
-        if (empty($terms)) {
+        if (empty($terms) || ! $this->productBarcodesReady()) {
             return null;
         }
 
         foreach ($terms as $term) {
             $match = ProductBarcode::where('business_id', $business_id)
-                ->where('barcode', $term)
+                ->where(function ($q) use ($term) {
+                    $q->where('barcode', $term)
+                        ->orWhereRaw('LOWER(barcode) = ?', [mb_strtolower($term)]);
+                })
                 ->first();
             if (! empty($match)) {
                 return $match;
@@ -3152,6 +3136,9 @@ class ProductController extends Controller
             $term = substr($term, 3);
         }
 
+        $extracted = $this->extractCodeFromQrPayload($term);
+        $term = $extracted !== '' ? $extracted : $term;
+
         $candidates = [$term];
         if (preg_match('/^\d+$/', $term)) {
             $stripped = ltrim($term, '0');
@@ -3177,5 +3164,127 @@ class ProductController extends Controller
         return array_values(array_unique(array_filter($candidates, function ($v) {
             return $v !== '';
         })));
+    }
+
+    private function productBarcodesReady(): bool
+    {
+        static $ready = null;
+        if ($ready === null) {
+            $ready = Schema::hasTable('product_barcodes');
+        }
+
+        return $ready;
+    }
+
+    private function barcodeIsTaken($business_id, string $code, $except_product_id = null, $except_variation_id = null): bool
+    {
+        $code = trim($code);
+        if ($code === '') {
+            return false;
+        }
+        $lower = mb_strtolower($code);
+
+        $skuQuery = Product::where('business_id', $business_id)
+            ->where(function ($q) use ($code, $lower) {
+                $q->where('sku', $code)->orWhereRaw('LOWER(sku) = ?', [$lower]);
+            });
+        if (! empty($except_product_id)) {
+            $skuQuery->where('id', '!=', $except_product_id);
+        }
+        if ($skuQuery->exists()) {
+            return true;
+        }
+
+        $varQuery = Variation::join('products', 'variations.product_id', '=', 'products.id')
+            ->where('products.business_id', $business_id)
+            ->where(function ($q) use ($code, $lower) {
+                $q->where('variations.sub_sku', $code)
+                    ->orWhereRaw('LOWER(variations.sub_sku) = ?', [$lower]);
+            });
+        if (! empty($except_product_id)) {
+            $varQuery->where('products.id', '!=', $except_product_id);
+        }
+        if (! empty($except_variation_id)) {
+            $varQuery->where('variations.id', '!=', $except_variation_id);
+        }
+        if ($varQuery->exists()) {
+            return true;
+        }
+
+        if (! $this->productBarcodesReady()) {
+            return false;
+        }
+
+        $barQuery = ProductBarcode::where('business_id', $business_id)
+            ->where(function ($q) use ($code, $lower) {
+                $q->where('barcode', $code)->orWhereRaw('LOWER(barcode) = ?', [$lower]);
+            });
+        if (! empty($except_product_id)) {
+            $barQuery->where('product_id', '!=', $except_product_id);
+        }
+
+        return $barQuery->exists();
+    }
+
+    private function productFormErrorMessage(\Throwable $e): string
+    {
+        $message = $e->getMessage();
+        if ($e instanceof \InvalidArgumentException) {
+            return $message;
+        }
+        if (str_contains($message, 'barcode') || str_contains($message, 'Duplicate') || str_contains($message, 'product_barcodes')) {
+            return __('lang_v1.barcode_already_used', ['code' => '']);
+        }
+
+        return __('messages.something_went_wrong');
+    }
+
+    private function extractCodeFromQrPayload(string $term): string
+    {
+        $term = trim($term);
+        if ($term === '') {
+            return '';
+        }
+
+        $json = json_decode($term, true);
+        if (is_array($json)) {
+            foreach (['sku', 'barcode', 'code', 'sub_sku'] as $key) {
+                if (! empty($json[$key]) && is_scalar($json[$key])) {
+                    return trim((string) $json[$key]);
+                }
+            }
+        }
+
+        if (preg_match('#https?://[^\s]+#i', $term, $m)) {
+            $url = $m[0];
+            $parts = parse_url($url);
+            if (! empty($parts['query'])) {
+                parse_str($parts['query'], $qs);
+                foreach (['sku', 'barcode', 'code', 'sub_sku'] as $key) {
+                    if (! empty($qs[$key])) {
+                        return trim((string) $qs[$key]);
+                    }
+                }
+            }
+            if (! empty($parts['path'])) {
+                $seg = trim((string) basename($parts['path']), '/');
+                if ($seg !== '' && ! preg_match('/^(shop|product|p|c|category)$/i', $seg)) {
+                    return rawurldecode($seg);
+                }
+            }
+        }
+
+        if (preg_match('/(?:^|\D)01(\d{8,14})(?:\D|$)/', $term, $m)) {
+            return $m[1];
+        }
+
+        if (str_contains($term, '|') || str_contains($term, ',')) {
+            $first = trim((string) preg_split('/[|,]/', $term, 2)[0]);
+            if ($first !== '') {
+                return $first;
+            }
+        }
+
+        return $term;
     }
 }

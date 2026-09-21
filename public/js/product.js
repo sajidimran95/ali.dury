@@ -167,10 +167,11 @@ $(document).ready(function() {
     if ($('#product_add_form').length) {
         $('form#product_add_form').validate({
             rules: {
-                sku: {
+                    sku: {
                     remote: {
                         url: '/products/check_product_sku',
                         type: 'post',
+                        dataType: 'json',
                         data: {
                             sku: function() {
                                 return $('#sku').val();
@@ -181,6 +182,11 @@ $(document).ready(function() {
                                 } else {
                                     return '';
                                 }
+                            },
+                            _token: function () {
+                                return $('meta[name="csrf-token"]').attr('content')
+                                    || $('input[name="_token"]').val()
+                                    || '';
                             },
                         },
                     },
@@ -217,11 +223,17 @@ $(document).ready(function() {
             },
             messages: {
                 sku: {
-                    remote: LANG.sku_already_exists,
+                    remote: LANG.sku_already_exists || LANG.barcode_already_used || 'SKU / barcode already exists',
                 },
                 name: {
                     remote: LANG.name_already_exists,
                 },
+            },
+            invalidHandler: function (event, validator) {
+                if (validator.errorMap && validator.errorMap.sku) {
+                    var code = $.trim($('#sku').val() || '');
+                    showBarcodeTakenAlert(code);
+                }
             },
         });
     }
@@ -254,24 +266,101 @@ $(document).ready(function() {
                 success: function(result) {
                     if (result.success == true) {
                         $('#submit_type').val(submit_type);
-                        if ($('form#product_add_form').valid()) {
-                            $('form#product_add_form').submit();
+                        if (!assertSkuUniqueThenSubmit()) {
+                            return false;
                         }
                     } else {
                         toastr.error(__translate('skus_already_exists', {sku: result.sku}));
+                        showBarcodeTakenAlert(result.sku);
                         return false;
                     }
                 },
             });
         } else {
             $('#submit_type').val(submit_type);
-            if ($('form#product_add_form').valid()) {
-                $('form#product_add_form').submit();
-            }
+            assertSkuUniqueThenSubmit();
         }
         
     });
-    //End for product type single
+
+    function barcodeTakenMessage(code) {
+        return (LANG.barcode_already_used || 'This barcode/SKU is already used by another product: :code').replace(':code', code || '');
+    }
+
+    function showBarcodeTakenAlert(code) {
+        var msg = barcodeTakenMessage(code);
+        if (typeof toastr !== 'undefined') {
+            toastr.error(msg, '', { timeOut: 8000, closeButton: true, progressBar: true });
+        }
+        window.alert(msg);
+    }
+    window.showBarcodeTakenAlert = showBarcodeTakenAlert;
+
+    function skuCheckPayload(code) {
+        return {
+            sku: code,
+            product_id: $('input[name="product_id"]').val() || $('#product_id').val() || '',
+            _token: $('meta[name="csrf-token"]').attr('content') || $('input[name="_token"]').val() || ''
+        };
+    }
+
+    function isSkuAvailableResponse(res) {
+        if (res === true || res === 'true' || res === 1 || res === '1') {
+            return true;
+        }
+        if (typeof res === 'string' && $.trim(res) === 'true') {
+            return true;
+        }
+        return false;
+    }
+
+    function assertSkuUniqueThenSubmit() {
+        var $form = $('form#product_add_form');
+        var sku = $.trim($('#sku').val() || '');
+        if (sku) {
+            var skuOk = true;
+            $.ajax({
+                url: '/products/check_product_sku',
+                method: 'POST',
+                async: false,
+                dataType: 'json',
+                data: skuCheckPayload(sku)
+            }).done(function (res) {
+                skuOk = isSkuAvailableResponse(res);
+            }).fail(function () {
+                skuOk = false;
+            });
+            if (!skuOk) {
+                showBarcodeTakenAlert(sku);
+                return false;
+            }
+        }
+        if ($form.valid()) {
+            $form.submit();
+            return true;
+        }
+        if ($form.validate().errorMap && $form.validate().errorMap.sku) {
+            showBarcodeTakenAlert(sku);
+        }
+        return false;
+    }
+
+    $(document).on('blur', '#sku', function () {
+        var code = $.trim($(this).val() || '');
+        if (!code) {
+            return;
+        }
+        $.ajax({
+            url: '/products/check_product_sku',
+            method: 'POST',
+            dataType: 'json',
+            data: skuCheckPayload(code)
+        }).done(function (res) {
+            if (!isSkuAvailableResponse(res)) {
+                showBarcodeTakenAlert(code);
+            }
+        });
+    });
 
     //Start for product type Variable
     //If purchase price exc tax is changed
@@ -1153,5 +1242,139 @@ $(document).on('change', '.variation-file-input', function() {
             togglePackFields($(this));
         });
         updateEmptyState();
+
+        function csrfToken() {
+            return $('meta[name="csrf-token"]').attr('content')
+                || $('input[name="_token"]').val()
+                || '';
+        }
+
+        function productIdForBarcodeCheck() {
+            return $('input[name="product_id"]').val()
+                || $('#product_id').val()
+                || '';
+        }
+
+        function barcodeUsedOnThisForm($input) {
+            var code = $.trim($input.val()).toLowerCase();
+            if (!code) {
+                return false;
+            }
+            var sku = $.trim($('#sku').val() || $('input[name="sku"]').val() || '').toLowerCase();
+            if (sku && sku === code) {
+                return true;
+            }
+            var hits = 0;
+            $('#product_barcodes_list .product-barcode-input').each(function () {
+                if ($.trim($(this).val()).toLowerCase() === code) {
+                    hits++;
+                }
+            });
+            return hits > 1;
+        }
+
+        function alertDuplicateBarcode($input, msg) {
+            if (typeof window.showBarcodeTakenAlert === 'function') {
+                var code = $.trim($input.val() || '');
+                window.showBarcodeTakenAlert(code);
+            } else if (typeof toastr !== 'undefined') {
+                toastr.error(msg);
+            } else {
+                window.alert(msg);
+            }
+            $input.addClass('input-error').css('border-color', '#dd4b39');
+            $input.focus();
+        }
+
+        function checkBarcodeUnique($input) {
+            var code = $.trim($input.val());
+            if (!code) {
+                $input.css('border-color', '');
+                return;
+            }
+            if (barcodeUsedOnThisForm($input)) {
+                alertDuplicateBarcode(
+                    $input,
+                    (LANG.barcode_duplicate_on_form || 'This barcode is already entered on this product: :code').replace(':code', code)
+                );
+                return false;
+            }
+            $.ajax({
+                url: '/products/check_product_sku',
+                method: 'POST',
+                dataType: 'json',
+                data: {
+                    sku: code,
+                    product_id: productIdForBarcodeCheck(),
+                    _token: csrfToken()
+                }
+            }).done(function (res) {
+                var ok = (res === true || res === 'true' || res === 1 || res === '1');
+                if (!ok) {
+                    alertDuplicateBarcode(
+                        $input,
+                        (LANG.barcode_already_used || 'This barcode/SKU is already used by another product: :code').replace(':code', code)
+                    );
+                } else {
+                    $input.css('border-color', '');
+                }
+            });
+            return true;
+        }
+
+        $(document).on('blur', '.product-barcode-input', function () {
+            checkBarcodeUnique($(this));
+        });
+
+        $(document).on('submit', 'form.product_form, form#product_add_form, form#product_edit_form', function (e) {
+            var blocked = false;
+            var $form = $(this);
+            $('#product_barcodes_list .product-barcode-input').each(function () {
+                var $inp = $(this);
+                var code = $.trim($inp.val());
+                if (!code) {
+                    return;
+                }
+                if (barcodeUsedOnThisForm($inp)) {
+                    alertDuplicateBarcode(
+                        $inp,
+                        (LANG.barcode_duplicate_on_form || 'This barcode is already entered on this product: :code').replace(':code', code)
+                    );
+                    blocked = true;
+                    return false;
+                }
+                $.ajax({
+                    url: '/products/check_product_sku',
+                    method: 'POST',
+                    async: false,
+                    data: {
+                        sku: code,
+                        product_id: productIdForBarcodeCheck(),
+                        _token: csrfToken()
+                    }
+                }).done(function (res) {
+                    var ok = (res === true || res === 'true' || res === 1 || res === '1');
+                    if (!ok) {
+                        alertDuplicateBarcode(
+                            $inp,
+                            (LANG.barcode_already_used || 'This barcode/SKU is already used by another product: :code').replace(':code', code)
+                        );
+                        blocked = true;
+                    }
+                }).fail(function () {
+                    alertDuplicateBarcode($inp, LANG.something_went_wrong || 'Could not verify barcode');
+                    blocked = true;
+                });
+                if (blocked) {
+                    return false;
+                }
+            });
+            if (blocked) {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                $form.find('button[type="submit"], .submit_product_form').prop('disabled', false);
+                return false;
+            }
+        });
     });
 })();

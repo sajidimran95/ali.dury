@@ -136,6 +136,8 @@ LANG = {
     'advance_payment_cannot_be_more_than_once': 'Advance payment cannot be selected more than once',
     'not_connected_to_a_network': "You're not connected to a Network",
     'skus_already_exists': 'sku :sku already exists',
+    'barcode_already_used': 'This barcode/SKU is already used by another product: :code',
+    'barcode_duplicate_on_form': 'This barcode is already entered on this product: :code',
     'copied_to_clipboard': 'Copied to clipboard',
     'enter_pin_here': 'Enter Pin Here',
     'authentication_failed': 'Authentication failed !',

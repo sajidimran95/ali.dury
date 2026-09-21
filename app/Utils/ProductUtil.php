@@ -22,6 +22,7 @@ use App\VariationLocationDetails;
 use App\VariationTemplate;
 use App\VariationValueTemplate;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class ProductUtil extends Util
 {
@@ -1743,7 +1744,7 @@ class ProductUtil extends Util
 
             //Search with like condition
             if ($search_type == 'like') {
-                $query->where(function ($query) use ($search_term, $search_fields) {
+                $query->where(function ($query) use ($search_term, $search_fields, $business_id) {
                     if (in_array('name', $search_fields)) {
                         $query->where('products.name', 'like', '%'.$search_term.'%');
                     }
@@ -1756,7 +1757,8 @@ class ProductUtil extends Util
                         $query->orWhere('sub_sku', 'like', '%'.$search_term.'%');
                     }
 
-                    if (in_array('sku', $search_fields) || in_array('sub_sku', $search_fields)) {
+                    if ((in_array('sku', $search_fields) || in_array('sub_sku', $search_fields))
+                        && Schema::hasTable('product_barcodes')) {
                         $query->orWhereExists(function ($q) use ($search_term, $business_id) {
                             $q->select(DB::raw(1))
                                 ->from('product_barcodes')
@@ -1787,7 +1789,7 @@ class ProductUtil extends Util
 
             //Search with exact condition
             if ($search_type == 'exact') {
-                $query->where(function ($query) use ($search_term, $search_fields) {
+                $query->where(function ($query) use ($search_term, $search_fields, $business_id) {
                     $has_condition = false;
 
                     if (in_array('name', $search_fields)) {
@@ -1797,23 +1799,32 @@ class ProductUtil extends Util
 
                     if (in_array('sku', $search_fields)) {
                         if ($has_condition) {
-                            $query->orWhere('products.sku', $search_term);
+                            $query->orWhere('products.sku', $search_term)
+                                ->orWhereRaw('LOWER(products.sku) = ?', [mb_strtolower($search_term)]);
                         } else {
-                            $query->where('products.sku', $search_term);
+                            $query->where(function ($qq) use ($search_term) {
+                                $qq->where('products.sku', $search_term)
+                                    ->orWhereRaw('LOWER(products.sku) = ?', [mb_strtolower($search_term)]);
+                            });
                             $has_condition = true;
                         }
                     }
 
                     if (in_array('sub_sku', $search_fields)) {
                         if ($has_condition) {
-                            $query->orWhere('variations.sub_sku', $search_term);
+                            $query->orWhere('variations.sub_sku', $search_term)
+                                ->orWhereRaw('LOWER(variations.sub_sku) = ?', [mb_strtolower($search_term)]);
                         } else {
-                            $query->where('variations.sub_sku', $search_term);
+                            $query->where(function ($qq) use ($search_term) {
+                                $qq->where('variations.sub_sku', $search_term)
+                                    ->orWhereRaw('LOWER(variations.sub_sku) = ?', [mb_strtolower($search_term)]);
+                            });
                             $has_condition = true;
                         }
                     }
 
-                    if (in_array('sku', $search_fields) || in_array('sub_sku', $search_fields)) {
+                    if ((in_array('sku', $search_fields) || in_array('sub_sku', $search_fields))
+                        && Schema::hasTable('product_barcodes')) {
                         if ($has_condition) {
                             $query->orWhereExists(function ($q) use ($search_term, $business_id) {
                                 $q->select(DB::raw(1))
