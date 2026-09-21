@@ -74,22 +74,6 @@ class NotificationTemplate extends Model
 
                 ],
             ],
-            'credit_limit_exceeded' => [
-                'name' => __('lang_v1.credit_limit_exceeded'),
-                'extra_tags' => [
-                    ['{business_name}', '{business_logo}'],
-                    ['{credit_limit}', '{due_amount}', '{cumulative_due_amount}'],
-                    ['{contact_name}'],
-                ],
-            ],
-            'overdue_balance' => [
-                'name' => __('lang_v1.overdue_balance_notification'),
-                'extra_tags' => [
-                    ['{business_name}', '{business_logo}'],
-                    ['{due_amount}', '{cumulative_due_amount}', '{due_date}'],
-                    ['{contact_name}'],
-                ],
-            ],
             'new_booking' => [
                 'name' => __('lang_v1.new_booking'),
                 'extra_tags' => self::bookingNotificationTags(),

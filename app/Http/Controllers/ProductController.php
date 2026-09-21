@@ -2254,48 +2254,6 @@ class ProductController extends Controller
     }
 
     /**
-     * POS inactivity decision: retain SKU (keep active, reset 180-day clock).
-     */
-    public function retainSku(Request $request, $id)
-    {
-        if (! auth()->user()->can('product.update') && ! auth()->user()->can('sell.create')) {
-            abort(403, 'Unauthorized action.');
-        }
-
-        try {
-            $business_id = $request->session()->get('user.business_id');
-            app(\App\Services\SkuInactivityService::class)->retain((int) $id, (int) $business_id);
-
-            return ['success' => true, 'msg' => __('lang_v1.sku_retained_success')];
-        } catch (\Exception $e) {
-            \Log::emergency('File:'.$e->getFile().'Line:'.$e->getLine().'Message:'.$e->getMessage());
-
-            return ['success' => false, 'msg' => __('messages.something_went_wrong')];
-        }
-    }
-
-    /**
-     * POS inactivity decision: archive SKU (inactive + not for selling).
-     */
-    public function archiveSku(Request $request, $id)
-    {
-        if (! auth()->user()->can('product.update') && ! auth()->user()->can('sell.create')) {
-            abort(403, 'Unauthorized action.');
-        }
-
-        try {
-            $business_id = $request->session()->get('user.business_id');
-            app(\App\Services\SkuInactivityService::class)->archive((int) $id, (int) $business_id);
-
-            return ['success' => true, 'msg' => __('lang_v1.sku_archived_success')];
-        } catch (\Exception $e) {
-            \Log::emergency('File:'.$e->getFile().'Line:'.$e->getLine().'Message:'.$e->getMessage());
-
-            return ['success' => false, 'msg' => __('messages.something_went_wrong')];
-        }
-    }
-
-    /**
      * Activates the specified resource from storage.
      *
      * @param  \App\Product  $product

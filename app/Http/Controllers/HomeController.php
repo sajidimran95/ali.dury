@@ -1985,45 +1985,20 @@ class HomeController extends Controller
 
     private function lowStockQuery($business_id, $permitted_locations, $location_id)
     {
-        $demandSub = DB::table('transaction_sell_lines as tsl')
-            ->join('transactions as t', 'tsl.transaction_id', '=', 't.id')
-            ->where('t.business_id', $business_id)
-            ->where('t.type', 'sales_order')
-            ->whereNotIn('t.status', ['completed', 'cancelled'])
-            ->where(function ($q) {
-                $q->whereNull('t.shipping_status')
-                    ->orWhereNotIn('t.shipping_status', ['delivered', 'cancelled']);
-            })
-            ->groupBy('tsl.variation_id', 't.location_id')
-            ->select(
-                'tsl.variation_id',
-                't.location_id',
-                DB::raw('SUM(tsl.quantity - COALESCE(tsl.so_quantity_invoiced, 0)) as open_demand')
-            );
-
         $query = VariationLocationDetails::join('products as p', 'variation_location_details.product_id', '=', 'p.id')
             ->join('variations as v', 'variation_location_details.variation_id', '=', 'v.id')
-            ->leftJoinSub($demandSub, 'od', function ($join) {
-                $join->on('od.variation_id', '=', 'variation_location_details.variation_id')
-                    ->on('od.location_id', '=', 'variation_location_details.location_id');
-            })
             ->where('p.business_id', $business_id)
             ->where('p.enable_stock', 1)
             ->where('p.is_inactive', 0)
             ->whereNull('v.deleted_at')
-            ->where(function ($q) {
-                $q->where(function ($q2) {
-                    $q2->whereNotNull('p.alert_quantity')
-                        ->whereRaw('variation_location_details.qty_available <= p.alert_quantity');
-                })->orWhereRaw('variation_location_details.qty_available < COALESCE(od.open_demand, 0)');
-            })
+            ->whereNotNull('p.alert_quantity')
+            ->whereRaw('variation_location_details.qty_available <= p.alert_quantity')
             ->select(
                 'p.name as product',
                 'p.sku',
                 'p.alert_quantity',
                 'v.sub_sku',
-                'variation_location_details.qty_available as stock',
-                DB::raw('COALESCE(od.open_demand, 0) as open_order_demand')
+                'variation_location_details.qty_available as stock'
             );
 
         if (! empty($permitted_locations) && $permitted_locations != 'all') {

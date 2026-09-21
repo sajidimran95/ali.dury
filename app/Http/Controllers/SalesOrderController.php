@@ -205,11 +205,6 @@ class SalesOrderController extends Controller
             ]);
 
             $transaction_before = $order->replicate();
-
-            $new_shipping_status = $input['shipping_status'] ?? null;
-            app(\App\Services\CreditControlService::class)
-                ->assertCanAdvanceShippingStatus($order, $new_shipping_status);
-
             $order->update($input);
 
             $this->transactionUtil->activityLog($order, 'shipping_edited', $transaction_before, [
@@ -223,14 +218,9 @@ class SalesOrderController extends Controller
         } catch (\Exception $e) {
             \Log::emergency('File:'.$e->getFile().'Line:'.$e->getLine().'Message:'.$e->getMessage());
 
-            $msg = __('messages.something_went_wrong');
-            if ($e instanceof \App\Exceptions\CreditShipmentHoldException) {
-                $msg = $e->getMessage();
-            }
-
             return redirect()->back()->with('status', [
                 'success' => 0,
-                'msg' => $msg,
+                'msg' => __('messages.something_went_wrong'),
             ]);
         }
     }
@@ -285,8 +275,6 @@ class SalesOrderController extends Controller
             'cancelled' => 'cancelled',
         ];
         if (isset($shipping_map[$status])) {
-            app(\App\Services\CreditControlService::class)
-                ->assertCanAdvanceShippingStatus($order, $shipping_map[$status]);
             $order->shipping_status = $shipping_map[$status];
             $order->save();
         }

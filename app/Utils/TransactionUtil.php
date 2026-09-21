@@ -119,7 +119,6 @@ class TransactionUtil extends Util
             'shipping_method' => isset($input['shipping_method']) ? $input['shipping_method'] : null,
             'shipping_address' => isset($input['shipping_address']) ? $input['shipping_address'] : null,
             'shipping_status' => isset($input['shipping_status']) ? $input['shipping_status'] : null,
-            'credit_shipment_hold' => ! empty($input['credit_shipment_hold']) ? 1 : 0,
             'fulfillment_stage' => $input['fulfillment_stage'] ?? null,
             'fulfillment_meta' => $input['fulfillment_meta'] ?? null,
             'shipping_date' => ! empty($input['shipping_date'])
@@ -254,9 +253,6 @@ class TransactionUtil extends Util
             'shipping_charges' => isset($input['shipping_charges']) ? $uf_data ? $this->num_uf($input['shipping_charges']) : $input['shipping_charges'] : 0,
             'shipping_address' => isset($input['shipping_address']) ? $input['shipping_address'] : null,
             'shipping_status' => isset($input['shipping_status']) ? $input['shipping_status'] : null,
-            'credit_shipment_hold' => isset($input['credit_shipment_hold'])
-                ? (! empty($input['credit_shipment_hold']) ? 1 : 0)
-                : ($transaction->credit_shipment_hold ?? 0),
             'shipping_date' => ! empty($input['shipping_date'])
                 ? ($uf_data ? $this->uf_date($input['shipping_date'], true) : $input['shipping_date'])
                 : null,

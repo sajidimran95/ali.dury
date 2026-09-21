@@ -1738,10 +1738,6 @@ class SellController extends Controller
 
             $transaction_before = $transaction->replicate();
 
-            $new_shipping_status = $input['shipping_status'] ?? null;
-            app(\App\Services\CreditControlService::class)
-                ->assertCanAdvanceShippingStatus($transaction, $new_shipping_status);
-
             $transaction->update($input);
 
             $activity_property = ['update_note' => $request->input('shipping_note', '')];
@@ -1753,13 +1749,8 @@ class SellController extends Controller
         } catch (\Exception $e) {
             \Log::emergency('File:'.$e->getFile().'Line:'.$e->getLine().'Message:'.$e->getMessage());
 
-            $msg = trans('messages.something_went_wrong');
-            if ($e instanceof \App\Exceptions\CreditShipmentHoldException) {
-                $msg = $e->getMessage();
-            }
-
             $output = ['success' => 0,
-                'msg' => $msg,
+                'msg' => trans('messages.something_went_wrong'),
             ];
         }
 

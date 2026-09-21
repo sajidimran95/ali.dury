@@ -138,8 +138,6 @@ class FulfillmentService
         if (! $this->allPicked($order)) {
             throw new \RuntimeException(__('fulfillment.pick_all_items'));
         }
-        app(\App\Services\CreditControlService::class)
-            ->assertCanAdvanceShippingStatus($order, 'packed');
         foreach ($order->sell_lines as $line) {
             if (empty($line->parent_sell_line_id)) {
                 $line->qty_packed = $line->qty_picked;
@@ -183,8 +181,6 @@ class FulfillmentService
         if (! $this->packingComplete($checklist)) {
             throw new \RuntimeException(__('fulfillment.complete_packing_checklist'));
         }
-        app(\App\Services\CreditControlService::class)
-            ->assertCanAdvanceShippingStatus($order, 'packed');
         $order->fulfillment_stage = 'shipment';
         $order->shipping_status = 'packed';
         $this->appendTimeline($order, 'moved_shipment', 'Moved from Packing to Shipment');
@@ -212,8 +208,6 @@ class FulfillmentService
 
     public function markShipped(Transaction $order): void
     {
-        app(\App\Services\CreditControlService::class)
-            ->assertCanAdvanceShippingStatus($order, 'shipped');
         $order->fulfillment_stage = 'shipped';
         $order->shipping_status = 'shipped';
         $this->appendTimeline($order, 'shipped', 'Shipment confirmed / Marked shipped');

@@ -142,7 +142,7 @@ class AppServiceProvider extends ServiceProvider
 
         //Blade directive to format number into required format.
         Blade::directive('num_format', function ($expression) {
-            return "number_format($expression, 2, session('currency')['decimal_separator'], session('currency')['thousand_separator'])";
+            return "number_format($expression, session('business.currency_precision', 2), session('currency')['decimal_separator'], session('currency')['thousand_separator'])";
         });
 
         //Blade directive to format quantity values into required format.
@@ -231,7 +231,7 @@ class AppServiceProvider extends ServiceProvider
             if (session("business.currency_symbol_placement") == "before") {
                 $formated_number .= session("currency")["symbol"] . " ";
             } 
-            $formated_number .= number_format((float) '.$number.', 2 , session("currency")["decimal_separator"], session("currency")["thousand_separator"]);
+            $formated_number .= number_format((float) '.$number.', session("business.currency_precision", 2) , session("currency")["decimal_separator"], session("currency")["thousand_separator"]);
 
             if (session("business.currency_symbol_placement") == "after") {
                 $formated_number .= " " . session("currency")["symbol"];

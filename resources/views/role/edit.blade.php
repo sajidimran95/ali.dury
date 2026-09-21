@@ -956,15 +956,6 @@
           <div class="col-md-12">
             <div class="checkbox">
               <label>
-                {!! Form::checkbox('permissions[]', 'customer.settle_credit_balance', in_array('customer.settle_credit_balance', $role_permissions), ['class' => 'input-icheck']); !!}
-                {{ __('lang_v1.customer.settle_credit_balance') }}
-                <p class="help-block" style="margin:0;">{{ __('lang_v1.credit_settlement_unauthorized') }}</p>
-              </label>
-            </div>
-          </div>
-          <div class="col-md-12">
-            <div class="checkbox">
-              <label>
                 {!! Form::checkbox('permissions[]', 'edit_sell_payment', in_array('edit_sell_payment', $role_permissions), ['class' => 'input-icheck']); !!}
                 {{ __('lang_v1.edit_sell_payment') }}
               </label>

@@ -5072,13 +5072,7 @@ function pos_product_row(variation_id = null, purchase_line_id = null, weighing_
             dataType: 'json',
             success: function(result) {
                 if (result.success) {
-                    if (result.sku_inactivity && result.sku_inactivity.prompt) {
-                        pos_handle_sku_inactivity(result.sku_inactivity, function () {
-                            pos_insert_product_row(result);
-                        });
-                    } else {
-                        pos_insert_product_row(result);
-                    }
+                    pos_insert_product_row(result);
                 } else {
                     toastr.error(result.msg);
                     if (!$('#__is_mobile').length) {
@@ -5090,77 +5084,6 @@ function pos_product_row(variation_id = null, purchase_line_id = null, weighing_
             },
         });
     }
-}
-
-function pos_handle_sku_inactivity(info, onContinue) {
-    var msg = (typeof LANG !== 'undefined' && LANG.sku_inactivity_prompt)
-        ? LANG.sku_inactivity_prompt
-        : 'SKU :sku (:name) has not been scanned in :days days. Retain it or move it to the archive?';
-    msg = msg
-        .replace(':sku', info.sku || '')
-        .replace(':name', info.product_name || '')
-        .replace(':days', info.days || 180);
-
-    var retainLabel = (typeof LANG !== 'undefined' && LANG.retain_sku) ? LANG.retain_sku : 'Retain';
-    var archiveLabel = (typeof LANG !== 'undefined' && LANG.archive_sku) ? LANG.archive_sku : 'Archive';
-
-    swal({
-        title: msg,
-        icon: 'warning',
-        buttons: {
-            retain: { text: retainLabel, value: 'retain', className: 'bg-green' },
-            archive: { text: archiveLabel, value: 'archive', className: 'bg-red' },
-            cancel: true
-        },
-        dangerMode: true
-    }).then(function (value) {
-        if (value === 'retain') {
-            $.ajax({
-                method: 'POST',
-                url: '/products/' + info.product_id + '/retain-sku',
-                data: { _token: $('meta[name="csrf-token"]').attr('content') },
-                dataType: 'json',
-                success: function (res) {
-                    if (res.success) {
-                        toastr.success(res.msg);
-                    } else {
-                        toastr.error(res.msg);
-                    }
-                    if (typeof onContinue === 'function') {
-                        onContinue();
-                    }
-                },
-                error: function () {
-                    if (typeof onContinue === 'function') {
-                        onContinue();
-                    }
-                }
-            });
-        } else if (value === 'archive') {
-            $.ajax({
-                method: 'POST',
-                url: '/products/' + info.product_id + '/archive-sku',
-                data: { _token: $('meta[name="csrf-token"]').attr('content') },
-                dataType: 'json',
-                success: function (res) {
-                    if (res.success) {
-                        toastr.success(res.msg);
-                    } else {
-                        toastr.error(res.msg);
-                        if (typeof onContinue === 'function') {
-                            onContinue();
-                        }
-                    }
-                },
-                error: function () {
-                    toastr.error('Something went wrong');
-                }
-            });
-        } else if (typeof onContinue === 'function') {
-            // Cancel: still allow the scanned line for this sale, clock already updated.
-            onContinue();
-        }
-    });
 }
 
 //Update values for each row (incl. item discount from cart item popup)
