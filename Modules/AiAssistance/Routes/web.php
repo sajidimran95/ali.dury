@@ -33,4 +33,5 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
         Route::post('intelligence/match-review', [\Modules\AiAssistance\Http\Controllers\IntelligenceController::class, 'reviewMatch'])->name('intelligence.match-review');
         Route::get('intelligence/pos-hints', [\Modules\AiAssistance\Http\Controllers\IntelligenceController::class, 'posHints'])->name('intelligence.pos-hints');
         Route::get('intelligence/addons', [\Modules\AiAssistance\Http\Controllers\IntelligenceController::class, 'addons'])->name('intelligence.addons');
+        Route::get('intelligence/embed', [\Modules\AiAssistance\Http\Controllers\IntelligenceController::class, 'embed'])->name('intelligence.embed');
     });

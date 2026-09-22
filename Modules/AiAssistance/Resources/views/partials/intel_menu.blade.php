@@ -1,9 +1,12 @@
 @php
     $intelHas = \Illuminate\Support\Facades\Route::has('ai.intelligence.index');
+    $embedUrl = $intelHas && \Illuminate\Support\Facades\Route::has('ai.intelligence.embed')
+        ? route('ai.intelligence.embed')
+        : ($intelHas ? route('ai.intelligence.index') : '');
 @endphp
-@if($intelHas)
-<p class="text-muted" style="margin:0 0 10px;font-size:13px;">Open a report. Each link loads the full list (forecast, match, cheaper suppliers, …).</p>
-<p style="display:flex;flex-wrap:wrap;gap:8px;">
+@if($intelHas && $embedUrl)
+<p class="text-muted" style="margin:0 0 10px;font-size:13px;">Click a chip — the report opens below (same as chat).</p>
+<div class="ai-chips" id="ai-intel-chips">
     @foreach([
         'forecast' => 'Forecast / draft PO',
         'collections' => 'Collections risk',
@@ -18,11 +21,14 @@
         'compliance' => 'Compliance',
         'anomalies' => 'Anomalies',
         'digest' => 'Digest',
+        'prices-table' => 'Supplier price table',
     ] as $sec => $label)
-        <a class="ai-chip" href="{{ route('ai.intelligence.index', ['section' => $sec]) }}" style="text-decoration:none;">{{ $label }}</a>
+        <button type="button"
+                class="japs-intel-chip"
+                data-intel-url="{{ $embedUrl }}?embed=1&amp;section={{ urlencode($sec) }}">{{ $label }}</button>
     @endforeach
-    @if(\Illuminate\Support\Facades\Route::has('ai.intelligence.supplier-prices'))
-        <a class="ai-chip" href="{{ route('ai.intelligence.supplier-prices') }}" style="text-decoration:none;">Supplier price table</a>
-    @endif
-</p>
+</div>
+<div id="ai-intel-report" class="ai-intel-report">
+    <p class="text-muted" style="margin:8px 0 0;">No report yet. Click a chip above.</p>
+</div>
 @endif

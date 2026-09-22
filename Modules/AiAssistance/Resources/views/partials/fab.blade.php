@@ -55,16 +55,61 @@
         setTimeout(mountAiUi, 0);
 
         var panelXhr = null;
+        var intelXhr = null;
 
-        function openAiModal(tab) {
+        function loadIntelReport(url, btn) {
+            var $box = $('#ai-modal #ai-intel-report');
+            if (!$box.length) {
+                $box = $('#ai-intel-report');
+            }
+            if (!$box.length) {
+                return;
+            }
+            if (!url) {
+                $box.html('<p class="text-danger">Report URL missing.</p>');
+                return;
+            }
+            if (btn) {
+                $('#ai-intel-chips .japs-intel-chip').removeClass('active');
+                $(btn).addClass('active');
+            }
+            $box.html('<p class="text-muted" style="padding:12px 0;">Loading report…</p>');
+            if (intelXhr && typeof intelXhr.abort === 'function') {
+                try { intelXhr.abort(); } catch (e) {}
+            }
+            intelXhr = $.ajax({
+                url: url,
+                method: 'GET',
+                dataType: 'html',
+                timeout: 90000,
+                cache: false
+            })
+                .done(function (html) {
+                    $box.html(html || '<p class="text-muted">No rows for this report.</p>');
+                    var pane = document.querySelector('#ai-modal .ai-panel__body');
+                    if (pane) pane.scrollTop = 0;
+                    if ($box[0]) $box[0].scrollTop = 0;
+                })
+                .fail(function (xhr, status) {
+                    if (status === 'abort') return;
+                    $box.html('<p class="text-danger">Could not load this report' + (xhr && xhr.status ? ' (' + xhr.status + ')' : '') + '.</p>');
+                })
+                .always(function () {
+                    intelXhr = null;
+                });
+        }
+        window.japsLoadIntelReport = loadIntelReport;
+
+        function openAiModal(tab, section) {
             var $modal = $('#ai-modal');
             var $backdrop = $('#ai-modal-backdrop');
             var $content = $('#ai-modal-content');
 
             // Drop any stale overlay state
-            $modal.addClass('open').css({ display: 'block', 'pointer-events': 'auto' });
+            $modal.addClass('open').css({ display: 'flex', 'pointer-events': 'auto' });
             $backdrop.addClass('open').css({ display: 'block' });
             $('body').addClass('ai-modal-open');
+            $('html').addClass('ai-modal-open');
 
             $content.html(
                 '<div style="padding:40px;text-align:center;color:#6b7280;">' +
@@ -112,14 +157,16 @@
             $('#ai-modal').removeClass('open').css('display', '');
             $('#ai-modal-backdrop').removeClass('open').css('display', '');
             $('body').removeClass('ai-modal-open');
+            $('html').removeClass('ai-modal-open');
             // Clear any leftover full-screen blockers that left the UI “dead”
             $('.ai-modal-backdrop').removeClass('open');
         }
         function bindAiModalTabs() {
             $('#ai-modal .ai-tab-link').off('click.aiTab').on('click.aiTab', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
                 var tab = $(this).data('tab');
                 if (!tab) return;
-                e.preventDefault();
                 $('#ai-modal .ai-tab-link').removeClass('active');
                 $(this).addClass('active');
                 $('#ai-modal .ai-tab-pane').hide();
@@ -144,6 +191,13 @@
                 if (e.key === 'Escape' && $('#ai-modal').hasClass('open')) {
                     closeAiModal();
                 }
+            })
+            // Always on document — survives panel reloads; not blocked by chat .ai-chip handlers
+            .off('click.japsIntel', '.japs-intel-chip')
+            .on('click.japsIntel', '.japs-intel-chip', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                loadIntelReport($(this).attr('data-intel-url'), this);
             });
     })();
     </script>

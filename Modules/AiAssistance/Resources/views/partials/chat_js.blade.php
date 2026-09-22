@@ -218,7 +218,8 @@
             return false;
         })
         .off('click.ai', '#ai-chips .ai-chip, .ai-chip')
-        .on('click.ai', '#ai-chips .ai-chip, .ai-chip', function (e) {
+        .off('click.ai', '#ai-chips .ai-chip')
+        .on('click.ai', '#ai-chips .ai-chip', function (e) {
             e.preventDefault();
             if (sending) return;
             var q = $(this).data('q');

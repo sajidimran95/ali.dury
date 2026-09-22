@@ -1,5 +1,6 @@
 @php
     $is_modal = !empty($is_modal);
+    $intel_html = $intel_html ?? '';
 @endphp
 @include('aiassistance::partials.styles')
 
@@ -22,22 +23,16 @@
         </div>
 
         <div class="ai-tabs">
-            <a href="{{ $is_modal ? '#' : route('ai.dashboard', ['tab' => 'insights']) }}"
-               class="ai-tab-link {{ $tab === 'insights' ? 'active' : '' }}"
-               data-tab="insights">
+            <button type="button" class="ai-tab-link {{ $tab === 'insights' ? 'active' : '' }}" data-tab="insights">
                 <i class="fa fa-magic"></i> @lang('aiassistance::lang.insights')
-            </a>
-            <a href="{{ $is_modal ? '#' : route('ai.dashboard', ['tab' => 'chat']) }}"
-               class="ai-tab-link {{ $tab === 'chat' ? 'active' : '' }}"
-               data-tab="chat">
+            </button>
+            <button type="button" class="ai-tab-link {{ $tab === 'chat' ? 'active' : '' }}" data-tab="chat">
                 <i class="fa fa-comments"></i> @lang('aiassistance::lang.chat')
-            </a>
+            </button>
             @if(\Illuminate\Support\Facades\Route::has('ai.intelligence.index'))
-            <a href="#ai-pane-intel"
-               class="ai-tab-link {{ $tab === 'intel' ? 'active' : '' }}"
-               data-tab="intel">
+            <button type="button" class="ai-tab-link {{ $tab === 'intel' ? 'active' : '' }}" data-tab="intel">
                 <i class="fa fa-line-chart"></i> Intelligence
-            </a>
+            </button>
             @endif
         </div>
 

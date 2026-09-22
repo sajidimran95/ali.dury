@@ -35,22 +35,90 @@ class IntelligenceController extends Controller
             abort(403, 'Unauthorized action.');
         }
         $business_id = (int) request()->session()->get('user.business_id');
-        $rows = $this->intel->cheaperSupplierPrices($business_id);
         $symbol = session('currency')['symbol'] ?? '';
+        try {
+            $rows = $this->intel->cheaperSupplierPrices($business_id);
+        } catch (\Throwable $e) {
+            $rows = [];
+            if (request()->boolean('embed')) {
+                return response('<p class="text-danger">'.e($e->getMessage()).'</p>', 200);
+            }
+        }
+
+        if (request()->boolean('embed')) {
+            $body = view('aiassistance::intelligence.supplier_prices_embed', compact('rows', 'symbol'))->render();
+
+            return response()
+                ->view('aiassistance::intelligence.embed_shell', ['embedBody' => $body])
+                ->header('X-Frame-Options', 'SAMEORIGIN')
+                ->header('Content-Security-Policy', "frame-ancestors 'self'");
+        }
 
         return view('aiassistance::intelligence.supplier_prices', compact('rows', 'symbol'));
     }
 
     public function index()
     {
-        $business_id = $this->gate();
-        $data = $this->intel->snapshot($business_id);
-        $section = request()->get('section', 'overview');
-        $user_id = (int) request()->session()->get('user.id');
-        $chat_history = $this->memory->load($business_id, $user_id, 'intelligence');
+        $section = (string) request()->get('section', 'overview');
         $symbol = session('currency')['symbol'] ?? '';
+        $chat_history = [];
+
+        try {
+            $business_id = $this->gate();
+            $user_id = (int) request()->session()->get('user.id');
+            $chat_history = $this->memory->load($business_id, $user_id, 'intelligence');
+
+        if (request()->boolean('embed')) {
+            $data = $this->intel->sectionData($business_id, $section);
+            $body = view('aiassistance::intelligence.report', compact('data', 'section', 'chat_history', 'symbol'))->render();
+
+            return response()
+                ->view('aiassistance::intelligence.embed_shell', ['embedBody' => $body])
+                ->header('X-Frame-Options', 'SAMEORIGIN')
+                ->header('Content-Security-Policy', "frame-ancestors 'self'");
+        }
+
+            $data = $this->intel->snapshot($business_id);
+        } catch (\Throwable $e) {
+            if (request()->boolean('embed')) {
+                return response(
+                    view('aiassistance::intelligence.embed_shell', [
+                        'embedBody' => '<p class="text-danger">Could not load this report: '.e($e->getMessage()).'</p>',
+                    ])->render(),
+                    200
+                )->header('X-Frame-Options', 'SAMEORIGIN');
+            }
+            throw $e;
+        }
 
         return view('aiassistance::intelligence.index', compact('data', 'section', 'chat_history', 'symbol'));
+    }
+
+    public function embed()
+    {
+        try {
+            $business_id = $this->gate();
+            $section = (string) request()->get('section', 'forecast');
+            $symbol = session('currency')['symbol'] ?? '';
+            if ($section === 'prices-table') {
+                $rows = $this->intel->cheaperSupplierPrices($business_id);
+
+                return response()
+                    ->view('aiassistance::intelligence.supplier_prices_embed', compact('rows', 'symbol'))
+                    ->header('Content-Type', 'text/html; charset=UTF-8');
+            }
+            $data = $this->intel->sectionData($business_id, $section);
+            $chat_history = [];
+
+            return response()
+                ->view('aiassistance::intelligence.report', compact('data', 'section', 'chat_history', 'symbol'))
+                ->header('Content-Type', 'text/html; charset=UTF-8');
+        } catch (\Throwable $e) {
+            return response(
+                '<p class="text-danger">Could not load this report: '.e($e->getMessage()).'</p>',
+                200
+            )->header('Content-Type', 'text/html; charset=UTF-8');
+        }
     }
 
     public function draftPo(Request $request)

@@ -73,6 +73,107 @@ class IntelligenceService
         ];
     }
 
+    /**
+     * One report only — used by the chat modal so a chip click is fast and does not 500 the pane.
+     */
+    public function sectionData(int $business_id, string $section): array
+    {
+        $tz = (string) (session('business.time_zone') ?? config('app.timezone', 'UTC'));
+        $now = Carbon::now($tz);
+        $data = [
+            'as_of' => $now->toDateTimeString(),
+            'timezone' => $tz,
+            'basis' => 'Based on last '.self::FORECAST_DAYS.' days of POS data. Drafts only.',
+            'forecast' => ['ready' => [], 'ready_count' => 0, 'insufficient_count' => 0, 'insufficient_sample' => []],
+            'slow_movers' => [],
+            'collections' => [],
+            'credit' => [],
+            'cash_flow' => ['total' => 0, 'buckets' => [], 'basis' => ''],
+            'churn' => [],
+            'match' => ['tolerance_pct' => 2, 'auto_ok_count' => 0, 'exception_count' => 0, 'exceptions' => []],
+            'vendors' => [],
+            'supplier_prices' => [],
+            'regulated' => [
+                'regulated_sku_count' => 0,
+                'licenses' => ['tracked' => false, 'missing_note' => '', 'expiring' => [], 'missing' => []],
+            ],
+            'anomalies' => [],
+            'cross_sell' => [],
+            'actions' => [],
+            'digest' => '',
+            'error' => null,
+        ];
+
+        try {
+            switch ($section) {
+                case 'forecast':
+                    $data['forecast'] = $this->demandForecast($business_id, $now);
+                    break;
+                case 'collections':
+                    $data['collections'] = $this->collectionsRisk($business_id, $now);
+                    break;
+                case 'match':
+                    $tol = 2.0;
+                    try {
+                        $tol = (float) (AiAssistanceSetting::forBusiness($business_id)->match_tolerance_pct ?: 2);
+                    } catch (\Throwable $e) {
+                        $tol = 2.0;
+                    }
+                    $data['match'] = $this->threeWayMatch($business_id, $tol);
+                    break;
+                case 'slow':
+                    $data['slow_movers'] = $this->slowMovers($business_id, $now);
+                    break;
+                case 'credit':
+                    $data['credit'] = $this->creditRisk($business_id, $now);
+                    break;
+                case 'cash':
+                    $data['cash_flow'] = $this->cashFlow($business_id, $now);
+                    break;
+                case 'cross':
+                    $data['cross_sell'] = $this->crossSellPairs($business_id, $now);
+                    break;
+                case 'churn':
+                    $data['churn'] = $this->churn($business_id, $now);
+                    break;
+                case 'vendors':
+                    $data['vendors'] = $this->vendorScores($business_id, $now);
+                    break;
+                case 'prices':
+                    $data['supplier_prices'] = $this->cheaperSupplierPrices($business_id, $now);
+                    break;
+                case 'compliance':
+                    $data['regulated'] = $this->regulated($business_id, $now);
+                    break;
+                case 'anomalies':
+                    $data['anomalies'] = $this->anomalies($business_id, $now);
+                    break;
+                case 'digest':
+                    $forecast = $this->demandForecast($business_id, $now);
+                    $slow = $this->slowMovers($business_id, $now);
+                    $collections = $this->collectionsRisk($business_id, $now);
+                    $churn = $this->churn($business_id, $now);
+                    $match = $this->threeWayMatch($business_id, 2.0);
+                    $anomalies = $this->anomalies($business_id, $now);
+                    $prices = $this->cheaperSupplierPrices($business_id, $now);
+                    $data['digest'] = $this->digestText($forecast, $slow, $collections, $churn, $match, $anomalies, $now, $prices);
+                    break;
+                default:
+                    $data['cash_flow'] = $this->cashFlow($business_id, $now);
+                    $data['actions'] = [];
+                    break;
+            }
+        } catch (\Throwable $e) {
+            $data['error'] = $e->getMessage();
+            \Log::warning('JapsAI intelligence section failed', [
+                'section' => $section,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        return $data;
+    }
+
     public function demandForecast(int $business_id, ?Carbon $now = null): array
     {
         $now = $now ?: Carbon::now();
