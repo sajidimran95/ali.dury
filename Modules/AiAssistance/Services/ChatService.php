@@ -104,8 +104,40 @@ class ChatService
         if (preg_match('/\b(hello|hi|hey|good morning|good afternoon|good evening)\b/', $m) && strlen($m) < 40) {
             return [
                 'success' => true,
-                'reply' => "Hi! I'm {$name}. Ask for reports like today's sales, purchases, expenses, payments by method, top products, receivables, or a full business overview.",
+                'reply' => "Hi! I'm {$name}. Ask for reports like today's sales, cheaper suppliers, forecast, collections, or a full business overview.",
                 'tool' => null,
+            ];
+        }
+
+        if (
+            str_contains($m, 'cheaper') || str_contains($m, 'cheap supplier')
+            || str_contains($m, 'better price') || str_contains($m, 'better prices')
+            || (str_contains($m, 'supplier') && str_contains($m, 'price'))
+        ) {
+            $rows = app(IntelligenceService::class)->cheaperSupplierPrices($business_id);
+            $lines = [
+                "{$name} cheaper supplier report",
+                $this->asOfLine($data),
+                'Last 12 months average purchase/PO unit cost. Same SKU, 2+ suppliers.',
+            ];
+            if (empty($rows)) {
+                $lines[] = 'No SKUs with two suppliers and different prices yet.';
+            } else {
+                foreach (array_slice($rows, 0, 12) as $r) {
+                    $lines[] = '• '.$r['product']
+                        .' — cheapest: '.$r['cheapest_supplier'].' '.$this->money((float) $r['cheapest_avg'], $symbol)
+                        .' vs '.$r['costliest_supplier'].' '.$this->money((float) $r['costliest_avg'], $symbol)
+                        .' (save '.$r['save_pct'].'%)';
+                }
+            }
+            if (\Illuminate\Support\Facades\Route::has('ai.intelligence.supplier-prices')) {
+                $lines[] = 'Full table: '.route('ai.intelligence.supplier-prices');
+            }
+
+            return [
+                'success' => true,
+                'reply' => implode("\n", $lines),
+                'tool' => $tool ?: __('aiassistance::lang.tool_lookup_purchases'),
             ];
         }
 
@@ -541,13 +573,9 @@ class ChatService
     {
         $settings = AiAssistanceSetting::forBusiness($business_id);
         $api_key = $settings->resolveApiKey();
-        $followUp = $this->isFollowUp($user_message, $history);
-
-        if (! ($followUp && $api_key)) {
-            $local = $this->localReply($business_id, $user_message, $history);
-            if ($local) {
-                return $local;
-            }
+        $local = $this->localReply($business_id, $user_message, $history);
+        if ($local) {
+            return $local;
         }
 
         $tool = $this->detectTool($user_message);

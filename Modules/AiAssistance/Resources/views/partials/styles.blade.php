@@ -375,13 +375,42 @@ body.ai-modal-open .ai-send {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: min(920px, calc(100vw - 32px));
-    max-height: calc(100vh - 48px);
+    width: min(960px, calc(100vw - 32px));
+    height: min(760px, calc(100vh - 40px));
+    max-height: calc(100vh - 40px);
     z-index: 1070;
     display: none;
 }
-.ai-modal.open { display: block; }
-.ai-modal .ai-panel { max-height: calc(100vh - 48px); }
+.ai-modal.open { display: flex; flex-direction: column; }
+.ai-modal #ai-modal-content {
+    flex: 1;
+    min-height: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+.ai-modal .ai-shell,
+.ai-modal .ai-panel {
+    height: 100%;
+    max-height: none;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+.ai-modal .ai-panel__body {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+}
+.ai-modal .ai-tab-pane {
+    min-height: 100%;
+}
+.ai-modal .ai-chat {
+    min-height: 0;
+    height: 100%;
+    flex: 1;
+}
 /* Sidebar "Boost with AI" card — matches left-nav promo placement */
 .japs-sidebar-ai-slot:empty {
     display: none;

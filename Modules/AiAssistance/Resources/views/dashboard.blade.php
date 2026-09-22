@@ -13,8 +13,9 @@
 <script>
 $(function () {
     $('.ai-tab-link').on('click', function (e) {
-        e.preventDefault();
         var tab = $(this).data('tab');
+        if (!tab) return;
+        e.preventDefault();
         $('.ai-tab-link').removeClass('active');
         $(this).addClass('active');
         $('.ai-tab-pane').hide();

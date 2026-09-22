@@ -28,7 +28,7 @@
     </button>
     <div class="ai-modal-backdrop" id="ai-modal-backdrop"></div>
     <div class="ai-modal" id="ai-modal">
-        <div id="ai-modal-content" style="min-height:200px;"></div>
+        <div id="ai-modal-content"></div>
     </div>
     @include('aiassistance::partials.styles')
     <script>
@@ -117,8 +117,9 @@
         }
         function bindAiModalTabs() {
             $('#ai-modal .ai-tab-link').off('click.aiTab').on('click.aiTab', function (e) {
-                e.preventDefault();
                 var tab = $(this).data('tab');
+                if (!tab) return;
+                e.preventDefault();
                 $('#ai-modal .ai-tab-link').removeClass('active');
                 $(this).addClass('active');
                 $('#ai-modal .ai-tab-pane').hide();

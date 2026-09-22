@@ -32,6 +32,13 @@
                data-tab="chat">
                 <i class="fa fa-comments"></i> @lang('aiassistance::lang.chat')
             </a>
+            @if(\Illuminate\Support\Facades\Route::has('ai.intelligence.index'))
+            <a href="#ai-pane-intel"
+               class="ai-tab-link {{ $tab === 'intel' ? 'active' : '' }}"
+               data-tab="intel">
+                <i class="fa fa-line-chart"></i> Intelligence
+            </a>
+            @endif
         </div>
 
         <div class="ai-panel__body">
@@ -40,6 +47,9 @@
             </div>
             <div class="ai-tab-pane" id="ai-pane-chat" style="{{ $tab === 'chat' ? '' : 'display:none;' }}">
                 @include('aiassistance::partials.chat')
+            </div>
+            <div class="ai-tab-pane" id="ai-pane-intel" style="{{ $tab === 'intel' ? '' : 'display:none;' }}">
+                @include('aiassistance::partials.intel_menu')
             </div>
         </div>
     </div>

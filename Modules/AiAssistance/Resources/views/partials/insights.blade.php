@@ -91,6 +91,13 @@
     <p class="text-muted">@lang('aiassistance::lang.no_actions')</p>
 @endforelse
 
+@if(\Illuminate\Support\Facades\Route::has('ai.intelligence.index'))
+<div class="ai-actions-head" style="margin-top:16px;">
+    <i class="fa fa-th-list"></i> Intelligence reports
+</div>
+@include('aiassistance::partials.intel_menu')
+@endif
+
 @if(!empty($insights['cash_flow']['buckets']))
 <div class="ai-actions-head" style="margin-top:16px;">
     <i class="fa fa-money text-success"></i>
