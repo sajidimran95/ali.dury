@@ -76,7 +76,11 @@
                 try { panelXhr.abort(); } catch (e) {}
             }
 
-            panelXhr = $.get('{{ route('ai.panel') }}', { tab: tab || 'chat' })
+            panelXhr = $.ajax({
+                url: '{{ route('ai.panel') }}',
+                data: { tab: tab || 'chat' },
+                timeout: 25000
+            })
                 .done(function (html) {
                     $content.html(html);
                     bindAiModalTabs();

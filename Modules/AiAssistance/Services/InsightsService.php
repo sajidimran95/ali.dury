@@ -203,6 +203,16 @@ class InsightsService
             ];
         }
 
+        $intelUrl = \Illuminate\Support\Facades\Route::has('ai.intelligence.index')
+            ? route('ai.intelligence.index')
+            : url('ai');
+        $actions[] = [
+            'priority' => 'medium',
+            'title' => 'Open JapsAI Intelligence',
+            'description' => 'Forecast POs, collections risk, cheaper suppliers, 3-way match, and more.',
+            'url' => $intelUrl,
+        ];
+
         return [
             'assistant' => 'JapsAI',
             'as_of' => $now->toDateTimeString(),

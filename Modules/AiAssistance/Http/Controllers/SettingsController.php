@@ -40,6 +40,16 @@ class SettingsController extends Controller
             $settings->openai_api_key = $key;
         }
 
+        if (\Illuminate\Support\Facades\Schema::hasColumn('ai_assistance_settings', 'match_tolerance_pct')) {
+            $settings->match_tolerance_pct = (float) $request->input('match_tolerance_pct', 2);
+        }
+        if (\Illuminate\Support\Facades\Schema::hasColumn('ai_assistance_settings', 'digest_enabled')) {
+            $settings->digest_enabled = $request->boolean('digest_enabled');
+        }
+        if (\Illuminate\Support\Facades\Schema::hasColumn('ai_assistance_settings', 'digest_email')) {
+            $settings->digest_email = $request->input('digest_email') ?: null;
+        }
+
         $settings->save();
 
         return redirect()->back()->with('status', [

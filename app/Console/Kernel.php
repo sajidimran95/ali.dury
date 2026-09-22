@@ -35,6 +35,8 @@ class Kernel extends ConsoleKernel
 
         }
 
+        $schedule->command('japsai:intelligence-digest')->dailyAt('07:00');
+
         if ($env === 'demo') {
             //IMPORTANT NOTE: This command will delete all business details and create dummy business, run only in demo server.
             $schedule->command('pos:dummyBusiness')

@@ -33,6 +33,22 @@
                     <input type="text" name="openai_model" class="form-control"
                            value="{{ $settings->openai_model ?: config('aiassistance.openai_model') }}">
                 </div>
+                <div class="form-group">
+                    <label>3-way match tolerance %</label>
+                    <input type="number" step="0.1" name="match_tolerance_pct" class="form-control"
+                           value="{{ $settings->match_tolerance_pct ?? 2 }}">
+                    <p class="help-block">Invoices within this % qty/price variance are auto-approved for review skip. Exceptions still need a person.</p>
+                </div>
+                <div class="checkbox">
+                    <label>
+                        <input type="checkbox" name="digest_enabled" value="1" @checked($settings->digest_enabled ?? false)>
+                        Send daily digest email at 7:00 (server cron: php artisan schedule:run)
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label>Digest email</label>
+                    <input type="email" name="digest_email" class="form-control" value="{{ $settings->digest_email ?? '' }}">
+                </div>
                 <button type="submit" class="btn btn-primary">@lang('messages.save')</button>
                 <a href="{{ route('ai.dashboard') }}" class="btn btn-default">@lang('aiassistance::lang.ai_assistant')</a>
             </form>

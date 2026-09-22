@@ -77,7 +77,7 @@ class ChatService
     /**
      * Instant answers from DB snapshot (works without OpenAI for structured report questions).
      */
-    public function localReply(int $business_id, string $message): ?array
+    public function localReply(int $business_id, string $message, array $history = []): ?array
     {
         $m = strtolower(trim($message));
         $m = preg_replace('/\s+/', ' ', $m) ?? $m;
@@ -480,7 +480,17 @@ class ChatService
             ];
         }
 
-        return null;
+        try {
+            $intel = app(IntelligenceService::class)->ask($business_id, $message, $history);
+
+            return [
+                'success' => true,
+                'reply' => $intel,
+                'tool' => $tool,
+            ];
+        } catch (\Throwable $e) {
+            return null;
+        }
     }
 
     protected function renderOverviewReport(array $data, string $symbol, string $name): string
@@ -529,13 +539,17 @@ class ChatService
 
     public function reply(int $business_id, string $user_message, array $history = []): array
     {
-        $local = $this->localReply($business_id, $user_message);
-        if ($local) {
-            return $local;
-        }
-
         $settings = AiAssistanceSetting::forBusiness($business_id);
         $api_key = $settings->resolveApiKey();
+        $followUp = $this->isFollowUp($user_message, $history);
+
+        if (! ($followUp && $api_key)) {
+            $local = $this->localReply($business_id, $user_message, $history);
+            if ($local) {
+                return $local;
+            }
+        }
+
         $tool = $this->detectTool($user_message);
 
         if (empty($api_key)) {
@@ -557,7 +571,9 @@ class ChatService
             [
                 'role' => 'system',
                 'content' => 'You are JapsAI (your name is always JapsAI), the POS / wholesale business assistant. '
-                    .'Answer using ONLY the JSON snapshot. All figures are from the live business database. '
+                    .'Use the conversation history below — remember what the user asked earlier in this and previous sessions. '
+                    .'Follow-up questions like "those", "that customer", "and last week" refer to the prior turns. '
+                    .'Answer using ONLY the JSON snapshot for numbers. All figures are from the live business database. '
                     .'Never invent numbers. Always mention the as_of timestamp when sharing key totals. '
                     .'You can present different report views: sales, purchases, expenses, payments by method, '
                     .'top products, inventory/stock value, receivables/payables, and overview. '
@@ -625,5 +641,18 @@ class ChatService
                 'tool' => $tool,
             ];
         }
+    }
+
+    protected function isFollowUp(string $message, array $history): bool
+    {
+        if (count($history) < 2) {
+            return false;
+        }
+        $m = strtolower(trim($message));
+        if (preg_match('/\b(that|those|them|it|also|again|previous|earlier|you said|same|and what|what about|how about|continue)\b/', $m)) {
+            return true;
+        }
+
+        return strlen($m) <= 48 && ! preg_match('/\b(today|sales|purchase|stock|invoice|report|overview)\b/', $m);
     }
 }

@@ -90,3 +90,16 @@
 @empty
     <p class="text-muted">@lang('aiassistance::lang.no_actions')</p>
 @endforelse
+
+@if(!empty($insights['cash_flow']['buckets']))
+<div class="ai-actions-head" style="margin-top:16px;">
+    <i class="fa fa-money text-success"></i>
+    Cash-in forecast (2–4 weeks)
+</div>
+<p class="text-muted" style="font-size:12px;">{{ $insights['cash_flow']['basis'] ?? '' }} · Total {{ $symbol }}{{ number_format($insights['cash_flow']['total'] ?? 0, 2) }}</p>
+<ul>
+    @foreach($insights['cash_flow']['buckets'] as $b => $v)
+        <li>{{ $b }} days: {{ $symbol }}{{ number_format($v, 2) }}</li>
+    @endforeach
+</ul>
+@endif

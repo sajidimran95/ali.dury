@@ -1,0 +1,199 @@
+JAPS TECH INC.
+POS AI — Developer Brief
+AI Module Enhancement Roadmap
+Prepared for: Development Team
+Current scope: EDI-based purchase-order invoice scanning
+September 2026
+1. Purpose
+The POS AI module currently reads incoming EDI documents and scans/matches vendor invoices against purchase orders. It already sits on top of live sales, inventory, and invoice data (as shown in the Insights panel), which puts it in a good position to do more than document scanning. This brief lists additional AI capabilities to build into the module, grouped by area, each with functional requirements and the data it needs. Priority and phasing are recommendations — reorder as needed.
+2. Current State (for reference)
+EDI-based invoice scanning and PO matching for incoming purchase orders.
+Insights dashboard: live sales, inventory status (out of stock / below reorder), and invoice/AR totals.
+Rule-based "Suggested Actions" panel (e.g., restock alerts, collections follow-up, no-sales-today flag).
+"Quick Answers" — canned queries (today's sales, low stock, open POs, etc.) and a Chat tab for free-form questions.
+3. Proposed AI Modules
+Modules are grouped into five areas: Inventory Intelligence, AR & Financial Intelligence, Sales & Customer Intelligence, Procurement & Vendor Intelligence, and Compliance & Risk. A summary table is in Section 5.
+3.1 Inventory Intelligence
+1. Demand Forecasting & Auto-Generated POs
+HIGH
+Predict per-SKU demand and turn today's static "below reorder" list into forward-looking, ready-to-send purchase orders.
+Functional requirements
+Model per-SKU sales velocity from historical invoice/sales-line data, with seasonality (e.g., weekly/monthly cycles) where enough history exists.
+Generate a suggested reorder quantity and target date per SKU, factoring in vendor lead time (from PO history).
+One-click "Create PO from suggestion" action that pre-fills a draft PO for review, not auto-send.
+Surface confidence/data-sufficiency (e.g., flag new SKUs with insufficient history rather than guessing).
+Data sources
+Sales/invoice line history, current inventory levels, PO history (for vendor lead times).
+Note: This directly extends the existing "6729 of 8805 products need attention" list from reactive to predictive.
+2. Slow-Mover / Dead-Stock Detection
+MEDIUM
+Flag inventory that is aging or not turning, so it can be cleared or discounted before it becomes a write-off.
+Functional requirements
+Compute days-since-last-sale and turnover rate per SKU.
+Flag SKUs below a configurable turnover threshold.
+Suggest a clearance/discount action, added as a new tile in Suggested Actions.
+Data sources
+Inventory levels, sales history by SKU, cost/margin data.
+3.2 AR & Financial Intelligence
+3. Collections Risk Scoring & Prioritization
+HIGH
+Turn the flat "616 not-paid invoices / $753,639.85 older amount" list into a ranked worklist so collections effort goes to the highest-risk accounts first.
+Functional requirements
+Score each open invoice/customer by payment risk, using days-overdue, historical payment lateness, and invoice size.
+Rank the collections follow-up list by risk score rather than age alone.
+Draft (not auto-send) a follow-up email or call script per flagged customer, in the existing informal client-communication tone.
+Data sources
+Invoice/AR aging data, customer payment history.
+Note: Pairs directly with the existing "Collections follow-up" suggested action.
+4. Customer Credit Risk Flagging
+MEDIUM
+Warn before extending more credit to an account whose payment behavior is deteriorating.
+Functional requirements
+Track rolling days-sales-outstanding (DSO) and on-time-payment rate per customer.
+Flag accounts trending worse over a rolling window (e.g., last 3–6 months) at the point of new order/invoice creation.
+Data sources
+Invoice/payment history per customer.
+5. Cash Flow Forecasting
+LOW
+Project expected incoming cash over the next 2–4 weeks based on open AR and historical payment timing.
+Functional requirements
+Combine open invoice aging with each customer's typical days-to-pay to project a cash-in timeline.
+Surface as a simple forecast chart/summary in the Insights panel.
+Data sources
+Invoice aging data, historical payment dates.
+3.3 Sales & Customer Intelligence
+6. Cross-Sell / Reorder Suggestions
+MEDIUM
+Suggest add-on products at order entry, based on what similar accounts typically buy together.
+Functional requirements
+Build simple "customers who buy X also buy Y" associations from historical order lines.
+Surface 2–3 suggested add-ons at point of sale / order entry.
+Also detect a customer's usual reorder cadence and prompt when they're "due" to reorder a regular item.
+Data sources
+Order/invoice line history across all customers.
+7. Account Churn / Drop-Off Detection
+MEDIUM
+Flag wholesale accounts whose order frequency or volume is declining before they go fully inactive.
+Functional requirements
+Track order frequency/volume per customer against their own historical baseline.
+Flag accounts with a meaningful drop-off as a new Suggested Action tile.
+Data sources
+Order/invoice history per customer.
+3.4 Procurement & Vendor Intelligence
+8. 3-Way Match Automation (PO ↔ Receipt ↔ Invoice)
+HIGH
+Extend the existing EDI invoice-scanning capability from PO-to-invoice matching to full 3-way match, so staff only review exceptions.
+Functional requirements
+Match received-quantity and unit cost across PO, warehouse receipt, and vendor invoice.
+Auto-approve invoices within a configurable tolerance (e.g., quantity/price variance under X%).
+Route only mismatches/exceptions to a human review queue, with the discrepancy highlighted.
+Data sources
+Existing EDI/invoice pipeline, PO data, warehouse receiving data.
+Note: This is a direct extension of what the module already does, rather than a new capability.
+9. Vendor Performance Scoring
+LOW
+Score vendors on fill rate, on-time delivery, and price stability using data already flowing through the EDI/PO pipeline.
+Functional requirements
+Compute per-vendor fill rate (ordered vs. received quantity), on-time delivery rate, and price-variance trend.
+Surface a simple vendor scorecard, usable when deciding who to reorder from.
+Data sources
+PO history, receiving history, EDI invoice data.
+3.5 Compliance & Risk
+10. Regulated-Product Compliance Flagging
+MEDIUM
+Flag age-restricted/regulated SKUs (tobacco, vape, etc.) for reporting and license checks, relevant given the product mix on file.
+Functional requirements
+Tag regulated SKUs (by category or existing product flags) and track them separately in sales/inventory reporting.
+Alert when a customer's resale/tobacco license is missing or approaching expiration, if license data is captured.
+Data sources
+Product catalog/category data, customer license records (if tracked).
+Note: Scope depends on whether license data is currently captured anywhere in the system — confirm before estimating.
+11. Transaction Anomaly Detection
+LOW
+Flag unusual transactions (atypical discount %, order size, or price override) that may indicate error or shrinkage.
+Functional requirements
+Establish a normal range per SKU/customer for discount %, order size, and price.
+Flag transactions outside that range for review, rather than blocking them.
+Data sources
+Sales transaction history.
+3.6 Interaction Layer
+12. Expanded Natural-Language Chat
+MEDIUM
+Extend the existing Chat tab beyond canned Quick Answers to handle free-form, multi-turn questions across sales, inventory, and AR.
+Functional requirements
+Support open-ended questions (e.g., "which customers haven't ordered in 60 days") rather than only the fixed Quick Answers list.
+Retain conversation context within a session for follow-up questions.
+Keep all answers grounded in live POS data — no fabricated figures.
+Data sources
+All existing data sources the module already has access to.
+13. Automated Daily/Weekly Digest
+LOW
+Turn the Suggested Actions panel into a short, plain-language summary sent by email each morning.
+Functional requirements
+Summarize sales, top inventory/collections priorities, and any anomalies into 4–6 sentences.
+Send on a schedule (e.g., 7am daily) by email; reuse existing Suggested Actions logic as the input.
+Data sources
+Existing Insights/Suggested Actions data.
+4. Non-Functional Requirements
+All AI-suggested actions (POs, collections emails, discounts) are drafts for human review by default — no auto-send/auto-commit without explicit opt-in per module.
+Every suggestion should show the data it's based on (e.g., "based on last 90 days of sales") so staff can trust or challenge it.
+New modules should reuse the existing Insights/Suggested Actions/Chat UI patterns rather than introducing new screens where avoidable.
+Model/logic choices should degrade gracefully for SKUs or customers with too little history to forecast reliably (flag as "insufficient data" instead of guessing).
+5. Priority Summary
+#
+Module
+Priority
+Est. phase
+1
+Demand Forecasting & Auto-Generated POs
+HIGH
+Phase 1
+3
+Collections Risk Scoring & Prioritization
+HIGH
+Phase 1
+8
+3-Way Match Automation
+HIGH
+Phase 1
+2
+Slow-Mover / Dead-Stock Detection
+MEDIUM
+Phase 2
+4
+Customer Credit Risk Flagging
+MEDIUM
+Phase 2
+6
+Cross-Sell / Reorder Suggestions
+MEDIUM
+Phase 2
+7
+Account Churn / Drop-Off Detection
+MEDIUM
+Phase 2
+10
+Regulated-Product Compliance Flagging
+MEDIUM
+Phase 2
+12
+Expanded Natural-Language Chat
+MEDIUM
+Phase 2
+5
+Cash Flow Forecasting
+LOW
+Phase 3
+9
+Vendor Performance Scoring
+LOW
+Phase 3
+11
+Transaction Anomaly Detection
+LOW
+Phase 3
+13
+Automated Daily/Weekly Digest
+LOW
+Phase 3
+Phase 1 items build directly on data the module already processes (EDI/invoices, inventory, AR) and give the clearest, fastest ROI. Phase 2 and 3 can be reprioritized once Phase 1 is scoped with the developer.

@@ -38,6 +38,7 @@
         <button type="button" class="ai-chip" data-q="@lang('aiassistance::lang.chip_payments')">@lang('aiassistance::lang.chip_payments')</button>
         <button type="button" class="ai-chip" data-q="@lang('aiassistance::lang.chip_low_stock')">@lang('aiassistance::lang.chip_low_stock')</button>
         <button type="button" class="ai-chip" data-q="@lang('aiassistance::lang.chip_unpaid')">@lang('aiassistance::lang.chip_unpaid')</button>
+        <button type="button" class="ai-chip" data-q="which supplier has better prices">Cheaper suppliers</button>
         <button type="button" class="ai-chip" data-q="@lang('aiassistance::lang.chip_pipeline')">@lang('aiassistance::lang.chip_pipeline')</button>
     </div>
 

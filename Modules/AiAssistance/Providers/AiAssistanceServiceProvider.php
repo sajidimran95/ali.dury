@@ -2,7 +2,9 @@
 
 namespace Modules\AiAssistance\Providers;
 
+use App\PurchaseLine;
 use Illuminate\Support\ServiceProvider;
+use Modules\AiAssistance\Observers\PurchaseLinePoCostObserver;
 
 class AiAssistanceServiceProvider extends ServiceProvider
 {
@@ -17,6 +19,7 @@ class AiAssistanceServiceProvider extends ServiceProvider
         $this->registerViews();
         $this->loadMigrationsFrom(module_path($this->moduleName, 'Database/Migrations'));
         $this->ensureModuleInstalled();
+        PurchaseLine::observe(PurchaseLinePoCostObserver::class);
     }
 
     public function register(): void
