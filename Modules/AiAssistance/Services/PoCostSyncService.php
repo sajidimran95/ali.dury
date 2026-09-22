@@ -59,6 +59,8 @@ class PoCostSyncService
             'new_cost' => $newCost,
             'po_ref' => $txn->ref_no,
         ];
+        // Keep for this request (AJAX chat) and flash for next full page (modal alert).
+        session()->put('japs_po_cost_changes', $list);
         session()->flash('japs_po_cost_changes', $list);
     }
 }

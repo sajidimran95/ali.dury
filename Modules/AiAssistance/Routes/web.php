@@ -23,6 +23,7 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
         Route::post('settings', [SettingsController::class, 'update'])->name('settings.update');
 
         Route::post('invoice/extract', [InvoiceExtractionController::class, 'extract'])->name('invoice.extract');
+        Route::post('invoice/confirm', [InvoiceExtractionController::class, 'confirm'])->name('invoice.confirm');
         Route::get('invoice/result/{token}', [InvoiceExtractionController::class, 'result'])->name('invoice.result');
 
         Route::get('intelligence', [\Modules\AiAssistance\Http\Controllers\IntelligenceController::class, 'index'])->name('intelligence.index');

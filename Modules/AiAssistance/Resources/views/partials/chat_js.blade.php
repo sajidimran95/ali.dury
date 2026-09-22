@@ -172,11 +172,56 @@
                 if (res && res.success) {
                     var d = res.data || {};
                     var count = (d.lines || []).length;
-                    var summary = 'Read ' + count + ' item(s)'
+                    var preview = res.preview || null;
+                    var html = 'Read ' + count + ' item(s)'
                         + (d.supplier_name ? ' from ' + $('<div>').text(d.supplier_name).html() : '')
+                        + (d.ref_no ? ', ref ' + $('<div>').text(d.ref_no).html() : '')
                         + (d.total ? ', total ' + d.total : '') + '.';
-                    var link = '{{ url('/purchases/create') }}?ai_invoice_token=' + encodeURIComponent(res.token);
-                    appendBotHtml($box, summary + '<br><a href="' + link + '" class="tw-dw-btn tw-dw-btn-sm tw-dw-btn-primary tw-text-white" style="margin-top:6px;display:inline-block;"><i class="fa fa-check"></i> {{ __('aiassistance::lang.invoice_review_link') }}</a>');
+
+                    if (preview) {
+                        html += '<br><br><strong>Ready to confirm</strong>';
+                        html += '<br>✓ ' + (preview.matched_count || 0) + ' item(s) OK in product list';
+                        if (preview.missing_count > 0) {
+                            html += '<br>⚠ ' + preview.missing_count + ' item(s) not in list — will auto-add on confirm:';
+                            html += '<ul style="margin:4px 0 0 18px;padding:0;">';
+                            (preview.missing || []).slice(0, 12).forEach(function (row) {
+                                var lab = (row.sku ? row.sku + ' — ' : '') + (row.name || '');
+                                html += '<li>' + $('<div>').text(lab).html()
+                                    + (row.unit_price != null ? ' @ ' + row.unit_price : '')
+                                    + '</li>';
+                            });
+                            if (preview.missing_count > 12) {
+                                html += '<li>…and ' + (preview.missing_count - 12) + ' more</li>';
+                            }
+                            html += '</ul>';
+                        } else {
+                            html += '<br>✓ All invoice items found in product list';
+                        }
+
+                        var sup = preview.supplier || {};
+                        if (sup.will_create) {
+                            html += '<br>⚠ Supplier <strong>' + $('<div>').text(sup.name || '').html()
+                                + '</strong> not in list — will auto-add on confirm';
+                        } else if (sup.found) {
+                            html += '<br>✓ Supplier OK: ' + $('<div>').text(sup.name || '').html();
+                        } else {
+                            html += '<br>✓ No supplier name on invoice (will use default if needed)';
+                        }
+
+                        if (preview.existing_po) {
+                            html += '<br>✓ Existing PO <strong>' + $('<div>').text(preview.existing_po.ref_no || '').html()
+                                + '</strong> will be updated with invoice amounts';
+                        } else {
+                            html += '<br>✓ New draft PO will be created (not sent to vendor)';
+                        }
+
+                        html += '<br><br><button type="button" class="tw-dw-btn tw-dw-btn-sm tw-dw-btn-primary tw-text-white ai-invoice-confirm-btn"'
+                            + ' data-token="' + $('<div>').text(res.token || '').html() + '"'
+                            + ' style="margin-top:4px;"><i class="fa fa-check"></i> Confirm — add missing &amp; create/update PO</button>';
+                        html += ' <span class="text-muted" style="font-size:12px;">Nothing is saved until you confirm.</span>';
+                    }
+
+                    appendBotHtml($box, html);
                 } else {
                     toastr.error((res && res.msg) || '{{ __('aiassistance::lang.chat_error') }}');
                     appendBot($box, (res && res.msg) || '{{ __('aiassistance::lang.chat_error') }}');
@@ -197,6 +242,112 @@
             });
     };
 
+    window.confirmAiInvoice = function (token, $btn) {
+        var $box = $('#ai-chat-box');
+        if (!$box.length || !token || sending) return;
+
+        if ($btn && $btn.length) {
+            $btn.prop('disabled', true).text('Working…');
+        }
+        var $pending = $('<div class="ai-pending" style="margin:0 0 10px 38px;color:#6b7280;">Adding missing items/supplier and creating PO…</div>');
+        $box.append($pending);
+        setBusy(true);
+
+        $.ajax({
+            url: '{{ route('ai.invoice.confirm') }}',
+            method: 'POST',
+            data: { _token: '{{ csrf_token() }}', token: token },
+            timeout: 120000,
+        })
+            .done(function (res) {
+                if (!(res && res.success)) {
+                    var err = (res && res.msg) || '{{ __('aiassistance::lang.chat_error') }}';
+                    toastr.error(err);
+                    appendBot($box, err);
+                    if ($btn && $btn.length) {
+                        $btn.prop('disabled', false).html('<i class="fa fa-check"></i> Confirm — add missing &amp; create/update PO');
+                    }
+                    return;
+                }
+
+                var draft = res.draft_po || {};
+                var html = '';
+
+                if (draft.created_products_count) {
+                    html += '✓ Added ' + draft.created_products_count + ' product(s) to the list';
+                    var cps = draft.created_products || [];
+                    if (cps.length) {
+                        html += '<ul style="margin:4px 0 0 18px;padding:0;">';
+                        cps.slice(0, 10).forEach(function (p) {
+                            html += '<li>' + $('<div>').text((p.sku ? p.sku + ' — ' : '') + (p.name || '')).html() + '</li>';
+                        });
+                        html += '</ul>';
+                    }
+                    html += '<br>';
+                }
+                if (draft.created_supplier) {
+                    html += '✓ Supplier added: <strong>'
+                        + $('<div>').text(draft.created_supplier.name || '').html() + '</strong><br>';
+                }
+
+                function costAlertHtml(changes) {
+                    if (!changes || !changes.length) return '';
+                    var t = '<br><strong>Admin alert — PO cost updated on product list</strong> (sell price unchanged):';
+                    t += '<table class="table table-condensed" style="margin:6px 0;font-size:12px;"><thead><tr>'
+                        + '<th>Item</th><th>SKU</th><th>Old</th><th>New</th><th>PO</th></tr></thead><tbody>';
+                    changes.slice(0, 20).forEach(function (row) {
+                        t += '<tr><td>' + $('<div>').text(row.product || '').html() + '</td>'
+                            + '<td>' + $('<div>').text(row.sku || '').html() + '</td>'
+                            + '<td>' + Number(row.old_cost || 0).toFixed(2) + '</td>'
+                            + '<td><strong>' + Number(row.new_cost || 0).toFixed(2) + '</strong></td>'
+                            + '<td>' + $('<div>').text(row.po_ref || '').html() + '</td></tr>';
+                    });
+                    t += '</tbody></table>';
+                    if (typeof toastr !== 'undefined') {
+                        toastr.warning(changes.length + ' item(s) PO cost updated on the product.');
+                    }
+                    return t;
+                }
+
+                if (draft.matched_existing && draft.edit_url) {
+                    html += '<strong>PO ' + $('<div>').text(draft.ref_no || '').html()
+                        + '</strong> updated from invoice'
+                        + (draft.updated_count ? ' (' + draft.updated_count + ' line change(s))' : '')
+                        + '. Not sent to vendor.';
+                    html += costAlertHtml(draft.cost_changes);
+                    html += '<br><a href="' + draft.edit_url + '" class="tw-dw-btn tw-dw-btn-sm tw-dw-btn-primary tw-text-white" style="margin-top:6px;display:inline-block;"><i class="fa fa-file-text-o"></i> Open PO</a>';
+                } else if (draft.created && draft.edit_url) {
+                    html += '<strong>Draft PO ' + $('<div>').text(draft.ref_no || '').html()
+                        + '</strong> created with invoice prices ('
+                        + (draft.matched || 0) + ' line(s)). Not sent to vendor.';
+                    html += costAlertHtml(draft.cost_changes);
+                    html += '<br><a href="' + draft.edit_url + '" class="tw-dw-btn tw-dw-btn-sm tw-dw-btn-primary tw-text-white" style="margin-top:6px;display:inline-block;"><i class="fa fa-file-text-o"></i> Open draft PO</a>';
+                } else {
+                    html += $('<div>').text(draft.msg || 'Done.').html();
+                }
+
+                appendBotHtml($box, html);
+                if (typeof toastr !== 'undefined') {
+                    toastr.success('Confirmed — list updated and PO ready.');
+                }
+            })
+            .fail(function (xhr) {
+                var err = (xhr.responseJSON && xhr.responseJSON.msg) || '{{ __('aiassistance::lang.chat_error') }}';
+                toastr.error(err);
+                appendBot($box, err);
+                if ($btn && $btn.length) {
+                    $btn.prop('disabled', false).html('<i class="fa fa-check"></i> Confirm — add missing &amp; create/update PO');
+                }
+            })
+            .always(function () {
+                $pending.remove();
+                setBusy(false);
+                if ($box.length && $box[0]) {
+                    $box.scrollTop($box[0].scrollHeight);
+                }
+            });
+    };
+
     // Delegated events — work even if modal HTML is replaced many times
     $(document)
         .off('change.ai', '#ai-invoice-attach')
@@ -206,6 +357,12 @@
                 window.sendAiInvoiceFile(file);
             }
             $(this).val('');
+        })
+        .off('click.aiConfirm', '.ai-invoice-confirm-btn')
+        .on('click.aiConfirm', '.ai-invoice-confirm-btn', function (e) {
+            e.preventDefault();
+            var token = $(this).data('token');
+            window.confirmAiInvoice(token, $(this));
         })
         .off('submit.ai', '#ai-chat-form')
         .on('submit.ai', '#ai-chat-form', function (e) {
