@@ -285,13 +285,16 @@ body.sale-page-create .sale-order-build__body { padding: 12px 20px 10px; gap: 8p
         <div id="catalogBody" class="sale-catalog__body"></div>
     </div>
 </div>
-<div id="orderHistorySheet" class="sale-sheet" hidden>
-    <div class="sale-sheet__panel">
-        <div class="sale-sheet__head is-center">
-            <div class="sale-sheet__title" id="orderHistoryTitle">Last ordered</div>
-            <button type="button" class="sale-sheet__close" onclick="saleCloseSheet('orderHistorySheet')" aria-label="Close">×</button>
+<div id="orderHistorySheet" class="sale-sheet sale-ohist" hidden>
+    <div class="sale-sheet__panel sale-ohist__panel">
+        <div class="sale-ohist__head">
+            <div class="sale-ohist__head-text">
+                <div class="sale-ohist__name" id="orderHistoryTitle">Product</div>
+                <div class="sale-ohist__sub">Order history</div>
+            </div>
+            <button type="button" class="sale-ohist__close" onclick="saleCloseSheet('orderHistorySheet')" aria-label="Close">×</button>
         </div>
-        <div class="sale-sheet__body" id="orderHistoryBody" style="padding:12px 16px 20px"></div>
+        <div class="sale-ohist__body" id="orderHistoryBody"></div>
     </div>
 </div>
 <div id="orderViewSheet" class="sale-sheet" hidden>
@@ -765,25 +768,30 @@ body.sale-page-create .sale-order-build__body { padding: 12px 20px 10px; gap: 8p
     async function openOrderHistory(variationId, name) {
         const body = document.getElementById('orderHistoryBody');
         const title = document.getElementById('orderHistoryTitle');
-        if (title) title.textContent = 'Last ordered';
-        if (body) body.innerHTML = '<div class="text-sm text-slate-400">Loading…</div>';
+        if (title) title.textContent = name || 'Product';
+        if (body) body.innerHTML = '<div class="sale-ohist__empty">Loading…</div>';
         if (typeof saleOpenSheet === 'function') saleOpenSheet('orderHistorySheet');
         try {
             const url = @json(route('sale.api.product_history')) + '?contact_id=' + encodeURIComponent(contactId.value) + '&variation_id=' + encodeURIComponent(variationId);
             const rows = await fetchJson(url);
             if (!body) return;
             if (!rows.length) {
-                body.innerHTML = '<div class="text-sm text-slate-400">No previous orders for this product.</div>';
+                body.innerHTML = '<div class="sale-ohist__empty">No previous orders for this product.</div>';
                 return;
             }
-            body.innerHTML = rows.map((h) => (
-                `<div class="sale-ois-hist">
-                    <div><b>${escapeHtml(h.date || '')}</b> · ${escapeHtml(h.invoice_no || '')}</div>
-                    <div>${fmtQty(h.quantity)} ${escapeHtml(h.unit_name || '')} @ ${money(h.unit_price)}</div>
-                </div>`
-            )).join('');
+            body.innerHTML = rows.map((h) => {
+                const qty = fmtQty(h.quantity);
+                const unit = (h.unit_name || 'Pc').toString().toLowerCase();
+                const lineTot = (Number(h.line_total) >= 0)
+                    ? Number(h.line_total)
+                    : (Number(h.quantity) * Number(h.unit_price));
+                return `<div class="sale-ohist__row">
+                    <div class="sale-ohist__date">${escapeHtml(h.date_short || h.date || '')}</div>
+                    <div class="sale-ohist__meta"><span class="sale-ohist__qty">${qty}</span> ${escapeHtml(unit)} · <span class="sale-ohist__amt">${money(lineTot)}</span></div>
+                </div>`;
+            }).join('');
         } catch (e) {
-            if (body) body.innerHTML = '<div class="text-sm text-slate-400">Could not load history.</div>';
+            if (body) body.innerHTML = '<div class="sale-ohist__empty">Could not load history.</div>';
         }
     }
 

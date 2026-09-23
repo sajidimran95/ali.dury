@@ -1292,18 +1292,28 @@ class SalePortalController extends Controller
                 't.transaction_date',
                 'tsl.quantity',
                 'tsl.unit_price_inc_tax',
-                'u.actual_name as unit_name'
+                'tsl.sub_unit_id',
+                'u.actual_name as unit_name',
+                'u.base_unit_multiplier'
             )
             ->get();
 
         return response()->json($rows->map(function ($r) {
-            $date = $r->transaction_date ? Carbon::parse($r->transaction_date)->format('m/d/Y') : '';
+            $mult = (float) ($r->base_unit_multiplier ?: 1);
+            if ($mult <= 0) {
+                $mult = 1.0;
+            }
+            $qty = ((float) $r->quantity) / $mult;
+            $unitPrice = (float) $r->unit_price_inc_tax * $mult;
+            $date = $r->transaction_date ? Carbon::parse($r->transaction_date) : null;
 
             return [
                 'invoice_no' => $r->invoice_no,
-                'date' => $date,
-                'quantity' => (float) $r->quantity,
-                'unit_price' => (float) $r->unit_price_inc_tax,
+                'date' => $date ? $date->format('m/d/Y') : '',
+                'date_short' => $date ? $date->format('M j') : '',
+                'quantity' => $qty,
+                'unit_price' => $unitPrice,
+                'line_total' => round($qty * $unitPrice, 2),
                 'unit_name' => $r->unit_name ?: 'Pc',
             ];
         })->values());

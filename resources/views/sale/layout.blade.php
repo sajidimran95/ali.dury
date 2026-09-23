@@ -2622,13 +2622,92 @@
         .sale-sheet__head.is-center .sale-sheet__title {
             font-size: 16px; font-weight: 700; color: #111;
         }
-        #orderHistorySheet .sale-sheet__title {
+        #orderHistorySheet .sale-ohist__panel {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 12px 40px rgba(15, 23, 42, 0.18);
+            max-width: 420px;
+            margin: 0 auto;
+            padding-bottom: 8px;
+        }
+        #orderHistorySheet.sale-sheet {
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        #orderHistorySheet .sale-ohist__head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 18px 18px 14px;
+            border-bottom: 1px solid #eceff3;
+        }
+        #orderHistorySheet .sale-ohist__head-text { min-width: 0; flex: 1; }
+        #orderHistorySheet .sale-ohist__name {
+            font-size: 16px;
+            font-weight: 800;
+            color: #0b1220;
+            line-height: 1.3;
+            word-break: break-word;
+        }
+        #orderHistorySheet .sale-ohist__sub {
+            margin-top: 4px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #94a3b8;
+        }
+        #orderHistorySheet .sale-ohist__close {
+            width: 32px;
+            height: 32px;
+            border-radius: 999px;
+            border: 0;
+            background: #f1f5f9;
+            color: #64748b;
+            font-size: 20px;
+            font-weight: 600;
+            line-height: 1;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        #orderHistorySheet .sale-ohist__body {
+            padding: 0 18px;
+            max-height: min(60vh, 420px);
+            overflow-y: auto;
+        }
+        #orderHistorySheet .sale-ohist__row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 14px 0;
+            border-bottom: 1px solid #eceff3;
+        }
+        #orderHistorySheet .sale-ohist__row:last-child { border-bottom: 0; }
+        #orderHistorySheet .sale-ohist__date {
+            font-size: 15px;
+            font-weight: 800;
+            color: #0b1220;
+            white-space: nowrap;
+        }
+        #orderHistorySheet .sale-ohist__meta {
             font-size: 14px;
             font-weight: 600;
-            max-width: 80%;
-            line-height: 1.25;
+            color: #0b1220;
+            text-align: right;
+            white-space: nowrap;
         }
-        #orderHistorySheet .sale-ois-hist { font-size: 12px; }
+        #orderHistorySheet .sale-ohist__qty,
+        #orderHistorySheet .sale-ohist__amt {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-weight: 700;
+        }
+        #orderHistorySheet .sale-ohist__empty {
+            padding: 24px 4px;
+            font-size: 13px;
+            color: #94a3b8;
+            text-align: center;
+        }
         .sale-sheet__head.is-center .sale-sheet__close {
             position: absolute; right: 8px; top: 8px;
             background: transparent; font-size: 22px;
