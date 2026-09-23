@@ -1,4 +1,4 @@
-<?php
+order popup need to as same this !DOCTYPE html><?php
 
 use Illuminate\Database\Migrations\Migration;
 use Spatie\Permission\Models\Permission;
