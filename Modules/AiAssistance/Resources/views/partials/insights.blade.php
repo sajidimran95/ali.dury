@@ -3,9 +3,26 @@
     $inventory = $insights['inventory'];
     $invoices = $insights['invoices'];
     $symbol = session('currency')['symbol'] ?? '';
+    $spoken = app(\Modules\AiAssistance\Services\InsightsService::class)
+        ->spokenSummary($insights, $symbol);
 @endphp
 
-<div class="ai-cards">
+<div class="ai-insights-voice" style="display:flex;align-items:center;gap:8px;margin:0 0 12px;flex-wrap:wrap;">
+    <button type="button"
+            class="tw-dw-btn tw-dw-btn-sm tw-dw-btn-outline ai-insights-speak-btn"
+            id="ai-insights-speak-btn"
+            data-speaking="0"
+            aria-pressed="false"
+            title="@lang('aiassistance::lang.insights_listen')">
+        <i class="fa fa-volume-up" aria-hidden="true"></i>
+        <span class="ai-insights-speak-label">@lang('aiassistance::lang.insights_listen')</span>
+    </button>
+    <span class="text-muted" style="font-size:12px;">@lang('aiassistance::lang.insights_listen_help')</span>
+</div>
+<div id="ai-insights-spoken-script" class="sr-only" aria-live="polite" hidden>{{ $spoken }}</div>
+<script type="application/json" id="ai-insights-spoken-json">@json($spoken)</script>
+
+<div class="ai-cards" role="region" aria-label="@lang('aiassistance::lang.insights')">
     <div class="ai-card">
         <div class="ai-card__label">
             <span>@lang('aiassistance::lang.sales')</span>

@@ -9,6 +9,7 @@
 @endsection
 
 @section('javascript')
+@include('aiassistance::partials.voice_js')
 @include('aiassistance::partials.chat_js')
 <script>
 $(function () {
@@ -24,6 +25,7 @@ $(function () {
             history.replaceState(null, '', '{{ url('ai') }}?tab=' + tab);
         }
         if (tab === 'chat' && window.initAiChat) window.initAiChat();
+        if (tab !== 'insights' && window.japsAiVoice) window.japsAiVoice.stop();
     });
     $(document).on('click', '.japs-intel-chip', function (e) {
         e.preventDefault();

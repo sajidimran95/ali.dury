@@ -424,4 +424,67 @@ class InsightsService
             ])->all(),
         ], JSON_PRETTY_PRINT);
     }
+
+    /**
+     * Plain-English script for browser text-to-speech (Insights voice readout).
+     */
+    public function spokenSummary(array $data, string $symbol = ''): string
+    {
+        $sales = $data['sales'] ?? [];
+        $inv = $data['inventory'] ?? [];
+        $invoices = $data['invoices'] ?? [];
+        $actions = $data['actions'] ?? [];
+
+        $todayTotal = (float) ($sales['today']['total'] ?? $sales['total'] ?? 0);
+        $todayOrders = (int) ($sales['today']['order_count'] ?? $sales['order_count'] ?? 0);
+        $monthTotal = (float) ($sales['total'] ?? 0);
+        $aov = (float) ($sales['aov'] ?? 0);
+
+        $parts = [];
+        $parts[] = 'JapsAI insights.';
+        $parts[] = 'Today\'s sales are '.$this->speakMoney($todayTotal, $symbol)
+            .' across '.$todayOrders.' orders.';
+        $parts[] = 'Last 30 days sales are '.$this->speakMoney($monthTotal, $symbol)
+            .'. Average order value '.$this->speakMoney($aov, $symbol).'.';
+        $parts[] = (int) ($sales['customers'] ?? 0).' customers on file, '
+            .(int) ($sales['leads'] ?? 0).' active leads.';
+
+        $attention = (int) ($inv['attention_count'] ?? 0);
+        $products = (int) ($inv['product_count'] ?? 0);
+        $parts[] = $attention.' of '.$products.' products need attention. '
+            .(int) ($inv['out_of_stock_count'] ?? 0).' out of stock, '
+            .(int) ($inv['low_stock_count'] ?? 0).' at or below reorder.';
+
+        $parts[] = (int) ($invoices['overdue'] ?? 0).' overdue invoices, '
+            .(int) ($invoices['open'] ?? 0).' open, '
+            .$this->speakMoney((float) ($invoices['outstanding'] ?? 0), $symbol).' outstanding.';
+
+        if (! empty($actions)) {
+            $parts[] = count($actions).' suggested actions.';
+            foreach (array_slice($actions, 0, 5) as $action) {
+                $parts[] = ($action['priority'] ?? '').' priority: '
+                    .($action['title'] ?? '').'. '
+                    .($action['description'] ?? '');
+            }
+        } else {
+            $parts[] = 'No suggested actions right now.';
+        }
+
+        if (! empty($data['cash_flow']['buckets'])) {
+            $parts[] = 'Cash-in forecast total '
+                .$this->speakMoney((float) ($data['cash_flow']['total'] ?? 0), $symbol).'.';
+            foreach ($data['cash_flow']['buckets'] as $bucket => $val) {
+                $parts[] = $bucket.' days: '.$this->speakMoney((float) $val, $symbol).'.';
+            }
+        }
+
+        return trim(preg_replace('/\s+/', ' ', implode(' ', $parts)));
+    }
+
+    protected function speakMoney(float $amount, string $symbol = ''): string
+    {
+        $n = number_format($amount, 2, '.', ',');
+
+        return trim($symbol.' '.$n);
+    }
 }

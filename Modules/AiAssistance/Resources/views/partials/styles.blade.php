@@ -117,6 +117,27 @@
     flex: 1;
 }
 
+.ai-insights-voice .ai-insights-speak-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+.ai-insights-voice .ai-insights-speak-btn[data-speaking="1"] {
+    border-color: #dc2626;
+    color: #dc2626;
+}
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
 .ai-cards {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));

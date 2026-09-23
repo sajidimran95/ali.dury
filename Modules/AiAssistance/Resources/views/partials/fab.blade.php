@@ -158,6 +158,9 @@
             $('#ai-modal-backdrop').removeClass('open').css('display', '');
             $('body').removeClass('ai-modal-open');
             $('html').removeClass('ai-modal-open');
+            if (window.japsAiVoice) {
+                window.japsAiVoice.stop();
+            }
             // Clear any leftover full-screen blockers that left the UI “dead”
             $('.ai-modal-backdrop').removeClass('open');
         }
@@ -173,6 +176,9 @@
                 $('#ai-modal #ai-pane-' + tab).show();
                 if (tab === 'chat' && window.initAiChat) {
                     window.initAiChat();
+                }
+                if (tab !== 'insights' && window.japsAiVoice) {
+                    window.japsAiVoice.stop();
                 }
             });
             $('#ai-modal-close').off('click.aiClose').on('click.aiClose', closeAiModal);
@@ -201,5 +207,6 @@
             });
     })();
     </script>
+    @include('aiassistance::partials.voice_js')
     @include('aiassistance::partials.chat_js')
 @endif
