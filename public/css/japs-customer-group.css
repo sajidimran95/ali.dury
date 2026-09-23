@@ -94,29 +94,6 @@ body.zoho-theme .cg-page {
     flex: 1;
 }
 
-.cg-active-scope {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    margin: 0 0 14px;
-    padding: 8px 12px;
-    background: #ecfdf5;
-    border: 1px solid #a7f3d0;
-    border-radius: 8px;
-    font-size: 13px;
-    color: #065f46;
-}
-
-.cg-active-scope__label {
-    font-weight: 600;
-    opacity: 0.85;
-}
-
-.cg-active-scope strong {
-    font-weight: 700;
-    color: #047857;
-}
-
 .cg-scope-opt {
     display: inline-flex;
     align-items: center;

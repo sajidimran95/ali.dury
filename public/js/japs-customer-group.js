@@ -22,16 +22,6 @@ $(document).ready(function () {
         return $('input[name="cg_scope"]:checked').val() || 'all_inventory';
     }
 
-    function scopeLabel(scope) {
-        if (scope === 'category') {
-            return cfg.scopeCategory || 'Category wise';
-        }
-        if (scope === 'product') {
-            return cfg.scopeProduct || 'Product wise';
-        }
-        return cfg.scopeAll || 'All inventory';
-    }
-
     function syncApplyButton() {
         var scope = currentScope();
         var label = cfg.btnAll || 'Apply % to all inventory';
@@ -47,7 +37,6 @@ $(document).ready(function () {
         scope = scope || currentScope();
         $('.cg-scope-opt').removeClass('is-active');
         $('.cg-scope-opt').has('input[value="' + scope + '"]').addClass('is-active');
-        $('#cg_active_scope_text').text(scopeLabel(scope));
         syncApplyButton();
     }
 

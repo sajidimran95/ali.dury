@@ -2,7 +2,7 @@
 @section('title', $customer_group->name)
 
 @section('css')
-    <link rel="stylesheet" href="{{ asset('css/japs-customer-group.css?v=' . ($asset_v ?? '') . '&cg=9') }}">
+    <link rel="stylesheet" href="{{ asset('css/japs-customer-group.css?v=' . ($asset_v ?? '') . '&cg=10') }}">
 @endsection
 
 @section('content')
@@ -53,10 +53,6 @@
         <div class="cg-card">
             <h2>@lang('lang_v1.group_product_prices')</h2>
             <p class="cg-help">@lang('lang_v1.group_price_scope_help')</p>
-            <div class="cg-active-scope" id="cg_active_scope_banner">
-                <span class="cg-active-scope__label">@lang('lang_v1.active_scope'):</span>
-                <strong id="cg_active_scope_text">@lang('lang_v1.scope_all_inventory')</strong>
-            </div>
 
             @can('customer.update')
                 <div class="cg-apply-bar">
@@ -169,5 +165,5 @@ window.cgGroup = {
     btnProducts: @json(__('lang_v1.apply_to_products'))
 };
 </script>
-<script src="{{ asset('js/japs-customer-group.js?v=' . ($asset_v ?? '') . '&cg=16') }}"></script>
+<script src="{{ asset('js/japs-customer-group.js?v=' . ($asset_v ?? '') . '&cg=17') }}"></script>
 @endsection
