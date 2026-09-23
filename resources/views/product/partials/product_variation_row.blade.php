@@ -6,7 +6,7 @@
     @endphp
 @else
     @php
-        $default = null;
+        $default = 0;
         $class = '';
     @endphp
 @endif

@@ -35,7 +35,7 @@ $(document).ready(function() {
 
     //Start For product type single
 
-    //If purchase price exc tax is changed
+    //If purchase price exc tax is changed — update purchase inc tax only (do not touch selling price)
     $(document).on('change', 'input#single_dpp', function(e) {
         var purchase_exc_tax = __read_number($('input#single_dpp'));
         purchase_exc_tax = purchase_exc_tax == undefined ? 0 : purchase_exc_tax;
@@ -47,13 +47,6 @@ $(document).ready(function() {
 
         var purchase_inc_tax = __add_percent(purchase_exc_tax, tax_rate);
         __write_number($('input#single_dpp_inc_tax'), purchase_inc_tax);
-
-        var profit_percent = __read_number($('#profit_percent'));
-        var selling_price = __add_percent(purchase_exc_tax, profit_percent);
-        __write_number($('input#single_dsp'), selling_price);
-
-        var selling_price_inc_tax = __add_percent(selling_price, tax_rate);
-        __write_number($('input#single_dsp_inc_tax'), selling_price_inc_tax);
     });
 
     //If tax rate is changed
@@ -76,7 +69,7 @@ $(document).ready(function() {
         }
     });
 
-    //If purchase price inc tax is changed
+    //If purchase price inc tax is changed — update purchase exc tax only (do not touch selling price)
     $(document).on('change', 'input#single_dpp_inc_tax', function(e) {
         var purchase_inc_tax = __read_number($('input#single_dpp_inc_tax'));
         purchase_inc_tax = purchase_inc_tax == undefined ? 0 : purchase_inc_tax;
@@ -88,25 +81,14 @@ $(document).ready(function() {
 
         var purchase_exc_tax = __get_principle(purchase_inc_tax, tax_rate);
         __write_number($('input#single_dpp'), purchase_exc_tax);
-        $('input#single_dpp').change();
-
-        var profit_percent = __read_number($('#profit_percent'));
-        profit_percent = profit_percent == undefined ? 0 : profit_percent;
-        var selling_price = __add_percent(purchase_exc_tax, profit_percent);
-        __write_number($('input#single_dsp'), selling_price);
-
-        var selling_price_inc_tax = __add_percent(selling_price, tax_rate);
-        __write_number($('input#single_dsp_inc_tax'), selling_price_inc_tax);
     });
 
+    // Margin still calculates selling from purchase when user edits margin intentionally
     $(document).on('change', 'input#profit_percent', function(e) {
         var tax_rate = $('select#tax')
             .find(':selected')
             .data('rate');
         tax_rate = tax_rate == undefined ? 0 : tax_rate;
-
-        var purchase_inc_tax = __read_number($('input#single_dpp_inc_tax'));
-        purchase_inc_tax = purchase_inc_tax == undefined ? 0 : purchase_inc_tax;
 
         var purchase_exc_tax = __read_number($('input#single_dpp'));
         purchase_exc_tax = purchase_exc_tax == undefined ? 0 : purchase_exc_tax;
@@ -129,7 +111,7 @@ $(document).ready(function() {
         var purchase_exc_tax = __read_number($('input#single_dpp'));
         var profit_percent = __read_number($('input#profit_percent'));
 
-        //if purchase price not set
+        // Update margin display only — do not change purchase price
         if (purchase_exc_tax == 0) {
             profit_percent = 0;
         } else {
@@ -154,7 +136,7 @@ $(document).ready(function() {
         var purchase_exc_tax = __read_number($('input#single_dpp'));
         var profit_percent = __read_number($('input#profit_percent'));
 
-        //if purchase price not set
+        // Update margin display only — do not change purchase price
         if (purchase_exc_tax == 0) {
             profit_percent = 0;
         } else {
@@ -377,16 +359,9 @@ $(document).ready(function() {
 
         var purchase_inc_tax = __add_percent(purchase_exc_tax, tax_rate);
         __write_number(tr_obj.find('input.variable_dpp_inc_tax'), purchase_inc_tax);
-
-        var profit_percent = __read_number(tr_obj.find('input.variable_profit_percent'));
-        var selling_price = __add_percent(purchase_exc_tax, profit_percent);
-        __write_number(tr_obj.find('input.variable_dsp'), selling_price);
-
-        var selling_price_inc_tax = __add_percent(selling_price, tax_rate);
-        __write_number(tr_obj.find('input.variable_dsp_inc_tax'), selling_price_inc_tax);
     });
 
-    //If purchase price inc tax is changed
+    //If purchase price inc tax is changed — purchase only, do not touch selling
     $(document).on('change', 'input.variable_dpp_inc_tax', function(e) {
         var tr_obj = $(this).closest('tr');
 
@@ -400,13 +375,6 @@ $(document).ready(function() {
 
         var purchase_exc_tax = __get_principle(purchase_inc_tax, tax_rate);
         __write_number(tr_obj.find('input.variable_dpp'), purchase_exc_tax);
-
-        var profit_percent = __read_number(tr_obj.find('input.variable_profit_percent'));
-        var selling_price = __add_percent(purchase_exc_tax, profit_percent);
-        __write_number(tr_obj.find('input.variable_dsp'), selling_price);
-
-        var selling_price_inc_tax = __add_percent(selling_price, tax_rate);
-        __write_number(tr_obj.find('input.variable_dsp_inc_tax'), selling_price_inc_tax);
     });
 
     $(document).on('change', 'input.variable_profit_percent', function(e) {

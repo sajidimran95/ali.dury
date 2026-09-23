@@ -5,14 +5,12 @@
   @endphp
 @else
   @php
-    $default = null;
+    $default = 0;
     $class = '';
   @endphp
 @endif
 
-{{-- Carried over from JapsAI invoice extraction (quick-add flow), if present.
-     Only seeds the purchase-price columns — selling price stays derived from
-     profit_percent (product.js recalculates it on change) rather than guessing. --}}
+{{-- Carried over from JapsAI invoice extraction (quick-add flow), if present. --}}
 @php
   $dpp_default = ! empty($purchase_price) ? $purchase_price : $default;
 @endphp
@@ -32,13 +30,13 @@
             <div class="col-sm-6">
               {!! Form::label('single_dpp', trans('product.exc_of_tax') . ':*') !!}
 
-              {!! Form::text('single_dpp', $dpp_default, ['class' => 'form-control input-sm dpp input_number', 'placeholder' => __('product.exc_of_tax'), 'required']); !!}
+              {!! Form::text('single_dpp', $dpp_default !== null ? $dpp_default : 0, ['class' => 'form-control input-sm dpp input_number', 'placeholder' => __('product.exc_of_tax'), 'required']); !!}
             </div>
 
             <div class="col-sm-6">
               {!! Form::label('single_dpp_inc_tax', trans('product.inc_of_tax') . ':*') !!}
 
-              {!! Form::text('single_dpp_inc_tax', $dpp_default, ['class' => 'form-control input-sm dpp_inc_tax input_number', 'placeholder' => __('product.inc_of_tax'), 'required']); !!}
+              {!! Form::text('single_dpp_inc_tax', $dpp_default !== null ? $dpp_default : 0, ['class' => 'form-control input-sm dpp_inc_tax input_number', 'placeholder' => __('product.inc_of_tax'), 'required']); !!}
             </div>
           </td>
 
@@ -49,9 +47,9 @@
 
           <td>
             <label><span class="dsp_label">@lang('product.exc_of_tax')</span></label>
-            {!! Form::text('single_dsp', $default, ['class' => 'form-control input-sm dsp input_number', 'placeholder' => __('product.exc_of_tax'), 'id' => 'single_dsp', 'required']); !!}
+            {!! Form::text('single_dsp', $default !== null ? $default : 0, ['class' => 'form-control input-sm dsp input_number', 'placeholder' => __('product.exc_of_tax'), 'id' => 'single_dsp', 'required']); !!}
 
-            {!! Form::text('single_dsp_inc_tax', $default, ['class' => 'form-control input-sm hide input_number', 'placeholder' => __('product.inc_of_tax'), 'id' => 'single_dsp_inc_tax', 'required']); !!}
+            {!! Form::text('single_dsp_inc_tax', $default !== null ? $default : 0, ['class' => 'form-control input-sm hide input_number', 'placeholder' => __('product.inc_of_tax'), 'id' => 'single_dsp_inc_tax', 'required']); !!}
           </td>
           @if(empty($quick_add))
           <td>
