@@ -38,17 +38,21 @@
     <div class="font-extrabold">New Products</div>
     <a href="{{ route('sale.products') }}" class="sale-viewmore">View More &gt;</a>
 </div>
-<div class="sale-prod-grid mb-5">
+<div class="pp-grid mb-5">
     @forelse($newProducts as $p)
-        <a class="sale-prod-tile" href="{{ $p['variation_id'] ? route('sale.orders.create', ['add' => $p['variation_id']]) : route('sale.products') }}">
-            @if(!empty($p['has_image']))
-                <img src="{{ $p['image'] }}" alt="">
-            @else
-                <div class="sale-prod-tile__ph">No image</div>
-            @endif
-            <div class="sale-prod-tile__name">@if(!empty($p['sku']))[{{ $p['sku'] }}] @endif{{ $p['name'] }}</div>
-            <div class="sale-prod-tile__price">${{ number_format((float) $p['price'], 2) }}</div>
-            <div class="sale-prod-tile__stock">{{ !empty($p['in_stock']) ? 'In Stock' : 'Out Stock' }}</div>
+        <a class="pp-card {{ empty($p['in_stock']) ? 'is-oos' : '' }}" href="{{ $p['variation_id'] ? route('sale.orders.create', ['add' => $p['variation_id']]) : route('sale.products') }}">
+            <div class="pp-img">
+                @if(!empty($p['has_image']))
+                    <img src="{{ $p['image'] }}" alt="">
+                @endif
+            </div>
+            <div class="pp-body">
+                <div class="pp-name">{{ $p['name'] }}</div>
+                @if(!empty($p['sku']))<div class="pp-code">Code: {{ $p['sku'] }}</div>@endif
+                <div class="pp-price">${{ number_format((float) $p['price'], 2) }}</div>
+                @if(empty($p['in_stock']))<div class="pp-oos">OUT OF STOCK</div>@endif
+            </div>
+        </a>
     @empty
         <div class="text-sm text-slate-400 col-span-2">No products</div>
     @endforelse
@@ -58,17 +62,20 @@
     <div class="font-extrabold">Top Sellers</div>
     <a href="{{ route('sale.products') }}" class="sale-viewmore">View More &gt;</a>
 </div>
-<div class="sale-prod-grid">
+<div class="pp-grid">
     @forelse($topProducts as $p)
-        <a class="sale-prod-tile" href="{{ !empty($p->variation_id) ? route('sale.orders.create', ['add' => $p->variation_id]) : route('sale.products') }}">
-            @if(!empty($p->has_image))
-                <img src="{{ $p->image_url }}" alt="">
-            @else
-                <div class="sale-prod-tile__ph">No image</div>
-            @endif
-            <div class="sale-prod-tile__name">@if(!empty($p->sku))[{{ $p->sku }}] @endif{{ $p->name }}</div>
-            <div class="sale-prod-tile__price">${{ number_format((float) $p->price, 2) }}</div>
-            <div class="sale-prod-tile__stock">{{ !empty($p->in_stock) ? 'In Stock' : 'Out Stock' }}</div>
+        <a class="pp-card {{ empty($p->in_stock) ? 'is-oos' : '' }}" href="{{ !empty($p->variation_id) ? route('sale.orders.create', ['add' => $p->variation_id]) : route('sale.products') }}">
+            <div class="pp-img">
+                @if(!empty($p->has_image))
+                    <img src="{{ $p->image_url }}" alt="">
+                @endif
+            </div>
+            <div class="pp-body">
+                <div class="pp-name">{{ $p->name }}</div>
+                @if(!empty($p->sku))<div class="pp-code">Code: {{ $p->sku }}</div>@endif
+                <div class="pp-price">${{ number_format((float) $p->price, 2) }}</div>
+                @if(empty($p->in_stock))<div class="pp-oos">OUT OF STOCK</div>@endif
+            </div>
         </a>
     @empty
         <div class="text-sm text-slate-400 col-span-2">No sales yet</div>

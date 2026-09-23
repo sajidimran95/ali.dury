@@ -2,6 +2,78 @@
 @section('title', !empty($edit_order) ? 'Edit order' : 'Create order')
 @section('header', !empty($edit_order) ? 'Edit order' : 'Create order')
 @section('content')
+<style>
+body.sale-page-create { background: #F6F5F1; }
+body.sale-building-order .sale-order-build,
+body.sale-building-order .sale-order-build__body,
+body.sale-building-order .sale-main-app,
+body.sale-building-order .sale-page { background: #F6F5F1 !important; }
+.pp-topbar {
+    background: #0E3F34; color: #fff;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 20px; flex-shrink: 0;
+}
+.pp-topbar__left, .pp-topbar__right { display: flex; align-items: center; gap: 12px; }
+.pp-sync {
+    width: 32px; height: 32px; border-radius: 50%; border: 0;
+    background: rgba(255,255,255,.12); color: #fff; font-size: 15px; cursor: pointer;
+}
+.pp-biz { font-weight: 800; font-size: 16px; }
+.pp-bizsub { font-size: 10.5px; color: rgba(255,255,255,.6); font-weight: 500; }
+.pp-sales { font-size: 12.5px; font-weight: 600; }
+.pp-avatar {
+    width: 32px; height: 32px; border-radius: 50%; background: #D98A2B; color: #0E3F34;
+    display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 12px;
+}
+body.sale-page-create .pp-toolbar { padding: 0; gap: 8px; }
+body.sale-page-create .pp-search {
+    flex: 1; display: flex; align-items: center; gap: 8px;
+    background: #fff; border: 1px solid #E3E1DA; border-radius: 10px; padding: 9px 13px; min-width: 0;
+}
+body.sale-page-create .pp-search input {
+    border: 0; outline: 0; background: transparent; flex: 1; min-width: 0; font-size: 13.5px; color: #17221E;
+}
+body.sale-page-create .pp-icon {
+    width: 38px; height: 38px; border-radius: 10px; border: 1px solid #E3E1DA; background: #fff;
+    display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0;
+}
+body.sale-page-create .pp-icon.on { background: #175C4C; border-color: #175C4C; color: #fff; }
+body.sale-page-create .pp-sort {
+    display: flex; align-items: center; gap: 6px; height: 38px; padding: 0 12px;
+    border-radius: 10px; border: 1px solid #E3E1DA; background: #fff;
+    font-size: 12.5px; font-weight: 600; color: #17221E; cursor: pointer;
+}
+body.sale-page-create .sale-ois-chips.pp-chips {
+    display: flex; gap: 8px; overflow-x: auto; flex-shrink: 0; min-width: 0; width: 100%;
+    padding: 2px 0 8px; scrollbar-width: thin; scrollbar-color: #175C4C #E3E1DA;
+}
+body.sale-page-create .sale-ois-chip {
+    background: #fff; border: 1px solid #E3E1DA; color: #56645F; border-radius: 999px;
+    padding: 6px 13px; font-size: 12px; font-weight: 600; flex-shrink: 0;
+}
+body.sale-page-create .sale-ois-chip.is-on { background: #0E3F34; border-color: #0E3F34; color: #fff; }
+body.sale-page-create .pp-cart {
+    display: flex; align-items: center; justify-content: space-between;
+    background: #0E3F34; color: #fff; border: 0; border-radius: 12px;
+    padding: 11px 15px; width: 100%; cursor: pointer; text-align: left;
+}
+body.sale-page-create .pp-cart.is-off { opacity: .55; }
+body.sale-page-create .pp-cart-left { font-size: 12.5px; font-weight: 700; }
+body.sale-page-create .pp-cart-left span { color: rgba(255,255,255,.65); font-weight: 500; }
+body.sale-page-create .pp-cart-total { font-size: 15px; font-weight: 800; font-family: ui-monospace, monospace; }
+body.sale-page-create .pp-cart-go { display: flex; align-items: center; gap: 10px; }
+body.sale-page-create .pp-cart-cta {
+    background: #fff; color: #0E3F34; border-radius: 999px;
+    padding: 6px 12px; font-size: 12.5px; font-weight: 800;
+}
+body.sale-page-create #goShippingBtn { flex-shrink: 0; width: 100% !important; }
+body.sale-page-create .sale-cart-lines { background: transparent; }
+body.sale-page-create .sale-cart-lines.is-view-list { grid-template-columns: 1fr !important; }
+body.sale-page-create .sale-order-build__body { padding: 12px 20px 10px; gap: 8px; }
+@media (max-width: 720px) {
+    .pp-sales, .pp-sort-label { display: none; }
+}
+</style>
 <form method="POST" action="{{ !empty($edit_order) ? route('sale.orders.update', $edit_order->id) : route('sale.orders.store') }}" id="saleOrderForm" class="sale-create-form">
     @csrf
     @if(!empty($edit_order))
@@ -16,51 +88,41 @@
 
     {{-- Customer is chosen from Customers → Create Order --}}
     <div id="stepCart" class="sale-order-build">
-        <div class="sale-order-build__bar">
-            <button type="button" id="backToCustomerBtn" class="sale-order-build__iconbtn" aria-label="Back">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>
-            </button>
-            <div class="sale-order-build__titles">
-                <div class="sale-ois-h2">Order Products</div>
+        <div class="pp-topbar">
+            <div class="pp-topbar__left">
+                <button type="button" id="backToCustomerBtn" class="pp-sync" aria-label="Back">&#8635;</button>
+                <div>
+                    <div class="pp-biz">{{ session('business.name') }}</div>
+                    <div class="pp-bizsub">Synced</div>
+                </div>
             </div>
-            <span class="hidden" id="orderCustomerName">{{ $default_customer['text'] ?? ($edit_order->contact->supplier_business_name ?? $edit_order->contact->name ?? '') }}</span>
-            <span class="sale-order-cart-ico" aria-hidden="true">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M3 4h2l2.4 11.2a2 2 0 0 0 2 1.6h7.4a2 2 0 0 0 2-1.5L21 8H7"/></svg>
+            <div class="pp-topbar__right">
+                <span class="hidden" id="orderCustomerName">{{ $default_customer['text'] ?? ($edit_order->contact->supplier_business_name ?? $edit_order->contact->name ?? '') }}</span>
+                <span class="pp-sales">{{ session('user.first_name') }}</span>
+                <span class="pp-avatar">{{ strtoupper(mb_substr((string) session('user.first_name'), 0, 1)) }}</span>
                 <span class="sale-order-cart-badge" id="cartBadge" hidden>0</span>
-            </span>
-            <button type="button" class="sale-order-build__iconbtn" id="orderMoreBtn" aria-label="More">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg>
-            </button>
-        </div>
-        <div class="sale-ois-idbar" aria-label="Session">
-            <span class="sale-ois-idbar__biz">{{ session('business.name') }}</span>
-            <span class="sale-ois-idbar__dot" aria-hidden="true"></span>
-            <span class="sale-ois-idbar__sync">Synced</span>
-            <span class="sale-ois-idbar__av">{{ strtoupper(mb_substr((string) session('user.first_name'), 0, 1)) }}</span>
-            <span class="sale-ois-idbar__rep">{{ session('user.first_name') }}</span>
+                <button type="button" class="hidden" id="orderMoreBtn" aria-label="More"></button>
+            </div>
         </div>
 
         <div class="sale-order-build__body">
             <input type="hidden" name="shipping_method" id="shipping_method" value="{{ old('shipping_method', $edit_order->shipping_method ?? 'Delivery') }}">
-            <div class="sale-ois-toolbar">
-                <button type="button" class="sale-ois-toolbar__ico" id="orderViewBtn" aria-label="View" onclick="return saleOpenSheet('orderViewSheet', event)">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-                </button>
-                <div class="sale-ois-search">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="#e53935" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-                    <input type="search" id="productSearch" placeholder="Search" autocomplete="off">
+            <div class="sale-ois-toolbar pp-toolbar">
+                <div class="sale-ois-search pp-search">
+                    <span>&#128269;</span>
+                    <input type="search" id="productSearch" placeholder="Search products or scan barcode" autocomplete="off">
                 </div>
-                <button type="button" class="sale-ois-toolbar__ico" id="orderSortBtn" aria-label="Sort" onclick="return saleOpenSheet('orderSortSheet', event)">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 7l4-4 4 4M8 17l4 4 4-4M12 3v18"/></svg>
-                </button>
-                <button type="button" class="sale-ois-toolbar__ico" id="orderFilterBtn" aria-label="Filter" onclick="return saleOpenSheet('orderFilterSheet', event)">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
-                </button>
+                <button type="button" class="pp-icon" id="orderScanBtn" aria-label="Scan barcode">&#9638;</button>
+                <button type="button" class="pp-icon on" id="orderGridBtn" aria-label="Grid view">&#9638;&#9638;</button>
+                <button type="button" class="pp-icon" id="orderListBtn" aria-label="List view">&#9776;</button>
+                <button type="button" class="pp-sort" id="orderSortBtn" aria-label="Sort" onclick="return saleOpenSheet('orderSortSheet', event)"><span class="pp-sort-label">Sort</span> &#8645;</button>
+                <button type="button" class="hidden" id="orderViewBtn" aria-label="View"></button>
+                <button type="button" class="hidden" id="orderFilterBtn" aria-label="Filter"></button>
             </div>
-            <div class="sale-ois-chips" id="orderCatChips" aria-label="Categories">
-                <button type="button" class="sale-ois-chip is-on" data-cat="">All Items</button>
+            <div class="sale-ois-chips pp-chips" id="orderCatChips" aria-label="Categories">
+                <button type="button" class="sale-ois-chip pp-chip is-on on" data-cat="">All Items</button>
             </div>
-            <div id="orderResultCount" class="sale-ois-results">Results: 0</div>
+            <div id="orderResultCount" class="hidden">Results: 0</div>
             <div id="productResults" class="sale-prod-results hidden"></div>
             <button type="button" id="skuModeScan" class="hidden" tabindex="-1"></button>
             <input type="checkbox" id="useLastQtyToggle" class="hidden" tabindex="-1">
@@ -76,13 +138,13 @@
                 <div id="cartLines" class="sale-cart-lines is-view-item"></div>
             </div>
 
-            <div class="sale-order-build__total">
-                <div>
-                    <div class="sale-order-build__total-label" id="cartCountLabel">0 items · 0 products</div>
-                    <strong id="cartTotal" class="tabular-nums">$0.00</strong>
+            <button type="button" class="pp-cart" id="goShippingBtn">
+                <div class="pp-cart-left" id="cartCountLabel">0 items <span>· 0 products</span></div>
+                <div class="pp-cart-go">
+                    <span class="pp-cart-total" id="cartTotal">$0.00</span>
+                    <span class="pp-cart-cta">Check out</span>
                 </div>
-                <button type="button" class="sale-order-build__checkout is-off" id="goShippingBtn">Check Out</button>
-            </div>
+            </button>
         </div>
 
         <input type="hidden" name="payment_type" id="payment_type" value="{{ old('payment_type', (!empty($edit_order) && ($edit_order->prefer_payment_method ?? '') === 'credit_sale') ? 'due' : 'cash') }}">
@@ -389,6 +451,17 @@
         }
     }
     window.applyProductView = applyProductView;
+    document.getElementById('orderGridBtn')?.addEventListener('click', () => {
+        applyProductView('item', false);
+        document.getElementById('orderGridBtn').classList.add('on');
+        document.getElementById('orderListBtn').classList.remove('on');
+    });
+    document.getElementById('orderListBtn')?.addEventListener('click', () => {
+        applyProductView('list', false);
+        document.getElementById('orderListBtn').classList.add('on');
+        document.getElementById('orderGridBtn').classList.remove('on');
+    });
+    document.getElementById('orderScanBtn')?.addEventListener('click', () => startSaleScan());
     document.getElementById('orderViewBtn')?.addEventListener('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
@@ -1246,42 +1319,35 @@
             const inStock = !isOutOfStock(line);
             const oos = !inStock;
             const last = lastBuyMap[String(line.variation_id)] || null;
-            const lastHtml = last
-                ? `<button type="button" class="sale-ois-card__hist" data-hist="${line.variation_id}" data-hist-name="${escapeHtml(line.name)}">Last ordered: ${money(last.last_price || last.price || 0)} × ${fmtQty(last.last_qty || last.quantity || 0)}</button>`
-                : '';
             const thumb = line.has_image && line.image
                 ? `<img src="${escapeHtml(line.image)}" alt="">`
                 : `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.6"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m21 15-4.5-4.5L9 18"/></svg>`;
-            const catName = (line.category_name || (line._browse && line._browse.category_name) || '').toString().toUpperCase();
             const el = document.createElement('div');
-            el.className = 'sale-ois-card' + (qty > 0 ? ' is-active' : '') + (oos ? ' is-oos' : '');
-            const stockHtml = oos
-                ? `<span class="sale-ois-card__stock out">OUT OF STOCK</span>`
-                : `<span class="sale-ois-card__stock in">${line.stock != null ? ('In Stock: ' + line.stock) : 'In Stock'}</span>`;
-            const qtyDisabled = oos ? 'disabled' : '';
+            el.className = 'pp-card' + (oos ? ' is-oos' : '');
             const toggle = packToggleHtml(units, line.sub_unit_id, line.variation_id, line.base_price);
             const unitLabel = (line.unit_name || '').trim();
+            const piece = Number(line.base_price || unitPrice) || 0;
+            const lastBtn = last
+                ? `<button type="button" class="pp-last" data-hist="${line.variation_id}" data-hist-name="${escapeHtml(line.name)}">Last ordered: <b>${escapeHtml(String(last.last_date || ''))}</b> ›</button>`
+                : `<div class="pp-last">No prior orders</div>`;
             el.innerHTML = `
-                <div class="sale-ois-card__head">
-                    <div class="sale-ois-card__name">${highlightName(line.name)}</div>
-                </div>
-                <div class="sale-ois-card__photo">${thumb}${stockHtml}</div>
-                <div class="sale-ois-card__body">
-                    <div class="sale-ois-card__left">
-                        <div class="sale-ois-card__price">Price: $ ${Number(unitPrice).toFixed(2)}${unitLabel ? ' / ' + escapeHtml(unitLabel) : ''}</div>
-                        <div class="sale-ois-card__total">Total: ${money(lineTot)}</div>
+                <div class="pp-img">${thumb}</div>
+                <div class="pp-body">
+                    <div class="pp-name">${highlightName(line.name)}</div>
+                    ${unitLabel ? `<div class="pp-pack">${escapeHtml(unitLabel)}</div>` : ''}
+                    ${line.sku ? `<div class="pp-code">Code: ${escapeHtml(line.sku)}</div>` : ''}
+                    ${oos ? `<div class="pp-oos">OUT OF STOCK</div>` : `
+                        <div class="pp-price-row"><div class="pp-price">${money(unitPrice)}</div><div class="pp-unit-price">${money(piece)}/pc</div></div>
+                        ${lastBtn}
                         ${toggle}
-                        ${lastHtml}
-                        ${line.sku ? `<div class="sale-ois-card__meta"><span class="sale-ois-card__code">Code:</span> ${escapeHtml(line.sku)}</div>` : ''}
-                    </div>
-                    <div class="sale-ois-card__right">
+                    `}
+                    <div class="pp-bottom">
                         <div class="sale-ois-qty">
                             <button type="button" class="is-minus" ${oos || cartIdx < 0 ? 'disabled' : 'data-dec="'+cartIdx+'"'}>−</button>
                             <input type="text" value="${qty}" ${oos ? 'disabled' : (cartIdx >= 0 ? 'data-qty="'+cartIdx+'"' : '')} class="sale-qty-input" autocomplete="off">
                             <button type="button" class="is-plus" ${oos ? 'disabled' : (cartIdx >= 0 ? 'data-inc="'+cartIdx+'"' : 'data-add-b="'+idx+'"')}>+</button>
                         </div>
-                        ${stockHtml}
-                        ${catName ? `<div class="sale-ois-card__cat">${escapeHtml(catName)}</div>` : ''}
+                        <div class="pp-total${qty ? '' : ' zero'}">${money(lineTot)}</div>
                     </div>
                 </div>`;
             cartLines.appendChild(el);
@@ -1292,7 +1358,7 @@
         if (countLabel) {
             const itemN = cart.reduce((s, l) => s + Number(l.quantity || 0), 0);
             const prodN = new Set(cart.filter((l) => Number(l.quantity) > 0).map((l) => String(l.variation_id))).size;
-            countLabel.textContent = fmtQty(itemN) + ' items · ' + prodN + ' products';
+            countLabel.innerHTML = fmtQty(itemN) + ' items <span>· ' + prodN + ' products</span>';
         }
         const checkoutBtn = document.getElementById('goShippingBtn');
         if (checkoutBtn) checkoutBtn.classList.toggle('is-off', total <= 0);
@@ -1383,12 +1449,14 @@
             productResults.innerHTML = '';
             return;
         }
+        productResults.classList.add('pp-grid');
         productResults.innerHTML = '';
         rows.forEach(r => {
             const a = document.createElement('button');
             a.type = 'button';
-            a.className = 'product-pick w-full text-left px-3 py-2.5 text-sm border-b border-slate-100';
-            a.innerHTML = `<div class="font-semibold">${escapeHtml(r.name)}</div><div class="text-xs text-slate-500">${priceLine(r)} · Stock ${r.stock}</div>`;
+            a.className = 'pp-card product-pick';
+            const thumb = r.has_image ? `<img src="${escapeHtml(r.image)}" alt="">` : '';
+            a.innerHTML = `<div class="pp-img">${thumb}</div><div class="pp-body"><div class="pp-name">${escapeHtml(r.name)}</div>${r.sku ? `<div class="pp-code">Code: ${escapeHtml(r.sku)}</div>` : ''}<div class="pp-price">${priceLine(r)}</div></div>`;
             a.onclick = () => {
                 addToCart(r);
                 productSearch.value = '';
@@ -1713,6 +1781,7 @@
         const state = catalogStack[catalogStack.length - 1];
         catalogTitle.textContent = state.title;
         catalogBackBtn.classList.toggle('hidden', catalogStack.length <= 1);
+        catalogBody.classList.remove('pp-grid');
         catalogBody.innerHTML = '<div class="px-3 py-4 text-sm text-slate-400">Loading…</div>';
 
         const tree = await ensureCatalogTree();
@@ -1778,12 +1847,14 @@
             return;
         }
         catalogBody.innerHTML = '';
+        catalogBody.classList.add('pp-grid');
         rows.forEach(r => {
             const b = document.createElement('button');
             b.type = 'button';
-            b.className = 'sale-catalog__row sale-catalog__prod';
-            const qty = cartQty(r.variation_id);
-            b.innerHTML = `<div class="min-w-0"><div class="font-bold text-sm truncate">${escapeHtml(r.name)}</div><div class="text-xs text-slate-500">${priceLine(r)} · Stock ${r.stock}</div></div><span class="sale-catalog__add">${qty || '+'}</span>`;
+            const oos = Number(r.enable_stock) === 1 && Number(r.stock) <= 0;
+            b.className = 'pp-card' + (oos ? ' is-oos' : '');
+            const thumb = r.has_image ? `<img src="${escapeHtml(r.image)}" alt="">` : '';
+            b.innerHTML = `<div class="pp-img">${thumb}</div><div class="pp-body"><div class="pp-name">${escapeHtml(r.name)}</div>${r.sku ? `<div class="pp-code">Code: ${escapeHtml(r.sku)}</div>` : ''}${oos ? '<div class="pp-oos">OUT OF STOCK</div>' : `<div class="pp-price">${priceLine(r)}</div>`}</div>`;
             b.onclick = (e) => {
                 e.preventDefault();
                 e.stopPropagation();

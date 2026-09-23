@@ -2928,6 +2928,65 @@
                 margin-top: 16px;
             }
         }
+        .pp-grid,
+        .sale-cart-lines.is-view-item,
+        .sale-cart-lines.is-view-details,
+        .sale-cart-lines.is-view-medium,
+        .sale-cart-lines.is-view-large,
+        #catalogBody.pp-grid,
+        .sale-prod-grid.pp-grid {
+            display: grid !important;
+            grid-template-columns: 1fr 1fr !important;
+            gap: 12px !important;
+        }
+        .pp-card {
+            background: #fff; border: 1px solid #E3E1DA; border-radius: 14px;
+            padding: 13px; display: flex !important; flex-direction: row-reverse; gap: 12px;
+            text-decoration: none; color: inherit; text-align: left; min-width: 0;
+        }
+        .pp-card.is-oos { opacity: .55; }
+        .pp-img {
+            width: 118px; height: 118px; border-radius: 10px; background: #FBEBD6;
+            flex-shrink: 0; display: flex; align-items: center; justify-content: center; overflow: hidden;
+        }
+        .pp-img img { width: 100%; height: 100%; object-fit: cover; }
+        .pp-body { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+        .pp-name { font-size: 13.5px; font-weight: 700; color: #17221E; line-height: 1.25; }
+        .pp-pack, .pp-code { font-size: 11px; color: #56645F; margin-top: 2px; }
+        .pp-code { font-family: ui-monospace, monospace; font-size: 10px; margin-top: 5px; }
+        .pp-price-row { margin-top: 7px; display: flex; align-items: baseline; gap: 7px; flex-wrap: wrap; }
+        .pp-price { font-size: 15px; font-weight: 800; color: #0E3F34; }
+        .pp-unit-price { font-size: 10.5px; color: #56645F; font-family: ui-monospace, monospace; }
+        .pp-last, .sale-ois-card__hist.pp-last {
+            font-size: 10.5px; color: #8C9690; margin-top: 4px; background: none; border: 0;
+            padding: 0; text-align: left; font-family: inherit; cursor: pointer;
+        }
+        .pp-oos { font-size: 10px; font-weight: 700; color: #B4432C; background: #FBEAE5; padding: 2px 7px; border-radius: 5px; align-self: flex-start; margin-top: 6px; }
+        .pp-bottom { margin-top: auto; display: flex; align-items: center; justify-content: space-between; padding-top: 9px; gap: 8px; }
+        .pp-card .sale-ois-qty, .pp-step {
+            display: flex; align-items: center; border: 1px solid #E3E1DA; border-radius: 8px; overflow: hidden;
+        }
+        .pp-card .sale-ois-qty button, .pp-step button {
+            width: 27px; height: 27px; border: 0; background: #F6F5F1; font-size: 14px; font-weight: 700; color: #0E3F34;
+        }
+        .pp-card .sale-qty-input, .pp-qty {
+            width: 30px; text-align: center; border: 0; background: #fff; font-weight: 700; font-size: 12.5px;
+        }
+        .pp-total { font-size: 13px; font-weight: 800; font-family: ui-monospace, monospace; }
+        .pp-total.zero { color: #B7BEB9; }
+        .pp-card .sale-ois-unitbtns { background: transparent; border: 1px solid #E3E1DA; border-radius: 8px; padding: 0; }
+        .pp-card .sale-ois-unitbtn { background: #F6F5F1; color: #56645F; border-radius: 0; min-height: 0; padding: 5px 10px; }
+        .pp-card .sale-ois-unitbtn.is-on { background: #175C4C; color: #fff; }
+        .pp-card .sale-ois-unitbtn__price { display: none; }
+        .sale-ois-chips { scrollbar-width: thin; scrollbar-color: #175C4C #E3E1DA; }
+        .sale-ois-chip.is-on { background: #0E3F34; border-color: #0E3F34; color: #fff; }
+        .sale-prod-results.pp-grid { position: static; box-shadow: none; max-height: none; }
+        @media (max-width: 720px) {
+            .pp-card { flex-direction: column; padding: 9px; gap: 8px; }
+            .pp-img { width: 100%; height: 64px; }
+            .pp-name { font-size: 11.5px; }
+            .pp-price { font-size: 12.5px; }
+        }
     </style>
     @stack('head')
 </head>
