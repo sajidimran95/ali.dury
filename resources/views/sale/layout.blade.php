@@ -932,7 +932,14 @@
                 margin-bottom: 0;
                 width: 100% !important;
             }
-            body.sale-page-create #stepCart.sale-order-build #goShippingBtn {
+            body.sale-page-create #stepCart.sale-order-build #goShippingBtn.pp-cart {
+                width: 100% !important;
+                min-width: 0 !important;
+                margin-top: 0 !important;
+                margin-bottom: 0 !important;
+                flex: 0 0 auto;
+            }
+            body.sale-page-create #stepCart.sale-order-build #goShippingBtn:not(.pp-cart) {
                 width: auto !important;
                 min-width: 140px;
                 margin-top: 0 !important;
@@ -1554,7 +1561,15 @@
         .sale-checkout__lines { display: flex; flex-direction: column; gap: 10px; }
         .sale-checkout__line { display: flex; justify-content: space-between; gap: 10px; font-size: 14px; font-weight: 700; }
         .sale-checkout__line span { color: #94a3b8; font-size: 12px; font-weight: 600; display: block; }
-        .sale-checkout__line em { font-style: normal; color: #e53935; font-weight: 700; }
+        .sale-checkout__line em { font-style: normal; color: #e53935; font-weight: 700; display: block; font-size: 11px; margin-top: 2px; }
+        .sale-checkout__price { text-align: right; }
+        .sale-checkout__list { display: block; font-size: 11px; color: #94a3b8; text-decoration: line-through; font-weight: 600; }
+        .sale-checkout__totals { margin-top: 12px; padding-top: 12px; border-top: 1px solid #e2e8f0; display: flex; flex-direction: column; gap: 6px; }
+        .sale-checkout__tot { display: flex; justify-content: space-between; gap: 10px; font-size: 13px; font-weight: 700; color: #64748b; }
+        .sale-checkout__tot strong { color: #0f172a; font-variant-numeric: tabular-nums; }
+        .sale-checkout__tot.is-disc strong { color: #e53935; }
+        .sale-checkout__tot.is-total { font-size: 15px; color: #0f172a; padding-top: 4px; }
+        .sale-checkout__tot.is-total strong { color: #0E3F34; }
         .sale-checkout .sale-order-build__total {
             background: #fff;
             box-shadow: 0 -8px 24px rgba(15,23,42,.06);

@@ -53,18 +53,23 @@ body.sale-page-create .sale-ois-chip {
 }
 body.sale-page-create .sale-ois-chip.is-on { background: #0E3F34; border-color: #0E3F34; color: #fff; }
 body.sale-page-create .pp-cart {
-    display: flex; align-items: center; justify-content: space-between;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
     background: #0E3F34; color: #fff; border: 0; border-radius: 12px;
-    padding: 11px 15px; width: 100%; cursor: pointer; text-align: left;
+    padding: 11px 15px; width: 100% !important; min-width: 0 !important;
+    cursor: pointer; text-align: left; box-sizing: border-box;
 }
 body.sale-page-create .pp-cart.is-off { opacity: .55; }
-body.sale-page-create .pp-cart-left { font-size: 12.5px; font-weight: 700; }
+body.sale-page-create .pp-cart-left { font-size: 12.5px; font-weight: 700; flex: 1 1 auto; min-width: 0; }
 body.sale-page-create .pp-cart-left span { color: rgba(255,255,255,.65); font-weight: 500; }
-body.sale-page-create .pp-cart-total { font-size: 15px; font-weight: 800; font-family: ui-monospace, monospace; }
-body.sale-page-create .pp-cart-go { display: flex; align-items: center; gap: 10px; }
+body.sale-page-create .pp-cart-total { font-size: 15px; font-weight: 800; font-family: ui-monospace, monospace; color: #fff; }
+body.sale-page-create .pp-cart-go { display: flex !important; align-items: center; gap: 10px; flex: 0 0 auto; }
 body.sale-page-create .pp-cart-cta {
     background: #fff; color: #0E3F34; border-radius: 999px;
     padding: 6px 12px; font-size: 12.5px; font-weight: 800;
+    white-space: nowrap;
 }
 body.sale-page-create .pp-price-input {
     width: 88px; max-width: 100%;
@@ -72,7 +77,7 @@ body.sale-page-create .pp-price-input {
     padding: 4px 8px; font-size: 15px; font-weight: 800; color: #0E3F34;
     background: #F3FAF7; font-family: ui-monospace, monospace;
 }
-body.sale-page-create #goShippingBtn { flex-shrink: 0; width: 100% !important; }
+body.sale-page-create #goShippingBtn.pp-cart { flex-shrink: 0; width: 100% !important; min-width: 0 !important; }
 body.sale-page-create .sale-cart-lines { background: transparent; }
 body.sale-page-create .sale-cart-lines.is-view-list { grid-template-columns: 1fr !important; }
 body.sale-page-create .sale-order-build__body { padding: 12px 20px 10px; gap: 8px; }
@@ -106,7 +111,6 @@ body.sale-page-create .sale-order-build__body { padding: 12px 20px 10px; gap: 8p
                 <span class="hidden" id="orderCustomerName">{{ $default_customer['text'] ?? ($edit_order->contact->supplier_business_name ?? $edit_order->contact->name ?? '') }}</span>
                 <span class="pp-sales">{{ session('user.first_name') }}</span>
                 <span class="pp-avatar">{{ strtoupper(mb_substr((string) session('user.first_name'), 0, 1)) }}</span>
-                <span class="sale-order-cart-badge" id="cartBadge" hidden>0</span>
                 <button type="button" class="hidden" id="orderMoreBtn" aria-label="More"></button>
             </div>
         </div>
@@ -195,6 +199,11 @@ body.sale-page-create .sale-order-build__body { padding: 12px 20px 10px; gap: 8p
             <div class="sale-co-card">
                 <div class="sale-checkout__lines-title">Order summary</div>
                 <div id="coLines" class="sale-checkout__lines"></div>
+                <div id="coTotals" class="sale-checkout__totals" hidden>
+                    <div class="sale-checkout__tot"><span>Subtotal</span><strong id="coSubtotal">$0.00</strong></div>
+                    <div class="sale-checkout__tot is-disc" id="coDiscRow" hidden><span>Item discount</span><strong id="coDisc">−$0.00</strong></div>
+                    <div class="sale-checkout__tot is-total"><span>Total</span><strong id="coTotalInline">$0.00</strong></div>
+                </div>
             </div>
             <div class="sale-co-card sale-checkout__fields">
                 <label>Shipping address
@@ -753,6 +762,7 @@ body.sale-page-create .sale-order-build__body { padding: 12px 20px 10px; gap: 8p
     let skipPersist = true;
     const DRAFT_KEY = 'sale_draft_cart';
     const serverDraft = @json($order_draft ?? null);
+    let liveServerDraft = serverDraft;
     const draftSaveUrl = @json(route('sale.api.order_draft'));
     const draftClearUrl = @json(route('sale.api.order_draft.clear'));
     const savedOrdersUrl = @json(route('sale.saved_orders'));
@@ -776,12 +786,14 @@ body.sale-page-create .sale-order-build__body { padding: 12px 20px 10px; gap: 8p
             const raw = JSON.stringify(draftPayload());
             localStorage.setItem(DRAFT_KEY, raw);
             sessionStorage.setItem(DRAFT_KEY, raw);
+            sessionStorage.removeItem('sale_cart_cleared');
         } catch (e) {}
     }
     function clearDraftStorage() {
         try {
             localStorage.removeItem(DRAFT_KEY);
             sessionStorage.removeItem(DRAFT_KEY);
+            sessionStorage.setItem('sale_cart_cleared', String(contactId && contactId.value ? contactId.value : '1'));
         } catch (e) {}
     }
     function applyDraft(data) {
@@ -796,7 +808,17 @@ body.sale-page-create .sale-order-build__body { padding: 12px 20px 10px; gap: 8p
     }
     function restoreCart() {
         if (typeof isEdit !== 'undefined' && isEdit) return;
-        if (applyDraft(serverDraft)) return;
+        try {
+            const cleared = sessionStorage.getItem('sale_cart_cleared');
+            if (cleared && (!contactId.value || cleared === '1' || String(cleared) === String(contactId.value))) {
+                liveServerDraft = null;
+                clearDraftStorage();
+                // Keep cleared marker until a new item is added / draft saved
+                sessionStorage.setItem('sale_cart_cleared', String(contactId && contactId.value ? contactId.value : '1'));
+                return;
+            }
+        } catch (e) {}
+        if (applyDraft(liveServerDraft)) return;
         try {
             const raw = localStorage.getItem(DRAFT_KEY) || sessionStorage.getItem(DRAFT_KEY);
             if (!raw) return;
@@ -817,12 +839,18 @@ body.sale-page-create .sale-order-build__body { padding: 12px 20px 10px; gap: 8p
                 credentials: 'same-origin',
                 body: JSON.stringify(draftPayload()),
             });
+            try { sessionStorage.removeItem('sale_cart_cleared'); } catch (e) {}
         } catch (e) {}
     }
     async function clearDraftServer() {
         clearDraftStorage();
+        liveServerDraft = null;
         try {
-            await fetch(draftClearUrl, {
+            let url = draftClearUrl;
+            if (contactId && contactId.value) {
+                url += (url.indexOf('?') >= 0 ? '&' : '?') + 'contact_id=' + encodeURIComponent(contactId.value);
+            }
+            await fetch(url, {
                 method: 'DELETE',
                 headers: {
                     'Accept': 'application/json',
@@ -886,6 +914,12 @@ body.sale-page-create .sale-order-build__body { padding: 12px 20px 10px; gap: 8p
             if (r.transaction_sell_lines_id && !cart[existingIdx].transaction_sell_lines_id) {
                 cart[existingIdx].transaction_sell_lines_id = r.transaction_sell_lines_id;
             }
+            if (cart[existingIdx].catalog_base_price == null) {
+                cart[existingIdx].catalog_base_price = (r.catalog_base_price != null ? Number(r.catalog_base_price) : meta.basePrice);
+            }
+            if (cart[existingIdx].list_unit_price == null) {
+                cart[existingIdx].list_unit_price = (r.list_unit_price != null ? Number(r.list_unit_price) : Number(cart[existingIdx].unit_price) || meta.unitPrice);
+            }
             cart.unshift(cart.splice(existingIdx, 1)[0]);
         } else {
             cart.unshift({
@@ -899,6 +933,8 @@ body.sale-page-create .sale-order-build__body { padding: 12px 20px 10px; gap: 8p
                 stock: Number(r.stock) || 0,
                 category: r.category || '',
                 base_price: meta.basePrice,
+                catalog_base_price: (r.catalog_base_price != null ? Number(r.catalog_base_price) : meta.basePrice),
+                list_unit_price: (r.list_unit_price != null ? Number(r.list_unit_price) : meta.unitPrice),
                 unit_price: meta.unitPrice,
                 quantity: Number(r.quantity) || 1,
                 enable_stock: r.enable_stock,
@@ -1020,6 +1056,15 @@ body.sale-page-create .sale-order-build__body { padding: 12px 20px 10px; gap: 8p
         line.unit_name = unit.name;
         line.multiplier = newMult;
         line.allow_decimal = !!Number(unit.allow_decimal);
+        if (line.catalog_base_price == null) {
+            line.catalog_base_price = Number(line.base_price) || 0;
+        }
+        if (line.list_unit_price == null) {
+            line.list_unit_price = Number(line.unit_price) || (Number(line.catalog_base_price) * oldMult);
+        } else {
+            // Keep list price aligned to new pack size from catalog piece price
+            line.list_unit_price = Number(line.catalog_base_price) * newMult;
+        }
         line.unit_price = Number(line.base_price) * newMult;
         line.quantity = newQty;
         if (qtyExceedsStock(line, line.quantity)) {
@@ -1265,12 +1310,6 @@ body.sale-page-create .sale-order-build__body { padding: 12px 20px 10px; gap: 8p
         cartLines.innerHTML = '';
         const total = cartSum();
         cartEmpty.classList.add('hidden');
-        const badge = document.getElementById('cartBadge');
-        if (badge) {
-            const n = cart.reduce((s, l) => s + Number(l.quantity), 0);
-            badge.hidden = n < 1;
-            badge.textContent = String(Math.round(n * 100) / 100);
-        }
         const rows = browseRows.length ? browseRows.slice() : [];
         rows.sort(function (a, b) {
             if (productSort === 'name_desc') return String(b.name || '').localeCompare(String(a.name || ''));
@@ -1298,6 +1337,8 @@ body.sale-page-create .sale-order-build__body { padding: 12px 20px 10px; gap: 8p
                 enable_stock: r.enable_stock,
                 category_name: r.category_name || '',
                 base_price: meta.basePrice,
+                catalog_base_price: (r.catalog_base_price != null ? Number(r.catalog_base_price) : meta.basePrice),
+                list_unit_price: (r.list_unit_price != null ? Number(r.list_unit_price) : meta.unitPrice),
                 unit_price: meta.unitPrice,
                 quantity: 0,
                 units: meta.units,
@@ -1333,10 +1374,13 @@ body.sale-page-create .sale-order-build__body { padding: 12px 20px 10px; gap: 8p
             el.className = 'pp-card' + (oos ? ' is-oos' : '');
             const toggle = packToggleHtml(units, line.sub_unit_id, line.variation_id, line.base_price);
             const unitLabel = (line.unit_name || '').trim();
-            const piece = Number(line.base_price || unitPrice) || 0;
+            const piece = Number((cartIdx >= 0 ? cart[cartIdx].base_price : line.base_price) || unitPrice) || 0;
             const lastBtn = last
                 ? `<button type="button" class="pp-last" data-hist="${line.variation_id}" data-hist-name="${escapeHtml(line.name)}">Last ordered: <b>${escapeHtml(String(last.last_date || ''))}</b> ›</button>`
                 : `<div class="pp-last">No prior orders</div>`;
+            const priceHtml = canEditOrderPrice && cartIdx >= 0
+                ? `<input type="number" min="0" step="0.01" class="pp-price-input" data-price="${cartIdx}" value="${Number(unitPrice).toFixed(2)}" inputmode="decimal">`
+                : `<div class="pp-price">${money(unitPrice)}</div>`;
             el.innerHTML = `
                 <div class="pp-img">${thumb}</div>
                 <div class="pp-body">
@@ -1344,11 +1388,7 @@ body.sale-page-create .sale-order-build__body { padding: 12px 20px 10px; gap: 8p
                     ${unitLabel ? `<div class="pp-pack">${escapeHtml(unitLabel)}</div>` : ''}
                     ${line.sku ? `<div class="pp-code">Code: ${escapeHtml(line.sku)}</div>` : ''}
                     ${oos ? `<div class="pp-oos">OUT OF STOCK</div>` : `
-                        <div class="pp-price-row">${
-                            canEditOrderPrice && cartIdx >= 0
-                                ? `<input type="number" min="0" step="0.01" class="pp-price-input" data-price="${cartIdx}" value="${Number(unitPrice).toFixed(2)}" inputmode="decimal">`
-                                : `<div class="pp-price">${money(unitPrice)}</div>`
-                        }<div class="pp-unit-price">${money(piece)}/pc</div></div>
+                        <div class="pp-price-row">${priceHtml}<div class="pp-unit-price">${money(piece)}/pc</div></div>
                         ${lastBtn}
                         ${toggle}
                     `}
@@ -1403,7 +1443,19 @@ body.sale-page-create .sale-order-build__body { padding: 12px 20px 10px; gap: 8p
             inp.addEventListener('blur', () => setQtyFromInput(+inp.dataset.qty, inp.value));
         });
         cartLines.querySelectorAll('input[data-price]').forEach(inp => {
-            inp.addEventListener('focus', () => inp.select());
+            inp.addEventListener('focus', () => {
+                inp.select();
+                const i = +inp.dataset.price;
+                if (!cart[i]) return;
+                // Lock original list price before any edit (POS-style discount base)
+                if (cart[i].list_unit_price == null) {
+                    cart[i].list_unit_price = Number(cart[i].unit_price) || 0;
+                }
+                if (cart[i].catalog_base_price == null) {
+                    const mult = Number(cart[i].multiplier) || 1;
+                    cart[i].catalog_base_price = Number(cart[i].base_price) || ((Number(cart[i].unit_price) || 0) / mult);
+                }
+            });
             inp.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter') {
                     e.preventDefault();
@@ -1419,6 +1471,12 @@ body.sale-page-create .sale-order-build__body { padding: 12px 20px 10px; gap: 8p
                 if (!isFinite(price) || price < 0) price = 0;
                 price = Math.round(price * 100) / 100;
                 const mult = Number(cart[i].multiplier) || 1;
+                if (cart[i].list_unit_price == null) {
+                    cart[i].list_unit_price = Number(cart[i].unit_price) || price;
+                }
+                if (cart[i].catalog_base_price == null) {
+                    cart[i].catalog_base_price = (Number(cart[i].unit_price) || price) / (mult || 1);
+                }
                 cart[i].unit_price = price;
                 cart[i].base_price = mult > 0 ? (price / mult) : price;
                 renderCart();
@@ -1539,14 +1597,16 @@ body.sale-page-create .sale-order-build__body { padding: 12px 20px 10px; gap: 8p
     }
 
     async function fillCheckoutSummary() {
-        const total = cartSum();
+        const soldTotal = cartSum();
+        let listTotal = 0;
+        let discTotal = 0;
         const setTxt = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
         setTxt('coName', lastCustomer.display || lastCustomer.text || '');
         setTxt('coAcct', lastCustomer.acct ? ('Acct #: ' + lastCustomer.acct) : '');
         setTxt('coAddr', lastCustomer.address || lastCustomer.shipAddr || '');
         const lim = lastCustomer.credit;
         setTxt('coLimit', (lim === null || typeof lim === 'undefined' || lim === '') ? '$0.00' : money(lim));
-        setTxt('coTotal', money(total));
+        setTxt('coTotal', money(soldTotal));
         setTxt('coTerms', isCreditSale() ? 'Credit' : 'Cash');
         const lines = document.getElementById('coLines');
         if (lines) {
@@ -1556,18 +1616,42 @@ body.sale-page-create .sale-order-build__body { padding: 12px 20px 10px; gap: 8p
                 const key = String(l.variation_id || l.product_id || l.name);
                 if (typeof idx[key] === 'undefined') {
                     idx[key] = groups.length;
-                    groups.push({ name: l.name, rows: [], total: 0 });
+                    groups.push({ name: l.name, rows: [], sold: 0, list: 0 });
                 }
                 const g = groups[idx[key]];
                 g.rows.push(l);
-                g.total += Number(l.quantity) * Number(l.unit_price);
+                const qty = Number(l.quantity) || 0;
+                const soldUnit = Number(l.unit_price) || 0;
+                const catalogBase = Number(l.catalog_base_price != null ? l.catalog_base_price : l.base_price) || 0;
+                const mult = Number(l.multiplier) || 1;
+                let listUnit = (l.list_unit_price != null && l.list_unit_price !== '')
+                    ? Number(l.list_unit_price)
+                    : (catalogBase * mult);
+                if (!isFinite(listUnit) || listUnit < soldUnit) listUnit = soldUnit;
+                g.sold += qty * soldUnit;
+                g.list += qty * listUnit;
+                listTotal += qty * listUnit;
+                discTotal += Math.max(0, qty * (listUnit - soldUnit));
             });
-            lines.innerHTML = groups.map((g) => `
-                <div class="sale-checkout__line">
+            lines.innerHTML = groups.map((g) => {
+                const disc = Math.max(0, Math.round((g.list - g.sold) * 100) / 100);
+                const pct = g.list > 0 ? Math.round((disc / g.list) * 1000) / 10 : 0;
+                const priceSide = disc > 0.009
+                    ? `<span class="sale-checkout__list">${money(g.list)}</span><strong>${money(g.sold)}</strong><em>Disc −${money(disc)}${pct > 0 ? ` (${pct}%)` : ''}</em>`
+                    : `<strong>${money(g.sold)}</strong>`;
+                return `<div class="sale-checkout__line">
                     <div>${escapeHtml(g.name)}<span>${escapeHtml(unitMixText(g.rows))}</span></div>
-                    <strong>${money(g.total)}</strong>
-                </div>`).join('');
+                    <div class="sale-checkout__price">${priceSide}</div>
+                </div>`;
+            }).join('');
         }
+        const totals = document.getElementById('coTotals');
+        const discRow = document.getElementById('coDiscRow');
+        if (totals) totals.hidden = false;
+        setTxt('coSubtotal', money(listTotal > 0 ? listTotal : soldTotal));
+        setTxt('coDisc', '−' + money(discTotal));
+        setTxt('coTotalInline', money(soldTotal));
+        if (discRow) discRow.hidden = !(discTotal > 0.009);
         setTxt('coLast', '$0.00');
         setTxt('coOpen', '$0.00');
         if (contactId.value) {
@@ -1620,17 +1704,38 @@ body.sale-page-create .sale-order-build__body { padding: 12px 20px 10px; gap: 8p
         form.requestSubmit();
     });
 
+    async function clearCart(keepUi) {
+        cart.length = 0;
+        liveServerDraft = null;
+        clearDraftStorage();
+        await clearDraftServer();
+        if (!keepUi) renderCart();
+    }
+
+    async function discardCartAndLeave(go) {
+        await clearCart(true);
+        allowLeave = true;
+        if (typeof go === 'function') go();
+    }
+
     const backToCustomerBtn = document.getElementById('backToCustomerBtn');
     if (backToCustomerBtn) {
-        backToCustomerBtn.addEventListener('click', () => confirmLeave(() => showCustomerStep()));
+        backToCustomerBtn.addEventListener('click', () => confirmLeave(() => showCustomerStep(), {
+            msg: 'Do you want to save this order?',
+            leaveOnNo: true,
+        }));
     }
-    document.getElementById('saleAttnNo')?.addEventListener('click', () => {
+    document.getElementById('saleAttnNo')?.addEventListener('click', async () => {
         const go = pendingLeave;
         const goNo = pendingLeaveNo;
         const leave = attnLeaveOnNo;
         hideAttn();
-        if (typeof goNo === 'function') goNo();
-        else if (leave && typeof go === 'function') go();
+        if (typeof goNo === 'function') {
+            goNo();
+        } else if (leave && typeof go === 'function') {
+            // NO = do not save — discard draft so cart does not come back
+            await discardCartAndLeave(go);
+        }
     });
     document.getElementById('saleAttnYes')?.addEventListener('click', async () => {
         await saveDraftToServer();

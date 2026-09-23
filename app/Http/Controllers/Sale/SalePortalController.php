@@ -948,6 +948,12 @@ class SalePortalController extends Controller
     {
         $request->session()->forget($this->saleAppDraftSessionKey());
 
+        // Also drop saved draft for this customer so clear cart does not come back on reload
+        $contactId = $request->input('contact_id', $request->query('contact_id'));
+        if (! empty($contactId)) {
+            $this->saleAppRemoveSavedForContact($contactId);
+        }
+
         return response()->json(['ok' => true]);
     }
 
@@ -1562,7 +1568,11 @@ class SalePortalController extends Controller
                 $units = $product ? $this->saleAppUnits((int) $business_id, (int) $product->id, $unitId) : [];
                 $subId = (int) ($line->sub_unit_id ?: $unitId);
                 $mult = $this->saleAppUnitMultiplier($units, $subId, $unitId);
-                $basePrice = (float) $line->unit_price_inc_tax;
+                $soldBase = (float) $line->unit_price_inc_tax;
+                $listBase = (float) ($line->unit_price_before_discount ?: $soldBase);
+                if ($listBase <= 0) {
+                    $listBase = $soldBase;
+                }
                 $unitName = optional(optional($product)->unit)->actual_name ?: 'Pc';
                 foreach ($units as $u) {
                     if ((int) $u['id'] === $subId) {
@@ -1576,8 +1586,9 @@ class SalePortalController extends Controller
                     'variation_id' => (int) $line->variation_id,
                     'transaction_sell_lines_id' => (int) $line->id,
                     'name' => $name,
-                    'price' => $basePrice * $mult,
-                    'base_price' => $basePrice,
+                    'price' => $soldBase * $mult,
+                    'base_price' => $soldBase,
+                    'catalog_base_price' => $listBase,
                     'quantity' => $mult > 0 ? ((float) $line->quantity / $mult) : (float) $line->quantity,
                     'enable_stock' => (int) optional($product)->enable_stock,
                     'product_type' => optional($product)->type,
@@ -2477,22 +2488,42 @@ class SalePortalController extends Controller
      */
     protected function saleAppAmountBreakdown(Transaction $order): array
     {
-        $subtotal = (float) ($order->total_before_tax ?? 0);
-        if ($subtotal <= 0) {
-            $subtotal = 0.0;
-            foreach ($order->sell_lines ?? [] as $line) {
-                if (! empty($line->parent_sell_line_id)) {
-                    continue;
-                }
-                $subtotal += (float) $line->quantity * (float) $line->unit_price_inc_tax;
+        $soldSubtotal = 0.0;
+        $listSubtotal = 0.0;
+        $lineDiscountTotal = 0.0;
+        foreach ($order->sell_lines ?? [] as $line) {
+            if (! empty($line->parent_sell_line_id)) {
+                continue;
             }
+            $qty = (float) $line->quantity;
+            $sold = (float) $line->unit_price_inc_tax;
+            $list = (float) ($line->unit_price_before_discount ?: $sold);
+            if ($list < $sold) {
+                $list = $sold;
+            }
+            $soldSubtotal += $qty * $sold;
+            $listSubtotal += $qty * $list;
+            if ($list > $sold) {
+                $lineDiscountTotal += $qty * ($list - $sold);
+            }
+        }
+        $subtotal = $listSubtotal > 0 ? $listSubtotal : $soldSubtotal;
+        if ($subtotal <= 0 && (float) ($order->total_before_tax ?? 0) > 0) {
+            $subtotal = (float) $order->total_before_tax;
         }
 
         $discountRaw = (float) ($order->discount_amount ?? 0);
         $discountType = $order->discount_type ?: 'fixed';
-        $discountMoney = $discountType === 'percentage'
-            ? round($subtotal * $discountRaw / 100, 2)
+        $orderDiscountMoney = $discountType === 'percentage'
+            ? round($soldSubtotal * $discountRaw / 100, 2)
             : $discountRaw;
+        $discountMoney = round($orderDiscountMoney + $lineDiscountTotal, 2);
+        $discountLabel = 'Discount';
+        if ($lineDiscountTotal > 0.009 && $orderDiscountMoney <= 0.009) {
+            $discountLabel = 'Item discount';
+        } elseif ($discountType === 'percentage' && $discountRaw > 0) {
+            $discountLabel = 'Discount ('.rtrim(rtrim(number_format($discountRaw, 2), '0'), '.').'%)';
+        }
 
         $packRaw = (float) ($order->packing_charge ?? 0);
         $packType = $order->packing_charge_type;
@@ -2522,9 +2553,8 @@ class SalePortalController extends Controller
         return [
             'subtotal' => $subtotal,
             'discount' => $discountMoney,
-            'discount_label' => $discountType === 'percentage' && $discountRaw > 0
-                ? 'Discount ('.rtrim(rtrim(number_format($discountRaw, 2), '0'), '.').'%)'
-                : 'Discount',
+            'line_discount' => round($lineDiscountTotal, 2),
+            'discount_label' => $discountLabel,
             'tax' => (float) ($order->tax_amount ?? 0),
             'shipping' => (float) ($order->shipping_charges ?? 0),
             'packing' => $packMoney,
@@ -2687,28 +2717,42 @@ class SalePortalController extends Controller
         $subId = isset($line['sub_unit_id']) ? (int) $line['sub_unit_id'] : (int) $product->unit_id;
         $multiplier = $this->saleAppUnitMultiplier($units, $subId, (int) $product->unit_id);
 
-        // Catalog / group price for this order line (never updates product master price).
+        // Catalog / list price for this unit (never updates product master price).
         $catalogBase = (float) ($variation->sell_price_inc_tax ?: $variation->default_sell_price ?: 0);
         $catalogUnit = round($catalogBase * $multiplier, 4);
 
         // Only users with this permission may override the line price for this order.
         $canEditOrderPrice = auth()->user() && auth()->user()->can('edit_product_price_from_sales_app');
-        $unitPrice = $canEditOrderPrice
-            ? (float) ($line['unit_price'] ?? $catalogUnit)
+        $soldUnit = $canEditOrderPrice
+            ? round((float) ($line['unit_price'] ?? $catalogUnit), 4)
             : $catalogUnit;
+        if ($soldUnit < 0) {
+            $soldUnit = 0.0;
+        }
+
+        // POS-style item discount when sold price is lower than list price.
+        $lineDiscountType = null;
+        $lineDiscountAmount = 0.0;
+        $unitPriceBeforeDiscount = $soldUnit;
+        if ($soldUnit + 0.00005 < $catalogUnit) {
+            $unitPriceBeforeDiscount = $catalogUnit;
+            $lineDiscountType = 'fixed';
+            $lineDiscountAmount = round($catalogUnit - $soldUnit, 4);
+        }
 
         $row = [
             'product_id' => $product->id,
             'variation_id' => $variation->id,
             'quantity' => (float) $line['quantity'],
-            'unit_price' => $unitPrice,
-            'unit_price_inc_tax' => $unitPrice,
+            // unit_price = before discount (selected unit); unit_price_inc_tax = sold price
+            'unit_price' => $unitPriceBeforeDiscount,
+            'unit_price_inc_tax' => $soldUnit,
             'item_tax' => 0,
             'tax_id' => null,
             'enable_stock' => $product->enable_stock,
             'product_type' => $product->type,
-            'line_discount_type' => 'fixed',
-            'line_discount_amount' => 0,
+            'line_discount_type' => $lineDiscountType,
+            'line_discount_amount' => $lineDiscountAmount,
             'sub_unit_id' => $subId,
             'product_unit_id' => (int) $product->unit_id,
             'base_unit_multiplier' => $multiplier,

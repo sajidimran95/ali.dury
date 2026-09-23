@@ -59,6 +59,7 @@
                         $mix = [];
                         $pcs = 0;
                         $groupTotal = 0;
+                        $groupList = 0;
                         $hasPack = false;
                         foreach ($groupLines as $line) {
                             $mult = 1;
@@ -70,7 +71,10 @@
                             $lineQty = $mult > 0 ? ((float) $line->quantity / $mult) : (float) $line->quantity;
                             $mix[] = rtrim(rtrim(number_format($lineQty, 3), '0'), '.').' '.$unitName;
                             $pcs += (float) $line->quantity;
-                            $groupTotal += (float) $line->unit_price_inc_tax * (float) $line->quantity;
+                            $sold = (float) $line->unit_price_inc_tax;
+                            $list = (float) ($line->unit_price_before_discount ?: $sold);
+                            $groupTotal += $sold * (float) $line->quantity;
+                            $groupList += max($list, $sold) * (float) $line->quantity;
                             if ($mult > 1) {
                                 $hasPack = true;
                             }
@@ -79,13 +83,26 @@
                         if ($hasPack) {
                             $mixText .= '  =  '.rtrim(rtrim(number_format($pcs, 3), '0'), '.').' Pc';
                         }
+                        $itemDisc = max(0, $groupList - $groupTotal);
+                        $itemDiscPct = $groupList > 0 ? round(($itemDisc / $groupList) * 100, 1) : 0;
                     @endphp
                     <div class="py-3 flex justify-between gap-3 text-sm">
                         <div class="min-w-0">
                             <div class="font-semibold">{{ optional($first->product)->name }}</div>
                             <div class="text-xs text-slate-500 mt-0.5">{{ $mixText }}</div>
+                            @if($itemDisc > 0.009)
+                                <div class="text-xs font-bold text-rose-600 mt-1">
+                                    Disc −${{ number_format($itemDisc, 2) }}
+                                    @if($itemDiscPct > 0) ({{ rtrim(rtrim(number_format($itemDiscPct, 1), '0'), '.') }}%) @endif
+                                </div>
+                            @endif
                         </div>
-                        <div class="font-extrabold tabular-nums shrink-0">${{ number_format($groupTotal, 2) }}</div>
+                        <div class="text-right shrink-0">
+                            @if($itemDisc > 0.009)
+                                <div class="text-xs text-slate-400 line-through tabular-nums">${{ number_format($groupList, 2) }}</div>
+                            @endif
+                            <div class="font-extrabold tabular-nums">${{ number_format($groupTotal, 2) }}</div>
+                        </div>
                     </div>
                 @endforeach
             </div>
@@ -95,10 +112,12 @@
                     <span class="text-slate-500">Subtotal</span>
                     <span class="tabular-nums font-semibold">${{ number_format($a['subtotal'] ?? 0, 2) }}</span>
                 </div>
+                @if(($a['discount'] ?? 0) > 0.009)
                 <div class="flex justify-between gap-3">
                     <span class="text-slate-500">{{ $a['discount_label'] ?? 'Discount' }}</span>
                     <span class="tabular-nums font-semibold">−${{ number_format($a['discount'] ?? 0, 2) }}</span>
                 </div>
+                @endif
                 <div class="flex justify-between gap-3">
                     <span class="text-slate-500">Tax</span>
                     <span class="tabular-nums font-semibold">${{ number_format($a['tax'] ?? 0, 2) }}</span>
