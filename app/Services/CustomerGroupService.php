@@ -35,7 +35,9 @@ class CustomerGroupService
     {
         $customerGroup->price_calculation_type = 'percentage';
         $customerGroup->amount = $percent;
-        $customerGroup->inventory_slug = 'all_inventory';
+        if (empty($customerGroup->inventory_slug)) {
+            $customerGroup->inventory_slug = 'all_inventory';
+        }
         $customerGroup->save();
 
         if (! $updateAllProductPrices) {
@@ -44,25 +46,48 @@ class CustomerGroupService
 
         $priceGroup = $this->ensurePriceGroup($customerGroup);
 
-        return $this->writeAllProductPricesFromPercent(
+        return $this->writeProductPricesFromPercent(
             (int) $customerGroup->business_id,
             (int) $priceGroup->id,
             $percent
         );
     }
 
-    public function writeAllProductPricesFromPercent(int $businessId, int $priceGroupId, float $percent): int
-    {
+    /**
+     * Write group prices from % for all products, or filtered by category / subcategory / variation ids.
+     */
+    public function writeProductPricesFromPercent(
+        int $businessId,
+        int $priceGroupId,
+        float $percent,
+        ?int $categoryId = null,
+        ?int $subCategoryId = null,
+        array $variationIds = []
+    ): int {
         $updated = 0;
         $now = now();
         $factor = 1 + ($percent / 100);
 
-        Variation::query()
+        $query = Variation::query()
             ->select(['variations.id', 'variations.sell_price_inc_tax'])
-            ->whereHas('product', function ($q) use ($businessId) {
-                $q->where('business_id', $businessId);
-            })
-            ->orderBy('variations.id')
+            ->whereHas('product', function ($q) use ($businessId, $categoryId, $subCategoryId) {
+                $q->where('business_id', $businessId)
+                    ->where('is_inactive', 0)
+                    ->where('not_for_selling', 0)
+                    ->whereIn('type', ['single', 'variable']);
+                if ($categoryId) {
+                    $q->where('category_id', $categoryId);
+                }
+                if ($subCategoryId) {
+                    $q->where('sub_category_id', $subCategoryId);
+                }
+            });
+
+        if (! empty($variationIds)) {
+            $query->whereIn('variations.id', $variationIds);
+        }
+
+        $query->orderBy('variations.id')
             ->chunkById(500, function ($variations) use ($priceGroupId, $factor, $now, &$updated) {
                 $ids = $variations->pluck('id')->all();
                 $existing = VariationGroupPrice::where('price_group_id', $priceGroupId)
@@ -95,6 +120,11 @@ class CustomerGroupService
         return $updated;
     }
 
+    public function writeAllProductPricesFromPercent(int $businessId, int $priceGroupId, float $percent): int
+    {
+        return $this->writeProductPricesFromPercent($businessId, $priceGroupId, $percent);
+    }
+
     /**
      * Ensure the customer group has a linked selling price group (same name).
      */
@@ -106,7 +136,8 @@ class CustomerGroupService
             $existing = SellingPriceGroup::withTrashed()
                 ->where('business_id', $businessId)
                 ->find($customerGroup->selling_price_group_id);
-            if ($existing) {
+            // Only reuse if it belongs to this customer group (same name).
+            if ($existing && $existing->name === $customerGroup->name) {
                 if ($existing->trashed()) {
                     $existing->restore();
                 } elseif ((int) $existing->is_active !== 1) {

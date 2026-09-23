@@ -1207,7 +1207,7 @@ class ContactController extends Controller
                             ->leftjoin('customer_groups as cg', 'cg.id', '=', 'contacts.customer_group_id')
                             ->active();
 
-            if (! request()->has('all_contact')) {
+            if (! request()->filled('all_contact') || (string) request()->input('all_contact') === '0') {
                 $contacts->onlyCustomers();
             }
 

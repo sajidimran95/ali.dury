@@ -649,12 +649,14 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::get('customer-group/{id}/members', [CustomerGroupController::class, 'members']);
     Route::post('customer-group/{id}/members', [CustomerGroupController::class, 'addMembers']);
     Route::delete('customer-group/{id}/members/{contactId}', [CustomerGroupController::class, 'removeMember']);
+    Route::get('customer-group/{id}/customers/search', [CustomerGroupController::class, 'searchCustomers']);
     Route::get('customer-group/{id}/products', [CustomerGroupController::class, 'products']);
     Route::post('customer-group/{id}/products', [CustomerGroupController::class, 'saveProducts']);
     Route::post('customer-group/{id}/discount', [CustomerGroupController::class, 'saveDiscount']);
     Route::get('customer-group/{id}/products/search', [CustomerGroupController::class, 'searchProducts']);
     Route::post('customer-group/{id}/products/override', [CustomerGroupController::class, 'addProductOverride']);
     Route::post('customer-group/{id}/products/apply-all', [CustomerGroupController::class, 'applyAllProducts']);
+    Route::post('customer-group/{id}/products/apply-scope', [CustomerGroupController::class, 'applyScope']);
     Route::resource('customer-group', CustomerGroupController::class);
 
     //Import opening stock

@@ -275,23 +275,26 @@ class CustomerGroupController extends Controller
 
         $business_id = (int) request()->session()->get('user.business_id');
         $customer_group = CustomerGroup::where('business_id', $business_id)->findOrFail($id);
-        $price_group = ! empty($customer_group->selling_price_group_id)
-            ? SellingPriceGroup::find($customer_group->selling_price_group_id)
-            : $this->customerGroupService->ensurePriceGroup($customer_group);
+        $price_group = $this->customerGroupService->ensurePriceGroup($customer_group);
 
         $customers_count = Contact::where('business_id', $business_id)
             ->where('customer_group_id', $customer_group->id)
+            ->whereIn('type', ['customer', 'both'])
             ->count();
 
         $priced_count = $price_group
             ? (int) VariationGroupPrice::where('price_group_id', $price_group->id)->count()
             : 0;
 
+        $categories = \App\Category::forDropdown($business_id, 'product');
+        $categories = collect(['' => __('lang_v1.all')])->union($categories);
+
         return view('customer_group.show')->with(compact(
             'customer_group',
             'price_group',
             'customers_count',
-            'priced_count'
+            'priced_count',
+            'categories'
         ));
     }
 
@@ -304,16 +307,31 @@ class CustomerGroupController extends Controller
         $business_id = (int) request()->session()->get('user.business_id');
         $customer_group = CustomerGroup::where('business_id', $business_id)->findOrFail($id);
 
-        $customers = Contact::where('business_id', $business_id)
-            ->where('customer_group_id', $customer_group->id)
-            ->whereIn('type', ['customer', 'both'])
-            ->select(['id', 'name', 'supplier_business_name', 'mobile', 'contact_id']);
+        $customers = Contact::query()
+            ->where('contacts.business_id', $business_id)
+            ->where('contacts.customer_group_id', $customer_group->id)
+            ->whereIn('contacts.type', ['customer', 'both'])
+            ->select([
+                'contacts.id',
+                'contacts.name',
+                'contacts.supplier_business_name',
+                'contacts.mobile',
+                'contacts.contact_id',
+            ]);
 
         return Datatables::of($customers)
             ->addColumn('display_name', function ($row) {
                 $name = ! empty($row->supplier_business_name) ? $row->supplier_business_name : $row->name;
 
                 return e($name).(! empty($row->contact_id) ? ' <small class="text-muted">('.e($row->contact_id).')</small>' : '');
+            })
+            ->filterColumn('name', function ($query, $keyword) {
+                $query->where(function ($q) use ($keyword) {
+                    $q->where('contacts.name', 'like', "%{$keyword}%")
+                        ->orWhere('contacts.supplier_business_name', 'like', "%{$keyword}%")
+                        ->orWhere('contacts.contact_id', 'like', "%{$keyword}%")
+                        ->orWhere('contacts.mobile', 'like', "%{$keyword}%");
+                });
             })
             ->addColumn('action', function ($row) use ($customer_group) {
                 if (! auth()->user()->can('customer.update')) {
@@ -334,18 +352,99 @@ class CustomerGroupController extends Controller
 
         $business_id = (int) $request->session()->get('user.business_id');
         $customer_group = CustomerGroup::where('business_id', $business_id)->findOrFail($id);
-        $ids = array_filter(array_map('intval', (array) $request->input('customer_ids', [])));
 
-        if (empty($ids)) {
-            return ['success' => false, 'msg' => __('lang_v1.select_customers_to_tag')];
+        $raw = $request->input('customer_ids', $request->json('customer_ids', []));
+        if (! is_array($raw)) {
+            $raw = ($raw !== null && $raw !== '') ? [$raw] : [];
         }
 
-        Contact::where('business_id', $business_id)
+        $ids = [];
+        foreach ($raw as $v) {
+            if (is_array($v)) {
+                continue;
+            }
+            $cid = (int) $v;
+            if ($cid > 0) {
+                $ids[$cid] = $cid;
+            }
+        }
+        $ids = array_values($ids);
+
+        if (empty($ids)) {
+            return response()->json(['success' => false, 'msg' => __('lang_v1.select_customers_to_tag')]);
+        }
+
+        $matchedIds = Contact::where('business_id', $business_id)
             ->whereIn('type', ['customer', 'both'])
             ->whereIn('id', $ids)
-            ->update(['customer_group_id' => $customer_group->id]);
+            ->pluck('id')
+            ->all();
 
-        return ['success' => true, 'msg' => __('lang_v1.customers_tagged')];
+        if (empty($matchedIds)) {
+            return response()->json([
+                'success' => false,
+                'msg' => __('lang_v1.select_customers_to_tag'),
+            ]);
+        }
+
+        Contact::whereIn('id', $matchedIds)->update(['customer_group_id' => $customer_group->id]);
+
+        $customers_count = Contact::where('business_id', $business_id)
+            ->where('customer_group_id', $customer_group->id)
+            ->whereIn('type', ['customer', 'both'])
+            ->count();
+
+        return response()->json([
+            'success' => true,
+            'msg' => __('lang_v1.customers_tagged'),
+            'updated' => count($matchedIds),
+            'customers_count' => $customers_count,
+        ]);
+    }
+
+    /**
+     * Dedicated customer search for tagging (avoids ContactController quirks).
+     */
+    public function searchCustomers(Request $request, $id)
+    {
+        if (! auth()->user()->can('customer.view')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $business_id = (int) $request->session()->get('user.business_id');
+        CustomerGroup::where('business_id', $business_id)->findOrFail($id);
+        $term = trim((string) $request->input('q', ''));
+
+        $rows = Contact::query()
+            ->where('business_id', $business_id)
+            ->whereIn('type', ['customer', 'both'])
+            ->where('contact_status', 'active')
+            ->when($term !== '', function ($q) use ($term) {
+                $q->where(function ($inner) use ($term) {
+                    $inner->where('name', 'like', '%'.$term.'%')
+                        ->orWhere('first_name', 'like', '%'.$term.'%')
+                        ->orWhere('supplier_business_name', 'like', '%'.$term.'%')
+                        ->orWhere('mobile', 'like', '%'.$term.'%')
+                        ->orWhere('contact_id', 'like', '%'.$term.'%');
+                });
+            })
+            ->orderBy('name')
+            ->limit(30)
+            ->get(['id', 'name', 'supplier_business_name', 'contact_id', 'mobile']);
+
+        $results = $rows->map(function ($row) {
+            $label = ! empty($row->supplier_business_name) ? $row->supplier_business_name : $row->name;
+            if (! empty($row->contact_id)) {
+                $label .= ' ('.$row->contact_id.')';
+            }
+            if (! empty($row->mobile)) {
+                $label .= ' — '.$row->mobile;
+            }
+
+            return ['id' => (int) $row->id, 'text' => $label];
+        })->values();
+
+        return response()->json($results);
     }
 
     public function removeMember($id, $contactId)
@@ -361,7 +460,16 @@ class CustomerGroupController extends Controller
             ->where('id', $contactId)
             ->update(['customer_group_id' => null]);
 
-        return ['success' => true, 'msg' => __('lang_v1.customer_removed_from_group')];
+        $customers_count = Contact::where('business_id', $business_id)
+            ->where('customer_group_id', $id)
+            ->whereIn('type', ['customer', 'both'])
+            ->count();
+
+        return [
+            'success' => true,
+            'msg' => __('lang_v1.customer_removed_from_group'),
+            'customers_count' => $customers_count,
+        ];
     }
 
     public function products($id)
@@ -372,8 +480,12 @@ class CustomerGroupController extends Controller
 
         $business_id = (int) request()->session()->get('user.business_id');
         $customer_group = CustomerGroup::where('business_id', $business_id)->findOrFail($id);
-        $price_group_id = $customer_group->selling_price_group_id ?: 0;
+        $price_group = $this->customerGroupService->ensurePriceGroup($customer_group);
+        $price_group_id = (int) $price_group->id;
         $percent = $customer_group->price_calculation_type === 'percentage' ? (float) $customer_group->amount : 0;
+
+        $categoryId = (int) request()->input('category_id', 0);
+        $subCategoryId = (int) request()->input('sub_category_id', 0);
 
         $query = Variation::query()
             ->join('products as p', 'variations.product_id', '=', 'p.id')
@@ -383,7 +495,19 @@ class CustomerGroupController extends Controller
                     ->where('vgp.price_group_id', '=', $price_group_id);
             })
             ->where('p.business_id', $business_id)
+            ->where('p.is_inactive', 0)
+            ->where('p.not_for_selling', 0)
             ->whereIn('p.type', ['single', 'variable'])
+            ->whereNull('variations.deleted_at')
+            ->when($categoryId > 0, function ($q) use ($categoryId) {
+                $q->where('p.category_id', $categoryId);
+            })
+            ->when($subCategoryId > 0, function ($q) use ($subCategoryId) {
+                $q->where('p.sub_category_id', $subCategoryId);
+            })
+            ->when(request()->input('only_tagged') === '1' || request()->input('only_tagged') === 1 || request()->input('only_tagged') === true, function ($q) {
+                $q->whereNotNull('vgp.id');
+            })
             ->select([
                 'variations.id as variation_id',
                 'p.name as product_name',
@@ -393,15 +517,32 @@ class CustomerGroupController extends Controller
                 'variations.sub_sku',
                 'variations.sell_price_inc_tax as default_price',
                 'vgp.price_inc_tax as group_price',
+                'vgp.id as group_price_id',
             ]);
 
         return Datatables::of($query)
-            ->addColumn('product', function ($row) {
-                if ($row->type === 'single') {
-                    return e($row->product_name);
-                }
+            ->filterColumn('p.name', function ($query, $keyword) {
+                $query->where(function ($q) use ($keyword) {
+                    $q->where('p.name', 'like', "%{$keyword}%")
+                        ->orWhere('variations.sub_sku', 'like', "%{$keyword}%")
+                        ->orWhere('variations.name', 'like', "%{$keyword}%");
+                });
+            })
+            ->orderColumn('p.name', 'p.name $1')
+            ->addColumn('select_col', function ($row) {
+                $checked = ($row->group_price_id !== null && $row->group_price_id !== '') ? ' checked' : '';
 
-                return e($row->product_name.' - '.$row->product_variation_name.' - '.$row->variation_name);
+                return '<input type="checkbox" class="cg-product-check" value="'.(int) $row->variation_id.'" title="Select"'.$checked.'>';
+            })
+            ->addColumn('product', function ($row) {
+                $name = $row->type === 'single'
+                    ? $row->product_name
+                    : $row->product_name.' - '.$row->product_variation_name.' - '.$row->variation_name;
+                $badge = ($row->group_price_id !== null && $row->group_price_id !== '')
+                    ? ' <span class="cg-tagged-badge">'.e(__('lang_v1.tagged')).'</span>'
+                    : '';
+
+                return e($name).$badge;
             })
             ->editColumn('default_price', function ($row) {
                 return $this->commonUtil->num_f($row->default_price);
@@ -415,7 +556,7 @@ class CustomerGroupController extends Controller
 
                 return '<input type="text" class="form-control input_number js-group-price" data-variation-id="'.$row->variation_id.'" value="'.e($value).'">';
             })
-            ->rawColumns(['group_price_input'])
+            ->rawColumns(['select_col', 'product', 'group_price_input'])
             ->make(true);
     }
 
@@ -474,12 +615,15 @@ class CustomerGroupController extends Controller
         $business_id = (int) $request->session()->get('user.business_id');
         $customer_group = CustomerGroup::where('business_id', $business_id)->findOrFail($id);
         $percent = $this->commonUtil->num_uf($request->input('amount', 0));
-        $this->customerGroupService->applyPercentToGroup($customer_group, (float) $percent, false);
+        $customer_group->inventory_slug = 'all_inventory';
+        $count = $this->customerGroupService->applyPercentToGroup($customer_group, (float) $percent, true);
+        $price_group = $this->customerGroupService->ensurePriceGroup($customer_group);
 
-        return [
+        return response()->json([
             'success' => true,
-            'msg' => __('lang_v1.group_discount_all_inventory', ['percent' => $percent]),
-        ];
+            'msg' => __('lang_v1.group_discount_saved', ['percent' => $percent, 'count' => $count]),
+            'priced_count' => (int) VariationGroupPrice::where('price_group_id', $price_group->id)->count(),
+        ]);
     }
 
     public function applyAllProducts($id)
@@ -491,12 +635,77 @@ class CustomerGroupController extends Controller
         $business_id = (int) request()->session()->get('user.business_id');
         $customer_group = CustomerGroup::where('business_id', $business_id)->findOrFail($id);
         $percent = (float) $customer_group->amount;
-        $this->customerGroupService->applyPercentToGroup($customer_group, $percent, false);
+        $customer_group->inventory_slug = 'all_inventory';
+        $count = $this->customerGroupService->applyPercentToGroup($customer_group, $percent, true);
+        $price_group = $this->customerGroupService->ensurePriceGroup($customer_group);
 
-        return [
+        return response()->json([
             'success' => true,
-            'msg' => __('lang_v1.group_discount_all_inventory', ['percent' => $percent]),
-        ];
+            'msg' => __('lang_v1.group_discount_saved', ['percent' => $percent, 'count' => $count]),
+            'priced_count' => (int) VariationGroupPrice::where('price_group_id', $price_group->id)->count(),
+        ]);
+    }
+
+    /**
+     * Apply group % by scope: all_inventory | category | product.
+     */
+    public function applyScope(Request $request, $id)
+    {
+        if (! auth()->user()->can('customer.update')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $business_id = (int) $request->session()->get('user.business_id');
+        $customer_group = CustomerGroup::where('business_id', $business_id)->findOrFail($id);
+        $price_group = $this->customerGroupService->ensurePriceGroup($customer_group);
+        $percent = $this->commonUtil->num_uf($request->input('amount', $customer_group->amount));
+        $scope = (string) $request->input('scope', 'all_inventory');
+        if (! in_array($scope, ['all_inventory', 'category', 'product'], true)) {
+            $scope = 'all_inventory';
+        }
+
+        $customer_group->price_calculation_type = 'percentage';
+        $customer_group->amount = $percent;
+        $customer_group->inventory_slug = $scope;
+        $customer_group->save();
+
+        $categoryId = (int) $request->input('category_id', 0) ?: null;
+        $subCategoryId = (int) $request->input('sub_category_id', 0) ?: null;
+        $variationIds = [];
+        $rawVars = $request->input('variation_ids', []);
+        if (! is_array($rawVars)) {
+            $rawVars = ($rawVars !== null && $rawVars !== '') ? [$rawVars] : [];
+        }
+        foreach ($rawVars as $v) {
+            $vid = (int) $v;
+            if ($vid > 0) {
+                $variationIds[$vid] = $vid;
+            }
+        }
+        $variationIds = array_values($variationIds);
+
+        if ($scope === 'category' && empty($categoryId)) {
+            return response()->json(['success' => false, 'msg' => __('lang_v1.select_category_to_apply')]);
+        }
+        if ($scope === 'product' && empty($variationIds)) {
+            return response()->json(['success' => false, 'msg' => __('lang_v1.select_products_to_apply')]);
+        }
+
+        $count = $this->customerGroupService->writeProductPricesFromPercent(
+            $business_id,
+            (int) $price_group->id,
+            (float) $percent,
+            $scope === 'category' ? $categoryId : null,
+            $scope === 'category' ? $subCategoryId : null,
+            $scope === 'product' ? $variationIds : []
+        );
+
+        return response()->json([
+            'success' => true,
+            'msg' => __('lang_v1.group_discount_saved', ['percent' => $percent, 'count' => $count]),
+            'priced_count' => (int) VariationGroupPrice::where('price_group_id', $price_group->id)->count(),
+            'scope' => $scope,
+        ]);
     }
 
     public function searchProducts(Request $request, $id)
@@ -513,7 +722,10 @@ class CustomerGroupController extends Controller
             ->join('products as p', 'variations.product_id', '=', 'p.id')
             ->join('product_variations as pv', 'variations.product_variation_id', '=', 'pv.id')
             ->where('p.business_id', $business_id)
+            ->where('p.is_inactive', 0)
+            ->where('p.not_for_selling', 0)
             ->whereIn('p.type', ['single', 'variable'])
+            ->whereNull('variations.deleted_at')
             ->when($term !== '', function ($q) use ($term) {
                 $q->where(function ($inner) use ($term) {
                     $inner->where('p.name', 'like', '%'.$term.'%')
