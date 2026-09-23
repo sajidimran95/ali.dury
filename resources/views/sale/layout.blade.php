@@ -1440,7 +1440,7 @@
             display: inline-flex; align-items: center; justify-content: center; padding: 0; cursor: pointer;
         }
         .sale-scan {
-            position: fixed; inset: 0; z-index: 210;
+            position: fixed; inset: 0; z-index: 12000;
             background: #fff;
             display: flex; flex-direction: column;
         }

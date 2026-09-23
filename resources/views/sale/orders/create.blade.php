@@ -36,8 +36,10 @@ body.sale-page-create .pp-search input {
 body.sale-page-create .pp-icon {
     width: 38px; height: 38px; border-radius: 10px; border: 1px solid #E3E1DA; background: #fff;
     display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0;
+    color: #17221E;
 }
 body.sale-page-create .pp-icon.on { background: #175C4C; border-color: #175C4C; color: #fff; }
+body.sale-page-create .pp-icon svg { display: block; }
 body.sale-page-create .pp-sort {
     display: flex; align-items: center; gap: 6px; height: 38px; padding: 0 12px;
     border-radius: 10px; border: 1px solid #E3E1DA; background: #fff;
@@ -122,7 +124,15 @@ body.sale-page-create .sale-order-build__body { padding: 12px 20px 10px; gap: 8p
                     <span>&#128269;</span>
                     <input type="search" id="productSearch" placeholder="Search products or scan barcode" autocomplete="off">
                 </div>
-                <button type="button" class="pp-icon" id="orderScanBtn" aria-label="Scan barcode">&#9638;</button>
+                <button type="button" class="pp-icon" id="orderScanBtn" aria-label="Scan barcode" title="Scan barcode">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M3 7V5a2 2 0 0 1 2-2h2"/>
+                        <path d="M17 3h2a2 2 0 0 1 2 2v2"/>
+                        <path d="M21 17v2a2 2 0 0 1-2 2h-2"/>
+                        <path d="M7 21H5a2 2 0 0 1-2-2v-2"/>
+                        <path d="M7 8v8M11 8v8M14 8v8M17 8v8"/>
+                    </svg>
+                </button>
                 <button type="button" class="pp-icon on" id="orderGridBtn" aria-label="Grid view">&#9638;&#9638;</button>
                 <button type="button" class="pp-icon" id="orderListBtn" aria-label="List view">&#9776;</button>
                 <button type="button" class="pp-sort" id="orderSortBtn" aria-label="Sort" onclick="return saleOpenSheet('orderSortSheet', event)"><span class="pp-sort-label">Sort</span> &#8645;</button>
@@ -476,7 +486,11 @@ body.sale-page-create .sale-order-build__body { padding: 12px 20px 10px; gap: 8p
         document.getElementById('orderListBtn').classList.add('on');
         document.getElementById('orderGridBtn').classList.remove('on');
     });
-    document.getElementById('orderScanBtn')?.addEventListener('click', () => startSaleScan());
+    document.getElementById('orderScanBtn')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        startSaleScan();
+    });
     document.getElementById('orderViewBtn')?.addEventListener('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
@@ -517,16 +531,21 @@ body.sale-page-create .sale-order-build__body { padding: 12px 20px 10px; gap: 8p
     let saleScanner = null;
     let lastScanCode = '';
     let lastScanAt = 0;
+    let scanSessionKeys = {}; // only show items scanned in this scan session
+
+    function scanLineKey(l) {
+        return String(l.variation_id || '') + ':' + String(l.sub_unit_id || 0);
+    }
 
     function syncScanUi() {
-        const total = cartSum();
         const totEl = document.getElementById('saleScanTotal');
         const btn = document.getElementById('saleScanCheckout');
         const empty = document.getElementById('saleScanEmpty');
         const list = document.getElementById('saleScanList');
-        if (totEl) totEl.textContent = money(total);
-        if (btn) btn.classList.toggle('is-off', total <= 0);
-        const scanned = cart.filter((l) => Number(l.quantity) > 0);
+        const scanned = cart.filter((l) => Number(l.quantity) > 0 && scanSessionKeys[scanLineKey(l)]);
+        const scanTotal = scanned.reduce((s, l) => s + (Number(l.quantity) * Number(l.unit_price)), 0);
+        if (totEl) totEl.textContent = money(scanTotal);
+        if (btn) btn.classList.toggle('is-off', scanned.length < 1 && cartSum() <= 0);
         if (!scanned.length) {
             if (empty) empty.hidden = false;
             if (list) { list.hidden = true; list.innerHTML = ''; }
@@ -555,16 +574,31 @@ body.sale-page-create .sale-order-build__body { padding: 12px 20px 10px; gap: 8p
                 await s.clear();
             }
         } catch (e) {}
+        scanSessionKeys = {};
         const screen = document.getElementById('saleScanScreen');
         if (screen) screen.hidden = true;
     }
 
     async function startSaleScan() {
         const screen = document.getElementById('saleScanScreen');
-        if (screen) screen.hidden = false;
+        if (screen) {
+            document.body.appendChild(screen);
+            screen.hidden = false;
+        }
+        // Fresh scan session — do not auto-list existing cart items
+        scanSessionKeys = {};
         syncScanUi();
-        if (typeof Html5Qrcode === 'undefined') return;
-        if (saleScanner) return;
+        if (typeof Html5Qrcode === 'undefined') {
+            alert('Scanner library not loaded. Check internet / refresh and try again.');
+            return;
+        }
+        if (saleScanner) {
+            try {
+                if (saleScanner.isScanning) await saleScanner.stop();
+                await saleScanner.clear();
+            } catch (e) {}
+            saleScanner = null;
+        }
         try {
             saleScanner = new Html5Qrcode('saleScanReader');
             await saleScanner.start(
@@ -579,11 +613,22 @@ body.sale-page-create .sale-order-build__body { padding: 12px 20px 10px; gap: 8p
                     if (!locationId || !locationId.value) return;
                     const rows = await fetchJson(@json(route('sale.api.products')) + '?q=' + encodeURIComponent(code) + '&location_id=' + encodeURIComponent(locationId.value));
                     const exact = rows.find((r) => String(r.sku || '').toLowerCase() === code.toLowerCase()) || (rows.length === 1 ? rows[0] : null);
-                    if (exact) addToCart(exact);
+                    if (exact) {
+                        addToCart(exact);
+                        const meta = unitMeta(exact);
+                        const key = String(exact.variation_id) + ':' + String(Number(meta.unit.id) || 0);
+                        scanSessionKeys[key] = true;
+                        syncScanUi();
+                    } else if (typeof toastr !== 'undefined') {
+                        toastr.warning('No product for: ' + code);
+                    }
                 },
                 () => {}
             );
-        } catch (e) {}
+        } catch (e) {
+            saleScanner = null;
+            alert((e && e.message) ? e.message : 'Could not open camera for scan.');
+        }
     }
 
     document.getElementById('saleScanBack')?.addEventListener('click', () => stopSaleScan());
