@@ -106,7 +106,7 @@ class PosQuickKeyController extends Controller
             'business_id' => $businessId,
             'user_id' => $userId,
             'name' => $name,
-            'keys' => [], // blank — user places up to 4 category tabs + products
+            'keys' => [], // blank — user places category tabs + products
             'keep_folder_open' => true,
             'is_current' => false,
         ]);
@@ -151,6 +151,10 @@ class PosQuickKeyController extends Controller
             }
             if ($type === '' && ! empty($row['category_id'])) {
                 $type = 'category';
+            }
+            // Drop legacy manual folders
+            if ($type === 'manual' || ! empty($row['manual_id'])) {
+                continue;
             }
             $color = preg_match('/^#[0-9a-fA-F]{6}$/', (string) ($row['color'] ?? ''))
                 ? $row['color']

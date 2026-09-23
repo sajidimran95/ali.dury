@@ -83,7 +83,7 @@ window.__posQkLayouts = @json($posQkLayoutsJson);
                     </section>
                     <section class="pos-qk-block">
                         <h2>Add to layout</h2>
-                        <p>First <strong>4 slots</strong> are category tabs. Everything below is for products. New layouts start blank — search and click to place.</p>
+                        <p>Top slots are <strong>category</strong> tabs. Bottom grid is for <strong>products</strong>. Layout becomes current when you edit it.</p>
                         <label class="pos-qk-field">Search categories or products
                             <input type="search" id="posQkSearch" class="form-control" placeholder="Start typing or scanning" autocomplete="off">
                         </label>
@@ -93,7 +93,7 @@ window.__posQkLayouts = @json($posQkLayoutsJson);
                                 <button type="button" class="pos-qk-dot{{ $c === '#3a3f4b' ? ' is-on' : '' }}" data-color="{{ $c }}" style="background:{{ $c }}"></button>
                             @endforeach
                         </div>
-                        <div class="pos-qk-zone-label">Category tabs (1–4)</div>
+                        <div class="pos-qk-zone-label">Category tabs</div>
                         <div class="pos-qk-grid pos-qk-grid--cats" id="posQkGridCats"></div>
                         <div class="pos-qk-zone-label" style="margin-top:14px;">Products</div>
                         <div class="pos-qk-grid" id="posQkGrid"></div>
@@ -108,7 +108,7 @@ window.__posQkLayouts = @json($posQkLayoutsJson);
     if (window.__posQkBound) return;
     window.__posQkBound = true;
 
-    var CAT_SLOTS = 4;
+    var CAT_SLOTS = 8;
     var PRODUCT_SLOTS = 26;
     var SLOTS = CAT_SLOTS + PRODUCT_SLOTS;
     var PALETTE = ['#3a3f4b','#e67e22','#2980b9','#e53935','#16a34a','#7c3aed','#db2777','#0f766e'];
@@ -120,6 +120,11 @@ window.__posQkLayouts = @json($posQkLayoutsJson);
     var dragFrom = null;
     var cats = [];
     var searchTimer = null;
+    var activeManualId = null;
+    var looseProductCache = [];
+    function syncActiveFolderFromProductGrid() {}
+    function loadFolderIntoProductGrid() {}
+    function updateProdHint() {}
 
     function csrf() {
         var m = document.querySelector('meta[name="csrf-token"]');
@@ -144,14 +149,25 @@ window.__posQkLayouts = @json($posQkLayoutsJson);
         return (data.layouts || []).filter(function (l) { return String(l.id) === String(id); })[0] || null;
     }
     function openEditById(id) {
-        var lay = findLayout(id);
-        if (lay) {
-            openEditor(lay);
-            return;
-        }
-        loadList().then(function () {
-            var found = findLayout(id);
-            if (found) openEditor(found);
+        // Editing a layout always makes it the active/current layout.
+        post('/pos/quick-keys/' + id + '/current', {}).then(function (j) {
+            if (j && j.layouts) data = j;
+            if (j && typeof j.enabled !== 'undefined') data.enabled = !!j.enabled;
+            renderList();
+            applyPosLayout();
+            var lay = findLayout(id);
+            if (lay) {
+                openEditor(lay);
+                return;
+            }
+            return loadList().then(function () {
+                var found = findLayout(id);
+                if (found) openEditor(found);
+                else status('Could not open layout', true);
+            });
+        }).catch(function () {
+            var lay = findLayout(id);
+            if (lay) openEditor(lay);
             else status('Could not open layout', true);
         });
     }
@@ -192,6 +208,8 @@ window.__posQkLayouts = @json($posQkLayoutsJson);
             return (parseInt(a.slot, 10) || 0) - (parseInt(b.slot, 10) || 0);
         }).forEach(function (k) {
             var type = k.type || (k.variation_id ? 'product' : 'category');
+            // Ignore legacy manual folders
+            if (type === 'manual') return;
             if (type === 'product' && k.variation_id) {
                 products.push({
                     variation_id: k.variation_id,
@@ -267,13 +285,12 @@ window.__posQkLayouts = @json($posQkLayoutsJson);
         var grid = document.querySelector('.pos-card-grid-categories');
         if (!grid) return;
         var allTile = grid.querySelector('.main-category[data-value="all"]');
-        // Category row: remove everything except All (no products in this row).
-        grid.querySelectorAll('.main-category-div.main-category, .main-category-div.qk-product-key').forEach(function (el) {
+        grid.querySelectorAll('.main-category-div.main-category, .main-category-div.qk-product-key, .main-category-div.qk-manual-folder').forEach(function (el) {
             if (el.getAttribute('data-value') !== 'all') el.remove();
         });
         var parts = currentLayoutKeys();
         var html = '';
-        parts.categories.forEach(function (c) {
+        (parts.categories || []).forEach(function (c) {
             var style = c.color ? ' style="--qk-color:' + c.color + '"' : '';
             var custom = c.color ? ' pos-cat-tile--custom' : '';
             var badge = (c.count != null && c.count > 0) ? '<span class="pos-qk-count">' + c.count + '</span>' : '';
@@ -291,7 +308,6 @@ window.__posQkLayouts = @json($posQkLayoutsJson);
         if (typeof window.global_p_category_id !== 'undefined') {
             window.global_p_category_id = null;
         }
-        // Bottom: selected products only when Quick Keys has product tiles.
         if (renderQuickProducts(parts.products)) {
             return;
         }
@@ -361,14 +377,6 @@ window.__posQkLayouts = @json($posQkLayoutsJson);
         });
         return ids;
     }
-    function usedVariationIds() {
-        var ids = {};
-        gridCells().forEach(function (el) {
-            var d = readCell(el);
-            if (d && d.type === 'product') ids[d.variation_id] = true;
-        });
-        return ids;
-    }
     function nextEmptyCategory() {
         var cells = document.querySelectorAll('#posQkGridCats .qk-cell');
         for (var i = 0; i < cells.length; i++) {
@@ -387,7 +395,7 @@ window.__posQkLayouts = @json($posQkLayoutsJson);
         return nextEmptyProduct();
     }
     function cellForCategory(id) {
-        var cells = gridCells();
+        var cells = document.querySelectorAll('#posQkGridCats .qk-cell');
         for (var i = 0; i < cells.length; i++) {
             var d = readCell(cells[i]);
             if (d && d.type === 'category' && d.category_id === id) return cells[i];
@@ -395,12 +403,20 @@ window.__posQkLayouts = @json($posQkLayoutsJson);
         return null;
     }
     function cellForVariation(id) {
-        var cells = gridCells();
+        var cells = document.querySelectorAll('#posQkGrid .qk-cell');
         for (var i = 0; i < cells.length; i++) {
             var d = readCell(cells[i]);
             if (d && d.type === 'product' && d.variation_id === id) return cells[i];
         }
         return null;
+    }
+    function usedVariationIds() {
+        var ids = {};
+        document.querySelectorAll('#posQkGrid .qk-cell').forEach(function (el) {
+            var d = readCell(el);
+            if (d && d.type === 'product') ids[d.variation_id] = true;
+        });
+        return ids;
     }
     function loadCats() {
         if (window.__posQkCats && window.__posQkCats.length) {
@@ -422,20 +438,19 @@ window.__posQkLayouts = @json($posQkLayoutsJson);
         var el = document.getElementById('posQkSearchResults');
         if (!el) return;
         if (!q) {
-            // Show category folders to fill the top 4 tabs (blank until clicked)
             var used = usedCatIds();
             var colors = usedColorMap();
-            el.innerHTML = '<div class="pos-qk-mini" style="padding:8px 12px;">Category folders for the top 4 tabs — click to add. Type above to find products.</div>' +
+            el.innerHTML = '<div class="pos-qk-mini" style="padding:8px 12px;">Category folders — click to add as tabs. Type above to find products.</div>' +
                 (cats || []).slice(0, 40).map(function (c) {
-                var on = !!used[c.id];
-                var bg = on ? (colors[c.id] || colorForCat(c.id)) : '';
-                var st = bg ? ' style="background:' + bg + ';color:#fff;border-left:4px solid #fff;"' : '';
-                return '<button type="button" class="' + (on ? 'is-on' : '') + '" data-kind="category" data-id="' + c.id + '" data-name="' + escapeHtml(c.name).replace(/"/g, '') + '" data-count="' + (c.count || 0) + '"' + st + '>' +
-                    (on ? '<span class="pos-qk-tick">✓</span> ' : '') +
-                    '<i class="fa fa-folder-o"></i> ' + escapeHtml(c.name) +
-                    (c.count ? ' <span class="pos-qk-mini-count">(' + c.count + ')</span>' : '') +
-                    '</button>';
-            }).join('') || '<div class="pos-qk-mini">Type to search products, or pick a category folder below.</div>';
+                    var on = !!used[c.id];
+                    var bg = on ? (colors[c.id] || colorForCat(c.id)) : '';
+                    var st = bg ? ' style="background:' + bg + ';color:#fff;border-left:4px solid #fff;"' : '';
+                    return '<button type="button" class="' + (on ? 'is-on' : '') + '" data-kind="category" data-id="' + c.id + '" data-name="' + escapeHtml(c.name).replace(/"/g, '') + '" data-count="' + (c.count || 0) + '"' + st + '>' +
+                        (on ? '<span class="pos-qk-tick">✓</span> ' : '') +
+                        '<i class="fa fa-folder-o"></i> ' + escapeHtml(c.name) +
+                        (c.count ? ' <span class="pos-qk-mini-count">(' + c.count + ')</span>' : '') +
+                        '</button>';
+                }).join('') || '<div class="pos-qk-mini">No categories found.</div>';
             bindSearchButtons(el);
             return;
         }
@@ -484,7 +499,7 @@ window.__posQkLayouts = @json($posQkLayoutsJson);
                         paintCell(existing, null);
                     } else {
                         var slot = nextEmptyCategory();
-                        if (!slot) { status('Only 4 category tabs allowed — remove one first', true); return; }
+                        if (!slot) { status('Category tabs are full — remove one first', true); return; }
                         var useColor = colorForCat(id);
                         setPaletteOn(useColor);
                         paintCell(slot, { type: 'category', category_id: id, label: label, color: useColor, count: count });
@@ -494,9 +509,9 @@ window.__posQkLayouts = @json($posQkLayoutsJson);
                     var pid = parseInt(btn.getAttribute('data-product-id'), 10) || null;
                     var pname = btn.getAttribute('data-name');
                     var existingP = cellForVariation(vid);
-                    if (existingP) {
+                    if (existingP && existingP.nodeType) {
                         paintCell(existingP, null);
-                    } else {
+                    } else if (!existingP) {
                         var slotP = nextEmptyProduct();
                         if (!slotP) { status('Product grid is full', true); return; }
                         setPaletteOn(color);
@@ -515,6 +530,7 @@ window.__posQkLayouts = @json($posQkLayoutsJson);
         if (!el) return null;
         var type = el.getAttribute('data-type');
         if (!type && el.getAttribute('data-variation-id')) type = 'product';
+        if (!type && el.getAttribute('data-manual-id')) type = 'manual';
         if (!type && el.getAttribute('data-category-id')) type = 'category';
         if (!type) return null;
         if (type === 'product') {
@@ -525,6 +541,31 @@ window.__posQkLayouts = @json($posQkLayoutsJson);
                 product_id: parseInt(el.getAttribute('data-product-id'), 10) || null,
                 label: el.getAttribute('data-label') || '',
                 color: el.getAttribute('data-color') || '#3a3f4b'
+            };
+        }
+        if (type === 'manual') {
+            var products = [];
+            try {
+                var raw = el.getAttribute('data-products') || '';
+                if (raw.indexOf('%') === 0 || raw.indexOf('%5B') === 0 || /%[0-9A-Fa-f]{2}/.test(raw)) {
+                    raw = decodeURIComponent(raw);
+                }
+                products = JSON.parse(raw || '[]') || [];
+            } catch (e) { products = []; }
+            if ((!products || !products.length) && window.__posQkEditorFolders) {
+                var mid = el.getAttribute('data-manual-id') || '';
+                if (mid && window.__posQkEditorFolders[mid]) {
+                    products = window.__posQkEditorFolders[mid].products || [];
+                }
+            }
+            return {
+                slot: parseInt(el.getAttribute('data-slot'), 10),
+                type: 'manual',
+                manual_id: el.getAttribute('data-manual-id') || '',
+                label: el.getAttribute('data-label') || '',
+                color: el.getAttribute('data-color') || '#3a3f4b',
+                count: products.length,
+                products: products
             };
         }
         return {
@@ -538,17 +579,19 @@ window.__posQkLayouts = @json($posQkLayoutsJson);
     }
     function paintCell(el, d) {
         if (!d) {
+            var oldMid = el.getAttribute('data-manual-id');
             el.className = 'qk-cell is-empty';
-            ['data-type','data-category-id','data-variation-id','data-product-id','data-label','data-color','data-count'].forEach(function (a) {
+            ['data-type','data-category-id','data-manual-id','data-variation-id','data-product-id','data-label','data-color','data-count','data-products'].forEach(function (a) {
                 el.removeAttribute(a);
             });
             el.style.background = '';
             el.draggable = false;
             el.innerHTML = '';
+            if (oldMid && window.__posQkEditorFolders) delete window.__posQkEditorFolders[oldMid];
             return;
         }
-        var type = d.type || (d.variation_id ? 'product' : 'category');
-        el.className = 'qk-cell' + (type === 'category' ? ' is-folder' : ' is-product');
+        var type = d.type || (d.variation_id ? 'product' : (d.manual_id ? 'manual' : 'category'));
+        el.className = 'qk-cell' + (type === 'product' ? ' is-product' : ' is-folder');
         el.setAttribute('data-type', type);
         el.setAttribute('data-label', d.label || '');
         el.setAttribute('data-color', d.color || '#3a3f4b');
@@ -557,17 +600,38 @@ window.__posQkLayouts = @json($posQkLayoutsJson);
         var badge = '';
         if (type === 'category') {
             el.setAttribute('data-category-id', d.category_id);
+            el.removeAttribute('data-manual-id');
             el.removeAttribute('data-variation-id');
             el.removeAttribute('data-product-id');
+            el.removeAttribute('data-products');
             if (d.count != null) {
                 el.setAttribute('data-count', d.count);
                 badge = '<span class="qk-badge">' + d.count + '</span>';
             }
+        } else if (type === 'manual') {
+            el.setAttribute('data-manual-id', d.manual_id);
+            el.removeAttribute('data-category-id');
+            el.removeAttribute('data-variation-id');
+            el.removeAttribute('data-product-id');
+            var products = Array.isArray(d.products) ? d.products : [];
+            // URI-encode so JSON quotes don't break the HTML attribute
+            el.setAttribute('data-products', encodeURIComponent(JSON.stringify(products)));
+            el.setAttribute('data-count', products.length);
+            if (!window.__posQkEditorFolders) window.__posQkEditorFolders = {};
+            window.__posQkEditorFolders[d.manual_id] = {
+                manual_id: d.manual_id,
+                label: d.label || '',
+                color: d.color || '#3a3f4b',
+                products: products
+            };
+            badge = '<span class="qk-badge">' + products.length + '</span>';
         } else {
             el.setAttribute('data-variation-id', d.variation_id);
             if (d.product_id) el.setAttribute('data-product-id', d.product_id);
             el.removeAttribute('data-category-id');
+            el.removeAttribute('data-manual-id');
             el.removeAttribute('data-count');
+            el.removeAttribute('data-products');
         }
         el.innerHTML = badge + '<button type="button" class="qk-x">&times;</button><span class="qk-label">' + escapeHtml(d.label || '') + '</span>';
     }
@@ -575,7 +639,14 @@ window.__posQkLayouts = @json($posQkLayoutsJson);
         gridCells().forEach(function (el) {
             el.onclick = function (e) {
                 if (e.target.classList.contains('qk-x')) {
+                    var was = readCell(el);
                     paintCell(el, null);
+                    if (was && was.type === 'manual' && was.manual_id === activeManualId) {
+                        activeManualId = null;
+                        loadFolderIntoProductGrid(null);
+                    } else if (el.closest('#posQkGrid') && activeManualId) {
+                        syncActiveFolderFromProductGrid();
+                    }
                     runSearch(document.getElementById('posQkSearch').value);
                     return;
                 }
@@ -585,6 +656,11 @@ window.__posQkLayouts = @json($posQkLayoutsJson);
                 if (d) {
                     lastCatId = d.type === 'category' ? d.category_id : null;
                     setPaletteOn(d.color || color);
+                    if (d.type === 'manual') {
+                        loadFolderIntoProductGrid(d.manual_id);
+                    } else if (el.closest('#posQkGridCats')) {
+                        loadFolderIntoProductGrid(null);
+                    }
                 }
             };
             el.ondragstart = function () { dragFrom = el; };
@@ -595,12 +671,12 @@ window.__posQkLayouts = @json($posQkLayoutsJson);
                 var a = readCell(dragFrom), b = readCell(el);
                 var fromZone = dragFrom.closest('#posQkGridCats') ? 'cat' : 'prod';
                 var toZone = el.closest('#posQkGridCats') ? 'cat' : 'prod';
-                // Keep categories in top 4, products in product grid only.
-                if (a && a.type === 'category' && toZone !== 'cat') { status('Categories stay in the top 4 tabs', true); return; }
+                if (a && (a.type === 'category' || a.type === 'manual') && toZone !== 'cat') { status('Category tabs stay on top', true); return; }
                 if (a && a.type === 'product' && toZone !== 'prod') { status('Products stay in the product grid', true); return; }
-                if (b && b.type === 'category' && fromZone !== 'cat') { status('Categories stay in the top 4 tabs', true); return; }
+                if (b && (b.type === 'category' || b.type === 'manual') && fromZone !== 'cat') { status('Category tabs stay on top', true); return; }
                 if (b && b.type === 'product' && fromZone !== 'prod') { status('Products stay in the product grid', true); return; }
                 paintCell(el, a); paintCell(dragFrom, b); dragFrom = null;
+                if (activeManualId) syncActiveFolderFromProductGrid();
             };
         });
     }
@@ -620,17 +696,17 @@ window.__posQkLayouts = @json($posQkLayoutsJson);
         document.getElementById('posQkEditId').value = layout.id;
         document.getElementById('posQkName').value = layout.name || '';
         document.getElementById('posQkKeepOpen').checked = layout.keep_folder_open !== false;
+        activeManualId = null;
+        looseProductCache = [];
         var keys = (layout.keys || []).slice();
-        var bySlot = {};
-        keys.forEach(function (k) { bySlot[parseInt(k.slot, 10)] = k; });
         buildBlankGrids();
-        // Place existing keys into the correct zone (migrate old layouts if needed).
         var catIdx = 0;
         var prodIdx = 0;
         keys.slice().sort(function (a, b) {
             return (parseInt(a.slot, 10) || 0) - (parseInt(b.slot, 10) || 0);
         }).forEach(function (k) {
             var type = k.type || (k.variation_id ? 'product' : 'category');
+            if (type === 'manual') return; // legacy — ignored
             if (type === 'category' && catIdx < CAT_SLOTS) {
                 var catCell = document.querySelector('#posQkGridCats .qk-cell[data-slot="' + catIdx + '"]');
                 if (catCell) {
@@ -739,7 +815,10 @@ window.__posQkLayouts = @json($posQkLayoutsJson);
     document.getElementById('posQkBackBtn').addEventListener('click', function () { showList(); loadList(); });
     document.getElementById('posQkSaveBtn').addEventListener('click', function () {
         var keys = [];
-        gridCells().forEach(function (el) { var d = readCell(el); if (d) keys.push(d); });
+        gridCells().forEach(function (el) {
+            var d = readCell(el);
+            if (d && d.type !== 'manual') keys.push(d);
+        });
         fetch(base() + '/pos/quick-keys/' + document.getElementById('posQkEditId').value, {
             method: 'POST',
             credentials: 'same-origin',
@@ -808,6 +887,7 @@ window.__posQkLayouts = @json($posQkLayoutsJson);
             }
             if (typeof pos_product_row === 'function') pos_product_row(vid);
         });
+        jQuery(document).off('click.qkManual', '.qk-manual-folder');
         jQuery(document).on('shown.bs.modal', '#pos_quick_keys_modal', function () {
             showList();
             loadList().then(function () { applyPosLayout(); });

@@ -12,7 +12,7 @@
 @php
     $qkEnabled = !empty($posQuickKeysEnabled);
     $qkLayout = $posQuickLayout ?? null;
-    // When Quick Keys is on: show only selected category tabs (max 4). Blank layout = All only.
+    // When Quick Keys is on: show only selected category tabs. Blank layout = All only.
     $displayCats = $qkEnabled ? [] : $categories;
     if ($qkEnabled && $qkLayout && !empty($qkLayout->keys)) {
         $byId = [];
@@ -33,11 +33,11 @@
         });
         foreach ($keyRows as $key) {
             $type = $key['type'] ?? (!empty($key['variation_id']) ? 'product' : 'category');
-            if ($type !== 'category') {
+            if ($type === 'manual' || $type !== 'category') {
                 continue;
             }
             $cid = (int) ($key['category_id'] ?? 0);
-            if ($cid && isset($byId[$cid]) && empty($seen[$cid]) && count($ordered) < 4) {
+            if ($cid && isset($byId[$cid]) && empty($seen[$cid]) && count($ordered) < 8) {
                 $row = $byId[$cid];
                 $row['_qk_label'] = $key['label'] ?: $row['name'];
                 $row['_qk_color'] = $key['color'] ?? null;
