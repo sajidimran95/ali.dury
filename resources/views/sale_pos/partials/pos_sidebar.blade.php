@@ -12,7 +12,8 @@
 @php
     $qkEnabled = !empty($posQuickKeysEnabled);
     $qkLayout = $posQuickLayout ?? null;
-    $displayCats = $categories;
+    // When Quick Keys is on: show only selected category tabs (max 4). Blank layout = All only.
+    $displayCats = $qkEnabled ? [] : $categories;
     if ($qkEnabled && $qkLayout && !empty($qkLayout->keys)) {
         $byId = [];
         foreach ($categories as $c) {
@@ -31,8 +32,12 @@
             return ((int) ($a['slot'] ?? 0)) <=> ((int) ($b['slot'] ?? 0));
         });
         foreach ($keyRows as $key) {
+            $type = $key['type'] ?? (!empty($key['variation_id']) ? 'product' : 'category');
+            if ($type !== 'category') {
+                continue;
+            }
             $cid = (int) ($key['category_id'] ?? 0);
-            if ($cid && isset($byId[$cid]) && empty($seen[$cid])) {
+            if ($cid && isset($byId[$cid]) && empty($seen[$cid]) && count($ordered) < 4) {
                 $row = $byId[$cid];
                 $row['_qk_label'] = $key['label'] ?: $row['name'];
                 $row['_qk_color'] = $key['color'] ?? null;
@@ -40,9 +45,7 @@
                 $seen[$cid] = true;
             }
         }
-        if ($ordered) {
-            $displayCats = $ordered;
-        }
+        $displayCats = $ordered;
     }
 @endphp
 <div id="product_category_div" class="pos-inline-categories">

@@ -495,6 +495,7 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::post('/pos/quick-keys', [\App\Http\Controllers\PosQuickKeyController::class, 'store'])->name('pos.quick_keys.store');
     Route::post('/pos/quick-keys/toggle', [\App\Http\Controllers\PosQuickKeyController::class, 'toggleEnabled'])->name('pos.quick_keys.toggle');
     Route::get('/pos/quick-keys/categories', [\App\Http\Controllers\PosQuickKeyController::class, 'searchCategories'])->name('pos.quick_keys.categories');
+    Route::get('/pos/quick-keys/products', [\App\Http\Controllers\PosQuickKeyController::class, 'searchProducts'])->name('pos.quick_keys.products');
     Route::get('/pos/quick-keys/{id}/edit', [\App\Http\Controllers\PosQuickKeyController::class, 'edit'])->name('pos.quick_keys.edit');
     Route::put('/pos/quick-keys/{id}', [\App\Http\Controllers\PosQuickKeyController::class, 'update'])->name('pos.quick_keys.update');
     Route::delete('/pos/quick-keys/{id}', [\App\Http\Controllers\PosQuickKeyController::class, 'destroy'])->name('pos.quick_keys.destroy');

@@ -74,7 +74,7 @@ window.__posQkLayouts = @json($posQkLayoutsJson);
                     <section class="pos-qk-block">
                         <h2>General</h2>
                         <label class="pos-qk-field">Layout name
-                            <input type="text" id="posQkName" class="form-control" placeholder="New layout">
+                            <input type="text" id="posQkName" class="form-control" placeholder="QUICK ITEMS">
                         </label>
                         <label class="pos-qk-check">
                             <input type="checkbox" id="posQkKeepOpen" checked>
@@ -82,17 +82,20 @@ window.__posQkLayouts = @json($posQkLayoutsJson);
                         </label>
                     </section>
                     <section class="pos-qk-block">
-                        <h2>Choose categories</h2>
-                        <p>These are your existing POS categories. Click one to show it on the layout. Click again to remove it. Drag tiles to rearrange.</p>
-                        <label class="pos-qk-field">Search
-                            <input type="search" id="posQkSearch" class="form-control" placeholder="Filter categories" autocomplete="off">
+                        <h2>Add to layout</h2>
+                        <p>First <strong>4 slots</strong> are category tabs. Everything below is for products. New layouts start blank — search and click to place.</p>
+                        <label class="pos-qk-field">Search categories or products
+                            <input type="search" id="posQkSearch" class="form-control" placeholder="Start typing or scanning" autocomplete="off">
                         </label>
-                        <div id="posQkCats" class="pos-qk-cats"></div>
+                        <div id="posQkSearchResults" class="pos-qk-cats"></div>
                         <div class="pos-qk-colors" id="posQkColors">
                             @foreach(['#3a3f4b','#e67e22','#2980b9','#e53935','#16a34a','#7c3aed','#db2777','#0f766e'] as $c)
                                 <button type="button" class="pos-qk-dot{{ $c === '#3a3f4b' ? ' is-on' : '' }}" data-color="{{ $c }}" style="background:{{ $c }}"></button>
                             @endforeach
                         </div>
+                        <div class="pos-qk-zone-label">Category tabs (1–4)</div>
+                        <div class="pos-qk-grid pos-qk-grid--cats" id="posQkGridCats"></div>
+                        <div class="pos-qk-zone-label" style="margin-top:14px;">Products</div>
                         <div class="pos-qk-grid" id="posQkGrid"></div>
                     </section>
                 </div>
@@ -105,14 +108,18 @@ window.__posQkLayouts = @json($posQkLayoutsJson);
     if (window.__posQkBound) return;
     window.__posQkBound = true;
 
-    var SLOTS = 30;
+    var CAT_SLOTS = 4;
+    var PRODUCT_SLOTS = 26;
+    var SLOTS = CAT_SLOTS + PRODUCT_SLOTS;
     var PALETTE = ['#3a3f4b','#e67e22','#2980b9','#e53935','#16a34a','#7c3aed','#db2777','#0f766e'];
+    var DEFAULT_PRODUCT_IMG = @json(asset('/img/default.png'));
     var data = { enabled: true, layouts: window.__posQkLayouts || [] };
     var picked = null;
     var color = '#3a3f4b';
     var lastCatId = null;
     var dragFrom = null;
     var cats = [];
+    var searchTimer = null;
 
     function csrf() {
         var m = document.querySelector('meta[name="csrf-token"]');
@@ -168,44 +175,110 @@ window.__posQkLayouts = @json($posQkLayoutsJson);
         document.getElementById('posQkDoneBtn').hidden = true;
         document.getElementById('posQkKicker').hidden = true;
         document.getElementById('posQuickKeysTitle').textContent = 'Edit layout';
-        document.getElementById('posQkHint').textContent = 'Pick categories for this layout, then press Done.';
+        document.getElementById('posQkHint').textContent = 'Rename, reposition and recolor keys, or organize products into folders.';
         wide(true);
     }
     function isCurrent(l) {
         return !!(l && (l.is_current === true || l.is_current === 1 || l.is_current === '1'));
     }
+    function currentLayoutKeys() {
+        var current = (data.layouts || []).filter(isCurrent)[0];
+        if (!data.enabled || !current || !current.keys) return { categories: [], products: [] };
+        var catsMap = {};
+        (window.__posQkCats || []).forEach(function (c) { catsMap[String(c.id)] = c; });
+        var categories = [];
+        var products = [];
+        current.keys.slice().sort(function (a, b) {
+            return (parseInt(a.slot, 10) || 0) - (parseInt(b.slot, 10) || 0);
+        }).forEach(function (k) {
+            var type = k.type || (k.variation_id ? 'product' : 'category');
+            if (type === 'product' && k.variation_id) {
+                products.push({
+                    variation_id: k.variation_id,
+                    name: k.label || ('#' + k.variation_id),
+                    color: k.color || ''
+                });
+            } else if (type === 'category' && k.category_id && categories.length < CAT_SLOTS) {
+                var c = catsMap[String(k.category_id)];
+                categories.push({
+                    id: k.category_id,
+                    name: k.label || (c ? c.name : ('#' + k.category_id)),
+                    color: k.color || '',
+                    count: k.count
+                });
+            }
+        });
+        return { categories: categories, products: products };
+    }
+    function renderQuickProducts(products) {
+        var box = document.getElementById('product_list_items') || document.getElementById('product_list_body');
+        if (!box) return false;
+        window.__posQkQuickProducts = products || [];
+        if (!products || !products.length) return false;
+        var defaultImg = DEFAULT_PRODUCT_IMG;
+        var colorByVid = {};
+        var labelByVid = {};
+        products.forEach(function (p) {
+            colorByVid[String(p.variation_id)] = p.color || '';
+            labelByVid[String(p.variation_id)] = p.name || '';
+        });
+        var ids = products.map(function (p) { return p.variation_id; }).join(',');
+        box.innerHTML = '<div class="col-md-12 text-center" style="padding:16px;color:#9aa3b5;"><i class="fa fa-spinner fa-spin"></i></div>';
+        fetch(base() + '/pos/quick-keys/products?ids=' + encodeURIComponent(ids), { credentials: 'same-origin', headers: jsonHeaders() })
+            .then(function (r) { return r.json(); })
+            .then(function (rows) {
+                var list = Array.isArray(rows) && rows.length ? rows : products.map(function (p) {
+                    return { variation_id: p.variation_id, name: p.name, image: defaultImg };
+                });
+                var html = list.map(function (p) {
+                    var vid = p.variation_id;
+                    var name = labelByVid[String(vid)] || p.name || ('#' + vid);
+                    var img = p.image || defaultImg;
+                    var color = colorByVid[String(vid)] || '';
+                    var border = color ? ' style="outline:2px solid ' + color + ';"' : '';
+                    return '<div class="col-md-3 col-xs-4 no-print !tw-px-[3px]">' +
+                        '<div class="product_box tw-w-full tw-mb-1 tw-text-center tw-font-semibold tw-rounded-lg tw-p-1 tw-cursor-pointer pos-qk-quick-product"' + border +
+                        ' data-variation_id="' + vid + '" title="' + escapeHtml(name) + '">' +
+                        '<div class="image-container tw-mx-auto tw-w-full">' +
+                        '<img class="product_tile_img" src="' + String(img).replace(/"/g, '') + '" alt="" loading="lazy" onerror="this.onerror=null;this.src=\'' + String(defaultImg).replace(/'/g, '') + '\';">' +
+                        '</div>' +
+                        '<div class="text_div"><span class="product_name">' + escapeHtml(name) + '</span></div>' +
+                        '</div></div>';
+                }).join('');
+                box.innerHTML = html + '<input type="hidden" id="no_products_found">';
+                if (typeof window.posSyncProductStockDisplay === 'function') {
+                    window.posSyncProductStockDisplay();
+                }
+            })
+            .catch(function () {
+                var html = products.map(function (p) {
+                    return '<div class="col-md-3 col-xs-4 no-print !tw-px-[3px]">' +
+                        '<div class="product_box tw-w-full tw-mb-1 tw-text-center tw-font-semibold tw-rounded-lg tw-p-1 tw-cursor-pointer" data-variation_id="' + p.variation_id + '">' +
+                        '<div class="image-container tw-mx-auto tw-w-full"><img class="product_tile_img" src="' + String(defaultImg).replace(/"/g, '') + '" alt=""></div>' +
+                        '<div class="text_div"><span class="product_name">' + escapeHtml(p.name) + '</span></div></div></div>';
+                }).join('');
+                box.innerHTML = html + '<input type="hidden" id="no_products_found">';
+            });
+        var page = document.getElementById('suggestion_page');
+        if (page) page.value = '1';
+        return true;
+    }
     function applyPosLayout() {
         var grid = document.querySelector('.pos-card-grid-categories');
         if (!grid) return;
         var allTile = grid.querySelector('.main-category[data-value="all"]');
-        grid.querySelectorAll('.main-category-div.main-category').forEach(function (el) {
+        // Category row: remove everything except All (no products in this row).
+        grid.querySelectorAll('.main-category-div.main-category, .main-category-div.qk-product-key').forEach(function (el) {
             if (el.getAttribute('data-value') !== 'all') el.remove();
         });
-        var cats = window.__posQkCats || [];
-        var byId = {};
-        cats.forEach(function (c) { byId[String(c.id)] = c; });
-        var current = (data.layouts || []).filter(isCurrent)[0];
-        var rows = [];
-        if (data.enabled && current && current.keys && current.keys.length) {
-            current.keys.slice().sort(function (a, b) {
-                return (parseInt(a.slot, 10) || 0) - (parseInt(b.slot, 10) || 0);
-            }).forEach(function (k) {
-                var c = byId[String(k.category_id)];
-                if (c) rows.push({ id: c.id, name: k.label || c.name, color: k.color || '' });
-            });
-        } else {
-            cats.forEach(function (c) { rows.push({ id: c.id, name: c.name, color: '' }); });
-        }
+        var parts = currentLayoutKeys();
         var html = '';
-        rows.forEach(function (c) {
-            var extra = '';
-            if (c.color) {
-                extra = ' pos-cat-tile--custom" style="--qk-color:' + c.color + '"';
-            } else {
-                extra = '"';
-            }
+        parts.categories.forEach(function (c) {
+            var style = c.color ? ' style="--qk-color:' + c.color + '"' : '';
+            var custom = c.color ? ' pos-cat-tile--custom' : '';
+            var badge = (c.count != null && c.count > 0) ? '<span class="pos-qk-count">' + c.count + '</span>' : '';
             html += '<div class="col-md-2 col-xs-4 tw-mb-2 tw-cursor-pointer main-category-div main-category no-print" data-value="' + c.id + '" data-name="' + String(c.name).replace(/"/g, '') + '" data-parent="0" style="padding-left: 4px; padding-right: 4px;">' +
-                '<div class="pos-card cat pos-cat-tile' + extra + '><h4 class="pos-card-name">' + c.name + '</h4></div></div>';
+                '<div class="pos-card cat pos-cat-tile pos-qk-folder' + custom + '"' + style + '>' + badge + '<h4 class="pos-card-name">' + escapeHtml(c.name) + '</h4></div></div>';
         });
         if (allTile) allTile.insertAdjacentHTML('afterend', html);
         if (typeof window.pos_set_active_category_tile === 'function') {
@@ -218,10 +291,17 @@ window.__posQkLayouts = @json($posQkLayoutsJson);
         if (typeof window.global_p_category_id !== 'undefined') {
             window.global_p_category_id = null;
         }
+        // Bottom: selected products only when Quick Keys has product tiles.
+        if (renderQuickProducts(parts.products)) {
+            return;
+        }
         if (typeof window.get_product_suggestion_list === 'function' && document.querySelector('input#location_id')) {
             var loc = document.querySelector('input#location_id').value;
             window.get_product_suggestion_list(null, window.global_brand_id || null, loc, null);
         }
+    }
+    function escapeHtml(s) {
+        return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
     function renderList() {
         var box = document.getElementById('posQkLayouts');
@@ -263,7 +343,7 @@ window.__posQkLayouts = @json($posQkLayoutsJson);
         var map = {};
         gridCells().forEach(function (el) {
             var d = readCell(el);
-            if (d) map[d.category_id] = d.color || colorForCat(d.category_id);
+            if (d && d.type === 'category') map[d.category_id] = d.color || colorForCat(d.category_id);
         });
         return map;
     }
@@ -273,121 +353,238 @@ window.__posQkLayouts = @json($posQkLayoutsJson);
             d.classList.toggle('is-on', d.getAttribute('data-color') === color);
         });
     }
-    function usedIds() {
+    function usedCatIds() {
         var ids = {};
         gridCells().forEach(function (el) {
             var d = readCell(el);
-            if (d) ids[d.category_id] = true;
+            if (d && d.type === 'category') ids[d.category_id] = true;
         });
         return ids;
     }
-    function nextEmpty() {
-        var cells = gridCells();
+    function usedVariationIds() {
+        var ids = {};
+        gridCells().forEach(function (el) {
+            var d = readCell(el);
+            if (d && d.type === 'product') ids[d.variation_id] = true;
+        });
+        return ids;
+    }
+    function nextEmptyCategory() {
+        var cells = document.querySelectorAll('#posQkGridCats .qk-cell');
         for (var i = 0; i < cells.length; i++) {
             if (!readCell(cells[i])) return cells[i];
         }
         return null;
     }
+    function nextEmptyProduct() {
+        var cells = document.querySelectorAll('#posQkGrid .qk-cell');
+        for (var i = 0; i < cells.length; i++) {
+            if (!readCell(cells[i])) return cells[i];
+        }
+        return null;
+    }
+    function nextEmpty() {
+        return nextEmptyProduct();
+    }
     function cellForCategory(id) {
         var cells = gridCells();
         for (var i = 0; i < cells.length; i++) {
             var d = readCell(cells[i]);
-            if (d && d.category_id === id) return cells[i];
+            if (d && d.type === 'category' && d.category_id === id) return cells[i];
+        }
+        return null;
+    }
+    function cellForVariation(id) {
+        var cells = gridCells();
+        for (var i = 0; i < cells.length; i++) {
+            var d = readCell(cells[i]);
+            if (d && d.type === 'product' && d.variation_id === id) return cells[i];
         }
         return null;
     }
     function loadCats() {
         if (window.__posQkCats && window.__posQkCats.length) {
             cats = window.__posQkCats.map(function (c) {
-                return { id: c.id, name: c.name };
+                return { id: c.id, name: c.name, type: 'category', count: c.count };
             });
-            paintCats(document.getElementById('posQkSearch') ? document.getElementById('posQkSearch').value : '');
             return Promise.resolve();
         }
         return fetch(base() + '/pos/quick-keys/categories', { credentials: 'same-origin', headers: jsonHeaders() })
             .then(function (r) { return r.json(); })
             .then(function (j) {
-                cats = j || [];
-                paintCats('');
+                cats = (j || []).map(function (c) {
+                    return { id: c.id, name: c.name, type: 'category', count: c.count };
+                });
             });
     }
-    function paintCats(q) {
-        q = (q || '').toLowerCase();
-        var el = document.getElementById('posQkCats');
+    function runSearch(q) {
+        q = (q || '').trim();
+        var el = document.getElementById('posQkSearchResults');
         if (!el) return;
-        var used = usedIds();
-        var colors = usedColorMap();
-        el.innerHTML = cats.filter(function (c) {
-            return !q || (c.name || '').toLowerCase().indexOf(q) >= 0;
-        }).map(function (c) {
-            var on = !!used[c.id];
-            var bg = on ? (colors[c.id] || colorForCat(c.id)) : '';
-            var st = bg ? ' style="background:' + bg + ';color:#fff;border-left:4px solid #fff;"' : '';
-            return '<button type="button" class="' + (on ? 'is-on' : '') + '" data-id="' + c.id + '" data-name="' + (c.name || '').replace(/"/g, '') + '"' + st + '>' +
-                (on ? '<span class="pos-qk-tick">✓</span> ' : '') + c.name + '</button>';
-        }).join('') || '<div class="pos-qk-mini">No categories in this business.</div>';
+        if (!q) {
+            // Show category folders to fill the top 4 tabs (blank until clicked)
+            var used = usedCatIds();
+            var colors = usedColorMap();
+            el.innerHTML = '<div class="pos-qk-mini" style="padding:8px 12px;">Category folders for the top 4 tabs — click to add. Type above to find products.</div>' +
+                (cats || []).slice(0, 40).map(function (c) {
+                var on = !!used[c.id];
+                var bg = on ? (colors[c.id] || colorForCat(c.id)) : '';
+                var st = bg ? ' style="background:' + bg + ';color:#fff;border-left:4px solid #fff;"' : '';
+                return '<button type="button" class="' + (on ? 'is-on' : '') + '" data-kind="category" data-id="' + c.id + '" data-name="' + escapeHtml(c.name).replace(/"/g, '') + '" data-count="' + (c.count || 0) + '"' + st + '>' +
+                    (on ? '<span class="pos-qk-tick">✓</span> ' : '') +
+                    '<i class="fa fa-folder-o"></i> ' + escapeHtml(c.name) +
+                    (c.count ? ' <span class="pos-qk-mini-count">(' + c.count + ')</span>' : '') +
+                    '</button>';
+            }).join('') || '<div class="pos-qk-mini">Type to search products, or pick a category folder below.</div>';
+            bindSearchButtons(el);
+            return;
+        }
+        el.innerHTML = '<div class="pos-qk-mini">Searching…</div>';
+        Promise.all([
+            fetch(base() + '/pos/quick-keys/products?q=' + encodeURIComponent(q), { credentials: 'same-origin', headers: jsonHeaders() }).then(function (r) { return r.json(); }),
+            Promise.resolve((cats || []).filter(function (c) {
+                return (c.name || '').toLowerCase().indexOf(q.toLowerCase()) >= 0;
+            }))
+        ]).then(function (parts) {
+            var products = parts[0] || [];
+            var matchedCats = parts[1] || [];
+            var usedV = usedVariationIds();
+            var usedC = usedCatIds();
+            var html = '';
+            matchedCats.forEach(function (c) {
+                var on = !!usedC[c.id];
+                html += '<button type="button" class="' + (on ? 'is-on' : '') + '" data-kind="category" data-id="' + c.id + '" data-name="' + escapeHtml(c.name).replace(/"/g, '') + '" data-count="' + (c.count || 0) + '">' +
+                    (on ? '<span class="pos-qk-tick">✓</span> ' : '') +
+                    '<i class="fa fa-folder-o"></i> ' + escapeHtml(c.name) + ' <span class="pos-qk-mini-count">folder</span></button>';
+            });
+            products.forEach(function (p) {
+                var on = !!usedV[p.variation_id];
+                html += '<button type="button" class="' + (on ? 'is-on' : '') + '" data-kind="product" data-variation-id="' + p.variation_id + '" data-product-id="' + (p.product_id || '') + '" data-name="' + escapeHtml(p.name).replace(/"/g, '') + '">' +
+                    (on ? '<span class="pos-qk-tick">✓</span> ' : '') +
+                    '<i class="fa fa-cube"></i> ' + escapeHtml(p.name) +
+                    (p.sku ? ' <span class="pos-qk-mini-count">' + escapeHtml(p.sku) + '</span>' : '') +
+                    '</button>';
+            });
+            el.innerHTML = html || '<div class="pos-qk-mini">No products or folders match.</div>';
+            bindSearchButtons(el);
+        }).catch(function () {
+            el.innerHTML = '<div class="pos-qk-mini">Search failed.</div>';
+        });
+    }
+    function bindSearchButtons(el) {
         el.querySelectorAll('button').forEach(function (btn) {
             btn.addEventListener('click', function () {
-                var id = parseInt(btn.getAttribute('data-id'), 10);
-                var label = btn.getAttribute('data-name');
-                lastCatId = id;
-                var existing = cellForCategory(id);
-                if (existing) {
-                    var cur = readCell(existing);
-                    setPaletteOn(cur && cur.color ? cur.color : colorForCat(id));
-                    paintCell(existing, null);
+                var kind = btn.getAttribute('data-kind');
+                if (kind === 'category') {
+                    var id = parseInt(btn.getAttribute('data-id'), 10);
+                    var label = btn.getAttribute('data-name');
+                    var count = parseInt(btn.getAttribute('data-count'), 10) || 0;
+                    var existing = cellForCategory(id);
+                    if (existing) {
+                        paintCell(existing, null);
+                    } else {
+                        var slot = nextEmptyCategory();
+                        if (!slot) { status('Only 4 category tabs allowed — remove one first', true); return; }
+                        var useColor = colorForCat(id);
+                        setPaletteOn(useColor);
+                        paintCell(slot, { type: 'category', category_id: id, label: label, color: useColor, count: count });
+                    }
                 } else {
-                    var slot = nextEmpty();
-                    if (!slot) { status('Layout is full', true); return; }
-                    var useColor = colorForCat(id);
-                    setPaletteOn(useColor);
-                    paintCell(slot, { category_id: id, label: label, color: useColor });
+                    var vid = parseInt(btn.getAttribute('data-variation-id'), 10);
+                    var pid = parseInt(btn.getAttribute('data-product-id'), 10) || null;
+                    var pname = btn.getAttribute('data-name');
+                    var existingP = cellForVariation(vid);
+                    if (existingP) {
+                        paintCell(existingP, null);
+                    } else {
+                        var slotP = nextEmptyProduct();
+                        if (!slotP) { status('Product grid is full', true); return; }
+                        setPaletteOn(color);
+                        paintCell(slotP, { type: 'product', variation_id: vid, product_id: pid, label: pname, color: color });
+                    }
                 }
-                paintCats(document.getElementById('posQkSearch').value);
+                runSearch(document.getElementById('posQkSearch').value);
             });
         });
     }
-    function gridCells() { return document.querySelectorAll('#posQkGrid .qk-cell'); }
+    function paintCats(q) { runSearch(q); }
+    function gridCells() {
+        return document.querySelectorAll('#posQkGridCats .qk-cell, #posQkGrid .qk-cell');
+    }
     function readCell(el) {
-        if (!el || !el.getAttribute('data-category-id')) return null;
+        if (!el) return null;
+        var type = el.getAttribute('data-type');
+        if (!type && el.getAttribute('data-variation-id')) type = 'product';
+        if (!type && el.getAttribute('data-category-id')) type = 'category';
+        if (!type) return null;
+        if (type === 'product') {
+            return {
+                slot: parseInt(el.getAttribute('data-slot'), 10),
+                type: 'product',
+                variation_id: parseInt(el.getAttribute('data-variation-id'), 10),
+                product_id: parseInt(el.getAttribute('data-product-id'), 10) || null,
+                label: el.getAttribute('data-label') || '',
+                color: el.getAttribute('data-color') || '#3a3f4b'
+            };
+        }
         return {
             slot: parseInt(el.getAttribute('data-slot'), 10),
+            type: 'category',
             category_id: parseInt(el.getAttribute('data-category-id'), 10),
             label: el.getAttribute('data-label') || '',
-            color: el.getAttribute('data-color') || '#3a3f4b'
+            color: el.getAttribute('data-color') || '#3a3f4b',
+            count: parseInt(el.getAttribute('data-count'), 10) || null
         };
     }
     function paintCell(el, d) {
         if (!d) {
             el.className = 'qk-cell is-empty';
-            el.removeAttribute('data-category-id');
-            el.removeAttribute('data-label');
-            el.removeAttribute('data-color');
+            ['data-type','data-category-id','data-variation-id','data-product-id','data-label','data-color','data-count'].forEach(function (a) {
+                el.removeAttribute(a);
+            });
             el.style.background = '';
             el.draggable = false;
             el.innerHTML = '';
             return;
         }
-        el.className = 'qk-cell';
-        el.setAttribute('data-category-id', d.category_id);
+        var type = d.type || (d.variation_id ? 'product' : 'category');
+        el.className = 'qk-cell' + (type === 'category' ? ' is-folder' : ' is-product');
+        el.setAttribute('data-type', type);
         el.setAttribute('data-label', d.label || '');
         el.setAttribute('data-color', d.color || '#3a3f4b');
         el.style.background = d.color || '#3a3f4b';
         el.draggable = true;
-        el.innerHTML = '<button type="button" class="qk-x">&times;</button>' + (d.label || '');
+        var badge = '';
+        if (type === 'category') {
+            el.setAttribute('data-category-id', d.category_id);
+            el.removeAttribute('data-variation-id');
+            el.removeAttribute('data-product-id');
+            if (d.count != null) {
+                el.setAttribute('data-count', d.count);
+                badge = '<span class="qk-badge">' + d.count + '</span>';
+            }
+        } else {
+            el.setAttribute('data-variation-id', d.variation_id);
+            if (d.product_id) el.setAttribute('data-product-id', d.product_id);
+            el.removeAttribute('data-category-id');
+            el.removeAttribute('data-count');
+        }
+        el.innerHTML = badge + '<button type="button" class="qk-x">&times;</button><span class="qk-label">' + escapeHtml(d.label || '') + '</span>';
     }
     function bindGrid() {
         gridCells().forEach(function (el) {
             el.onclick = function (e) {
                 if (e.target.classList.contains('qk-x')) {
                     paintCell(el, null);
-                    paintCats(document.getElementById('posQkSearch').value);
+                    runSearch(document.getElementById('posQkSearch').value);
                     return;
                 }
+                gridCells().forEach(function (c) { c.classList.remove('is-on'); });
+                el.classList.add('is-on');
                 var d = readCell(el);
                 if (d) {
-                    lastCatId = d.category_id;
-                    setPaletteOn(d.color || colorForCat(d.category_id));
+                    lastCatId = d.type === 'category' ? d.category_id : null;
+                    setPaletteOn(d.color || color);
                 }
             };
             el.ondragstart = function () { dragFrom = el; };
@@ -396,62 +593,67 @@ window.__posQkLayouts = @json($posQkLayoutsJson);
                 e.preventDefault();
                 if (!dragFrom || dragFrom === el) return;
                 var a = readCell(dragFrom), b = readCell(el);
+                var fromZone = dragFrom.closest('#posQkGridCats') ? 'cat' : 'prod';
+                var toZone = el.closest('#posQkGridCats') ? 'cat' : 'prod';
+                // Keep categories in top 4, products in product grid only.
+                if (a && a.type === 'category' && toZone !== 'cat') { status('Categories stay in the top 4 tabs', true); return; }
+                if (a && a.type === 'product' && toZone !== 'prod') { status('Products stay in the product grid', true); return; }
+                if (b && b.type === 'category' && fromZone !== 'cat') { status('Categories stay in the top 4 tabs', true); return; }
+                if (b && b.type === 'product' && fromZone !== 'prod') { status('Products stay in the product grid', true); return; }
                 paintCell(el, a); paintCell(dragFrom, b); dragFrom = null;
             };
         });
     }
-    function slotCount() {
-        return Math.max(30, (cats.length || (window.__posQkCats || []).length || 0));
-    }
-    function keysForAllCategories() {
-        var list = cats.length ? cats : (window.__posQkCats || []);
-        return list.map(function (c, i) {
-            return {
-                slot: i,
-                category_id: parseInt(c.id, 10),
-                label: c.name || '',
-                color: colorForCat(c.id)
-            };
-        });
+    function buildBlankGrids() {
+        var catHtml = '';
+        for (var i = 0; i < CAT_SLOTS; i++) {
+            catHtml += '<div class="qk-cell is-empty" data-slot="' + i + '" data-zone="cat"></div>';
+        }
+        document.getElementById('posQkGridCats').innerHTML = catHtml;
+        var prodHtml = '';
+        for (var j = 0; j < PRODUCT_SLOTS; j++) {
+            prodHtml += '<div class="qk-cell is-empty" data-slot="' + (CAT_SLOTS + j) + '" data-zone="prod"></div>';
+        }
+        document.getElementById('posQkGrid').innerHTML = prodHtml;
     }
     function openEditor(layout) {
         document.getElementById('posQkEditId').value = layout.id;
         document.getElementById('posQkName').value = layout.name || '';
         document.getElementById('posQkKeepOpen').checked = layout.keep_folder_open !== false;
         var keys = (layout.keys || []).slice();
-        if (!keys.length) {
-            keys = keysForAllCategories();
-        }
         var bySlot = {};
         keys.forEach(function (k) { bySlot[parseInt(k.slot, 10)] = k; });
-        var grid = document.getElementById('posQkGrid');
-        var html = '';
-        var n = Math.max(slotCount(), keys.length);
-        for (var i = 0; i < n; i++) html += '<div class="qk-cell is-empty" data-slot="' + i + '"></div>';
-        grid.innerHTML = html;
-        gridCells().forEach(function (el) {
-            var d = bySlot[el.getAttribute('data-slot')];
-            if (d) paintCell(el, d);
+        buildBlankGrids();
+        // Place existing keys into the correct zone (migrate old layouts if needed).
+        var catIdx = 0;
+        var prodIdx = 0;
+        keys.slice().sort(function (a, b) {
+            return (parseInt(a.slot, 10) || 0) - (parseInt(b.slot, 10) || 0);
+        }).forEach(function (k) {
+            var type = k.type || (k.variation_id ? 'product' : 'category');
+            if (type === 'category' && catIdx < CAT_SLOTS) {
+                var catCell = document.querySelector('#posQkGridCats .qk-cell[data-slot="' + catIdx + '"]');
+                if (catCell) {
+                    k.slot = catIdx;
+                    paintCell(catCell, k);
+                    catIdx++;
+                }
+            } else if (type === 'product') {
+                var slot = CAT_SLOTS + prodIdx;
+                var prodCell = document.querySelector('#posQkGrid .qk-cell[data-slot="' + slot + '"]');
+                if (prodCell) {
+                    k.slot = slot;
+                    paintCell(prodCell, k);
+                    prodIdx++;
+                }
+            }
         });
         bindGrid();
         showEdit();
         document.getElementById('posQuickKeysTitle').textContent = layout.name || 'New layout';
+        document.getElementById('posQkSearch').value = '';
         loadCats().then(function () {
-            if (!(layout.keys || []).length) {
-                keys = keysForAllCategories();
-                bySlot = {};
-                keys.forEach(function (k) { bySlot[parseInt(k.slot, 10)] = k; });
-                n = Math.max(slotCount(), keys.length);
-                html = '';
-                for (var j = 0; j < n; j++) html += '<div class="qk-cell is-empty" data-slot="' + j + '"></div>';
-                grid.innerHTML = html;
-                gridCells().forEach(function (el) {
-                    var d = bySlot[el.getAttribute('data-slot')];
-                    if (d) paintCell(el, d);
-                });
-                bindGrid();
-            }
-            paintCats(document.getElementById('posQkSearch') ? document.getElementById('posQkSearch').value : '');
+            runSearch('');
         });
     }
     function post(url, body) {
@@ -562,7 +764,11 @@ window.__posQkLayouts = @json($posQkLayoutsJson);
             setTimeout(function () { status(''); }, 1500);
         }).catch(function () { status('Could not save', true); });
     });
-    document.getElementById('posQkSearch').addEventListener('input', function () { paintCats(this.value); });
+    document.getElementById('posQkSearch').addEventListener('input', function () {
+        var q = this.value;
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(function () { runSearch(q); }, 220);
+    });
     document.querySelectorAll('#posQkColors .pos-qk-dot').forEach(function (dot) {
         dot.addEventListener('click', function () {
             document.querySelectorAll('#posQkColors .pos-qk-dot').forEach(function (d) { d.classList.remove('is-on'); });
@@ -576,8 +782,14 @@ window.__posQkLayouts = @json($posQkLayoutsJson);
                     if (d) {
                         d.color = color;
                         paintCell(cell, d);
-                        paintCats(document.getElementById('posQkSearch').value);
+                        runSearch(document.getElementById('posQkSearch').value);
                     }
+                }
+            } else {
+                var sel = document.querySelector('#posQkGridCats .qk-cell.is-on, #posQkGrid .qk-cell.is-on');
+                if (sel) {
+                    var pd = readCell(sel);
+                    if (pd) { pd.color = color; paintCell(sel, pd); }
                 }
             }
             if (picked) picked.color = color;
@@ -585,11 +797,43 @@ window.__posQkLayouts = @json($posQkLayoutsJson);
     });
 
     if (typeof jQuery !== 'undefined') {
+        jQuery(document).off('click.qkProd', '.qk-product-key').on('click.qkProd', '.qk-product-key', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            var vid = jQuery(this).data('variation-id');
+            if (!vid) return;
+            if (jQuery('input#location_id').val() === '') {
+                if (typeof toastr !== 'undefined') toastr.warning((typeof LANG !== 'undefined' && LANG.select_location) || 'Select location');
+                return;
+            }
+            if (typeof pos_product_row === 'function') pos_product_row(vid);
+        });
         jQuery(document).on('shown.bs.modal', '#pos_quick_keys_modal', function () {
             showList();
             loadList().then(function () { applyPosLayout(); });
-            loadCats();
+            loadCats().then(function () { runSearch(''); });
         });
+    }
+    // When category is "All", show selected quick products in the bottom grid (not every product).
+    function wrapProductSuggest() {
+        if (window.__posQkWrappedSuggest) return;
+        if (typeof window.get_product_suggestion_list !== 'function') return;
+        window.__posQkWrappedSuggest = true;
+        var orig = window.get_product_suggestion_list;
+        window.get_product_suggestion_list = function (category_id, brand_id, location_id, url, is_enabled_stock, repair_model_id) {
+            var parts = currentLayoutKeys();
+            var noCat = category_id == null || category_id === '' || category_id === 'all';
+            if (noCat && !brand_id && parts.products && parts.products.length) {
+                return renderQuickProducts(parts.products);
+            }
+            return orig.apply(this, arguments);
+        };
+    }
+    wrapProductSuggest();
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', wrapProductSuggest);
+    } else {
+        setTimeout(wrapProductSuggest, 0);
     }
     function bootLayout() {
         loadList().then(function () { applyPosLayout(); });
@@ -606,10 +850,10 @@ window.__posQkLayouts = @json($posQkLayoutsJson);
   padding: 0 !important;
 }
 #pos_quick_keys_modal .modal-dialog.pos-qk-dialog {
-  width: min(860px, 82vw);
+  width: min(980px, 92vw);
   max-width: none;
-  height: min(720px, 82vh);
-  margin: max(24px, calc((100vh - min(720px, 82vh)) / 2)) auto;
+  height: min(820px, 90vh);
+  margin: max(16px, calc((100vh - min(820px, 90vh)) / 2)) auto;
 }
 #pos_quick_keys_modal .pos-qk-sheet {
   background: #1b1e24;
@@ -703,20 +947,50 @@ body.lockscreen .pos-qk-switch input[type="checkbox"] {
   margin-top: 6px; background: #111318; border: 1px solid #3a3f4b; color: #fff; height: 40px; border-radius: 6px;
 }
 .pos-qk-check { display: flex; gap: 8px; font-size: 13px; margin: 8px 0 4px; font-weight: 600; color: #d1d5db; }
-.pos-qk-cats { max-height: 120px; overflow: auto; border: 1px solid #3a3f4b; border-radius: 8px; margin-bottom: 10px; background: #111318; }
+.pos-qk-cats { max-height: 160px; overflow: auto; border: 1px solid #3a3f4b; border-radius: 8px; margin-bottom: 10px; background: #111318; }
 .pos-qk-cats button { display: block; width: 100%; text-align: left; border: 0; border-bottom: 1px solid #2a2e36; background: transparent; color: #e5e7eb; padding: 10px 12px; cursor: pointer; }
 .pos-qk-cats button.is-on { font-weight: 800; background: rgba(124,58,237,.28); }
+.pos-qk-zone-label {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: #9aa3b5;
+  margin: 4px 0 8px;
+}
+.pos-qk-grid--cats {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  max-width: 720px;
+}
 .pos-qk-colors { display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0 14px; }
 .pos-qk-dot { width: 22px; height: 22px; border-radius: 6px; border: 2px solid transparent; cursor: pointer; padding: 0; }
 .pos-qk-dot.is-on { border-color: #fff; }
 .pos-qk-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
 .pos-qk-grid .qk-cell {
-  min-height: clamp(48px, 8vh, 72px); border: 1px dashed #4b5563; border-radius: 4px; display: flex; align-items: center;
-  justify-content: center; text-align: center; padding: 8px; cursor: pointer; position: relative;
-  font-size: 12px; font-weight: 700; color: #fff; background: #23262d;
+  min-height: clamp(56px, 9vh, 80px); border: 1px dashed #4b5563; border-radius: 6px; display: flex; align-items: center;
+  justify-content: center; text-align: center; padding: 10px 8px; cursor: pointer; position: relative;
+  font-size: 11px; font-weight: 800; color: #fff; background: #23262d; text-transform: uppercase; letter-spacing: .02em;
 }
-.pos-qk-grid .qk-cell.is-empty { color: transparent; background: transparent; }
-.pos-qk-grid .qk-x { position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,.45); border: 0; color: #fff; width: 18px; height: 18px; border-radius: 4px; line-height: 16px; font-size: 12px; cursor: pointer; }
+.pos-qk-grid .qk-cell.is-empty {
+  color: transparent;
+  background: rgba(255,255,255,.03);
+  border-style: dashed;
+  border-color: rgba(255,255,255,.12);
+}
+.pos-qk-grid .qk-cell.is-on { outline: 2px solid #3b82f6; }
+.pos-qk-grid .qk-cell.is-folder .qk-label { border-bottom: 2px solid #e67e22; padding-bottom: 2px; }
+.pos-qk-grid .qk-badge {
+  position: absolute; top: 4px; right: 22px; background: #fff; color: #111; border-radius: 999px;
+  font-size: 10px; font-weight: 800; min-width: 16px; height: 16px; line-height: 16px; padding: 0 4px;
+}
+.pos-qk-grid .qk-x { position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,.45); border: 0; color: #fff; width: 18px; height: 18px; border-radius: 4px; line-height: 16px; font-size: 12px; cursor: pointer; z-index: 2; }
+.pos-qk-grid .qk-label { display: block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+.pos-card.pos-qk-folder .pos-card-name { border-bottom: 2px solid #e67e22; display: inline-block; padding-bottom: 2px; }
+.pos-card .pos-qk-count {
+  position: absolute; top: 6px; right: 8px; background: #fff; color: #111; border-radius: 999px;
+  font-size: 10px; font-weight: 800; min-width: 16px; height: 16px; line-height: 16px; padding: 0 4px;
+}
+.pos-card.pos-qk-folder, .pos-card.pos-qk-product { position: relative; }
 .pos-qk-mini { font-size: 13px; color: #9aa3b5; }
 @media (max-width: 768px) {
   #pos_quick_keys_modal .modal-dialog.pos-qk-dialog {
