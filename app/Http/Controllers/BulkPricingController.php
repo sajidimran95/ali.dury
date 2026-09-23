@@ -135,6 +135,13 @@ class BulkPricingController extends Controller
                 }
 
                 $variation->{$price_field} = round($new_price, 4);
+                
+                // Recalculate profit margin
+                if ($variation->default_purchase_price > 0) {
+                    $profit = $variation->default_sell_price - $variation->default_purchase_price;
+                    $variation->profit_percent = ($profit / $variation->default_purchase_price) * 100;
+                }
+                
                 $variation->save();
 
                 $updated_count++;
