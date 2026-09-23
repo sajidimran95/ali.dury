@@ -85,14 +85,21 @@
                                 <th>@lang('sale.product')</th>
                                 <th>SKU</th>
                                 <th>{{ __('fulfillment.qty_ordered') }}</th>
-                                <th>{{ __('fulfillment.qty_picked') }}</th>
+                                <th>{{ __('fulfillment.already_picked') }}</th>
+                                <th>{{ __('fulfillment.qty_due') }}</th>
+                                <th>{{ __('fulfillment.pick_now') }}</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach ($order->sell_lines as $line)
-                                @php $sku = $line->variations->sub_sku ?? $line->product->sku ?? ''; @endphp
-                                <tr>
-                                    <td><input type="checkbox" class="ff-pick-check" data-max="{{ (float) $line->quantity }}"></td>
+                                @php
+                                    $sku = $line->variations->sub_sku ?? $line->product->sku ?? '';
+                                    $ordered = (float) $line->quantity;
+                                    $already = (float) ($line->qty_picked ?? 0);
+                                    $due = max(0, $ordered - $already);
+                                @endphp
+                                <tr data-ordered="{{ $ordered }}" data-already="{{ $already }}" data-due="{{ $due }}">
+                                    <td><input type="checkbox" class="ff-pick-check" data-due="{{ $due }}"></td>
                                     <td class="ff-item-cell">
                                         @if (!empty($line->product->image_url))
                                             <img src="{{ $line->product->image_url }}" alt="">
@@ -104,13 +111,16 @@
                                         </span>
                                     </td>
                                     <td>{{ $sku }}</td>
-                                    <td>{{ (float) $line->quantity }}</td>
+                                    <td>{{ $ordered }}</td>
+                                    <td class="ff-already">{{ $already }}</td>
+                                    <td class="ff-due">{{ $due }}</td>
                                     <td>
-                                        <input type="number" min="0" step="0.01" max="{{ (float) $line->quantity }}"
-                                            name="qty_picked[{{ $line->id }}]"
+                                        <input type="number" min="0" step="0.01" max="{{ $due }}"
+                                            name="pick_now[{{ $line->id }}]"
                                             class="form-control ff-qty-picked"
-                                            value="{{ (float) ($line->qty_picked ?? 0) }}">
-                                        <small>/ {{ (float) $line->quantity }}</small>
+                                            value="0"
+                                            @if ($due <= 0) readonly @endif>
+                                        <small>/ {{ $due }} {{ __('fulfillment.due_short') }}</small>
                                     </td>
                                 </tr>
                             @endforeach
@@ -315,6 +325,6 @@
 @endsection
 
 @section('javascript')
-<script src="{{ asset('js/japs-fulfillment.js?v=' . $asset_v) }}"></script>
+<script src="{{ asset('js/japs-fulfillment.js?v=' . $asset_v . '&pick=6') }}"></script>
 <script>if (typeof __currency_convert_recursively === 'function') { __currency_convert_recursively($('.ff-page')); }</script>
 @endsection

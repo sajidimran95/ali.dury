@@ -100,15 +100,20 @@ class FulfillmentService
         }
     }
 
-    public function savePicks(Transaction $order, array $picks, bool $advance): void
+    public function savePicks(Transaction $order, array $pickNow, bool $advance): void
     {
         foreach ($order->sell_lines as $line) {
             if (! empty($line->parent_sell_line_id)) {
                 continue;
             }
-            $qty = isset($picks[$line->id]) ? (float) $picks[$line->id] : (float) ($line->qty_picked ?? 0);
             $max = (float) $line->quantity;
-            $line->qty_picked = max(0, min($qty, $max));
+            $already = (float) ($line->qty_picked ?? 0);
+            $now = isset($pickNow[$line->id]) ? (float) $pickNow[$line->id] : 0;
+            if ($now < 0) {
+                $now = 0;
+            }
+            // Add this session's pick onto already saved — never replace with ordered qty.
+            $line->qty_picked = max(0, min($already + $now, $max));
             $line->save();
         }
         $this->appendTimeline($order, 'picking_saved', 'Picking quantities updated');
@@ -121,16 +126,19 @@ class FulfillmentService
 
     public function allPicked(Transaction $order): bool
     {
-        foreach ($order->sell_lines as $line) {
-            if (! empty($line->parent_sell_line_id)) {
-                continue;
-            }
-            if ((float) ($line->qty_picked ?? 0) + 0.0001 < (float) $line->quantity) {
+        $lines = $order->sell_lines->whereNull('parent_sell_line_id');
+        if ($lines->isEmpty()) {
+            return false;
+        }
+
+        // Partial picks are allowed — every line must have at least some qty picked.
+        foreach ($lines as $line) {
+            if ((float) ($line->qty_picked ?? 0) <= 0) {
                 return false;
             }
         }
 
-        return $order->sell_lines->whereNull('parent_sell_line_id')->count() > 0;
+        return true;
     }
 
     public function advanceToPacking(Transaction $order): void
@@ -218,7 +226,7 @@ class FulfillmentService
     {
         $lines = $order->sell_lines->whereNull('parent_sell_line_id');
         $total = $lines->count();
-        $picked = $lines->filter(fn ($l) => (float) ($l->qty_picked ?? 0) >= (float) $l->quantity)->count();
+        $picked = $lines->filter(fn ($l) => (float) ($l->qty_picked ?? 0) > 0)->count();
 
         return ['picked' => $picked, 'total' => $total];
     }

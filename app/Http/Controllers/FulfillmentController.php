@@ -137,7 +137,7 @@ class FulfillmentController extends Controller
         try {
             $this->fulfillment->savePicks(
                 $order,
-                $request->input('qty_picked', []),
+                $request->input('pick_now', $request->input('qty_picked', [])),
                 (bool) $request->input('advance')
             );
         } catch (\RuntimeException $e) {
