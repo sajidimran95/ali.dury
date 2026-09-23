@@ -66,6 +66,12 @@ body.sale-page-create .pp-cart-cta {
     background: #fff; color: #0E3F34; border-radius: 999px;
     padding: 6px 12px; font-size: 12.5px; font-weight: 800;
 }
+body.sale-page-create .pp-price-input {
+    width: 88px; max-width: 100%;
+    border: 1px solid #C9E6DE; border-radius: 8px;
+    padding: 4px 8px; font-size: 15px; font-weight: 800; color: #0E3F34;
+    background: #F3FAF7; font-family: ui-monospace, monospace;
+}
 body.sale-page-create #goShippingBtn { flex-shrink: 0; width: 100% !important; }
 body.sale-page-create .sale-cart-lines { background: transparent; }
 body.sale-page-create .sale-cart-lines.is-view-list { grid-template-columns: 1fr !important; }
@@ -1032,6 +1038,7 @@ body.sale-page-create .sale-order-build__body { padding: 12px 20px 10px; gap: 8p
     const stepCustomer = document.getElementById('stepCustomer');
     const orderModeInput = document.getElementById('order_mode');
     const isEdit = @json(!empty($edit_order));
+    const canEditOrderPrice = @json(auth()->user()->can('edit_product_price_from_sales_app'));
     const customerSearchEdit = document.getElementById('customerSearchEdit');
     const customerResultsEdit = document.getElementById('customerResultsEdit');
 
@@ -1337,7 +1344,11 @@ body.sale-page-create .sale-order-build__body { padding: 12px 20px 10px; gap: 8p
                     ${unitLabel ? `<div class="pp-pack">${escapeHtml(unitLabel)}</div>` : ''}
                     ${line.sku ? `<div class="pp-code">Code: ${escapeHtml(line.sku)}</div>` : ''}
                     ${oos ? `<div class="pp-oos">OUT OF STOCK</div>` : `
-                        <div class="pp-price-row"><div class="pp-price">${money(unitPrice)}</div><div class="pp-unit-price">${money(piece)}/pc</div></div>
+                        <div class="pp-price-row">${
+                            canEditOrderPrice && cartIdx >= 0
+                                ? `<input type="number" min="0" step="0.01" class="pp-price-input" data-price="${cartIdx}" value="${Number(unitPrice).toFixed(2)}" inputmode="decimal">`
+                                : `<div class="pp-price">${money(unitPrice)}</div>`
+                        }<div class="pp-unit-price">${money(piece)}/pc</div></div>
                         ${lastBtn}
                         ${toggle}
                     `}
@@ -1390,6 +1401,28 @@ body.sale-page-create .sale-order-build__body { padding: 12px 20px 10px; gap: 8p
                 }
             });
             inp.addEventListener('blur', () => setQtyFromInput(+inp.dataset.qty, inp.value));
+        });
+        cartLines.querySelectorAll('input[data-price]').forEach(inp => {
+            inp.addEventListener('focus', () => inp.select());
+            inp.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    inp.blur();
+                }
+            });
+            inp.addEventListener('click', (e) => e.stopPropagation());
+            inp.addEventListener('blur', () => {
+                if (!canEditOrderPrice) return;
+                const i = +inp.dataset.price;
+                if (!cart[i]) return;
+                let price = parseFloat(String(inp.value).replace(/[^0-9.]/g, ''));
+                if (!isFinite(price) || price < 0) price = 0;
+                price = Math.round(price * 100) / 100;
+                const mult = Number(cart[i].multiplier) || 1;
+                cart[i].unit_price = price;
+                cart[i].base_price = mult > 0 ? (price / mult) : price;
+                renderCart();
+            });
         });
         cartLines.querySelectorAll('input[data-unit]').forEach(inp => {
             inp.addEventListener('change', () => setCartUnit(+inp.dataset.unit, inp.value));

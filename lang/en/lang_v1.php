@@ -705,6 +705,7 @@ return [
     'purchase_payment_dues' => 'Purchase Payment Due',
     'tooltip_sales_payment_dues' => "Pending payment for Sales. <br/><small class='text-muted'>Based on invoice pay term. <br/> Showing payments to be received in 7 days or less.</small>",
     'edit_product_price_from_sale_screen' => 'Edit product price from sales screen',
+    'edit_product_price_from_sales_app' => 'Edit item price on Sale App order (order only, not inventory price)',
     'edit_product_discount_from_sale_screen' => 'Edit product discount from Sale screen',
     'autosend_email' => 'Auto Send Email',
     'autosend_sms' => 'Auto Send SMS',

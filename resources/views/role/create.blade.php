@@ -1078,6 +1078,14 @@
             <div class="col-md-12">
               <div class="checkbox">
                 <label>
+                  {!! Form::checkbox('permissions[]', 'edit_product_price_from_sales_app', false,
+                  [ 'class' => 'input-icheck']); !!} {{ __('lang_v1.edit_product_price_from_sales_app') }}
+                </label>
+              </div>
+            </div>
+            <div class="col-md-12">
+              <div class="checkbox">
+                <label>
                   {!! Form::checkbox('permissions[]', 'so.update', false, 
                   [ 'class' => 'input-icheck']); !!} {{ __( 'lang_v1.edit_so' ) }}
                 </label>

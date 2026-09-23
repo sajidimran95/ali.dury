@@ -2687,12 +2687,22 @@ class SalePortalController extends Controller
         $subId = isset($line['sub_unit_id']) ? (int) $line['sub_unit_id'] : (int) $product->unit_id;
         $multiplier = $this->saleAppUnitMultiplier($units, $subId, (int) $product->unit_id);
 
+        // Catalog / group price for this order line (never updates product master price).
+        $catalogBase = (float) ($variation->sell_price_inc_tax ?: $variation->default_sell_price ?: 0);
+        $catalogUnit = round($catalogBase * $multiplier, 4);
+
+        // Only users with this permission may override the line price for this order.
+        $canEditOrderPrice = auth()->user() && auth()->user()->can('edit_product_price_from_sales_app');
+        $unitPrice = $canEditOrderPrice
+            ? (float) ($line['unit_price'] ?? $catalogUnit)
+            : $catalogUnit;
+
         $row = [
             'product_id' => $product->id,
             'variation_id' => $variation->id,
             'quantity' => (float) $line['quantity'],
-            'unit_price' => (float) $line['unit_price'],
-            'unit_price_inc_tax' => (float) $line['unit_price'],
+            'unit_price' => $unitPrice,
+            'unit_price_inc_tax' => $unitPrice,
             'item_tax' => 0,
             'tax_id' => null,
             'enable_stock' => $product->enable_stock,
