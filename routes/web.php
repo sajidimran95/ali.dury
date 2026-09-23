@@ -7,6 +7,7 @@ use App\Http\Controllers\AccountTypeController;
 use App\Http\Controllers\BackUpController;
 use App\Http\Controllers\BarcodeController;
 use App\Http\Controllers\BrandController;
+use App\Http\Controllers\BulkPricingController;
 use App\Http\Controllers\BusinessController;
 use App\Http\Controllers\PosPwaController;
 use App\Http\Controllers\BusinessLocationController;
@@ -701,6 +702,13 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::get('/discount/activate/{id}', [DiscountController::class, 'activate']);
     Route::post('/discount/mass-deactivate', [DiscountController::class, 'massDeactivate']);
     Route::resource('discount', DiscountController::class);
+
+    // Bulk Pricing
+    Route::get('/bulk-pricing', [BulkPricingController::class, 'index']);
+    Route::get('/bulk-pricing/get-products', [BulkPricingController::class, 'getProducts']);
+    Route::post('/bulk-pricing/update', [BulkPricingController::class, 'update']);
+    Route::get('/bulk-pricing/history', [BulkPricingController::class, 'history']);
+    Route::get('/bulk-pricing/details/{id}', [BulkPricingController::class, 'details']);
 
     Route::prefix('account')->group(function () {
         Route::resource('/account', AccountController::class);

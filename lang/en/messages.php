@@ -33,6 +33,7 @@ return [
     'purchase_due_tooltip' => '-ve value = Amount to receive <br> +ve value = Amount to pay',
     'yes' => 'Yes',
     'no' => 'No',
+    'sure' => 'Are you sure?',
     'all' => 'All',
     'settings' => 'Settings',
     'business_location_settings' => 'Business Location Settings',

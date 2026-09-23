@@ -624,6 +624,13 @@ class AdminSidebarMenu
                 ['icon' => '', 'active' => request()->segment(1) == 'labels' && request()->segment(2) == 'show']
             );
         }
+        if (auth()->user()->can('bulk_pricing.access')) {
+            $sub->url(
+                action([\App\Http\Controllers\BulkPricingController::class, 'index']),
+                __('lang_v1.bulk_pricing'),
+                ['icon' => '', 'active' => request()->segment(1) == 'bulk-pricing']
+            );
+        }
 
         // —— Import Data ——
         if (auth()->user()->can('product.create')) {
