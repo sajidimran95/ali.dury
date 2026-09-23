@@ -284,8 +284,7 @@
             success: function (result) {
                 $(container).html(result).modal('show');
                 if (line.unit_price > 0) {
-                    // Field is pre-filled server-side; trigger the existing product.js
-                    // listener so profit_percent -> selling price recalculates too.
+                    // Refresh purchase inc-tax only; selling price stays independent.
                     $('#single_dpp').trigger('change');
                 }
             },

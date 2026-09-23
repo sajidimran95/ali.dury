@@ -411,7 +411,7 @@
 
 @section('javascript')
 
-<script src="{{ asset('js/product.js?v=' . $asset_v . '&uom=1&os=1') }}"></script>
+<script src="{{ asset('js/product.js?v=' . $asset_v . '&uom=3&os=1&decouple=2') }}"></script>
 <script src="{{ asset('js/opening_stock.js?v=' . $asset_v) }}"></script>
 
 <script type="text/javascript">

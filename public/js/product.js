@@ -83,22 +83,9 @@ $(document).ready(function() {
         __write_number($('input#single_dpp'), purchase_exc_tax);
     });
 
-    // Margin still calculates selling from purchase when user edits margin intentionally
+    // Margin is independent — editing it does not rewrite selling or purchase prices
     $(document).on('change', 'input#profit_percent', function(e) {
-        var tax_rate = $('select#tax')
-            .find(':selected')
-            .data('rate');
-        tax_rate = tax_rate == undefined ? 0 : tax_rate;
-
-        var purchase_exc_tax = __read_number($('input#single_dpp'));
-        purchase_exc_tax = purchase_exc_tax == undefined ? 0 : purchase_exc_tax;
-
-        var profit_percent = __read_number($('input#profit_percent'));
-        var selling_price = __add_percent(purchase_exc_tax, profit_percent);
-        __write_number($('input#single_dsp'), selling_price);
-
-        var selling_price_inc_tax = __add_percent(selling_price, tax_rate);
-        __write_number($('input#single_dsp_inc_tax'), selling_price_inc_tax);
+        // no-op: keep purchase and selling prices independent
     });
 
     $(document).on('change', 'input#single_dsp', function(e) {
@@ -108,18 +95,6 @@ $(document).ready(function() {
         tax_rate = tax_rate == undefined ? 0 : tax_rate;
 
         var selling_price = __read_number($('input#single_dsp'));
-        var purchase_exc_tax = __read_number($('input#single_dpp'));
-        var profit_percent = __read_number($('input#profit_percent'));
-
-        // Update margin display only — do not change purchase price
-        if (purchase_exc_tax == 0) {
-            profit_percent = 0;
-        } else {
-            profit_percent = __get_rate(purchase_exc_tax, selling_price);
-        }
-
-        __write_number($('input#profit_percent'), profit_percent);
-
         var selling_price_inc_tax = __add_percent(selling_price, tax_rate);
         __write_number($('input#single_dsp_inc_tax'), selling_price_inc_tax);
     });
@@ -133,17 +108,6 @@ $(document).ready(function() {
 
         var selling_price = __get_principle(selling_price_inc_tax, tax_rate);
         __write_number($('input#single_dsp'), selling_price);
-        var purchase_exc_tax = __read_number($('input#single_dpp'));
-        var profit_percent = __read_number($('input#profit_percent'));
-
-        // Update margin display only — do not change purchase price
-        if (purchase_exc_tax == 0) {
-            profit_percent = 0;
-        } else {
-            profit_percent = __get_rate(purchase_exc_tax, selling_price);
-        }
-
-        __write_number($('input#profit_percent'), profit_percent);
     });
 
     if ($('#product_add_form').length) {
@@ -378,22 +342,7 @@ $(document).ready(function() {
     });
 
     $(document).on('change', 'input.variable_profit_percent', function(e) {
-        var tax_rate = $('select#tax')
-            .find(':selected')
-            .data('rate');
-        tax_rate = tax_rate == undefined ? 0 : tax_rate;
-
-        var tr_obj = $(this).closest('tr');
-        var profit_percent = __read_number($(this));
-
-        var purchase_exc_tax = __read_number(tr_obj.find('input.variable_dpp'));
-        purchase_exc_tax = purchase_exc_tax == undefined ? 0 : purchase_exc_tax;
-
-        var selling_price = __add_percent(purchase_exc_tax, profit_percent);
-        __write_number(tr_obj.find('input.variable_dsp'), selling_price);
-
-        var selling_price_inc_tax = __add_percent(selling_price, tax_rate);
-        __write_number(tr_obj.find('input.variable_dsp_inc_tax'), selling_price_inc_tax);
+        // no-op: purchase and selling stay independent
     });
 
     $(document).on('change', 'input.variable_dsp', function(e) {
@@ -404,19 +353,6 @@ $(document).ready(function() {
 
         var tr_obj = $(this).closest('tr');
         var selling_price = __read_number($(this));
-        var purchase_exc_tax = __read_number(tr_obj.find('input.variable_dpp'));
-
-        var profit_percent = __read_number(tr_obj.find('input.variable_profit_percent'));
-
-        //if purchase price not set
-        if (purchase_exc_tax == 0) {
-            profit_percent = 0;
-        } else {
-            profit_percent = __get_rate(purchase_exc_tax, selling_price);
-        }
-
-        __write_number(tr_obj.find('input.variable_profit_percent'), profit_percent);
-
         var selling_price_inc_tax = __add_percent(selling_price, tax_rate);
         __write_number(tr_obj.find('input.variable_dsp_inc_tax'), selling_price_inc_tax);
     });
@@ -431,17 +367,6 @@ $(document).ready(function() {
 
         var selling_price = __get_principle(selling_price_inc_tax, tax_rate);
         __write_number(tr_obj.find('input.variable_dsp'), selling_price);
-
-        var purchase_exc_tax = __read_number(tr_obj.find('input.variable_dpp'));
-        var profit_percent = __read_number(tr_obj.find('input.variable_profit_percent'));
-        //if purchase price not set
-        if (purchase_exc_tax == 0) {
-            profit_percent = 0;
-        } else {
-            profit_percent = __get_rate(purchase_exc_tax, selling_price);
-        }
-
-        __write_number(tr_obj.find('input.variable_profit_percent'), profit_percent);
     });
 
     $(document).on('click', '.add_variation_value_row', function() {
@@ -916,18 +841,25 @@ $(document).on('change', '.variation-file-input', function() {
         }
     }
 
-    function uomSyncFromMainPrices() {
+    function uomSyncSellFromMain() {
         if (!uomEnabled() || uomLock) return;
         uomLock = true;
         var factor = uomFactor();
         var sellBase = __read_number($('input#single_dsp'));
-        var purchaseBase = __read_number($('input#single_dpp'));
         if (sellBase !== undefined && sellBase !== null) {
             __write_number($('#uom_sell_base'), sellBase);
             if (factor > 0) {
                 __write_number($('#uom_sell_pack'), sellBase * factor);
             }
         }
+        uomLock = false;
+    }
+
+    function uomSyncPurchaseFromMain() {
+        if (!uomEnabled() || uomLock) return;
+        uomLock = true;
+        var factor = uomFactor();
+        var purchaseBase = __read_number($('input#single_dpp'));
         if (purchaseBase !== undefined && purchaseBase !== null) {
             __write_number($('#uom_purchase_base'), purchaseBase);
             if (factor > 0) {
@@ -935,6 +867,11 @@ $(document).on('change', '.variation-file-input', function() {
             }
         }
         uomLock = false;
+    }
+
+    function uomSyncFromMainPrices() {
+        uomSyncSellFromMain();
+        uomSyncPurchaseFromMain();
     }
 
     function uomFromSellBase() {
@@ -948,10 +885,6 @@ $(document).on('change', '.variation-file-input', function() {
         __write_number($('input#single_dsp_inc_tax'), __add_percent(base, tax_rate));
         if (factor > 0) {
             __write_number($('#uom_sell_pack'), base * factor);
-        }
-        var purchase_exc_tax = __read_number($('input#single_dpp')) || 0;
-        if (purchase_exc_tax > 0) {
-            __write_number($('#profit_percent'), __get_rate(purchase_exc_tax, base));
         }
         uomLock = false;
     }
@@ -968,10 +901,6 @@ $(document).on('change', '.variation-file-input', function() {
         __write_number($('input#single_dsp'), base);
         var tax_rate = $('select#tax').find(':selected').data('rate') || 0;
         __write_number($('input#single_dsp_inc_tax'), __add_percent(base, tax_rate));
-        var purchase_exc_tax = __read_number($('input#single_dpp')) || 0;
-        if (purchase_exc_tax > 0) {
-            __write_number($('#profit_percent'), __get_rate(purchase_exc_tax, base));
-        }
         uomLock = false;
     }
 
@@ -982,15 +911,12 @@ $(document).on('change', '.variation-file-input', function() {
         var base = __read_number($('#uom_purchase_base'));
         base = base == undefined ? 0 : base;
         __write_number($('input#single_dpp'), base);
-        $('input#single_dpp').trigger('change');
+        var tax_rate = $('select#tax').find(':selected').data('rate') || 0;
+        __write_number($('input#single_dpp_inc_tax'), __add_percent(base, tax_rate));
         if (factor > 0) {
             __write_number($('#uom_purchase_pack'), base * factor);
         }
-        var sellBase = __read_number($('input#single_dsp')) || 0;
-        __write_number($('#uom_sell_base'), sellBase);
-        if (factor > 0) {
-            __write_number($('#uom_sell_pack'), sellBase * factor);
-        }
+        // Do not touch selling prices
         uomLock = false;
     }
 
@@ -1004,10 +930,9 @@ $(document).on('change', '.variation-file-input', function() {
         var base = pack / factor;
         __write_number($('#uom_purchase_base'), base);
         __write_number($('input#single_dpp'), base);
-        $('input#single_dpp').trigger('change');
-        var sellBase = __read_number($('input#single_dsp')) || 0;
-        __write_number($('#uom_sell_base'), sellBase);
-        __write_number($('#uom_sell_pack'), sellBase * factor);
+        var tax_rate = $('select#tax').find(':selected').data('rate') || 0;
+        __write_number($('input#single_dpp_inc_tax'), __add_percent(base, tax_rate));
+        // Do not touch selling prices
         uomLock = false;
     }
 
@@ -1091,9 +1016,14 @@ $(document).on('change', '.variation-file-input', function() {
         $(document).on('change', '#uom_purchase_base', uomFromPurchaseBase);
         $(document).on('change', '#uom_purchase_pack', uomFromPurchasePack);
 
-        $(document).on('change', 'input#single_dsp, input#single_dpp', function () {
+        // Keep sell and purchase packaging prices fully independent
+        $(document).on('change', 'input#single_dsp', function () {
             if (!uomEnabled() || uomLock) return;
-            uomSyncFromMainPrices();
+            uomSyncSellFromMain();
+        });
+        $(document).on('change', 'input#single_dpp', function () {
+            if (!uomEnabled() || uomLock) return;
+            uomSyncPurchaseFromMain();
         });
 
         $(document).on('submit', 'form.product_form, form#product_add_form, form#product_edit_form', function (e) {
