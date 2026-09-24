@@ -154,9 +154,19 @@ class CustomerGroupController extends Controller
 
             $customer_group = CustomerGroup::create($input);
             $this->customerGroupService->ensurePriceGroup($customer_group);
+            $priced = 0;
+            if (($input['price_calculation_type'] ?? 'percentage') === 'percentage') {
+                $priced = $this->customerGroupService->applyPercentToGroup(
+                    $customer_group->fresh(),
+                    (float) $input['amount'],
+                    true
+                );
+            }
             $output = ['success' => true,
                 'data' => $customer_group,
-                'msg' => __('lang_v1.success'),
+                'msg' => $priced > 0
+                    ? __('lang_v1.group_discount_saved', ['percent' => $input['amount'], 'count' => $priced])
+                    : __('lang_v1.success'),
             ];
         } catch (\Exception $e) {
             \Log::emergency('File:'.$e->getFile().'Line:'.$e->getLine().'Message:'.$e->getMessage());
@@ -214,12 +224,33 @@ class CustomerGroupController extends Controller
                 $input['amount'] = ! empty($input['amount']) ? $this->commonUtil->num_uf($input['amount']) : 0;
 
                 $customer_group = CustomerGroup::where('business_id', $business_id)->findOrFail($id);
+                $oldAmount = (float) $customer_group->amount;
+                $oldType = (string) ($customer_group->price_calculation_type ?: 'percentage');
 
                 $customer_group->update($input);
                 $this->customerGroupService->ensurePriceGroup($customer_group);
 
+                $priced = 0;
+                $type = (string) ($input['price_calculation_type'] ?? $oldType);
+                $amount = (float) ($input['amount'] ?? 0);
+                // When % calculation is used (create or change to -5%, etc.), rebuild linked price group
+                if ($type === 'percentage') {
+                    $shouldRebuild = $oldType !== 'percentage'
+                        || abs($oldAmount - $amount) > 0.00001
+                        || ! VariationGroupPrice::where('price_group_id', $customer_group->selling_price_group_id)->exists();
+                    if ($shouldRebuild) {
+                        $priced = $this->customerGroupService->applyPercentToGroup(
+                            $customer_group->fresh(),
+                            $amount,
+                            true
+                        );
+                    }
+                }
+
                 $output = ['success' => true,
-                    'msg' => __('lang_v1.success'),
+                    'msg' => $priced > 0
+                        ? __('lang_v1.group_discount_saved', ['percent' => $amount, 'count' => $priced])
+                        : __('lang_v1.success'),
                 ];
             } catch (\Exception $e) {
                 \Log::emergency('File:'.$e->getFile().'Line:'.$e->getLine().'Message:'.$e->getMessage());
