@@ -860,6 +860,8 @@ class ContactController extends Controller
             $input['contact_type'] = $request->input('contact_type_radio');
 
             $input['name'] = trim(implode(' ', $name_array));
+            // contacts.mobile is NOT NULL
+            $input['mobile'] = trim((string) ($input['mobile'] ?? ''));
 
             if (! empty($request->input('is_export'))) {
                 $input['is_export'] = true;
@@ -1081,6 +1083,8 @@ class ContactController extends Controller
 
 
                 $input['name'] = trim(implode(' ', $name_array));
+                // contacts.mobile is NOT NULL
+                $input['mobile'] = trim((string) ($input['mobile'] ?? ''));
 
                 $input['is_export'] = ! empty($request->input('is_export')) ? 1 : 0;
 
@@ -2100,7 +2104,10 @@ class ContactController extends Controller
     {
         $business_id = $request->session()->get('user.business_id');
 
-        $mobile_number = $request->input('mobile_number');
+        $mobile_number = trim((string) $request->input('mobile_number'));
+        if ($mobile_number === '') {
+            return ['is_mobile_exists' => false, 'msg' => ''];
+        }
 
         $query = Contact::where('business_id', $business_id)
                         ->where('mobile', 'like', "%{$mobile_number}");

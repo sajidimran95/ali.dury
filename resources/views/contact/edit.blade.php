@@ -110,9 +110,9 @@
             </div>
             <div class="col-md-3 contact_person">
                 <div class="form-group">
-                    {!! Form::label('first_name', __( 'business.first_name' ) . ':*') !!}
+                    {!! Form::label('first_name', __( 'business.first_name' ) . ':') !!}
                     <small class="text-muted contact_person_hint" @if($person_type != 'business') style="display:none;" @endif>(@lang('team_schedule.contact_person'))</small>
-                    {!! Form::text('first_name', $contact->first_name, ['class' => 'form-control', 'required', 'placeholder' => __( 'business.first_name' ) ]); !!}
+                    {!! Form::text('first_name', $contact->first_name, ['class' => 'form-control', 'placeholder' => __( 'business.first_name' ) ]); !!}
                 </div>
             </div>
             <div class="col-md-3 contact_person">
@@ -131,12 +131,12 @@
 
       <div class="col-md-3">
         <div class="form-group">
-            {!! Form::label('mobile', __('contact.mobile') . ':*') !!}
+            {!! Form::label('mobile', __('contact.mobile') . ':') !!}
             <div class="input-group">
                 <span class="input-group-addon">
                     <i class="fa fa-mobile"></i>
                 </span>
-                {!! Form::text('mobile', $contact->mobile, ['class' => 'form-control', 'required', 'placeholder' => __('contact.mobile')]); !!}
+                {!! Form::text('mobile', $contact->mobile, ['class' => 'form-control', 'placeholder' => __('contact.mobile')]); !!}
             </div>
         </div>
       </div>

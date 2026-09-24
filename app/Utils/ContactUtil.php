@@ -117,6 +117,10 @@ class ContactUtil extends Util
                 unset($input['assigned_to_users']);
             }
 
+            if (trim((string) ($input['name'] ?? '')) === '' && trim((string) ($input['supplier_business_name'] ?? '')) === '') {
+                $input['name'] = $input['contact_id'];
+            }
+
             $contact = Contact::create($input);
 
             //Assigned the user
