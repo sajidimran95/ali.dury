@@ -203,6 +203,11 @@
       		@endif
       	</div>
       	<div class="modal-footer">
+      		<a href="{{ action([\App\Http\Controllers\LabelsController::class, 'show']) }}?product_id={{ $product->id }}"
+      			class="tw-dw-btn tw-dw-btn-info tw-text-white no-print"
+      			title="{{ __('lang_v1.label_help') }}">
+      			<i class="fa fa-barcode"></i> @lang('barcode.print_labels')
+      		</a>
       		<button type="button" class="tw-dw-btn tw-dw-btn-primary tw-text-white no-print" 
 	        aria-label="Print" 
 	          onclick="$(this).closest('div.modal').printThis();">
