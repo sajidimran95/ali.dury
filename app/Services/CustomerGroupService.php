@@ -6,6 +6,7 @@ use App\CustomerGroup;
 use App\SellingPriceGroup;
 use App\Variation;
 use App\VariationGroupPrice;
+use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
@@ -95,11 +96,14 @@ class CustomerGroupService
                     ->pluck('id', 'variation_id');
 
                 $insert = [];
+                $updateIds = [];
+                $priceById = [];
                 foreach ($variations as $variation) {
                     $price = round(((float) ($variation->sell_price_inc_tax ?? 0)) * $factor, 4);
                     if (isset($existing[$variation->id])) {
-                        VariationGroupPrice::where('id', $existing[$variation->id])
-                            ->update(['price_inc_tax' => $price, 'price_type' => 'fixed', 'updated_at' => $now]);
+                        $rowId = (int) $existing[$variation->id];
+                        $updateIds[] = $rowId;
+                        $priceById[$rowId] = $price;
                     } else {
                         $insert[] = [
                             'variation_id' => $variation->id,
@@ -114,6 +118,22 @@ class CustomerGroupService
                 }
                 if (! empty($insert)) {
                     VariationGroupPrice::insert($insert);
+                }
+                if (! empty($updateIds)) {
+                    $cases = '';
+                    $bindings = [];
+                    foreach ($priceById as $rowId => $price) {
+                        $cases .= ' WHEN ? THEN ?';
+                        $bindings[] = $rowId;
+                        $bindings[] = $price;
+                    }
+                    $idPlaceholders = implode(',', array_fill(0, count($updateIds), '?'));
+                    $bindings[] = $now;
+                    $bindings = array_merge($bindings, $updateIds);
+                    DB::update(
+                        "UPDATE variation_group_prices SET price_inc_tax = CASE id{$cases} END, price_type = 'fixed', updated_at = ? WHERE id IN ({$idPlaceholders})",
+                        $bindings
+                    );
                 }
             });
 

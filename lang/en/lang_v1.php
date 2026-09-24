@@ -188,6 +188,7 @@ return [
     'group_product_overrides_help' => 'Optional. Search and add only the products that should not use the all-inventory %. Leave this empty if every product uses the group %.',
     'group_product_override_added' => 'Product added as an exception price.',
     'group_discount_saved' => 'Group discount :percent% applied to :count products.',
+    'group_discount_updating' => 'Saved. Updating product prices for :percent% in the background…',
     'group_price_scope_help' => 'Choose how this group % applies: all inventory, a category, or selected products.',
     'active_scope' => 'Selected',
     'scope_all_inventory' => 'All inventory',
