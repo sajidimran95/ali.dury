@@ -1,7 +1,12 @@
 <div class="modal-dialog" role="document">
   <div class="modal-content">
 
-    {!! Form::open(['url' => action([\App\Http\Controllers\TaxonomyController::class, 'store']), 'method' => 'post', 'id' => 'category_add_form' ]) !!}
+    @php
+      $quick_add = $quick_add ?? false;
+      $quick_add_parent_id = $quick_add_parent_id ?? null;
+      $is_quick_sub = $quick_add && !empty($quick_add_parent_id);
+    @endphp
+    {!! Form::open(['url' => action([\App\Http\Controllers\TaxonomyController::class, 'store']), 'method' => 'post', 'id' => $quick_add ? 'quick_add_category_form' : 'category_add_form' ]) !!}
     <div class="modal-header">
       <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
       <h4 class="modal-title">@lang( 'messages.add' )</h4>
@@ -46,7 +51,13 @@
         <p class="help-block">@lang('lang_v1.show_on_pos_help')</p>
       </div>
       @endif
-      @if(!empty($parent_categories) && $enable_sub_category)
+      @if($is_quick_sub)
+        <input type="hidden" name="add_as_sub_cat" value="1">
+        <div class="form-group">
+          {!! Form::label('parent_id', __( 'category.select_parent_category' ) . ':') !!}
+          {!! Form::select('parent_id', $parent_categories, $quick_add_parent_id, ['class' => 'form-control']); !!}
+        </div>
+      @elseif(!empty($parent_categories) && $enable_sub_category && !$quick_add)
         <div class="form-group">
             <div class="checkbox">
               <label>

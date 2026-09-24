@@ -102,14 +102,24 @@
             <div class="col-sm-4 @if(!session('business.enable_category')) hide @endif">
               <div class="form-group">
                 {!! Form::label('category_id', __('product.category') . ':') !!}
+                <div class="input-group">
                   {!! Form::select('category_id', $categories, $product->category_id, ['placeholder' => __('messages.please_select'), 'class' => 'form-control select2']); !!}
+                  <span class="input-group-btn">
+                    <button type="button" @if(!auth()->user()->can('category.create')) disabled @endif class="btn btn-default bg-white btn-flat btn-modal" data-href="{{action([\App\Http\Controllers\TaxonomyController::class, 'create'], ['type' => 'product', 'quick_add' => true])}}" title="@lang('category.add_category')" data-container=".view_modal"><i class="fa fa-plus-circle text-primary fa-lg"></i></button>
+                  </span>
+                </div>
               </div>
             </div>
 
             <div class="col-sm-4 @if(!(session('business.enable_category') && session('business.enable_sub_category'))) hide @endif">
               <div class="form-group">
                 {!! Form::label('sub_category_id', __('product.sub_category')  . ':') !!}
+                <div class="input-group">
                   {!! Form::select('sub_category_id', $sub_categories, $product->sub_category_id, ['placeholder' => __('messages.please_select'), 'class' => 'form-control select2']); !!}
+                  <span class="input-group-btn">
+                    <button type="button" @if(!auth()->user()->can('category.create')) disabled @endif class="btn btn-default bg-white btn-flat quick_add_sub_category" data-href="{{action([\App\Http\Controllers\TaxonomyController::class, 'create'], ['type' => 'product', 'quick_add' => true])}}" title="@lang('category.add_category')"><i class="fa fa-plus-circle text-primary fa-lg"></i></button>
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -402,7 +412,7 @@
 @endsection
 
 @section('javascript')
-  <script src="{{ asset('js/product.js?v=' . $asset_v . '&uom=3&decouple=3&margin=2') }}"></script>
+  <script src="{{ asset('js/product.js?v=' . $asset_v . '&uom=3&decouple=3&margin=2&qcat=1') }}"></script>
   <script type="text/javascript">
     $(document).ready( function(){
       __page_leave_confirmation('#product_add_form');

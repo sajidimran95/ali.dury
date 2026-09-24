@@ -791,6 +791,70 @@ $(document).on('submit', 'form#quick_add_brand_form', function(e) {
     });
 });
 
+//Quick add sub category (needs a parent category selected first)
+$(document).on('click', 'button.quick_add_sub_category', function(e) {
+    e.preventDefault();
+    var parent_id = $('#category_id').val();
+    if (!parent_id) {
+        toastr.error(LANG.please_select_category || 'Please select a category first');
+        $('#category_id').select2('open');
+        return;
+    }
+    var $container = $('.view_modal').first();
+    if (!$container.length || $container.hasClass('in') || $container.data('loading')) {
+        return;
+    }
+    $container.data('loading', true);
+    $.ajax({
+        url: $(this).data('href') + '&parent_id=' + encodeURIComponent(parent_id),
+        dataType: 'html',
+        success: function(result) {
+            if (!$container.parent().is('body')) {
+                $container.appendTo('body');
+            }
+            $container.html(result).modal('show');
+        },
+        complete: function() {
+            $container.data('loading', false);
+        },
+    });
+});
+
+//Quick add category / sub category
+$(document).on('submit', 'form#quick_add_category_form', function(e) {
+    e.preventDefault();
+    var form = $(this);
+
+    $.ajax({
+        method: 'POST',
+        url: form.attr('action'),
+        dataType: 'json',
+        data: form.serialize(),
+        beforeSend: function() {
+            __disable_submit_button(form.find('button[type="submit"]'));
+        },
+        success: function(result) {
+            if (result.success == true) {
+                var cat = result.data;
+                if (parseInt(cat.parent_id, 10) > 0) {
+                    $('#sub_category_id')
+                        .append(new Option(cat.name, cat.id, true, true))
+                        .trigger('change');
+                } else {
+                    $('#category_id')
+                        .append(new Option(cat.name, cat.id, true, true))
+                        .trigger('change');
+                }
+                $('div.view_modal').modal('hide');
+                toastr.success(result.msg);
+            } else {
+                toastr.error(result.msg);
+                form.find('button[type="submit"]').prop('disabled', false);
+            }
+        },
+    });
+});
+
 $(document).on('click', 'button.apply-all', function(){
     var val = $(this).closest('.input-group').find('input').val();
     var target_class = $(this).data('target-class');
