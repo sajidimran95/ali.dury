@@ -78,9 +78,17 @@ $(document).ready(function() {
         $('.contact_modal')
             .find('select#contact_type')
             .val('supplier')
+            .trigger('change')
             .closest('div.contact_type_div')
-            .addClass('hide');
+            .removeClass('hide');
         $('.contact_modal').modal('show');
+    });
+
+    $(document).on('shown.bs.modal', '.contact_modal', function() {
+        var $type = $(this).find('select#contact_type');
+        if ($type.length && !$type.val()) {
+            $type.val('supplier').trigger('change');
+        }
     });
 
     $('form#quick_add_contact')
@@ -192,11 +200,15 @@ $(document).ready(function() {
         });
     }
 
-    $('.contact_modal').on('hidden.bs.modal', function() {
-        $('form#quick_add_contact')
-            .find('button[type="submit"]')
-            .removeAttr('disabled');
-        $('form#quick_add_contact')[0].reset();
+    $('.contact_modal').on('hidden.bs.modal', function(e) {
+        // Ignore hidden events bubbling up from widgets inside the modal
+        if (e.target !== this) {
+            return;
+        }
+        var $form = $('form#quick_add_contact');
+        $form.find('button[type="submit"]').removeAttr('disabled');
+        $form[0].reset();
+        $form.find('select#contact_type').val('supplier').trigger('change');
     });
 
     //Add products
@@ -1330,19 +1342,25 @@ function submitQuickAddPurchaseContactForm(form) {
         },
         success: function(result) {
             if (result.success == true) {
-                var name = result.data.name;
-
-                if (result.data.supplier_business_name) {
-                    name += result.data.supplier_business_name;
+                var contact = result.data;
+                var parts = [];
+                if (contact.supplier_business_name) {
+                    parts.push(contact.supplier_business_name);
                 }
-                $('select#supplier_id').append(
-                    $('<option>', { value: result.data.id, text: name })
-                );
-                $('select#supplier_id')
-                    .val(result.data.id)
-                    .trigger('change');
+                if (contact.name) {
+                    parts.push(contact.name);
+                }
+                var name = parts.join(' - ') || contact.contact_id || String(contact.id);
+
+                var $supplier = $('select#supplier_id');
+                $supplier.find('option[value="' + contact.id + '"]').remove();
+                $supplier.append(new Option(name, contact.id, true, true)).trigger('change');
+                $supplier.trigger({
+                    type: 'select2:select',
+                    params: { data: $.extend({ balance: 0 }, contact, { id: contact.id, text: name }) },
+                });
+
                 $('div.contact_modal').modal('hide');
-                set_supplier_address(result.data);
                 toastr.success(result.msg);
             } else {
                 toastr.error(result.msg);

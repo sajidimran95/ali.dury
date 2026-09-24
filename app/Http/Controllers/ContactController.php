@@ -836,6 +836,12 @@ class ContactController extends Controller
             $input = $request->only(['type', 'supplier_business_name',
                 'prefix', 'first_name', 'middle_name', 'last_name', 'tax_number', 'pay_term_number', 'pay_term_type', 'mobile', 'landline', 'alternate_number', 'city', 'state', 'country', 'address_line_1', 'address_line_2', 'customer_group_id', 'zip_code', 'contact_id', 'custom_field1', 'custom_field2', 'custom_field3', 'custom_field4', 'custom_field5', 'custom_field6', 'custom_field7', 'custom_field8', 'custom_field9', 'custom_field10', 'email', 'shipping_address', 'position', 'dob', 'shipping_custom_field_details', 'assigned_to_users', 'land_mark', 'street_name', 'building_number', 'additional_number']);
 
+            if (empty($input['type'])) {
+                return ['success' => false,
+                    'msg' => __('validation.required', ['attribute' => __('contact.contact_type')]),
+                ];
+            }
+
             $name_array = [];
 
             if (! empty($input['prefix'])) {

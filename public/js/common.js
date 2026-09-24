@@ -75,7 +75,8 @@ $(document).on('show.bs.modal', STACKED_MODALS_SELECTOR, function () {
 $(document).on('shown.bs.modal', STACKED_MODALS_SELECTOR, function () {
     var base = document.body.classList.contains('pos-sale-theme') ? 10600 : 1100;
     var zIndex = parseInt(this.style.zIndex, 10) || base;
-    var backdrop = document.querySelector('.modal-backdrop:last-of-type') || document.querySelector('.modal-backdrop:last-child');
+    var backdrops = document.querySelectorAll('.modal-backdrop');
+    var backdrop = backdrops.length ? backdrops[backdrops.length - 1] : null;
     if (backdrop) {
         backdrop.style.setProperty('z-index', String(zIndex - 1), 'important');
     }
