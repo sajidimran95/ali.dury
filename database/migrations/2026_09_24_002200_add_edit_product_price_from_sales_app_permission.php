@@ -1,4 +1,4 @@
-order popup need to as same this !DOCTYPE html><?php
+<?php
 
 use Illuminate\Database\Migrations\Migration;
 use Spatie\Permission\Models\Permission;
@@ -12,9 +12,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        $permission = 'edit_product_price_from_sales_app';
+        $name = 'edit_product_price_from_sales_app';
 
-        Permission::findOrCreate($permission, 'web');
+        $permission = Permission::firstOrCreate(
+            ['name' => $name, 'guard_name' => 'web']
+        );
 
         if (app()->bound('cache')) {
             app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
@@ -32,22 +34,33 @@ return new class extends Migration
             ->get();
 
         foreach ($roles as $role) {
-            $name = (string) $role->name;
-            $isAdmin = $name === 'Admin' || stripos($name, 'Admin#') === 0;
-            $isSalesRep = stripos($name, 'Sales Representative#') === 0
-                || (bool) preg_match('/^Sales#\d+$/', $name);
+            $roleName = (string) $role->name;
+            $isAdmin = $roleName === 'Admin' || stripos($roleName, 'Admin#') === 0;
+            $isSalesRep = stripos($roleName, 'Sales Representative#') === 0
+                || (bool) preg_match('/^Sales#\d+$/', $roleName);
             if (! $isAdmin && ! $isSalesRep) {
                 continue;
             }
-            if (! $role->hasPermissionTo($permission)) {
+
+            // Avoid hasPermissionTo() — it throws if permission is missing from cache.
+            if (! $role->permissions()->where('permissions.name', $name)->exists()) {
                 $role->givePermissionTo($permission);
             }
+        }
+
+        if (app()->bound('cache')) {
+            app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
         }
     }
 
     public function down(): void
     {
-        $permission = 'edit_product_price_from_sales_app';
+        $name = 'edit_product_price_from_sales_app';
+
+        $permission = Permission::where('name', $name)->where('guard_name', 'web')->first();
+        if (! $permission) {
+            return;
+        }
 
         $roles = Role::query()
             ->where('guard_name', 'web')
@@ -60,19 +73,20 @@ return new class extends Migration
             ->get();
 
         foreach ($roles as $role) {
-            $name = (string) $role->name;
-            $isAdmin = $name === 'Admin' || stripos($name, 'Admin#') === 0;
-            $isSalesRep = stripos($name, 'Sales Representative#') === 0
-                || (bool) preg_match('/^Sales#\d+$/', $name);
+            $roleName = (string) $role->name;
+            $isAdmin = $roleName === 'Admin' || stripos($roleName, 'Admin#') === 0;
+            $isSalesRep = stripos($roleName, 'Sales Representative#') === 0
+                || (bool) preg_match('/^Sales#\d+$/', $roleName);
             if (! $isAdmin && ! $isSalesRep) {
                 continue;
             }
-            if ($role->hasPermissionTo($permission)) {
+
+            if ($role->permissions()->where('permissions.name', $name)->exists()) {
                 $role->revokePermissionTo($permission);
             }
         }
 
-        Permission::where('name', $permission)->where('guard_name', 'web')->delete();
+        $permission->delete();
 
         if (app()->bound('cache')) {
             app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
