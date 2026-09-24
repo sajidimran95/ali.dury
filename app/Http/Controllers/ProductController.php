@@ -156,6 +156,11 @@ class ProductController extends Controller
                 $products->where('products.category_id', $category_id);
             }
 
+            $sub_category_id = request()->get('sub_category_id', null);
+            if (! empty($sub_category_id)) {
+                $products->where('products.sub_category_id', $sub_category_id);
+            }
+
             $brand_id = request()->get('brand_id', null);
             if (! empty($brand_id)) {
                 $products->where('products.brand_id', $brand_id);

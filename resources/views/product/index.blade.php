@@ -82,6 +82,17 @@
                             ]) !!}
                         </div>
                     </div>
+                    <div class="col-md-3 hide" id="product_list_sub_category_wrap">
+                        <div class="form-group">
+                            {!! Form::label('sub_category_id', __('product.sub_category') . ':') !!}
+                            {!! Form::select('sub_category_id', [], null, [
+                                'class' => 'form-control select2',
+                                'style' => 'width:100%',
+                                'id' => 'product_list_filter_sub_category_id',
+                                'placeholder' => __('lang_v1.all'),
+                            ]) !!}
+                        </div>
+                    </div>
 
                     <div class="col-md-3">
                         <div class="form-group">
@@ -324,6 +335,7 @@
                     "data": function(d) {
                         d.type = $('#product_list_filter_type').val();
                         d.category_id = $('#product_list_filter_category_id').val();
+                        d.sub_category_id = $('#product_list_filter_sub_category_id').val();
                         d.brand_id = $('#product_list_filter_brand_id').val();
                         d.unit_id = $('#product_list_filter_unit_id').val();
                         d.tax_id = $('#product_list_filter_tax_id').val();
@@ -628,8 +640,37 @@
                 });
             });
 
+            $(document).on('change', '#product_list_filter_category_id', function() {
+                var cat_id = $(this).val();
+                var $wrap = $('#product_list_sub_category_wrap');
+                var $sub = $('#product_list_filter_sub_category_id');
+                $sub.html('<option value="">@lang('lang_v1.all')</option>').val('').trigger('change.select2');
+                if (!cat_id) {
+                    $wrap.addClass('hide');
+                    return;
+                }
+                $.ajax({
+                    method: 'POST',
+                    url: '/products/get_sub_categories',
+                    dataType: 'html',
+                    data: { cat_id: cat_id },
+                    success: function(result) {
+                        var $opts = $('<select>' + (result || '') + '</select>').find('option').filter(function() {
+                            return $(this).val() !== '';
+                        });
+                        if ($opts.length) {
+                            $sub.append($opts);
+                            $wrap.removeClass('hide');
+                        } else {
+                            $wrap.addClass('hide');
+                        }
+                        $sub.trigger('change.select2');
+                    }
+                });
+            });
+
             $(document).on('change',
-                '#product_list_filter_type, #product_list_filter_category_id, #product_list_filter_brand_id, #product_list_filter_unit_id, #product_list_filter_tax_id, #location_id, #active_state, #repair_model_id',
+                '#product_list_filter_type, #product_list_filter_category_id, #product_list_filter_sub_category_id, #product_list_filter_brand_id, #product_list_filter_unit_id, #product_list_filter_tax_id, #location_id, #active_state, #repair_model_id',
                 function() {
                     if ($("#product_list_tab").hasClass('active')) {
                         product_table.ajax.reload();
@@ -826,6 +867,7 @@
                             data: function(d) {
                                 d.location_id = $('#location_id').val();
                                 d.category_id = $('#product_list_filter_category_id').val();
+                                d.sub_category_id = $('#product_list_filter_sub_category_id').val();
                                 d.brand_id = $('#product_list_filter_brand_id').val();
                                 d.unit_id = $('#product_list_filter_unit_id').val();
                                 d.type = $('#product_list_filter_type').val();
