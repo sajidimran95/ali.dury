@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Sep 24, 2026 at 08:32 PM
+-- Generation Time: Sep 24, 2026 at 08:34 PM
 -- Server version: 8.4.3
 -- PHP Version: 8.4.2
 
@@ -381,7 +381,9 @@ INSERT INTO `activity_log` (`id`, `log_name`, `description`, `subject_id`, `subj
 (270, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-09-24 10:07:37', '2026-09-24 10:07:37'),
 (271, 'default', 'sell_deleted', 437, 'App\\Transaction', NULL, 1, 1, 'App\\User', '{\"id\":437,\"invoice_no\":\"0110\",\"attributes\":{\"type\":\"sell\",\"status\":\"final\",\"shipping_status\":\"delivered\",\"payment_status\":\"paid\",\"final_total\":\"20.0000\"}}', NULL, '2026-09-24 10:28:38', '2026-09-24 10:28:38'),
 (272, 'default', 'sell_deleted', 182, 'App\\Transaction', NULL, 1, 1, 'App\\User', '{\"id\":182,\"invoice_no\":\"0109\",\"attributes\":{\"type\":\"sell\",\"status\":\"final\",\"shipping_status\":\"delivered\",\"payment_status\":\"paid\",\"final_total\":\"6.9900\"}}', NULL, '2026-09-24 10:28:42', '2026-09-24 10:28:42'),
-(273, 'default', 'sell_deleted', 181, 'App\\Transaction', NULL, 1, 1, 'App\\User', '{\"id\":181,\"invoice_no\":\"0108\",\"attributes\":{\"type\":\"sell\",\"status\":\"final\",\"shipping_status\":\"delivered\",\"payment_status\":\"due\",\"final_total\":\"190.0000\"}}', NULL, '2026-09-24 10:28:46', '2026-09-24 10:28:46');
+(273, 'default', 'sell_deleted', 181, 'App\\Transaction', NULL, 1, 1, 'App\\User', '{\"id\":181,\"invoice_no\":\"0108\",\"attributes\":{\"type\":\"sell\",\"status\":\"final\",\"shipping_status\":\"delivered\",\"payment_status\":\"due\",\"final_total\":\"190.0000\"}}', NULL, '2026-09-24 10:28:46', '2026-09-24 10:28:46'),
+(274, 'default', 'logout', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-09-24 10:33:13', '2026-09-24 10:33:13'),
+(275, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-09-24 10:33:32', '2026-09-24 10:33:32');
 
 -- --------------------------------------------------------
 
@@ -1908,7 +1910,7 @@ CREATE TABLE `ecommerce_settings` (
 --
 
 INSERT INTO `ecommerce_settings` (`id`, `business_id`, `is_enabled`, `store_name`, `store_logo`, `location_id`, `enable_cod`, `enable_stripe`, `enable_paypal`, `stripe_key`, `stripe_secret`, `paypal_client_id`, `paypal_secret`, `default_country`, `seo_title`, `seo_description`, `contact_email`, `contact_phone`, `extra`, `created_at`, `updated_at`) VALUES
-(1, 1, 1, 'Japs Wholesale', 'ecommerce/store_logo_1789759644.png', 1, 1, 0, 0, NULL, NULL, NULL, NULL, 'United States', 'Japs Wholesale Distribution', 'Shop curated snacks, beverages, personal care and home essentials. Live POS inventory, secure checkout, USA shipping.', 'japspos@gmail.com', '+123436589789o', '{\"about_body\": \"rgvbtnjhu,mjk,jk,.lo;/p\'\", \"about_lede\": null, \"about_title\": null, \"store_hours\": \"Mon–Fri 9:30AM–5:30PM | Sat 10AM–4PM\"}', '2026-07-21 20:26:19', '2026-09-18 10:12:32');
+(1, 1, 1, 'Japs Wholesale', 'ecommerce/store_logo_1790282058.png', 1, 1, 0, 0, NULL, NULL, NULL, NULL, 'United States', 'Japs Wholesale Distribution', 'Shop curated snacks, beverages, personal care and home essentials. Live POS inventory, secure checkout, USA shipping.', 'japspos@gmail.com', '+123436589789o', '{\"about_body\": null, \"about_lede\": null, \"about_title\": null, \"store_hours\": \"Mon–Fri 9:30AM–5:30PM | Sat 10AM–4PM\"}', '2026-07-21 20:26:19', '2026-09-24 10:34:23');
 
 -- --------------------------------------------------------
 
@@ -19487,7 +19489,7 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `user_type`, `surname`, `first_name`, `last_name`, `username`, `email`, `password`, `language`, `contact_no`, `address`, `remember_token`, `business_id`, `available_at`, `paused_at`, `max_sales_discount_percent`, `allow_login`, `barcode_login`, `barcode_switch_id`, `status`, `is_enable_service_staff_pin`, `service_staff_pin`, `crm_contact_id`, `is_cmmsn_agnt`, `cmmsn_percent`, `sales_target`, `sales_target_daily`, `sales_target_weekly`, `sales_target_monthly`, `selected_contacts`, `dob`, `gender`, `marital_status`, `blood_group`, `contact_number`, `alt_number`, `family_number`, `fb_link`, `twitter_link`, `social_media_1`, `social_media_2`, `permanent_address`, `current_address`, `guardian_name`, `custom_field_1`, `custom_field_2`, `custom_field_3`, `custom_field_4`, `bank_details`, `id_proof_name`, `id_proof_number`, `deleted_at`, `created_at`, `updated_at`, `pos_quick_keys_enabled`) VALUES
-(1, 'user', NULL, 'Japs', 'POS', 'japspos', 'japspos@gmail.com', '$2y$10$LH3D2XH/82k.Av8HfGb3GOfKM3F7Qi7I86iZLyxhJFtjajS8pKHpK', 'en', NULL, NULL, 'x8EvGSL3xRIXQpYBv8vCv1xLG6lGUgx0AUwy4QjTAFWlgacirS8OUbVej11z', 1, NULL, NULL, NULL, 1, 1, 'usi:1659d00394bc', 'active', 0, NULL, NULL, 0, 0.00, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '{\"account_holder_name\":null,\"account_number\":null,\"bank_name\":null,\"bank_code\":null,\"branch\":null,\"tax_payer_id\":null}', NULL, NULL, NULL, '2026-06-04 16:29:53', '2026-09-10 05:14:45', 1),
+(1, 'user', NULL, 'Japs', 'POS', 'japspos', 'japspos@gmail.com', '$2y$10$LH3D2XH/82k.Av8HfGb3GOfKM3F7Qi7I86iZLyxhJFtjajS8pKHpK', 'en', NULL, NULL, 'VOtEL0RpXM8MSAIJ5r2vwM2pW7yA6WsLh8jriRHCwlTqoAuNwdqkJy41vAgN', 1, NULL, NULL, NULL, 1, 1, 'usi:1659d00394bc', 'active', 0, NULL, NULL, 0, 0.00, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '{\"account_holder_name\":null,\"account_number\":null,\"bank_name\":null,\"bank_code\":null,\"branch\":null,\"tax_payer_id\":null}', NULL, NULL, NULL, '2026-06-04 16:29:53', '2026-09-10 05:14:45', 1),
 (3, 'user', NULL, 'Sales', NULL, 'sales', 'sales@japspos.com', '$2y$10$bhjln6gIUl7iQH99RhOHe.SdLfYtmWt46.QAc9EYGCwwKI.apVRG.', 'en', NULL, NULL, NULL, 1, NULL, NULL, NULL, 1, 1, 'usi:79f26ee953f9', 'active', 0, NULL, NULL, 0, 0.00, NULL, 20.0000, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '{\"account_holder_name\":null,\"account_number\":null,\"bank_name\":null,\"bank_code\":null,\"branch\":null,\"tax_payer_id\":null}', NULL, NULL, NULL, '2026-08-17 03:13:14', '2026-09-10 05:19:25', 1),
 (4, 'user', 'Delivery', 'Delivery', 'Man', 'delivery', 'delivery@gmail.com', '$2y$10$PuoHB9TgIQJgKwIArsx3lOhXxy3adR/3vIStKn9WY7ANbA0rP24o.', 'en', NULL, NULL, NULL, 1, NULL, NULL, NULL, 1, 0, 'usi:33bb86fe0b35', 'active', 0, NULL, NULL, 0, 0.00, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '{\"account_holder_name\":null,\"account_number\":null,\"bank_name\":null,\"bank_code\":null,\"branch\":null,\"tax_payer_id\":null}', NULL, NULL, NULL, '2026-09-16 05:26:26', '2026-09-16 05:54:03', 1);
 
@@ -25550,7 +25552,7 @@ ALTER TABLE `account_types`
 -- AUTO_INCREMENT for table `activity_log`
 --
 ALTER TABLE `activity_log`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=274;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=276;
 
 --
 -- AUTO_INCREMENT for table `ai_assistance_settings`
