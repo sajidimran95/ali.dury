@@ -676,9 +676,9 @@ class HomeController extends Controller
             //NET = TOTAL SALES - INVOICE DUE - EXPENSE
             $output['net'] = $output['total_sell'] - $output['invoice_due'] - $output['total_expense'];
 
-            // Orders / AOV / avg time-to-payment KPIs (POS + Online Store + Field Sales)
+            // Orders / AOV / avg time-to-payment KPIs — invoice (final sell) only
             $permitted_locations = auth()->user()->permitted_locations();
-            $pos_orders = $this->getOrdersCount($business_id, $start, $end, $location_id, $created_by, $permitted_locations);
+            $invoice_orders = (int) $this->dashboardOrdersQuery($business_id, $start, $end, $permitted_locations, $location_id, $created_by)->count();
             $output['avg_payment_hours'] = $this->getAvgPaymentHours($business_id, $start, $end, $location_id, $permitted_locations);
             $spark_end = $end;
             $spark_start = \Carbon::parse($end)->subDays(13)->format('Y-m-d');
@@ -700,11 +700,11 @@ class HomeController extends Controller
             $channel_totals = $this->getOnlineAndFieldTotals($business_id, $start, $end, $location_id, $created_by, $permitted_locations);
             $output['online_orders'] = $channel_totals['online_orders'];
             $output['online_orders_amount'] = $channel_totals['online_amount'];
-            $field_orders = $channel_totals['field_orders'];
-            $field_amount = $channel_totals['field_amount'];
 
-            $output['total_orders'] = $pos_orders + $output['online_orders'] + $field_orders;
-            $output['total_sell'] = $total_sell_inc_tax + $output['online_orders_amount'] + $field_amount;
+            // Total Orders = final invoices only (POS + Online + Field), no sales orders
+            $output['total_orders'] = $invoice_orders;
+            $output['total_sell'] = $total_sell_inc_tax + $output['online_orders_amount'];
+            // Field sale invoices are already in getSellTotals (notEcommerce); only add online invoice amount
             $output['avg_order_value'] = $output['total_orders'] > 0 ? round($output['total_sell'] / $output['total_orders'], 2) : 0;
             $output['net'] = $output['total_sell'] - $output['invoice_due'] - $output['total_expense'];
 
@@ -724,10 +724,9 @@ class HomeController extends Controller
             $prev_total_purchase = (float) ($prev_purchase['total_purchase_inc_tax'] ?? 0);
             $prev_net = $prev_total_sell - $prev_invoice_due - (float) ($prev_txn['total_expense'] ?? 0);
 
-            $prev_total_orders = $this->getOrdersCount($business_id, $prev_start, $prev_end_str, $location_id, $created_by, $permitted_locations);
+            $prev_total_orders = (int) $this->dashboardOrdersQuery($business_id, $prev_start, $prev_end_str, $permitted_locations, $location_id, $created_by)->count();
             $prev_channel = $this->getOnlineAndFieldTotals($business_id, $prev_start, $prev_end_str, $location_id, $created_by, $permitted_locations);
-            $prev_total_orders += $prev_channel['online_orders'] + $prev_channel['field_orders'];
-            $prev_total_sell += $prev_channel['online_amount'] + $prev_channel['field_amount'];
+            $prev_total_sell += $prev_channel['online_amount'];
             $prev_avg_order_value = $prev_total_orders > 0 ? $prev_total_sell / $prev_total_orders : 0;
             $prev_avg_payment_hours = $this->getAvgPaymentHours($business_id, $prev_start, $prev_end_str, $location_id, $permitted_locations);
             $prev_net = $prev_total_sell - $prev_invoice_due - (float) ($prev_txn['total_expense'] ?? 0);
@@ -2028,30 +2027,12 @@ class HomeController extends Controller
     }
 
     /**
-     * Count of finalized, non-ecommerce sells in a date range — companion to
-     * TransactionUtil::getSellTotals() (same population, used for Average Order Value).
+     * Count of finalized invoice sells in a date range (type=sell, status=final).
+     * Sales orders are excluded.
      */
     private function getOrdersCount($business_id, $start, $end, $location_id = null, $created_by = null, $permitted_locations = null)
     {
-        $query = Transaction::where('business_id', $business_id)
-            ->where('type', 'sell')
-            ->where('status', 'final')
-            ->notEcommerce();
-
-        if (! empty($start) && ! empty($end)) {
-            $query->whereBetween('transaction_date', [$start.' 00:00:00', $end.' 23:59:59']);
-        }
-        if (! empty($permitted_locations) && $permitted_locations != 'all') {
-            $query->whereIn('location_id', $permitted_locations);
-        }
-        if (! empty($location_id)) {
-            $query->where('location_id', $location_id);
-        }
-        if (! empty($created_by)) {
-            $query->where('created_by', $created_by);
-        }
-
-        return (int) $query->count();
+        return (int) $this->dashboardOrdersQuery($business_id, $start, $end, $permitted_locations, $location_id, $created_by)->count();
     }
 
     /**
@@ -2107,7 +2088,8 @@ class HomeController extends Controller
     }
 
     /**
-     * Online Store + Field Sales counts/amounts for a date range (KPI totals).
+     * Online Store + Field Sales invoice counts/amounts for a date range (KPI totals).
+     * Only final invoices (type=sell, status=final) — sales orders excluded.
      */
     private function getOnlineAndFieldTotals($business_id, $start, $end, $location_id = null, $created_by = null, $permitted_locations = null)
     {
@@ -2125,27 +2107,16 @@ class HomeController extends Controller
     }
 
     /**
-     * POS finals + Online Store + Field Sales for dashboard widgets.
+     * Final invoice orders only (type=sell, status=final) for dashboard KPIs/widgets.
+     * Sales orders are excluded — only completed invoices count.
      */
     private function dashboardOrdersQuery($business_id, $start = null, $end = null, $permitted_locations = null, $location_id = null, $created_by = null, $table = '')
     {
         $c = $table !== '' ? $table.'.' : '';
-        $query = Transaction::query()->where($c.'business_id', $business_id);
-        $query->where(function ($q) use ($c) {
-            $q->where(function ($pos) use ($c) {
-                $pos->where($c.'type', 'sell')
-                    ->where($c.'status', 'final')
-                    ->where(function ($s) use ($c) {
-                        $s->whereNull($c.'source')->orWhereNotIn($c.'source', ['ecommerce', 'sale_app']);
-                    });
-            })->orWhere(function ($ecom) use ($c) {
-                $ecom->where($c.'source', 'ecommerce')
-                    ->where($c.'type', 'sales_order')
-                    ->where($c.'status', '!=', 'cancelled');
-            })->orWhere(function ($field) use ($c) {
-                $field->where($c.'source', 'sale_app')->whereIn($c.'type', ['sales_order', 'sell']);
-            });
-        });
+        $query = Transaction::query()
+            ->where($c.'business_id', $business_id)
+            ->where($c.'type', 'sell')
+            ->where($c.'status', 'final');
 
         if (! empty($start) && ! empty($end)) {
             $query->whereBetween($c.'transaction_date', [$start.' 00:00:00', $end.' 23:59:59']);
@@ -2164,20 +2135,11 @@ class HomeController extends Controller
     }
 
     /**
-     * Daily order count per location — mirrors TransactionUtil::getSellsCurrentFy()'s
-     * grouping (COUNT instead of SUM), for the Orders Over Time / Orders by Location widgets.
+     * Daily invoice order count per location (final sells only).
      */
     private function getOrdersCountByLocation($business_id, $start, $end, $permitted_locations = null)
     {
-        $query = Transaction::where('business_id', $business_id)
-            ->where('type', 'sell')
-            ->where('status', 'final')
-            ->notEcommerce()
-            ->whereBetween('transaction_date', [$start.' 00:00:00', $end.' 23:59:59']);
-
-        if (! empty($permitted_locations) && $permitted_locations != 'all') {
-            $query->whereIn('location_id', $permitted_locations);
-        }
+        $query = $this->dashboardOrdersQuery($business_id, $start, $end, $permitted_locations);
 
         return $query->select(
             DB::raw('DATE(transaction_date) as date'),
