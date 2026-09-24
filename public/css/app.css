@@ -2365,3 +2365,11 @@ body.lockscreen::-webkit-scrollbar-thumb:hover {
 	font-size: 12px;
 	line-height: 1.35;
 }
+
+/* Required field asterisk (*) — red on all create/edit forms */
+.required-asterisk,
+label .required-asterisk,
+.control-label .required-asterisk {
+	color: #dd4b39 !important;
+	font-weight: 700;
+}

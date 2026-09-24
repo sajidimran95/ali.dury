@@ -1,5 +1,31 @@
 //This file contains all common functionality for the application
 
+// Make required-field asterisks (*) red on all create/edit forms and modals
+window.highlightRequiredAsterisks = function (context) {
+    var $root = context ? $(context) : $(document);
+    $root.find('label, .control-label, th, legend, .box-title, h1, h2, h3, h4').each(function () {
+        var $el = $(this);
+        if ($el.data('req-star-done')) {
+            return;
+        }
+        var html = $el.html();
+        if (!html || html.indexOf('*') === -1 || html.indexOf('required-asterisk') !== -1) {
+            if (html && html.indexOf('required-asterisk') !== -1) {
+                $el.data('req-star-done', 1);
+            }
+            return;
+        }
+        // Only wrap plain * used as required markers (e.g. "Name:*" / "Name *")
+        var updated = html
+            .replace(/:(\s*)\*(?![^<]*>)/g, ':$1<span class="required-asterisk">*</span>')
+            .replace(/(\S)\s+\*(?=\s*<|$)/g, '$1 <span class="required-asterisk">*</span>');
+        if (updated !== html) {
+            $el.html(updated);
+            $el.data('req-star-done', 1);
+        }
+    });
+};
+
 // Bootstrap 3 wasn't built for stacked/nested modals — it shares state across ALL modal
 // instances instead of scoping it per-instance. The fixes below patch that, but ONLY for
 // the specific modal pairs in this app that are actually opened stacked (JapsAI's two
@@ -67,6 +93,17 @@ $(document).on('submit', 'form', function (e) {
 $(document).ready(function () {
     window.addEventListener('online', updateOnlineStatus);
     window.addEventListener('offline', updateOnlineStatus);
+
+    // Red * for required fields on all pages
+    if (typeof window.highlightRequiredAsterisks === 'function') {
+        window.highlightRequiredAsterisks();
+    }
+    $(document).on('shown.bs.modal', '.modal', function () {
+        window.highlightRequiredAsterisks(this);
+    });
+    $(document).ajaxComplete(function () {
+        window.highlightRequiredAsterisks();
+    });
 
     $.ajaxSetup({
         beforeSend: function (jqXHR, settings) {
