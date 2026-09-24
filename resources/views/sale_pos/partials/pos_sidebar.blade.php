@@ -49,14 +49,15 @@
     }
 @endphp
 <div id="product_category_div" class="pos-inline-categories">
+    <div class="pos-cat-selected" style="display: none;">
+        <div class="pos-cat-selected-bar">
+            <span class="pos-cat-selected-name"></span>
+            <button type="button" class="pos-cat-selected-close" aria-label="Close">&times;</button>
+        </div>
+        <div class="pos-cat-selected-subcats" style="display: none;"></div>
+    </div>
     <div class="pos-category-scroll" aria-label="@lang('category.categories')">
     <div class="row pos-card-grid pos-card-grid-categories" data-label-all="@lang('messages.all')" style="margin: 0;">
-        <div class="col-md-2 col-xs-4 tw-mb-2 tw-cursor-pointer main-category-div main-category no-print"
-            data-value="all" data-parent="0" style="padding-left: 4px; padding-right: 4px;">
-            <div class="pos-card cat pos-cat-tile">
-                <h4 class="pos-card-name">@lang('lang_v1.all_category')</h4>
-            </div>
-        </div>
         @foreach ($displayCats as $index => $category)
             <div class="col-md-2 col-xs-4 tw-mb-2 tw-cursor-pointer main-category-div main-category no-print"
                 data-value="{{ $category['id'] }}" data-name="{{ $category['_qk_label'] ?? $category['name'] }}" data-parent="0"

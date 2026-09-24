@@ -1070,6 +1070,62 @@ body.lockscreen.pos-sale-theme .pos-subcat-pill.is-active {
   transform: none;
 }
 
+/* Selected category header bar (replaces category grid while a category is active) */
+body.lockscreen.pos-sale-theme .pos-cat-selected {
+  margin: 4px 4px 10px;
+}
+
+body.lockscreen.pos-sale-theme .pos-cat-selected-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 6px 48px;
+  border-radius: 6px;
+  background: var(--pos-orange, #ee6c4d);
+  color: #fff;
+}
+
+body.lockscreen.pos-sale-theme .pos-cat-selected-name {
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: .3px;
+  text-transform: uppercase;
+  text-align: center;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+body.lockscreen.pos-sale-theme .pos-cat-selected-close {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #fff;
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+}
+
+body.lockscreen.pos-sale-theme .pos-cat-selected-close:hover {
+  background: rgba(0, 0, 0, .15);
+}
+
+body.lockscreen.pos-sale-theme .pos-cat-selected-subcats {
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 8px 0 0;
+}
 /* Hide page footer / bottom white line on POS create/edit only */
 body.lockscreen.pos-sale-theme footer,
 body.lockscreen.pos-sale-theme .main-footer,

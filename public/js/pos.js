@@ -3879,6 +3879,9 @@ function pos_refresh_payment_modal() {
         if (kind === 'category') {
             global_p_category_id = null;
             pos_set_active_category_tile('all');
+            if (typeof window.pos_hide_selected_category === 'function') {
+                window.pos_hide_selected_category();
+            }
         } else if (kind === 'brand') {
             global_brand_id = null;
         }
@@ -3944,59 +3947,64 @@ function pos_refresh_payment_modal() {
             return;
         }
 
-        // Check for subcategory data stored in the hidden divs
-        var $subcatSource = $('.all-sub-category[data-category-id="' + value + '"]');
-
-        if (!$subcatSource.length) {
-            // No subcategories — filter immediately and close
-            global_p_category_id = value;
-            pos_set_filter_chip('category', name);
-            $grid.find('.pos-subcat-strip').remove();
-            $grid.removeData('open-cat');
-            pos_set_active_category_tile(value);
-            $('input#suggestion_page').val(1);
-            get_product_suggestion_list(global_p_category_id, global_brand_id, $('input#location_id').val(), null);
-            get_featured_products();
-            $('.overlay-category').trigger('click');
-            return;
-        }
-
-        // Has subcategories — tapping same card again collapses the strip
-        if ($grid.data('open-cat') == value) {
-            $grid.find('.pos-subcat-strip').remove();
-            $grid.removeData('open-cat');
-            return;
-        }
-
-        // Mark active parent card
-        $grid.data('open-cat', value);
-        pos_set_active_category_tile(value);
-
-        // Load parent category products immediately (don't wait for subcategory pill)
         global_p_category_id = value;
         pos_set_filter_chip('category', name);
+        pos_set_active_category_tile(value);
+        pos_show_selected_category(value, name);
         $('input#suggestion_page').val(1);
         get_product_suggestion_list(global_p_category_id, global_brand_id, $('input#location_id').val(), null);
         get_featured_products();
+    });
 
-        // Find the last col in the same visual row (3 cols per row at md breakpoint)
-        var $cols     = $grid.children('[class*="col-"]').not('.pos-subcat-strip');
-        var idx       = $cols.index($(this).closest('[class*="col-"]'));
-        var $lastInRow = $cols.eq(Math.min(Math.ceil((idx + 1) / 3) * 3 - 1, $cols.length - 1));
+    // Selected category: hide the tile grid, show a header bar (name + ×) and subcategory pills
+    function pos_escape_html(s) {
+        return $('<div>').text(s == null ? '' : String(s)).html();
+    }
 
-        // Build pills: first pill = "All [Name]" (selects parent), rest = subcategories
-        var allLabel = $grid.data('label-all') || 'All';
-        var pills = '<button type="button" class="pos-subcat-pill pos-subcat-pill--all" data-value="' + value + '" data-name="' + name + '">' + allLabel + ' ' + name + '</button>';
-        $subcatSource.find('.product_category').each(function() {
-            var scId   = $(this).data('value');
-            var scName = $(this).data('name');
-            if (scId && scName) {
-                pills += '<button type="button" class="pos-subcat-pill" data-value="' + scId + '" data-name="' + scName + '">' + scName + '</button>';
-            }
-        });
+    function pos_show_selected_category(value, name) {
+        var $wrap = $('.pos-inline-categories');
+        $wrap.find('.pos-cat-selected-name').text(name || '');
 
-        $grid.find('.pos-subcat-strip').remove();
-        $('<div class="pos-subcat-strip"></div>').html(pills).insertAfter($lastInRow);
+        var $subcatSource = $('.all-sub-category[data-category-id="' + value + '"]').first();
+        var $subs = $wrap.find('.pos-cat-selected-subcats');
+        if ($subcatSource.length) {
+            var allLabel = $('.pos-card-grid-categories').first().data('label-all') || 'All';
+            var pills = '<button type="button" class="pos-subcat-pill pos-subcat-pill--all is-active" data-value="' + pos_escape_html(value) + '" data-name="' + pos_escape_html(name) + '">' + pos_escape_html(allLabel) + '</button>';
+            $subcatSource.find('.product_category').each(function() {
+                var scId   = $(this).data('value');
+                var scName = $(this).data('name');
+                if (scId && scName) {
+                    pills += '<button type="button" class="pos-subcat-pill" data-value="' + pos_escape_html(scId) + '" data-name="' + pos_escape_html(scName) + '">' + pos_escape_html(scName) + '</button>';
+                }
+            });
+            $subs.html(pills).css('display', 'flex');
+        } else {
+            $subs.empty().hide();
+        }
+
+        $wrap.find('.pos-category-scroll').hide();
+        $wrap.find('.pos-cat-selected').show();
+    }
+
+    function pos_hide_selected_category() {
+        var $wrap = $('.pos-inline-categories');
+        $wrap.find('.pos-cat-selected').hide();
+        $wrap.find('.pos-cat-selected-subcats').empty().hide();
+        $wrap.find('.pos-category-scroll').show();
+    }
+    window.pos_hide_selected_category = pos_hide_selected_category;
+
+    // × on selected category bar → back to default POS view (all categories, all products)
+    $(document).on('click', '.pos-cat-selected-close', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        global_p_category_id = null;
+        pos_set_filter_chip('category', null);
+        pos_set_active_category_tile('all');
+        pos_hide_selected_category();
+        $('input#suggestion_page').val(1);
+        get_product_suggestion_list(null, global_brand_id, $('input#location_id').val(), null);
+        get_featured_products();
     });
 
     // Subcategory pill tap — delegated because pills are dynamically injected
@@ -4007,20 +4015,11 @@ function pos_refresh_payment_modal() {
 
         global_p_category_id = value;
         pos_set_filter_chip('category', name);
-        // Keep parent tile active when a subcategory is chosen
-        var parentId = $(this).closest('.pos-card-grid-categories').data('open-cat') || value;
-        if ($(this).hasClass('pos-subcat-pill--all')) {
-            parentId = value;
-        }
-        pos_set_active_category_tile(parentId);
+        $('.pos-cat-selected-subcats .pos-subcat-pill').removeClass('is-active');
+        $('.pos-cat-selected-subcats .pos-subcat-pill[data-value="' + value + '"]').addClass('is-active');
         $('input#suggestion_page').val(1);
         get_product_suggestion_list(global_p_category_id, global_brand_id, $('input#location_id').val(), null);
         get_featured_products();
-
-        var $grid = $('.pos-card-grid-categories');
-        $grid.find('.pos-subcat-strip').remove();
-        $grid.removeData('open-cat');
-        $('.overlay-category').trigger('click');
     });
 
     // on click brand in brand drawer

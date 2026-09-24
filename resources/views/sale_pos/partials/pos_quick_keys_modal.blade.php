@@ -297,7 +297,14 @@ window.__posQkLayouts = @json($posQkLayoutsJson);
             html += '<div class="col-md-2 col-xs-4 tw-mb-2 tw-cursor-pointer main-category-div main-category no-print" data-value="' + c.id + '" data-name="' + String(c.name).replace(/"/g, '') + '" data-parent="0" style="padding-left: 4px; padding-right: 4px;">' +
                 '<div class="pos-card cat pos-cat-tile pos-qk-folder' + custom + '"' + style + '>' + badge + '<h4 class="pos-card-name">' + escapeHtml(c.name) + '</h4></div></div>';
         });
-        if (allTile) allTile.insertAdjacentHTML('afterend', html);
+        if (allTile) {
+            allTile.insertAdjacentHTML('afterend', html);
+        } else {
+            grid.insertAdjacentHTML('afterbegin', html);
+        }
+        if (typeof window.pos_hide_selected_category === 'function') {
+            window.pos_hide_selected_category();
+        }
         if (typeof window.pos_set_active_category_tile === 'function') {
             window.pos_set_active_category_tile('all');
         } else {
