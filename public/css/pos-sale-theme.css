@@ -6000,6 +6000,45 @@ body.lockscreen.pos-sale-theme #recent_transactions_modal .tw-dw-btn-error {
   border-color: #ef5350 !important;
 }
 
+/* Recent transactions: one tidy row of icon actions */
+#recent_transactions_modal .pos-recent-actions-cell {
+  width: 1%;
+  white-space: nowrap;
+  vertical-align: middle !important;
+}
+#recent_transactions_modal .pos-recent-actions {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+}
+#recent_transactions_modal .pos-recent-act {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: 1px solid #444;
+  background: #2a2a2a;
+  color: #e5e5e5 !important;
+  font-size: 14px;
+  text-decoration: none !important;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+#recent_transactions_modal .pos-recent-act i {
+  color: inherit !important;
+}
+#recent_transactions_modal .pos-recent-act--edit { border-color: #3b8ddd; color: #7cb8f2 !important; }
+#recent_transactions_modal .pos-recent-act--print { border-color: #2e7d4f; color: #6fcf97 !important; }
+#recent_transactions_modal .pos-recent-act--return { border-color: #d98a1c; color: #f5b24a !important; }
+#recent_transactions_modal .pos-recent-act--delete { border-color: #ef5350; color: #ff8a80 !important; }
+#recent_transactions_modal .pos-recent-act--edit:hover { background: #3b8ddd; color: #fff !important; }
+#recent_transactions_modal .pos-recent-act--print:hover { background: #2e7d4f; color: #fff !important; }
+#recent_transactions_modal .pos-recent-act--return:hover { background: #d98a1c; color: #fff !important; }
+#recent_transactions_modal .pos-recent-act--delete:hover { background: #ef5350; color: #fff !important; }
+
 body.lockscreen.pos-sale-theme #recent_transactions_modal .text-muted,
 body.lockscreen.pos-sale-theme #recent_transactions_modal .text-danger {
   color: #cfcfcf !important;
