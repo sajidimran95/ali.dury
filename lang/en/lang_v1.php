@@ -866,6 +866,8 @@ return [
     'click_to_print' => 'Click to print',
     'deactivated_success' => 'Deactivated successfully',
     'products_could_not_be_deleted' => "Some products couldn't be deleted because it has transactions related to it.",
+    'product_has_sales_cannot_delete' => 'This product is used in sales and cannot be deleted. Mark it inactive instead so old sales keep their items.',
+    'sell_lines_missing' => 'The products on this sale are no longer in the system (they were removed with a product delete/import). Totals and payments are kept, but the items cannot be shown or edited.',
     'price' => 'Price',
     'auto_backup_instruction' => 'To enable auto backup and backup clean you must setup a cron job with this command',
     'gross_profit' => 'Gross Profit',

@@ -1094,22 +1094,10 @@ class ProductController extends Controller
                                 ->with('variations')
                                 ->first();
 
-                // check for enable stock = 0 product
-                if($product->enable_stock == 0){
-                    $t_count = TransactionSellLine::join(
-                        'transactions as T',
-                        'transaction_sell_lines.transaction_id',
-                        '=',
-                        'T.id'
-                    )
-                        ->where('T.business_id', $business_id)
-                        ->where('transaction_sell_lines.product_id', $id)
-                        ->count();
-
-                    if ($t_count > 0) {
-                        $can_be_deleted = false;
-                        $error_msg = "can't delete product exit in sell";
-                    }
+                // Sale lines are removed by DB cascade when a product is deleted, so never delete sold products
+                if ($can_be_deleted && TransactionSellLine::where('product_id', $id)->exists()) {
+                    $can_be_deleted = false;
+                    $error_msg = __('lang_v1.product_has_sales_cannot_delete');
                 }
 
                 //Check if product is added as an ingredient of any recipe
@@ -2022,6 +2010,10 @@ class ProductController extends Controller
                         $exists_as_ingredient = \Modules\Manufacturing\Entities\MfgRecipeIngredient::whereIn('variation_id', $variation_ids)
                             ->exists();
                         $can_be_deleted = ! $exists_as_ingredient;
+                    }
+
+                    if ($can_be_deleted && TransactionSellLine::where('product_id', $product->id)->exists()) {
+                        $can_be_deleted = false;
                     }
 
                     //Delete if no purchase found

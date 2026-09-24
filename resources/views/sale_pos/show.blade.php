@@ -203,6 +203,11 @@
       </div>
 
       <div class="col-sm-12 col-xs-12">
+        @if($sell->type === 'sell' && $sell->sell_lines->isEmpty() && (float) $sell->final_total > 0)
+          <div class="alert alert-warning no-print" style="margin-bottom:10px;">
+            <i class="fa fa-exclamation-triangle"></i> @lang('lang_v1.sell_lines_missing')
+          </div>
+        @endif
         <div class="table-responsive">
           @include('sale_pos.partials.sale_line_details')
         </div>
