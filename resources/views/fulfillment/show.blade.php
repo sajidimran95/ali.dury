@@ -81,7 +81,7 @@
                     <table class="ff-items">
                         <thead>
                             <tr>
-                                <th></th>
+                                <th><input type="checkbox" id="ff_pick_select_all" title="@lang('lang_v1.select_all')" aria-label="@lang('lang_v1.select_all')"></th>
                                 <th>@lang('sale.product')</th>
                                 <th>SKU</th>
                                 <th>{{ __('fulfillment.qty_ordered') }}</th>
@@ -325,6 +325,6 @@
 @endsection
 
 @section('javascript')
-<script src="{{ asset('js/japs-fulfillment.js?v=' . $asset_v . '&pick=6') }}"></script>
+<script src="{{ asset('js/japs-fulfillment.js?v=' . $asset_v . '&pick=7') }}"></script>
 <script>if (typeof __currency_convert_recursively === 'function') { __currency_convert_recursively($('.ff-page')); }</script>
 @endsection

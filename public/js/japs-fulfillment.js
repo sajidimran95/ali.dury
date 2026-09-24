@@ -42,6 +42,17 @@ $(function () {
         $('#ff_ready_pack').prop('disabled', !ok);
     }
 
+    function syncSelectAll() {
+        var $checks = $('#ff_pick_form .ff-pick-check');
+        var $all = $('#ff_pick_select_all');
+        if (!$all.length || !$checks.length) {
+            return;
+        }
+        var checked = $checks.filter(':checked').length;
+        $all.prop('checked', checked > 0 && checked === $checks.length);
+        $all.prop('indeterminate', checked > 0 && checked < $checks.length);
+    }
+
     $(document).on('input change keyup blur', '.ff-qty-picked', function () {
         var $row = $(this).closest('tr');
         var meta = rowMeta($row);
@@ -65,7 +76,19 @@ $(function () {
                 $row.find('.ff-qty-picked').val(meta.due);
             }
         }
+        syncSelectAll();
         syncReady();
+    });
+
+    $(document).on('change', '#ff_pick_select_all', function () {
+        var on = this.checked;
+        $('#ff_pick_form .ff-pick-check').each(function () {
+            if (this.checked === on) {
+                return;
+            }
+            $(this).prop('checked', on).trigger('change');
+        });
+        syncSelectAll();
     });
 
     // Pre-select rows that already have saved picks (do not change pick-now)
@@ -75,5 +98,6 @@ $(function () {
             $row.find('.ff-pick-check').prop('checked', true);
         }
     });
+    syncSelectAll();
     syncReady();
 });
