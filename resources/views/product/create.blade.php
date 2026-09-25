@@ -445,7 +445,7 @@
 
 @section('javascript')
 
-<script src="{{ asset('js/product.js?v=' . $asset_v . '&uom=6&os=1&decouple=3&margin=2&qcat=2') }}"></script>
+<script src="{{ asset('js/product.js?v=' . $asset_v . '&uom=6&os=1&decouple=3&margin=2&qcat=2&pp=2') }}"></script>
 <script src="{{ asset('js/opening_stock.js?v=' . $asset_v . '&pack=2') }}"></script>
 
 <script type="text/javascript">

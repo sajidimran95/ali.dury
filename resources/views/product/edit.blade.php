@@ -436,7 +436,7 @@
 @endsection
 
 @section('javascript')
-  <script src="{{ asset('js/product.js?v=' . $asset_v . '&uom=6&decouple=3&margin=2&qcat=2') }}"></script>
+  <script src="{{ asset('js/product.js?v=' . $asset_v . '&uom=6&decouple=3&margin=2&qcat=2&pp=2') }}"></script>
   <script type="text/javascript">
     $(document).ready( function(){
       __page_leave_confirmation('#product_add_form');

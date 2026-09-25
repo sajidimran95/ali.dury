@@ -996,7 +996,39 @@ $(document).on('change', '.variation-file-input', function() {
             $('#packaging_uom_fields').addClass('hide');
             $('.js-pack-price-wrap').addClass('hide');
         }
+        ppUpdateSummary();
     }
+
+    function ppFormat(n) {
+        return typeof __number_f === 'function' ? __number_f(n) : (Math.round(n * 100) / 100).toFixed(2);
+    }
+
+    // Price table: "1 Box = N Pcs" hint and profit per base unit / per pack
+    function ppUpdateSummary() {
+        var $table = $('table.add-product-price-table');
+        if (!$table.length) return;
+        var factor = uomFactor();
+        var hasPack = uomEnabled() && factor > 0;
+        $('.js-pack-factor-label').text(factor > 0 ? String(factor) : '—');
+
+        var cost = __read_number($('input#single_dpp')) || 0;
+        var sell = __read_number($('input#single_dsp')) || 0;
+        var profit = sell - cost;
+
+        $('#pp_profit_base').text(ppFormat(profit)).closest('.pp-margin-profit').toggleClass('is-loss', profit < 0);
+        $('#pp_profit_pack').text(ppFormat(profit * factor)).closest('.pp-margin-profit').toggleClass('is-loss', profit < 0);
+        $('.pp-profit-pack-row').toggleClass('hide', !hasPack);
+        $table.toggleClass('pp-has-pack', hasPack);
+    }
+    window.ppUpdateSummary = ppUpdateSummary;
+
+    $(document).on(
+        'keyup change',
+        'input#single_dpp, input#single_dsp, input#single_dsp_inc_tax, #profit_percent, #uom_sell_pack, #uom_purchase_pack, #packaging_conversion_factor, #packaging_unit_name, #packaging_unit_custom_name, select#tax, #tax_type',
+        function () { setTimeout(ppUpdateSummary, 20); }
+    );
+    $(document).on('ifChecked ifUnchecked', '#enable_packaging_unit', function () { setTimeout(ppUpdateSummary, 20); });
+    $(function () { setTimeout(ppUpdateSummary, 50); });
 
     // Box price fields live in the main price table; the main (per piece) fields are the source of truth.
     function uomSellIsInc() {
