@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Sep 25, 2026 at 03:51 PM
+-- Generation Time: Sep 25, 2026 at 04:44 PM
 -- Server version: 8.4.3
 -- PHP Version: 8.4.2
 
@@ -387,7 +387,8 @@ INSERT INTO `activity_log` (`id`, `log_name`, `description`, `subject_id`, `subj
 (276, 'default', 'added', 1884, 'App\\Contact', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-09-24 10:48:36', '2026-09-24 10:48:36'),
 (277, 'default', 'contact_deleted', 1884, 'App\\Contact', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-09-24 10:49:22', '2026-09-24 10:49:22'),
 (278, 'default', 'added', 444, 'App\\Transaction', NULL, 1, 1, 'App\\User', '{\"attributes\":{\"type\":\"sell\",\"status\":\"final\",\"payment_status\":\"paid\",\"final_total\":11.99}}', NULL, '2026-09-24 10:59:30', '2026-09-24 10:59:30'),
-(279, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-09-25 04:05:08', '2026-09-25 04:05:08');
+(279, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-09-25 04:05:08', '2026-09-25 04:05:08'),
+(280, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-09-25 06:22:30', '2026-09-25 06:22:30');
 
 -- --------------------------------------------------------
 
@@ -8433,7 +8434,8 @@ INSERT INTO `products` (`id`, `name`, `business_id`, `type`, `unit_id`, `seconda
 (5643, 'POLAND SPRING 16OZ 24PK', 1, 'single', 1, NULL, NULL, NULL, NULL, 99, NULL, NULL, NULL, 'exclusive', 0, NULL, '0075720004096', 'C128', NULL, NULL, 0, NULL, '1719320634909-AST6K', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, NULL, NULL, 0, 1, 'pos_only', NULL, '2026-09-10 04:14:41', '2026-09-10 04:14:41', NULL, NULL, NULL, NULL, 0, 0, NULL, NULL, NULL),
 (5644, 'POLAND SPRING GALLON', 1, 'single', 1, NULL, NULL, NULL, NULL, 99, NULL, NULL, NULL, 'exclusive', 0, NULL, '075720005048', 'C128', NULL, NULL, 0, NULL, '1719320593764-AST6K', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'BCP8.5/SP', 1, NULL, NULL, 0, 0, 'pos_only', NULL, '2026-09-10 04:14:41', '2026-09-10 04:14:41', NULL, NULL, NULL, NULL, 0, 0, NULL, NULL, NULL),
 (5645, 'POLAND SPRING SPORTS CAP', 1, 'single', 1, NULL, NULL, NULL, NULL, 99, NULL, NULL, NULL, 'exclusive', 0, NULL, '075720710034', 'C128', NULL, NULL, 0, NULL, '1719319926929-AST6K', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'BCP7.5/SP/BCP11.75/ESJ', 1, NULL, NULL, 0, 0, 'pos_only', NULL, '2026-09-10 04:14:41', '2026-09-10 04:14:41', NULL, NULL, NULL, NULL, 0, 0, NULL, NULL, NULL),
-(5646, 'Poland Spring 16oz 40pk', 1, 'single', 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'exclusive', 0, NULL, '075720904501', 'C128', NULL, NULL, 0, NULL, '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '1789759841_4362304e-d5ac-40e3-847b-11d69ba4fc6ab0da4c9adc19dc2b0f0c8a166b514d4f-ezgifcom-avif-to-jpg-converter.jpg', NULL, 1, NULL, NULL, 0, 1, 'pos_ecommerce', NULL, '2026-09-10 04:14:41', '2026-09-18 09:30:41', NULL, NULL, NULL, NULL, 0, 0, NULL, NULL, NULL);
+(5646, 'Poland Spring 16oz 40pk', 1, 'single', 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'exclusive', 0, NULL, '075720904501', 'C128', NULL, NULL, 0, NULL, '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '1789759841_4362304e-d5ac-40e3-847b-11d69ba4fc6ab0da4c9adc19dc2b0f0c8a166b514d4f-ezgifcom-avif-to-jpg-converter.jpg', NULL, 1, NULL, NULL, 0, 1, 'pos_ecommerce', NULL, '2026-09-10 04:14:41', '2026-09-18 09:30:41', NULL, NULL, NULL, NULL, 0, 0, NULL, NULL, NULL),
+(5647, 'ddddd', 1, 'single', 1, NULL, '[\"5\"]', NULL, 10, NULL, NULL, NULL, NULL, 'inclusive', 1, 5.0000, '5647', 'C128', NULL, NULL, 0, NULL, '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', NULL, NULL, 1, NULL, NULL, 0, 0, 'pos_only', NULL, '2026-09-25 06:19:15', '2026-09-25 06:36:13', NULL, NULL, NULL, NULL, 0, 0, NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -13199,7 +13201,8 @@ INSERT INTO `product_locations` (`product_id`, `location_id`) VALUES
 (5643, 1),
 (5644, 1),
 (5645, 1),
-(5646, 1);
+(5646, 1),
+(5647, 1);
 
 -- --------------------------------------------------------
 
@@ -17976,7 +17979,8 @@ INSERT INTO `product_variations` (`id`, `variation_template_id`, `name`, `produc
 (5643, NULL, 'DUMMY', 5643, 1, '2026-09-10 04:14:41', '2026-09-10 04:14:41'),
 (5644, NULL, 'DUMMY', 5644, 1, '2026-09-10 04:14:41', '2026-09-10 04:14:41'),
 (5645, NULL, 'DUMMY', 5645, 1, '2026-09-10 04:14:41', '2026-09-10 04:14:41'),
-(5646, NULL, 'DUMMY', 5646, 1, '2026-09-10 04:14:41', '2026-09-10 04:14:41');
+(5646, NULL, 'DUMMY', 5646, 1, '2026-09-10 04:14:41', '2026-09-10 04:14:41'),
+(5647, NULL, 'DUMMY', 5647, 1, '2026-09-25 06:19:15', '2026-09-25 06:19:15');
 
 -- --------------------------------------------------------
 
@@ -18268,7 +18272,8 @@ INSERT INTO `purchase_lines` (`id`, `transaction_id`, `product_id`, `variation_i
 (296, 433, 5556, 5556, 3.0000, 0.0000, 27.0000, 0.00, 27.0000, 27.0000, 0.0000, NULL, NULL, NULL, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, NULL, NULL, NULL, NULL, '2026-09-10 04:14:40', '2026-09-10 04:14:40'),
 (297, 434, 5598, 5598, 19.0000, 0.0000, 33.9500, 0.00, 33.9500, 33.9500, 0.0000, NULL, NULL, NULL, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, NULL, NULL, NULL, NULL, '2026-09-10 04:14:41', '2026-09-10 04:14:41'),
 (298, 435, 5601, 5601, 3.0000, 0.0000, 29.8000, 0.00, 29.8000, 29.8000, 0.0000, NULL, NULL, NULL, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, NULL, NULL, NULL, NULL, '2026-09-10 04:14:41', '2026-09-10 04:14:41'),
-(299, 436, 5604, 5604, 2.0000, 0.0000, 14.9900, 0.00, 14.9900, 14.9900, 0.0000, NULL, NULL, NULL, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, NULL, NULL, NULL, NULL, '2026-09-10 04:14:41', '2026-09-10 04:14:41');
+(299, 436, 5604, 5604, 2.0000, 0.0000, 14.9900, 0.00, 14.9900, 14.9900, 0.0000, NULL, NULL, NULL, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, NULL, NULL, NULL, NULL, '2026-09-10 04:14:41', '2026-09-10 04:14:41'),
+(300, 445, 5647, 5647, 30.0000, 0.0000, 0.0000, 0.00, 0.0000, 0.0000, 0.0000, NULL, NULL, NULL, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, NULL, NULL, NULL, NULL, '2026-09-25 06:19:15', '2026-09-25 06:30:56');
 
 -- --------------------------------------------------------
 
@@ -19136,7 +19141,8 @@ INSERT INTO `transactions` (`id`, `business_id`, `location_id`, `is_kitchen_orde
 INSERT INTO `transactions` (`id`, `business_id`, `location_id`, `is_kitchen_order`, `res_table_id`, `res_waiter_id`, `res_order_status`, `type`, `sub_type`, `status`, `sub_status`, `is_quotation`, `payment_status`, `adjustment_type`, `contact_id`, `customer_group_id`, `invoice_no`, `ref_no`, `source`, `order_source`, `subscription_no`, `subscription_repeat_on`, `transaction_date`, `total_before_tax`, `tax_id`, `tax_amount`, `discount_type`, `discount_amount`, `upcharge_percent`, `rp_redeemed`, `rp_redeemed_amount`, `shipping_details`, `shipping_method`, `shipping_address`, `shipping_latitude`, `shipping_longitude`, `delivery_date`, `shipping_status`, `fulfillment_stage`, `fulfillment_meta`, `shipping_date`, `shipping_tracking_no`, `no_of_boxes`, `delivered_to`, `delivery_person`, `delivery_status`, `shipping_charges`, `shipping_custom_field_1`, `shipping_custom_field_2`, `shipping_custom_field_3`, `shipping_custom_field_4`, `shipping_custom_field_5`, `additional_notes`, `staff_note`, `is_export`, `export_custom_fields_info`, `round_off_amount`, `additional_expense_key_1`, `additional_expense_value_1`, `additional_expense_key_2`, `additional_expense_value_2`, `additional_expense_key_3`, `additional_expense_value_3`, `additional_expense_key_4`, `additional_expense_value_4`, `final_total`, `expense_category_id`, `expense_sub_category_id`, `expense_for`, `commission_agent`, `document`, `is_direct_sale`, `crm_is_order_request`, `is_suspend`, `exchange_rate`, `total_amount_recovered`, `transfer_parent_id`, `return_parent_id`, `opening_stock_product_id`, `created_by`, `purchase_requisition_ids`, `prefer_payment_method`, `prefer_payment_account`, `sales_order_ids`, `purchase_order_ids`, `custom_field_1`, `custom_field_2`, `custom_field_3`, `custom_field_4`, `import_batch`, `import_time`, `types_of_service_id`, `packing_charge`, `packing_charge_type`, `service_custom_field_1`, `service_custom_field_2`, `service_custom_field_3`, `service_custom_field_4`, `service_custom_field_5`, `service_custom_field_6`, `is_created_from_api`, `rp_earned`, `order_addresses`, `is_recurring`, `recur_interval`, `recur_interval_type`, `recur_repetitions`, `recur_stopped_on`, `recur_parent_id`, `invoice_token`, `pay_term_number`, `pay_term_type`, `selling_price_group_id`, `created_at`, `updated_at`) VALUES
 (441, 1, 1, 0, NULL, NULL, NULL, 'sell', NULL, 'final', NULL, 0, 'paid', NULL, 1390, NULL, '0112', '', NULL, NULL, NULL, NULL, '2026-09-17 14:29:00', 51.9600, NULL, 0.0000, 'percentage', 0.0000, 0.00, 0, 0.0000, 'Delivery', NULL, '206-06JAMAICA AVE QUEENS VILLAGE NY 11428', NULL, NULL, NULL, 'ordered', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, 51.9600, NULL, NULL, NULL, NULL, NULL, 1, 0, 0, 1.000, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, '[\"440\"]', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL, 0, 1.0000, 'days', 0, NULL, NULL, NULL, NULL, NULL, NULL, '2026-09-17 08:29:45', '2026-09-17 08:29:45'),
 (443, 1, 1, 0, NULL, NULL, NULL, 'sales_order', NULL, 'ordered', NULL, 0, 'due', NULL, 1882, NULL, '2026/0006', '', 'ecommerce', 'ecommerce', NULL, NULL, '2026-09-19 02:08:51', 23.9800, NULL, 0.0000, NULL, 0.0000, 0.00, 0, 0.0000, '233 Clarendon Avenue', NULL, '233 Clarendon Avenue, Officia enim sed et, Tempora laboriosam, ME 65929, United States', NULL, NULL, NULL, 'ordered', 'picking', '{\"timeline\": [{\"at\": \"2026-09-19 02:08:51\", \"by\": \"System\", \"event\": \"entered_fulfillment\", \"label\": \"Entered Fulfillment\"}]}', NULL, NULL, NULL, 'Britanni Cantu', NULL, NULL, 5.9900, NULL, NULL, NULL, NULL, NULL, 'Facere nulla beatae', NULL, 0, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, 29.9700, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 1.000, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL, 0, 1.0000, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, '2026-09-18 20:08:51', '2026-09-18 20:08:51'),
-(444, 1, 1, 0, NULL, NULL, NULL, 'sell', NULL, 'final', NULL, 0, 'paid', NULL, 1, NULL, '0114', '', NULL, NULL, NULL, NULL, '2026-09-24 16:59:30', 11.9900, NULL, 0.0000, 'percentage', 0.0000, 0.00, 0, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, 11.9900, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 1.000, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL, 0, 1.0000, 'days', 0, NULL, NULL, NULL, NULL, NULL, 0, '2026-09-24 10:59:30', '2026-09-24 10:59:30');
+(444, 1, 1, 0, NULL, NULL, NULL, 'sell', NULL, 'final', NULL, 0, 'paid', NULL, 1, NULL, '0114', '', NULL, NULL, NULL, NULL, '2026-09-24 16:59:30', 11.9900, NULL, 0.0000, 'percentage', 0.0000, 0.00, 0, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, 11.9900, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 1.000, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL, 0, 1.0000, 'days', 0, NULL, NULL, NULL, NULL, NULL, 0, '2026-09-24 10:59:30', '2026-09-24 10:59:30'),
+(445, 1, 1, 0, NULL, NULL, NULL, 'opening_stock', NULL, 'received', NULL, 0, 'paid', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-01-01 12:19:00', 0.0000, NULL, 0.0000, NULL, 0.0000, 0.00, 0, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, NULL, 0.0000, 0.0000, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 1.000, NULL, NULL, NULL, 5647, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-09-25 06:19:15', '2026-09-25 06:30:56');
 
 -- --------------------------------------------------------
 
@@ -19437,7 +19443,8 @@ CREATE TABLE `units` (
 INSERT INTO `units` (`id`, `business_id`, `actual_name`, `short_name`, `allow_decimal`, `base_unit_id`, `base_unit_multiplier`, `created_by`, `deleted_at`, `created_at`, `updated_at`) VALUES
 (1, 1, 'Pieces', 'Pc(s)', 0, NULL, NULL, 1, NULL, '2026-07-18 18:56:53', '2026-07-18 18:56:53'),
 (3, 1, 'Box', 'Box', 0, 1, 10.0000, 1, NULL, '2026-09-05 03:20:34', '2026-09-05 03:20:34'),
-(4, 1, 'dozon', 'dozon', 0, NULL, NULL, 1, NULL, '2026-09-05 03:29:20', '2026-09-05 03:56:22');
+(4, 1, 'dozon', 'dozon', 0, NULL, NULL, 1, NULL, '2026-09-05 03:29:20', '2026-09-05 03:56:22'),
+(5, 1, 'Box', 'Box', 0, 1, 5.0000, 1, NULL, '2026-09-25 06:19:15', '2026-09-25 06:19:15');
 
 -- --------------------------------------------------------
 
@@ -24296,7 +24303,8 @@ INSERT INTO `variations` (`id`, `name`, `product_id`, `sub_sku`, `product_variat
 (5643, 'DUMMY', 5643, '0075720004096', 5643, NULL, 6.0000, 6.0000, 16.5000, 6.9900, 6.9900, '2026-09-10 04:14:41', '2026-09-10 04:14:41', NULL, '[]'),
 (5644, 'DUMMY', 5644, '075720005048', 5644, NULL, 9.2500, 9.2500, 29.6216, 11.9900, 11.9900, '2026-09-10 04:14:41', '2026-09-10 04:14:41', NULL, '[]'),
 (5645, 'DUMMY', 5645, '075720710034', 5645, NULL, 9.6000, 9.6000, 50.9375, 14.4900, 14.4900, '2026-09-10 04:14:41', '2026-09-10 04:14:41', NULL, '[]'),
-(5646, 'DUMMY', 5646, '075720904501', 5646, NULL, 8.5000, 8.5000, 29.2900, 10.9900, 10.9900, '2026-09-10 04:14:41', '2026-09-18 09:30:41', NULL, '[]');
+(5646, 'DUMMY', 5646, '075720904501', 5646, NULL, 8.5000, 8.5000, 29.2900, 10.9900, 10.9900, '2026-09-10 04:14:41', '2026-09-18 09:30:41', NULL, '[]'),
+(5647, 'DUMMY', 5647, '5647', 5647, NULL, 4.0000, 4.0000, 150.0000, 10.0000, 10.0000, '2026-09-25 06:19:15', '2026-09-25 06:36:13', NULL, '[]');
 
 -- --------------------------------------------------------
 
@@ -24586,7 +24594,8 @@ INSERT INTO `variation_location_details` (`id`, `product_id`, `product_variation
 (308, 5556, 5556, 5556, 1, 3.0000, '2026-09-10 04:14:40', '2026-09-10 04:14:40'),
 (309, 5598, 5598, 5598, 1, 19.0000, '2026-09-10 04:14:41', '2026-09-10 04:14:41'),
 (310, 5601, 5601, 5601, 1, 3.0000, '2026-09-10 04:14:41', '2026-09-10 04:14:41'),
-(311, 5604, 5604, 5604, 1, 2.0000, '2026-09-10 04:14:41', '2026-09-10 04:14:41');
+(311, 5604, 5604, 5604, 1, 2.0000, '2026-09-10 04:14:41', '2026-09-10 04:14:41'),
+(312, 5647, 5647, 5647, 1, 30.0000, '2026-09-25 06:19:15', '2026-09-25 06:30:56');
 
 -- --------------------------------------------------------
 
@@ -25573,7 +25582,7 @@ ALTER TABLE `account_types`
 -- AUTO_INCREMENT for table `activity_log`
 --
 ALTER TABLE `activity_log`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=280;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=281;
 
 --
 -- AUTO_INCREMENT for table `ai_assistance_settings`
@@ -25927,7 +25936,7 @@ ALTER TABLE `printers`
 -- AUTO_INCREMENT for table `products`
 --
 ALTER TABLE `products`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5647;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5648;
 
 --
 -- AUTO_INCREMENT for table `product_barcodes`
@@ -25945,13 +25954,13 @@ ALTER TABLE `product_racks`
 -- AUTO_INCREMENT for table `product_variations`
 --
 ALTER TABLE `product_variations`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5647;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5648;
 
 --
 -- AUTO_INCREMENT for table `purchase_lines`
 --
 ALTER TABLE `purchase_lines`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=300;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=301;
 
 --
 -- AUTO_INCREMENT for table `reference_counts`
@@ -26035,7 +26044,7 @@ ALTER TABLE `time_off_requests`
 -- AUTO_INCREMENT for table `transactions`
 --
 ALTER TABLE `transactions`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=445;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=446;
 
 --
 -- AUTO_INCREMENT for table `transaction_payments`
@@ -26065,7 +26074,7 @@ ALTER TABLE `types_of_services`
 -- AUTO_INCREMENT for table `units`
 --
 ALTER TABLE `units`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `users`
@@ -26083,7 +26092,7 @@ ALTER TABLE `user_contact_access`
 -- AUTO_INCREMENT for table `variations`
 --
 ALTER TABLE `variations`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5647;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5648;
 
 --
 -- AUTO_INCREMENT for table `variation_group_prices`
@@ -26095,7 +26104,7 @@ ALTER TABLE `variation_group_prices`
 -- AUTO_INCREMENT for table `variation_location_details`
 --
 ALTER TABLE `variation_location_details`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=312;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=313;
 
 --
 -- AUTO_INCREMENT for table `variation_templates`
