@@ -395,11 +395,12 @@
 				<div class="col-sm-10 col-sm-offset-1">
 					<div class="form-group">
 						<div class="input-group">
-							<div class="input-group-btn">
-								<button type="button" class="btn btn-default bg-white btn-flat" data-toggle="modal" data-target="#configure_search_modal" title="{{__('lang_v1.configure_product_search')}}"><i class="fas fa-search-plus"></i></button>
-							</div>
-							{!! Form::text('search_product', null, ['class' => 'form-control mousetrap', 'id' => 'search_product', 'placeholder' => __('lang_v1.search_product_placeholder'),
+							@include('sell.partials.search_mode_toggle')
+							{!! Form::text('search_product', null, ['class' => 'form-control mousetrap', 'id' => 'search_product', 'placeholder' => __('lang_v1.enter_sku_placeholder'),
 							'autofocus' => true,
+							'autocomplete' => 'off',
+							'data-placeholder-scan' => __('lang_v1.enter_sku_placeholder'),
+							'data-placeholder-search' => __('lang_v1.search_product_placeholder'),
 							]); !!}
 							<span class="input-group-btn">
 								<button type="button" class="btn btn-default bg-white btn-flat pos_add_quick_product" data-href="{{action([\App\Http\Controllers\ProductController::class, 'quickAdd'])}}" data-container=".quick_add_product_modal"><i class="fa fa-plus-circle text-primary fa-lg"></i></button>
@@ -873,7 +874,7 @@
 @stop
 
 @section('javascript')
-	<script src="{{ asset('js/pos.js?v=' . $asset_v) }}"></script>
+	<script src="{{ asset('js/pos.js?v=' . $asset_v . '&scan=2') }}"></script>
 	<script src="{{ asset('js/sell-upcharge.js?v=' . $asset_v . '&u=1') }}"></script>
 	<script src="{{ asset('js/product.js?v=' . $asset_v) }}"></script>
 	<script src="{{ asset('js/opening_stock.js?v=' . $asset_v) }}"></script>
