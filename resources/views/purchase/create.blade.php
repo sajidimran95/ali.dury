@@ -744,5 +744,41 @@
 			}
 		}
 	</script>
+	@if(!empty($purchase_prefill))
+	<script type="text/javascript">
+		$(document).ready(function () {
+			var prefill = @json($purchase_prefill);
+
+			if (prefill.supplier) {
+				var s = prefill.supplier;
+				var $sup = $('#supplier_id');
+				if (!$sup.find('option[value="' + s.id + '"]').length) {
+					$sup.append(new Option(s.text, s.id, true, true));
+				}
+				$sup.val(s.id).trigger('change');
+				$sup.trigger({ type: 'select2:select', params: { data: s } });
+			}
+
+			if (prefill.product) {
+				var added = false;
+				var addProduct = function () {
+					if (added || !$('#location_id').val()) return;
+					added = true;
+					setTimeout(function () {
+						get_purchase_entry_row(prefill.product.product_id, prefill.product.variation_id);
+					}, 150);
+				};
+				if ($('#location_id').val()) {
+					addProduct();
+				} else {
+					$(document).on('change.purchasePrefill', '#location_id', function () {
+						addProduct();
+						if (added) $(document).off('change.purchasePrefill');
+					});
+				}
+			}
+		});
+	</script>
+	@endif
 	@include('purchase.partials.keyboard_shortcuts')
 @endsection

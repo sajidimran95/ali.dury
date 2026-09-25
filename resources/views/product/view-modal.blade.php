@@ -42,6 +42,24 @@
 						@endif
 						<b>@lang('product.brand'): </b>
 						{{$product->brand->name ?? '--' }}<br>
+						<b>@lang('purchase.supplier'): </b>
+						@if(!empty($product->supplier))
+							@can('supplier.view')
+								<a href="{{ action([\App\Http\Controllers\ContactController::class, 'show'], [$product->supplier->id]) }}" target="_blank">{{ $product->supplier->name ?: $product->supplier->supplier_business_name }}</a>
+							@else
+								{{ $product->supplier->name ?: $product->supplier->supplier_business_name }}
+							@endif
+						@else
+							--
+						@endif
+						<br>
+						@if(!empty($purchased_from) && count($purchased_from))
+							<b>@lang('lang_v1.purchased_from'): </b>
+							@foreach($purchased_from as $pf)
+								<span class="label bg-gray" style="display:inline-block;margin:1px 2px 1px 0;" title="{{ __('lang_v1.last_purchase') }}: {{ @format_date($pf->last_purchase) }}">{{ $pf->name }} ({{ $pf->purchase_count }})</span>
+							@endforeach
+							<br>
+						@endif
 						<b>@lang('product.unit'): </b>
 						{{$product->unit->short_name ?? '--' }}<br>
 						<b>@lang('product.barcode_type'): </b>
@@ -208,6 +226,12 @@
       			title="{{ __('lang_v1.label_help') }}">
       			<i class="fa fa-barcode"></i> @lang('barcode.print_labels')
       		</a>
+      		@can('purchase.create')
+      		<a href="{{ action([\App\Http\Controllers\PurchaseController::class, 'create'], array_filter(['product_id' => $product->id, 'supplier_id' => $product->supplier_id])) }}"
+      			class="tw-dw-btn tw-dw-btn-success tw-text-white no-print">
+      			<i class="fas fa-cart-plus"></i> @lang('purchase.add_purchase')
+      		</a>
+      		@endcan
       		<button type="button" class="tw-dw-btn tw-dw-btn-primary tw-text-white no-print" 
 	        aria-label="Print" 
 	          onclick="$(this).closest('div.modal').printThis();">

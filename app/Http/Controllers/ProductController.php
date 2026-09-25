@@ -125,6 +125,7 @@ class ProductController extends Controller
                 'products.sku',
                 'products.image',
                 'products.enable_stock',
+                'products.supplier_id',
                 'products.is_inactive',
                 'products.not_for_selling',
                 'products.product_custom_field1', 'products.product_custom_field2', 'products.product_custom_field3', 'products.product_custom_field4', 'products.product_custom_field5', 'products.product_custom_field6',
@@ -239,6 +240,15 @@ class ProductController extends Controller
                         }
 
                         $html .= '<li class="divider"></li>';
+
+                        if (auth()->user()->can('purchase.create')) {
+                            $purchase_params = ['product_id' => $row->id];
+                            if (! empty($row->supplier_id)) {
+                                $purchase_params['supplier_id'] = $row->supplier_id;
+                            }
+                            $html .=
+                            '<li><a href="'.action([\App\Http\Controllers\PurchaseController::class, 'create'], $purchase_params).'"><i class="fas fa-cart-plus"></i> '.__('purchase.add_purchase').'</a></li>';
+                        }
 
                         if ($row->enable_stock == 1 && auth()->user()->can('product.opening_stock')) {
                             $html .=
@@ -421,6 +431,7 @@ class ProductController extends Controller
         $categories = Category::forDropdown($business_id, 'product');
 
         $brands = Brands::forDropdown($business_id);
+        $suppliers = \App\Contact::suppliersDropdown($business_id, false);
         $units = Unit::forDropdown($business_id, true);
 
         $tax_dropdown = TaxRate::forBusinessDropdown($business_id, true, true);
@@ -493,7 +504,7 @@ class ProductController extends Controller
         }
 
         return view('product.create')
-            ->with(compact('categories', 'brands', 'units', 'taxes', 'barcode_types', 'default_profit_percent', 'tax_attributes', 'barcode_default', 'business_locations', 'duplicate_product', 'sub_categories', 'child_categories', 'rack_details', 'selling_price_group_count', 'module_form_parts', 'product_types', 'common_settings', 'warranties', 'pos_module_data', 'enable_expiry', 'enable_lot', 'product_barcodes', 'packaging_helper'));
+            ->with(compact('categories', 'brands', 'suppliers', 'units', 'taxes', 'barcode_types', 'default_profit_percent', 'tax_attributes', 'barcode_default', 'business_locations', 'duplicate_product', 'sub_categories', 'child_categories', 'rack_details', 'selling_price_group_count', 'module_form_parts', 'product_types', 'common_settings', 'warranties', 'pos_module_data', 'enable_expiry', 'enable_lot', 'product_barcodes', 'packaging_helper'));
     }
 
     private function product_types()
@@ -532,6 +543,7 @@ class ProductController extends Controller
 
             $product_details['enable_stock'] = (! empty($request->input('enable_stock')) && $request->input('enable_stock') == 1) ? 1 : 0;
             $product_details['not_for_selling'] = (! empty($request->input('not_for_selling')) && $request->input('not_for_selling') == 1) ? 1 : 0;
+            $product_details['supplier_id'] = $request->input('supplier_id') ?: null;
 
             if (! empty($request->input('sub_category_id'))) {
                 $product_details['sub_category_id'] = $request->input('sub_category_id');
@@ -731,6 +743,7 @@ class ProductController extends Controller
         $business_id = request()->session()->get('user.business_id');
         $categories = Category::forDropdown($business_id, 'product');
         $brands = Brands::forDropdown($business_id);
+        $suppliers = \App\Contact::suppliersDropdown($business_id, false);
 
         $tax_dropdown = TaxRate::forBusinessDropdown($business_id, true, true);
         $taxes = $tax_dropdown['tax_rates'];
@@ -787,7 +800,7 @@ class ProductController extends Controller
         $product_barcodes = ProductBarcode::where('product_id', $product->id)->orderBy('id')->get();
 
         return view('product.edit')
-                ->with(compact('categories', 'brands', 'units', 'sub_units', 'taxes', 'tax_attributes', 'barcode_types', 'product', 'sub_categories', 'child_categories', 'default_profit_percent', 'business_locations', 'rack_details', 'selling_price_group_count', 'module_form_parts', 'product_types', 'common_settings', 'warranties', 'pos_module_data', 'alert_quantity', 'packaging_helper', 'product_barcodes'));
+                ->with(compact('categories', 'brands', 'suppliers', 'units', 'sub_units', 'taxes', 'tax_attributes', 'barcode_types', 'product', 'sub_categories', 'child_categories', 'default_profit_percent', 'business_locations', 'rack_details', 'selling_price_group_count', 'module_form_parts', 'product_types', 'common_settings', 'warranties', 'pos_module_data', 'alert_quantity', 'packaging_helper', 'product_barcodes'));
     }
 
     /**
@@ -869,6 +882,9 @@ class ProductController extends Controller
             $product->preparation_time_in_minutes = $product_details['preparation_time_in_minutes'];
             $product->warranty_id = ! empty($request->input('warranty_id')) ? $request->input('warranty_id') : null;
             $product->secondary_unit_id = ! empty($request->input('secondary_unit_id')) ? $request->input('secondary_unit_id') : null;
+            if ($request->has('supplier_id')) {
+                $product->supplier_id = $request->input('supplier_id') ?: null;
+            }
 
             if (! empty($request->input('enable_stock')) && $request->input('enable_stock') == 1) {
                 $product->enable_stock = 1;
@@ -1961,8 +1977,24 @@ class ProductController extends Controller
             $business_id = request()->session()->get('user.business_id');
 
             $product = Product::where('business_id', $business_id)
-                        ->with(['brand', 'unit', 'category', 'sub_category', 'product_tax', 'variations', 'variations.product_variation', 'variations.group_prices', 'variations.media', 'product_locations', 'warranty', 'media'])
+                        ->with(['brand', 'supplier', 'unit', 'category', 'sub_category', 'product_tax', 'variations', 'variations.product_variation', 'variations.group_prices', 'variations.media', 'product_locations', 'warranty', 'media'])
                         ->findOrFail($id);
+
+            $purchased_from = PurchaseLine::join('transactions as t', 't.id', '=', 'purchase_lines.transaction_id')
+                ->join('contacts as c', 'c.id', '=', 't.contact_id')
+                ->where('t.business_id', $business_id)
+                ->where('t.type', 'purchase')
+                ->where('purchase_lines.product_id', $product->id)
+                ->groupBy('c.id', 'c.name', 'c.supplier_business_name')
+                ->select(
+                    'c.id',
+                    DB::raw("IF(c.name IS NULL OR c.name = '', c.supplier_business_name, c.name) as name"),
+                    DB::raw('COUNT(DISTINCT t.id) as purchase_count'),
+                    DB::raw('MAX(t.transaction_date) as last_purchase')
+                )
+                ->orderByDesc('last_purchase')
+                ->limit(10)
+                ->get();
 
             $price_groups = SellingPriceGroup::where('business_id', $business_id)->active()->pluck('name', 'id');
 
@@ -1993,7 +2025,8 @@ class ProductController extends Controller
                 'rack_details',
                 'allowed_group_prices',
                 'group_price_details',
-                'combo_variations'
+                'combo_variations',
+                'purchased_from'
             ));
         } catch (\Exception $e) {
             \Log::emergency('File:'.$e->getFile().'Line:'.$e->getLine().'Message:'.$e->getMessage());

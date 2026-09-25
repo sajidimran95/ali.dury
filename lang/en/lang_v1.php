@@ -866,6 +866,8 @@ return [
     'click_to_print' => 'Click to print',
     'deactivated_success' => 'Deactivated successfully',
     'products_could_not_be_deleted' => "Some products couldn't be deleted because it has transactions related to it.",
+    'purchased_from' => 'Purchased from',
+    'last_purchase' => 'Last purchase',
     'upcharge_title' => 'Increase all prices:',
     'upcharge_apply' => 'Apply',
     'upcharge_active' => 'Prices +:percent% applied',

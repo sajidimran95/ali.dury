@@ -151,6 +151,14 @@ class Product extends Model
     }
 
     /**
+     * Get the default supplier (vendor) of the product.
+     */
+    public function supplier()
+    {
+        return $this->belongsTo(\App\Contact::class, 'supplier_id', 'id');
+    }
+
+    /**
      * Get the tax associated with the product.
      */
     public function product_tax()

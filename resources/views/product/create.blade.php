@@ -124,6 +124,13 @@
             </div>
         </div>
 
+        <div class="col-sm-4">
+            <div class="form-group">
+                {!! Form::label('supplier_id', __('purchase.supplier') . ':') !!}
+                {!! Form::select('supplier_id', $suppliers ?? [], !empty($duplicate_product->supplier_id) ? $duplicate_product->supplier_id : null, ['placeholder' => __('messages.please_select'), 'class' => 'form-control select2', 'id' => 'product_supplier_id', 'style' => 'width:100%']); !!}
+            </div>
+        </div>
+
         @php
         $default_location = null;
         if(count($business_locations) == 1){

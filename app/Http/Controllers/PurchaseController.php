@@ -313,8 +313,38 @@ class PurchaseController extends Controller
 
         $common_settings = ! empty(session('business.common_settings')) ? session('business.common_settings') : [];
 
+        $purchase_prefill = [];
+        if (! empty(request()->input('supplier_id'))) {
+            $prefill_supplier = Contact::where('business_id', $business_id)
+                ->onlySuppliers()
+                ->where('contacts.id', request()->input('supplier_id'))
+                ->select(
+                    'contacts.id',
+                    DB::raw('IF(name="", supplier_business_name, name) as text'),
+                    'supplier_business_name as business_name',
+                    'contacts.mobile', 'contacts.address_line_1', 'contacts.address_line_2',
+                    'contacts.city', 'contacts.state', 'contacts.country', 'contacts.zip_code',
+                    'contacts.contact_id', 'contacts.pay_term_type', 'contacts.pay_term_number', 'contacts.balance'
+                )
+                ->first();
+            if (! empty($prefill_supplier)) {
+                $purchase_prefill['supplier'] = $prefill_supplier;
+            }
+        }
+        if (! empty(request()->input('product_id'))) {
+            $prefill_product = Product::where('business_id', $business_id)
+                ->with('variations:id,product_id')
+                ->find(request()->input('product_id'));
+            if (! empty($prefill_product)) {
+                $purchase_prefill['product'] = [
+                    'product_id' => $prefill_product->id,
+                    'variation_id' => $prefill_product->type == 'variable' ? '0' : optional($prefill_product->variations->first())->id,
+                ];
+            }
+        }
+
         return view('purchase.create')
-            ->with(compact('taxes', 'orderStatuses', 'business_locations', 'currency_details', 'default_purchase_status', 'customer_groups', 'types', 'shortcuts', 'payment_line', 'payment_types', 'accounts', 'bl_attributes', 'common_settings'));
+            ->with(compact('taxes', 'orderStatuses', 'business_locations', 'currency_details', 'default_purchase_status', 'customer_groups', 'types', 'shortcuts', 'payment_line', 'payment_types', 'accounts', 'bl_attributes', 'common_settings', 'purchase_prefill'));
     }
 
     /**
