@@ -1,6 +1,6 @@
 <style>
     table.add-product-price-table > tbody > tr > td { vertical-align: top; }
-    table.add-product-price-table .pack-price-row { margin-top: 10px; }
+    table.add-product-price-table .pack-price-row { margin-bottom: 10px; }
     table.add-product-price-table .pack-price-row .input-group-addon {
         background: #eef2ff;
         border-color: #c7d2fe;

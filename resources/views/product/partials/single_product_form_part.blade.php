@@ -27,6 +27,14 @@
         </tr>
         <tr>
           <td>
+            <div class="col-sm-12 js-pack-price-wrap pack-price-row hide">
+              <div class="input-group input-group-sm">
+                <span class="input-group-addon">@lang('lang_v1.purchase_price_per') <span class="js-pack-unit-label">Box</span></span>
+                <input type="text" id="uom_purchase_pack" class="form-control input_number" placeholder="0.00" autocomplete="off">
+              </div>
+            </div>
+            <div class="clearfix"></div>
+
             <div class="col-sm-12">
               <label for="single_dpp">@lang('lang_v1.purchase_price_per') <span class="js-base-unit-label">Pcs</span>:*</label>
 
@@ -38,14 +46,6 @@
 
               {!! Form::text('single_dpp_inc_tax', $dpp_default !== null ? $dpp_default : 0, ['class' => 'form-control input-sm dpp_inc_tax input_number', 'placeholder' => __('product.inc_of_tax'), 'required']); !!}
             </div>
-
-            <div class="clearfix"></div>
-            <div class="col-sm-12 js-pack-price-wrap pack-price-row hide">
-              <div class="input-group input-group-sm">
-                <span class="input-group-addon">@lang('lang_v1.purchase_price_per') <span class="js-pack-unit-label">Box</span></span>
-                <input type="text" id="uom_purchase_pack" class="form-control input_number" placeholder="0.00" autocomplete="off">
-              </div>
-            </div>
           </td>
 
           <td>
@@ -54,17 +54,17 @@
           </td>
 
           <td>
-            <label>@lang('lang_v1.sell_price_per') <span class="js-base-unit-label">Pcs</span> <small class="text-muted">(<span class="dsp_label">@lang('product.exc_of_tax')</span>)</small></label>
-            {!! Form::text('single_dsp', $default !== null ? $default : 0, ['class' => 'form-control input-sm dsp input_number', 'placeholder' => __('product.exc_of_tax'), 'id' => 'single_dsp', 'required']); !!}
-
-            {!! Form::text('single_dsp_inc_tax', $default !== null ? $default : 0, ['class' => 'form-control input-sm hide input_number', 'placeholder' => __('product.inc_of_tax'), 'id' => 'single_dsp_inc_tax', 'required']); !!}
-
             <div class="js-pack-price-wrap pack-price-row hide">
               <div class="input-group input-group-sm">
                 <span class="input-group-addon">@lang('lang_v1.sell_price_per') <span class="js-pack-unit-label">Box</span></span>
                 <input type="text" id="uom_sell_pack" class="form-control input_number" placeholder="0.00" autocomplete="off">
               </div>
             </div>
+
+            <label>@lang('lang_v1.sell_price_per') <span class="js-base-unit-label">Pcs</span> <small class="text-muted">(<span class="dsp_label">@lang('product.exc_of_tax')</span>)</small></label>
+            {!! Form::text('single_dsp', $default !== null ? $default : 0, ['class' => 'form-control input-sm dsp input_number', 'placeholder' => __('product.exc_of_tax'), 'id' => 'single_dsp', 'required']); !!}
+
+            {!! Form::text('single_dsp_inc_tax', $default !== null ? $default : 0, ['class' => 'form-control input-sm hide input_number', 'placeholder' => __('product.inc_of_tax'), 'id' => 'single_dsp_inc_tax', 'required']); !!}
           </td>
           @if(empty($quick_add))
           <td>
