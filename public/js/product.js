@@ -820,7 +820,36 @@ $(document).on('click', 'button.quick_add_sub_category', function(e) {
     });
 });
 
-//Quick add category / sub category
+//Quick add child category (needs a sub category selected first)
+$(document).on('click', 'button.quick_add_child_category', function(e) {
+    e.preventDefault();
+    var parent_id = $('#sub_category_id').val();
+    if (!parent_id) {
+        toastr.error(LANG.please_select_sub_category || 'Please select a sub category first');
+        $('#sub_category_id').select2('open');
+        return;
+    }
+    var $container = $('.view_modal').first();
+    if (!$container.length || $container.hasClass('in') || $container.data('loading')) {
+        return;
+    }
+    $container.data('loading', true);
+    $.ajax({
+        url: $(this).data('href') + '&parent_id=' + encodeURIComponent(parent_id),
+        dataType: 'html',
+        success: function(result) {
+            if (!$container.parent().is('body')) {
+                $container.appendTo('body');
+            }
+            $container.html(result).modal('show');
+        },
+        complete: function() {
+            $container.data('loading', false);
+        },
+    });
+});
+
+//Quick add category / sub category / child category
 $(document).on('submit', 'form#quick_add_category_form', function(e) {
     e.preventDefault();
     var form = $(this);
@@ -836,7 +865,12 @@ $(document).on('submit', 'form#quick_add_category_form', function(e) {
         success: function(result) {
             if (result.success == true) {
                 var cat = result.data;
-                if (parseInt(cat.parent_id, 10) > 0) {
+                var parentId = String(cat.parent_id || '');
+                if (parseInt(parentId, 10) > 0 && $('#child_category_id').length && parentId === String($('#sub_category_id').val() || '')) {
+                    $('#child_category_id')
+                        .append(new Option(cat.name, cat.id, true, true))
+                        .trigger('change');
+                } else if (parseInt(parentId, 10) > 0) {
                     $('#sub_category_id')
                         .append(new Option(cat.name, cat.id, true, true))
                         .trigger('change');

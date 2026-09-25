@@ -123,6 +123,18 @@
               </div>
             </div>
 
+            <div class="col-sm-4 child_category_wrap @if(!(session('business.enable_category') && session('business.enable_sub_category'))) hide @endif" data-always-show="1">
+              <div class="form-group">
+                {!! Form::label('child_category_id', __('category.child_category') . ':') !!}
+                <div class="input-group">
+                  {!! Form::select('child_category_id', $child_categories ?? [], $product->child_category_id, ['placeholder' => __('messages.please_select'), 'class' => 'form-control select2', 'id' => 'child_category_id']); !!}
+                  <span class="input-group-btn">
+                    <button type="button" @if(!auth()->user()->can('category.create')) disabled @endif class="btn btn-default bg-white btn-flat quick_add_child_category" data-href="{{action([\App\Http\Controllers\TaxonomyController::class, 'create'], ['type' => 'product', 'quick_add' => true])}}" title="@lang('category.add_category')"><i class="fa fa-plus-circle text-primary fa-lg"></i></button>
+                  </span>
+                </div>
+              </div>
+            </div>
+
             <div class="col-sm-4">
               <div class="form-group">
                 {!! Form::label('product_locations', __('business.business_locations') . ':') !!} @show_tooltip(__('lang_v1.product_location_help'))
@@ -412,7 +424,7 @@
 @endsection
 
 @section('javascript')
-  <script src="{{ asset('js/product.js?v=' . $asset_v . '&uom=3&decouple=3&margin=2&qcat=1') }}"></script>
+  <script src="{{ asset('js/product.js?v=' . $asset_v . '&uom=3&decouple=3&margin=2&qcat=2') }}"></script>
   <script type="text/javascript">
     $(document).ready( function(){
       __page_leave_confirmation('#product_add_form');

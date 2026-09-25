@@ -352,7 +352,7 @@ class ReportController extends Controller
             $show_manufacturing_data = 0;
         }
         if ($request->ajax()) {
-            $filters = request()->only(['location_id', 'category_id', 'sub_category_id', 'brand_id', 'unit_id', 'tax_id', 'type',
+            $filters = request()->only(['location_id', 'category_id', 'sub_category_id', 'child_category_id', 'brand_id', 'unit_id', 'tax_id', 'type',
                 'only_mfg_products', 'active_state',  'not_for_selling', 'repair_model_id', 'product_id', 'active_state', ]);
 
             $filters['not_for_selling'] = isset($filters['not_for_selling']) && $filters['not_for_selling'] == 'true' ? 1 : 0;

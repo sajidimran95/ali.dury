@@ -55,6 +55,7 @@
             <button type="button" class="pos-cat-selected-close" aria-label="Close">&times;</button>
         </div>
         <div class="pos-cat-selected-subcats" style="display: none;"></div>
+        <div class="pos-cat-selected-subcats pos-cat-selected-childcats" style="display: none; margin-top: 6px;"></div>
     </div>
     <div class="pos-category-scroll" aria-label="@lang('category.categories')">
     <div class="row pos-card-grid pos-card-grid-categories" data-label-all="@lang('messages.all')" style="margin: 0;">
@@ -86,6 +87,15 @@
                         @endif
                     @endforeach
                 </div>
+                @foreach ($category['sub_categories'] as $sc)
+                    @if (!empty($sc['child_categories']))
+                        <div class="all-child-category" data-sub-category-id="{{ $sc['id'] }}" style="display: none">
+                            @foreach ($sc['child_categories'] as $cc)
+                                <span class="product_child_category" data-value="{{ $cc['id'] }}" data-name="{{ $cc['name'] }}"></span>
+                            @endforeach
+                        </div>
+                    @endif
+                @endforeach
             @endif
         @endforeach
     </div>

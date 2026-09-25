@@ -2498,6 +2498,7 @@ class SellPosController extends Controller
                 $products->where(function ($query) use ($category_id) {
                     $query->where('p.category_id', $category_id);
                     $query->orWhere('p.sub_category_id', $category_id);
+                    $query->orWhere('p.child_category_id', $category_id);
                 });
             }
             if (!empty($brand_id) && ($brand_id != 'all')) {
@@ -2522,6 +2523,18 @@ class SellPosController extends Controller
                     $q->whereNull('p.sub_category_id')
                         ->orWhere('p.sub_category_id', 0)
                         ->orWhereIn('p.sub_category_id', function ($sub) {
+                            $sub->select('id')
+                                ->from('categories')
+                                ->whereNull('deleted_at')
+                                ->where(function ($c) {
+                                    $c->where('show_in_pos', 1)->orWhereNull('show_in_pos');
+                                });
+                        });
+                });
+                $products->where(function ($q) {
+                    $q->whereNull('p.child_category_id')
+                        ->orWhere('p.child_category_id', 0)
+                        ->orWhereIn('p.child_category_id', function ($sub) {
                             $sub->select('id')
                                 ->from('categories')
                                 ->whereNull('deleted_at')

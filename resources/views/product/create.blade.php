@@ -112,6 +112,18 @@
             </div>
         </div>
 
+        <div class="col-sm-4 child_category_wrap @if(!(session('business.enable_category') && session('business.enable_sub_category'))) hide @endif" data-always-show="1">
+            <div class="form-group">
+                {!! Form::label('child_category_id', __('category.child_category') . ':') !!}
+                <div class="input-group">
+                    {!! Form::select('child_category_id', $child_categories ?? [], !empty($duplicate_product->child_category_id) ? $duplicate_product->child_category_id : null, ['placeholder' => __('messages.please_select'), 'class' => 'form-control select2', 'id' => 'child_category_id']); !!}
+                    <span class="input-group-btn">
+                        <button type="button" @if(!auth()->user()->can('category.create')) disabled @endif class="btn btn-default bg-white btn-flat quick_add_child_category" data-href="{{action([\App\Http\Controllers\TaxonomyController::class, 'create'], ['type' => 'product', 'quick_add' => true])}}" title="@lang('category.add_category')"><i class="fa fa-plus-circle text-primary fa-lg"></i></button>
+                    </span>
+                </div>
+            </div>
+        </div>
+
         @php
         $default_location = null;
         if(count($business_locations) == 1){
@@ -421,7 +433,7 @@
 
 @section('javascript')
 
-<script src="{{ asset('js/product.js?v=' . $asset_v . '&uom=3&os=1&decouple=3&margin=2&qcat=1') }}"></script>
+<script src="{{ asset('js/product.js?v=' . $asset_v . '&uom=3&os=1&decouple=3&margin=2&qcat=2') }}"></script>
 <script src="{{ asset('js/opening_stock.js?v=' . $asset_v) }}"></script>
 
 <script type="text/javascript">

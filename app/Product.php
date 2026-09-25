@@ -143,6 +143,14 @@ class Product extends Model
     }
 
     /**
+     * Get child category (third level) associated with the product.
+     */
+    public function child_category()
+    {
+        return $this->belongsTo(\App\Category::class, 'child_category_id', 'id');
+    }
+
+    /**
      * Get the tax associated with the product.
      */
     public function product_tax()

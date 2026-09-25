@@ -1953,6 +1953,9 @@ class ProductUtil extends Util
         if (! empty($filters['sub_category_id'])) {
             $query->where('p.sub_category_id', $filters['sub_category_id']);
         }
+        if (! empty($filters['child_category_id'])) {
+            $query->where('p.child_category_id', $filters['child_category_id']);
+        }
         if (! empty($filters['brand_id'])) {
             $query->where('p.brand_id', $filters['brand_id']);
         }

@@ -67,11 +67,43 @@ class Category extends Model
 
         foreach ($categories as $key => $value) {
             if (! empty($sub_cat_by_parent[$value['id']])) {
-                $categories[$key]['sub_categories'] = $sub_cat_by_parent[$value['id']];
+                $subs = $sub_cat_by_parent[$value['id']];
+                foreach ($subs as $sk => $sub) {
+                    if (! empty($sub_cat_by_parent[$sub['id']])) {
+                        $subs[$sk]['child_categories'] = $sub_cat_by_parent[$sub['id']];
+                    }
+                }
+                $categories[$key]['sub_categories'] = $subs;
             }
         }
 
         return $categories;
+    }
+
+    /**
+     * Top-level categories and their sub categories, for choosing a parent
+     * (a sub category can be the parent of a child category).
+     *
+     * @return array<int, string> id => label ("Parent" or "Parent › Sub")
+     */
+    public static function parentOptions($business_id, $type, $exclude_id = null)
+    {
+        $rows = Category::where('business_id', $business_id)
+            ->where('category_type', $type)
+            ->when($exclude_id, fn ($q) => $q->where('id', '!=', $exclude_id))
+            ->orderBy('name')
+            ->get(['id', 'name', 'parent_id']);
+
+        $top = $rows->where('parent_id', 0);
+        $options = [];
+        foreach ($top as $cat) {
+            $options[$cat->id] = $cat->name;
+            foreach ($rows->where('parent_id', $cat->id) as $sub) {
+                $options[$sub->id] = $cat->name.' › '.$sub->name;
+            }
+        }
+
+        return $options;
     }
 
     /**

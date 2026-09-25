@@ -1053,6 +1053,9 @@ $(document).ready(function() {
     $(document).on('change', '#category_id', function() {
         get_sub_categories();
     });
+    $(document).on('change', '#sub_category_id', function() {
+        get_child_categories();
+    });
     $(document).on('change', '#unit_id', function() {
         get_sub_units();
     });
@@ -2452,6 +2455,36 @@ function get_sub_categories() {
             if (result) {
                 $('#sub_category_id').html(result);
             }
+            get_child_categories();
+        },
+    });
+}
+function get_child_categories() {
+    var $child = $('#child_category_id');
+    if (!$child.length) {
+        return;
+    }
+    var sub = $('#sub_category_id').val();
+    var $wrap = $child.closest('.child_category_wrap');
+    if (!sub) {
+        $child.html('<option value="">' + (LANG.none || 'None') + '</option>').val('').trigger('change.select2');
+        $wrap.toggleClass('hide', !$wrap.data('always-show'));
+        return;
+    }
+    $.ajax({
+        method: 'POST',
+        url: '/products/get_sub_categories',
+        dataType: 'html',
+        data: { cat_id: sub },
+        success: function(result) {
+            var keep = $child.data('selected');
+            $child.html(result || '<option value="">None</option>');
+            if (keep && $child.find('option[value="' + keep + '"]').length) {
+                $child.val(String(keep));
+            }
+            $child.data('selected', '');
+            $child.trigger('change.select2');
+            $wrap.toggleClass('hide', $child.find('option[value!=""]').length === 0 && !$wrap.data('always-show'));
         },
     });
 }

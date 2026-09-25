@@ -81,6 +81,7 @@ class ProductController extends Controller
                 ->join('units', 'products.unit_id', '=', 'units.id')
                 ->leftJoin('categories as c1', 'products.category_id', '=', 'c1.id')
                 ->leftJoin('categories as c2', 'products.sub_category_id', '=', 'c2.id')
+                ->leftJoin('categories as c3', 'products.child_category_id', '=', 'c3.id')
                 ->leftJoin('tax_rates', 'products.tax', '=', 'tax_rates.id')
                 ->join('variations as v', 'v.product_id', '=', 'products.id')
                 ->leftJoin('variation_location_details as vld', function ($join) use ($permitted_locations) {
@@ -117,6 +118,7 @@ class ProductController extends Controller
                 'products.type',
                 'c1.name as category',
                 'c2.name as sub_category',
+                'c3.name as child_category',
                 'units.actual_name as unit',
                 'brands.name as brand',
                 'tax_rates.name as tax',
@@ -159,6 +161,11 @@ class ProductController extends Controller
             $sub_category_id = request()->get('sub_category_id', null);
             if (! empty($sub_category_id)) {
                 $products->where('products.sub_category_id', $sub_category_id);
+            }
+
+            $child_category_id = request()->get('child_category_id', null);
+            if (! empty($child_category_id)) {
+                $products->where('products.child_category_id', $child_category_id);
             }
 
             $brand_id = request()->get('brand_id', null);
@@ -204,7 +211,7 @@ class ProductController extends Controller
                         return $row->product_locations->implode('name', ', ');
                     }
                 )
-                ->editColumn('category', '{{$category}} @if(!empty($sub_category))<br/> -- {{$sub_category}}@endif')
+                ->editColumn('category', '{{$category}} @if(!empty($sub_category))<br/> -- {{$sub_category}}@endif @if(!empty($child_category))<br/> &nbsp;&nbsp;-- {{$child_category}}@endif')
                 ->addColumn(
                     'action',
                     function ($row) use ($selling_price_group_count) {
@@ -433,6 +440,7 @@ class ProductController extends Controller
         $rack_details = null;
 
         $sub_categories = [];
+        $child_categories = [];
         if (! empty(request()->input('d'))) {
             $duplicate_product = Product::where('business_id', $business_id)->find(request()->input('d'));
             $duplicate_product->name .= ' (copy)';
@@ -440,6 +448,12 @@ class ProductController extends Controller
             if (! empty($duplicate_product->category_id)) {
                 $sub_categories = Category::where('business_id', $business_id)
                         ->where('parent_id', $duplicate_product->category_id)
+                        ->pluck('name', 'id')
+                        ->toArray();
+            }
+            if (! empty($duplicate_product->sub_category_id)) {
+                $child_categories = Category::where('business_id', $business_id)
+                        ->where('parent_id', $duplicate_product->sub_category_id)
                         ->pluck('name', 'id')
                         ->toArray();
             }
@@ -479,7 +493,7 @@ class ProductController extends Controller
         }
 
         return view('product.create')
-            ->with(compact('categories', 'brands', 'units', 'taxes', 'barcode_types', 'default_profit_percent', 'tax_attributes', 'barcode_default', 'business_locations', 'duplicate_product', 'sub_categories', 'rack_details', 'selling_price_group_count', 'module_form_parts', 'product_types', 'common_settings', 'warranties', 'pos_module_data', 'enable_expiry', 'enable_lot', 'product_barcodes', 'packaging_helper'));
+            ->with(compact('categories', 'brands', 'units', 'taxes', 'barcode_types', 'default_profit_percent', 'tax_attributes', 'barcode_default', 'business_locations', 'duplicate_product', 'sub_categories', 'child_categories', 'rack_details', 'selling_price_group_count', 'module_form_parts', 'product_types', 'common_settings', 'warranties', 'pos_module_data', 'enable_expiry', 'enable_lot', 'product_barcodes', 'packaging_helper'));
     }
 
     private function product_types()
@@ -521,6 +535,9 @@ class ProductController extends Controller
 
             if (! empty($request->input('sub_category_id'))) {
                 $product_details['sub_category_id'] = $request->input('sub_category_id');
+                if (! empty($request->input('child_category_id'))) {
+                    $product_details['child_category_id'] = $request->input('child_category_id');
+                }
             }
 
             if (! empty($request->input('secondary_unit_id'))) {
@@ -734,6 +751,15 @@ class ProductController extends Controller
                         ->toArray();
         $sub_categories = ['' => 'None'] + $sub_categories;
 
+        $child_categories = [];
+        if (! empty($product->sub_category_id)) {
+            $child_categories = Category::where('business_id', $business_id)
+                        ->where('parent_id', $product->sub_category_id)
+                        ->pluck('name', 'id')
+                        ->toArray();
+        }
+        $child_categories = ['' => 'None'] + $child_categories;
+
         $default_profit_percent = request()->session()->get('business.default_profit_percent');
 
         //Get units.
@@ -761,7 +787,7 @@ class ProductController extends Controller
         $product_barcodes = ProductBarcode::where('product_id', $product->id)->orderBy('id')->get();
 
         return view('product.edit')
-                ->with(compact('categories', 'brands', 'units', 'sub_units', 'taxes', 'tax_attributes', 'barcode_types', 'product', 'sub_categories', 'default_profit_percent', 'business_locations', 'rack_details', 'selling_price_group_count', 'module_form_parts', 'product_types', 'common_settings', 'warranties', 'pos_module_data', 'alert_quantity', 'packaging_helper', 'product_barcodes'));
+                ->with(compact('categories', 'brands', 'units', 'sub_units', 'taxes', 'tax_attributes', 'barcode_types', 'product', 'sub_categories', 'child_categories', 'default_profit_percent', 'business_locations', 'rack_details', 'selling_price_group_count', 'module_form_parts', 'product_types', 'common_settings', 'warranties', 'pos_module_data', 'alert_quantity', 'packaging_helper', 'product_barcodes'));
     }
 
     /**
@@ -856,8 +882,10 @@ class ProductController extends Controller
 
             if (! empty($request->input('sub_category_id'))) {
                 $product->sub_category_id = $request->input('sub_category_id');
+                $product->child_category_id = $request->input('child_category_id') ?: null;
             } else {
                 $product->sub_category_id = null;
+                $product->child_category_id = null;
             }
 
             $expiry_enabled = $request->session()->get('business.enable_product_expiry');

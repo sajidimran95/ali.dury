@@ -3981,6 +3981,7 @@ function pos_refresh_payment_modal() {
         } else {
             $subs.empty().hide();
         }
+        $wrap.find('.pos-cat-selected-childcats').empty().hide();
 
         $wrap.find('.pos-category-scroll').hide();
         $wrap.find('.pos-cat-selected').show();
@@ -4012,11 +4013,35 @@ function pos_refresh_payment_modal() {
         e.stopPropagation();
         var value = $(this).data('value');
         var name  = $(this).data('name');
+        var $row  = $(this).closest('.pos-cat-selected-subcats');
+        var isChildRow = $row.hasClass('pos-cat-selected-childcats');
 
         global_p_category_id = value;
         pos_set_filter_chip('category', name);
-        $('.pos-cat-selected-subcats .pos-subcat-pill').removeClass('is-active');
-        $('.pos-cat-selected-subcats .pos-subcat-pill[data-value="' + value + '"]').addClass('is-active');
+        $row.find('.pos-subcat-pill').removeClass('is-active');
+        $(this).addClass('is-active');
+
+        // Picking a sub category shows its child categories as a second row
+        if (!isChildRow) {
+            var $childRow = $('.pos-inline-categories .pos-cat-selected-childcats');
+            var $childSource = $(this).hasClass('pos-subcat-pill--all')
+                ? $()
+                : $('.all-child-category[data-sub-category-id="' + value + '"]').first();
+            if ($childSource.length) {
+                var allLabel = $('.pos-card-grid-categories').first().data('label-all') || 'All';
+                var pills = '<button type="button" class="pos-subcat-pill pos-subcat-pill--all is-active" data-value="' + pos_escape_html(value) + '" data-name="' + pos_escape_html(name) + '">' + pos_escape_html(allLabel) + '</button>';
+                $childSource.find('.product_child_category').each(function() {
+                    var ccId = $(this).data('value');
+                    var ccName = $(this).data('name');
+                    if (ccId && ccName) {
+                        pills += '<button type="button" class="pos-subcat-pill" data-value="' + pos_escape_html(ccId) + '" data-name="' + pos_escape_html(ccName) + '">' + pos_escape_html(ccName) + '</button>';
+                    }
+                });
+                $childRow.html(pills).css('display', 'flex');
+            } else {
+                $childRow.empty().hide();
+            }
+        }
         $('input#suggestion_page').val(1);
         get_product_suggestion_list(global_p_category_id, global_brand_id, $('input#location_id').val(), null);
         get_featured_products();

@@ -57,6 +57,9 @@
           <div class="form-group @if($is_parent) {{'hide' }} @endif" id="parent_cat_div">
             {!! Form::label('parent_id', __( 'lang_v1.select_parent_taxonomy' ) . ':') !!}
             {!! Form::select('parent_id', $parent_categories, $selected_parent, ['class' => 'form-control']); !!}
+            @if(($category->category_type ?? '') === 'product')
+              <p class="help-block">@lang('category.parent_category_hint')</p>
+            @endif
           </div>
       @endif
     </div>

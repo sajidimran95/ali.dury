@@ -72,6 +72,11 @@ class TaxonomyController extends Controller
                     // Attach parent name for use in editColumn
                     $child->parent_name = $parent->name;
                     $category->push($child);
+
+                    foreach ($grouped[$child->id] ?? [] as $grandchild) {
+                        $grandchild->parent_name = $parent->name.' -> '.$child->name;
+                        $category->push($grandchild);
+                    }
                 }
             }
 
@@ -174,18 +179,7 @@ class TaxonomyController extends Controller
 
         $module_category_data = $this->moduleUtil->getTaxonomyData($category_type);
 
-        $categories = Category::where('business_id', $business_id)
-                        ->where('parent_id', 0)
-                        ->where('category_type', $category_type)
-                        ->select(['name', 'short_code', 'id'])
-                        ->get();
-
-        $parent_categories = [];
-        if (! empty($categories)) {
-            foreach ($categories as $category) {
-                $parent_categories[$category->id] = $category->name;
-            }
-        }
+        $parent_categories = Category::parentOptions($business_id, $category_type);
 
         $quick_add = ! empty(request()->input('quick_add'));
         $quick_add_parent_id = request()->input('parent_id');
@@ -209,12 +203,15 @@ class TaxonomyController extends Controller
 
         try {
             $input = $request->only(['name', 'short_code', 'category_type', 'description']);
+            $input['business_id'] = $request->session()->get('user.business_id');
             if (! empty($request->input('add_as_sub_cat')) && $request->input('add_as_sub_cat') == 1 && ! empty($request->input('parent_id'))) {
+                if (! $this->isAllowedParent((int) $input['business_id'], (int) $request->input('parent_id'))) {
+                    return ['success' => false, 'msg' => __('category.max_three_levels')];
+                }
                 $input['parent_id'] = $request->input('parent_id');
             } else {
                 $input['parent_id'] = 0;
             }
-            $input['business_id'] = $request->session()->get('user.business_id');
             $input['created_by'] = $request->session()->get('user.id');
             // Product categories: visible on POS by default when field not submitted
             if ($category_type === 'product') {
@@ -269,11 +266,17 @@ class TaxonomyController extends Controller
 
             $module_category_data = $this->moduleUtil->getTaxonomyData($category_type);
 
-            $parent_categories = Category::where('business_id', $business_id)
-                                        ->where('parent_id', 0)
-                                        ->where('category_type', $category_type)
-                                        ->where('id', '!=', $id)
-                                        ->pluck('name', 'id');
+            // A category that already has children can only sit at top level or under a top-level category
+            $has_children = Category::where('business_id', $business_id)->where('parent_id', $id)->exists();
+            $parent_categories = $has_children
+                ? Category::where('business_id', $business_id)
+                    ->where('parent_id', 0)
+                    ->where('category_type', $category_type)
+                    ->where('id', '!=', $id)
+                    ->orderBy('name')
+                    ->pluck('name', 'id')
+                    ->toArray()
+                : Category::parentOptions($business_id, $category_type, $id);
             $is_parent = false;
 
             if ($category->parent_id == 0) {
@@ -313,7 +316,15 @@ class TaxonomyController extends Controller
                 $category->short_code = $request->input('short_code');
 
                 if (! empty($request->input('add_as_sub_cat')) && $request->input('add_as_sub_cat') == 1 && ! empty($request->input('parent_id'))) {
-                    $category->parent_id = $request->input('parent_id');
+                    $parent_id = (int) $request->input('parent_id');
+                    $has_children = Category::where('business_id', $business_id)->where('parent_id', $category->id)->exists();
+                    $parent = Category::where('business_id', $business_id)->find($parent_id);
+                    if ($parent_id === (int) $category->id
+                        || ! $this->isAllowedParent((int) $business_id, $parent_id)
+                        || ($has_children && $parent && (int) $parent->parent_id !== 0)) {
+                        return ['success' => false, 'msg' => __('category.max_three_levels')];
+                    }
+                    $category->parent_id = $parent_id;
                 } else {
                     $category->parent_id = 0;
                 }
@@ -370,6 +381,23 @@ class TaxonomyController extends Controller
 
             return $output;
         }
+    }
+
+    /**
+     * Parent must be a top-level category or a sub category (max 3 levels).
+     */
+    protected function isAllowedParent(int $business_id, int $parent_id): bool
+    {
+        $parent = Category::where('business_id', $business_id)->find($parent_id);
+        if (! $parent) {
+            return false;
+        }
+        if ((int) $parent->parent_id === 0) {
+            return true;
+        }
+        $grand = Category::where('business_id', $business_id)->find($parent->parent_id);
+
+        return $grand && (int) $grand->parent_id === 0;
     }
 
     public function getCategoriesApi()
