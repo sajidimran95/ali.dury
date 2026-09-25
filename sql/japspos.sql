@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Sep 25, 2026 at 04:44 PM
+-- Generation Time: Sep 25, 2026 at 05:23 PM
 -- Server version: 8.4.3
 -- PHP Version: 8.4.2
 
@@ -393,6 +393,27 @@ INSERT INTO `activity_log` (`id`, `log_name`, `description`, `subject_id`, `subj
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `ai_admin_alerts`
+--
+
+CREATE TABLE `ai_admin_alerts` (
+  `id` int UNSIGNED NOT NULL,
+  `business_id` int UNSIGNED NOT NULL,
+  `type` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `message` text COLLATE utf8mb4_unicode_ci,
+  `url` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `meta` json DEFAULT NULL,
+  `created_by` int UNSIGNED DEFAULT NULL,
+  `emailed` tinyint(1) NOT NULL DEFAULT '0',
+  `read_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `ai_assistance_settings`
 --
 
@@ -406,15 +427,16 @@ CREATE TABLE `ai_assistance_settings` (
   `updated_at` timestamp NULL DEFAULT NULL,
   `match_tolerance_pct` decimal(8,2) NOT NULL DEFAULT '2.00',
   `digest_enabled` tinyint(1) NOT NULL DEFAULT '0',
-  `digest_email` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL
+  `digest_email` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `alert_email_enabled` tinyint(1) NOT NULL DEFAULT '1'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `ai_assistance_settings`
 --
 
-INSERT INTO `ai_assistance_settings` (`id`, `business_id`, `is_enabled`, `openai_api_key`, `openai_model`, `created_at`, `updated_at`, `match_tolerance_pct`, `digest_enabled`, `digest_email`) VALUES
-(1, 1, 1, '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', 'gpt-4o-mini', '2026-07-23 08:24:14', '2026-08-04 06:44:22', 2.00, 0, NULL);
+INSERT INTO `ai_assistance_settings` (`id`, `business_id`, `is_enabled`, `openai_api_key`, `openai_model`, `created_at`, `updated_at`, `match_tolerance_pct`, `digest_enabled`, `digest_email`, `alert_email_enabled`) VALUES
+(1, 1, 1, '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', 'gpt-4o-mini', '2026-07-23 08:24:14', '2026-08-04 06:44:22', 2.00, 0, NULL, 1);
 
 -- --------------------------------------------------------
 
@@ -433,6 +455,14 @@ CREATE TABLE `ai_chat_messages` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `ai_chat_messages`
+--
+
+INSERT INTO `ai_chat_messages` (`id`, `business_id`, `user_id`, `channel`, `role`, `content`, `tool`, `created_at`, `updated_at`) VALUES
+(1, 1, 1, 'japsai', 'user', 'Purchase report', NULL, '2026-09-25 06:54:05', '2026-09-25 06:54:05'),
+(2, 1, 1, 'japsai', 'assistant', 'JapsAI purchase report\nAs of 2026-09-25 12:53:57 (America/New_York) — live POS database numbers.\nToday: $0.00 (0 txn)\nThis week: $0.00 (0 txn)\nThis month: $0.00 (0 txn)\nLast 30 days: $0.00 (0 txn)\nSupplier payables (due/partial): $10,897.30\nSuppliers on file: 4', 'lookup purchases', '2026-09-25 06:54:05', '2026-09-25 06:54:05');
 
 -- --------------------------------------------------------
 
@@ -2218,7 +2248,8 @@ INSERT INTO `ecom_carts` (`id`, `business_id`, `contact_id`, `session_id`, `coup
 (231, 1, NULL, 'veMBFUVYyHi6MUwLqVIFa2SC5HrAYi8M9b0XZzNH', NULL, '2026-09-18 20:10:46', '2026-09-18 20:10:46'),
 (232, 1, NULL, '4QNYMh2MGgCfOC4mvboDp9XWAdKusftOc7kjTW4u', NULL, '2026-09-21 13:49:02', '2026-09-21 13:49:02'),
 (233, 1, NULL, 'qwg5tcWzrYZYVxsjEO2ZczH7iku2REbsiGXEgIkb', NULL, '2026-09-21 07:52:42', '2026-09-21 07:52:42'),
-(234, 1, NULL, 'hCz5jW1BcxltopZPyfneGT07ZM3NQrOOzb4LD4uc', NULL, '2026-09-24 10:28:18', '2026-09-24 10:28:18');
+(234, 1, NULL, 'hCz5jW1BcxltopZPyfneGT07ZM3NQrOOzb4LD4uc', NULL, '2026-09-24 10:28:18', '2026-09-24 10:28:18'),
+(235, 1, NULL, 'iFR7zpJ06i6K4pEDQjEezATfNbpJwtkRkgzTFXd9', NULL, '2026-09-25 07:06:09', '2026-09-25 07:06:09');
 
 -- --------------------------------------------------------
 
@@ -3210,7 +3241,8 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (338, '2026_09_24_011816_create_bulk_price_updates_table', 32),
 (339, '2026_09_25_200000_add_child_category_id_to_products_table', 33),
 (340, '2026_09_25_210000_add_upcharge_percent_to_transactions_table', 34),
-(341, '2026_09_25_220000_add_supplier_id_to_products_table', 35);
+(341, '2026_09_25_220000_add_supplier_id_to_products_table', 35),
+(342, '2026_09_25_220000_create_ai_admin_alerts_table', 36);
 
 -- --------------------------------------------------------
 
@@ -24685,6 +24717,15 @@ ALTER TABLE `activity_log`
   ADD KEY `activity_log_log_name_index` (`log_name`);
 
 --
+-- Indexes for table `ai_admin_alerts`
+--
+ALTER TABLE `ai_admin_alerts`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `ai_admin_alerts_business_id_read_at_index` (`business_id`,`read_at`),
+  ADD KEY `ai_admin_alerts_business_id_index` (`business_id`),
+  ADD KEY `ai_admin_alerts_type_index` (`type`);
+
+--
 -- Indexes for table `ai_assistance_settings`
 --
 ALTER TABLE `ai_assistance_settings`
@@ -25585,6 +25626,12 @@ ALTER TABLE `activity_log`
   MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=281;
 
 --
+-- AUTO_INCREMENT for table `ai_admin_alerts`
+--
+ALTER TABLE `ai_admin_alerts`
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `ai_assistance_settings`
 --
 ALTER TABLE `ai_assistance_settings`
@@ -25594,7 +25641,7 @@ ALTER TABLE `ai_assistance_settings`
 -- AUTO_INCREMENT for table `ai_chat_messages`
 --
 ALTER TABLE `ai_chat_messages`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `ai_match_reviews`
@@ -25756,7 +25803,7 @@ ALTER TABLE `ecom_banners`
 -- AUTO_INCREMENT for table `ecom_carts`
 --
 ALTER TABLE `ecom_carts`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=235;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=236;
 
 --
 -- AUTO_INCREMENT for table `ecom_cart_items`
@@ -25894,7 +25941,7 @@ ALTER TABLE `media`
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=342;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=343;
 
 --
 -- AUTO_INCREMENT for table `notification_templates`
