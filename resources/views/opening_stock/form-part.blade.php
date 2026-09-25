@@ -1,5 +1,12 @@
+@php
+	$os_pack_factor = !empty($pack_unit['factor']) ? (float) $pack_unit['factor'] : 0;
+	$os_pack_name = $pack_unit['name'] ?? '';
+@endphp
 <div class="row">
 	<div class="col-sm-12">
+		@if($os_pack_factor > 0)
+			<p class="help-block"><i class="fa fa-info-circle"></i> 1 {{ $os_pack_name }} = {{ @format_quantity($os_pack_factor) }} {{ $product->unit->short_name }} — @lang('lang_v1.os_pack_help', ['pack' => $os_pack_name, 'unit' => $product->unit->short_name])</p>
+		@endif
 		@forelse($locations as $key => $value)
 		<div class="box box-solid">
 			<div class="box-header">
@@ -8,12 +15,12 @@
 			<div class="box-body">
 				<div class="row tw-overflow-scroll">
 					<div class="col-sm-12">
-						<table class="table table-condensed table-bordered text-center table-responsive table-striped add_opening_stock_table">
+						<table class="table table-condensed table-bordered text-center table-responsive table-striped add_opening_stock_table" data-pack-factor="{{ $os_pack_factor }}">
 								<thead>
 								<tr class="bg-green">
 									<th>@lang( 'product.product_name' )</th>
-									<th>@lang( 'lang_v1.quantity_left' )</th>
-									<th>@lang( 'purchase.unit_cost_before_tax' )</th>
+									<th>@lang( 'lang_v1.opening_stock_qty' )</th>
+									<th>@if($os_pack_factor > 0) @lang('lang_v1.purchase_price_per') {{ $product->unit->short_name }} / {{ $os_pack_name }} @else @lang( 'purchase.unit_cost_before_tax' ) @endif</th>
 									@if($enable_expiry == 1 && $product->enable_stock == 1)
 										<th>Exp. Date</th>
 									@endif
@@ -63,13 +70,31 @@
 
 <tr>
 	<td>
-		{{ $product->name }} @if( $product->type == 'variable' ) (<b>{{ $variation->product_variation->name }}</b> : {{ $variation->name }}) @endif
+		<strong>{{ $product->name }}</strong> @if( $product->type == 'variable' ) (<b>{{ $variation->product_variation->name }}</b> : {{ $variation->name }}) @endif
+		@if($loop->index == 0)
+			@php
+				$os_current = (float) optional($variation->variation_location_details->firstWhere('location_id', $key))->qty_available;
+			@endphp
+			<div class="os-current-stock">
+				@lang('lang_v1.current_stock'):
+				<b>{{ @format_quantity($os_current) }} {{ $product->unit->short_name }}</b>
+				@if($os_pack_factor > 0)
+					<span class="text-muted">({{ @format_quantity($os_current / $os_pack_factor) }} {{ $os_pack_name }})</span>
+				@endif
+			</div>
+		@endif
 
 		@if(!empty($purchase_line_id))
 			{!! Form::hidden('stocks[' . $key . '][' . $variation->id . '][' . $sub_key . '][purchase_line_id]', $purchase_line_id); !!}
 		@endif
 	</td>
 	<td>
+		@if($os_pack_factor > 0)
+		<div class="input-group" style="margin-bottom:4px;">
+		  <input type="text" class="form-control input-sm input_number os_pack_qty" value="{{ @format_quantity($qty / $os_pack_factor) }}" autocomplete="off">
+		  <span class="input-group-addon">{{ $os_pack_name }}</span>
+		</div>
+		@endif
 		<div class="input-group">
 		  {!! Form::text('stocks[' . $key . '][' . $variation->id . '][' . $sub_key . '][quantity]', @format_quantity($qty) , ['class' => 'form-control input-sm input_number purchase_quantity input_quantity', 'required']); !!}
 		  <span class="input-group-addon">
@@ -84,7 +109,16 @@
 		@endif
 	</td>
 <td>
-	{!! Form::text('stocks[' . $key . '][' . $variation->id . '][' . $sub_key . '][purchase_price]', @num_format($purcahse_price) , ['class' => 'form-control input-sm input_number unit_price', 'required']); !!}
+	<div class="input-group">
+		{!! Form::text('stocks[' . $key . '][' . $variation->id . '][' . $sub_key . '][purchase_price]', @num_format($purcahse_price) , ['class' => 'form-control input-sm input_number unit_price', 'required']); !!}
+		@if($os_pack_factor > 0)<span class="input-group-addon">/ {{ $product->unit->short_name }}</span>@endif
+	</div>
+	@if($os_pack_factor > 0)
+	<div class="input-group" style="margin-top:4px;">
+		<input type="text" class="form-control input-sm input_number os_pack_price" value="{{ @num_format($purcahse_price * $os_pack_factor) }}" autocomplete="off">
+		<span class="input-group-addon">/ {{ $os_pack_name }}</span>
+	</div>
+	@endif
 </td>
 
 @if($enable_expiry == 1 && $product->enable_stock == 1)
@@ -103,20 +137,26 @@
 	</td>
 	<td>
 		<div class="input-group date">
-		{!! Form::text('stocks[' . $key . '][' . $variation->id . '][' . $sub_key . '][transaction_date]', $transaction_date , ['class' => 'form-control input-sm os_date', 'readonly']); !!}
+		{!! Form::text('stocks[' . $key . '][' . $variation->id . '][' . $sub_key . '][transaction_date]', $transaction_date , ['class' => 'form-control input-sm os_date', 'readonly', 'placeholder' => __('lang_v1.date')]); !!}
 		</div>
 	</td>
 	<td>
-		{!! Form::textarea('stocks[' . $key . '][' . $variation->id . '][' . $sub_key . '][purchase_line_note]', $purchase_line_note , ['class' => 'form-control input-sm', 'rows' => 3 ]); !!}
+		{!! Form::textarea('stocks[' . $key . '][' . $variation->id . '][' . $sub_key . '][purchase_line_note]', $purchase_line_note , ['class' => 'form-control input-sm', 'rows' => 2, 'placeholder' => __('brand.note')]); !!}
 	</td>
 	<td>
 		@if($loop->index == 0)
-			<button type="button" class="tw-dw-btn tw-dw-btn-xs tw-dw-btn-outline  tw-dw-btn-primary add_stock_row" data-sub-key="{{ count($purchases[$key][$variation->id])}}" 
+			<button type="button" class="btn btn-primary btn-sm add_stock_row" title="@lang('lang_v1.add_stock_batch_help')" data-sub-key="{{ count($purchases[$key][$variation->id])}}" 
 				data-row-html='<tr>
 					<td>
 						{{ $product->name }} @if( $product->type == "variable" ) (<b>{{ $variation->product_variation->name }}</b> : {{ $variation->name }}) @endif
 					</td>
 					<td>
+					@if($os_pack_factor > 0)
+					<div class="input-group" style="margin-bottom:4px;">
+						<input type="text" class="form-control input-sm input_number os_pack_qty" value="0" autocomplete="off">
+						<span class="input-group-addon">{{ $os_pack_name }}</span>
+					</div>
+					@endif
 					<div class="input-group">
 	              		<input class="form-control input-sm input_number purchase_quantity" required="" name="stocks[{{$key}}][{{$variation->id}}][__subkey__][quantity]" type="text" value="0">
 			              <span class="input-group-addon">
@@ -126,6 +166,12 @@
 					</td>
 	<td>
 		<input class="form-control input-sm input_number unit_price" required="" name="stocks[{{$key}}][{{$variation->id}}][__subkey__][purchase_price]" type="text" value="{{@num_format($purcahse_price)}}">
+		@if($os_pack_factor > 0)
+		<div class="input-group" style="margin-top:4px;">
+			<input type="text" class="form-control input-sm input_number os_pack_price" value="{{ @num_format($purcahse_price * $os_pack_factor) }}" autocomplete="off">
+			<span class="input-group-addon">/ {{ $os_pack_name }}</span>
+		</div>
+		@endif
 	</td>
 
 	@if($enable_expiry == 1 && $product->enable_stock == 1)
@@ -150,10 +196,10 @@
 		</div>
 	</td>
 	<td>
-		<textarea rows="3" class="form-control input-sm" name="stocks[{{$key}}][{{$variation->id}}][__subkey__][purchase_line_note]"></textarea>
+		<textarea rows="2" class="form-control input-sm" name="stocks[{{$key}}][{{$variation->id}}][__subkey__][purchase_line_note]"></textarea>
 	</td>
-	<td>&nbsp;</td></tr>'
-	><i class="fa fa-plus"></i></button>
+	<td><button type="button" class="btn btn-default btn-sm text-danger remove_stock_row" title="{{ __('messages.delete') }}"><i class="fa fa-trash"></i></button></td></tr>'
+	><i class="fa fa-plus"></i> @lang('lang_v1.add_stock_batch')</button>
 	@else
 		&nbsp;
 	@endif
@@ -164,7 +210,7 @@
 								</tbody>
 								<tfoot>
 								<tr>
-									<td colspan="@if($enable_expiry == 1 && $product->enable_stock == 1 && $enable_lot == 1) 5 @elseif(($enable_expiry == 1 && $product->enable_stock == 1) || $enable_lot == 1) @else 3 @endif"></td>
+									<td colspan="{{ 3 + (($enable_expiry == 1 && $product->enable_stock == 1) ? 1 : 0) + ($enable_lot == 1 ? 1 : 0) }}"></td>
 									<td><strong>@lang( 'lang_v1.total_amount_exc_tax' ): </strong> <span id="total_subtotal">{{@num_format($subtotal)}}</span>
 									<input type="hidden" id="total_subtotal_hidden" value=0>
 									</td>
@@ -181,3 +227,11 @@
 		@endforelse
 	</div>
 </div>
+<style>
+	.add_opening_stock_table > tbody > tr > td { vertical-align: middle; }
+	.add_opening_stock_table .os_date { min-width: 150px; }
+	.add_opening_stock_table .input-group { min-width: 150px; }
+	.add_opening_stock_table textarea { min-width: 140px; resize: vertical; }
+	.add_opening_stock_table .os-current-stock { margin-top: 6px; font-size: 12px; color: #334155; white-space: nowrap; }
+	.add_opening_stock_table .add_stock_row { white-space: nowrap; }
+</style>

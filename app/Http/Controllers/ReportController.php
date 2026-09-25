@@ -367,7 +367,21 @@ class ReportController extends Controller
             if ($for == 'view_product' && ! empty(request()->input('product_id'))) {
                 $product_stock_details = $products;
 
-                return view('product.partials.product_stock_details')->with(compact('product_stock_details'));
+                $pack_unit = null;
+                $view_product = \App\Product::where('business_id', $business_id)->find(request()->input('product_id'));
+                if (! empty($view_product) && is_array($view_product->sub_unit_ids) && ! empty($view_product->sub_unit_ids)) {
+                    $pack = \App\Unit::where('business_id', $business_id)
+                        ->whereIn('id', $view_product->sub_unit_ids)
+                        ->where('base_unit_id', $view_product->unit_id)
+                        ->where('base_unit_multiplier', '>', 0)
+                        ->orderBy('id')
+                        ->first();
+                    if (! empty($pack)) {
+                        $pack_unit = ['name' => $pack->actual_name, 'factor' => (float) $pack->base_unit_multiplier];
+                    }
+                }
+
+                return view('product.partials.product_stock_details')->with(compact('product_stock_details', 'pack_unit'));
             }
 
             $datatable = Datatables::of($products)

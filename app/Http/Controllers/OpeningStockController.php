@@ -51,6 +51,7 @@ class OpeningStockController extends Controller
                             ->where('id', $product_id)
                             ->with(['variations',
                                 'variations.product_variation',
+                                'variations.variation_location_details',
                                 'unit',
                                 'product_locations',
                                 'second_unit',
@@ -108,6 +109,19 @@ class OpeningStockController extends Controller
             $enable_expiry = request()->session()->get('business.enable_product_expiry');
             $enable_lot = request()->session()->get('business.enable_lot_number');
 
+            $pack_unit = null;
+            if (! empty($product->sub_unit_ids) && is_array($product->sub_unit_ids)) {
+                $packaging = \App\Unit::where('business_id', $business_id)
+                    ->whereIn('id', $product->sub_unit_ids)
+                    ->where('base_unit_id', $product->unit_id)
+                    ->where('base_unit_multiplier', '>', 0)
+                    ->orderBy('id')
+                    ->first();
+                if (! empty($packaging)) {
+                    $pack_unit = ['name' => $packaging->actual_name, 'factor' => (float) $packaging->base_unit_multiplier];
+                }
+            }
+
             if (request()->ajax()) {
                 return view('opening_stock.ajax_add')
                     ->with(compact(
@@ -115,7 +129,8 @@ class OpeningStockController extends Controller
                         'locations',
                         'purchases',
                         'enable_expiry',
-                        'enable_lot'
+                        'enable_lot',
+                        'pack_unit'
                     ));
             }
 
@@ -125,7 +140,8 @@ class OpeningStockController extends Controller
                         'locations',
                         'purchases',
                         'enable_expiry',
-                        'enable_lot'
+                        'enable_lot',
+                        'pack_unit'
                     ));
         }
     }

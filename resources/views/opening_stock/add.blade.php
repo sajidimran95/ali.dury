@@ -23,7 +23,7 @@
 </section>
 @stop
 @section('javascript')
-	<script src="{{ asset('js/opening_stock.js?v=' . $asset_v) }}"></script>
+	<script src="{{ asset('js/opening_stock.js?v=' . $asset_v . '&pack=2') }}"></script>
 	<script type="text/javascript">
 		$(document).ready( function(){
 			$('.os_date').datetimepicker({

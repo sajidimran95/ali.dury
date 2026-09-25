@@ -928,7 +928,7 @@
 	<script src="{{ asset('js/pos.js?v=' . $asset_v . '&scan=2') }}"></script>
 	<script src="{{ asset('js/sell-upcharge.js?v=' . $asset_v . '&u=1') }}"></script>
 	<script src="{{ asset('js/product.js?v=' . $asset_v) }}"></script>
-	<script src="{{ asset('js/opening_stock.js?v=' . $asset_v) }}"></script>
+	<script src="{{ asset('js/opening_stock.js?v=' . $asset_v . '&pack=2') }}"></script>
 
 	<!-- Call restaurant module if defined -->
     @if(in_array('tables' ,$enabled_modules) || in_array('modifiers' ,$enabled_modules) || in_array('service_staff' ,$enabled_modules))

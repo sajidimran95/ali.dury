@@ -31,16 +31,24 @@
                     <td>
                         <input type="hidden" name="single_variation_id" value="{{$variation->id}}">
 
-                        <div class="col-sm-6">
-                          {!! Form::label('single_dpp', trans('product.exc_of_tax') . ':*') !!}
+                        <div class="col-sm-12">
+                          <label for="single_dpp">@lang('lang_v1.purchase_price_per') <span class="js-base-unit-label">Pcs</span>:*</label>
 
-                          {!! Form::text('single_dpp', @num_format($variation->default_purchase_price), ['class' => 'form-control input-sm dpp input_number', 'placeholder' => __('product.exc_of_tax'), 'required']); !!}
+                          {!! Form::text('single_dpp', @num_format($variation->default_purchase_price), ['class' => 'form-control input-sm dpp input_number', 'id' => 'single_dpp', 'placeholder' => '0.00', 'required']); !!}
                         </div>
 
-                        <div class="col-sm-6">
+                        <div class="col-sm-6 hide">
                           {!! Form::label('single_dpp_inc_tax', trans('product.inc_of_tax') . ':*') !!}
                         
                           {!! Form::text('single_dpp_inc_tax', @num_format($variation->dpp_inc_tax), ['class' => 'form-control input-sm dpp_inc_tax input_number', 'placeholder' => __('product.inc_of_tax'), 'required']); !!}
+                        </div>
+
+                        <div class="clearfix"></div>
+                        <div class="col-sm-12 js-pack-price-wrap pack-price-row hide">
+                          <div class="input-group input-group-sm">
+                            <span class="input-group-addon">@lang('lang_v1.purchase_price_per') <span class="js-pack-unit-label">Box</span></span>
+                            <input type="text" id="uom_purchase_pack" class="form-control input_number" placeholder="0.00" autocomplete="off">
+                          </div>
                         </div>
                     </td>
 
@@ -50,10 +58,17 @@
                     </td>
 
                     <td>
-                        <label><span class="dsp_label"></span></label>
+                        <label>@lang('lang_v1.sell_price_per') <span class="js-base-unit-label">Pcs</span> <small class="text-muted">(<span class="dsp_label"></span>)</small></label>
                         {!! Form::text('single_dsp', @num_format($variation->default_sell_price), ['class' => 'form-control input-sm dsp input_number', 'placeholder' => __('product.exc_of_tax'), 'id' => 'single_dsp', 'required']); !!}
 
                         {!! Form::text('single_dsp_inc_tax', @num_format($variation->sell_price_inc_tax), ['class' => 'form-control input-sm hide input_number', 'placeholder' => __('product.inc_of_tax'), 'id' => 'single_dsp_inc_tax', 'required']); !!}
+
+                        <div class="js-pack-price-wrap pack-price-row hide">
+                          <div class="input-group input-group-sm">
+                            <span class="input-group-addon">@lang('lang_v1.sell_price_per') <span class="js-pack-unit-label">Box</span></span>
+                            <input type="text" id="uom_sell_pack" class="form-control input_number" placeholder="0.00" autocomplete="off">
+                          </div>
+                        </div>
                     </td>
                     <td>
                         @php 
@@ -80,3 +95,4 @@
     </table>
     </div>
 </div>
+@include('product.partials.pack_price_row_style')

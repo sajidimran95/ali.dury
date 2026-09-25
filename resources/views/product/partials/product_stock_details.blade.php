@@ -34,6 +34,9 @@
                         	</td>
 	            			<td>
                         		<span data-is_quantity="true" class="display_currency"data-currency_symbol=false >{{$product->stock ?? 0}}</span>{{$product->unit}}
+                        		@if(!empty($pack_unit) && $pack_unit['factor'] > 0)
+                        			<br><small class="text-muted">= {{ @format_quantity(($product->stock ?? 0) / $pack_unit['factor']) }} {{ $pack_unit['name'] }}</small>
+                        		@endif
                         	</td>
                         	<td>
                         		<span class="display_currency"data-currency_symbol=true >{{$product->unit_price * $product->stock}}</span>

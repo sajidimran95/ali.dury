@@ -127,7 +127,12 @@
         <div class="col-sm-4">
             <div class="form-group">
                 {!! Form::label('supplier_id', __('purchase.supplier') . ':') !!}
-                {!! Form::select('supplier_id', $suppliers ?? [], !empty($duplicate_product->supplier_id) ? $duplicate_product->supplier_id : null, ['placeholder' => __('messages.please_select'), 'class' => 'form-control select2', 'id' => 'product_supplier_id', 'style' => 'width:100%']); !!}
+                <div class="input-group">
+                    {!! Form::select('supplier_id', $suppliers ?? [], !empty($duplicate_product->supplier_id) ? $duplicate_product->supplier_id : null, ['placeholder' => __('messages.please_select'), 'class' => 'form-control select2', 'id' => 'product_supplier_id', 'style' => 'width:100%']); !!}
+                    <span class="input-group-btn">
+                        <button type="button" @if(!auth()->user()->can('supplier.create')) disabled @endif class="btn btn-default bg-white btn-flat product-quick-add-supplier" data-href="{{ action([\App\Http\Controllers\ContactController::class, 'create'], ['type' => 'supplier']) }}" title="@lang('contact.add_contact')"><i class="fa fa-plus-circle text-primary fa-lg"></i></button>
+                    </span>
+                </div>
             </div>
         </div>
 
@@ -378,7 +383,7 @@
         <div class="col-sm-4 @if(!session('business.enable_price_tax')) hide @endif">
             <div class="form-group">
                 {!! Form::label('tax_type', __('product.selling_price_tax_type') . ':*') !!}
-                {!! Form::select('tax_type', ['inclusive' => __('product.inclusive'), 'exclusive' => __('product.exclusive')], !empty($duplicate_product->tax_type) ? $duplicate_product->tax_type : 'exclusive',
+                {!! Form::select('tax_type', ['inclusive' => __('product.inclusive'), 'exclusive' => __('product.exclusive')], !empty($duplicate_product->tax_type) ? $duplicate_product->tax_type : 'inclusive',
                 ['class' => 'form-control select2', 'required']); !!}
             </div>
         </div>
@@ -440,27 +445,66 @@
 
 @section('javascript')
 
-<script src="{{ asset('js/product.js?v=' . $asset_v . '&uom=3&os=1&decouple=3&margin=2&qcat=2') }}"></script>
-<script src="{{ asset('js/opening_stock.js?v=' . $asset_v) }}"></script>
+<script src="{{ asset('js/product.js?v=' . $asset_v . '&uom=6&os=1&decouple=3&margin=2&qcat=2') }}"></script>
+<script src="{{ asset('js/opening_stock.js?v=' . $asset_v . '&pack=2') }}"></script>
 
 <script type="text/javascript">
     $(document).ready(function() {
         __page_leave_confirmation('#product_add_form');
 
+        // Unit cost follows the product purchase price until the user types a different cost in a row
         function syncOpeningStockPurchasePrice() {
             if (!$('#product_opening_stock_table').length) return;
             var price = __read_number($('input#single_dpp'));
             if (price == undefined || price === null) return;
             $('#product_opening_stock_table tbody tr').each(function () {
-                var $pp = $(this).find('input.os_purchase_price, input.unit_price');
-                if (!$pp.length) return;
-                var cur = __read_number($pp);
-                if (!cur) {
-                    __write_number($pp, price);
-                    $pp.trigger('change');
-                }
+                var $pp = $(this).find('input.os_purchase_price');
+                if (!$pp.length || $pp.data('os-manual')) return;
+                __write_number($pp, price);
+                $pp.trigger('change');
             });
         }
+
+        function osPackFactor() {
+            if (!$('#enable_packaging_unit').is(':checked')) return 0;
+            var f = __read_number($('#packaging_conversion_factor'));
+            return f && f > 0 ? f : 0;
+        }
+
+        function updateOpeningStockPackColumn() {
+            var factor = osPackFactor();
+            $('#product_opening_stock_table .js-os-pack-col').toggleClass('hide', !(factor > 0));
+            if (factor > 0) {
+                $('#product_opening_stock_table tbody tr').each(function () {
+                    var qty = __read_number($(this).find('.purchase_quantity')) || 0;
+                    var $pack = $(this).find('.os_pack_qty');
+                    if (!$pack.is(':focus')) {
+                        __write_number($pack, qty / factor);
+                    }
+                });
+            }
+        }
+
+        $(document).on('input', '#product_opening_stock_table input.os_purchase_price', function () {
+            $(this).data('os-manual', true);
+        });
+        $(document).on('keyup change', '#product_opening_stock_table .os_pack_qty', function () {
+            var factor = osPackFactor();
+            if (!(factor > 0)) return;
+            var boxes = __read_number($(this)) || 0;
+            var $qty = $(this).closest('tr').find('.purchase_quantity');
+            __write_number($qty, boxes * factor);
+            $qty.trigger('change');
+        });
+        $(document).on('keyup change', '#product_opening_stock_table .purchase_quantity', updateOpeningStockPackColumn);
+        $(document).on('change keyup', '#packaging_conversion_factor', updateOpeningStockPackColumn);
+        $(document).on('ifChecked ifUnchecked change', '#enable_packaging_unit', function () {
+            setTimeout(updateOpeningStockPackColumn, 0);
+        });
+        $(document).on('keyup change', 'input#single_dpp_inc_tax, #uom_purchase_pack', function () {
+            setTimeout(syncOpeningStockPurchasePrice, 0);
+        });
+        updateOpeningStockPackColumn();
 
         function updateOpeningStockVisibility() {
             var stockOn = $('#enable_stock').is(':checked');
@@ -477,7 +521,7 @@
 
         $(document).on('change', '#type', updateOpeningStockVisibility);
         $(document).on('ifChecked ifUnchecked', 'input#enable_stock', updateOpeningStockVisibility);
-        $(document).on('change', 'input#single_dpp', syncOpeningStockPurchasePrice);
+        $(document).on('change keyup', 'input#single_dpp', syncOpeningStockPurchasePrice);
 
         $(document).on('submit', '#product_add_form', function () {
             // Ensure purchase cost is set for rows with qty before save

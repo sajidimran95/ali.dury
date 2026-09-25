@@ -67,7 +67,7 @@
                 <select name="purchases[{{$row_count}}][sub_unit_id]" class="form-control input-sm sub_unit">
                     @foreach($sub_units as $key => $value)
                         <option value="{{$key}}" data-multiplier="{{$value['multiplier']}}">
-                            {{$value['name']}}
+                            {{$value['name']}}@if((float) $value['multiplier'] != 1) ({{ @format_quantity($value['multiplier']) }} {{ $product->unit->short_name }})@endif
                         </option>
                     @endforeach
                 </select>

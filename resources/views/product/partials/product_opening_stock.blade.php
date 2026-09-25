@@ -22,8 +22,9 @@
                         <thead>
                             <tr>
                                 <th>@lang('sale.location')</th>
-                                <th>@lang('lang_v1.quantity') <small class="text-muted">(@lang('lang_v1.product_base_unit'))</small></th>
-                                <th>@lang('purchase.unit_cost_before_tax')</th>
+                                <th class="js-os-pack-col hide">@lang('lang_v1.quantity') <small class="text-muted">(<span class="js-pack-unit-label">Box</span>)</small></th>
+                                <th>@lang('lang_v1.quantity') <small class="text-muted">(<span class="js-base-unit-label">Pcs</span>)</small></th>
+                                <th>@lang('lang_v1.purchase_price_per') <span class="js-base-unit-label">Pcs</span></th>
                                 @if($os_enable_expiry)
                                     <th>@lang('lang_v1.expiry_date')</th>
                                 @endif
@@ -37,6 +38,9 @@
                             @forelse($os_locations as $key => $value)
                                 <tr>
                                     <td>{{ $value }}</td>
+                                    <td class="js-os-pack-col hide">
+                                        <input type="text" class="form-control input-sm input_number os_pack_qty" placeholder="0" autocomplete="off">
+                                    </td>
                                     <td>
                                         {!! Form::text('opening_stock[' . $key . '][quantity]', 0, [
                                             'class' => 'form-control input-sm input_number purchase_quantity',
@@ -74,7 +78,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="5" class="text-muted">@lang('lang_v1.no_location_available')</td>
+                                    <td colspan="6" class="text-muted">@lang('lang_v1.no_location_available')</td>
                                 </tr>
                             @endforelse
                         </tbody>

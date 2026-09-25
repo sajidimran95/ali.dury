@@ -3229,6 +3229,7 @@ function submitContactForm(form) {
             if (result.success == true) {
                 $('div.contact_modal').modal('hide');
                 toastr.success(result.msg);
+                $(document).trigger('contact:created', [result.data || null]);
 
                 if (typeof(contact_table) != 'undefined') {
                     contact_table.ajax.reload();

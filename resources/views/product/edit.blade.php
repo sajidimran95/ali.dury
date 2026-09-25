@@ -138,7 +138,12 @@
             <div class="col-sm-4">
               <div class="form-group">
                 {!! Form::label('supplier_id', __('purchase.supplier') . ':') !!}
-                {!! Form::select('supplier_id', $suppliers ?? [], $product->supplier_id, ['placeholder' => __('messages.please_select'), 'class' => 'form-control select2', 'id' => 'product_supplier_id', 'style' => 'width:100%']); !!}
+                <div class="input-group">
+                  {!! Form::select('supplier_id', $suppliers ?? [], $product->supplier_id, ['placeholder' => __('messages.please_select'), 'class' => 'form-control select2', 'id' => 'product_supplier_id', 'style' => 'width:100%']); !!}
+                  <span class="input-group-btn">
+                    <button type="button" @if(!auth()->user()->can('supplier.create')) disabled @endif class="btn btn-default bg-white btn-flat product-quick-add-supplier" data-href="{{ action([\App\Http\Controllers\ContactController::class, 'create'], ['type' => 'supplier']) }}" title="@lang('contact.add_contact')"><i class="fa fa-plus-circle text-primary fa-lg"></i></button>
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -431,7 +436,7 @@
 @endsection
 
 @section('javascript')
-  <script src="{{ asset('js/product.js?v=' . $asset_v . '&uom=3&decouple=3&margin=2&qcat=2') }}"></script>
+  <script src="{{ asset('js/product.js?v=' . $asset_v . '&uom=6&decouple=3&margin=2&qcat=2') }}"></script>
   <script type="text/javascript">
     $(document).ready( function(){
       __page_leave_confirmation('#product_add_form');

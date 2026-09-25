@@ -38,6 +38,7 @@
                                 'style' => 'margin-top:8px;',
                             ]); !!}
                             <input type="hidden" name="packaging_unit_id" id="packaging_unit_id" value="{{ $ph_unit_id }}">
+                            <input type="hidden" name="packaging_prev_unit_id" value="{{ $ph_unit_id }}">
                         </div>
                     </div>
                     <div class="col-sm-4">
@@ -57,34 +58,8 @@
                     </div>
                 </div>
 
-                <div class="row">
-                    <div class="col-sm-3">
-                        <div class="form-group">
-                            <label>@lang('lang_v1.sell_price_per') <span class="js-base-unit-label">Pcs</span></label>
-                            {!! Form::text('uom_sell_base', null, ['class' => 'form-control input_number', 'id' => 'uom_sell_base', 'placeholder' => '0.00']); !!}
-                        </div>
-                    </div>
-                    <div class="col-sm-3">
-                        <div class="form-group">
-                            <label>@lang('lang_v1.sell_price_per') <span class="js-pack-unit-label">Box</span></label>
-                            {!! Form::text('uom_sell_pack', null, ['class' => 'form-control input_number', 'id' => 'uom_sell_pack', 'placeholder' => '0.00']); !!}
-                        </div>
-                    </div>
-                    <div class="col-sm-3">
-                        <div class="form-group">
-                            <label>@lang('lang_v1.purchase_price_per') <span class="js-base-unit-label">Pcs</span></label>
-                            {!! Form::text('uom_purchase_base', null, ['class' => 'form-control input_number', 'id' => 'uom_purchase_base', 'placeholder' => '0.00']); !!}
-                        </div>
-                    </div>
-                    <div class="col-sm-3">
-                        <div class="form-group">
-                            <label>@lang('lang_v1.purchase_price_per') <span class="js-pack-unit-label">Box</span></label>
-                            {!! Form::text('uom_purchase_pack', null, ['class' => 'form-control input_number', 'id' => 'uom_purchase_pack', 'placeholder' => '0.00']); !!}
-                        </div>
-                    </div>
-                </div>
                 <p class="help-block text-muted" style="margin:0;">
-                    <i class="fa fa-info-circle"></i> @lang('lang_v1.uom_price_override_help')
+                    <i class="fa fa-info-circle"></i> @lang('lang_v1.uom_price_in_table_help')
                 </p>
             </div>
         </div>

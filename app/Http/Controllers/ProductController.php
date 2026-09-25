@@ -601,7 +601,8 @@ class ProductController extends Controller
             }
 
             if ($product->type == 'single') {
-                $this->productUtil->createSingleProductVariation($product->id, $product->sku, $request->input('single_dpp'), $request->input('single_dpp_inc_tax'), $request->input('profit_percent'), $request->input('single_dsp'), $request->input('single_dsp_inc_tax'));
+                $prices = $this->normalizeSinglePrices($request->only(['single_dpp', 'single_dpp_inc_tax', 'single_dsp', 'single_dsp_inc_tax', 'profit_percent']), $product->tax);
+                $this->productUtil->createSingleProductVariation($product->id, $product->sku, $prices['single_dpp'], $prices['single_dpp_inc_tax'], $prices['profit_percent'], $prices['single_dsp'], $prices['single_dsp_inc_tax']);
             } elseif ($product->type == 'variable') {
                 if (! empty($request->input('product_variation'))) {
                     $input_variations = $request->input('product_variation');
@@ -967,11 +968,12 @@ class ProductController extends Controller
                 $variation = Variation::find($single_data['single_variation_id']);
 
                 $variation->sub_sku = $product->sku;
-                $variation->default_purchase_price = $this->productUtil->num_uf($single_data['single_dpp']);
-                $variation->dpp_inc_tax = $this->productUtil->num_uf($single_data['single_dpp_inc_tax']);
-                $variation->profit_percent = $this->productUtil->num_uf($single_data['profit_percent']);
-                $variation->default_sell_price = $this->productUtil->num_uf($single_data['single_dsp']);
-                $variation->sell_price_inc_tax = $this->productUtil->num_uf($single_data['single_dsp_inc_tax']);
+                $prices = $this->normalizeSinglePrices($single_data, $product->tax);
+                $variation->default_purchase_price = $prices['single_dpp'];
+                $variation->dpp_inc_tax = $prices['single_dpp_inc_tax'];
+                $variation->profit_percent = $prices['profit_percent'];
+                $variation->default_sell_price = $prices['single_dsp'];
+                $variation->sell_price_inc_tax = $prices['single_dsp_inc_tax'];
                 $variation->save();
 
                 Media::uploadMedia($product->business_id, $variation, $request, 'variation_images');
@@ -2020,13 +2022,19 @@ class ProductController extends Controller
                 $combo_variations = $this->productUtil->__getComboProductDetails($product['variations'][0]->combo_variations, $business_id);
             }
 
+            $packaging = $this->getPackagingHelperForProduct($business_id, $product);
+            $pack_unit = ! empty($packaging['enabled']) && (float) $packaging['factor'] > 0
+                ? ['name' => $packaging['name'], 'factor' => (float) $packaging['factor']]
+                : null;
+
             return view('product.view-modal')->with(compact(
                 'product',
                 'rack_details',
                 'allowed_group_prices',
                 'group_price_details',
                 'combo_variations',
-                'purchased_from'
+                'purchased_from',
+                'pack_unit'
             ));
         } catch (\Exception $e) {
             \Log::emergency('File:'.$e->getFile().'Line:'.$e->getLine().'Message:'.$e->getMessage());
@@ -2689,13 +2697,45 @@ class ProductController extends Controller
     }
 
     /**
+     * Keeps purchase exc/inc tax and margin consistent when one side of the pair is missing.
+     */
+    protected function normalizeSinglePrices(array $data, $tax_id): array
+    {
+        $tax_rate = ! empty($tax_id) ? (float) (TaxRate::where('id', $tax_id)->value('amount') ?? 0) : 0;
+
+        $dpp = (float) $this->productUtil->num_uf($data['single_dpp'] ?? 0);
+        $dpp_inc = (float) $this->productUtil->num_uf($data['single_dpp_inc_tax'] ?? 0);
+        $dsp = (float) $this->productUtil->num_uf($data['single_dsp'] ?? 0);
+        $dsp_inc = (float) $this->productUtil->num_uf($data['single_dsp_inc_tax'] ?? 0);
+
+        if ($dpp <= 0 && $dpp_inc > 0) {
+            $dpp = $dpp_inc / (1 + $tax_rate / 100);
+        } elseif ($dpp_inc <= 0 && $dpp > 0) {
+            $dpp_inc = $dpp * (1 + $tax_rate / 100);
+        }
+        if ($dsp <= 0 && $dsp_inc > 0) {
+            $dsp = $dsp_inc / (1 + $tax_rate / 100);
+        } elseif ($dsp_inc <= 0 && $dsp > 0) {
+            $dsp_inc = $dsp * (1 + $tax_rate / 100);
+        }
+
+        return [
+            'single_dpp' => $dpp,
+            'single_dpp_inc_tax' => $dpp_inc,
+            'single_dsp' => $dsp,
+            'single_dsp_inc_tax' => $dsp_inc,
+            'profit_percent' => $dpp > 0 ? $this->productUtil->get_percent($dpp, $dsp) : (float) $this->productUtil->num_uf($data['profit_percent'] ?? 0),
+        ];
+    }
+
+    /**
      * Find/create packaging unit from product form helper and merge into sub_unit_ids.
      */
     protected function applyPackagingUnitFromRequest(Request $request, array $product_details, $business_id): array
     {
         if (empty($request->input('enable_packaging_unit'))) {
             // If user turns packaging off, drop the previous packaging unit from related list
-            $prev_pack_id = $request->input('packaging_unit_id');
+            $prev_pack_id = $request->input('packaging_prev_unit_id') ?: $request->input('packaging_unit_id');
             if (! empty($prev_pack_id) && ! empty($product_details['sub_unit_ids']) && is_array($product_details['sub_unit_ids'])) {
                 $product_details['sub_unit_ids'] = array_values(array_filter(
                     $product_details['sub_unit_ids'],
@@ -2769,6 +2809,14 @@ class ProductController extends Controller
         $sub_ids = $product_details['sub_unit_ids'] ?? [];
         if (! is_array($sub_ids)) {
             $sub_ids = [];
+        }
+        // Replace the previous packaging unit (factor or name changed) instead of keeping both
+        foreach (array_unique([(string) $existing_id, (string) $request->input('packaging_prev_unit_id')]) as $old_pack_id) {
+            if ($old_pack_id !== '' && $old_pack_id !== (string) $packaging->id) {
+                $sub_ids = array_filter($sub_ids, function ($id) use ($old_pack_id) {
+                    return (string) $id !== $old_pack_id;
+                });
+            }
         }
         $sub_ids[] = $packaging->id;
         // Keep base unit out of related filter list (POS always includes base)

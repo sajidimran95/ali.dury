@@ -6,6 +6,43 @@ $(document).ready(function() {
         update_table_total($(this).closest('table'));
     });
 
+    $(document).on('click', '.remove_stock_row', function() {
+        var $table = $(this).closest('table');
+        $(this).closest('tr').remove();
+        update_table_total($table);
+    });
+
+    // Box / Case helpers on the opening stock screen (stock is always saved in the base unit)
+    function osPackFactor(el) {
+        return parseFloat($(el).closest('table.add_opening_stock_table').data('pack-factor')) || 0;
+    }
+    $(document).on('keyup change', 'table.add_opening_stock_table .os_pack_qty', function() {
+        var f = osPackFactor(this);
+        if (!(f > 0)) return;
+        var $qty = $(this).closest('td').find('.purchase_quantity');
+        __write_number($qty, (__read_number($(this)) || 0) * f);
+        update_table_total($(this).closest('table'));
+    });
+    $(document).on('keyup change', 'table.add_opening_stock_table .purchase_quantity', function() {
+        var f = osPackFactor(this);
+        var $pack = $(this).closest('td').find('.os_pack_qty');
+        if (!(f > 0) || !$pack.length || $pack.is(':focus')) return;
+        __write_number($pack, (__read_number($(this)) || 0) / f);
+    });
+    $(document).on('keyup change', 'table.add_opening_stock_table .os_pack_price', function() {
+        var f = osPackFactor(this);
+        if (!(f > 0)) return;
+        var $price = $(this).closest('td').find('.unit_price');
+        __write_number($price, (__read_number($(this)) || 0) / f);
+        update_table_total($(this).closest('table'));
+    });
+    $(document).on('keyup change', 'table.add_opening_stock_table .unit_price', function() {
+        var f = osPackFactor(this);
+        var $pack = $(this).closest('td').find('.os_pack_price');
+        if (!(f > 0) || !$pack.length || $pack.is(':focus')) return;
+        __write_number($pack, (__read_number($(this)) || 0) * f);
+    });
+
     $('.os_exp_date').datepicker({
         autoclose: true,
         format: datepicker_date_format,

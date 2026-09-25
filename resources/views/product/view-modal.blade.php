@@ -62,6 +62,10 @@
 						@endif
 						<b>@lang('product.unit'): </b>
 						{{$product->unit->short_name ?? '--' }}<br>
+						@if(!empty($pack_unit))
+							<b>@lang('lang_v1.packaging_unit'): </b>
+							1 {{ $pack_unit['name'] }} = {{ @format_quantity($pack_unit['factor']) }} {{ $product->unit->short_name ?? '' }}<br>
+						@endif
 						<b>@lang('product.barcode_type'): </b>
 						{{$product->barcode_type ?? '--' }}
 						@php 

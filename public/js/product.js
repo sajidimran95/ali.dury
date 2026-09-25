@@ -973,6 +973,7 @@ $(document).on('change', '.variation-file-input', function() {
     }
 
     function uomBaseLabel() {
+        if (!$('#unit_id').val()) return 'Pcs';
         var text = ($('#unit_id option:selected').text() || 'Pcs').toString();
         var m = text.match(/\(([^)]+)\)\s*$/);
         return m ? m[1] : text.split(' ')[0] || 'Pcs';
@@ -988,38 +989,41 @@ $(document).on('change', '.variation-file-input', function() {
     function uomToggleFields() {
         if (uomEnabled()) {
             $('#packaging_uom_fields').removeClass('hide');
+            $('.js-pack-price-wrap').removeClass('hide');
             uomUpdateLabels();
             uomSyncFromMainPrices();
         } else {
             $('#packaging_uom_fields').addClass('hide');
+            $('.js-pack-price-wrap').addClass('hide');
         }
     }
 
+    // Box price fields live in the main price table; the main (per piece) fields are the source of truth.
+    function uomSellIsInc() {
+        return $('#tax_type').val() === 'inclusive';
+    }
+
+    function uomTaxRate() {
+        return typeof get_single_tax_rate === 'function'
+            ? get_single_tax_rate()
+            : ($('select#tax').find(':selected').data('rate') || 0);
+    }
+
     function uomSyncSellFromMain() {
-        if (!uomEnabled() || uomLock) return;
-        uomLock = true;
+        if (!uomEnabled() || uomLock || $('#uom_sell_pack').is(':focus')) return;
         var factor = uomFactor();
-        var sellBase = __read_number($('input#single_dsp'));
-        if (sellBase !== undefined && sellBase !== null) {
-            __write_number($('#uom_sell_base'), sellBase);
-            if (factor > 0) {
-                __write_number($('#uom_sell_pack'), sellBase * factor);
-            }
-        }
+        var sellBase = __read_number(uomSellIsInc() ? $('input#single_dsp_inc_tax') : $('input#single_dsp'));
+        uomLock = true;
+        __write_number($('#uom_sell_pack'), factor > 0 ? (sellBase || 0) * factor : 0);
         uomLock = false;
     }
 
     function uomSyncPurchaseFromMain() {
-        if (!uomEnabled() || uomLock) return;
-        uomLock = true;
+        if (!uomEnabled() || uomLock || $('#uom_purchase_pack').is(':focus')) return;
         var factor = uomFactor();
         var purchaseBase = __read_number($('input#single_dpp'));
-        if (purchaseBase !== undefined && purchaseBase !== null) {
-            __write_number($('#uom_purchase_base'), purchaseBase);
-            if (factor > 0) {
-                __write_number($('#uom_purchase_pack'), purchaseBase * factor);
-            }
-        }
+        uomLock = true;
+        __write_number($('#uom_purchase_pack'), factor > 0 ? (purchaseBase || 0) * factor : 0);
         uomLock = false;
     }
 
@@ -1028,55 +1032,20 @@ $(document).on('change', '.variation-file-input', function() {
         uomSyncPurchaseFromMain();
     }
 
-    function uomFromSellBase() {
-        if (!uomEnabled() || uomLock) return;
-        uomLock = true;
-        var factor = uomFactor();
-        var base = __read_number($('#uom_sell_base'));
-        base = base == undefined ? 0 : base;
-        __write_number($('input#single_dsp'), base);
-        var tax_rate = $('select#tax').find(':selected').data('rate') || 0;
-        __write_number($('input#single_dsp_inc_tax'), __add_percent(base, tax_rate));
-        if (factor > 0) {
-            __write_number($('#uom_sell_pack'), base * factor);
-        }
-        uomLock = false;
-        if (typeof window.update_profit_margin === 'function') {
-            window.update_profit_margin();
-        }
-    }
-
     function uomFromSellPack() {
         if (!uomEnabled() || uomLock) return;
         var factor = uomFactor();
         if (!(factor > 0)) return;
         uomLock = true;
-        var pack = __read_number($('#uom_sell_pack'));
-        pack = pack == undefined ? 0 : pack;
+        var pack = __read_number($('#uom_sell_pack')) || 0;
         var base = pack / factor;
-        __write_number($('#uom_sell_base'), base);
-        __write_number($('input#single_dsp'), base);
-        var tax_rate = $('select#tax').find(':selected').data('rate') || 0;
-        __write_number($('input#single_dsp_inc_tax'), __add_percent(base, tax_rate));
-        uomLock = false;
-        if (typeof window.update_profit_margin === 'function') {
-            window.update_profit_margin();
+        if (uomSellIsInc()) {
+            __write_number($('input#single_dsp_inc_tax'), base);
+            __write_number($('input#single_dsp'), __get_principle(base, uomTaxRate()));
+        } else {
+            __write_number($('input#single_dsp'), base);
+            __write_number($('input#single_dsp_inc_tax'), __add_percent(base, uomTaxRate()));
         }
-    }
-
-    function uomFromPurchaseBase() {
-        if (!uomEnabled() || uomLock) return;
-        uomLock = true;
-        var factor = uomFactor();
-        var base = __read_number($('#uom_purchase_base'));
-        base = base == undefined ? 0 : base;
-        __write_number($('input#single_dpp'), base);
-        var tax_rate = $('select#tax').find(':selected').data('rate') || 0;
-        __write_number($('input#single_dpp_inc_tax'), __add_percent(base, tax_rate));
-        if (factor > 0) {
-            __write_number($('#uom_purchase_pack'), base * factor);
-        }
-        // Do not touch selling prices
         uomLock = false;
         if (typeof window.update_profit_margin === 'function') {
             window.update_profit_margin();
@@ -1088,14 +1057,11 @@ $(document).on('change', '.variation-file-input', function() {
         var factor = uomFactor();
         if (!(factor > 0)) return;
         uomLock = true;
-        var pack = __read_number($('#uom_purchase_pack'));
-        pack = pack == undefined ? 0 : pack;
+        var pack = __read_number($('#uom_purchase_pack')) || 0;
         var base = pack / factor;
-        __write_number($('#uom_purchase_base'), base);
         __write_number($('input#single_dpp'), base);
         var tax_rate = $('select#tax').find(':selected').data('rate') || 0;
         __write_number($('input#single_dpp_inc_tax'), __add_percent(base, tax_rate));
-        // Do not touch selling prices
         uomLock = false;
         if (typeof window.update_profit_margin === 'function') {
             window.update_profit_margin();
@@ -1122,9 +1088,10 @@ $(document).on('change', '.variation-file-input', function() {
 
         $(document).ajaxComplete(function (event, xhr, settings) {
             if (settings && settings.url && String(settings.url).indexOf('product_form_part') !== -1) {
-                if (uomEnabled()) {
-                    setTimeout(uomSyncFromMainPrices, 50);
-                }
+                setTimeout(function () {
+                    uomUpdateLabels();
+                    uomToggleFields();
+                }, 50);
             }
         });
 
@@ -1157,30 +1124,18 @@ $(document).on('change', '.variation-file-input', function() {
             $('#packaging_unit_id').val('');
         });
 
-        $(document).on('change', '#packaging_conversion_factor', function () {
-            if (!uomEnabled()) return;
-            var factor = uomFactor();
-            if (!(factor > 0)) return;
-            var sellBase = __read_number($('#uom_sell_base'));
-            if (sellBase == undefined || sellBase === null || sellBase === '') {
-                sellBase = __read_number($('input#single_dsp')) || 0;
-                __write_number($('#uom_sell_base'), sellBase);
-            }
-            var purchaseBase = __read_number($('#uom_purchase_base'));
-            if (purchaseBase == undefined || purchaseBase === null || purchaseBase === '') {
-                purchaseBase = __read_number($('input#single_dpp')) || 0;
-                __write_number($('#uom_purchase_base'), purchaseBase);
-            }
-            uomLock = true;
-            __write_number($('#uom_sell_pack'), (sellBase || 0) * factor);
-            __write_number($('#uom_purchase_pack'), (purchaseBase || 0) * factor);
-            uomLock = false;
+        $(document).on('change keyup', '#packaging_conversion_factor', function () {
+            uomSyncFromMainPrices();
         });
 
-        $(document).on('change keyup blur', '#uom_sell_base', uomFromSellBase);
-        $(document).on('change keyup blur', '#uom_sell_pack', uomFromSellPack);
-        $(document).on('change keyup blur', '#uom_purchase_base', uomFromPurchaseBase);
-        $(document).on('change keyup blur', '#uom_purchase_pack', uomFromPurchasePack);
+        $(document).on('keyup change', '#uom_sell_pack', uomFromSellPack);
+        $(document).on('keyup change', '#uom_purchase_pack', uomFromPurchasePack);
+        $(document).on('blur', '#uom_sell_pack, #uom_purchase_pack', function () {
+            setTimeout(uomSyncFromMainPrices, 0);
+        });
+        $(document).on('change keyup', '#profit_percent, input#single_dpp_inc_tax, input#single_dsp_inc_tax, select#tax, #tax_type', function () {
+            setTimeout(uomSyncFromMainPrices, 0);
+        });
 
         // Keep sell and purchase packaging prices fully independent
         // Also recalculate x Margin(%) whenever top PO / sale price changes
@@ -1222,18 +1177,6 @@ $(document).on('change', '.variation-file-input', function() {
                 toastr.error('Enter packaging unit name');
                 e.preventDefault();
                 return false;
-            }
-            var sellBase = __read_number($('#uom_sell_base'));
-            var purchaseBase = __read_number($('#uom_purchase_base'));
-            if (sellBase != undefined && $('input#single_dsp').length) {
-                __write_number($('input#single_dsp'), sellBase);
-                var tax_rate = $('select#tax').find(':selected').data('rate') || 0;
-                __write_number($('input#single_dsp_inc_tax'), __add_percent(sellBase, tax_rate));
-            }
-            if (purchaseBase != undefined && $('input#single_dpp').length) {
-                __write_number($('input#single_dpp'), purchaseBase);
-                var tax_rate2 = $('select#tax').find(':selected').data('rate') || 0;
-                __write_number($('input#single_dpp_inc_tax'), __add_percent(purchaseBase, tax_rate2));
             }
         });
     });
@@ -1457,5 +1400,48 @@ $(document).on('change', '.variation-file-input', function() {
                 return false;
             }
         });
+    });
+})();
+
+// --- Quick add supplier (Add/Edit Product) ---
+(function () {
+    var waitingForSupplier = false;
+
+    $(document).on('click', '.product-quick-add-supplier', function () {
+        var $modal = $('div.contact_modal').first();
+        if (!$modal.length) {
+            $modal = $('<div class="modal fade contact_modal" tabindex="-1" role="dialog"></div>').appendTo('body');
+        }
+        $modal.load($(this).data('href'), function () {
+            waitingForSupplier = true;
+            var $type = $modal.find('select#contact_type');
+            if ($type.length) {
+                $type.val('supplier').trigger('change');
+            }
+            $modal.modal('show');
+        });
+    });
+
+    $(document).on('hidden.bs.modal', 'div.contact_modal', function (e) {
+        if (e.target === this) {
+            setTimeout(function () { waitingForSupplier = false; }, 300);
+        }
+    });
+
+    $(document).on('contact:created', function (e, contact) {
+        var $sel = $('#product_supplier_id');
+        if (!waitingForSupplier || !contact || !contact.id || !$sel.length) return;
+        waitingForSupplier = false;
+        var name = contact.name || contact.supplier_business_name || contact.contact_id || ('#' + contact.id);
+        if (contact.supplier_business_name && contact.name && contact.supplier_business_name !== contact.name) {
+            name += ' - ' + contact.supplier_business_name;
+        }
+        if (contact.contact_id) {
+            name += ' (' + contact.contact_id + ')';
+        }
+        if (!$sel.find('option[value="' + contact.id + '"]').length) {
+            $sel.append(new Option(name, contact.id, true, true));
+        }
+        $sel.val(String(contact.id)).trigger('change');
     });
 })();

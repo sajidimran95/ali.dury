@@ -690,6 +690,19 @@ class Util
             ];
         }
 
+        // Packaging units are per product; a product without related sub units only uses its base unit
+        if (! empty($product_id) && empty($related_sub_units)) {
+            if (empty($sub_units)) {
+                $sub_units[$unit->id] = [
+                    'name' => $unit->actual_name,
+                    'multiplier' => 1,
+                    'allow_decimal' => $unit->allow_decimal,
+                ];
+            }
+
+            return $sub_units;
+        }
+
         if (count($unit->sub_units) > 0) {
             foreach ($unit->sub_units as $sub_unit) {
                 //Check if subunit is related to the product or not.
