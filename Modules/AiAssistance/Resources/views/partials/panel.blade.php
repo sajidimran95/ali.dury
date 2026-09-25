@@ -1,6 +1,10 @@
 @php
     $is_modal = !empty($is_modal);
     $intel_html = $intel_html ?? '';
+    $panelBid = (int) session('user.business_id');
+    $alertUnread = \Modules\AiAssistance\Services\AdminAlertService::canView(auth()->user(), $panelBid)
+        ? app(\Modules\AiAssistance\Services\AdminAlertService::class)->unreadCount($panelBid)
+        : 0;
 @endphp
 @include('aiassistance::partials.styles')
 
@@ -25,6 +29,7 @@
         <div class="ai-tabs">
             <button type="button" class="ai-tab-link {{ $tab === 'insights' ? 'active' : '' }}" data-tab="insights">
                 <i class="fa fa-magic"></i> @lang('aiassistance::lang.insights')
+                <span class="ai-alert-badge" title="Unread admin alerts" @if(!$alertUnread) hidden @endif>{{ $alertUnread > 99 ? '99+' : $alertUnread }}</span>
             </button>
             <button type="button" class="ai-tab-link {{ $tab === 'chat' ? 'active' : '' }}" data-tab="chat">
                 <i class="fa fa-comments"></i> @lang('aiassistance::lang.chat')

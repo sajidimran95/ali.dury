@@ -11,6 +11,7 @@
 @section('javascript')
 @include('aiassistance::partials.voice_js')
 @include('aiassistance::partials.chat_js')
+@include('aiassistance::partials.alerts_js')
 <script>
 $(function () {
     $('.ai-tab-link').on('click', function (e) {

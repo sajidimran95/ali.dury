@@ -490,11 +490,17 @@ PROMPT;
         }
 
         $existing = $this->findExistingPurchaseOrder($business_id, $data['ref_no'] ?? null);
-        if ($existing) {
-            return $this->matchInvoiceAgainstPurchaseOrder($business_id, $existing, $data, $tolerance);
+        $result = $existing
+            ? $this->matchInvoiceAgainstPurchaseOrder($business_id, $existing, $data, $tolerance)
+            : $this->createNewDraftPurchaseOrder($business_id, $user_id, $data, $tolerance);
+
+        try {
+            app(AdminAlertService::class)->recordInvoiceResult($business_id, $result);
+        } catch (\Throwable $e) {
+            Log::warning('JapsAI invoice alert skipped: '.$e->getMessage());
         }
 
-        return $this->createNewDraftPurchaseOrder($business_id, $user_id, $data, $tolerance);
+        return $result;
     }
 
     /**

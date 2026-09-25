@@ -9,6 +9,9 @@ use App\Utils\ProductUtil;
 
 class PoCostSyncService
 {
+    /** Set while this service saves a variation so the price observer does not double-alert. */
+    public static bool $syncing = false;
+
     public function syncFromPurchaseLine(PurchaseLine $line): void
     {
         if (! $line->variation_id || ! $line->transaction_id) {
@@ -45,20 +48,43 @@ class PoCostSyncService
         $variation->default_purchase_price = $newCost;
         $variation->dpp_inc_tax = $util->calc_percentage($newCost, $tax_rate, $newCost);
         $variation->profit_percent = $util->get_percent($newCost, (float) $variation->default_sell_price);
-        $variation->save();
-
-        if (! app()->bound('session')) {
-            return;
+        self::$syncing = true;
+        try {
+            $variation->save();
+        } finally {
+            self::$syncing = false;
         }
 
-        $list = session('japs_po_cost_changes', []);
-        $list[] = [
+        $row = [
             'product' => $variation->product->name ?? ('#'.$line->product_id),
             'sku' => $variation->sub_sku,
             'old_cost' => $oldCost,
             'new_cost' => $newCost,
             'po_ref' => $txn->ref_no,
         ];
+
+        try {
+            app(AdminAlertService::class)->queue(
+                (int) $txn->business_id,
+                AdminAlertService::TYPE_PO_COST,
+                'po_cost:'.$txn->id,
+                $row,
+                [
+                    'po_id' => $txn->id,
+                    'po_ref' => $txn->ref_no,
+                    'url' => action([\App\Http\Controllers\PurchaseOrderController::class, 'edit'], [$txn->id]),
+                ]
+            );
+        } catch (\Throwable $e) {
+            \Log::warning('JapsAI PO cost alert skipped: '.$e->getMessage());
+        }
+
+        if (! app()->bound('session')) {
+            return;
+        }
+
+        $list = session('japs_po_cost_changes', []);
+        $list[] = $row;
         // Keep for this request (AJAX chat) and flash for next full page (modal alert).
         session()->put('japs_po_cost_changes', $list);
         session()->flash('japs_po_cost_changes', $list);

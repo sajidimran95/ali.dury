@@ -9,6 +9,10 @@
             if ($bid) {
                 $ai_settings = \Modules\AiAssistance\Entities\AiAssistanceSetting::forBusiness($bid);
                 $show_ai_fab = (bool) $ai_settings->is_enabled;
+                $fab_alert_unread = $show_ai_fab
+                    && \Modules\AiAssistance\Services\AdminAlertService::canView(auth()->user(), $bid)
+                    ? app(\Modules\AiAssistance\Services\AdminAlertService::class)->unreadCount($bid)
+                    : 0;
             }
         }
     } catch (\Throwable $e) {
@@ -20,6 +24,7 @@
     <button type="button" class="ai-ask-fab" id="ai-ask-fab-btn" title="@lang('aiassistance::lang.boost_with_ai')">
         <span class="ai-ask-fab__icon" aria-hidden="true">
             @include('aiassistance::partials.japsai_icon', ['size' => 18])
+            <span class="ai-alert-badge ai-alert-badge--fab" @if(empty($fab_alert_unread)) hidden @endif>{{ ($fab_alert_unread ?? 0) > 99 ? '99+' : ($fab_alert_unread ?? 0) }}</span>
         </span>
         <span class="ai-ask-fab__text">
             <span class="ai-ask-fab__title">@lang('aiassistance::lang.boost_with_ai')</span>
@@ -123,7 +128,7 @@
 
             panelXhr = $.ajax({
                 url: '{{ route('ai.panel') }}',
-                data: { tab: tab || 'chat' },
+                data: { tab: tab || 'insights' },
                 timeout: 25000
             })
                 .done(function (html) {
@@ -131,6 +136,9 @@
                     bindAiModalTabs();
                     if (window.initAiChat) {
                         window.initAiChat();
+                    }
+                    if (window.japsAiAlerts) {
+                        window.japsAiAlerts.start();
                     }
                 })
                 .fail(function (xhr, status) {
@@ -142,7 +150,7 @@
                             '<button type="button" class="btn btn-default btn-sm" id="ai-fail-close">Close</button>' +
                         '</div>'
                     );
-                    $('#ai-retry-load').on('click', function () { openAiModal(tab || 'chat'); });
+                    $('#ai-retry-load').on('click', function () { openAiModal(tab || 'insights'); });
                     $('#ai-fail-close').on('click', closeAiModal);
                 })
                 .always(function () {
@@ -160,6 +168,9 @@
             $('html').removeClass('ai-modal-open');
             if (window.japsAiVoice) {
                 window.japsAiVoice.stop();
+            }
+            if (window.japsAiAlerts) {
+                window.japsAiAlerts.stop();
             }
             // Clear any leftover full-screen blockers that left the UI “dead”
             $('.ai-modal-backdrop').removeClass('open');
@@ -188,7 +199,7 @@
             .off('click.aiFab', '#ai-ask-fab-btn')
             .on('click.aiFab', '#ai-ask-fab-btn', function (e) {
                 e.preventDefault();
-                openAiModal('chat');
+                openAiModal('insights');
             })
             .off('click.aiBackdrop', '#ai-modal-backdrop')
             .on('click.aiBackdrop', '#ai-modal-backdrop', closeAiModal)
@@ -209,4 +220,5 @@
     </script>
     @include('aiassistance::partials.voice_js')
     @include('aiassistance::partials.chat_js')
+    @include('aiassistance::partials.alerts_js')
 @endif

@@ -49,6 +49,9 @@ class SettingsController extends Controller
         if (\Illuminate\Support\Facades\Schema::hasColumn('ai_assistance_settings', 'digest_email')) {
             $settings->digest_email = $request->input('digest_email') ?: null;
         }
+        if (\Illuminate\Support\Facades\Schema::hasColumn('ai_assistance_settings', 'alert_email_enabled')) {
+            $settings->alert_email_enabled = $request->boolean('alert_email_enabled');
+        }
 
         $settings->save();
 

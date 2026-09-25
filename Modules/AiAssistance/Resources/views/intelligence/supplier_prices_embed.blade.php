@@ -1,4 +1,11 @@
-<p class="help-block">Average purchase / PO unit cost per SKU. Shown only when two or more suppliers sold you the same item. Advice only.</p>
+<p class="help-block">Average purchase / PO unit cost per SKU. Shown only when two or more suppliers sold you the same item. Advice only.
+    @if(\Illuminate\Support\Facades\Route::has('ai.intelligence.export'))
+        <a href="{{ route('ai.intelligence.export', ['section' => 'prices-table']) }}"
+           class="btn btn-default btn-xs" style="margin-left:8px;border-radius:999px;">
+            <i class="fa fa-download"></i> Export CSV
+        </a>
+    @endif
+</p>
 <table class="table table-bordered table-striped table-condensed">
     <thead>
         <tr>

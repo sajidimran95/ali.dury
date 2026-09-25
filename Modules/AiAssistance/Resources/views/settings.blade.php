@@ -49,6 +49,13 @@
                     <label>Digest email</label>
                     <input type="email" name="digest_email" class="form-control" value="{{ $settings->digest_email ?? '' }}">
                 </div>
+                <div class="checkbox">
+                    <label>
+                        <input type="checkbox" name="alert_email_enabled" value="1" @checked($settings->alert_email_enabled ?? true)>
+                        Email admin alerts (PO cost changes, invoice uploads that need review) to business admins and the digest email
+                    </label>
+                    <p class="help-block">Product price edits always appear in JapsAI → Insights → Admin alerts.</p>
+                </div>
                 <button type="submit" class="btn btn-primary">@lang('messages.save')</button>
                 <a href="{{ route('ai.dashboard') }}" class="btn btn-default">@lang('aiassistance::lang.ai_assistant')</a>
             </form>

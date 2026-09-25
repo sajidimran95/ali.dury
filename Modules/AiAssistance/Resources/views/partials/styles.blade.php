@@ -142,6 +142,133 @@
     border: 0;
 }
 
+.ai-alerts {
+    border: 1px solid #fde2e2;
+    background: linear-gradient(180deg, #fffafa 0%, #fff 100%);
+    border-radius: 14px;
+    padding: 12px 14px;
+    margin: 0 0 14px;
+}
+.ai-alerts__head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+}
+.ai-alerts__title {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    color: #b91c1c;
+}
+.ai-alerts__count,
+.ai-alert-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: 999px;
+    background: #ef4444;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1;
+}
+.ai-alerts__count[hidden],
+.ai-alert-badge[hidden] { display: none; }
+.ai-alert-badge--fab {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    box-shadow: 0 0 0 2px #f4f6fa;
+}
+.ai-ask-fab__icon { position: relative; }
+.ai-alerts__tools {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.ai-alerts__voice {
+    margin: 0;
+    font-size: 12px;
+    font-weight: 600;
+    color: #6b7280;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+.ai-alerts__voice input { margin: 0; }
+.ai-alerts__btn {
+    border: 1px solid var(--ai-border);
+    background: #fff;
+    color: #374151;
+    border-radius: 999px;
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+}
+.ai-alerts__btn:hover { background: #f9fafb; }
+.ai-alerts__empty {
+    margin: 0;
+    font-size: 12px;
+    color: var(--ai-muted);
+}
+.ai-alerts__list {
+    max-height: 260px;
+    overflow: auto;
+}
+.ai-alert {
+    display: flex;
+    gap: 10px;
+    padding: 9px 4px;
+    border-top: 1px solid #f3f4f6;
+    text-decoration: none !important;
+    color: inherit !important;
+}
+.ai-alert:first-child { border-top: 0; }
+a.ai-alert:hover { background: #fafafa; border-radius: 8px; }
+.ai-alert__icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #f3f4f6;
+    color: #6b7280;
+    font-size: 13px;
+}
+.ai-alert--po_cost .ai-alert__icon { background: #fef3c7; color: #b45309; }
+.ai-alert--invoice .ai-alert__icon { background: #fee2e2; color: #b91c1c; }
+.ai-alert--price_edit .ai-alert__icon { background: var(--ai-purple-soft); color: #6d28d9; }
+.ai-alert__body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.ai-alert__title { font-size: 13px; font-weight: 700; color: #111827; }
+.ai-alert.is-unread .ai-alert__title::before {
+    content: '';
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #ef4444;
+    margin-right: 6px;
+    vertical-align: middle;
+}
+.ai-alert__msg {
+    font-size: 12px;
+    color: #4b5563;
+    white-space: pre-line;
+    line-height: 1.45;
+}
+.ai-alert__time { font-size: 11px; color: #9ca3af; }
+
 .ai-cards {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));

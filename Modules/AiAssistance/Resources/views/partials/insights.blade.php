@@ -5,7 +5,16 @@
     $symbol = session('currency')['symbol'] ?? '';
     $spoken = app(\Modules\AiAssistance\Services\InsightsService::class)
         ->spokenSummary($insights, $symbol);
+    $alertBid = (int) session('user.business_id');
+    if (\Modules\AiAssistance\Services\AdminAlertService::canView(auth()->user(), $alertBid)) {
+        $alertSpoken = app(\Modules\AiAssistance\Services\AdminAlertService::class)->spokenSummary($alertBid);
+        if ($alertSpoken !== '') {
+            $spoken = $alertSpoken.' '.$spoken;
+        }
+    }
 @endphp
+
+@include('aiassistance::partials.admin_alerts')
 
 <div class="ai-insights-voice" style="display:flex;align-items:center;gap:8px;margin:0 0 12px;flex-wrap:wrap;">
     <button type="button"

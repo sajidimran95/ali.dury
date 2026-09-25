@@ -7,6 +7,12 @@
     @if(!empty($data['as_of']))
         <span class="text-muted"> · as of {{ $data['as_of'] }}</span>
     @endif
+    @if($sec !== 'overview' && \Illuminate\Support\Facades\Route::has('ai.intelligence.export'))
+        <a href="{{ route('ai.intelligence.export', ['section' => $sec]) }}"
+           class="btn btn-default btn-xs" style="margin-left:8px;border-radius:999px;" title="Download as spreadsheet (opens in Excel)">
+            <i class="fa fa-download"></i> Export CSV
+        </a>
+    @endif
 </p>
 @if(!empty($data['error']))
     <p class="text-danger">{{ $data['error'] }}</p>

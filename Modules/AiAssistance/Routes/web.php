@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Modules\AiAssistance\Http\Controllers\AlertController;
 use Modules\AiAssistance\Http\Controllers\ChatController;
 use Modules\AiAssistance\Http\Controllers\DashboardController;
 use Modules\AiAssistance\Http\Controllers\InstallController;
@@ -19,6 +20,9 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
         Route::post('chat', [ChatController::class, 'send'])->name('chat.send');
         Route::post('chat/clear', [ChatController::class, 'clear'])->name('chat.clear');
 
+        Route::get('alerts', [AlertController::class, 'index'])->name('alerts.index');
+        Route::post('alerts/read', [AlertController::class, 'markRead'])->name('alerts.read');
+
         Route::get('settings', [SettingsController::class, 'index'])->name('settings');
         Route::post('settings', [SettingsController::class, 'update'])->name('settings.update');
 
@@ -28,6 +32,7 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
 
         Route::get('intelligence', [\Modules\AiAssistance\Http\Controllers\IntelligenceController::class, 'index'])->name('intelligence.index');
         Route::get('intelligence/supplier-prices', [\Modules\AiAssistance\Http\Controllers\IntelligenceController::class, 'supplierPrices'])->name('intelligence.supplier-prices');
+        Route::get('intelligence/export', [\Modules\AiAssistance\Http\Controllers\IntelligenceController::class, 'export'])->name('intelligence.export');
         Route::post('intelligence/draft-po', [\Modules\AiAssistance\Http\Controllers\IntelligenceController::class, 'draftPo'])->name('intelligence.draft-po');
         Route::post('intelligence/chat', [\Modules\AiAssistance\Http\Controllers\IntelligenceController::class, 'chat'])->name('intelligence.chat');
         Route::post('intelligence/digest', [\Modules\AiAssistance\Http\Controllers\IntelligenceController::class, 'sendDigest'])->name('intelligence.digest');

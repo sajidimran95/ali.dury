@@ -61,7 +61,7 @@ class DashboardController extends Controller
             }
 
             $insights = $this->insights->forBusiness($business_id);
-            $tab = request()->get('tab', 'chat');
+            $tab = request()->get('tab', 'insights');
             $user_id = (int) request()->session()->get('user.id');
             $chat_history = $this->memory->load($business_id, $user_id, 'japsai');
             if ($chat_history === []) {

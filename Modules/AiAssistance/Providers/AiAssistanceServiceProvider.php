@@ -3,8 +3,12 @@
 namespace Modules\AiAssistance\Providers;
 
 use App\PurchaseLine;
+use App\Variation;
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\ServiceProvider;
+use Modules\AiAssistance\Console\IntelligenceDigestCommand;
 use Modules\AiAssistance\Observers\PurchaseLinePoCostObserver;
+use Modules\AiAssistance\Observers\VariationPriceObserver;
 
 class AiAssistanceServiceProvider extends ServiceProvider
 {
@@ -20,11 +24,21 @@ class AiAssistanceServiceProvider extends ServiceProvider
         $this->loadMigrationsFrom(module_path($this->moduleName, 'Database/Migrations'));
         $this->ensureModuleInstalled();
         PurchaseLine::observe(PurchaseLinePoCostObserver::class);
+        Variation::observe(VariationPriceObserver::class);
+        $this->registerSchedule();
     }
 
     public function register(): void
     {
         $this->app->register(RouteServiceProvider::class);
+        $this->commands([IntelligenceDigestCommand::class]);
+    }
+
+    protected function registerSchedule(): void
+    {
+        $this->callAfterResolving(Schedule::class, function (Schedule $schedule) {
+            $schedule->command('japsai:intelligence-digest')->dailyAt('07:00');
+        });
     }
 
     protected function registerConfig(): void

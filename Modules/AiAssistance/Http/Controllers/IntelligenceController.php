@@ -121,6 +121,71 @@ class IntelligenceController extends Controller
         }
     }
 
+    public function export(Request $request)
+    {
+        $business_id = $this->gate();
+        $section = (string) $request->get('section', 'forecast');
+
+        if ($section === 'prices-table') {
+            $rows = $this->intel->cheaperSupplierPrices($business_id);
+        } else {
+            $data = $this->intel->sectionData($business_id, $section);
+            $rows = match ($section) {
+                'forecast' => $data['forecast']['ready'] ?? [],
+                'collections' => $data['collections'] ?? [],
+                'match' => $data['match']['exceptions'] ?? [],
+                'slow' => $data['slow_movers'] ?? [],
+                'credit' => $data['credit'] ?? [],
+                'cash' => collect($data['cash_flow']['buckets'] ?? [])
+                    ->map(fn ($v, $k) => ['days' => $k, 'expected_cash_in' => $v])->values()->all(),
+                'cross' => $data['cross_sell'] ?? [],
+                'churn' => $data['churn'] ?? [],
+                'vendors' => $data['vendors'] ?? [],
+                'prices' => $data['supplier_prices'] ?? [],
+                'compliance' => array_merge(
+                    array_map(fn ($r) => ['status' => 'expiring'] + (array) $r, $data['regulated']['licenses']['expiring'] ?? []),
+                    array_map(fn ($r) => ['status' => 'missing'] + (is_array($r) ? $r : ['item' => $r]), $data['regulated']['licenses']['missing'] ?? [])
+                ),
+                'anomalies' => $data['anomalies'] ?? [],
+                'digest' => array_map(
+                    fn ($line) => ['digest' => $line],
+                    array_values(array_filter(preg_split('/\r?\n/', (string) ($data['digest'] ?? ''))))
+                ),
+                default => [],
+            };
+        }
+
+        $rows = array_values(array_filter((array) $rows, 'is_array'));
+        $headers = [];
+        foreach ($rows as $row) {
+            foreach ($row as $key => $value) {
+                if (! is_array($value) && ! is_object($value) && ! in_array($key, $headers, true)) {
+                    $headers[] = $key;
+                }
+            }
+        }
+
+        $filename = 'japsai-'.preg_replace('/[^a-z0-9\-]/', '', strtolower($section)).'-'.now()->format('Y-m-d').'.csv';
+
+        return response()->streamDownload(function () use ($rows, $headers) {
+            $out = fopen('php://output', 'w');
+            fwrite($out, "\xEF\xBB\xBF");
+            if ($headers === []) {
+                fputcsv($out, ['No rows for this report'], ',', '"', '\\');
+            } else {
+                fputcsv($out, array_map(fn ($h) => ucfirst(str_replace('_', ' ', (string) $h)), $headers), ',', '"', '\\');
+                foreach ($rows as $row) {
+                    fputcsv($out, array_map(function ($h) use ($row) {
+                        $v = $row[$h] ?? '';
+
+                        return is_float($v) ? round($v, 2) : $v;
+                    }, $headers), ',', '"', '\\');
+                }
+            }
+            fclose($out);
+        }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);
+    }
+
     public function draftPo(Request $request)
     {
         $business_id = $this->gate();

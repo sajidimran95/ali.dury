@@ -569,8 +569,68 @@ class ChatService
         return implode("\n", $lines);
     }
 
+    /**
+     * True when the message has no POS / business signal (general knowledge, coding, etc.).
+     * Short follow-ups inside an existing conversation are allowed so "and last week?" still works.
+     */
+    public function isOutsideProjectScope(string $message, array $history = []): bool
+    {
+        $m = mb_strtolower(trim($message));
+        if ($m === '') {
+            return false;
+        }
+
+        if (preg_match('/^(hi|hello|hey|salam|assalam|help|thanks|thank you|ok|okay|yes|no|what can you|who are you)\b/u', $m)) {
+            return false;
+        }
+
+        if ($history !== [] && str_word_count($m) <= 6) {
+            return false;
+        }
+
+        $keywords = [
+            'sale', 'sell', 'sold', 'invoice', 'order', 'stock', 'qty', 'quantity', 'inventory', 'item', 'sku',
+            'upc', 'barcode', 'product', 'brand', 'category', 'unit', 'customer', 'client', 'supplier', 'vendor',
+            'purchase', 'po ', ' po', 'po-', 'receiv', 'return', 'refund', 'payment', 'paid', 'due', 'unpaid',
+            'outstanding', 'balance', 'credit', 'debit', 'cash', 'bank', 'card', 'ach', 'pipeline', 'lead',
+            'report', 'price', 'cost', 'margin', 'profit', 'loss', 'revenue', 'income', 'expense', 'tax', 'vat',
+            'discount', 'reorder', 'low stock', 'out of stock', 'on hand', 'warehouse', 'location', 'branch',
+            'store', 'shop', 'pos', 'japs', 'business', 'dashboard', 'overview', 'today', 'yesterday', 'week',
+            'month', 'year', 'receipt', 'memo', 'staff', 'employee', 'user', 'role', 'settings', 'module',
+            'forecast', 'churn', 'collection', 'anomal', 'digest', 'dead stock', 'slow', 'compliance', 'license',
+            'cross-sell', 'cross sell', 'alert', 'top ', 'best', 'total', 'how many', 'how much', 'transfer',
+            'adjust', 'shipment', 'delivery', 'commission', 'target', 'account', 'ledger', 'contact',
+        ];
+
+        foreach ($keywords as $kw) {
+            if (str_contains($m, $kw)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public function outOfScopeReply(): string
+    {
+        $business = (string) (session('business.name') ?? 'your business');
+
+        return 'I only answer questions about '.$business.' in this POS '
+            .'(sales, invoices, stock, purchases, customers, suppliers, payments, reports and alerts).'
+            ."\n\nI can't help with general topics outside the POS. "
+            .'Try a suggested question below, for example: today\'s sales, low stock, or unpaid invoices.';
+    }
+
     public function reply(int $business_id, string $user_message, array $history = []): array
     {
+        if ($this->isOutsideProjectScope($user_message, $history)) {
+            return [
+                'success' => true,
+                'reply' => $this->outOfScopeReply(),
+                'tool' => 'Outside POS scope',
+            ];
+        }
+
         $settings = AiAssistanceSetting::forBusiness($business_id);
         $api_key = $settings->resolveApiKey();
         $local = $this->localReply($business_id, $user_message, $history);
