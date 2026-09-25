@@ -1980,9 +1980,7 @@ body.lockscreen.pos-sale-theme .pos-card.is-active.brand {
  * Product tiles — screen-width columns (viewport):
  *   small           → 2
  *   tablet ~991     → 3
- *   laptop ~1199    → 4
- *   ~1400 desktop   → 5
- *   ≥2100 big screen → 6
+ *   laptop and up   → 4 (max)
  */
 body.lockscreen.pos-sale-theme #product_list_items,
 body.lockscreen.pos-sale-theme #featured_products_box {
@@ -1997,27 +1995,17 @@ body.lockscreen.pos-sale-theme #featured_products_box {
   overflow-x: hidden;
 }
 
-/* Base (default desktop / ~1400 range): 5 per row */
+/* Desktop and big screens: max 4 per row */
 body.lockscreen.pos-sale-theme #product_list_items > [class*="col-"],
 body.lockscreen.pos-sale-theme #featured_products_box > [class*="col-"] {
   float: none !important;
-  flex: 0 0 20% !important;
-  max-width: 20% !important;
-  width: 20% !important;
+  flex: 0 0 25% !important;
+  max-width: 25% !important;
+  width: 25% !important;
   padding: 5px !important;
   height: auto !important;
   align-self: flex-start !important;
   box-sizing: border-box !important;
-}
-
-/* Big desktop / 4K-ish: 6 per row */
-@media (min-width: 2100px) {
-  body.lockscreen.pos-sale-theme #product_list_items > [class*="col-"],
-  body.lockscreen.pos-sale-theme #featured_products_box > [class*="col-"] {
-    flex: 0 0 16.6667% !important;
-    max-width: 16.6667% !important;
-    width: 16.6667% !important;
-  }
 }
 
 /* Laptop */
