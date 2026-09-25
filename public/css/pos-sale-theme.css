@@ -8165,3 +8165,65 @@ body.lockscreen.pos-sale-theme .pos-line-edit-panel .modal-footer .pos-row-edit-
   border-color: var(--pos-accent, #3b8ddd) !important;
   color: #ffffff !important;
 }
+
+/* Small tablets / phones: legacy app.css turns the toolbar into a white stacked panel — keep it one dark scrollable row */
+@media (max-width: 767px) {
+  body.lockscreen.pos-sale-theme .pos-ls-topbar {
+    gap: 8px;
+    padding: 6px 8px !important;
+    height: auto !important;
+  }
+  body.lockscreen.pos-sale-theme .pos-ls-topbar-left {
+    flex: 0 1 auto;
+    min-width: 0;
+  }
+  body.lockscreen.pos-sale-theme .pos-brand-mark {
+    max-width: 38vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  body.lockscreen.pos-sale-theme #pos_header_more_options {
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    flex: 1 1 auto !important;
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+    width: auto !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: transparent !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+  }
+  body.lockscreen.pos-sale-theme #pos_header_more_options #full_screen {
+    display: none !important;
+  }
+  body.lockscreen.pos-sale-theme #pos_header_more_options .pos-drafts-header-btn strong {
+    margin: 0 !important;
+  }
+  body.lockscreen.pos-sale-theme #pos_header_more_options .pos-drafts-header-btn strong > span:not(.pos-drafts-header-badge) {
+    display: none !important;
+  }
+  body.lockscreen.pos-sale-theme #pos_header_more_options > a,
+  body.lockscreen.pos-sale-theme #pos_header_more_options > button,
+  body.lockscreen.pos-sale-theme #pos_header_more_options .pos-drafts-header-btn {
+    width: 36px !important;
+    min-width: 36px !important;
+    max-width: 36px !important;
+    height: 36px !important;
+    min-height: 36px !important;
+    padding: 0 !important;
+    justify-content: center !important;
+    flex: 0 0 36px !important;
+  }
+  body.lockscreen.pos-sale-theme #pos_header_more_options .pos-tb-btn-wide span,
+  body.lockscreen.pos-sale-theme #pos_header_more_options .pos-tb-divider {
+    display: none !important;
+  }
+  body.lockscreen.pos-sale-theme #pos_header_more_options > button.tw-hidden {
+    display: none !important;
+  }
+}
