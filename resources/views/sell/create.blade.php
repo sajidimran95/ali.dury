@@ -372,6 +372,7 @@
 							$hide_tax = 'hide';
 						}
 					@endphp
+					@include('sell.partials.upcharge_bar', ['upcharge_percent' => 0])
 					<div class="table-responsive">
 					<table class="table table-condensed table-bordered table-striped table-responsive direct-sell-product-table" id="pos_table">
 						<thead>
@@ -924,6 +925,7 @@
 
 @section('javascript')
 	<script src="{{ asset('js/pos.js?v=' . $asset_v) }}"></script>
+	<script src="{{ asset('js/sell-upcharge.js?v=' . $asset_v . '&u=1') }}"></script>
 	<script src="{{ asset('js/product.js?v=' . $asset_v) }}"></script>
 	<script src="{{ asset('js/opening_stock.js?v=' . $asset_v) }}"></script>
 

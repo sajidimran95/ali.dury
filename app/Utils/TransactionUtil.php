@@ -153,6 +153,7 @@ class TransactionUtil extends Util
             'rp_earned' => $input['status'] == 'final' ? $this->calculateRewardPoints($business_id, $final_total) : 0,
             'rp_redeemed' => ! empty($input['rp_redeemed']) ? $input['rp_redeemed'] : 0,
             'rp_redeemed_amount' => ! empty($input['rp_redeemed_amount']) ? $input['rp_redeemed_amount'] : 0,
+            'upcharge_percent' => ! empty($input['upcharge_percent']) ? (float) $input['upcharge_percent'] : 0,
             'is_created_from_api' => ! empty($input['is_created_from_api']) ? 1 : 0,
             'types_of_service_id' => ! empty($input['types_of_service_id']) ? $input['types_of_service_id'] : null,
             'packing_charge' => ! empty($input['packing_charge']) ? $input['packing_charge'] : 0,
@@ -312,6 +313,11 @@ class TransactionUtil extends Util
 
         if (! empty($input['transaction_date'])) {
             $update_date['transaction_date'] = $input['transaction_date'];
+        }
+
+        // Only the Add/Edit Sale screen sends this; POS edits keep the stored value
+        if (array_key_exists('upcharge_percent', $input)) {
+            $update_date['upcharge_percent'] = ! empty($input['upcharge_percent']) ? (float) $input['upcharge_percent'] : 0;
         }
 
         $transaction->fill($update_date);

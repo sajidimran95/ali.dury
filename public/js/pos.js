@@ -1262,6 +1262,8 @@ $(document).ready(function() {
             busy: false,
             queue: [],
             mode: 'scan',
+            // Bumped whenever a scan is processed so in-flight autocomplete lookups are dropped
+            acSeq: 0,
         };
 
         function posGetSearchMode() {
@@ -1474,6 +1476,7 @@ $(document).ready(function() {
                 return;
             }
             posScan.busy = true;
+            posScan.acSeq += 1;
 
             var $inp = $('#search_product');
             // Clear immediately so the next scan starts clean
@@ -1664,11 +1667,18 @@ $(document).ready(function() {
                         $('#search_product').val(term);
                     }
                     var params = posGetSearchParams(term);
+                    var reqSeq = ++posScan.acSeq;
                     
                     $.getJSON(
                         '/products/list',
                         params,
                         function(data) {
+                            // A scan (Enter) already handled this code, or the field changed → stale result
+                            if (reqSeq !== posScan.acSeq || posScan.busy
+                                || String($('#search_product').val() || '').trim() !== String(term || '').trim()) {
+                                response([]);
+                                return;
+                            }
                             // Check if auto-add is enabled (single product found) — Scan mode only
                             if (data && data.auto_add && data.row_data && posIsScanMode()) {
                                 // Automatically add the product row
