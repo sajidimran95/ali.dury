@@ -8,6 +8,7 @@ use Modules\Crm\Http\Controllers\DashboardController;
 use Modules\Crm\Http\Controllers\InstallController;
 use Modules\Crm\Http\Controllers\LeadController;
 use Modules\Crm\Http\Controllers\PipelineController;
+use Modules\Crm\Http\Controllers\ScheduleController;
 use Modules\Crm\Http\Controllers\ZeroSaleController;
 
 Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 'AdminSidebarMenu', 'CheckUserLogin'])
