@@ -173,4 +173,7 @@
 @if(!empty($__system_settings['additional_css']))
     {!! $__system_settings['additional_css'] !!}
 @endif
+@if(!empty($report_tables))
+<link rel="stylesheet" href="{{ asset('css/report-tables.css?v='.$asset_v.'&rt=3') }}">
+@endif
 
