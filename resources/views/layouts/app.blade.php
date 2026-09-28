@@ -17,24 +17,8 @@
     $home_ops = $request->segment(1) == 'home';
     // Premium canvas for all non-POS pages (dashboards + rest of app)
     $dashboard_premium = ! $pos_layout;
-    // Listed report pages: keep every table cell on one line (css/report-tables.css)
-    $report_tables = $request->is(
-        'reports/profit-loss',
-        'reports/expense-report',
-        'reports/register-report',
-        'reports/sell-payment-report',
-        'reports/product-sell-report',
-        'reports/product-purchase-report',
-        'reports/purchase-payment-report',
-        'reports/customer-supplier',
-        'reports/stock-report',
-        'reports/items-report',
-        'reports/stock-adjustment-report',
-        'reports/tax-report',
-        'reports/sales-representative-report',
-        'reports/activity-log',
-        'ai/intelligence/supplier-prices'
-    );
+    // Every list table outside POS: one short line per column (css/report-tables.css)
+    $list_tables = ! $pos_layout;
 @endphp
 
 @php
@@ -112,7 +96,7 @@
                 $__pos_screen_layout = strtolower((string) $__biz_sess->pos_screen_layout) === 'rtl' ? 'rtl' : 'ltr';
             }
         }
-    @endphp pos-layout-{{ $__pos_screen_layout }} @elseif(!empty($home_ops)) hold-transition japs-dashboard-home japs-home-ops japs-dashboard-premium sidebar-mini @elseif(!empty($dashboard_home)) hold-transition japs-dashboard-home japs-dashboard-premium sidebar-mini @elseif(!empty($dashboard_premium)) hold-transition japs-dashboard-premium sidebar-mini @else hold-transition skin-@if (!empty(session('business.theme_color'))){{ session('business.theme_color') }}@else{{ 'blue-light' }} @endif sidebar-mini @endif @if (!empty($report_tables)) japs-report-tables @endif" >
+    @endphp pos-layout-{{ $__pos_screen_layout }} @elseif(!empty($home_ops)) hold-transition japs-dashboard-home japs-home-ops japs-dashboard-premium sidebar-mini @elseif(!empty($dashboard_home)) hold-transition japs-dashboard-home japs-dashboard-premium sidebar-mini @elseif(!empty($dashboard_premium)) hold-transition japs-dashboard-premium sidebar-mini @else hold-transition skin-@if (!empty(session('business.theme_color'))){{ session('business.theme_color') }}@else{{ 'blue-light' }} @endif sidebar-mini @endif @if (!empty($list_tables)) japs-list-tables @endif" >
     <div class="tw-flex thetop">
         <script type="text/javascript">
             if (localStorage.getItem("upos_sidebar_collapse") == 'true') {
@@ -208,15 +192,18 @@
 
         @include('layouts.partials.javascripts')
 
-        @if (!empty($report_tables))
+        @if (!empty($list_tables))
             <script>
                 (function () {
+                    function isEntryTable(node) {
+                        return node.closest && node.closest('#purchase_entry_table, #pos_table, .direct-sell-product-table, .table-pdf');
+                    }
                     function flattenReportBreaks(root) {
                         var scope = root && root.querySelectorAll ? root : document;
                         var nodes = scope.querySelectorAll('br');
                         for (var i = 0; i < nodes.length; i++) {
                             var br = nodes[i];
-                            if (!br.closest || !br.closest('table')) {
+                            if (!br.closest || !br.closest('table') || isEntryTable(br)) {
                                 continue;
                             }
                             br.replaceWith(document.createTextNode(' '));
@@ -227,6 +214,9 @@
                         var cells = scope.querySelectorAll('th, td');
                         for (var i = 0; i < cells.length; i++) {
                             var cell = cells[i];
+                            if (isEntryTable(cell)) {
+                                continue;
+                            }
                             if (cell.querySelector('.btn, .tw-dw-btn, .btn-group, .table-action-btns')) {
                                 continue;
                             }

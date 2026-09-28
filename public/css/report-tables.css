@@ -1,19 +1,16 @@
 /* =============================================================================
-   Report tables — keep every column on a single line
+   List tables — one short line per column
    -----------------------------------------------------------------------------
-   Loaded only on the listed report pages (body class `japs-report-tables`).
-   Cells stop wrapping and the table grows to its content width. Existing
-   horizontal scroll containers (.table-responsive, DataTables scroll body,
-   or the DataTables wrapper) keep every column reachable. Fonts, colors,
-   borders, sorting, filters, and pagination are unchanged.
+   Loaded on every non-POS page (body class `japs-list-tables`).
+   Purchase lines, sell lines, and PDF tables keep their own layout.
    ========================================================================== */
 
 /* DataTables measures a clone appended to <body>, outside .content.
    The nowrap rule has to match that clone or columns are sized for wrapping.
    Long values are capped so the column stays short; the full text is on the
    cell title (set from the layout script) for hover. */
-body.japs-report-tables .content table :is(th, td),
-body.japs-report-tables table.dataTable :is(th, td) {
+body.japs-list-tables .content table :is(th, td),
+body.japs-list-tables table.dataTable :is(th, td) {
     white-space: nowrap !important;
     word-break: normal !important;
     overflow-wrap: normal !important;
@@ -25,8 +22,8 @@ body.japs-report-tables table.dataTable :is(th, td) {
 }
 
 /* Buttons and menus need their full width */
-body.japs-report-tables .content table :is(th, td):has(.btn, .tw-dw-btn, .btn-group, .table-action-btns),
-body.japs-report-tables table.dataTable :is(th, td):has(.btn, .tw-dw-btn, .btn-group, .table-action-btns) {
+body.japs-list-tables .content table :is(th, td):has(.btn, .tw-dw-btn, .btn-group, .table-action-btns),
+body.japs-list-tables table.dataTable :is(th, td):has(.btn, .tw-dw-btn, .btn-group, .table-action-btns) {
     width: max-content !important;
     max-width: none !important;
     overflow: visible !important;
@@ -34,8 +31,8 @@ body.japs-report-tables table.dataTable :is(th, td):has(.btn, .tw-dw-btn, .btn-g
 }
 
 /* Children that set their own white-space (badges, links, action groups) */
-body.japs-report-tables .content table :is(th, td) :where(span, small, a, strong, b, label, p, div),
-body.japs-report-tables table.dataTable :is(th, td) :where(span, small, a, strong, b, label, p, div) {
+body.japs-list-tables .content table :is(th, td) :where(span, small, a, strong, b, label, p, div),
+body.japs-list-tables table.dataTable :is(th, td) :where(span, small, a, strong, b, label, p, div) {
     white-space: nowrap !important;
     word-break: normal !important;
     overflow-wrap: normal !important;
@@ -44,14 +41,14 @@ body.japs-report-tables table.dataTable :is(th, td) :where(span, small, a, stron
 /* <br> forces a new line even when white-space is nowrap. Hide the break
    before the small script in the layout replaces it with a space, so the
    text on both sides stays visible on one line. */
-body.japs-report-tables .content table :is(th, td) br,
-body.japs-report-tables table.dataTable :is(th, td) br {
+body.japs-list-tables .content table :is(th, td) br,
+body.japs-list-tables table.dataTable :is(th, td) br {
     display: none !important;
 }
 
 /* Action groups stay on one row */
-body.japs-report-tables .content table .table-action-btns,
-body.japs-report-tables .content table .btn-group {
+body.japs-list-tables .content table .table-action-btns,
+body.japs-list-tables .content table .btn-group {
     flex-wrap: nowrap !important;
     max-width: none !important;
     width: max-content;
@@ -60,7 +57,7 @@ body.japs-report-tables .content table .btn-group {
 
 /* Fixed columns so a long value cannot stretch its column. The table
    stays as wide as those short columns and scrolls when there are many. */
-body.japs-report-tables .content table:not(td table):not(th table) {
+body.japs-list-tables .content table:not(td table):not(th table) {
     table-layout: fixed !important;
     width: max-content !important;
     min-width: 0 !important;
@@ -69,17 +66,17 @@ body.japs-report-tables .content table:not(td table):not(th table) {
 
 /* Scrollports. Toolbar and pager stick to the left so only the table moves.
    Open action menus still escape via the existing :has(.btn-group.open) rule. */
-body.japs-report-tables .content .table-responsive,
-body.japs-report-tables .content .dataTables_wrapper:not(:has(.dataTables_scroll)),
-body.japs-report-tables .content .box-body:has(table) {
+body.japs-list-tables .content .table-responsive,
+body.japs-list-tables .content .dataTables_wrapper:not(:has(.dataTables_scroll)),
+body.japs-list-tables .content .box-body:has(table) {
     overflow-x: auto;
     max-width: 100%;
     -webkit-overflow-scrolling: touch;
 }
 
-body.japs-report-tables .content .dataTables_wrapper:not(:has(.dataTables_scroll)) > .row,
-body.japs-report-tables .content .dataTables_wrapper:not(:has(.dataTables_scroll)) > .dataTables_info,
-body.japs-report-tables .content .dataTables_wrapper:not(:has(.dataTables_scroll)) > .dataTables_paginate {
+body.japs-list-tables .content .dataTables_wrapper:not(:has(.dataTables_scroll)) > .row,
+body.japs-list-tables .content .dataTables_wrapper:not(:has(.dataTables_scroll)) > .dataTables_info,
+body.japs-list-tables .content .dataTables_wrapper:not(:has(.dataTables_scroll)) > .dataTables_paginate {
     position: sticky;
     left: 0;
     z-index: 2;
@@ -90,8 +87,24 @@ body.japs-report-tables .content .dataTables_wrapper:not(:has(.dataTables_scroll
 }
 
 /* scrollX tables: the scroll body is the scrollport. Don't clip the bar. */
-body.japs-report-tables .content .dataTables_scrollBody {
+body.japs-list-tables .content .dataTables_scrollBody {
     overflow-x: auto;
     max-width: 100%;
     -webkit-overflow-scrolling: touch;
+}
+
+/* Line-entry and print tables keep their own column widths and wrapping. */
+body.japs-list-tables .content :is(#purchase_entry_table, #pos_table, .direct-sell-product-table, .table-pdf),
+body.japs-list-tables .content :is(#purchase_entry_table, #pos_table, .direct-sell-product-table, .table-pdf) :is(th, td) {
+    table-layout: auto !important;
+    width: auto !important;
+    max-width: none !important;
+    min-width: 0 !important;
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+}
+
+body.japs-list-tables .content :is(#purchase_entry_table, #pos_table, .direct-sell-product-table) br {
+    display: inline !important;
 }
