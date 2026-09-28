@@ -24,3 +24,4 @@ npm-debug.log
 # Archives — never commit zip dumps to git
 *.zip
 **/*.zip
+note
