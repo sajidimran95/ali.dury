@@ -63,7 +63,7 @@
                 <p class="text-black/60">Min. order: 1 display · Pack: {{ strip_tags($product->ecom_short_description ?: '1 display') }}</p>
             </div>
 
-            <p class="text-sm mb-4 {{ ($stock > 0 || !$product->enable_stock) ? 'text-orange-700' : 'text-rose-600' }}">
+            <p class="text-sm mb-4 {{ ($stock > 0 || !$product->enable_stock) ? 'text-emerald-700' : 'text-rose-600' }}">
                 {{ ($stock > 0 || !$product->enable_stock) ? '● In stock — ready to ship' : 'Out of stock' }}
             </p>
 
@@ -90,10 +90,10 @@
                             aria-label="Increase quantity">+</button>
                 </div>
 
-                <button type="submit" class="rounded-lg bg-[#ea580c] text-white px-8 py-3 text-sm font-semibold hover:bg-[#c2410c] transition">
+                <button type="submit" class="rounded-lg bg-[#3d9b6d] text-white px-8 py-3 text-sm font-semibold hover:bg-[#2d7a54] transition">
                     Add to Cart
                 </button>
-                <button type="submit" name="buy_now" value="1" class="rounded-lg bg-[#9a3412] text-white px-6 py-3 text-sm font-semibold hover:bg-[#431407] transition">
+                <button type="submit" name="buy_now" value="1" class="rounded-lg bg-[#1f6b45] text-white px-6 py-3 text-sm font-semibold hover:bg-[#143d2c] transition">
                     Buy Now
                 </button>
             </form>

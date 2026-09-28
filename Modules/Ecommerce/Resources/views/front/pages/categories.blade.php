@@ -3,7 +3,7 @@
 @section('content')
 @php use Modules\Ecommerce\Support\Storefront; @endphp
 <div class="max-w-screen-xl mx-auto px-4 py-10 md:py-14">
-    <p class="text-xs font-bold uppercase tracking-widest mb-1" style="color:#f97316">Browse by Type</p>
+    <p class="text-xs font-bold uppercase tracking-widest mb-1" style="color:#4CAF79">Browse by Type</p>
     <h1 class="font-display text-3xl font-bold mb-8">Categories</h1>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         @forelse($categories as $cat)

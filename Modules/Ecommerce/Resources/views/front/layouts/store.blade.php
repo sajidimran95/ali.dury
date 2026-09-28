@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <meta name="theme-color" content="#c2410c">
+    <meta name="theme-color" content="#2e6a49">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="{{ $ecom_settings->store_name ?? 'Store' }}">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -19,19 +19,19 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/gc-storefront.css') }}?v={{ config('app.asset_version', '1') }}&gc=8">
+    <link rel="stylesheet" href="{{ asset('css/gc-storefront.css') }}?v={{ config('app.asset_version', '1') }}&gc=7">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        brand: '#f97316',
-                        brandDark: '#c2410c',
+                        brand: '#4caf79',
+                        brandDark: '#2e6a49',
                         ink: '#1a1a1a',
-                        slatebar: '#7c2d12',
+                        slatebar: '#1a3d2b',
                         mist: '#f4f4f4',
-                        line: '#ffedd5'
+                        line: '#e6ebe8'
                     },
                     fontFamily: {
                         sans: ['Poppins', 'system-ui', 'sans-serif'],
@@ -44,11 +44,11 @@
     <style>
         body { font-family: Poppins, system-ui, sans-serif; background: #f4f4f4; color: #1a1a1a; }
         .mega.is-active > .cat-link, .cat-link:hover { color: #fff !important; }
-        .btn-brand { background: #ea580c; color: #fff; font-weight: 600; border-radius: 8px; padding: .7rem 1.25rem; }
-        .btn-brand:hover { background: #c2410c; }
-        .input-w:focus { border-color: #ea580c; box-shadow: 0 0 0 3px rgba(234,88,12,.15); }
-        .app-tab.active, .app-tab:active { color: #9a3412; }
-        .app-chip.active { background: #fff7ed; color: #9a3412; border-color: #fed7aa; }
+        .btn-brand { background: #3d9b6d; color: #fff; font-weight: 600; border-radius: 8px; padding: .7rem 1.25rem; }
+        .btn-brand:hover { background: #2d7a54; }
+        .input-w:focus { border-color: #3d9b6d; box-shadow: 0 0 0 3px rgba(61,155,109,.15); }
+        .app-tab.active, .app-tab:active { color: #1f6b45; }
+        .app-chip.active { background: #edf7f1; color: #1f6b45; border-color: #b7dfc8; }
         .cat-nav-wrap { position: relative; overflow: visible; }
         .gc-nav { overflow: visible; }
         .gc-menubar {
@@ -78,8 +78,8 @@
             width: max-content;
             max-width: 280px;
             background: #fff;
-            color: #431407;
-            border: 1px solid #ffedd5;
+            color: #12261c;
+            border: 1px solid #e6ebe8;
             box-shadow: 0 16px 40px rgba(0,0,0,.16);
             border-radius: 0 0 10px 10px;
             padding: 8px 0;
@@ -87,15 +87,15 @@
         .mega:hover > .mega-panel,
         .mega.is-open > .mega-panel,
         .mega-panel.is-open { display: block; }
-        .mega-panel a { display: block; padding: 8px 16px; font-size: 13px; color: #431407; }
-        .mega-panel a:hover { background: #fff7ed; color: #9a3412; }
+        .mega-panel a { display: block; padding: 8px 16px; font-size: 13px; color: #12261c; }
+        .mega-panel a:hover { background: #edf7f1; color: #1f6b45; }
         .brand-tile {
             display: flex; align-items: center; justify-content: center;
             min-height: 64px; border: 1px solid #ececec; border-radius: 8px;
             background: #fafafa; padding: 8px; text-align: center;
             transition: border-color .15s, box-shadow .15s;
         }
-        .brand-tile:hover { border-color: #ea580c; box-shadow: 0 2px 10px rgba(234,88,12,.12); }
+        .brand-tile:hover { border-color: #3d9b6d; box-shadow: 0 2px 10px rgba(61,155,109,.12); }
         .input-w {
             width: 100%; border: 1px solid #d4d4d4; border-radius: 8px; padding: .7rem .9rem; font-size: .875rem;
             background: #fff; outline: none;
@@ -496,13 +496,13 @@
 
 <div id="gcAgeGate" class="gc-age" role="dialog" aria-label="Age verification">
     <div class="gc-age__card">
-        <div class="mx-auto mb-4 h-14 w-14 rounded-full bg-[#ea580c] flex items-center justify-center text-2xl">🌲</div>
+        <div class="mx-auto mb-4 h-14 w-14 rounded-full bg-[#3d9b6d] flex items-center justify-center text-2xl">🌲</div>
         <h2 class="gc-serif text-2xl mb-2">Age Verification Required</h2>
         <p class="text-sm text-white/75 mb-1">You must be 21 years of age or older to enter this site.</p>
         <p class="text-xs text-white/55 mb-5">This site sells tobacco, nicotine, hemp and age-restricted products for licensed retailers only.</p>
         <p class="font-semibold mb-4">Are you 21 or older?</p>
         <div class="grid gap-2">
-            <button type="button" id="gcAgeYes" class="rounded-lg bg-[#ea580c] text-white font-bold py-3">Yes, I am 21 or older — enter site</button>
+            <button type="button" id="gcAgeYes" class="rounded-lg bg-[#3d9b6d] text-white font-bold py-3">Yes, I am 21 or older — enter site</button>
             <button type="button" id="gcAgeNo" class="rounded-lg border border-white/25 text-white/80 py-3">No, I am under 21 — exit site</button>
         </div>
         <p class="text-[11px] text-white/45 mt-4">By entering, you confirm you are 21+ and agree to our
@@ -558,7 +558,7 @@
     <div class="max-w-[1400px] mx-auto px-4 h-[44px] flex items-center justify-center gap-3 text-sm font-semibold" id="gcAnnounce">
         <button type="button" class="opacity-70" data-ann-prev aria-label="Previous">‹</button>
         <a href="{{ route('ecommerce.shop') }}" class="text-white no-underline" data-ann-text>Summer Clearance — Up to 40% Off Select Items</a>
-        <a href="{{ route('ecommerce.shop') }}" class="rounded-full bg-white text-[#c2410c] text-xs font-bold px-3 py-1">Shop Clearance →</a>
+        <a href="{{ route('ecommerce.shop') }}" class="rounded-full bg-white text-[#2e6a49] text-xs font-bold px-3 py-1">Shop Clearance →</a>
         <button type="button" class="opacity-70" data-ann-next aria-label="Next">›</button>
     </div>
 </div>
@@ -593,22 +593,22 @@
                 <div class="flex w-full rounded-lg border border-line overflow-hidden bg-white focus-within:border-brand">
                     <input type="search" name="q" value="{{ request('q') }}" placeholder="Search products, brands, categories..."
                            class="flex-1 bg-transparent border-0 outline-none text-[13px] px-4 py-2.5">
-                    <button class="text-[#c2410c] px-4" aria-label="Search">
+                    <button class="text-[#2e6a49] px-4" aria-label="Search">
                         <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="5.5"/><path d="M12 12l4 4"/></svg>
                     </button>
                 </div>
             </form>
 
             <div class="ml-auto flex items-center gap-3 sm:gap-4 text-[14px] font-semibold shrink-0">
-                <a href="{{ auth('customer')->check() ? route('ecommerce.account') : route('ecommerce.login') }}" class="inline-flex items-center gap-1.5 h-9 text-[#c2410c]">
+                <a href="{{ auth('customer')->check() ? route('ecommerce.account') : route('ecommerce.login') }}" class="inline-flex items-center gap-1.5 h-9 text-[#2e6a49]">
                     <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="6" r="3"/><path d="M3 16c1.5-3 10.5-3 12 0"/></svg>
                     Account
                 </a>
-                <a href="{{ route('ecommerce.cart') }}" class="inline-flex items-center gap-2 rounded-lg bg-[#f97316] text-[#1a1a1a] px-3.5 h-9 hover:bg-[#ea580c]">
+                <a href="{{ route('ecommerce.cart') }}" class="inline-flex items-center gap-2 rounded-lg bg-[#4caf79] text-[#1a1a1a] px-3.5 h-9 hover:bg-[#3d9b68]">
                     <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 4h12l-1 9H4L3 4z"/><path d="M7 7V4a2 2 0 014 0v3"/></svg>
                     Cart
                     @if(($cart_totals['count'] ?? 0) > 0)
-                        <span class="bg-white text-[#c2410c] text-[10px] rounded-full min-w-[16px] h-[16px] inline-flex items-center justify-center px-1">{{ $cart_totals['count'] }}</span>
+                        <span class="bg-white text-[#2e6a49] text-[10px] rounded-full min-w-[16px] h-[16px] inline-flex items-center justify-center px-1">{{ $cart_totals['count'] }}</span>
                     @endif
                 </a>
             </div>
@@ -674,7 +674,7 @@
 </div>
 
 @if(session('success'))
-    <div class="bg-orange-50 text-orange-900 text-sm text-center py-2.5 border-b border-orange-100">{{ session('success') }}</div>
+    <div class="bg-emerald-50 text-emerald-900 text-sm text-center py-2.5 border-b border-emerald-100">{{ session('success') }}</div>
 @endif
 @if(session('error'))
     <div class="bg-rose-50 text-rose-900 text-sm text-center py-2.5 border-b border-rose-100">{{ session('error') }}</div>
@@ -685,7 +685,7 @@
 
 <main>@yield('content')</main>
 
-<footer class="desktop-footer mt-16 bg-[#431407] text-white">
+<footer class="desktop-footer mt-16 bg-[#0c2a1e] text-white">
     <div class="max-w-[1400px] mx-auto px-4 py-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-10 gc-footer-grid">
         <div>
             <div class="flex items-center gap-2 mb-3">
@@ -749,7 +749,7 @@
                 <p class="text-xs text-white/60 mb-2">Stay informed — new arrivals, deals &amp; industry news</p>
                 <div class="flex flex-wrap gap-2 min-w-0">
                     <input type="email" required placeholder="Your business email" class="min-w-0 flex-1 rounded-lg px-3 py-2 text-sm text-ink">
-                    <button type="submit" class="rounded-lg bg-[#ea580c] px-3 py-2 text-sm font-bold shrink-0">Subscribe</button>
+                    <button type="submit" class="rounded-lg bg-[#3d9b6d] px-3 py-2 text-sm font-bold shrink-0">Subscribe</button>
                 </div>
                 <p class="text-[11px] text-white/40 mt-2">For licensed wholesale accounts only.</p>
             </form>

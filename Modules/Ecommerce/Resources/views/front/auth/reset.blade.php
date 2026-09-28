@@ -9,7 +9,7 @@
         <input type="email" name="email" required value="{{ $email }}" class="w-full border rounded-lg px-3 py-2.5 text-sm">
         <input type="password" name="password" required minlength="7" placeholder="New password" class="w-full border rounded-lg px-3 py-2.5 text-sm">
         <input type="password" name="password_confirmation" required placeholder="Confirm password" class="w-full border rounded-lg px-3 py-2.5 text-sm">
-        <button class="w-full py-3 rounded-lg text-white font-bold text-sm" style="background:#f97316">Update password</button>
+        <button class="w-full py-3 rounded-lg text-white font-bold text-sm" style="background:#4CAF79">Update password</button>
     </form>
 </div>
 @endsection

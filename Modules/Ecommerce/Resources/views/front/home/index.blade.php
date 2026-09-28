@@ -91,14 +91,14 @@
                 <h2 class="gc-section-title uppercase">Current Promotions</h2>
                 <div class="gc-underline"></div>
             </div>
-            <a href="{{ route('ecommerce.promotions') }}" class="text-sm font-semibold text-[#c2410c]">View All Promotions →</a>
+            <a href="{{ route('ecommerce.promotions') }}" class="text-sm font-semibold text-[#2e6a49]">View All Promotions →</a>
         </div>
         <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
             @foreach($promos as $p)
                 <a href="{{ $p['href'] ?? route('ecommerce.promotions') }}" class="gc-promo-card min-h-[170px]">
                     <img src="{{ $p['img'] }}" alt="">
                     <div class="absolute inset-0 bg-black/35"></div>
-                    <span class="absolute top-2 left-2 text-[10px] font-bold bg-[#f97316] px-2 py-0.5 rounded">{{ $p['tag'] }}</span>
+                    <span class="absolute top-2 left-2 text-[10px] font-bold bg-[#4caf79] px-2 py-0.5 rounded">{{ $p['tag'] }}</span>
                     <span class="absolute bottom-3 left-3 right-3">
                         <span class="block font-bold">{{ $p['title'] }}</span>
                         <span class="block text-xs text-white/80">{{ $p['sub'] }}</span>
@@ -117,7 +117,7 @@
                 <h2 class="gc-section-title uppercase">Featured Products</h2>
                 <div class="gc-underline"></div>
             </div>
-            <a href="{{ route('ecommerce.shop') }}" class="text-sm font-semibold text-[#c2410c]">View All Products →</a>
+            <a href="{{ route('ecommerce.shop') }}" class="text-sm font-semibold text-[#2e6a49]">View All Products →</a>
         </div>
         @include('ecommerce::front.partials.product_grid', ['products' => $featured])
     </div>
@@ -130,7 +130,7 @@
                 <h2 class="gc-section-title uppercase">New Arrivals</h2>
                 <div class="gc-underline"></div>
             </div>
-            <a href="{{ route('ecommerce.shop', ['sort' => 'newest']) }}" class="text-sm font-semibold text-[#c2410c]">View All New Arrivals →</a>
+            <a href="{{ route('ecommerce.shop', ['sort' => 'newest']) }}" class="text-sm font-semibold text-[#2e6a49]">View All New Arrivals →</a>
         </div>
         @include('ecommerce::front.partials.product_grid', ['products' => $new_arrivals])
     </div>
@@ -143,7 +143,7 @@
                 <h2 class="gc-section-title uppercase">Shop by Brand</h2>
                 <div class="gc-underline"></div>
             </div>
-            <a href="{{ route('ecommerce.brands') }}" class="text-sm font-semibold text-[#c2410c]">View All Brands →</a>
+            <a href="{{ route('ecommerce.brands') }}" class="text-sm font-semibold text-[#2e6a49]">View All Brands →</a>
         </div>
         <div class="flex gap-3 overflow-x-auto pb-2">
             @foreach($fallbackBrands as $brand)
@@ -166,7 +166,7 @@
                 <h2 class="gc-section-title uppercase">Shop by Category</h2>
                 <div class="gc-underline"></div>
             </div>
-            <a href="{{ route('ecommerce.shop') }}" class="text-sm font-semibold text-[#c2410c]">View All Categories →</a>
+            <a href="{{ route('ecommerce.shop') }}" class="text-sm font-semibold text-[#2e6a49]">View All Categories →</a>
         </div>
         <div class="flex gap-3 overflow-x-auto pb-2">
             @foreach($fallbackCats as $cat)
@@ -198,35 +198,35 @@
 <section class="gc-why py-10">
     <div class="max-w-[1400px] mx-auto px-4 grid grid-cols-2 md:grid-cols-5 gap-6 text-center text-sm">
         <div>
-            <div class="mx-auto mb-2 h-10 w-10 rounded-full bg-[#fff7ed] text-[#c2410c] flex items-center justify-center">
+            <div class="mx-auto mb-2 h-10 w-10 rounded-full bg-[#edf7f1] text-[#2e6a49] flex items-center justify-center">
                 <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9h12M9 3v12"/></svg>
             </div>
             <div class="font-bold">Direct Wholesale</div>
             <div class="text-black/50">Factory-direct pricing</div>
         </div>
         <div>
-            <div class="mx-auto mb-2 h-10 w-10 rounded-full bg-[#fff7ed] text-[#c2410c] flex items-center justify-center">
+            <div class="mx-auto mb-2 h-10 w-10 rounded-full bg-[#edf7f1] text-[#2e6a49] flex items-center justify-center">
                 <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 13h12l2-6H5L3 13z"/><circle cx="7" cy="16" r="1.4"/><circle cx="14" cy="16" r="1.4"/></svg>
             </div>
             <div class="font-bold">Fast Fulfillment</div>
             <div class="text-black/50">Same-day orders before 2PM</div>
         </div>
         <div>
-            <div class="mx-auto mb-2 h-10 w-10 rounded-full bg-[#fff7ed] text-[#c2410c] flex items-center justify-center">
+            <div class="mx-auto mb-2 h-10 w-10 rounded-full bg-[#edf7f1] text-[#2e6a49] flex items-center justify-center">
                 <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 2l7 3v5c0 4-3 7-7 8-4-1-7-4-7-8V5l7-3z"/></svg>
             </div>
             <div class="font-bold">Verified Products</div>
             <div class="text-black/50">COAs on all hemp products</div>
         </div>
         <div>
-            <div class="mx-auto mb-2 h-10 w-10 rounded-full bg-[#fff7ed] text-[#c2410c] flex items-center justify-center">
+            <div class="mx-auto mb-2 h-10 w-10 rounded-full bg-[#edf7f1] text-[#2e6a49] flex items-center justify-center">
                 <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="8" width="12" height="8" rx="1"/><path d="M6 8V6a3 3 0 016 0v2"/></svg>
             </div>
             <div class="font-bold">Licensed Retailers</div>
             <div class="text-black/50">Verified B2B accounts only</div>
         </div>
         <div>
-            <div class="mx-auto mb-2 h-10 w-10 rounded-full bg-[#fff7ed] text-[#c2410c] flex items-center justify-center">
+            <div class="mx-auto mb-2 h-10 w-10 rounded-full bg-[#edf7f1] text-[#2e6a49] flex items-center justify-center">
                 <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9h12M9 4l6 5-6 5"/></svg>
             </div>
             <div class="font-bold">Free Shipping</div>
@@ -242,7 +242,7 @@
                 <h2 class="gc-section-title uppercase">Best Sellers</h2>
                 <div class="gc-underline"></div>
             </div>
-            <a href="{{ route('ecommerce.shop') }}" class="text-sm font-semibold text-[#c2410c]">View All →</a>
+            <a href="{{ route('ecommerce.shop') }}" class="text-sm font-semibold text-[#2e6a49]">View All →</a>
         </div>
         @include('ecommerce::front.partials.product_grid', ['products' => $best_sellers])
     </div>

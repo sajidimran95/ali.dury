@@ -7,10 +7,10 @@
     <form method="post" action="{{ route('ecommerce.password.email', absolute: false) }}" class="bg-white border border-[#e0e0e0] rounded-2xl p-6 space-y-3">
         @csrf
         <input type="email" name="email" required placeholder="Business email" class="w-full border rounded-lg px-3 py-2.5 text-sm">
-        <button class="w-full py-3 rounded-lg text-white font-bold text-sm" style="background:#f97316">Send reset link</button>
+        <button class="w-full py-3 rounded-lg text-white font-bold text-sm" style="background:#4CAF79">Send reset link</button>
     </form>
     @if(session('reset_debug_url'))
-        <p class="text-sm mt-4 p-3 bg-[#fff7ed] rounded-lg">Reset link (valid 2 hours): <a class="underline font-semibold" href="{{ session('reset_debug_url') }}">Continue</a></p>
+        <p class="text-sm mt-4 p-3 bg-[#f0f9f4] rounded-lg">Reset link (valid 2 hours): <a class="underline font-semibold" href="{{ session('reset_debug_url') }}">Continue</a></p>
     @endif
 </div>
 @endsection
