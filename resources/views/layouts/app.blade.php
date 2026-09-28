@@ -196,7 +196,7 @@
             <script>
                 (function () {
                     function isEntryTable(node) {
-                        return node.closest && node.closest('#purchase_entry_table, #pos_table, .direct-sell-product-table, .table-pdf');
+                        return node.closest && node.closest('#purchase_entry_table, #pos_table, .direct-sell-product-table, .table-pdf, .fc');
                     }
                     function flattenReportBreaks(root) {
                         var scope = root && root.querySelectorAll ? root : document;

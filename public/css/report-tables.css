@@ -108,3 +108,27 @@ body.japs-list-tables .content :is(#purchase_entry_table, #pos_table, .direct-se
 body.japs-list-tables .content :is(#purchase_entry_table, #pos_table, .direct-sell-product-table) br {
     display: inline !important;
 }
+
+/* FullCalendar draws the attendance report with its own tables. */
+body.japs-list-tables .content .fc table,
+body.japs-list-tables .content .fc table :is(th, td) {
+    table-layout: auto !important;
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0 !important;
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+}
+
+body.japs-list-tables .content .fc table :is(th, td) :where(span, small, a, strong, b, label, p, div) {
+    white-space: inherit !important;
+}
+
+body.japs-list-tables .content .fc table br {
+    display: inline !important;
+}
+
+body.japs-list-tables .content .box-body:has(.fc) {
+    overflow: visible;
+}
