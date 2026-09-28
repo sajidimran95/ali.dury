@@ -19,14 +19,14 @@
                      class="w-full h-full object-cover"
                      onerror="this.onerror=null;this.src='{{ asset('img/default.png') }}';">
                 @if($product->ecom_is_new_arrival)
-                    <span class="absolute top-2 left-2 rounded bg-[#4caf79] text-white text-[10px] font-bold uppercase px-2 py-1">New</span>
+                    <span class="absolute top-2 left-2 rounded bg-[#f97316] text-white text-[10px] font-bold uppercase px-2 py-1">New</span>
                 @elseif($onSale)
-                    <span class="absolute top-2 left-2 rounded bg-[#2e6a49] text-white text-[10px] font-bold uppercase px-2 py-1">Sale</span>
+                    <span class="absolute top-2 left-2 rounded bg-[#c2410c] text-white text-[10px] font-bold uppercase px-2 py-1">Sale</span>
                 @endif
             </a>
             <div class="p-3 md:p-3.5 flex flex-col flex-1">
                 @if(optional($product->brand)->name)
-                    <a href="{{ route('ecommerce.shop', ['brand' => $product->brand_id]) }}" class="text-[11px] font-bold tracking-wide text-[#2e6a49] uppercase">{{ $product->brand->name }}</a>
+                    <a href="{{ route('ecommerce.shop', ['brand' => $product->brand_id]) }}" class="text-[11px] font-bold tracking-wide text-[#c2410c] uppercase">{{ $product->brand->name }}</a>
                 @endif
                 <a href="{{ route('ecommerce.product', $slug) }}" class="font-semibold text-sm leading-snug line-clamp-2 min-h-[2.5rem] mt-0.5 hover:text-brand">
                     {{ $product->name }}
@@ -45,11 +45,11 @@
                     <input type="hidden" name="product_id" value="{{ $product->id }}">
                     <input type="hidden" name="variation_id" value="{{ $variation->id }}">
                     <input type="hidden" name="quantity" value="1">
-                    <button type="submit" class="ecom-add-cart w-full rounded-lg bg-[#4caf79] text-[#1a1a1a] text-xs font-bold py-2.5 hover:bg-[#3d9b68]"
+                    <button type="submit" class="ecom-add-cart w-full rounded-lg bg-[#f97316] text-[#1a1a1a] text-xs font-bold py-2.5 hover:bg-[#ea580c]"
                             aria-label="Add {{ $product->name }} to cart">Add to Cart</button>
                 </form>
                 @else
-                    <a href="{{ route('ecommerce.shop') }}" class="ecom-add-cart mt-auto pt-3 w-full rounded-lg bg-[#4caf79] text-[#1a1a1a] text-xs font-bold py-2.5 text-center">Add to Cart</a>
+                    <a href="{{ route('ecommerce.shop') }}" class="ecom-add-cart mt-auto pt-3 w-full rounded-lg bg-[#f97316] text-[#1a1a1a] text-xs font-bold py-2.5 text-center">Add to Cart</a>
                 @endif
             </div>
         </article>
@@ -61,14 +61,14 @@
                 <img src="{{ asset('img/default.png') }}" alt="" class="w-full h-full object-cover opacity-70">
             </a>
             <div class="p-3 md:p-3.5 flex flex-col flex-1">
-                <span class="text-[11px] font-bold tracking-wide text-[#2e6a49] uppercase">Brand</span>
+                <span class="text-[11px] font-bold tracking-wide text-[#c2410c] uppercase">Brand</span>
                 <a href="{{ route('ecommerce.shop') }}" class="font-semibold text-sm leading-snug line-clamp-2 min-h-[2.5rem] mt-0.5">Product</a>
                 <div class="mt-1 text-[11px] text-black/45">1 display</div>
                 <div class="mt-1 text-[11px] text-black/40">Min. qty: 1 display</div>
                 <div class="mt-2 flex items-baseline gap-2">
                     <span class="font-extrabold tabular-nums text-ink">$0.00</span>
                 </div>
-                <a href="{{ route('ecommerce.shop') }}" class="ecom-add-cart mt-auto pt-3 w-full rounded-lg bg-[#4caf79] text-[#1a1a1a] text-xs font-bold py-2.5 text-center">Add to Cart</a>
+                <a href="{{ route('ecommerce.shop') }}" class="ecom-add-cart mt-auto pt-3 w-full rounded-lg bg-[#f97316] text-[#1a1a1a] text-xs font-bold py-2.5 text-center">Add to Cart</a>
             </div>
         </article>
         @endfor

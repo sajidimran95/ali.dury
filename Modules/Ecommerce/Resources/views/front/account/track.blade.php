@@ -30,13 +30,13 @@
             </div>
 
             @if(!empty($converted_invoices))
-                <div class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">
-                    <div class="text-xs font-bold uppercase tracking-wide text-emerald-700 mb-2">@lang('ecommerce::lang.invoice_created')</div>
+                <div class="rounded-xl border border-orange-200 bg-orange-50 px-4 py-3">
+                    <div class="text-xs font-bold uppercase tracking-wide text-orange-700 mb-2">@lang('ecommerce::lang.invoice_created')</div>
                     <ul class="space-y-1 text-sm">
                         @foreach($converted_invoices as $invoice)
-                            <li class="font-semibold text-emerald-900">
+                            <li class="font-semibold text-orange-900">
                                 #{{ $invoice->invoice_no }}
-                                <span class="text-emerald-700/70 font-normal">· {{ @format_datetime($invoice->transaction_date ?? $invoice->created_at) }}</span>
+                                <span class="text-orange-700/70 font-normal">· {{ @format_datetime($invoice->transaction_date ?? $invoice->created_at) }}</span>
                             </li>
                         @endforeach
                     </ul>
@@ -46,7 +46,7 @@
             <ol class="space-y-3 text-sm">
                 @forelse(($timeline ?? $meta->timeline ?? []) as $step)
                     <li class="flex justify-between gap-3 border-b border-line pb-2">
-                        <span class="@if(($step['status'] ?? '') === 'invoiced') font-semibold text-emerald-700 @endif">
+                        <span class="@if(($step['status'] ?? '') === 'invoiced') font-semibold text-orange-700 @endif">
                             {{ $step['label'] ?? ucfirst($step['status'] ?? '') }}
                             @if(!empty($step['invoice_no']) && empty($step['label']))
                                 — #{{ $step['invoice_no'] }}

@@ -5,7 +5,7 @@
     $badge = match($approval) {
         'pending' => 'bg-amber-100 text-amber-900',
         'rejected' => 'bg-rose-100 text-rose-900',
-        default => 'bg-emerald-100 text-emerald-900',
+        default => 'bg-orange-100 text-orange-900',
     };
     $first = $contact->ecom_first_name ?: $contact->name;
 @endphp

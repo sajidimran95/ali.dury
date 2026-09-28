@@ -8,13 +8,13 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/gc-storefront.css') }}?v={{ config('app.asset_version', '1') }}&gc=2">
+    <link rel="stylesheet" href="{{ asset('css/gc-storefront.css') }}?v={{ config('app.asset_version', '1') }}&gc=3">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: { brand: '#4caf79', ink: '#1a1a1a', slatebar: '#1a3d2b' },
+                    colors: { brand: '#f97316', ink: '#1a1a1a', slatebar: '#7c2d12' },
                     fontFamily: { sans: ['Poppins', 'system-ui', 'sans-serif'] }
                 }
             }
@@ -23,12 +23,12 @@
     <style>
         body { font-family: Poppins, system-ui, sans-serif; background: #f4f4f4; color: #1a1a1a; }
         .input-w {
-            width: 100%; border: 1px solid #e6ebe8; border-radius: 8px; padding: .75rem .9rem; font-size: .875rem;
+            width: 100%; border: 1px solid #ffedd5; border-radius: 8px; padding: .75rem .9rem; font-size: .875rem;
             background: #fff; outline: none;
         }
-        .input-w:focus { border-color: #4caf79; box-shadow: 0 0 0 3px rgba(76,175,121,.18); }
+        .input-w:focus { border-color: #f97316; box-shadow: 0 0 0 3px rgba(249,115,22,.18); }
         .step-dot { width:10px;height:10px;border-radius:999px;background:#ccc; }
-        .step-dot.active { background:#4caf79; }
+        .step-dot.active { background:#f97316; }
         .step-panel { display:none; }
         .step-panel.active { display:block; }
     </style>
