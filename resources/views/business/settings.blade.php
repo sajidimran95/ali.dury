@@ -286,6 +286,93 @@
             });
         });
 
+        if ($('#db_update_box').length) {
+            var dbUpdateName = '';
+
+            function dbUpdateRender(status) {
+                var pending = status.pending || [];
+                if (status.database) {
+                    dbUpdateName = status.database;
+                    $('#db_update_db_name').text(status.database + (status.host ? ' @ ' + status.host : ''));
+                }
+                $('#db_update_pending_count').text(pending.length)
+                    .toggleClass('label-danger', pending.length > 0)
+                    .toggleClass('label-success', pending.length === 0)
+                    .removeClass('label-default');
+                $('#db_update_ran_count').text(status.ran_count);
+                var $list = $('#db_update_pending_list').empty();
+                pending.forEach(function (m) {
+                    $list.append($('<li>').append($('<code>').text(m)));
+                });
+                $('#db_update_pending_wrap').toggleClass('hide', pending.length === 0);
+                $('#db_update_up_to_date').toggleClass('hide', pending.length !== 0);
+                $('#db_update_confirm_backup').prop('checked', false);
+                $('#btn_db_update_run').prop('disabled', true);
+            }
+
+            function dbUpdateLoad() {
+                var $icon = $('#btn_db_update_refresh i').addClass('fa-spin');
+                $.getJSON('{{ route('system.db_update.status') }}', dbUpdateRender)
+                    .fail(function () { toastr.error('@lang('messages.something_went_wrong')'); })
+                    .always(function () { $icon.removeClass('fa-spin'); });
+            }
+
+            dbUpdateLoad();
+            $('#btn_db_update_refresh').click(dbUpdateLoad);
+
+            $('#db_update_confirm_backup').change(function () {
+                $('#btn_db_update_run').prop('disabled', !this.checked);
+            });
+
+            $('#btn_db_update_run').click(function () {
+                if (!$('#db_update_confirm_backup').is(':checked')) {
+                    toastr.error(@json(__('lang_v1.db_update_confirm_required')));
+                    return;
+                }
+                var text = @json(__('lang_v1.db_update_confirm_text'))
+                    .replace(':count', $('#db_update_pending_list li').length)
+                    .replace(':db', dbUpdateName);
+
+                swal({
+                    title: @json(__('lang_v1.db_update_confirm_title')),
+                    text: text,
+                    icon: 'warning',
+                    buttons: true,
+                    dangerMode: true,
+                }).then(function (ok) {
+                    if (!ok) return;
+                    var $btn = $('#btn_db_update_run').prop('disabled', true);
+                    $('#db_update_running').removeClass('hide');
+                    $.ajax({
+                        method: 'POST',
+                        url: '{{ route('system.db_update.run') }}',
+                        dataType: 'json',
+                        timeout: 0,
+                        data: { _token: '{{ csrf_token() }}', confirm_backup: 1 },
+                        success: function (result) {
+                            result.success ? toastr.success(result.msg) : toastr.error(result.msg);
+                            if (result.output) {
+                                $('#db_update_output').text(result.output);
+                                $('#db_update_output_wrap').removeClass('hide');
+                            }
+                            if (result.status) {
+                                dbUpdateRender(result.status);
+                            }
+                        },
+                        error: function (xhr) {
+                            toastr.error(@json(__('lang_v1.db_update_failed')));
+                            $('#db_update_output').text(xhr.responseText ? xhr.responseText.substring(0, 4000) : xhr.statusText);
+                            $('#db_update_output_wrap').removeClass('hide');
+                            $btn.prop('disabled', !$('#db_update_confirm_backup').is(':checked'));
+                        },
+                        complete: function () {
+                            $('#db_update_running').addClass('hide');
+                        },
+                    });
+                });
+            });
+        }
+
         $('#btn_reset_database_fresh_pos').click(function() {
             var phrase = $('#fresh_pos_reset_phrase').val();
             if (phrase !== 'RESET') {

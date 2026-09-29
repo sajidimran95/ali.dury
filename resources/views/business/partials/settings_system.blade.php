@@ -38,12 +38,67 @@
                 <div class="box-body">
                     <p class="text-muted">@lang('lang_v1.clear_cache_help')</p>
                     <button type="button" class="btn btn-primary" id="btn_clear_application_cache">
-                        <i class="fa fa-refresh"></i> @lang('lang_v1.clear_cache')
+                        <i class="fas fa-sync-alt"></i> @lang('lang_v1.clear_cache')
                     </button>
                 </div>
             </div>
         </div>
     </div>
+
+    @if(auth()->user()->can('superadmin') || auth()->user()->hasRole('Admin#'.auth()->user()->business_id))
+    <div class="row" style="margin-top: 20px;">
+        <div class="col-sm-12">
+            <div class="box box-warning" id="db_update_box">
+                <div class="box-header with-border">
+                    <h3 class="box-title">@lang('lang_v1.db_update')</h3>
+                </div>
+                <div class="box-body">
+                    <p class="text-muted">@lang('lang_v1.db_update_help')</p>
+                    <p>
+                        <strong>@lang('lang_v1.db_connected_to'):</strong> <code id="db_update_db_name">…</code>
+                        &nbsp;|&nbsp; <strong>@lang('lang_v1.db_pending_updates'):</strong> <span id="db_update_pending_count" class="label label-default">…</span>
+                        &nbsp;|&nbsp; <strong>@lang('lang_v1.db_applied_updates'):</strong> <span id="db_update_ran_count">…</span>
+                        <button type="button" class="btn btn-default btn-xs" id="btn_db_update_refresh" style="margin-left:8px;">
+                            <i class="fas fa-sync-alt"></i> @lang('lang_v1.refresh_status')
+                        </button>
+                    </p>
+
+                    <div id="db_update_up_to_date" class="text-success hide">
+                        <i class="fa fa-check-circle"></i> @lang('lang_v1.db_up_to_date')
+                    </div>
+
+                    <div id="db_update_pending_wrap" class="hide">
+                        <strong>@lang('lang_v1.db_pending_list')</strong>
+                        <ul id="db_update_pending_list" style="max-height:200px;overflow:auto;margin:6px 0 12px;padding-left:20px;"></ul>
+
+                        <p class="text-warning" style="margin-bottom:4px;">
+                            <i class="fa fa-exclamation-triangle"></i> <strong>@lang('lang_v1.db_backup_first')</strong>
+                        </p>
+                        <p class="text-muted"><small>@lang('lang_v1.db_backup_cpanel_help')</small></p>
+
+                        <div class="checkbox">
+                            <label>
+                                <input type="checkbox" id="db_update_confirm_backup"> @lang('lang_v1.db_confirm_backup_label')
+                            </label>
+                        </div>
+
+                        <button type="button" class="btn btn-warning" id="btn_db_update_run" disabled>
+                            <i class="fa fa-database"></i> @lang('lang_v1.db_run_update')
+                        </button>
+                        <span id="db_update_running" class="text-muted hide" style="margin-left:10px;">
+                            <i class="fa fa-spinner fa-spin"></i> @lang('lang_v1.db_update_running')
+                        </span>
+                    </div>
+
+                    <div id="db_update_output_wrap" class="hide" style="margin-top:12px;">
+                        <strong>@lang('lang_v1.db_update_output')</strong>
+                        <pre id="db_update_output" style="max-height:300px;overflow:auto;background:#111827;color:#e5e7eb;border-radius:6px;padding:10px;white-space:pre-wrap;"></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
 
     <div class="row" style="margin-top: 20px;">
         <div class="col-sm-12">

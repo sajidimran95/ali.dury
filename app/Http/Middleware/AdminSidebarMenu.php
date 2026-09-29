@@ -1360,8 +1360,7 @@ class AdminSidebarMenu
                                 __('business.business_locations'),
                                 $locationAttrs
                             );
-                        }
-                        if (auth()->user()->can('invoice_settings.access') || auth()->user()->can('barcode_settings.access') || auth()->user()->can('access_printers')) {
+                        }                        if (auth()->user()->can('invoice_settings.access') || auth()->user()->can('barcode_settings.access') || auth()->user()->can('access_printers')) {
                             $sub->header(__('lang_v1.menu_documents_print'));
                         }
                         if (auth()->user()->can('invoice_settings.access')) {

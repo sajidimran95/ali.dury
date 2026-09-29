@@ -17,6 +17,7 @@ use App\Http\Controllers\CombinedPurchaseReturnController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\CustomerGroupController;
 use App\Http\Controllers\DashboardConfiguratorController;
+use App\Http\Controllers\DatabaseMigrationController;
 use App\Http\Controllers\DiscountController;
 use App\Http\Controllers\DocumentAndNoteController;
 use App\Http\Controllers\ExpenseCategoryController;
@@ -679,6 +680,9 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::get('backup/download/{file_name}', [BackUpController::class, 'download']);
     Route::get('backup/{id}/delete', [BackUpController::class, 'delete'])->name('delete_backup');
     Route::resource('backup', BackUpController::class)->only('index', 'create', 'store');
+
+    Route::get('system/database-update/status', [DatabaseMigrationController::class, 'status'])->name('system.db_update.status');
+    Route::post('system/database-update/run', [DatabaseMigrationController::class, 'run'])->name('system.db_update.run');
 
     Route::get('selling-price-group/activate-deactivate/{id}', [SellingPriceGroupController::class, 'activateDeactivate']);
     Route::get('update-product-price', [SellingPriceGroupController::class, 'updateProductPrice'])->name('update-product-price');
