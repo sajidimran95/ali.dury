@@ -119,13 +119,27 @@ $(document).ready(function () {
     });
 
     update_font_size();
+
+    // Must be set before the first toast: the container keeps the position it was created with
+    toastr.options.preventDuplicates = true;
+    toastr.options.positionClass = 'toast-top-center';
+    toastr.options.timeOut = '3000';
+    toastr.options.extendedTimeOut = '800';
+    toastr.options.closeButton = true;
+    toastr.options.newestOnTop = true;
+
     if ($('#status_span').length) {
         var status = $('#status_span').attr('data-status');
-        if (status === '1') {
-            toastr.success($('#status_span').attr('data-msg'));
-        } else if (status == '' || status === '0') {
-            toastr.error($('#status_span').attr('data-msg'));
-        }
+        var status_msg = $('#status_span').attr('data-msg');
+        // Deferred until the page's own ready handlers (DataTables etc.) finish; otherwise the
+        // main thread is blocked while the toast's timer runs and it vanishes before it's painted
+        setTimeout(function () {
+            if (status === '1') {
+                toastr.success(status_msg, '', { timeOut: 4000 });
+            } else if (status == '' || status === '0') {
+                toastr.error(status_msg, '', { timeOut: 5000 });
+            }
+        }, 300);
     }
 
     //Default setting for select2
@@ -136,10 +150,6 @@ $(document).ready(function () {
     $.fn.datepicker.defaults.todayHighlight = true;
     $.fn.datepicker.defaults.autoclose = true;
     $.fn.datepicker.defaults.format = datepicker_date_format;
-
-    //Toastr setting
-    toastr.options.preventDuplicates = true;
-    toastr.options.timeOut = '3000';
 
     //Play notification sound on success, error and warning
     toastr.options.onShown = function () {

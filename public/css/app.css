@@ -2373,3 +2373,26 @@ label .required-asterisk,
 	color: #dd4b39 !important;
 	font-weight: 700;
 }
+
+/* Toasts sit just below the top bar (clear of header buttons and the macOS Dock) and never block clicks; only the × is clickable */
+body #toast-container.toast-top-center {
+	top: 64px;
+}
+body #toast-container > div {
+	pointer-events: none;
+	opacity: 1;
+	width: fit-content;
+	min-width: 280px;
+	max-width: min(460px, calc(100vw - 32px));
+	border-radius: 10px;
+	box-shadow: 0 10px 30px rgba(15, 23, 42, .18);
+	font-size: 14px;
+	font-weight: 500;
+}
+body #toast-container > div:hover {
+	box-shadow: 0 10px 30px rgba(15, 23, 42, .18);
+}
+body #toast-container > div .toast-close-button {
+	pointer-events: auto;
+	opacity: .8;
+}
