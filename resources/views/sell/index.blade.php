@@ -218,7 +218,10 @@
                 "ajax": {
                     "url": "/sells",
                     "data": function(d) {
-                        if ($('#sell_list_filter_date_range').val()) {
+                        // When searching (e.g. invoice no), ignore default date range
+                        // so older invoices like 20120 still appear.
+                        var hasSearch = d.search && d.search.value && String(d.search.value).trim() !== '';
+                        if (!hasSearch && $('#sell_list_filter_date_range').val()) {
                             var start = $('#sell_list_filter_date_range').data('daterangepicker')
                                 .startDate.format('YYYY-MM-DD');
                             var end = $('#sell_list_filter_date_range').data('daterangepicker').endDate
