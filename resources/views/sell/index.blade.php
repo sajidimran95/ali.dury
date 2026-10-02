@@ -15,16 +15,32 @@
                 <span id="sell_list_selected_range" class="tw-text-gray-600 tw-font-normal tw-text-base">{{ @format_date(\Carbon\Carbon::now()->subDays(29)) }} ~ {{ @format_date(\Carbon\Carbon::now()) }}</span>
             </h1>
             <div class="product-list-header__actions">
+                @can('sell.create')
+                    @if (in_array('pos_sale', session('business.enabled_modules') ?? []))
+                        <a class="product-list-header__btn"
+                            href="{{ action([\App\Http\Controllers\SellPosController::class, 'create']) }}">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <rect x="2" y="3" width="20" height="14" rx="2" />
+                                <line x1="8" y1="21" x2="16" y2="21" />
+                                <line x1="12" y1="17" x2="12" y2="21" />
+                            </svg>
+                            @lang('sale.pos_sale')
+                        </a>
+                    @endif
+                @endcan
                 @can('direct_sell.access')
-                    <a class="product-list-header__btn product-list-header__btn--primary"
-                        href="{{ action([\App\Http\Controllers\SellController::class, 'create']) }}">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                            <path d="M12 5l0 14" />
-                            <path d="M5 12l14 0" />
-                        </svg>
-                        @lang('messages.add')
-                    </a>
+                    @if (in_array('add_sale', session('business.enabled_modules') ?? []))
+                        <a class="product-list-header__btn product-list-header__btn--primary"
+                            href="{{ action([\App\Http\Controllers\SellController::class, 'create']) }}">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M12 5l0 14" />
+                                <path d="M5 12l14 0" />
+                            </svg>
+                            @lang('sale.add_sale')
+                        </a>
+                    @endif
                 @endcan
             </div>
         </div>
@@ -37,6 +53,25 @@
         @endif
         @component('components.filters', ['title' => __('report.filters')])
             @include('sell.partials.sell_list_filters')
+            <div class="col-md-3">
+                <div class="form-group">
+                    {!! Form::label('sell_list_filter_sale_channel', __('sale.sale_type') . ':') !!}
+                    {!! Form::select(
+                        'sell_list_filter_sale_channel',
+                        [
+                            '' => __('lang_v1.all'),
+                            '1' => __('sale.add_sale'),
+                            '0' => __('sale.pos_sale'),
+                        ],
+                        null,
+                        [
+                            'class' => 'form-control select2',
+                            'style' => 'width:100%',
+                            'id' => 'sell_list_filter_sale_channel',
+                        ]
+                    ) !!}
+                </div>
+            </div>
             @if ($payment_types)
                 <div class="col-md-3">
                     <div class="form-group">
@@ -77,6 +112,7 @@
                             <th class="not-export">@lang('messages.action')</th>
                             <th>@lang('messages.date')</th>
                             <th>@lang('sale.invoice_no')</th>
+                            <th>@lang('sale.sale_type')</th>
                             <th>@lang('sale.customer_name')</th>
                             <th>@lang('lang_v1.contact_no')</th>
                             <th>@lang('sale.location')</th>
@@ -106,7 +142,7 @@
                     <tbody></tbody>
                     <tfoot>
                         <tr class="bg-gray font-17 footer-total text-center">
-                            <td colspan="6"><strong>@lang('sale.total'):</strong></td>
+                            <td colspan="7"><strong>@lang('sale.total'):</strong></td>
                             <td class="footer_payment_status_count"></td>
                             <td class="payment_method_count"></td>
                             <td class="footer_sale_total"></td>
@@ -190,7 +226,7 @@
                             d.start_date = start;
                             d.end_date = end;
                         }
-                        d.is_direct_sale = 1;
+                        d.is_direct_sale = $('#sell_list_filter_sale_channel').val();
 
                         d.location_id = $('#sell_list_filter_location_id').val();
                         d.customer_id = $('#sell_list_filter_customer_id').val();
@@ -234,6 +270,12 @@
                     {
                         data: 'invoice_no',
                         name: 'invoice_no'
+                    },
+                    {
+                        data: 'sale_channel',
+                        name: 'transactions.is_direct_sale',
+                        orderable: true,
+                        searchable: false
                     },
                     {
                         data: 'conatct_name',
@@ -387,12 +429,12 @@
                     $('.payment_method_count').html(__count_status(data, 'payment_methods'));
                 },
                 createdRow: function(row, data, dataIndex) {
-                    $(row).find('td:eq(6)').attr('class', 'clickable_td');
+                    $(row).find('td:eq(7)').attr('class', 'clickable_td');
                 }
             });
 
             $(document).on('change',
-                '#sell_list_filter_location_id, #sell_list_filter_customer_id, #sell_list_filter_payment_status, #created_by, #sales_cmsn_agnt, #service_staffs, #shipping_status, #sell_list_filter_source, #payment_method',
+                '#sell_list_filter_location_id, #sell_list_filter_customer_id, #sell_list_filter_payment_status, #created_by, #sales_cmsn_agnt, #service_staffs, #shipping_status, #sell_list_filter_source, #payment_method, #sell_list_filter_sale_channel',
                 function() {
                     sell_table.ajax.reload();
                 });

@@ -131,6 +131,7 @@ class SellController extends Controller
                 'zatca_status' => request()->input('zatca_status'),
                 'rewards_only' => request()->input('rewards_only'),
                 'commission_agent' => request()->input('commission_agent'),
+                'is_direct_sale' => request()->input('is_direct_sale'),
             ];
             $cache_key = 'sell_list_count_' . md5(json_encode($cache_key_params));
 
@@ -480,6 +481,13 @@ class SellController extends Controller
 
                     return '<span class="label '.$meta['class'].'">'.e($meta['label']).'</span>';
                 })
+                ->addColumn('sale_channel', function ($row) {
+                    if (! empty($row->is_direct_sale)) {
+                        return '<span class="label bg-aqua">'.e(__('sale.add_sale')).'</span>';
+                    }
+
+                    return '<span class="label bg-blue">'.e(__('sale.pos_sale')).'</span>';
+                })
                 ->editColumn('shipping_status', function ($row) use ($shipping_statuses) {
                     $status_color = ! empty($this->shipping_status_colors[$row->shipping_status]) ? $this->shipping_status_colors[$row->shipping_status] : 'bg-gray';
                     $status = ! empty($row->shipping_status) ? '<a href="#" class="btn-modal" data-href="'.action([\App\Http\Controllers\SellController::class, 'editShipping'], [$row->id]).'" data-container=".view_modal"><span class="label '.$status_color.'">'.$shipping_statuses[$row->shipping_status].'</span></a>' : '';
@@ -557,7 +565,7 @@ class SellController extends Controller
                         }
                     }, ]);
 
-            $rawColumns = ['final_total', 'action', 'total_paid', 'total_remaining', 'payment_status', 'invoice_no', 'order_source', 'discount_amount', 'tax_amount', 'total_before_tax', 'shipping_status', 'types_of_service_name', 'payment_methods', 'return_due', 'conatct_name', 'status', 'zatca_status', 'converted_invoice'];
+            $rawColumns = ['final_total', 'action', 'total_paid', 'total_remaining', 'payment_status', 'invoice_no', 'order_source', 'sale_channel', 'discount_amount', 'tax_amount', 'total_before_tax', 'shipping_status', 'types_of_service_name', 'payment_methods', 'return_due', 'conatct_name', 'status', 'zatca_status', 'converted_invoice'];
 
             return $datatable->rawColumns($rawColumns)
                       ->skipTotalRecords()
@@ -591,10 +599,49 @@ class SellController extends Controller
 
         $payment_types = $this->transactionUtil->payment_types(null, true, $business_id);
 
-        $sell_stats = $this->getDirectSellListStats((int) $business_id);
+        $sell_stats = $this->getInvoiceListStats((int) $business_id);
 
         return view('sell.index')
         ->with(compact('business_locations', 'customers', 'is_woocommerce', 'sales_representative', 'is_cmsn_agent_enabled', 'commission_agents', 'service_staffs', 'is_tables_enabled', 'is_service_staff_enabled', 'is_types_service_enabled', 'shipping_statuses', 'sources', 'payment_types', 'sell_stats'));
+    }
+
+    /**
+     * KPI stats for all invoices (POS + Add Sale).
+     */
+    protected function getInvoiceListStats(int $businessId): array
+    {
+        $base = Transaction::where('business_id', $businessId)
+            ->where('type', 'sell')
+            ->where('status', 'final')
+            ->where(function ($q) {
+                $q->where('is_direct_sale', 1)
+                    ->orWhere(function ($q2) {
+                        $q2->where('is_direct_sale', 0)->whereNull('sub_type');
+                    });
+            })
+            ->notEcommerce();
+
+        $permitted = auth()->user()->permitted_locations();
+        if ($permitted != 'all') {
+            $base->whereIn('location_id', $permitted);
+        }
+
+        $total = (int) (clone $base)->count();
+        $direct = (int) (clone $base)->where('is_direct_sale', 1)->count();
+        $pos = (int) (clone $base)->where('is_direct_sale', 0)->whereNull('sub_type')->count();
+        $paid = (int) (clone $base)->where('payment_status', 'paid')->count();
+        $due = (int) (clone $base)->where('payment_status', 'due')->count();
+        $partial = (int) (clone $base)->where('payment_status', 'partial')->count();
+        $today = (int) (clone $base)->whereDate('transaction_date', \Carbon\Carbon::today())->count();
+        $thisMonth = (int) (clone $base)
+            ->whereBetween('transaction_date', [
+                \Carbon\Carbon::now()->startOfMonth()->toDateTimeString(),
+                \Carbon\Carbon::now()->endOfMonth()->toDateTimeString(),
+            ])
+            ->count();
+        $totalAmount = (float) (clone $base)->sum('final_total');
+
+        return compact('total', 'direct', 'pos', 'paid', 'due', 'partial', 'today', 'thisMonth', 'totalAmount');
     }
 
     /**
@@ -1995,12 +2042,14 @@ class SellController extends Controller
                 ->where('transactions.transaction_date', '<=', $end);
         }
 
-        // Direct sale flag
-        if (request()->has('is_direct_sale')) {
-            $is_direct_sale = request()->is_direct_sale;
-            if ($is_direct_sale == 0) {
+        // Sale channel: POS (0) vs Add Sale / direct (1). Empty = all invoices.
+        if (request()->has('is_direct_sale') && request()->input('is_direct_sale') !== '' && request()->input('is_direct_sale') !== null) {
+            $is_direct_sale = request()->input('is_direct_sale');
+            if ($is_direct_sale == 0 || $is_direct_sale === '0') {
                 $query->where('transactions.is_direct_sale', 0);
                 $query->whereNull('transactions.sub_type');
+            } elseif ($is_direct_sale == 1 || $is_direct_sale === '1') {
+                $query->where('transactions.is_direct_sale', 1);
             }
         }
 

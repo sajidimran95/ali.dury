@@ -184,7 +184,9 @@ class AdminSidebarMenu
             $sub->url(
                 action([\App\Http\Controllers\SellController::class, 'index']),
                 __('lang_v1.invoices'),
-                $salesAttrs
+                array_merge($salesAttrs, [
+                    'data-search-terms' => 'invoice invoices all sales pos sale add sale list sales',
+                ])
             );
         }
 

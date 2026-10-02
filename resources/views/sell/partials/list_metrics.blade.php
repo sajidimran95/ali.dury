@@ -1,6 +1,8 @@
 @php
     $s = $sell_stats ?? [];
     $total = (float) ($s['total'] ?? 0);
+    $direct = (float) ($s['direct'] ?? 0);
+    $pos = (float) ($s['pos'] ?? 0);
     $paid = (float) ($s['paid'] ?? 0);
     $due = (float) ($s['due'] ?? 0);
     $partial = (float) ($s['partial'] ?? 0);
@@ -44,12 +46,12 @@
         </div>
         <div class="inv-metric inv-metric--violet">
             <span class="inv-metric__icon" aria-hidden="true">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
             </span>
             <div>
-                <div class="inv-metric__label">@lang('home.today')</div>
-                <div class="inv-metric__value">{{ @num_format($today) }}</div>
-                <div class="inv-metric__hint">@lang('lang_v1.invoices')</div>
+                <div class="inv-metric__label">@lang('sale.pos_sale')</div>
+                <div class="inv-metric__value">{{ @num_format($pos) }}</div>
+                <div class="inv-metric__hint">@lang('sale.add_sale'): {{ @num_format($direct) }}</div>
             </div>
         </div>
         <div class="inv-metric inv-metric--slate">
@@ -59,7 +61,7 @@
             <div>
                 <div class="inv-metric__label">@lang('home.this_month')</div>
                 <div class="inv-metric__value">{{ @num_format($thisMonth) }}</div>
-                <div class="inv-metric__hint">@lang('lang_v1.invoices')</div>
+                <div class="inv-metric__hint">@lang('home.today'): {{ @num_format($today) }}</div>
             </div>
         </div>
     </div>
