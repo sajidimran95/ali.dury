@@ -2,10 +2,10 @@
 -- version 5.2.3
 -- https://www.phpmyadmin.net/
 --
--- Host: localhost:3306
--- Generation Time: Oct 05, 2026 at 04:09 PM
--- Server version: 8.4.3
--- PHP Version: 8.4.2
+-- Host: localhost
+-- Generation Time: Oct 05, 2026 at 06:41 PM
+-- Server version: 8.4.11-0ubuntu0.26.04.1
+-- PHP Version: 8.5.4
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -397,7 +397,13 @@ INSERT INTO `activity_log` (`id`, `log_name`, `description`, `subject_id`, `subj
 (286, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-09-29 08:53:52', '2026-09-29 08:53:52'),
 (287, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-09-30 05:20:51', '2026-09-30 05:20:51'),
 (288, 'default', 'logout', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-09-30 08:40:49', '2026-09-30 08:40:49'),
-(289, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-10-02 05:32:13', '2026-10-02 05:32:13');
+(289, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-10-02 05:32:13', '2026-10-02 05:32:13'),
+(290, 'default', 'edited', 1, 'App\\Contact', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-10-05 08:01:33', '2026-10-05 08:01:33'),
+(291, 'default', 'login', 3, 'App\\User', NULL, 1, 3, 'App\\User', '[]', NULL, '2026-10-05 08:35:30', '2026-10-05 08:35:30'),
+(292, 'default', 'edited', 3, 'App\\User', NULL, 1, 1, 'App\\User', '{\"name\":\" Sales \"}', NULL, '2026-10-05 08:35:57', '2026-10-05 08:35:57'),
+(293, 'default', 'login', 3, 'App\\User', NULL, 1, 3, 'App\\User', '[]', NULL, '2026-10-05 08:36:07', '2026-10-05 08:36:07'),
+(294, 'default', 'login', 3, 'App\\User', NULL, 1, 3, 'App\\User', '[]', NULL, '2026-10-05 08:39:10', '2026-10-05 08:39:10'),
+(295, 'default', 'edited', 1, 'App\\Contact', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-10-05 08:41:17', '2026-10-05 08:41:17');
 
 -- --------------------------------------------------------
 
@@ -408,10 +414,10 @@ INSERT INTO `activity_log` (`id`, `log_name`, `description`, `subject_id`, `subj
 CREATE TABLE `ai_admin_alerts` (
   `id` int UNSIGNED NOT NULL,
   `business_id` int UNSIGNED NOT NULL,
-  `type` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `message` text COLLATE utf8mb4_unicode_ci,
-  `url` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `type` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `title` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `message` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `url` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `meta` json DEFAULT NULL,
   `created_by` int UNSIGNED DEFAULT NULL,
   `emailed` tinyint(1) NOT NULL DEFAULT '0',
@@ -436,7 +442,7 @@ CREATE TABLE `ai_assistance_settings` (
   `updated_at` timestamp NULL DEFAULT NULL,
   `match_tolerance_pct` decimal(8,2) NOT NULL DEFAULT '2.00',
   `digest_enabled` tinyint(1) NOT NULL DEFAULT '0',
-  `digest_email` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `digest_email` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `alert_email_enabled` tinyint(1) NOT NULL DEFAULT '1'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -457,10 +463,10 @@ CREATE TABLE `ai_chat_messages` (
   `id` int UNSIGNED NOT NULL,
   `business_id` int UNSIGNED NOT NULL,
   `user_id` int UNSIGNED NOT NULL,
-  `channel` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'japsai',
-  `role` varchar(16) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `content` text COLLATE utf8mb4_unicode_ci NOT NULL,
-  `tool` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `channel` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'japsai',
+  `role` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `content` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `tool` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -485,7 +491,7 @@ CREATE TABLE `ai_match_reviews` (
   `po_id` int UNSIGNED NOT NULL,
   `po_line_id` int UNSIGNED NOT NULL,
   `purchase_id` int UNSIGNED DEFAULT NULL,
-  `status` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'exception',
+  `status` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'exception',
   `qty_var_pct` decimal(10,2) NOT NULL DEFAULT '0.00',
   `cost_var_pct` decimal(10,2) NOT NULL DEFAULT '0.00',
   `reviewed_at` timestamp NULL DEFAULT NULL,
@@ -604,13 +610,13 @@ CREATE TABLE `bulk_price_updates` (
   `id` int UNSIGNED NOT NULL,
   `business_id` int UNSIGNED NOT NULL,
   `created_by` int UNSIGNED NOT NULL,
-  `update_type` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'percentage or flat',
+  `update_type` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'percentage or flat',
   `update_value` decimal(22,4) NOT NULL COMMENT 'percentage or flat amount',
-  `price_field` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'default_sell_price or sell_price_inc_tax',
-  `filters` text COLLATE utf8mb4_unicode_ci COMMENT 'JSON: category, brand, etc.',
+  `price_field` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'default_sell_price or sell_price_inc_tax',
+  `filters` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci COMMENT 'JSON: category, brand, etc.',
   `products_count` int NOT NULL DEFAULT '0',
-  `product_ids` text COLLATE utf8mb4_unicode_ci COMMENT 'Comma-separated IDs',
-  `notes` text COLLATE utf8mb4_unicode_ci,
+  `product_ids` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci COMMENT 'Comma-separated IDs',
+  `notes` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -1002,7 +1008,7 @@ CREATE TABLE `contacts` (
 --
 
 INSERT INTO `contacts` (`id`, `business_id`, `type`, `contact_type`, `land_mark`, `street_name`, `building_number`, `additional_number`, `supplier_business_name`, `name`, `prefix`, `first_name`, `middle_name`, `last_name`, `email`, `password`, `allow_customer_app`, `ecom_first_name`, `ecom_last_name`, `email_verified_at`, `contact_id`, `contact_status`, `crm_source`, `crm_life_stage`, `tax_number`, `city`, `state`, `country`, `address_line_1`, `address_line_2`, `zip_code`, `dob`, `mobile`, `landline`, `alternate_number`, `pay_term_number`, `pay_term_type`, `credit_limit`, `created_by`, `balance`, `total_rp`, `total_rp_used`, `total_rp_expired`, `is_default`, `shipping_address`, `shipping_custom_field_details`, `is_export`, `export_custom_field_1`, `export_custom_field_2`, `export_custom_field_3`, `export_custom_field_4`, `export_custom_field_5`, `export_custom_field_6`, `position`, `customer_group_id`, `custom_field1`, `custom_field2`, `custom_field3`, `custom_field4`, `custom_field5`, `custom_field6`, `custom_field7`, `custom_field8`, `custom_field9`, `custom_field10`, `deleted_at`, `created_at`, `updated_at`, `remember_token`) VALUES
-(1, 1, 'customer', NULL, NULL, NULL, NULL, NULL, NULL, 'Walk-In Customer', NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, 'CO0001', 'active', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '', NULL, NULL, NULL, NULL, NULL, 1, 0.0000, 0, 0, 0, 1, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'RETAIL', NULL, 'Y', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-18 18:56:53', '2026-07-18 18:56:54', NULL),
+(1, 1, 'customer', 'individual', NULL, NULL, NULL, NULL, NULL, 'Walk in Customer', NULL, 'Walk', 'in', 'Customer', 'customer@example.com', '$2y$10$ISy8F7Sub/0Cfm6Jxv2Uou47R6ebZXkYgyMtt5Z6hl87xeDVYJeji', 1, NULL, NULL, NULL, 'CO0001', 'active', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '012548963145', NULL, NULL, NULL, NULL, NULL, 1, 0.0000, 0, 0, 0, 1, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'RETAIL', NULL, 'Y', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-18 18:56:53', '2026-10-05 08:01:33', NULL),
 (10, 1, 'supplier', NULL, NULL, NULL, NULL, NULL, 'Alamo Candy Co', 'Alamo Candy Co', NULL, NULL, NULL, NULL, 'supplier1@demo.local', NULL, 0, NULL, NULL, NULL, 'DEMO-SUP-1', 'active', NULL, NULL, NULL, 'Nashville', 'TN', 'USA', NULL, NULL, NULL, NULL, '2145550101', NULL, NULL, NULL, NULL, NULL, 1, 0.0000, 0, 0, 0, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-18 15:31:03', '2026-08-18 15:31:03', NULL),
 (11, 1, 'supplier', NULL, NULL, NULL, NULL, NULL, 'Gulf Coast Snacks', 'Gulf Coast Snacks', NULL, NULL, NULL, NULL, 'supplier2@demo.local', NULL, 0, NULL, NULL, NULL, 'DEMO-SUP-2', 'active', NULL, NULL, NULL, 'Nashville', 'TN', 'USA', NULL, NULL, NULL, NULL, '7135550188', NULL, NULL, NULL, NULL, NULL, 1, 0.0000, 0, 0, 0, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-18 15:31:03', '2026-08-18 15:31:03', NULL),
 (12, 1, 'supplier', NULL, NULL, NULL, NULL, NULL, 'Tennessee Tobacco Dist.', 'Tennessee Tobacco Dist.', NULL, NULL, NULL, NULL, 'supplier3@demo.local', NULL, 0, NULL, NULL, NULL, 'DEMO-SUP-3', 'active', NULL, NULL, NULL, 'Nashville', 'TN', 'USA', NULL, NULL, NULL, NULL, '6155550144', NULL, NULL, NULL, NULL, NULL, 1, 0.0000, 0, 0, 0, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-18 15:31:03', '2026-08-18 15:31:03', NULL),
@@ -18444,6 +18450,7 @@ INSERT INTO `role_has_permissions` (`permission_id`, `role_id`) VALUES
 (80, 2),
 (85, 2),
 (86, 2),
+(18, 3),
 (27, 3),
 (36, 3),
 (37, 3),
@@ -19568,7 +19575,7 @@ CREATE TABLE `users` (
 
 INSERT INTO `users` (`id`, `user_type`, `surname`, `first_name`, `last_name`, `username`, `email`, `password`, `language`, `contact_no`, `address`, `remember_token`, `business_id`, `available_at`, `paused_at`, `max_sales_discount_percent`, `allow_login`, `barcode_login`, `barcode_switch_id`, `status`, `is_enable_service_staff_pin`, `service_staff_pin`, `crm_contact_id`, `is_cmmsn_agnt`, `cmmsn_percent`, `sales_target`, `sales_target_daily`, `sales_target_weekly`, `sales_target_monthly`, `selected_contacts`, `dob`, `gender`, `marital_status`, `blood_group`, `contact_number`, `alt_number`, `family_number`, `fb_link`, `twitter_link`, `social_media_1`, `social_media_2`, `permanent_address`, `current_address`, `guardian_name`, `custom_field_1`, `custom_field_2`, `custom_field_3`, `custom_field_4`, `bank_details`, `id_proof_name`, `id_proof_number`, `deleted_at`, `created_at`, `updated_at`, `pos_quick_keys_enabled`) VALUES
 (1, 'user', NULL, 'Japs', 'POS', 'japspos', 'japspos@gmail.com', '$2y$10$LH3D2XH/82k.Av8HfGb3GOfKM3F7Qi7I86iZLyxhJFtjajS8pKHpK', 'en', NULL, NULL, 'Z1DoEySwOxpZRYkdw0pXy2agGWmtgfQ2U631vjvRDMAPNf3S8LGF7ORWbhHJ', 1, NULL, NULL, NULL, 1, 1, 'usi:1659d00394bc', 'active', 0, NULL, NULL, 0, 0.00, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '{\"account_holder_name\":null,\"account_number\":null,\"bank_name\":null,\"bank_code\":null,\"branch\":null,\"tax_payer_id\":null}', NULL, NULL, NULL, '2026-06-04 16:29:53', '2026-09-10 05:14:45', 1),
-(3, 'user', NULL, 'Sales', NULL, 'sales', 'sales@japspos.com', '$2y$10$bhjln6gIUl7iQH99RhOHe.SdLfYtmWt46.QAc9EYGCwwKI.apVRG.', 'en', NULL, NULL, NULL, 1, NULL, NULL, NULL, 1, 1, 'usi:79f26ee953f9', 'active', 0, NULL, NULL, 0, 0.00, NULL, 20.0000, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '{\"account_holder_name\":null,\"account_number\":null,\"bank_name\":null,\"bank_code\":null,\"branch\":null,\"tax_payer_id\":null}', NULL, NULL, NULL, '2026-08-17 03:13:14', '2026-09-10 05:19:25', 1),
+(3, 'user', NULL, 'Sales', NULL, 'sales', 'sales@japspos.com', '$2y$10$CSawg.7qafRk3S09LRtSUuuA9yzGY0b0XH8Et7EusTF/oSJLKo2Bq', 'en', NULL, NULL, NULL, 1, NULL, NULL, NULL, 1, 1, 'usi:79f26ee953f9', 'active', 0, NULL, NULL, 0, 0.00, NULL, 20.0000, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '{\"account_holder_name\":null,\"account_number\":null,\"bank_name\":null,\"bank_code\":null,\"branch\":null,\"tax_payer_id\":null}', NULL, NULL, NULL, '2026-08-17 03:13:14', '2026-10-05 08:35:57', 1),
 (4, 'user', 'Delivery', 'Delivery', 'Man', 'delivery', 'delivery@gmail.com', '$2y$10$PuoHB9TgIQJgKwIArsx3lOhXxy3adR/3vIStKn9WY7ANbA0rP24o.', 'en', NULL, NULL, NULL, 1, NULL, NULL, NULL, 1, 0, 'usi:33bb86fe0b35', 'active', 0, NULL, NULL, 0, 0.00, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '{\"account_holder_name\":null,\"account_number\":null,\"bank_name\":null,\"bank_code\":null,\"branch\":null,\"tax_payer_id\":null}', NULL, NULL, NULL, '2026-09-16 05:26:26', '2026-09-16 05:54:03', 1);
 
 -- --------------------------------------------------------
@@ -25651,7 +25658,7 @@ ALTER TABLE `account_types`
 -- AUTO_INCREMENT for table `activity_log`
 --
 ALTER TABLE `activity_log`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=290;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=296;
 
 --
 -- AUTO_INCREMENT for table `ai_admin_alerts`
