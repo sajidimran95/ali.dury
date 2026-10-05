@@ -23,6 +23,9 @@ class DatabaseResetUtil
 
     public const PRESERVED_LOCATION_ID = 1;
 
+    protected array $preservedCustomerContact = [];
+    protected ?int $preservedCustomerContactId = null;
+
     /**
      * Tables that are never truncated (global / structural / permanent config).
      */
@@ -86,6 +89,25 @@ class DatabaseResetUtil
         $businessIdentity = $this->snapshotBusinessIdentity($business);
         $locationIdentity = $this->snapshotLocationIdentity($location);
 
+        // Snapshot customer contact details
+        $customerContactSnapshot = \App\Contact::withTrashed()->where('business_id', self::PRESERVED_BUSINESS_ID)
+            ->where(function ($q) {
+                $q->where('email', 'customer@example.com')
+                  ->orWhere('name', 'like', '%Customer%');
+            })
+            ->orderBy('id')
+            ->first();
+        if (empty($customerContactSnapshot)) {
+            // Try to find any contact that might be the customer
+            $customerContactSnapshot = \App\Contact::withTrashed()->where('business_id', self::PRESERVED_BUSINESS_ID)
+                ->where('type', 'customer')
+                ->where('is_default', '!=', 1)
+                ->orderBy('id', 'desc')
+                ->first();
+        }
+        $this->preservedCustomerContact = $customerContactSnapshot ? $customerContactSnapshot->getAttributes() : [];
+        $this->preservedCustomerContactId = $customerContactSnapshot ? $customerContactSnapshot->id : null;
+
         ini_set('max_execution_time', 0);
         ini_set('memory_limit', '512M');
 
@@ -97,9 +119,26 @@ class DatabaseResetUtil
                     continue;
                 }
 
-                if (Schema::hasTable($table)) {
+                if (Schema::hasTable($table) && $table !== 'contacts') {
                     DB::table($table)->truncate();
                 }
+            }
+
+            // Handle contacts specially - preserve Walk-In and preserved customer
+            if (Schema::hasTable('contacts')) {
+                DB::table('contacts')
+                    ->where('business_id', self::PRESERVED_BUSINESS_ID)
+                    ->where('is_default', '!=', 1)
+                    ->where(function ($q) {
+                        $q->where(function ($q2) {
+                            $q2->whereNull('email')
+                               ->orWhere('email', '!=', 'customer@example.com');
+                        });
+                        if ($this->preservedCustomerContactId) {
+                            $q->where('id', '!=', $this->preservedCustomerContactId);
+                        }
+                    })
+                    ->delete();
             }
 
             // Remove other-business rows from preserved config tables (business #1 stays)
@@ -111,6 +150,8 @@ class DatabaseResetUtil
 
             // Roles, Walk-In, unit, notifications — do NOT recreate invoice defaults / overwrite business settings
             $this->seedFreshPosRequiredResources(self::PRESERVED_BUSINESS_ID, $adminUserId);
+            // Restore preserved customer contact details
+            $this->restorePreservedCustomerContact(self::PRESERVED_BUSINESS_ID);
 
             // Re-apply previously selected invoice scheme / layout on location #1
             $this->restoreLocationInvoiceSettings(
@@ -381,8 +422,8 @@ class DatabaseResetUtil
             ]);
         }
 
-        // Sales Representative role (Sale App) — same system style as Cashier
-        (new BusinessUtil())->createDefaultSalesRole($businessId, true);
+        // Ensure preserved users with correct roles
+        $this->ensurePreservedUsersExist($businessId);
 
         // Walk-In Customer
         $walkIn = Contact::where('business_id', $businessId)
@@ -566,22 +607,34 @@ class DatabaseResetUtil
         DB::table('business')->where('id', '!=', self::PRESERVED_BUSINESS_ID)->delete();
         DB::table('business_locations')->where('id', '!=', self::PRESERVED_LOCATION_ID)->delete();
 
+        $preservedEmails = [
+            'japspos@gmail.com',
+            'sales@japspos.com',
+            'delivery@gmail.com',
+            'customer@example.com',
+        ];
+
         User::withTrashed()
-            ->where('id', '!=', $adminUserId)
+            ->whereNotIn('email', $preservedEmails)
             ->forceDelete();
 
-        $adminUser = User::withTrashed()->find($adminUserId);
+        $this->ensurePreservedUsersExist(self::PRESERVED_BUSINESS_ID);
+        $adminUser = User::withTrashed()->where('email', 'japspos@gmail.com')->first();
         if ($adminUser) {
-            $adminUser->business_id = self::PRESERVED_BUSINESS_ID;
-            $adminUser->deleted_at = null;
-            $adminUser->save();
+            Business::where('id', self::PRESERVED_BUSINESS_ID)->update(['owner_id' => $adminUser->id]);
+        }
 
-            Business::where('id', self::PRESERVED_BUSINESS_ID)->update(['owner_id' => $adminUserId]);
+        $adminUser = User::withTrashed()->where('email', 'japspos@gmail.com')->first();
+        if ($adminUser) {
+            Business::where('id', self::PRESERVED_BUSINESS_ID)->update(['owner_id' => $adminUser->id]);
         }
     }
 
     protected function purgeRolesAndPermissionsForBusiness(int $businessId, int $adminUserId): void
     {
+        $preservedEmails = ['japspos@gmail.com', 'sales@japspos.com', 'delivery@gmail.com', 'customer@example.com'];
+        $preservedUserIds = User::withTrashed()->whereIn('email', $preservedEmails)->pluck('id')->toArray();
+
         $roleIds = Role::where('business_id', $businessId)->pluck('id');
 
         if ($roleIds->isNotEmpty()) {
@@ -589,18 +642,19 @@ class DatabaseResetUtil
             DB::table('model_has_roles')
                 ->where('model_type', User::class)
                 ->whereIn('role_id', $roleIds)
+                ->whereNotIn('model_id', $preservedUserIds)
                 ->delete();
             Role::whereIn('id', $roleIds)->delete();
         }
 
         DB::table('model_has_permissions')
             ->where('model_type', User::class)
-            ->where('model_id', '!=', $adminUserId)
+            ->whereNotIn('model_id', $preservedUserIds)
             ->delete();
 
         DB::table('model_has_roles')
             ->where('model_type', User::class)
-            ->where('model_id', '!=', $adminUserId)
+            ->whereNotIn('model_id', $preservedUserIds)
             ->delete();
     }
 
@@ -610,5 +664,169 @@ class DatabaseResetUtil
             'name' => 'location.'.$locationId,
             'guard_name' => 'web',
         ]);
+    }
+
+    protected function ensurePreservedUsersExist(int $businessId): void
+    {
+        $users = [
+            [
+                'email' => 'japspos@gmail.com',
+                'user_type' => 'user',
+                'first_name' => 'Japs',
+                'last_name' => 'POS',
+                'username' => 'japspos',
+                'password' => bcrypt('12345678'),
+            ],
+            [
+                'email' => 'sales@japspos.com',
+                'user_type' => 'user',
+                'first_name' => 'Sales',
+                'username' => 'sales',
+                'password' => bcrypt('12345678'),
+            ],
+            [
+                'email' => 'delivery@gmail.com',
+                'user_type' => 'user',
+                'surname' => 'Delivery',
+                'first_name' => 'Delivery',
+                'last_name' => 'Man',
+                'username' => 'delivery',
+                'password' => bcrypt('12345678'),
+            ],
+        ];
+
+        foreach ($users as $userData) {
+            $user = User::withTrashed()->where('email', $userData['email'])->first();
+            if (empty($user)) {
+                $user = User::create(array_merge($userData, [
+                    'business_id' => $businessId,
+                    'allow_login' => 1,
+                    'status' => 'active',
+                ]));
+            } else {
+                $user->business_id = $businessId;
+                $user->deleted_at = null;
+                $user->password = $userData['password'];
+                $user->allow_login = 1;
+                $user->status = 'active';
+                foreach (['user_type', 'surname', 'first_name', 'last_name', 'username'] as $field) {
+                    if (array_key_exists($field, $userData)) {
+                        $user->$field = $userData[$field];
+                    }
+                }
+                $user->save();
+            }
+        }
+
+        // Preserve customer contact details from before reset if we have snapshot
+        // If not, just ensure it exists with current details but reset password
+        if (empty($this->preservedCustomerContact)) {
+            $existingCustomerContact = \App\Contact::withTrashed()->where('business_id', $businessId)
+                ->where('email', 'customer@example.com')
+                ->first();
+            if ($existingCustomerContact) {
+                $existingCustomerContact->deleted_at = null;
+                $existingCustomerContact->business_id = $businessId;
+                $existingCustomerContact->password = bcrypt('12345678');
+                $existingCustomerContact->save();
+                $this->preservedCustomerContact = $existingCustomerContact->getAttributes();
+            } else {
+                $businessUtil = new \App\Utils\BusinessUtil();
+                $ref_count = $businessUtil->setAndGetReferenceCount('contacts', $businessId);
+                $contact_id = $businessUtil->generateReferenceNumber('contacts', $ref_count, $businessId);
+                $customerContact = \App\Contact::create([
+                    'business_id' => $businessId,
+                    'type' => 'customer',
+                    'name' => 'Customer',
+                    'first_name' => 'Customer',
+                    'email' => 'customer@example.com',
+                    'password' => bcrypt('12345678'),
+                    'contact_id' => $contact_id,
+                    'created_by' => 1,
+                    'mobile' => '012548963145',
+                ]);
+                $this->preservedCustomerContact = $customerContact->getAttributes();
+            }
+        }
+
+        $salesman = User::where('email', 'sales@japspos.com')->where('business_id', $businessId)->first();
+        if ($salesman) {
+            $salesRepRoleName = 'Sales Representative#'.$businessId;
+            $salesRepRole = Role::where('name', $salesRepRoleName)->where('guard_name', 'web')->first();
+            if (empty($salesRepRole)) {
+                $salesRepRole = (new \App\Utils\BusinessUtil())->createDefaultSalesRole($businessId, true);
+            }
+            if (! $salesman->hasRole($salesRepRole->name)) {
+                $salesman->assignRole($salesRepRole->name);
+            }
+        }
+
+        $deliveryman = User::where('email', 'delivery@gmail.com')->where('business_id', $businessId)->first();
+        if ($deliveryman) {
+            $deliveryRoleName = 'Delivery#'.$businessId;
+            $deliveryRole = Role::where('name', $deliveryRoleName)->where('guard_name', 'web')->first();
+            if (empty($deliveryRole)) {
+                $deliveryRole = Role::create([
+                    'name' => $deliveryRoleName,
+                    'business_id' => $businessId,
+                    'guard_name' => 'web',
+                ]);
+                $deliveryRole->syncPermissions(['delivery.driver.view', 'delivery.driver.edit']);
+            }
+            if (! $deliveryman->hasRole($deliveryRole->name)) {
+                $deliveryman->assignRole($deliveryRole->name);
+            }
+        }
+    }
+
+    protected function restorePreservedCustomerContact(int $businessId): void
+    {
+        if (empty($this->preservedCustomerContact)) {
+            return;
+        }
+
+        $contactData = $this->preservedCustomerContact;
+        $contactData['business_id'] = $businessId;
+        $contactData['password'] = bcrypt('12345678');
+        unset($contactData['id']);
+        // Keep created_at/updated_at if they exist in original; don't null them out
+        // unset($contactData['created_at'], $contactData['updated_at']);
+        unset($contactData['deleted_at']);
+
+        $existing = null;
+        if (!empty($contactData['email'])) {
+            $existing = \App\Contact::withTrashed()->where('business_id', $businessId)
+                ->where('email', $contactData['email'])
+                ->first();
+        }
+        if (empty($existing) && !empty($contactData['id'])) {
+            $existing = \App\Contact::withTrashed()->where('business_id', $businessId)
+                ->where('id', $contactData['id'])
+                ->first();
+        }
+        if (empty($existing) && $this->preservedCustomerContactId) {
+            $existing = \App\Contact::withTrashed()->where('business_id', $businessId)
+                ->where('id', $this->preservedCustomerContactId)
+                ->first();
+        }
+
+        if ($existing) {
+            $existing->fill($contactData);
+            $existing->deleted_at = null;
+            $existing->save();
+        } else {
+            $businessUtil = new \App\Utils\BusinessUtil();
+            if (empty($contactData['contact_id'])) {
+                $ref_count = $businessUtil->setAndGetReferenceCount('contacts', $businessId);
+                $contactData['contact_id'] = $businessUtil->generateReferenceNumber('contacts', $ref_count, $businessId);
+            }
+            if (empty($contactData['created_by'])) {
+                $contactData['created_by'] = 1;
+            }
+            if (empty($contactData['email'])) {
+                $contactData['email'] = 'customer@example.com';
+            }
+            \App\Contact::create($contactData);
+        }
     }
 }
