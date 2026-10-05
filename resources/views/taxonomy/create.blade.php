@@ -50,6 +50,7 @@
         </div>
         <p class="help-block">@lang('lang_v1.show_on_pos_help')</p>
       </div>
+      @include('taxonomy.partials.measure_unit', ['category' => null])
       @endif
       @if($is_quick_sub)
         <input type="hidden" name="add_as_sub_cat" value="1">

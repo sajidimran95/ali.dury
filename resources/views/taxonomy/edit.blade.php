@@ -45,6 +45,7 @@
         </div>
         <p class="help-block">@lang('lang_v1.show_on_pos_help')</p>
       </div>
+      @include('taxonomy.partials.measure_unit', ['category' => $category])
       @endif
       @if(!empty($parent_categories) && $enable_sub_category)
           <div class="form-group">

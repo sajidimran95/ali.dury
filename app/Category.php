@@ -142,4 +142,92 @@ class Category extends Model
     {
         return $query->where('parent_id', 0);
     }
+
+    public static function hasMeasureUnitColumns(): bool
+    {
+        static $has = null;
+        if ($has === null) {
+            $has = \Schema::hasColumn('categories', 'measure_unit_enabled');
+        }
+
+        return $has;
+    }
+
+    /**
+     * Find (or create) the base unit used to count stock for a category, e.g. "oz", "gram".
+     */
+    public static function resolveMeasureUnit(int $business_id, string $name, ?int $user_id = null): ?Unit
+    {
+        $name = trim($name);
+        if ($name === '') {
+            return null;
+        }
+
+        $unit = Unit::where('business_id', $business_id)
+            ->whereNull('base_unit_id')
+            ->where(function ($q) use ($name) {
+                $q->where('short_name', $name)->orWhere('actual_name', $name);
+            })
+            ->first();
+
+        if (! $unit) {
+            $user_id = $user_id ?: auth()->id() ?: (int) Business::where('id', $business_id)->value('owner_id');
+            $unit = Unit::create([
+                'business_id' => $business_id,
+                'actual_name' => $name,
+                'short_name' => $name,
+                'allow_decimal' => 1,
+                'created_by' => $user_id,
+            ]);
+        }
+
+        return $unit;
+    }
+
+    /**
+     * Unit id from the most specific selected category level that has a measurement unit.
+     */
+    public static function measureUnitIdFor(int $business_id, array $category_ids): ?int
+    {
+        if (! self::hasMeasureUnitColumns()) {
+            return null;
+        }
+
+        $ids = array_values(array_filter(array_map('intval', $category_ids)));
+        if ($ids === []) {
+            return null;
+        }
+
+        $rows = Category::where('business_id', $business_id)
+            ->whereIn('id', $ids)
+            ->where('measure_unit_enabled', 1)
+            ->whereNotNull('measure_unit_id')
+            ->pluck('measure_unit_id', 'id');
+
+        foreach (array_reverse($ids) as $id) {
+            if (! empty($rows[$id])) {
+                return (int) $rows[$id];
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * [category_id => ['unit_id' => .., 'name' => ..]] for the product form.
+     */
+    public static function measureUnitMap(int $business_id): array
+    {
+        if (! self::hasMeasureUnitColumns()) {
+            return [];
+        }
+
+        return Category::where('business_id', $business_id)
+            ->where('category_type', 'product')
+            ->where('measure_unit_enabled', 1)
+            ->whereNotNull('measure_unit_id')
+            ->get(['id', 'measure_unit_id', 'measure_unit_name'])
+            ->mapWithKeys(fn ($c) => [$c->id => ['unit_id' => (int) $c->measure_unit_id, 'name' => (string) $c->measure_unit_name]])
+            ->all();
+    }
 }

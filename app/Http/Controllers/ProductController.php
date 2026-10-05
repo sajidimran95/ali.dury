@@ -580,6 +580,7 @@ class ProductController extends Controller
 
             $product_details['warranty_id'] = ! empty($request->input('warranty_id')) ? $request->input('warranty_id') : null;
 
+            $product_details = $this->applyCategoryMeasureUnit($request, $product_details, $business_id);
             $product_details = $this->applyPackagingUnitFromRequest($request, $product_details, $business_id);
 
             DB::beginTransaction();
@@ -821,6 +822,7 @@ class ProductController extends Controller
             $business_id = $request->session()->get('user.business_id');
             $product_details = $request->only(['name', 'brand_id', 'unit_id', 'category_id', 'tax', 'barcode_type', 'sku', 'alert_quantity', 'tax_type', 'weight', 'product_description', 'sub_unit_ids', 'preparation_time_in_minutes', 'product_custom_field1', 'product_custom_field2', 'product_custom_field3', 'product_custom_field4', 'product_custom_field5', 'product_custom_field6', 'product_custom_field7', 'product_custom_field8', 'product_custom_field9', 'product_custom_field10', 'product_custom_field11', 'product_custom_field12', 'product_custom_field13', 'product_custom_field14', 'product_custom_field15', 'product_custom_field16', 'product_custom_field17', 'product_custom_field18', 'product_custom_field19', 'product_custom_field20',]);
 
+            $product_details = $this->applyCategoryMeasureUnit($request, $product_details, $business_id);
             $product_details = $this->applyPackagingUnitFromRequest($request, $product_details, $business_id);
 
             DB::beginTransaction();
@@ -2726,6 +2728,23 @@ class ProductController extends Controller
             'single_dsp_inc_tax' => $dsp_inc,
             'profit_percent' => $dpp > 0 ? $this->productUtil->get_percent($dpp, $dsp) : (float) $this->productUtil->num_uf($data['profit_percent'] ?? 0),
         ];
+    }
+
+    /**
+     * Categories with a measurement unit (oz, mg, gram…) fix the product's base (stock) unit.
+     */
+    protected function applyCategoryMeasureUnit(Request $request, array $product_details, $business_id): array
+    {
+        $unit_id = \App\Category::measureUnitIdFor((int) $business_id, [
+            $request->input('category_id'),
+            $request->input('sub_category_id'),
+            $request->input('child_category_id'),
+        ]);
+        if ($unit_id) {
+            $product_details['unit_id'] = $unit_id;
+        }
+
+        return $product_details;
     }
 
     /**

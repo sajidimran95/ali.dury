@@ -135,6 +135,20 @@
               </div>
             </div>
 
+            @php
+              $category_stock_amount = \App\VariationLocationDetails::where('product_id', $product->id)->sum('qty_available');
+            @endphp
+            <div class="col-sm-4 hide" id="category_measure_amount_wrap">
+              <div class="form-group">
+                <label for="category_measure_amount">Amount in stock (<span class="js-category-unit-name"></span>):</label>
+                <div class="input-group">
+                  <input type="text" id="category_measure_amount" class="form-control" value="{{ @num_format($category_stock_amount) }}" readonly>
+                  <span class="input-group-addon" style="background:#f5f3ff;border-color:#c4b5fd;color:#6d28d9;font-weight:700;"><span class="js-category-unit-name"></span></span>
+                </div>
+                <p class="help-block" style="margin-bottom:0;">Current stock. Change it with a purchase or stock adjustment.</p>
+              </div>
+            </div>
+
             <div class="col-sm-4">
               <div class="form-group">
                 {!! Form::label('supplier_id', __('purchase.supplier') . ':') !!}
@@ -437,6 +451,7 @@
 
 @section('javascript')
   <script src="{{ asset('js/product.js?v=' . $asset_v . '&uom=6&decouple=3&margin=2&qcat=2&pp=2') }}"></script>
+  @include('product.partials.category_measure_unit_js')
   <script type="text/javascript">
     $(document).ready( function(){
       __page_leave_confirmation('#product_add_form');

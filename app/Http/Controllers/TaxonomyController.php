@@ -194,6 +194,30 @@ class TaxonomyController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
+    /**
+     * Measurement unit fields (oz, mg, gram…) for a product category.
+     */
+    protected function measureUnitInput(Request $request, int $business_id): array
+    {
+        if (! Category::hasMeasureUnitColumns()) {
+            return [];
+        }
+
+        $enabled = (int) $request->input('measure_unit_enabled') === 1;
+        $name = trim((string) $request->input('measure_unit_name'));
+        if (! $enabled || $name === '') {
+            return ['measure_unit_enabled' => 0, 'measure_unit_name' => null, 'measure_unit_id' => null];
+        }
+
+        $unit = Category::resolveMeasureUnit($business_id, mb_substr($name, 0, 30), (int) $request->session()->get('user.id'));
+
+        return [
+            'measure_unit_enabled' => 1,
+            'measure_unit_name' => $unit ? $unit->short_name : $name,
+            'measure_unit_id' => $unit?->id,
+        ];
+    }
+
     public function store(Request $request)
     {
         $category_type = request()->input('category_type');
@@ -218,6 +242,10 @@ class TaxonomyController extends Controller
                 $input['show_in_pos'] = $request->exists('show_in_pos')
                     ? ((int) $request->input('show_in_pos') === 1 ? 1 : 0)
                     : 1;
+            }
+
+            if ($category_type === 'product') {
+                $input = array_merge($input, $this->measureUnitInput($request, (int) $input['business_id']));
             }
 
             $category = Category::create($input);
@@ -330,6 +358,9 @@ class TaxonomyController extends Controller
                 }
                 if ($category->category_type === 'product' && $request->exists('show_in_pos')) {
                     $category->show_in_pos = (int) $request->input('show_in_pos') === 1 ? 1 : 0;
+                }
+                if ($category->category_type === 'product' && $request->exists('measure_unit_enabled')) {
+                    $category->fill($this->measureUnitInput($request, (int) $business_id));
                 }
                 $category->save();
 
