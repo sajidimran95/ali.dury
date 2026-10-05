@@ -6,6 +6,16 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    @php
+        $__icons = app_pwa_icons();
+    @endphp
+    <meta name="theme-color" content="{{ $__icons['theme'] }}">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="{{ $__icons['title'] }}">
+    <link rel="icon" type="image/png" sizes="192x192" href="{{ $__icons['icon192'] }}">
+    <link rel="icon" type="image/png" sizes="512x512" href="{{ $__icons['icon512'] }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ $__icons['apple'] }}">
     <title>@yield('title') - {{ config('app.name', 'POS') }}</title>
     @include('layouts.partials.css')
     @include('layouts.partials.extracss_auth')

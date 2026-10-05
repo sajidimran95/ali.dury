@@ -153,3 +153,119 @@ if (! function_exists('getAuthLogoUrl')) {
         return $default;
     }
 }
+
+/**
+ * Icon artwork for each app surface.
+ *
+ * Every app owns a distinct colour and letter, so no two browser tabs or
+ * home-screen installs ever look the same:
+ *
+ *   pos        #0f0f0f  "POS"   — main till
+ *   sale       #e53935  "S"     — sales rep app
+ *   delivery   #0f766e  "D"     — delivery driver app
+ *   customer   #e11d48  "C"     — customer portal
+ *   ecom       #e85d04  "J"     — storefront
+ */
+if (! function_exists('pwa_icon_manifest')) {
+    function pwa_icon_manifest(): array
+    {
+        return [
+            'pos' => [
+                'theme' => '#0f0f0f',
+                'title' => 'POS',
+                'icon192' => 'icon-192.png',
+                'icon512' => 'icon-512.png',
+                'maskable' => 'icon-512.png',
+                'apple' => 'apple-touch-icon.png',
+            ],
+            'sale' => [
+                'theme' => '#e53935',
+                'title' => 'Sales',
+                'icon192' => 'sale-icon-192.png',
+                'icon512' => 'sale-icon-512.png',
+                'maskable' => 'sale-icon-maskable-512.png',
+                'apple' => 'sale-icon-apple-touch-icon.png',
+            ],
+            'delivery' => [
+                'theme' => '#0f766e',
+                'title' => 'Delivery',
+                'icon192' => 'delivery-icon-192.png',
+                'icon512' => 'delivery-icon-512.png',
+                'maskable' => 'delivery-icon-maskable-512.png',
+                'apple' => 'delivery-icon-apple-touch-icon.png',
+            ],
+            'customer' => [
+                'theme' => '#e11d48',
+                'title' => 'Customer',
+                'icon192' => 'customer-icon-192.png',
+                'icon512' => 'customer-icon-512.png',
+                'maskable' => 'customer-icon-maskable-512.png',
+                'apple' => 'customer-icon-apple-touch-icon.png',
+            ],
+            'ecom' => [
+                'theme' => '#e85d04',
+                'title' => 'Store',
+                'icon192' => 'ecom-icon-192.png',
+                'icon512' => 'ecom-icon-512.png',
+                'maskable' => 'ecom-icon-512.png',
+                'apple' => 'ecom-apple-touch-icon.png',
+            ],
+        ];
+    }
+}
+
+/**
+ * Which app a request belongs to, inferred from the URL path.
+ */
+if (! function_exists('pwa_icon_app_for_request')) {
+    function pwa_icon_app_for_request(): string
+    {
+        $segment = request()->segment(1);
+        $apps = pwa_icon_manifest();
+
+        if ($segment === 'sale') {
+            return 'sale';
+        }
+        if ($segment === 'delivery') {
+            return 'delivery';
+        }
+        if ($segment === 'customer') {
+            return 'customer';
+        }
+        if ($segment === 'ecommerce' || $segment === config('ecommerce.route_prefix', 'shop')) {
+            return 'ecom';
+        }
+
+        return 'pos';
+    }
+}
+
+/**
+ * Icon URLs for an app surface, with a cache-busting version so browsers
+ * actually pick up regenerated artwork.
+ *
+ * @param  string|null  $app  Force a key; inferred from the request when null.
+ */
+if (! function_exists('app_pwa_icons')) {
+    function app_pwa_icons(?string $app = null): array
+    {
+        $apps = pwa_icon_manifest();
+        $app = $app !== null && isset($apps[$app]) ? $app : pwa_icon_app_for_request();
+        $meta = $apps[$app];
+
+        $v = config('app.asset_version', config('constants.asset_version', '1'));
+        $url = function (string $file) use ($v) {
+            return asset('pwa/'.$file).'?v='.$v;
+        };
+
+        return [
+            'app' => $app,
+            'theme' => $meta['theme'],
+            'title' => $meta['title'],
+            'icon192' => $url($meta['icon192']),
+            'icon512' => $url($meta['icon512']),
+            'maskable' => $url($meta['maskable']),
+            'apple' => $url($meta['apple']),
+        ];
+    }
+}

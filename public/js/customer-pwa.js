@@ -18,10 +18,23 @@
       m.setAttribute('data-customer-pwa', '1');
       document.head.appendChild(m);
     }
-    if (!document.querySelector('link[rel="apple-touch-icon"][data-customer-pwa]')) {
+    // Tab favicon. Server-rendered layouts already ship one, so this only
+    // fills the gap on pages that do not (e.g. the login screen).
+    if (!document.querySelector('link[rel="icon"]')) {
+      var i = document.createElement('link');
+      i.rel = 'icon';
+      i.type = 'image/png';
+      i.setAttribute('sizes', '192x192');
+      i.href = cfg.icon192 || '/pwa/customer-icon-192.png';
+      i.setAttribute('data-customer-pwa', '1');
+      document.head.appendChild(i);
+    }
+    // iOS home screen wants the dedicated 180px tile, not the 192 grid icon.
+    if (!document.querySelector('link[rel="apple-touch-icon"]')) {
       var a = document.createElement('link');
       a.rel = 'apple-touch-icon';
-      a.href = cfg.iconUrl || '/pwa/customer-icon-192.png';
+      a.setAttribute('sizes', '180x180');
+      a.href = cfg.appleIcon || '/pwa/customer-icon-apple-touch-icon.png';
       a.setAttribute('data-customer-pwa', '1');
       document.head.appendChild(a);
     }
@@ -31,7 +44,7 @@
       meta.name = 'theme-color';
       document.head.appendChild(meta);
     }
-    meta.content = '#e11d48';
+    meta.content = cfg.themeColor || '#e11d48';
   }
 
   function isStandalone() {

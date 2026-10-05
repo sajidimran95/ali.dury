@@ -36,34 +36,27 @@ class CustomerPwaController extends Controller
     public function manifest(Request $request)
     {
         $ctx = $this->context();
+        $set = app_pwa_icons('customer');
         $icons = [
             [
-                'src' => asset('pwa/customer-icon-192.png'),
+                'src' => $set['icon192'],
                 'sizes' => '192x192',
                 'type' => 'image/png',
                 'purpose' => 'any',
             ],
             [
-                'src' => asset('pwa/customer-icon-512.png'),
+                'src' => $set['icon512'],
                 'sizes' => '512x512',
                 'type' => 'image/png',
                 'purpose' => 'any',
             ],
             [
-                'src' => asset('pwa/customer-icon-512.png'),
+                'src' => $set['maskable'],
                 'sizes' => '512x512',
                 'type' => 'image/png',
                 'purpose' => 'maskable',
             ],
         ];
-
-        if (! file_exists(public_path('pwa/customer-icon-192.png'))) {
-            $icons = [
-                ['src' => asset('pwa/ecom-icon-192.png'), 'sizes' => '192x192', 'type' => 'image/png', 'purpose' => 'any'],
-                ['src' => asset('pwa/ecom-icon-512.png'), 'sizes' => '512x512', 'type' => 'image/png', 'purpose' => 'any'],
-                ['src' => asset('pwa/ecom-icon-512.png'), 'sizes' => '512x512', 'type' => 'image/png', 'purpose' => 'maskable'],
-            ];
-        }
 
         $manifest = [
             'id' => url('/customer').'#customer-pwa',
@@ -97,8 +90,8 @@ class CustomerPwaController extends Controller
             url('/customer/login'),
             url('/customer/home'),
             $offline,
-            asset('pwa/customer-icon-192.png'),
-            asset('pwa/customer-icon-512.png'),
+            asset('pwa/customer-icon-192.png').'?v='.$version,
+            asset('pwa/customer-icon-512.png').'?v='.$version,
         ]);
 
         $js = <<<JS

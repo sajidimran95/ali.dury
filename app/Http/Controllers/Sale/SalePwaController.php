@@ -35,35 +35,27 @@ class SalePwaController extends Controller
     public function manifest(Request $request)
     {
         $ctx = $this->context();
+        $set = app_pwa_icons('sale');
         $icons = [
             [
-                'src' => asset('pwa/sale-icon-192.png'),
+                'src' => $set['icon192'],
                 'sizes' => '192x192',
                 'type' => 'image/png',
                 'purpose' => 'any',
             ],
             [
-                'src' => asset('pwa/sale-icon-512.png'),
+                'src' => $set['icon512'],
                 'sizes' => '512x512',
                 'type' => 'image/png',
                 'purpose' => 'any',
             ],
             [
-                'src' => asset('pwa/sale-icon-512.png'),
+                'src' => $set['maskable'],
                 'sizes' => '512x512',
                 'type' => 'image/png',
                 'purpose' => 'maskable',
             ],
         ];
-
-        // Fallbacks if sale icons missing
-        if (! file_exists(public_path('pwa/sale-icon-192.png'))) {
-            $icons = [
-                ['src' => asset('pwa/ecom-icon-192.png'), 'sizes' => '192x192', 'type' => 'image/png', 'purpose' => 'any'],
-                ['src' => asset('pwa/ecom-icon-512.png'), 'sizes' => '512x512', 'type' => 'image/png', 'purpose' => 'any'],
-                ['src' => asset('pwa/ecom-icon-512.png'), 'sizes' => '512x512', 'type' => 'image/png', 'purpose' => 'maskable'],
-            ];
-        }
 
         $manifest = [
             'id' => url('/sale').'#sale-pwa',
@@ -97,8 +89,8 @@ class SalePwaController extends Controller
             url('/sale/orders'),
             url('/sale/orders/create'),
             $offline,
-            asset('pwa/sale-icon-192.png'),
-            asset('pwa/sale-icon-512.png'),
+            asset('pwa/sale-icon-192.png').'?v='.$version,
+            asset('pwa/sale-icon-512.png').'?v='.$version,
         ]);
 
         $js = <<<JS

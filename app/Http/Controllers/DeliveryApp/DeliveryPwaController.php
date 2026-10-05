@@ -19,7 +19,8 @@ class DeliveryPwaController extends Controller
         return [
             'app_name' => $name,
             'short_name' => mb_substr($name, 0, 12),
-            'theme_color' => '#0ea5e9',
+            // Keep in step with delivery_app/layout.blade.php (--dlv) and the app icon.
+            'theme_color' => app_pwa_icons('delivery')['theme'],
             'background_color' => '#0b1220',
         ];
     }
@@ -27,12 +28,7 @@ class DeliveryPwaController extends Controller
     public function manifest(Request $request)
     {
         $ctx = $this->context();
-        $icon192 = file_exists(public_path('pwa/sale-icon-192.png'))
-            ? asset('pwa/sale-icon-192.png')
-            : asset('img/logo-small.png');
-        $icon512 = file_exists(public_path('pwa/sale-icon-512.png'))
-            ? asset('pwa/sale-icon-512.png')
-            : $icon192;
+        $icons = app_pwa_icons('delivery');
 
         return response()->json([
             'id' => url('/delivery').'#delivery-pwa',
@@ -46,10 +42,12 @@ class DeliveryPwaController extends Controller
             'background_color' => $ctx['background_color'],
             'theme_color' => $ctx['theme_color'],
             'icons' => [
-                ['src' => $icon192, 'sizes' => '192x192', 'type' => 'image/png', 'purpose' => 'any'],
-                ['src' => $icon512, 'sizes' => '512x512', 'type' => 'image/png', 'purpose' => 'any'],
+                ['src' => $icons['icon192'], 'sizes' => '192x192', 'type' => 'image/png', 'purpose' => 'any'],
+                ['src' => $icons['icon512'], 'sizes' => '512x512', 'type' => 'image/png', 'purpose' => 'any'],
+                ['src' => $icons['maskable'], 'sizes' => '512x512', 'type' => 'image/png', 'purpose' => 'maskable'],
             ],
-        ])->header('Content-Type', 'application/manifest+json');
+        ])->header('Content-Type', 'application/manifest+json')
+            ->header('Cache-Control', 'no-cache, must-revalidate');
     }
 
     public function serviceWorker()

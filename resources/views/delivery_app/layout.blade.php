@@ -4,13 +4,18 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <meta name="theme-color" content="#0f766e">
+    @php
+        $__icons = app_pwa_icons('delivery');
+    @endphp
+    <meta name="theme-color" content="{{ $__icons['theme'] }}">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Delivery">
     <meta name="mobile-web-app-capable" content="yes">
     <title>@yield('title', 'Delivery') — Delivery</title>
     <link rel="manifest" href="{{ url('/delivery/pwa/manifest.webmanifest') }}">
-    <link rel="icon" type="image/png" href="{{ asset(file_exists(public_path('pwa/sale-icon-192.png')) ? 'pwa/sale-icon-192.png' : 'img/logo-small.png') }}">
-    <link rel="apple-touch-icon" href="{{ asset(file_exists(public_path('pwa/sale-icon-192.png')) ? 'pwa/sale-icon-192.png' : 'img/logo-small.png') }}">
+    <link rel="icon" type="image/png" sizes="192x192" href="{{ $__icons['icon192'] }}">
+    <link rel="icon" type="image/png" sizes="512x512" href="{{ $__icons['icon512'] }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ $__icons['apple'] }}">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
     <style>
         :root {

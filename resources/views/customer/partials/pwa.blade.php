@@ -1,4 +1,7 @@
 {{-- Customer PWA install bar (login + portal) --}}
+@php
+    $__icons = app_pwa_icons('customer');
+@endphp
 <style>
     .ca-install {
         position: fixed;
@@ -43,7 +46,7 @@
 
 <div id="customer_pwa_install_bar" class="ca-install" hidden>
     <div class="ca-install__inner">
-        <img src="{{ asset('pwa/customer-icon-192.png') }}" alt="" class="ca-install__logo" width="36" height="36"
+        <img src="{{ $__icons['icon192'] }}" alt="" class="ca-install__logo" width="36" height="36"
              onerror="this.src='{{ asset('pwa/ecom-icon-192.png') }}'">
         <div style="flex:1;min-width:0">
             <div style="font-size:12px;font-weight:800">Install Customer App</div>
@@ -58,7 +61,9 @@
 window.__CUSTOMER_PWA__ = {
     swUrl: @json(url('/customer/pwa/sw.js')),
     manifestUrl: @json(url('/customer/pwa/manifest.webmanifest')),
-    iconUrl: @json(asset('pwa/customer-icon-192.png')),
+    themeColor: @json($__icons['theme']),
+    icon192: @json($__icons['icon192']),
+    appleIcon: @json($__icons['apple']),
     startUrl: @json(url('/customer/login'))
 };
 </script>

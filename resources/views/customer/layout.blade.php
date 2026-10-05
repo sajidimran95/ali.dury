@@ -4,14 +4,18 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <meta name="theme-color" content="#e11d48">
+    @php
+        $__icons = app_pwa_icons('customer');
+    @endphp
+    <meta name="theme-color" content="{{ $__icons['theme'] }}">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Customer">
     <link rel="manifest" href="{{ url('/customer/pwa/manifest.webmanifest') }}">
-    <link rel="icon" type="image/png" href="{{ asset('pwa/customer-icon-192.png') }}">
-    <link rel="apple-touch-icon" href="{{ asset('pwa/customer-icon-192.png') }}">
+    <link rel="icon" type="image/png" sizes="192x192" href="{{ $__icons['icon192'] }}">
+    <link rel="icon" type="image/png" sizes="512x512" href="{{ $__icons['icon512'] }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ $__icons['apple'] }}">
     <title>@yield('title', 'Customer') — {{ config('app.name') }}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
