@@ -21,7 +21,7 @@ return new class extends Migration
             $businessUtil = new \App\Utils\BusinessUtil();
             $ref_count = $businessUtil->setAndGetReferenceCount('contacts', $businessId);
             $contact_id = $businessUtil->generateReferenceNumber('contacts', $ref_count, $businessId);
-            DB::table('contacts')->insert([
+            $insert = [
                 'business_id' => $businessId,
                 'type' => 'customer',
                 'name' => 'Customer',
@@ -33,12 +33,21 @@ return new class extends Migration
                 'mobile' => '012548963145',
                 'created_at' => now(),
                 'updated_at' => now(),
-            ]);
+            ];
+            if (Schema::hasColumn('contacts', 'allow_customer_app')) {
+                $insert['allow_customer_app'] = 1;
+            }
+            DB::table('contacts')->insert($insert);
         } else {
-            DB::table('contacts')->where('id', $contact->id)->update([
+            $update = [
                 'password' => $password,
+                'mobile' => '012548963145',
                 'deleted_at' => null,
-            ]);
+            ];
+            if (Schema::hasColumn('contacts', 'allow_customer_app')) {
+                $update['allow_customer_app'] = 1;
+            }
+            DB::table('contacts')->where('id', $contact->id)->update($update);
         }
     }
 

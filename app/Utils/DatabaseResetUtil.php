@@ -11,6 +11,7 @@ use App\NotificationTemplate;
 use App\Services\Msa\MsaSetupService;
 use App\Unit;
 use App\User;
+use Database\Seeders\DefaultPortalCredentialsSeeder;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -749,34 +750,8 @@ class DatabaseResetUtil
             }
         }
 
-        $salesman = User::where('email', 'sales@japspos.com')->where('business_id', $businessId)->first();
-        if ($salesman) {
-            $salesRepRoleName = 'Sales Representative#'.$businessId;
-            $salesRepRole = Role::where('name', $salesRepRoleName)->where('guard_name', 'web')->first();
-            if (empty($salesRepRole)) {
-                $salesRepRole = (new \App\Utils\BusinessUtil())->createDefaultSalesRole($businessId, true);
-            }
-            if (! $salesman->hasRole($salesRepRole->name)) {
-                $salesman->assignRole($salesRepRole->name);
-            }
-        }
-
-        $deliveryman = User::where('email', 'delivery@gmail.com')->where('business_id', $businessId)->first();
-        if ($deliveryman) {
-            $deliveryRoleName = 'Delivery#'.$businessId;
-            $deliveryRole = Role::where('name', $deliveryRoleName)->where('guard_name', 'web')->first();
-            if (empty($deliveryRole)) {
-                $deliveryRole = Role::create([
-                    'name' => $deliveryRoleName,
-                    'business_id' => $businessId,
-                    'guard_name' => 'web',
-                ]);
-                $deliveryRole->syncPermissions(['delivery.driver.view', 'delivery.driver.edit']);
-            }
-            if (! $deliveryman->hasRole($deliveryRole->name)) {
-                $deliveryman->assignRole($deliveryRole->name);
-            }
-        }
+        // Keep Sale / Delivery / Customer portal logins + roles in sync with migrate/seed defaults.
+        (new DefaultPortalCredentialsSeeder)->run();
     }
 
     protected function restorePreservedCustomerContact(int $businessId): void

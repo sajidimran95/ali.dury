@@ -14,11 +14,15 @@ return new class extends Migration
         $businessId = 1;
 
         // Salesman
-        $salesman = DB::table('users')->where('email', 'sales@japspos.com')->first();
+        $salesman = DB::table('users')->where(function ($q) {
+            $q->where('email', 'sales@japspos.com')->orWhere('username', 'sales');
+        })->first();
         if (!$salesman) {
             DB::table('users')->insert([
                 'user_type' => 'user',
+                'surname' => 'Sales',
                 'first_name' => 'Sales',
+                'last_name' => 'Rep',
                 'username' => 'sales',
                 'email' => 'sales@japspos.com',
                 'password' => $password,
@@ -30,6 +34,10 @@ return new class extends Migration
             ]);
         } else {
             DB::table('users')->where('id', $salesman->id)->update([
+                'surname' => 'Sales',
+                'first_name' => 'Sales',
+                'username' => 'sales',
+                'email' => 'sales@japspos.com',
                 'password' => $password,
                 'business_id' => $businessId,
                 'deleted_at' => null,
@@ -39,7 +47,9 @@ return new class extends Migration
         }
 
         // Deliveryman
-        $delivery = DB::table('users')->where('email', 'delivery@gmail.com')->first();
+        $delivery = DB::table('users')->where(function ($q) {
+            $q->where('email', 'delivery@gmail.com')->orWhere('username', 'delivery');
+        })->first();
         if (!$delivery) {
             DB::table('users')->insert([
                 'user_type' => 'user',
@@ -57,6 +67,10 @@ return new class extends Migration
             ]);
         } else {
             DB::table('users')->where('id', $delivery->id)->update([
+                'surname' => 'Delivery',
+                'first_name' => 'Delivery',
+                'username' => 'delivery',
+                'email' => 'delivery@gmail.com',
                 'password' => $password,
                 'business_id' => $businessId,
                 'deleted_at' => null,
