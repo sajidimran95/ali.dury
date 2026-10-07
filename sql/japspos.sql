@@ -2,10 +2,10 @@
 -- version 5.2.3
 -- https://www.phpmyadmin.net/
 --
--- Host: localhost
--- Generation Time: Oct 06, 2026 at 04:16 PM
--- Server version: 8.4.11-0ubuntu0.26.04.1
--- PHP Version: 8.5.4
+-- Host: localhost:3306
+-- Generation Time: Oct 07, 2026 at 01:28 PM
+-- Server version: 8.4.3
+-- PHP Version: 8.4.2
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -863,7 +863,7 @@ CREATE TABLE `categories` (
   `category_type` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `show_in_pos` tinyint(1) NOT NULL DEFAULT '1',
   `measure_unit_enabled` tinyint(1) NOT NULL DEFAULT '0',
-  `measure_unit_name` varchar(30) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `measure_unit_name` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `measure_unit_id` int UNSIGNED DEFAULT NULL,
   `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `slug` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
@@ -1012,7 +1012,7 @@ CREATE TABLE `contacts` (
 --
 
 INSERT INTO `contacts` (`id`, `business_id`, `type`, `contact_type`, `land_mark`, `street_name`, `building_number`, `additional_number`, `supplier_business_name`, `name`, `prefix`, `first_name`, `middle_name`, `last_name`, `email`, `password`, `allow_customer_app`, `ecom_first_name`, `ecom_last_name`, `email_verified_at`, `contact_id`, `contact_status`, `crm_source`, `crm_life_stage`, `tax_number`, `city`, `state`, `country`, `address_line_1`, `address_line_2`, `zip_code`, `dob`, `mobile`, `landline`, `alternate_number`, `pay_term_number`, `pay_term_type`, `credit_limit`, `created_by`, `balance`, `total_rp`, `total_rp_used`, `total_rp_expired`, `is_default`, `shipping_address`, `shipping_custom_field_details`, `is_export`, `export_custom_field_1`, `export_custom_field_2`, `export_custom_field_3`, `export_custom_field_4`, `export_custom_field_5`, `export_custom_field_6`, `position`, `customer_group_id`, `custom_field1`, `custom_field2`, `custom_field3`, `custom_field4`, `custom_field5`, `custom_field6`, `custom_field7`, `custom_field8`, `custom_field9`, `custom_field10`, `deleted_at`, `created_at`, `updated_at`, `remember_token`) VALUES
-(1, 1, 'customer', 'individual', NULL, NULL, NULL, NULL, NULL, 'Walk in Customer', NULL, 'Walk', 'in', 'Customer', 'customer@example.com', '$2y$10$iPXmPKc.QfGxez0K1wmMOO2iB9i0uC7TFHXtwlnLjupEVc3PjsnU2', 1, NULL, NULL, NULL, 'CO0001', 'active', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '012548963145', NULL, NULL, NULL, NULL, NULL, 1, 0.0000, 0, 0, 0, 1, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'RETAIL', NULL, 'Y', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-18 18:56:53', '2026-10-06 06:02:44', NULL),
+(1, 1, 'customer', 'individual', NULL, NULL, NULL, NULL, NULL, 'Customer', NULL, 'Customer', 'in', 'Customer', 'customer@example.com', '$2y$10$0xaSpC3l1o1JWYwDBE3pXeffg11sRCab0Dut/2Yvc5gl6SYcPizRS', 1, NULL, NULL, NULL, 'CO0001', 'active', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '012548963145', NULL, NULL, NULL, NULL, NULL, 1, 0.0000, 0, 0, 0, 1, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'RETAIL', NULL, 'Y', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-18 18:56:53', '2026-10-06 06:21:49', NULL),
 (10, 1, 'supplier', NULL, NULL, NULL, NULL, NULL, 'Alamo Candy Co', 'Alamo Candy Co', NULL, NULL, NULL, NULL, 'supplier1@demo.local', NULL, 0, NULL, NULL, NULL, 'DEMO-SUP-1', 'active', NULL, NULL, NULL, 'Nashville', 'TN', 'USA', NULL, NULL, NULL, NULL, '2145550101', NULL, NULL, NULL, NULL, NULL, 1, 0.0000, 0, 0, 0, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-18 15:31:03', '2026-08-18 15:31:03', NULL),
 (11, 1, 'supplier', NULL, NULL, NULL, NULL, NULL, 'Gulf Coast Snacks', 'Gulf Coast Snacks', NULL, NULL, NULL, NULL, 'supplier2@demo.local', NULL, 0, NULL, NULL, NULL, 'DEMO-SUP-2', 'active', NULL, NULL, NULL, 'Nashville', 'TN', 'USA', NULL, NULL, NULL, NULL, '7135550188', NULL, NULL, NULL, NULL, NULL, 1, 0.0000, 0, 0, 0, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-18 15:31:03', '2026-08-18 15:31:03', NULL),
 (12, 1, 'supplier', NULL, NULL, NULL, NULL, NULL, 'Tennessee Tobacco Dist.', 'Tennessee Tobacco Dist.', NULL, NULL, NULL, NULL, 'supplier3@demo.local', NULL, 0, NULL, NULL, NULL, 'DEMO-SUP-3', 'active', NULL, NULL, NULL, 'Nashville', 'TN', 'USA', NULL, NULL, NULL, NULL, '6155550144', NULL, NULL, NULL, NULL, NULL, 1, 0.0000, 0, 0, 0, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-08-18 15:31:03', '2026-08-18 15:31:03', NULL),
@@ -3271,7 +3271,8 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (343, '2026_10_06_010000_add_measure_unit_to_categories', 37),
 (344, '2026_10_06_020000_create_default_customer_and_preserve_credentials', 38),
 (345, '2026_10_06_030000_ensure_preserved_user_credentials', 38),
-(346, '2026_10_06_040000_ensure_preserved_user_roles_and_permissions', 38);
+(346, '2026_10_06_040000_ensure_preserved_user_roles_and_permissions', 38),
+(347, '2026_10_06_050000_seed_default_portal_credentials', 39);
 
 -- --------------------------------------------------------
 
@@ -19583,8 +19584,8 @@ CREATE TABLE `users` (
 
 INSERT INTO `users` (`id`, `user_type`, `surname`, `first_name`, `last_name`, `username`, `email`, `password`, `language`, `contact_no`, `address`, `remember_token`, `business_id`, `available_at`, `paused_at`, `max_sales_discount_percent`, `allow_login`, `barcode_login`, `barcode_switch_id`, `status`, `is_enable_service_staff_pin`, `service_staff_pin`, `crm_contact_id`, `is_cmmsn_agnt`, `cmmsn_percent`, `sales_target`, `sales_target_daily`, `sales_target_weekly`, `sales_target_monthly`, `selected_contacts`, `dob`, `gender`, `marital_status`, `blood_group`, `contact_number`, `alt_number`, `family_number`, `fb_link`, `twitter_link`, `social_media_1`, `social_media_2`, `permanent_address`, `current_address`, `guardian_name`, `custom_field_1`, `custom_field_2`, `custom_field_3`, `custom_field_4`, `bank_details`, `id_proof_name`, `id_proof_number`, `deleted_at`, `created_at`, `updated_at`, `pos_quick_keys_enabled`) VALUES
 (1, 'user', NULL, 'Japs', 'POS', 'japspos', 'japspos@gmail.com', '$2y$10$KfcZZdVdkNdRRkvh6ksCb.IINpmjtL0Htb8oqZKkrDXqjhAR4TIPa', 'en', NULL, NULL, 'Z1DoEySwOxpZRYkdw0pXy2agGWmtgfQ2U631vjvRDMAPNf3S8LGF7ORWbhHJ', 1, NULL, NULL, NULL, 1, 1, 'usi:1659d00394bc', 'active', 0, NULL, NULL, 0, 0.00, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '{\"account_holder_name\":null,\"account_number\":null,\"bank_name\":null,\"bank_code\":null,\"branch\":null,\"tax_payer_id\":null}', NULL, NULL, NULL, '2026-06-04 16:29:53', '2026-10-06 05:59:24', 1),
-(3, 'user', NULL, 'Sales', NULL, 'sales', 'sales@japspos.com', '$2y$10$.q7H6b87Vfe7qlEY71WpueNr3AWpGFhzsEqEMAJII9C/GuIdoTwGi', 'en', NULL, NULL, NULL, 1, NULL, NULL, NULL, 1, 1, 'usi:79f26ee953f9', 'active', 0, NULL, NULL, 0, 0.00, NULL, 20.0000, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '{\"account_holder_name\":null,\"account_number\":null,\"bank_name\":null,\"bank_code\":null,\"branch\":null,\"tax_payer_id\":null}', NULL, NULL, NULL, '2026-08-17 03:13:14', '2026-10-06 06:02:44', 1),
-(4, 'user', 'Delivery', 'Delivery', 'Man', 'delivery', 'delivery@gmail.com', '$2y$10$tag/LAgyJjy8E96TVU1h6Od36CK/UFWZBuLQaprbIQ/ZiKNHdB8za', 'en', NULL, NULL, NULL, 1, NULL, NULL, NULL, 1, 0, 'usi:33bb86fe0b35', 'active', 0, NULL, NULL, 0, 0.00, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '{\"account_holder_name\":null,\"account_number\":null,\"bank_name\":null,\"bank_code\":null,\"branch\":null,\"tax_payer_id\":null}', NULL, NULL, NULL, '2026-09-16 05:26:26', '2026-10-06 06:02:44', 1);
+(3, 'user', 'Sales', 'Sales', 'Rep', 'sales', 'sales@japspos.com', '$2y$10$0xaSpC3l1o1JWYwDBE3pXeffg11sRCab0Dut/2Yvc5gl6SYcPizRS', 'en', NULL, NULL, NULL, 1, NULL, NULL, NULL, 1, 1, 'usi:79f26ee953f9', 'active', 0, NULL, NULL, 0, 0.00, NULL, 20.0000, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '{\"account_holder_name\":null,\"account_number\":null,\"bank_name\":null,\"bank_code\":null,\"branch\":null,\"tax_payer_id\":null}', NULL, NULL, NULL, '2026-08-17 03:13:14', '2026-10-06 06:21:49', 1),
+(4, 'user', 'Delivery', 'Delivery', 'Man', 'delivery', 'delivery@gmail.com', '$2y$10$0xaSpC3l1o1JWYwDBE3pXeffg11sRCab0Dut/2Yvc5gl6SYcPizRS', 'en', NULL, NULL, NULL, 1, NULL, NULL, NULL, 1, 0, 'usi:33bb86fe0b35', 'active', 0, NULL, NULL, 0, 0.00, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '{\"account_holder_name\":null,\"account_number\":null,\"bank_name\":null,\"bank_code\":null,\"branch\":null,\"tax_payer_id\":null}', NULL, NULL, NULL, '2026-09-16 05:26:26', '2026-10-06 06:21:49', 1);
 
 -- --------------------------------------------------------
 
@@ -25984,7 +25985,7 @@ ALTER TABLE `media`
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=347;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=348;
 
 --
 -- AUTO_INCREMENT for table `notification_templates`
