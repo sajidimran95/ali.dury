@@ -1,0 +1,2192 @@
+{
+  "info": {
+    "_postman_id": "a6ef626e-b127-45bb-b295-843c8b370380",
+    "name": "JAPS POS - Sales Rep App API v1",
+    "description": "Native Sales Representative app. Same rules as the /sale PWA. Run **0. Setup & Auth > Login** first; the token is saved to `{{token}}` automatically. Change `{{base_url}}` to the client's server.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://japspos.test",
+      "type": "string",
+      "description": "Server root chosen by the user in the app (no trailing slash, no /api)."
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string",
+      "description": "Set automatically by the Login request."
+    },
+    {
+      "key": "username",
+      "value": "sales",
+      "type": "string"
+    },
+    {
+      "key": "password",
+      "value": "12345678",
+      "type": "string"
+    },
+    {
+      "key": "contact_id",
+      "value": "1390",
+      "type": "string"
+    },
+    {
+      "key": "product_id",
+      "value": "5541",
+      "type": "string"
+    },
+    {
+      "key": "variation_id",
+      "value": "5541",
+      "type": "string"
+    },
+    {
+      "key": "order_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "invoice_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "saved_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "transfer_id",
+      "value": "1",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "0. Setup & Auth",
+      "description": "",
+      "item": [
+        {
+          "name": "Ping (check base URL)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/ping",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "ping"
+              ]
+            },
+            "description": "Public. Call when the user enters / changes the server URL. A valid JAPS POS server answers `success: true` and `data.api = \"japspos-mobile\"`.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sale/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sale",
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Sales rep username + password. Admin and users without sales-order/sell permission get 403.",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{username}}\",\n  \"password\": \"{{password}}\",\n  \"device_name\": \"Postman\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.success && res.data && res.data.token) {",
+                  "    pm.collectionVariables.set('token', res.data.token);",
+                  "    console.log('Token saved to collection variable {{token}}');",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Me (profile + business)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sale/auth/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sale",
+                "auth",
+                "me"
+              ]
+            },
+            "description": "Current account, permissions and business settings."
+          },
+          "response": []
+        },
+        {
+          "name": "Logout (this device)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sale/auth/logout",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sale",
+                "auth",
+                "logout"
+              ]
+            },
+            "description": "Revokes the token used for this request."
+          },
+          "response": []
+        },
+        {
+          "name": "Logout all devices",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sale/auth/logout-all",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sale",
+                "auth",
+                "logout-all"
+              ]
+            },
+            "description": "Revokes every token of this account for this app."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "1. Dashboard & Account",
+      "description": "",
+      "item": [
+        {
+          "name": "Dashboard",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sale/dashboard",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sale",
+                "dashboard"
+              ]
+            },
+            "description": "Stats (today / month), recent orders, new and top products for the current location."
+          },
+          "response": []
+        },
+        {
+          "name": "Account",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sale/account",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sale",
+                "account"
+              ]
+            },
+            "description": "Profile + permitted locations + current location."
+          },
+          "response": []
+        },
+        {
+          "name": "Locations",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sale/locations",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sale",
+                "locations"
+              ]
+            },
+            "description": "Permitted business locations and the current (default) one."
+          },
+          "response": []
+        },
+        {
+          "name": "Set current location",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sale/locations/current",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sale",
+                "locations",
+                "current"
+              ]
+            },
+            "description": "Saved per device (token).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"location_id\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Sync",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sale/sync",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sale",
+                "sync"
+              ]
+            },
+            "description": "Clears server catalog cache; returns synced_at."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "2. Orders",
+      "description": "",
+      "item": [
+        {
+          "name": "Orders report (goals & totals)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sale/orders?period=monthly&month=2026-10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sale",
+                "orders"
+              ],
+              "query": [
+                {
+                  "key": "period",
+                  "value": "monthly",
+                  "description": "daily | weekly | monthly"
+                },
+                {
+                  "key": "month",
+                  "value": "2026-10",
+                  "description": "YYYY-MM (monthly)"
+                },
+                {
+                  "key": "day",
+                  "value": "2026-10-09",
+                  "description": "YYYY-MM-DD (daily / weekly anchor)",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "No section = report only (orders list empty)."
+          },
+          "response": []
+        },
+        {
+          "name": "Orders list (section)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sale/orders?section=orders&period=monthly&month=2026-10&page=1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sale",
+                "orders"
+              ],
+              "query": [
+                {
+                  "key": "section",
+                  "value": "orders",
+                  "description": "orders | invoices | payments | visits | day | quotes | credit"
+                },
+                {
+                  "key": "period",
+                  "value": "monthly",
+                  "description": "daily | weekly | monthly"
+                },
+                {
+                  "key": "month",
+                  "value": "2026-10",
+                  "description": "YYYY-MM"
+                },
+                {
+                  "key": "day",
+                  "value": "2026-10-09",
+                  "description": "YYYY-MM-DD",
+                  "disabled": true
+                },
+                {
+                  "key": "q",
+                  "value": "",
+                  "description": "invoice no / customer name / mobile",
+                  "disabled": true
+                },
+                {
+                  "key": "contact_id",
+                  "value": "",
+                  "description": "filter one customer",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "page number"
+                }
+              ]
+            },
+            "description": "Paginated (20). meta = pagination."
+          },
+          "response": []
+        },
+        {
+          "name": "Orders list by status (all periods)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sale/orders?status=sale&page=1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sale",
+                "orders"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "sale",
+                  "description": "sale (not invoiced) | invoiced | estimate | orders | payments | credit"
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": ""
+                }
+              ]
+            },
+            "description": "status without section searches all dates."
+          },
+          "response": []
+        },
+        {
+          "name": "Order create data (for a customer)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sale/orders/create?contact_id={{contact_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sale",
+                "orders",
+                "create"
+              ],
+              "query": [
+                {
+                  "key": "contact_id",
+                  "value": "{{contact_id}}",
+                  "description": "customer id (required)"
+                },
+                {
+                  "key": "saved",
+                  "value": "",
+                  "description": "saved cart id",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Locations, customer, saved cart, options."
+          },
+          "response": []
+        },
+        {
+          "name": "Create order / estimate / back order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sale/orders",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sale",
+                "orders"
+              ]
+            },
+            "description": "order_mode: new_order | estimate | back_order. payment_type: cash | due. unit_price = price of the selected unit (only used when user has edit_order_price permission, otherwise catalog price is used).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"contact_id\": \"{{contact_id}}\",\n  \"location_id\": 1,\n  \"order_mode\": \"new_order\",\n  \"payment_type\": \"cash\",\n  \"shipping_method\": \"Delivery\",\n  \"shipping_details\": \"Delivery\",\n  \"shipping_address\": \"206-06 Jamaica Ave, Queens Village NY 11428\",\n  \"shipping_status\": \"ordered\",\n  \"sale_note\": \"Leave at back door\",\n  \"products\": [\n    {\n      \"product_id\": \"{{product_id}}\",\n      \"variation_id\": \"{{variation_id}}\",\n      \"quantity\": 2,\n      \"unit_price\": 20.99,\n      \"sub_unit_id\": 1\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Order details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sale/orders/{{order_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sale",
+                "orders",
+                "{{order_id}}"
+              ]
+            },
+            "description": "Lines, grouped items, amounts, payments (invoice snapshot after conversion)."
+          },
+          "response": []
+        },
+        {
+          "name": "Order edit data",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sale/orders/{{order_id}}/edit",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sale",
+                "orders",
+                "{{order_id}}",
+                "edit"
+              ]
+            },
+            "description": "403 if invoiced or no so.update / so.update_own."
+          },
+          "response": []
+        },
+        {
+          "name": "Update order",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sale/orders/{{order_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sale",
+                "orders",
+                "{{order_id}}"
+              ]
+            },
+            "description": "Send transaction_sell_lines_id for existing lines; omitted lines are removed.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"contact_id\": \"{{contact_id}}\",\n  \"location_id\": 1,\n  \"payment_type\": \"due\",\n  \"shipping_method\": \"Pickup\",\n  \"shipping_details\": \"Pickup\",\n  \"shipping_address\": \"Customer Pickup\",\n  \"shipping_status\": \"ordered\",\n  \"sale_note\": \"\",\n  \"products\": [\n    {\n      \"product_id\": \"{{product_id}}\",\n      \"variation_id\": \"{{variation_id}}\",\n      \"quantity\": 3,\n      \"unit_price\": 20.99,\n      \"sub_unit_id\": 1,\n      \"transaction_sell_lines_id\": 0\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete order",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sale/orders/{{order_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sale",
+                "orders",
+                "{{order_id}}"
+              ]
+            },
+            "description": "Needs so.delete or so.delete_own. Estimates cannot be deleted from the app."
+          },
+          "response": []
+        },
+        {
+          "name": "Order invoice (HTML)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "text/html"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sale/orders/{{order_id}}/invoice",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sale",
+                "orders",
+                "{{order_id}}",
+                "invoice"
+              ]
+            },
+            "description": "text/html US-Letter invoice for a WebView / print."
+          },
+          "response": []
+        },
+        {
+          "name": "Order invoice (JSON html)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sale/orders/{{order_id}}/invoice?format=json",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sale",
+                "orders",
+                "{{order_id}}",
+                "invoice"
+              ],
+              "query": [
+                {
+                  "key": "format",
+                  "value": "json",
+                  "description": "html | json | pdf"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Order invoice (PDF)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sale/orders/{{order_id}}/invoice?format=pdf",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sale",
+                "orders",
+                "{{order_id}}",
+                "invoice"
+              ],
+              "query": [
+                {
+                  "key": "format",
+                  "value": "pdf",
+                  "description": "html | json | pdf"
+                }
+              ]
+            },
+            "description": "PDF download."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "3. Saved carts",
+      "description": "",
+      "item": [
+        {
+          "name": "Saved carts",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sale/saved-orders",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sale",
+                "saved-orders"
+              ]
+            },
+            "description": "One saved cart per customer (newest first in the app)."
+          },
+          "response": []
+        },
+        {
+          "name": "Save cart",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sale/order-draft",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sale",
+                "order-draft"
+              ]
+            },
+            "description": "Upserts the saved cart for the customer.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"contact_id\": \"{{contact_id}}\",\n  \"contact_name\": \"\",\n  \"payment_type\": \"cash\",\n  \"shipping_address\": \"\",\n  \"shipping_details\": \"Delivery\",\n  \"cart\": [\n    {\n      \"product_id\": \"{{product_id}}\",\n      \"variation_id\": \"{{variation_id}}\",\n      \"quantity\": 2,\n      \"unit_price\": 20.99,\n      \"sub_unit_id\": 1,\n      \"name\": \"Item\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Clear cart",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sale/order-draft?contact_id={{contact_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sale",
+                "order-draft"
+              ],
+              "query": [
+                {
+                  "key": "contact_id",
+                  "value": "{{contact_id}}",
+                  "description": "customer whose saved cart is removed"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Delete saved cart",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sale/saved-orders/{{saved_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sale",
+                "saved-orders",
+                "{{saved_id}}"
+              ]
+            },
+            "description": "saved id from Saved carts (e.g. so6ac93f105f9e04.99057373)."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "4. Catalog",
+      "description": "",
+      "item": [
+        {
+          "name": "Catalog meta",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sale/catalog",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sale",
+                "catalog"
+              ]
+            },
+            "description": "Locations, default location, category tree."
+          },
+          "response": []
+        },
+        {
+          "name": "Search products",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sale/products?q=bag&limit=30",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sale",
+                "products"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "bag",
+                  "description": "name / sku / variation"
+                },
+                {
+                  "key": "location_id",
+                  "value": "",
+                  "description": "defaults to current location",
+                  "disabled": true
+                },
+                {
+                  "key": "category_id",
+                  "value": "",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "sub_category_id",
+                  "value": "",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "variation_id",
+                  "value": "",
+                  "description": "exact variation",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "30",
+                  "description": "1-100"
+                }
+              ]
+            },
+            "description": "Stock + units per variation."
+          },
+          "response": []
+        },
+        {
+          "name": "Categories",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sale/categories",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sale",
+                "categories"
+              ]
+            },
+            "description": "Category -> sub_categories."
+          },
+          "response": []
+        },
+        {
+          "name": "Customer last purchases",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sale/last-purchases?contact_id={{contact_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sale",
+                "last-purchases"
+              ],
+              "query": [
+                {
+                  "key": "contact_id",
+                  "value": "{{contact_id}}",
+                  "description": "required"
+                },
+                {
+                  "key": "location_id",
+                  "value": "",
+                  "description": "stock location (default current)",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Last 40 orders/invoices, one row per variation."
+          },
+          "response": []
+        },
+        {
+          "name": "Product order history",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sale/product-history?contact_id={{contact_id}}&variation_id={{variation_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sale",
+                "product-history"
+              ],
+              "query": [
+                {
+                  "key": "contact_id",
+                  "value": "{{contact_id}}",
+                  "description": "required"
+                },
+                {
+                  "key": "variation_id",
+                  "value": "{{variation_id}}",
+                  "description": "required"
+                }
+              ]
+            },
+            "description": "Last 20 lines of a variation for a customer."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "5. Customers",
+      "description": "",
+      "item": [
+        {
+          "name": "Customers list",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sale/customers?page=1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sale",
+                "customers"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "",
+                  "description": "name / mobile / email / business / account no",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": ""
+                }
+              ]
+            },
+            "description": "Paginated (20). Needs customer.view / customer.view_own."
+          },
+          "response": []
+        },
+        {
+          "name": "Customer quick search",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sale/customers/search?q=shell",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sale",
+                "customers",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "shell",
+                  "description": ""
+                }
+              ]
+            },
+            "description": "Max 40 active customers."
+          },
+          "response": []
+        },
+        {
+          "name": "Customer create data",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sale/customers/create",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sale",
+                "customers",
+                "create"
+              ]
+            },
+            "description": "Customer groups. Needs customer.create."
+          },
+          "response": []
+        },
+        {
+          "name": "Create customer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sale/customers",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sale",
+                "customers"
+              ]
+            },
+            "description": "allow_customer_app=1 also enables Customer-app login (password = customer_app_password or mobile).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"contact_type_radio\": \"business\",\n  \"first_name\": \"John\",\n  \"last_name\": \"Doe\",\n  \"supplier_business_name\": \"Doe Market\",\n  \"contact_id\": null,\n  \"customer_group_id\": null,\n  \"mobile\": \"5550001111\",\n  \"alternate_number\": null,\n  \"landline\": null,\n  \"email\": \"john@example.com\",\n  \"tax_number\": null,\n  \"address_line_1\": \"1 Main St\",\n  \"address_line_2\": null,\n  \"city\": \"Queens\",\n  \"state\": \"NY\",\n  \"zip_code\": \"11428\",\n  \"country\": \"USA\",\n  \"shipping_address\": \"1 Main St, Queens NY 11428\",\n  \"credit_limit\": null,\n  \"allow_customer_app\": 0,\n  \"customer_app_password\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Customer details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sale/customers/{{contact_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sale",
+                "customers",
+                "{{contact_id}}"
+              ]
+            },
+            "description": "Details, aging, open invoices, history."
+          },
+          "response": []
+        },
+        {
+          "name": "Customer open invoices",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sale/customers/{{contact_id}}/invoices",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sale",
+                "customers",
+                "{{contact_id}}",
+                "invoices"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "",
+                  "description": "invoice no",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Customer history",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sale/customers/{{contact_id}}/history",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sale",
+                "customers",
+                "{{contact_id}}",
+                "history"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "",
+                  "description": "invoice no / kind",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Print customer invoice / order",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sale/customers/{{contact_id}}/invoices/{{invoice_id}}/print?format=html",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sale",
+                "customers",
+                "{{contact_id}}",
+                "invoices",
+                "{{invoice_id}}",
+                "print"
+              ],
+              "query": [
+                {
+                  "key": "format",
+                  "value": "html",
+                  "description": "html | json | pdf"
+                }
+              ]
+            },
+            "description": "Final sell invoice or sales order of this customer."
+          },
+          "response": []
+        },
+        {
+          "name": "Payment form data",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sale/customers/{{contact_id}}/payment",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sale",
+                "customers",
+                "{{contact_id}}",
+                "payment"
+              ],
+              "query": [
+                {
+                  "key": "invoice_id",
+                  "value": "",
+                  "description": "preselect invoice",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Active payment methods of current location + open invoices."
+          },
+          "response": []
+        },
+        {
+          "name": "Receive payment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sale/customers/{{contact_id}}/payment",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sale",
+                "customers",
+                "{{contact_id}}",
+                "payment"
+              ]
+            },
+            "description": "Pays oldest due invoices first (payContact). pay_mode=credit records a reverse/credit payment. signature = PNG data URL (optional).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": \"50.00\",\n  \"method\": \"cash\",\n  \"paid_on\": null,\n  \"note\": \"Paid at store\",\n  \"pay_mode\": \"pay\",\n  \"signature\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Zero sale (no order visit)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sale/customers/{{contact_id}}/zero-sale",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sale",
+                "customers",
+                "{{contact_id}}",
+                "zero-sale"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason_id\": 1,\n  \"comment\": \"Owner not in\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Zero sale reasons",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sale/zero-sale-reasons",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sale",
+                "zero-sale-reasons"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "6. Expenses",
+      "description": "",
+      "item": [
+        {
+          "name": "Expenses list",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sale/expenses?page=1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sale",
+                "expenses"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": ""
+                }
+              ]
+            },
+            "description": "Own expenses (or all with all_expense.access). Paginated (20)."
+          },
+          "response": []
+        },
+        {
+          "name": "Expense form data",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sale/expenses/create",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sale",
+                "expenses",
+                "create"
+              ]
+            },
+            "description": "Locations, categories, sub categories, payment methods per location."
+          },
+          "response": []
+        },
+        {
+          "name": "Add expense (multipart)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sale/expenses",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sale",
+                "expenses"
+              ]
+            },
+            "description": "document: pdf, csv, zip, doc, docx, jpeg, jpg, png (max 5 MB).",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "location_id",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "final_total",
+                  "value": "12.50",
+                  "type": "text"
+                },
+                {
+                  "key": "transaction_date",
+                  "value": "2026-10-09 10:30",
+                  "type": "text"
+                },
+                {
+                  "key": "expense_category_id",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "expense_sub_category_id",
+                  "value": "",
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "contact_id",
+                  "value": "",
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "payment_method",
+                  "value": "cash",
+                  "type": "text"
+                },
+                {
+                  "key": "ref_no",
+                  "value": "",
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "additional_notes",
+                  "value": "Fuel",
+                  "type": "text"
+                },
+                {
+                  "key": "document",
+                  "type": "file",
+                  "src": [],
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "7. Delivery (own orders)",
+      "description": "",
+      "item": [
+        {
+          "name": "My delivery route",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sale/delivery?start_date=2026-09-10&end_date=2026-10-10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sale",
+                "delivery"
+              ],
+              "query": [
+                {
+                  "key": "start_date",
+                  "value": "2026-09-10",
+                  "description": "default today-30"
+                },
+                {
+                  "key": "end_date",
+                  "value": "2026-10-10",
+                  "description": "default today"
+                },
+                {
+                  "key": "q",
+                  "value": "",
+                  "description": "",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Own sales orders sorted from the current POS location."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "8. Timesheet",
+      "description": "",
+      "item": [
+        {
+          "name": "Timesheet (last 14)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sale/timesheet",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sale",
+                "timesheet"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Clock status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sale/timesheet/status",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sale",
+                "timesheet",
+                "status"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Clock in",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sale/timesheet/clock-in",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sale",
+                "timesheet",
+                "clock-in"
+              ]
+            },
+            "description": "latitude/longitude required when the location has a geofence.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"latitude\": 43.0690799,\n  \"longitude\": -76.1723723,\n  \"location_id\": null,\n  \"notes\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Start break",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sale/timesheet/start-break",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sale",
+                "timesheet",
+                "start-break"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Lunch\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "End break",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sale/timesheet/end-break",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sale",
+                "timesheet",
+                "end-break"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Clock out",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sale/timesheet/clock-out",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sale",
+                "timesheet",
+                "clock-out"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"latitude\": 43.0690799,\n  \"longitude\": -76.1723723,\n  \"location_id\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "9. Stock transfers",
+      "description": "",
+      "item": [
+        {
+          "name": "Transfers",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sale/transfers?page=1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sale",
+                "transfers"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": ""
+                }
+              ]
+            },
+            "description": "Paginated (20)."
+          },
+          "response": []
+        },
+        {
+          "name": "Transfer form data",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sale/transfers/create",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sale",
+                "transfers",
+                "create"
+              ]
+            },
+            "description": "Locations + statuses + can_create."
+          },
+          "response": []
+        },
+        {
+          "name": "Transfer products",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sale/transfers/products?location_id=1&limit=30",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sale",
+                "transfers",
+                "products"
+              ],
+              "query": [
+                {
+                  "key": "location_id",
+                  "value": "1",
+                  "description": "source location"
+                },
+                {
+                  "key": "q",
+                  "value": "",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "30",
+                  "description": "max 50"
+                }
+              ]
+            },
+            "description": "Stock-managed products with purchase price."
+          },
+          "response": []
+        },
+        {
+          "name": "Create transfer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sale/transfers",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sale",
+                "transfers"
+              ]
+            },
+            "description": "Needs stock_transfer.create. unit_price defaults to purchase price.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"location_id\": 1,\n  \"transfer_location_id\": 2,\n  \"transaction_date\": \"2026-10-09 10:00\",\n  \"ref_no\": null,\n  \"status\": \"pending\",\n  \"shipping_charges\": 0,\n  \"additional_notes\": \"\",\n  \"products\": [\n    {\n      \"product_id\": \"{{product_id}}\",\n      \"variation_id\": \"{{variation_id}}\",\n      \"quantity\": 5,\n      \"unit_price\": null,\n      \"sub_unit_id\": null\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Transfer details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sale/transfers/{{transfer_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sale",
+                "transfers",
+                "{{transfer_id}}"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

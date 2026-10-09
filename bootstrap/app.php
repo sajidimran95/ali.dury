@@ -125,8 +125,54 @@ return Application::configure(basePath: dirname(__DIR__))
             'sale.guard' => \App\Http\Middleware\UseSaleGuard::class,
             'delivery.app' => \App\Http\Middleware\EnsureDeliveryAppAccess::class,
             'delivery.guard' => \App\Http\Middleware\UseDeliveryGuard::class,
+            'mobile.auth' => \App\Http\Middleware\MobileApiAuth::class,
+            'mobile.json' => \App\Http\Middleware\ForceJsonResponse::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        // Native mobile apps API (/api/v1/*): one JSON error envelope
+        // { "success": false, "message": "...", "errors": {...}|null }
+        $exceptions->render(function (\Throwable $e, \Illuminate\Http\Request $request) {
+            if (! $request->is('api/v1/*')) {
+                return null;
+            }
+
+            if ($e instanceof \Illuminate\Validation\ValidationException) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $e->validator->errors()->first() ?: $e->getMessage(),
+                    'errors' => $e->errors(),
+                ], $e->status);
+            }
+
+            if ($e instanceof \Illuminate\Auth\AuthenticationException) {
+                $status = 401;
+                $message = 'Unauthenticated. Please log in again.';
+            } elseif ($e instanceof \Illuminate\Database\Eloquent\ModelNotFoundException) {
+                $status = 404;
+                $message = 'Record not found.';
+            } elseif ($e instanceof \Symfony\Component\HttpKernel\Exception\HttpExceptionInterface) {
+                $status = $e->getStatusCode();
+                $message = $e->getPrevious() instanceof \Illuminate\Database\Eloquent\ModelNotFoundException
+                    ? 'Record not found.'
+                    : $e->getMessage();
+                $message = $message ?: match ($status) {
+                    403 => 'Unauthorized action.',
+                    404 => 'Not found.',
+                    405 => 'Method not allowed.',
+                    429 => 'Too many requests.',
+                    default => 'Request failed.',
+                };
+            } else {
+                report($e);
+                $status = 500;
+                $message = config('app.debug') ? $e->getMessage() : 'Something went wrong. Please try again.';
+            }
+
+            return response()->json([
+                'success' => false,
+                'message' => $message,
+                'errors' => null,
+            ], $status);
+        });
     })->create();

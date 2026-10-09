@@ -1,0 +1,646 @@
+{
+  "info": {
+    "_postman_id": "c4b4100e-01c5-46a4-8e10-815b3a69cfe4",
+    "name": "JAPS POS - Delivery Driver App API v1",
+    "description": "Native Delivery (driver) app. Same rules as the /delivery PWA. Run **0. Setup & Auth > Login** first.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://japspos.test",
+      "type": "string",
+      "description": "Server root chosen by the user in the app (no trailing slash, no /api)."
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string",
+      "description": "Set automatically by the Login request."
+    },
+    {
+      "key": "username",
+      "value": "delivery",
+      "type": "string"
+    },
+    {
+      "key": "password",
+      "value": "12345678",
+      "type": "string"
+    },
+    {
+      "key": "stop_id",
+      "value": "1",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "0. Setup & Auth",
+      "description": "",
+      "item": [
+        {
+          "name": "Ping (check base URL)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/ping",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "ping"
+              ]
+            },
+            "description": "Public. Call when the user enters / changes the server URL. A valid JAPS POS server answers `success: true` and `data.api = \"japspos-mobile\"`.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/delivery/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "delivery",
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Driver username + password. Needs delivery.driver.view / delivery.driver.edit / delivery.manage or a Delivery# role.",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{username}}\",\n  \"password\": \"{{password}}\",\n  \"device_name\": \"Postman\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.success && res.data && res.data.token) {",
+                  "    pm.collectionVariables.set('token', res.data.token);",
+                  "    console.log('Token saved to collection variable {{token}}');",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Me (profile + business)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/delivery/auth/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "delivery",
+                "auth",
+                "me"
+              ]
+            },
+            "description": "Current account, permissions and business settings."
+          },
+          "response": []
+        },
+        {
+          "name": "Logout (this device)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/delivery/auth/logout",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "delivery",
+                "auth",
+                "logout"
+              ]
+            },
+            "description": "Revokes the token used for this request."
+          },
+          "response": []
+        },
+        {
+          "name": "Logout all devices",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/delivery/auth/logout-all",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "delivery",
+                "auth",
+                "logout-all"
+              ]
+            },
+            "description": "Revokes every token of this account for this app."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "1. Dashboard & Route",
+      "description": "",
+      "item": [
+        {
+          "name": "Dashboard",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/delivery/dashboard",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "delivery",
+                "dashboard"
+              ]
+            },
+            "description": "Today's progress, KPIs, next stop."
+          },
+          "response": []
+        },
+        {
+          "name": "Today's route",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/delivery/route",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "delivery",
+                "route"
+              ],
+              "query": [
+                {
+                  "key": "stop",
+                  "value": "",
+                  "description": "stop id",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Route, all stops, map points. ?stop= opens that stop (and its route)."
+          },
+          "response": []
+        },
+        {
+          "name": "Start route",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/delivery/route/start",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "delivery",
+                "route",
+                "start"
+              ]
+            },
+            "description": "Starts today's planned route."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "2. Stop lists",
+      "description": "",
+      "item": [
+        {
+          "name": "Assigned (open) stops",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/delivery/assigned?from=2026-10-09&to=2026-10-09",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "delivery",
+                "assigned"
+              ],
+              "query": [
+                {
+                  "key": "from",
+                  "value": "2026-10-09",
+                  "description": "YYYY-MM-DD"
+                },
+                {
+                  "key": "to",
+                  "value": "2026-10-09",
+                  "description": "YYYY-MM-DD"
+                }
+              ]
+            },
+            "description": "Not delivered / skipped. Default today."
+          },
+          "response": []
+        },
+        {
+          "name": "All stops (grouped by day)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/delivery/all?from=2026-10-02&to=2026-10-09",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "delivery",
+                "all"
+              ],
+              "query": [
+                {
+                  "key": "from",
+                  "value": "2026-10-02",
+                  "description": "YYYY-MM-DD"
+                },
+                {
+                  "key": "to",
+                  "value": "2026-10-09",
+                  "description": "YYYY-MM-DD"
+                }
+              ]
+            },
+            "description": "Default last 7 days."
+          },
+          "response": []
+        },
+        {
+          "name": "History (delivered + failed)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/delivery/history?date=2026-10-09",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "delivery",
+                "history"
+              ],
+              "query": [
+                {
+                  "key": "date",
+                  "value": "2026-10-09",
+                  "description": "YYYY-MM-DD (default today)"
+                },
+                {
+                  "key": "all",
+                  "value": "1",
+                  "description": "1 = all dates",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Max 100, newest first."
+          },
+          "response": []
+        },
+        {
+          "name": "Fail reasons",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/delivery/fail-reasons",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "delivery",
+                "fail-reasons"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "3. Stop actions",
+      "description": "",
+      "item": [
+        {
+          "name": "Stop details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/delivery/stops/{{stop_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "delivery",
+                "stops",
+                "{{stop_id}}"
+              ]
+            },
+            "description": "Includes order + customer."
+          },
+          "response": []
+        },
+        {
+          "name": "Mark arrived",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/delivery/stops/{{stop_id}}/arrived",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "delivery",
+                "stops",
+                "{{stop_id}}",
+                "arrived"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Mark delivered",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/delivery/stops/{{stop_id}}/delivered",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "delivery",
+                "stops",
+                "{{stop_id}}",
+                "delivered"
+              ]
+            },
+            "description": "Also allowed for failed stops (retry).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"notes\": \"Left with cashier\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Mark failed",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/delivery/stops/{{stop_id}}/failed",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "delivery",
+                "stops",
+                "{{stop_id}}",
+                "failed"
+              ]
+            },
+            "description": "fail_reason from Fail reasons.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fail_reason\": \"customer_unavailable\",\n  \"notes\": \"Store closed\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Save note",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/delivery/stops/{{stop_id}}/notes",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "delivery",
+                "stops",
+                "{{stop_id}}",
+                "notes"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"notes\": \"Gate code 1234\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

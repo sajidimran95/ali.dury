@@ -2075,7 +2075,11 @@ class TransactionUtil extends Util
 
         if (! empty($transaction->prefer_payment_method)) {
             $payment_types = $this->payment_types(null, true, $transaction->business_id);
-            $output['preferred_payment_method'] = $payment_types[$transaction->prefer_payment_method];
+            // Sales App stores "credit_sale" (not a payment type) for credit/due orders
+            $output['preferred_payment_method'] = $payment_types[$transaction->prefer_payment_method]
+                ?? ($transaction->prefer_payment_method === 'credit_sale'
+                    ? __('lang_v1.credit_sale')
+                    : ucwords(str_replace('_', ' ', $transaction->prefer_payment_method)));
         }
 
         if (! empty($transaction->prefer_payment_account)) {
