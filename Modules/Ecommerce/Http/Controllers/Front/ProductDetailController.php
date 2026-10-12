@@ -3,123 +3,28 @@
 namespace Modules\Ecommerce\Http\Controllers\Front;
 
 use App\Http\Controllers\Controller;
-use App\Product;
 use Illuminate\Http\Request;
-use Modules\Ecommerce\Entities\EcomReview;
-use Modules\Ecommerce\Services\CartService;
-use Modules\Ecommerce\Services\InventoryGuard;
+use Modules\Ecommerce\Support\StaticCatalog;
+use Modules\Ecommerce\Support\StaticCart;
 
 class ProductDetailController extends Controller
 {
-    public function show($slug, Request $request, CartService $cartService, InventoryGuard $inventory)
+    public function show($slug)
     {
-        $business_id = $request->attributes->get('ecommerce_business_id');
-        $settings = $request->attributes->get('ecommerce_settings');
+        $product = StaticCatalog::find($slug);
+        abort_unless($product, 404);
 
-        $product = Product::where('business_id', $business_id)
-            ->active()
-            ->forEcommerce()
-            ->where(function ($q) use ($slug) {
-                $q->where('ecom_slug', $slug)->orWhere('id', $slug);
-            })
-            ->with(['variations', 'brand', 'category', 'unit', 'product_variations.variations'])
-            ->firstOrFail();
-
-        $stock = 0;
         $variation = $product->variations->first();
-        $variant_stocks = [];
-        foreach ($product->variations as $v) {
-            if ($settings->location_id && $product->enable_stock) {
-                $variant_stocks[$v->id] = $inventory->availableQty($product->id, $v->id, $settings->location_id);
-            } else {
-                $variant_stocks[$v->id] = $product->enable_stock ? 0 : 999;
-            }
-        }
-        if ($variation) {
-            $stock = (int) ($variant_stocks[$variation->id] ?? 0);
-        } elseif (! $product->enable_stock) {
-            $stock = 999;
-        }
-
-        $related = Product::where('business_id', $business_id)
-            ->active()
-            ->forEcommerce()
-            ->where('id', '!=', $product->id)
-            ->where(function ($q) use ($product) {
-                $q->where('category_id', $product->category_id);
-                if ($product->sub_category_id) {
-                    $q->orWhere('sub_category_id', $product->sub_category_id)
-                        ->orWhere('category_id', $product->sub_category_id);
-                }
-            })
-            ->with(['variations', 'category', 'brand', 'unit'])
-            ->limit(4)
-            ->get();
-        if ($related->isEmpty() && $product->brand_id) {
-            $related = Product::where('business_id', $business_id)
-                ->active()
-                ->forEcommerce()
-                ->where('id', '!=', $product->id)
-                ->where('brand_id', $product->brand_id)
-                ->with(['variations', 'category', 'brand', 'unit'])
-                ->limit(4)
-                ->get();
-        }
-        if ($related->isEmpty()) {
-            $related = Product::where('business_id', $business_id)
-                ->active()
-                ->forEcommerce()
-                ->where('id', '!=', $product->id)
-                ->with(['variations', 'category', 'brand', 'unit'])
-                ->limit(4)
-                ->get();
-        }
-
-        $reviews = EcomReview::where('product_id', $product->id)->where('status', 'approved')->latest()->get();
-        $rating_avg = $reviews->count() ? round((float) $reviews->avg('rating'), 1) : 0.0;
-        $review_count = $reviews->count();
-
-        $cart = $cartService->getOrCreateCart($business_id);
-        $cart_totals = $cartService->totals($cart);
-        $cart_product_ids = $cart->items->pluck('product_id')->unique()->values()->all();
-
-        $recent = array_values(array_filter(array_map('intval', session()->get('ecom_recently_viewed', []))));
-        array_unshift($recent, (int) $product->id);
-        $recent = array_values(array_unique(array_slice($recent, 0, 12)));
-        session()->put('ecom_recently_viewed', $recent);
-
-        $otherIds = array_values(array_filter($recent, fn ($id) => $id !== (int) $product->id));
-        $recently_viewed = collect();
-        if ($otherIds) {
-            $recently_viewed = Product::storefrontQuery((int) $business_id)
-                ->whereIn('id', $otherIds)
-                ->with(['variations', 'category', 'brand', 'unit'])
-                ->limit(4)
-                ->get()
-                ->sortBy(fn ($p) => array_search((int) $p->id, $otherIds, true))
-                ->values();
-        }
-        if ($recently_viewed->isEmpty()) {
-            $recently_viewed = Product::storefrontQuery((int) $business_id)
-                ->where('id', '!=', $product->id)
-                ->with(['variations', 'category', 'brand', 'unit'])
-                ->orderByDesc('id')
-                ->limit(4)
-                ->get();
-        }
-
-        $brand_image = null;
-        if ($product->brand_id) {
-            $brandProduct = Product::storefrontQuery((int) $business_id)
-                ->where('brand_id', $product->brand_id)
-                ->whereNotNull('image')
-                ->where('image', '!=', '')
-                ->orderByDesc('id')
-                ->first();
-            $brand_image = $brandProduct?->image_url;
-        }
-
-        $product->loadMissing('category');
+        $stock = 999;
+        $variant_stocks = [$variation->id => 999];
+        $related = StaticCatalog::related($product, 4);
+        $reviews = collect();
+        $rating_avg = 0.0;
+        $review_count = 0;
+        $cart_totals = StaticCart::totals();
+        $cart_product_ids = StaticCart::items()->pluck('product_id')->all();
+        $brand_image = $product->image_url;
+        $recently_viewed = StaticCatalog::all()->where('id', '!=', $product->id)->take(4)->values();
 
         return view('ecommerce::front.product.show', compact(
             'product',
@@ -139,17 +44,10 @@ class ProductDetailController extends Controller
 
     public function stockAlert(Request $request)
     {
-        $data = $request->validate([
-            'product_id' => 'required|integer',
+        $request->validate([
+            'product_id' => 'required',
             'email' => 'required|email',
         ]);
-        if (\Illuminate\Support\Facades\Schema::hasTable('ecom_stock_alerts')) {
-            \Modules\Ecommerce\Entities\EcomStockAlert::firstOrCreate([
-                'business_id' => $request->attributes->get('ecommerce_business_id'),
-                'product_id' => $data['product_id'],
-                'email' => $data['email'],
-            ]);
-        }
 
         return back()->with('success', 'We’ll notify you when this item is available.');
     }

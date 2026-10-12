@@ -29,7 +29,7 @@
     <div class="space-y-3 ecom-acc-desktop-only">
         @foreach($orders as $order)
             @php $meta = $metas[$order->id] ?? null; @endphp
-            <div class="rounded-2xl border bg-white p-4 text-sm flex flex-wrap justify-between gap-2">
+            <div class="wn-panel p-4 text-sm flex flex-wrap justify-between gap-2">
                 <div>
                     <div class="font-medium">{{ $order->invoice_no }}</div>
                     <div class="text-slate-500">{{ $meta->fulfillment_status ?? 'pending' }}</div>

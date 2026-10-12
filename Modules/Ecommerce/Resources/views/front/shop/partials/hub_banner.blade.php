@@ -11,7 +11,7 @@
         <p class="text-sm text-white/80 mb-4">{{ $hub['lede'] }}</p>
         <div class="flex flex-wrap gap-2">
             <a href="{{ route('ecommerce.compliance') }}" class="px-4 py-2 rounded-lg text-sm font-semibold border border-white/30">Full compliance & state map →</a>
-            <a href="{{ route('ecommerce.register') }}" class="px-4 py-2 rounded-lg text-sm font-bold" style="background:#4CAF79">Apply for Account</a>
+            <a href="{{ route('ecommerce.register') }}" class="px-4 py-2 rounded-lg text-sm font-bold bg-[#f23488] text-white">Apply for Account</a>
         </div>
     </div>
 </section>

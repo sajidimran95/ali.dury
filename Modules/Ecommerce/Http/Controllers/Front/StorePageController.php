@@ -29,48 +29,33 @@ class StorePageController extends Controller
 
     public function categories(Request $request, CartService $cartService)
     {
-        $business_id = $request->attributes->get('ecommerce_business_id');
-        $categories = Category::where('business_id', $business_id)
-            ->where('category_type', 'product')
-            ->where(function ($q) {
-                $q->whereNull('parent_id')->orWhere('parent_id', 0);
-            })
-            ->with('sub_categories')
-            ->orderBy('name')
-            ->get();
-
-        $counts = Product::storefrontQuery((int) $business_id)
-            ->select('category_id', DB::raw('count(*) as c'))
+        $categories = \Modules\Ecommerce\Support\StaticCatalog::categories();
+        $counts = \Modules\Ecommerce\Support\StaticCatalog::all()
             ->groupBy('category_id')
-            ->pluck('c', 'category_id');
+            ->map->count();
 
         return view('ecommerce::front.pages.categories', compact('categories', 'counts'));
     }
 
     public function brands(Request $request)
     {
-        $business_id = $request->attributes->get('ecommerce_business_id');
-        $brands = Brands::where('business_id', $business_id)->orderBy('name')->get();
-        $counts = Product::storefrontQuery((int) $business_id)
-            ->select('brand_id', DB::raw('count(*) as c'))
+        $brands = \Modules\Ecommerce\Support\StaticCatalog::brands();
+        $counts = \Modules\Ecommerce\Support\StaticCatalog::all()
             ->groupBy('brand_id')
-            ->pluck('c', 'brand_id');
+            ->map->count();
 
         return view('ecommerce::front.pages.brands', compact('brands', 'counts'));
     }
 
     public function brand($id, Request $request, CartService $cartService)
     {
-        $business_id = $request->attributes->get('ecommerce_business_id');
-        $brand = Brands::where('business_id', $business_id)
-            ->where(function ($q) use ($id) {
-                $q->where('id', $id)->orWhere('name', $id);
-            })
-            ->firstOrFail();
-
+        $brand = \Modules\Ecommerce\Support\StaticCatalog::brands()->first(function ($b) use ($id) {
+            return (string) $b->id === (string) $id || strcasecmp($b->name, (string) $id) === 0;
+        });
+        abort_unless($brand, 404);
         $request->merge(['brand' => $brand->id]);
 
-        return app(ShopController::class)->index($request, $cartService);
+        return app(ShopController::class)->index($request);
     }
 
     public function promotions(Request $request)

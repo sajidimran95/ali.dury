@@ -85,9 +85,9 @@
     <div class="ecom-acc-desktop-only">
         <div class="flex flex-wrap items-start justify-between gap-4 mb-8">
             <div>
-                <p class="text-[11px] uppercase tracking-[0.18em] text-black/40 font-bold mb-2">Account</p>
+                <p class="text-[11px] uppercase tracking-[0.18em] text-[#8b95b8] font-bold mb-2">Account</p>
                 <h1 class="text-3xl font-extrabold">Licenses</h1>
-                <p class="text-sm text-black/55 mt-2">Upload business, resale, tobacco, or ID certificates for wholesale approval.</p>
+                <p class="text-sm text-[#8b95b8] mt-2">Upload business, resale, tobacco, or ID certificates for wholesale approval.</p>
             </div>
             <span class="inline-flex rounded-full px-3 py-1 text-xs font-bold {{ $badge }}">
                 {{ \Modules\Ecommerce\Support\WholesaleAccount::label($approval) }}
@@ -104,12 +104,12 @@
             </div>
         @endif
 
-        <div class="rounded-xl bg-white border border-line overflow-hidden mb-8">
-            <div class="px-4 py-3 border-b border-line font-extrabold text-sm uppercase tracking-wide">Uploaded certificates</div>
+        <div class="wn-panel overflow-hidden mb-8">
+            <div class="px-4 py-3 border-b border-[#252d4d] font-extrabold text-sm uppercase tracking-wide">Uploaded certificates</div>
             <div class="overflow-x-auto">
                 <table class="w-full text-sm">
                     <thead>
-                        <tr class="text-left text-xs uppercase tracking-wide text-black/45 border-b border-line">
+                        <tr class="text-left text-xs uppercase tracking-wide text-[#8b95b8] border-b border-[#252d4d]">
                             <th class="px-4 py-3">Type</th>
                             <th class="px-4 py-3">Number</th>
                             <th class="px-4 py-3">Expiry</th>
@@ -118,7 +118,7 @@
                     </thead>
                     <tbody>
                     @forelse($licenses as $lic)
-                        <tr class="border-b border-line">
+                        <tr class="border-b border-[#252d4d]">
                             <td class="px-4 py-3 font-semibold">{{ $lic->label ?: $lic->license_type }}</td>
                             <td class="px-4 py-3">{{ $lic->certificate_number ?: '—' }}</td>
                             <td class="px-4 py-3">{{ $lic->expires_at ? $lic->expires_at->format('M j, Y') : '—' }}</td>
@@ -131,14 +131,14 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="4" class="px-4 py-8 text-center text-black/45">No licenses uploaded yet.</td></tr>
+                        <tr><td colspan="4" class="px-4 py-8 text-center text-[#8b95b8]">No licenses uploaded yet.</td></tr>
                     @endforelse
                     </tbody>
                 </table>
             </div>
         </div>
 
-        <div class="rounded-xl bg-white border border-line p-5">
+        <div class="wn-panel p-5">
             <h2 class="font-extrabold mb-4">Upload another license</h2>
             <form method="post" action="{{ route('ecommerce.account.licenses', absolute: false) }}" enctype="multipart/form-data" class="grid md:grid-cols-2 gap-4">
                 @csrf
@@ -170,7 +170,7 @@
                 </div>
                 <div class="md:col-span-2">
                     <button class="btn-brand">Submit license</button>
-                    <a href="{{ route('ecommerce.account') }}" class="ml-3 text-sm font-semibold text-black/50 hover:text-brand">Back to account</a>
+                    <a href="{{ route('ecommerce.account') }}" class="ml-3 text-sm font-semibold text-[#8b95b8] hover:text-white">Back to account</a>
                 </div>
             </form>
         </div>

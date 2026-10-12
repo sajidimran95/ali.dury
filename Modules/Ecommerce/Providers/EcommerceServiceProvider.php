@@ -30,86 +30,19 @@ class EcommerceServiceProvider extends ServiceProvider
     {
         view()->composer('ecommerce::front.*', function ($view) {
             try {
-                $business_id = request()->attributes->get('ecommerce_business_id')
-                    ?? view()->shared('ecom_business_id');
-
-                if (! $business_id) {
-                    return;
-                }
-
-                $cartService = app(\Modules\Ecommerce\Services\CartService::class);
-                $cart = $cartService->getOrCreateCart((int) $business_id);
-                $view->with('cart_totals', $cartService->totals($cart));
-                $view->with('cart_product_ids', $cart->items->pluck('product_id')->unique()->values()->all());
-
-                $ecomProducts = \App\Product::query()
-                    ->where('business_id', $business_id)
-                    ->active()
-                    ->forEcommerce()
-                    ->select('id', 'category_id', 'sub_category_id', 'brand_id', 'ecom_is_new_arrival', 'ecom_is_featured')
-                    ->get();
-
-                $usedCatIds = $ecomProducts->pluck('category_id')
-                    ->merge($ecomProducts->pluck('sub_category_id'))
-                    ->filter()
-                    ->unique()
-                    ->values();
-
-                $nav_categories = \App\Category::where('business_id', $business_id)
-                    ->where('category_type', 'product')
-                    ->where(function ($q) {
-                        $q->whereNull('parent_id')->orWhere('parent_id', 0);
-                    })
-                    ->with(['sub_categories' => function ($q) {
-                        $q->where(function ($qq) {
-                            $qq->where('category_type', 'product')->orWhereNull('category_type');
-                        })->orderBy('name');
-                    }])
-                    ->orderBy('name')
-                    ->get()
-                    ->filter(function ($cat) use ($usedCatIds) {
-                        $isNewArrivals = strcasecmp(trim((string) $cat->name), 'New Arrivals') === 0;
-                        if ($isNewArrivals && $cat->sub_categories->isNotEmpty()) {
-                            return true;
-                        }
-                        if ($usedCatIds->contains($cat->id)) {
-                            return true;
-                        }
-
-                        return $cat->sub_categories->contains(fn ($sub) => $usedCatIds->contains($sub->id));
-                    })
-                    ->values();
-
-                $new_arrivals_category = $nav_categories->first(function ($cat) {
-                    return strcasecmp(trim((string) $cat->name), 'New Arrivals') === 0;
-                });
-                if (! $new_arrivals_category) {
-                    $new_arrivals_category = \App\Category::where('business_id', $business_id)
-                        ->where('category_type', 'product')
-                        ->where(function ($q) {
-                            $q->whereNull('parent_id')->orWhere('parent_id', 0);
-                        })
-                        ->whereRaw('LOWER(name) = ?', ['new arrivals'])
-                        ->with(['sub_categories' => function ($q) {
-                            $q->orderBy('name');
-                        }])
-                        ->first();
-                }
-
-                $nav_categories = $nav_categories
-                    ->reject(fn ($cat) => strcasecmp(trim((string) $cat->name), 'New Arrivals') === 0)
-                    ->take(8)
-                    ->values();
-
-                $view->with('has_new_arrivals', $ecomProducts->contains(fn ($p) => (int) $p->ecom_is_new_arrival === 1) || $new_arrivals_category);
-                $view->with('has_promotions', $ecomProducts->contains(fn ($p) => (int) $p->ecom_is_featured === 1));
-                $view->with('new_arrivals_category', $new_arrivals_category);
-                $view->with('nav_categories', $nav_categories);
-
-                $ecomBrandIds = $ecomProducts->pluck('brand_id')->filter()->unique()->all();
-                $view->with('nav_brands', $ecomBrandIds
-                    ? \App\Brands::where('business_id', $business_id)->whereIn('id', $ecomBrandIds)->orderBy('name')->limit(20)->get()
-                    : collect());
+                $catalog = \Modules\Ecommerce\Support\StaticCatalog::all();
+                $view->with('cart_totals', \Modules\Ecommerce\Support\StaticCart::totals());
+                $view->with('cart_product_ids', \Modules\Ecommerce\Support\StaticCart::items()->pluck('product_id')->all());
+                $view->with('nav_categories', \Modules\Ecommerce\Support\StaticCatalog::categories());
+                $view->with('nav_brands', \Modules\Ecommerce\Support\StaticCatalog::brands());
+                $view->with('has_new_arrivals', $catalog->contains(fn ($p) => $p->ecom_is_new_arrival));
+                $view->with('has_promotions', $catalog->contains(fn ($p) => $p->ecom_is_featured));
+                $view->with('new_arrivals_category', (object) [
+                    'id' => 0,
+                    'name' => 'New Arrivals',
+                    'slug' => 'new-arrivals',
+                    'sub_categories' => collect(),
+                ]);
             } catch (\Throwable $e) {
                 // keep existing shared defaults
             }

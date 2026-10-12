@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/gc-storefront.css') }}?v={{ config('app.asset_version', '1') }}&gc=2">
+    <link rel="stylesheet" href="{{ asset('css/gc-storefront.css') }}?v={{ config('app.asset_version', '1') }}&gc=13">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -24,7 +24,7 @@
         body { font-family: Poppins, system-ui, sans-serif; background: #f4f4f4; color: #1a1a1a; }
         .input-w {
             width: 100%; border: 1px solid #e6ebe8; border-radius: 8px; padding: .75rem .9rem; font-size: .875rem;
-            background: #fff; outline: none;
+            background: #fff; color: #111; outline: none;
         }
         .input-w:focus { border-color: #4caf79; box-shadow: 0 0 0 3px rgba(76,175,121,.18); }
         .step-dot { width:10px;height:10px;border-radius:999px;background:#ccc; }
@@ -34,7 +34,7 @@
     </style>
     @stack('head')
 </head>
-<body class="gc-store antialiased bg-[#f4f4f4] text-ink">
+<body class="gc-store ecom-auth antialiased bg-[#f4f4f4] text-[#1a1a1a]">
 @if(session('error'))
     <div class="bg-rose-50 text-rose-800 text-sm text-center py-2">{{ session('error') }}</div>
 @endif

@@ -14,12 +14,12 @@
             <button type="submit" class="btn-brand">Save</button>
         </form>
     </div>
-    <form method="post" class="rounded-2xl border bg-white p-6 space-y-3 ecom-acc-desktop-only">
+    <form method="post" class="wn-panel p-6 space-y-3 ecom-acc-desktop-only">
         @csrf
-        <input name="first_name" value="{{ old('first_name', $contact->ecom_first_name) }}" placeholder="First name" class="w-full border rounded-xl px-4 py-2.5 text-sm" required>
-        <input name="last_name" value="{{ old('last_name', $contact->ecom_last_name) }}" placeholder="Last name" class="w-full border rounded-xl px-4 py-2.5 text-sm" required>
-        <input name="email" type="email" value="{{ old('email', $contact->email) }}" class="w-full border rounded-xl px-4 py-2.5 text-sm" required>
-        <input name="mobile" value="{{ old('mobile', $contact->mobile) }}" class="w-full border rounded-xl px-4 py-2.5 text-sm" required>
+        <input name="first_name" value="{{ old('first_name', $contact->ecom_first_name) }}" placeholder="First name" class="wn-field" required>
+        <input name="last_name" value="{{ old('last_name', $contact->ecom_last_name) }}" placeholder="Last name" class="wn-field" required>
+        <input name="email" type="email" value="{{ old('email', $contact->email) }}" class="wn-field" required>
+        <input name="mobile" value="{{ old('mobile', $contact->mobile) }}" class="wn-field" required>
         <button class="btn-brand w-full">Save</button>
     </form>
 </div>

@@ -44,26 +44,26 @@
     <div class="ecom-acc-desktop-only">
         <div class="space-y-3 mb-8">
             @foreach($addresses as $address)
-                <div class="rounded-2xl border bg-white p-4 text-sm">
-                    <div class="font-medium">{{ $address->first_name }} {{ $address->last_name }} @if($address->is_default)<span class="text-accent text-xs">Default</span>@endif</div>
-                    <div class="text-slate-600">{{ $address->formatted() }}</div>
+                <div class="wn-panel p-4 text-sm">
+                    <div class="font-medium">{{ $address->first_name }} {{ $address->last_name }} @if($address->is_default)<span class="text-brand text-xs">Default</span>@endif</div>
+                    <div class="text-[#8b95b8]">{{ $address->formatted() }}</div>
                 </div>
             @endforeach
         </div>
-        <form method="post" class="rounded-2xl border bg-white p-6 space-y-3">
+        <form method="post" class="wn-panel p-6 space-y-3">
             @csrf
             <h2 class="font-semibold">Add address</h2>
             <div class="grid md:grid-cols-2 gap-3">
-                <input name="first_name" required placeholder="First name" class="border rounded-xl px-4 py-2.5 text-sm">
-                <input name="last_name" required placeholder="Last name" class="border rounded-xl px-4 py-2.5 text-sm">
+                <input name="first_name" required placeholder="First name" class="wn-field">
+                <input name="last_name" required placeholder="Last name" class="wn-field">
             </div>
-            <input name="company" placeholder="Company" class="w-full border rounded-xl px-4 py-2.5 text-sm">
-            <input name="address_line_1" required placeholder="Address line 1" class="w-full border rounded-xl px-4 py-2.5 text-sm">
-            <input name="address_line_2" placeholder="Address line 2" class="w-full border rounded-xl px-4 py-2.5 text-sm">
+            <input name="company" placeholder="Company" class="wn-field">
+            <input name="address_line_1" required placeholder="Address line 1" class="wn-field">
+            <input name="address_line_2" placeholder="Address line 2" class="wn-field">
             <div class="grid md:grid-cols-3 gap-3">
-                <input name="city" required placeholder="City" class="border rounded-xl px-4 py-2.5 text-sm">
-                <input name="state" required placeholder="State" class="border rounded-xl px-4 py-2.5 text-sm">
-                <input name="zip_code" required placeholder="ZIP" class="border rounded-xl px-4 py-2.5 text-sm">
+                <input name="city" required placeholder="City" class="wn-field">
+                <input name="state" required placeholder="State" class="wn-field">
+                <input name="zip_code" required placeholder="ZIP" class="wn-field">
             </div>
             <input type="hidden" name="country" value="United States">
             <label class="text-sm flex items-center gap-2"><input type="checkbox" name="is_default" value="1"> Default shipping</label>

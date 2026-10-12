@@ -71,6 +71,9 @@ class Product extends Model
      */
     public function getImageUrlAttribute()
     {
+        if (! empty($this->image) && preg_match('#^https?://#i', (string) $this->image)) {
+            return (string) $this->image;
+        }
         if (! empty($this->image)) {
             $image_path = public_path('uploads/'.config('constants.product_img_path').'/'.$this->image);
             if (is_file($image_path)) {

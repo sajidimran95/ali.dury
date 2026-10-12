@@ -8,35 +8,35 @@
     }
 @endphp
 <div class="max-w-xl mx-auto px-4 py-10">
-    <h1 class="text-2xl font-semibold mb-6">@lang('ecommerce::lang.track_order')</h1>
+    <h1 class="text-2xl font-extrabold mb-6">@lang('ecommerce::lang.track_order')</h1>
     <form method="get" class="flex gap-2 mb-8">
-        <input name="token" value="{{ $token }}" placeholder="Tracking token" class="flex-1 border rounded-full px-4 py-2.5 text-sm">
+        <input name="token" value="{{ $token }}" placeholder="Tracking token" class="flex-1 wn-field">
         <button class="btn-brand">Track</button>
     </form>
     @if($meta && $order)
-        <div class="rounded-2xl border bg-white p-6 space-y-5">
+        <div class="wn-panel p-6 space-y-5">
             <div>
                 <div class="font-semibold text-lg">{{ $order->invoice_no }}</div>
-                <div class="text-sm text-slate-500 mt-1">
+                <div class="text-sm text-[#8b95b8] mt-1">
                     @lang('ecommerce::lang.fulfillment'):
-                    <span class="inline-flex items-center rounded-full bg-mist px-2.5 py-0.5 text-xs font-bold text-ink">{{ $statusLabel }}</span>
+                    <span class="inline-flex items-center rounded-full bg-[#1a2140] px-2.5 py-0.5 text-xs font-bold">{{ $statusLabel }}</span>
                 </div>
                 @if($order->type === 'sales_order')
-                    <div class="text-sm text-slate-500 mt-1">
+                    <div class="text-sm text-[#8b95b8] mt-1">
                         @lang('ecommerce::lang.sales_order_status'):
-                        <span class="font-medium text-ink">{{ ucfirst($order->status) }}</span>
+                        <span class="font-medium">{{ ucfirst($order->status) }}</span>
                     </div>
                 @endif
             </div>
 
             @if(!empty($converted_invoices))
-                <div class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">
-                    <div class="text-xs font-bold uppercase tracking-wide text-emerald-700 mb-2">@lang('ecommerce::lang.invoice_created')</div>
+                <div class="rounded-xl border border-[#3ee07a55] bg-[#10281c] px-4 py-3">
+                    <div class="text-xs font-bold uppercase tracking-wide text-[#3ee07a] mb-2">@lang('ecommerce::lang.invoice_created')</div>
                     <ul class="space-y-1 text-sm">
                         @foreach($converted_invoices as $invoice)
-                            <li class="font-semibold text-emerald-900">
+                            <li class="font-semibold">
                                 #{{ $invoice->invoice_no }}
-                                <span class="text-emerald-700/70 font-normal">· {{ @format_datetime($invoice->transaction_date ?? $invoice->created_at) }}</span>
+                                <span class="text-[#8b95b8] font-normal">· {{ @format_datetime($invoice->transaction_date ?? $invoice->created_at) }}</span>
                             </li>
                         @endforeach
                     </ul>
@@ -45,22 +45,21 @@
 
             <ol class="space-y-3 text-sm">
                 @forelse(($timeline ?? $meta->timeline ?? []) as $step)
-                    <li class="flex justify-between gap-3 border-b border-line pb-2">
-                        <span class="@if(($step['status'] ?? '') === 'invoiced') font-semibold text-emerald-700 @endif">
-                            {{ $step['label'] ?? ucfirst($step['status'] ?? '') }}
+                    <li class="flex justify-between gap-3 border-b border-[#252d4d] pb-2">
+                        <span>{{ $step['label'] ?? ucfirst($step['status'] ?? '') }}
                             @if(!empty($step['invoice_no']) && empty($step['label']))
                                 — #{{ $step['invoice_no'] }}
                             @endif
                         </span>
-                        <span class="text-slate-400 shrink-0">{{ $step['at'] ?? '' }}</span>
+                        <span class="text-[#8b95b8] shrink-0">{{ $step['at'] ?? '' }}</span>
                     </li>
                 @empty
-                    <li class="text-slate-400">No updates yet.</li>
+                    <li class="text-[#8b95b8]">No updates yet.</li>
                 @endforelse
             </ol>
         </div>
     @elseif($token)
-        <p class="text-rose-600 text-sm">Order not found.</p>
+        <p class="text-rose-400 text-sm">Order not found.</p>
     @endif
 </div>
 @endsection

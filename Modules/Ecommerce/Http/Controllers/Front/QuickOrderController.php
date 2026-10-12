@@ -3,70 +3,59 @@
 namespace Modules\Ecommerce\Http\Controllers\Front;
 
 use App\Http\Controllers\Controller;
-use App\Product;
-use App\Variation;
 use Illuminate\Http\Request;
-use Modules\Ecommerce\Services\CartService;
+use Modules\Ecommerce\Support\StaticCatalog;
+use Modules\Ecommerce\Support\StaticCart;
 
 class QuickOrderController extends Controller
 {
     public function index()
     {
-        return view('ecommerce::front.quick_order.index');
+        $cart_totals = StaticCart::totals();
+        $exampleSku = optional(StaticCatalog::all()->first())->sku ?: 'EDEMO-01';
+
+        return view('ecommerce::front.quick_order.index', compact('cart_totals', 'exampleSku'));
     }
 
-    public function submit(Request $request, CartService $cartService)
+    public function suggest(Request $request)
     {
-        $business_id = $request->attributes->get('ecommerce_business_id');
-        $lines = $this->parseLines($request);
+        $q = trim((string) $request->query('q', ''));
+        $items = StaticCatalog::search($q, 12)->map(fn ($p) => [
+            'sku' => $p->sku,
+            'name' => $p->name,
+            'product_id' => $p->id,
+            'variation_id' => $p->variations->first()->id,
+        ])->values();
 
+        return response()->json(['items' => $items]);
+    }
+
+    public function submit(Request $request)
+    {
+        $lines = $this->parseLines($request);
         if (empty($lines)) {
-            return back()->with('error', 'Add at least one SKU and quantity.');
+            return back()->withInput()->with('error', 'Add at least one SKU and quantity.');
         }
 
         $added = 0;
         $errors = [];
-
         foreach ($lines as $i => $line) {
-            $sku = $line['sku'];
-            $qty = $line['qty'];
-            if ($qty <= 0) {
-                $errors[] = "Row ".($i + 1).": quantity must be greater than 0.";
+            if ($line['qty'] <= 0) {
+                $errors[] = 'Row '.($i + 1).': quantity must be greater than 0.';
                 continue;
             }
-
-            $product = Product::storefrontQuery((int) $business_id)
-                ->where(function ($q) use ($sku) {
-                    $q->where('sku', $sku)->orWhere('sku', strtoupper($sku));
-                })
-                ->with('variations')
-                ->first();
-
-            $variation = null;
-            if ($product) {
-                $variation = $product->variations->first();
-            } else {
-                $variation = Variation::where('sub_sku', $sku)
-                    ->orWhere('sub_sku', strtoupper($sku))
-                    ->whereHas('product', function ($q) use ($business_id) {
-                        $q->where('business_id', $business_id)->active();
-                    })
-                    ->with('product')
-                    ->first();
-                $product = $variation?->product;
+            $hit = StaticCatalog::find($line['sku'])
+                ?: StaticCatalog::search($line['sku'], 2)->first();
+            if (! $hit || (StaticCatalog::search($line['sku'], 2)->count() > 1 && ! StaticCatalog::find($line['sku']))) {
+                $exact = StaticCatalog::all()->first(fn ($p) => strcasecmp($p->sku, $line['sku']) === 0);
+                $hit = $exact ?: (StaticCatalog::search($line['sku'], 1)->count() === 1 ? StaticCatalog::search($line['sku'], 1)->first() : null);
             }
-
-            if (! $product || ! $variation) {
-                $errors[] = "SKU \"{$sku}\" not found.";
+            if (! $hit) {
+                $errors[] = 'SKU "'.$line['sku'].'" not found.';
                 continue;
             }
-
-            try {
-                $cartService->add($business_id, $product->id, $variation->id, $qty);
-                $added++;
-            } catch (\Throwable $e) {
-                $errors[] = "SKU \"{$sku}\": ".$e->getMessage();
-            }
+            StaticCart::add((int) $hit->id, (float) $line['qty']);
+            $added++;
         }
 
         if ($added === 0) {
@@ -83,16 +72,22 @@ class QuickOrderController extends Controller
 
     protected function parseLines(Request $request): array
     {
-        $lines = [];
+        $merged = [];
+        $push = function (string $sku, float $qty) use (&$merged) {
+            $key = strtolower(preg_replace('/[\s\-]+/', '', trim($sku)) ?? '');
+            if ($key === '') {
+                return;
+            }
+            if (! isset($merged[$key])) {
+                $merged[$key] = ['sku' => trim($sku), 'qty' => 0.0];
+            }
+            $merged[$key]['qty'] += $qty;
+        };
 
-        $rows = $request->input('rows', []);
-        if (is_array($rows)) {
-            foreach ($rows as $row) {
-                $sku = trim((string) ($row['sku'] ?? ''));
-                $qty = (float) ($row['qty'] ?? 0);
-                if ($sku !== '') {
-                    $lines[] = ['sku' => $sku, 'qty' => $qty];
-                }
+        foreach ((array) $request->input('rows', []) as $row) {
+            $sku = trim((string) ($row['sku'] ?? ''));
+            if ($sku !== '') {
+                $push($sku, (float) ($row['qty'] ?? 0));
             }
         }
 
@@ -104,13 +99,13 @@ class QuickOrderController extends Controller
                     continue;
                 }
                 if (preg_match('/^(.+?)[\s,;|\t]+([\d.]+)$/', $line, $m)) {
-                    $lines[] = ['sku' => trim($m[1]), 'qty' => (float) $m[2]];
-                } elseif (preg_match('/^(.+)$/', $line, $m)) {
-                    $lines[] = ['sku' => trim($m[1]), 'qty' => 1];
+                    $push(trim($m[1]), (float) $m[2]);
+                } else {
+                    $push($line, 1);
                 }
             }
         }
 
-        return $lines;
+        return array_values($merged);
     }
 }

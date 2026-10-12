@@ -1,48 +1,59 @@
 @extends('ecommerce::front.layouts.store')
 @section('title', 'Cart')
 @section('content')
-<div class="max-w-[1400px] mx-auto px-4 py-10 md:py-12">
-    <p class="text-[11px] uppercase tracking-[0.18em] text-black/40 font-bold mb-2">Bag</p>
-    <h1 class="text-3xl md:text-4xl font-extrabold mb-8">Your cart</h1>
+@php
+    $itemCount = $cart->items->sum('quantity');
+    $freeMin = (float) ($freeShipMin ?? 750);
+    $subtotal = (float) ($totals['subtotal'] ?? 0);
+    $shipPct = $freeMin > 0 ? min(100, round(($subtotal / $freeMin) * 100)) : 100;
+    $shipLeft = max(0, $freeMin - $subtotal);
+@endphp
+<div class="max-w-[1440px] mx-auto px-4 py-8 md:py-12">
+    <p class="text-[11px] uppercase tracking-[0.18em] text-[#8b95b8] font-bold mb-2">Bag</p>
+    <div class="flex flex-wrap items-end justify-between gap-3 mb-8">
+        <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight">Your cart</h1>
+        @if($cart->items->isNotEmpty())
+            <p class="text-sm text-[#8b95b8]">{{ (int) $itemCount }} {{ (int) $itemCount === 1 ? 'case' : 'cases' }}</p>
+        @endif
+    </div>
 
     @if($cart->items->isEmpty())
-        <div class="rounded-xl bg-white border border-line p-12 text-center">
-            <p class="text-black/50 mb-6">Your cart is empty.</p>
-            <a href="{{ route('ecommerce.shop') }}" class="btn-brand">Continue shopping</a>
+        <div class="wn-empty p-12 text-center">
+            <p class="text-[#8b95b8] mb-6">Your cart is empty.</p>
+            <a href="{{ route('ecommerce.shop') }}" class="wn-add inline-flex px-6" style="height:44px">Continue shopping</a>
         </div>
     @else
         <div class="grid lg:grid-cols-5 gap-8">
-            <div class="lg:col-span-3 space-y-4">
+            <div class="lg:col-span-3 space-y-3">
                 @foreach($cart->items as $item)
                     @php $product = $item->product; @endphp
-                    <div class="rounded-xl bg-white border border-line p-4 flex flex-wrap gap-4 items-center">
-                        <a href="{{ $product ? route('ecommerce.product', $product->ecom_slug ?: $product->id) : '#' }}" class="w-20 h-20 rounded-xl overflow-hidden bg-mist shrink-0">
+                    <div class="wn-cart-item">
+                        <a href="{{ $product ? route('ecommerce.product', $product->ecom_slug ?: $product->id) : '#' }}" class="wn-cart-thumb">
                             @if($product)
-                                <img src="{{ $product->image_url }}" alt="" class="w-full h-full object-cover"
+                                <img src="{{ $product->image_url }}" alt=""
                                      onerror="this.onerror=null;this.src='{{ asset('img/default.png') }}';">
                             @endif
                         </a>
                         <div class="flex-1 min-w-0">
-                            <div class="font-semibold text-sm truncate">{{ optional($product)->name }}</div>
-                            <div class="text-xs text-black/45 mt-0.5">${{ number_format($item->unit_price, 2) }} each</div>
+                            <div class="font-extrabold text-sm uppercase tracking-wide truncate">{{ optional($product)->name }}</div>
+                            <div class="text-xs text-[#8b95b8] mt-1">${{ number_format($item->unit_price, 2) }} / case</div>
 
-                            <form action="{{ route('ecommerce.cart.update', absolute: false) }}" method="post" class="cart-qty-form flex items-center gap-2 mt-3">
+                            <form action="{{ route('ecommerce.cart.update', absolute: false) }}" method="post" class="cart-qty-form mt-3">
                                 @csrf
                                 <input type="hidden" name="item_id" value="{{ $item->id }}">
-                                <div class="inline-flex items-center gap-2 rounded-full bg-[#f0f0f0] px-1.5 py-1.5">
-                                    <button type="button" class="qty-minus h-9 w-9 rounded-full bg-white border border-[#ddd] text-ink text-lg leading-none flex items-center justify-center hover:bg-mist" aria-label="Decrease quantity">−</button>
-                                    <input type="number" name="quantity" value="{{ (int) $item->quantity }}" min="1" step="1"
-                                           class="qty-input w-10 bg-transparent border-0 text-center text-sm font-medium tabular-nums outline-none appearance-none [-moz-appearance:textfield]">
-                                    <button type="button" class="qty-plus h-9 w-9 rounded-full bg-white border border-[#ddd] text-ink text-lg leading-none flex items-center justify-center hover:bg-mist" aria-label="Increase quantity">+</button>
+                                <div class="wn-qty">
+                                    <button type="button" class="qty-minus" aria-label="Decrease quantity">−</button>
+                                    <input type="number" name="quantity" value="{{ (int) $item->quantity }}" min="1" step="1" class="qty-input">
+                                    <button type="button" class="qty-plus" aria-label="Increase quantity">+</button>
                                 </div>
                             </form>
                         </div>
                         <div class="text-right shrink-0 ml-auto">
-                            <div class="font-extrabold tabular-nums">${{ number_format($item->quantity * $item->unit_price, 2) }}</div>
+                            <div class="font-extrabold tabular-nums text-lg">${{ number_format($item->quantity * $item->unit_price, 2) }}</div>
                             <form action="{{ route('ecommerce.cart.remove', absolute: false) }}" method="post" class="mt-2">
                                 @csrf
                                 <input type="hidden" name="item_id" value="{{ $item->id }}">
-                                <button class="text-xs text-rose-600 font-medium">Remove</button>
+                                <button class="wn-remove" type="submit">Remove</button>
                             </form>
                         </div>
                     </div>
@@ -50,22 +61,34 @@
             </div>
 
             <aside class="lg:col-span-2">
-                <div class="rounded-xl bg-white border border-line p-6 sticky top-28 space-y-4">
-                    <h2 class="text-xl font-extrabold">Summary</h2>
+                <div class="wn-summary p-6 sticky top-28 space-y-4">
+                    <h2 class="text-xl font-extrabold tracking-tight">Order summary</h2>
+
+                    <div class="rounded-lg bg-[#0c1224] border border-[#252d4d] p-3">
+                        @if($shipLeft <= 0)
+                            <p class="text-xs font-bold text-[#3ee07a]">Free shipping unlocked</p>
+                        @else
+                            <p class="text-xs text-[#8b95b8]">
+                                Add <span class="text-white font-bold">${{ number_format($shipLeft, 2) }}</span> for free shipping
+                            </p>
+                        @endif
+                        <div class="wn-ship"><span style="width: {{ $shipPct }}%"></span></div>
+                    </div>
+
                     <form action="{{ route('ecommerce.cart.coupon', absolute: false) }}" method="post" class="flex gap-2">
                         @csrf
                         <input type="text" name="coupon_code" placeholder="Coupon code"
-                               class="flex-1 input-w rounded-full" value="{{ $cart->coupon_code }}">
-                        <button class="rounded-full bg-mist px-4 text-sm font-semibold hover:bg-[#eaeaea]">Apply</button>
+                               class="flex-1 input-w" value="{{ $cart->coupon_code }}">
+                        <button class="wn-apply" type="submit">Apply</button>
                     </form>
-                    <div class="space-y-2 text-sm border-t border-line pt-4">
-                        <div class="flex justify-between"><span class="text-black/50">Subtotal</span><span class="tabular-nums">${{ number_format($totals['subtotal'], 2) }}</span></div>
-                        <div class="flex justify-between"><span class="text-black/50">Shipping</span><span class="tabular-nums">${{ number_format($totals['shipping'], 2) }}</span></div>
-                        <div class="flex justify-between"><span class="text-black/50">Tax</span><span class="tabular-nums">${{ number_format($totals['tax'], 2) }}</span></div>
-                        <div class="flex justify-between font-extrabold text-base pt-2 border-t border-line"><span>Total</span><span class="tabular-nums">${{ number_format($totals['total'], 2) }}</span></div>
+                    <div class="space-y-2 text-sm border-t border-[#252d4d] pt-4">
+                        <div class="flex justify-between"><span class="text-[#8b95b8]">Subtotal</span><span class="tabular-nums">${{ number_format($totals['subtotal'], 2) }}</span></div>
+                        <div class="flex justify-between"><span class="text-[#8b95b8]">Shipping</span><span class="tabular-nums">${{ number_format($totals['shipping'], 2) }}</span></div>
+                        <div class="flex justify-between"><span class="text-[#8b95b8]">Tax</span><span class="tabular-nums">${{ number_format($totals['tax'], 2) }}</span></div>
+                        <div class="flex justify-between font-extrabold text-base pt-2 border-t border-[#252d4d]"><span>Total</span><span class="tabular-nums">${{ number_format($totals['total'], 2) }}</span></div>
                     </div>
-                    <a href="{{ route('ecommerce.checkout') }}" class="btn-brand w-full">Checkout</a>
-                    <a href="{{ route('ecommerce.shop') }}" class="block text-center text-sm font-semibold text-brand">Continue shopping</a>
+                    <a href="{{ route('ecommerce.checkout') }}" class="wn-checkout w-full">Checkout</a>
+                    <a href="{{ route('ecommerce.shop') }}" class="block text-center text-sm font-semibold text-[#8b95b8] hover:text-white">Continue shopping</a>
                 </div>
             </aside>
         </div>

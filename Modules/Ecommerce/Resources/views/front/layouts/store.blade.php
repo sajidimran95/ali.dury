@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <meta name="theme-color" content="#2e6a49">
+    <meta name="theme-color" content="#070b16">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="{{ $ecom_settings->store_name ?? 'Store' }}">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -18,54 +18,59 @@
     <meta name="description" content="@yield('meta_description', $ecom_settings->seo_description ?? '')">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/gc-storefront.css') }}?v={{ config('app.asset_version', '1') }}&gc=7">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800;900&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/gc-storefront.css') }}?v={{ config('app.asset_version', '1') }}&gc=19">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        brand: '#4caf79',
-                        brandDark: '#2e6a49',
-                        ink: '#1a1a1a',
-                        slatebar: '#1a3d2b',
-                        mist: '#f4f4f4',
-                        line: '#e6ebe8'
+                        brand: '#f23488',
+                        brandDark: '#f00678',
+                        ink: '#eef2ff',
+                        slatebar: '#070b16',
+                        mist: '#10162a',
+                        line: '#2a3358'
                     },
                     fontFamily: {
-                        sans: ['Poppins', 'system-ui', 'sans-serif'],
-                        serif: ['Cinzel', 'Georgia', 'serif']
+                        sans: ['Inter', 'Poppins', 'system-ui', 'sans-serif'],
+                        serif: ['Bebas Neue', 'Impact', 'sans-serif']
                     }
                 }
             }
         }
     </script>
     <style>
-        body { font-family: Poppins, system-ui, sans-serif; background: #f4f4f4; color: #1a1a1a; }
+        body { font-family: Inter, Poppins, system-ui, sans-serif; background: #070b16; color: #eef2ff; }
         .mega.is-active > .cat-link, .cat-link:hover { color: #fff !important; }
-        .btn-brand { background: #3d9b6d; color: #fff; font-weight: 600; border-radius: 8px; padding: .7rem 1.25rem; }
-        .btn-brand:hover { background: #2d7a54; }
-        .input-w:focus { border-color: #3d9b6d; box-shadow: 0 0 0 3px rgba(61,155,109,.15); }
-        .app-tab.active, .app-tab:active { color: #1f6b45; }
-        .app-chip.active { background: #edf7f1; color: #1f6b45; border-color: #b7dfc8; }
-        .cat-nav-wrap { position: relative; overflow: visible; }
+        .btn-brand { background: #f23488; color: #fff; font-weight: 600; border-radius: 8px; padding: .7rem 1.25rem; }
+        .btn-brand:hover { background: #ff4b98; }
+        .input-w:focus { border-color: #f23488; box-shadow: 0 0 0 3px rgba(242,52,136,.18); }
+        .app-tab.active, .app-tab:active { color: #f23488; }
+        .app-chip.active { background: #241428; color: #ff8fc8; border-color: #f23488; }
+        .cat-nav-wrap {
+            position: relative;
+            overflow-x: auto;
+            overflow-y: hidden;
+            scrollbar-width: none;
+        }
+        .cat-nav-wrap::-webkit-scrollbar { display: none; }
         .gc-nav { overflow: visible; }
         .gc-menubar {
-            display: flex; align-items: stretch; justify-content: space-evenly;
-            width: 100%; margin: 0; padding: 0; list-style: none;
-            overflow: visible;
+            display: flex; flex-wrap: nowrap; align-items: stretch; justify-content: flex-start;
+            width: max-content; min-width: 100%; margin: 0; padding: 0; list-style: none;
         }
-        .gc-menubar > li { flex: 1 1 0; min-width: 0; position: relative; }
+        .gc-menubar > li { flex: 0 0 auto; min-width: auto; position: relative; }
         .mega { position: relative; }
         .mega > a { position: relative; z-index: 2; }
         .cat-link.gc-nav-item {
             display: flex; align-items: center; justify-content: center; gap: 6px;
-            min-height: 64px; padding: 8px 8px; color: #fff;
-            font-size: 13px; font-weight: 600; line-height: 1.15; text-align: left;
-            white-space: pre-line;
+            height: 48px; padding: 0 14px; color: #d7def8;
+            font-size: 12px; font-weight: 700; line-height: 1; text-align: center;
+            white-space: nowrap; letter-spacing: .03em; text-transform: uppercase;
         }
-        .cat-link.gc-nav-item:hover, .mega:hover > .cat-link, .mega.is-active > .cat-link { background: rgba(0,0,0,.12); color: #fff !important; }
+        .cat-link.gc-nav-item:hover, .mega:hover > .cat-link, .mega.is-active > .cat-link { background: rgba(255,78,200,.12); color: #fff !important; }
         .gc-nav-item .gc-nav-text { display: block; }
         .mega-panel {
             display: none;
@@ -77,9 +82,9 @@
             min-width: 220px;
             width: max-content;
             max-width: 280px;
-            background: #fff;
-            color: #12261c;
-            border: 1px solid #e6ebe8;
+            background: #12182e;
+            color: #eef2ff;
+            border: 1px solid #2a3358;
             box-shadow: 0 16px 40px rgba(0,0,0,.16);
             border-radius: 0 0 10px 10px;
             padding: 8px 0;
@@ -87,8 +92,8 @@
         .mega:hover > .mega-panel,
         .mega.is-open > .mega-panel,
         .mega-panel.is-open { display: block; }
-        .mega-panel a { display: block; padding: 8px 16px; font-size: 13px; color: #12261c; }
-        .mega-panel a:hover { background: #edf7f1; color: #1f6b45; }
+        .mega-panel a { display: block; padding: 8px 16px; font-size: 13px; color: #d7def8; }
+        .mega-panel a:hover { background: #1a2140; color: #ff8fc8; }
         .brand-tile {
             display: flex; align-items: center; justify-content: center;
             min-height: 64px; border: 1px solid #ececec; border-radius: 8px;
@@ -103,6 +108,32 @@
         .pc-qty-input::-webkit-outer-spin-button,
         .pc-qty-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         .pc-qty-input { -moz-appearance: textfield; }
+        body.gc-store .wn-add,
+        body.ecom-account-panel .wn-add,
+        body.ecom-account-panel a.wn-add,
+        body.ecom-account-panel button.wn-add,
+        body.ecom-account-panel .product-card-form .ecom-add-cart {
+            display: inline-flex !important;
+            align-items: center;
+            justify-content: center;
+            flex: 1 1 auto;
+            height: 36px;
+            padding: 0 10px;
+            border: 0;
+            border-radius: 6px;
+            background: #0066f0 !important;
+            color: #fff !important;
+            -webkit-text-fill-color: #fff !important;
+            text-decoration: none !important;
+            font-weight: 800;
+            font-size: 11px;
+            letter-spacing: .06em;
+            cursor: pointer;
+        }
+        body.ecom-account-panel .wn-add:hover {
+            background: #1a78ff !important;
+            color: #fff !important;
+        }
         .product-card { transition: box-shadow .2s, transform .2s; }
         .product-card:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(0,0,0,.08); }
 
@@ -110,29 +141,29 @@
         .app-bottom-nav {
             display: flex; flex-direction: column;
             position: fixed; left: 0; right: 0; bottom: 0; z-index: 90;
-            background: rgba(255,255,255,.94);
+            background: rgba(7,11,22,.96);
             backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
-            border-top: 1px solid #e8e8e8;
+            border-top: 1px solid #2a3358;
             padding-bottom: env(safe-area-inset-bottom, 0);
         }
         .app-tab {
             flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
-            gap: 2px; min-height: 56px; color: #6b6b6b; font-size: 10px; font-weight: 600;
+            gap: 2px; min-height: 56px; color: #8b95b8; font-size: 10px; font-weight: 600;
             text-decoration: none; background: transparent; border: 0; cursor: pointer;
             -webkit-tap-highlight-color: transparent;
         }
-        .app-tab.active, .app-tab:active { color: #e85d04; }
+        .app-tab.active, .app-tab:active { color: #f23488; }
         .app-chip-scroll {
             display: flex; gap: 8px; overflow-x: auto; -webkit-overflow-scrolling: touch;
             scrollbar-width: none; padding: 0 16px 10px;
         }
         .app-chip-scroll::-webkit-scrollbar { display: none; }
         .app-chip {
-            flex: 0 0 auto; padding: 8px 14px; border-radius: 999px; background: #f0f0f0;
-            font-size: 13px; font-weight: 600; color: #1a1a1a; white-space: nowrap;
+            flex: 0 0 auto; padding: 8px 14px; border-radius: 999px; background: #151a2e;
+            font-size: 13px; font-weight: 600; color: #eef2ff; white-space: nowrap;
             border: 1px solid transparent; text-decoration: none;
         }
-        .app-chip.active { background: #fff4ec; color: #e85d04; border-color: #f4c7a8; }
+        .app-chip.active { background: #241428; color: #ff8fc8; border-color: #f23488; }
         .app-sheet {
             position: fixed; inset: 0; z-index: 90; display: none;
         }
@@ -143,7 +174,7 @@
         .app-sheet__panel {
             position: absolute; left: 0; right: 0; bottom: 0;
             max-height: min(88vh, 720px);
-            background: #fff; border-radius: 18px 18px 0 0;
+            background: #10162a; border-radius: 18px 18px 0 0;
             box-shadow: 0 -12px 40px rgba(0,0,0,.18);
             padding-bottom: calc(12px + env(safe-area-inset-bottom, 0));
             transform: translateY(100%);
@@ -297,15 +328,15 @@
                 gap: 8px;
                 min-height: 48px;
                 padding: 8px 12px;
-                background: rgba(255,255,255,.96);
+                background: rgba(7,11,22,.96);
                 backdrop-filter: blur(12px);
                 -webkit-backdrop-filter: blur(12px);
-                border-bottom: 1px solid #e8e8e8;
+                border-bottom: 1px solid #252d4d;
             }
             body.ecom-account-panel .ecom-acc-top__back {
                 width: 40px; height: 40px; border-radius: 999px;
                 display: inline-flex; align-items: center; justify-content: center;
-                background: #f0f0f0; color: #1a1a1a; text-decoration: none; flex-shrink: 0;
+                background: #1a2140; color: #eef2ff; text-decoration: none; flex-shrink: 0;
                 font-size: 18px; line-height: 1; border: 0;
             }
             body.ecom-account-panel .ecom-acc-top__title {
@@ -315,18 +346,18 @@
             }
             body.ecom-account-panel .ecom-acc-hero {
                 padding: 16px 16px 12px;
-                background: linear-gradient(180deg, #fff 0%, #f7f7f7 100%);
+                background: linear-gradient(180deg, #12182e 0%, #0b1020 100%);
             }
             body.ecom-account-panel .ecom-acc-hero__name {
                 font-size: 22px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.2;
             }
             body.ecom-account-panel .ecom-acc-hero__meta {
-                margin-top: 6px; font-size: 13px; color: #6b6b6b;
+                margin-top: 6px; font-size: 13px; color: #8b95b8;
             }
             body.ecom-account-panel .ecom-acc-list {
                 margin: 0 12px 12px;
-                background: #fff;
-                border: 1px solid #e8e8e8;
+                background: #12182e;
+                border: 1px solid #252d4d;
                 border-radius: 14px;
                 overflow: hidden;
             }
@@ -339,11 +370,11 @@
                 text-align: left;
                 padding: 14px 14px;
                 border: 0;
-                background: #fff;
-                border-bottom: 1px solid #f0f0f0;
+                background: #12182e;
+                border-bottom: 1px solid #252d4d;
                 font-size: 15px;
                 font-weight: 600;
-                color: #1a1a1a;
+                color: #eef2ff;
                 text-decoration: none;
                 cursor: pointer;
                 -webkit-tap-highlight-color: transparent;
@@ -354,12 +385,12 @@
             }
             body.ecom-account-panel .ecom-acc-list a:active,
             body.ecom-account-panel .ecom-acc-list button:active {
-                background: #f5f5f5;
+                background: #1a2140;
             }
             body.ecom-account-panel .ecom-acc-list__icon {
                 width: 34px; height: 34px; border-radius: 10px;
                 display: inline-flex; align-items: center; justify-content: center;
-                background: #fff4ec; color: #e85d04; flex-shrink: 0;
+                background: #241428; color: #f23488; flex-shrink: 0;
                 font-size: 14px;
             }
             body.ecom-account-panel .ecom-acc-list__chev {
@@ -378,8 +409,8 @@
             }
             body.ecom-account-panel .ecom-acc-card {
                 margin: 0 12px 12px;
-                background: #fff;
-                border: 1px solid #e8e8e8;
+                background: #12182e;
+                border: 1px solid #252d4d;
                 border-radius: 14px;
                 padding: 14px;
             }
@@ -388,7 +419,7 @@
                 flex-direction: column;
                 gap: 4px;
                 padding: 12px 14px;
-                border-bottom: 1px solid #f0f0f0;
+                border-bottom: 1px solid #252d4d;
             }
             body.ecom-account-panel .ecom-acc-order:last-child { border-bottom: 0; }
             body.ecom-account-panel .ecom-acc-order__row {
@@ -403,7 +434,7 @@
                 font-size: 15px;
             }
             body.ecom-account-panel .ecom-acc-form .btn-brand,
-            body.ecom-account-panel .ecom-acc-form button[type=submit] {
+            body.ecom-account-panel .ecom-acc-form button[type=submit]:not(.wn-add) {
                 min-height: 48px;
                 border-radius: 12px;
                 width: 100%;
@@ -484,7 +515,7 @@
         }
     }
     $routeName = optional(request()->route())->getName();
-    $isHome = request()->is('/') || $routeName === 'ecommerce.home';
+    $isHome = $routeName === 'ecommerce.home';
     $isShop = in_array($routeName, ['ecommerce.shop', 'ecommerce.category', 'ecommerce.product', 'ecommerce.collection'], true);
     $isCart = $routeName === 'ecommerce.cart' || $routeName === 'ecommerce.checkout';
     $isAccount = str_starts_with((string) $routeName, 'ecommerce.account')
@@ -496,13 +527,13 @@
 
 <div id="gcAgeGate" class="gc-age" role="dialog" aria-label="Age verification">
     <div class="gc-age__card">
-        <div class="mx-auto mb-4 h-14 w-14 rounded-full bg-[#3d9b6d] flex items-center justify-center text-2xl">🌲</div>
+        <div class="mx-auto mb-4 h-14 w-14 rounded-full bg-[#f23488] flex items-center justify-center text-2xl">21+</div>
         <h2 class="gc-serif text-2xl mb-2">Age Verification Required</h2>
         <p class="text-sm text-white/75 mb-1">You must be 21 years of age or older to enter this site.</p>
         <p class="text-xs text-white/55 mb-5">This site sells tobacco, nicotine, hemp and age-restricted products for licensed retailers only.</p>
         <p class="font-semibold mb-4">Are you 21 or older?</p>
         <div class="grid gap-2">
-            <button type="button" id="gcAgeYes" class="rounded-lg bg-[#3d9b6d] text-white font-bold py-3">Yes, I am 21 or older — enter site</button>
+            <button type="button" id="gcAgeYes" class="rounded-lg bg-[#f23488] text-white font-bold py-3">Yes, I am 21 or older — enter site</button>
             <button type="button" id="gcAgeNo" class="rounded-lg border border-white/25 text-white/80 py-3">No, I am under 21 — exit site</button>
         </div>
         <p class="text-[11px] text-white/45 mt-4">By entering, you confirm you are 21+ and agree to our
@@ -512,19 +543,18 @@
 </div>
 
 {{-- Mobile app header --}}
-<header class="app-mobile-only sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-line pt-[env(safe-area-inset-top,0)]">
+<header class="app-mobile-only sticky top-0 z-50 bg-[#070b16]/95 backdrop-blur border-b border-line pt-[env(safe-area-inset-top,0)]">
     <div class="px-3 h-14 flex items-center gap-2">
-        <a href="{{ url('/') }}" class="shrink-0 flex items-center" aria-label="{{ $store }}">
+        <a href="{{ route('ecommerce.home') }}" class="shrink-0 flex items-center" aria-label="{{ $store }}">
             @if($storeLogoUrl)
                 <img src="{{ $storeLogoUrl }}" alt="{{ $store }}" class="h-9 w-auto max-w-[140px] object-contain object-left">
             @else
-                <span class="font-extrabold text-[15px] tracking-tight text-[#1a1a1a] leading-none max-w-[140px] truncate">{{ $store }}</span>
+                <span class="wn-logo"><strong>{{ $store }}</strong><span>Convenience store wholesale</span></span>
             @endif
         </a>
         <form action="{{ route('ecommerce.shop') }}" method="get" class="flex-1 min-w-0">
-            <div class="flex items-center rounded-full bg-mist border border-line px-3 h-10">
-                <svg width="16" height="16" class="text-black/40 shrink-0" fill="none" stroke="currentColor" stroke-width="2"><circle cx="7" cy="7" r="5"/><path d="M11 11l3.5 3.5"/></svg>
-                <input type="search" name="q" value="{{ request('q') }}" placeholder="Search SKU, brands..."
+            <div class="wn-search">
+                <input type="search" name="q" value="{{ request('q') }}" placeholder="Search products, brands..."
                        class="flex-1 bg-transparent border-0 outline-none text-[13px] px-2 min-w-0">
             </div>
         </form>
@@ -552,87 +582,64 @@
         </div>
 </header>
 
-{{-- Sticky desktop chrome matching Figma --}}
+{{-- Sticky desktop chrome --}}
 <div class="hidden lg:block sticky top-0 z-50 overflow-visible">
-<div class="gc-ann">
-    <div class="max-w-[1400px] mx-auto px-4 h-[44px] flex items-center justify-center gap-3 text-sm font-semibold" id="gcAnnounce">
-        <button type="button" class="opacity-70" data-ann-prev aria-label="Previous">‹</button>
-        <a href="{{ route('ecommerce.shop') }}" class="text-white no-underline" data-ann-text>Summer Clearance — Up to 40% Off Select Items</a>
-        <a href="{{ route('ecommerce.shop') }}" class="rounded-full bg-white text-[#2e6a49] text-xs font-bold px-3 py-1">Shop Clearance →</a>
-        <button type="button" class="opacity-70" data-ann-next aria-label="Next">›</button>
-    </div>
-</div>
 <div class="gc-util">
-    <div class="max-w-[1400px] mx-auto px-4 h-[28px] flex flex-wrap items-center justify-between gap-2">
-        <span>{{ $store }}</span>
-        <div class="flex flex-wrap items-center gap-4">
+    <div class="max-w-[1440px] mx-auto px-4 h-[36px] flex items-center justify-between gap-3 text-[12px]">
+        <div class="flex items-center gap-5">
             @if($storePhone !== '')
-                <a href="tel:{{ $storePhoneHref }}" class="text-white/85 hover:text-white">{{ $storePhone }}</a>
+                <a href="tel:{{ $storePhoneHref }}" class="text-white/80 hover:text-white">{{ $storePhone }}</a>
             @endif
             @if($storeEmail !== '')
-                <a href="mailto:{{ $storeEmail }}" class="text-white/85 hover:text-white">{{ $storeEmail }}</a>
+                <a href="mailto:{{ $storeEmail }}" class="text-white/80 hover:text-white">{{ $storeEmail }}</a>
             @endif
-            <span>{{ $storeHours }}</span>
+            <span class="text-[#3ee07a] font-semibold">Free Shipping on Orders $750+</span>
+        </div>
+        <div class="flex items-center gap-5 font-semibold">
+            @auth('customer')
+                <a href="{{ route('ecommerce.account') }}" class="text-[#3ee07a] hover:text-white">Account</a>
+                <form action="{{ route('ecommerce.logout', absolute: false) }}" method="post" class="inline">
+                    @csrf
+                    <button type="submit" class="text-white/85 hover:text-white font-semibold">Logout</button>
+                </form>
+            @else
+                <a href="{{ route('ecommerce.register') }}" class="text-[#3ee07a] hover:text-white">Wholesale Account</a>
+                <a href="{{ route('ecommerce.login') }}" class="text-white/85 hover:text-white">Login</a>
+            @endauth
+            <a href="{{ route('ecommerce.cart') }}" class="text-white/85 hover:text-white">Cart @if(($cart_totals['count'] ?? 0) > 0)<span class="text-[#f23488]">({{ $cart_totals['count'] }})</span>@endif</a>
         </div>
     </div>
 </div>
 
-{{-- Desktop header --}}
-<header class="bg-white border-b border-line overflow-visible">
-    <div class="max-w-[1400px] mx-auto px-4">
-        <div class="h-[68px] flex items-center gap-4 lg:gap-6 relative z-[60]">
-            <a href="{{ url('/') }}" class="shrink-0 flex items-center" aria-label="{{ $store }}">
+<header class="bg-[#0b1020] overflow-visible">
+    <div class="max-w-[1440px] mx-auto px-4">
+        <div class="h-[72px] flex items-center gap-5 relative z-[60]">
+            <a href="{{ route('ecommerce.home') }}" class="shrink-0 flex items-center" aria-label="{{ $store }}">
                 @if($storeLogoUrl)
-                    <img src="{{ $storeLogoUrl }}" alt="{{ $store }}" class="h-10 w-auto max-w-[220px] object-contain object-left">
+                    <img src="{{ $storeLogoUrl }}" alt="{{ $store }}" class="h-11 w-auto max-w-[220px] object-contain object-left">
                 @else
-                    <span class="font-extrabold text-[18px] tracking-tight text-[#1a1a1a] leading-none max-w-[220px]">{{ $store }}</span>
+                    <span class="wn-logo"><strong>{{ $store }}</strong><span>Convenience store wholesale distributor</span></span>
                 @endif
             </a>
 
-            <form action="{{ route('ecommerce.shop') }}" method="get" class="flex flex-1 max-w-2xl mx-auto">
-                <div class="flex w-full rounded-lg border border-line overflow-hidden bg-white focus-within:border-brand">
-                    <input type="search" name="q" value="{{ request('q') }}" placeholder="Search products, brands, categories..."
-                           class="flex-1 bg-transparent border-0 outline-none text-[13px] px-4 py-2.5">
-                    <button class="text-[#2e6a49] px-4" aria-label="Search">
+            <form action="{{ route('ecommerce.shop') }}" method="get" class="flex flex-1 max-w-3xl">
+                <div class="wn-search">
+                    <input type="search" name="q" value="{{ request('q') }}" placeholder="Search products, brands, categories...">
+                    <button aria-label="Search">
                         <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="5.5"/><path d="M12 12l4 4"/></svg>
                     </button>
                 </div>
             </form>
 
-            <div class="ml-auto flex items-center gap-3 sm:gap-4 text-[14px] font-semibold shrink-0">
-                <a href="{{ auth('customer')->check() ? route('ecommerce.account') : route('ecommerce.login') }}" class="inline-flex items-center gap-1.5 h-9 text-[#2e6a49]">
-                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="6" r="3"/><path d="M3 16c1.5-3 10.5-3 12 0"/></svg>
-                    Account
-                </a>
-                <a href="{{ route('ecommerce.cart') }}" class="inline-flex items-center gap-2 rounded-lg bg-[#4caf79] text-[#1a1a1a] px-3.5 h-9 hover:bg-[#3d9b68]">
-                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 4h12l-1 9H4L3 4z"/><path d="M7 7V4a2 2 0 014 0v3"/></svg>
-                    Cart
-                    @if(($cart_totals['count'] ?? 0) > 0)
-                        <span class="bg-white text-[#2e6a49] text-[10px] rounded-full min-w-[16px] h-[16px] inline-flex items-center justify-center px-1">{{ $cart_totals['count'] }}</span>
-                    @endif
-                </a>
-            </div>
+            <a href="{{ route('ecommerce.quick_order') }}" class="wn-quick ml-auto">⚡ QUICK ORDER</a>
         </div>
     </div>
 
     <div class="gc-nav relative z-[80] text-white overflow-visible">
-        <div class="max-w-[1400px] mx-auto px-4 cat-nav-wrap" id="catNavWrap">
+        <div class="max-w-[1440px] mx-auto px-4 cat-nav-wrap" id="catNavWrap">
             <ul class="gc-menubar">
-                <li>
-                    <a href="{{ route('ecommerce.promotions') }}" class="cat-link gc-nav-item">
-                        <span>Promotions</span>
-                    </a>
-                </li>
-                <li class="mega">
-                    <a href="{{ route('ecommerce.shop', ['sort' => 'newest', 'new_only' => 1]) }}" class="cat-link gc-nav-item">
-                        <span class="gc-nav-text">New{{ "\n" }}Arrivals</span>
-                        <svg width="11" height="11" viewBox="0 0 20 20" fill="currentColor" class="opacity-80 shrink-0"><path d="M5 8l5 5 5-5"/></svg>
-                    </a>
-                    <div class="mega-panel">
-                        <a href="{{ route('ecommerce.shop', ['sort' => 'newest', 'new_only' => 1]) }}">All New Arrivals</a>
-                        <a href="{{ route('ecommerce.shop', ['sort' => 'newest', 'new_only' => 1]) }}">New arrivals</a>
-                        <a href="{{ route('ecommerce.shop', ['sort' => 'price_asc', 'new_only' => 1]) }}">Best value</a>
-                    </div>
+                <li class="!flex-[0_0_44px]">
+                    <a href="{{ route('ecommerce.shop') }}" class="cat-link gc-nav-item" aria-label="All departments">☰</a>
                 </li>
                 @foreach($nav_categories as $cat)
                     @php $subs = $cat->sub_categories ?? collect(); @endphp
@@ -654,19 +661,18 @@
                     </li>
                 @endforeach
                 @if($nav_categories->isEmpty())
-                    <li>
-                        <a href="{{ route('ecommerce.shop') }}" class="cat-link gc-nav-item"><span>Shop</span></a>
-                    </li>
-                    <li>
-                        <a href="{{ route('ecommerce.brands') }}" class="cat-link gc-nav-item"><span>Brands</span></a>
-                    </li>
-                    <li>
-                        <a href="{{ route('ecommerce.shop') }}" class="cat-link gc-nav-item"><span>Categories</span></a>
-                    </li>
-                    <li>
-                        <a href="{{ route('ecommerce.promotions') }}" class="cat-link gc-nav-item"><span>Featured</span></a>
-                    </li>
+                    <li><a href="{{ route('ecommerce.shop') }}" class="cat-link gc-nav-item"><span>Shop</span></a></li>
+                    <li><a href="{{ route('ecommerce.brands') }}" class="cat-link gc-nav-item"><span>Brands</span></a></li>
                 @endif
+                <li>
+                    <a href="{{ route('ecommerce.promotions') }}" class="cat-link gc-nav-item wn-nav-special deals">Deals</a>
+                </li>
+                <li>
+                    <a href="{{ route('ecommerce.shop', ['sort' => 'newest', 'new_only' => 1]) }}" class="cat-link gc-nav-item wn-nav-special new">New</a>
+                </li>
+                <li>
+                    <a href="{{ route('ecommerce.promotions') }}" class="cat-link gc-nav-item wn-nav-special clearance">Clearance</a>
+                </li>
             </ul>
         </div>
     </div>
@@ -674,18 +680,18 @@
 </div>
 
 @if(session('success'))
-    <div class="bg-emerald-50 text-emerald-900 text-sm text-center py-2.5 border-b border-emerald-100">{{ session('success') }}</div>
+    <div class="bg-[#10281c] text-[#7dffb3] text-sm text-center py-2.5 border-b border-[#1e4a32]">{{ session('success') }}</div>
 @endif
 @if(session('error'))
-    <div class="bg-rose-50 text-rose-900 text-sm text-center py-2.5 border-b border-rose-100">{{ session('error') }}</div>
+    <div class="bg-[#2a1218] text-[#ff8aa3] text-sm text-center py-2.5 border-b border-[#5a2230]">{{ session('error') }}</div>
 @endif
 @if($errors->any())
-    <div class="bg-rose-50 text-rose-900 text-sm text-center py-2.5 border-b border-rose-100">{{ $errors->first() }}</div>
+    <div class="bg-[#2a1218] text-[#ff8aa3] text-sm text-center py-2.5 border-b border-[#5a2230]">{{ $errors->first() }}</div>
 @endif
 
 <main>@yield('content')</main>
 
-<footer class="desktop-footer mt-16 bg-[#0c2a1e] text-white">
+<footer class="desktop-footer mt-16 bg-[#050814] text-white">
     <div class="max-w-[1400px] mx-auto px-4 py-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-10 gc-footer-grid">
         <div>
             <div class="flex items-center gap-2 mb-3">
@@ -749,7 +755,7 @@
                 <p class="text-xs text-white/60 mb-2">Stay informed — new arrivals, deals &amp; industry news</p>
                 <div class="flex flex-wrap gap-2 min-w-0">
                     <input type="email" required placeholder="Your business email" class="min-w-0 flex-1 rounded-lg px-3 py-2 text-sm text-ink">
-                    <button type="submit" class="rounded-lg bg-[#3d9b6d] px-3 py-2 text-sm font-bold shrink-0">Subscribe</button>
+                    <button type="submit" class="rounded-lg bg-[#f23488] px-3 py-2 text-sm font-bold shrink-0">Subscribe</button>
                 </div>
                 <p class="text-[11px] text-white/40 mt-2">For licensed wholesale accounts only.</p>
             </form>
@@ -765,7 +771,7 @@
 {{-- Mobile bottom tabs --}}
 <nav class="app-bottom-nav app-mobile-only" aria-label="Primary">
     <div class="flex items-stretch">
-        <a href="{{ url('/') }}" class="app-tab {{ $isHome ? 'active' : '' }}">
+        <a href="{{ route('ecommerce.home') }}" class="app-tab {{ $isHome ? 'active' : '' }}">
             <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 10.5L12 3l9 7.5V20a1 1 0 01-1 1h-5v-6H9v6H4a1 1 0 01-1-1v-9.5z"/></svg>
             Home
         </a>
@@ -829,7 +835,7 @@
                 @endauth
             </div>
             <div class="text-xs font-bold uppercase tracking-wider text-black/40 mb-2">Departments</div>
-            <div class="divide-y divide-line rounded-xl border border-line overflow-hidden bg-white">
+            <div class="divide-y divide-line rounded-xl border border-line overflow-hidden bg-[#12182e]">
                 <a href="{{ route('ecommerce.promotions') }}" class="flex items-center justify-between px-4 py-3.5 font-semibold text-[15px] active:bg-mist">
                     <span>Promotions</span>
                     <span class="text-black/30">›</span>

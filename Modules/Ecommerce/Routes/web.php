@@ -81,16 +81,14 @@ Route::prefix(config('ecommerce.route_prefix', 'shop'))
     ->middleware(['ecommerce.enabled'])
     ->name('ecommerce.')
     ->group(function () {
-        // Catalog lives at /shop (not /shop/shop)
-        Route::get('/', [ShopController::class, 'index'])->name('shop');
-        Route::get('/shop', function () {
-            return redirect('/shop', 301);
-        });
+        Route::get('/', [HomeController::class, 'index'])->name('home');
+        Route::get('/home', fn () => redirect()->route('ecommerce.home'));
+        Route::get('/catalog', [ShopController::class, 'index'])->name('shop');
+        Route::get('/shop', fn () => redirect()->route('ecommerce.shop'));
 
         Route::get('/page/{slug}', [PageController::class, 'show'])->name('page');
         Route::get('/brands', [ShopController::class, 'brands'])->name('brands');
         Route::get('/promotions', [ShopController::class, 'promotions'])->name('promotions');
-        Route::get('/home', [HomeController::class, 'index'])->name('home');
         Route::get('/c/{slug}', [ShopController::class, 'category'])->name('category');
         Route::get('/p/{slug}', [ProductDetailController::class, 'show'])->name('product');
         Route::get('/collections/{slug}', [CollectionFrontController::class, 'show'])->name('collection');
@@ -136,6 +134,7 @@ Route::prefix(config('ecommerce.route_prefix', 'shop'))
 
         Route::middleware('auth:customer')->group(function () {
             Route::get('/quick-order', [QuickOrderController::class, 'index'])->name('quick_order');
+            Route::get('/quick-order/suggest', [QuickOrderController::class, 'suggest'])->name('quick_order.suggest');
             Route::post('/quick-order', [QuickOrderController::class, 'submit'])->name('quick_order.submit');
             Route::get('/account', [AccountController::class, 'index'])->name('account');
             Route::get('/account/orders', [AccountController::class, 'orders'])->name('account.orders');
