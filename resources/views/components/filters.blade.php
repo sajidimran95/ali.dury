@@ -23,6 +23,23 @@
     }
     .pf-open .pf-btn::before { transform: scaleX(1); }
     .pf-open .pf-btn { border-bottom-color: #e5e7eb !important; }
+    .pf-clear {
+        display: inline-flex;
+        align-items: center;
+        flex: 0 0 auto;
+        border: 0;
+        background: transparent;
+        color: #6b7280;
+        font-size: 13px;
+        font-weight: 600;
+        line-height: 1;
+        padding: 6px 14px;
+        align-self: center;
+        cursor: pointer;
+        white-space: nowrap;
+    }
+    .pf-btn { min-width: 0; }
+    .pf-clear:hover { color: #b91c1c; }
 </style>
 @endonce
 
@@ -47,9 +64,10 @@ function pfToggle(id) {
      class="tw-bg-white tw-rounded-xl tw-shadow-sm tw-ring-1 tw-ring-gray-200 tw-mb-4 tw-overflow-hidden tw-transition-shadow tw-duration-200 hover:tw-shadow-md {{ $isOpen ? 'pf-open' : '' }}">
 
     {{-- Header --}}
+    <div class="tw-flex tw-items-stretch">
     <button type="button"
             id="{{ $filterId }}_btn"
-            class="pf-btn tw-w-full tw-flex tw-items-center tw-justify-between tw-px-4 tw-py-3 tw-border-0 tw-border-b tw-border-transparent tw-bg-transparent tw-cursor-pointer tw-transition-colors tw-duration-150 hover:tw-bg-gray-50"
+            class="pf-btn tw-flex-1 tw-flex tw-items-center tw-justify-between tw-px-4 tw-py-3 tw-border-0 tw-border-b tw-border-transparent tw-bg-transparent tw-cursor-pointer tw-transition-colors tw-duration-150 hover:tw-bg-gray-50"
             onclick="pfToggle('{{ $filterId }}')"
             aria-expanded="{{ $isOpen ? 'true' : 'false' }}"
             aria-controls="{{ $filterId }}_body">
@@ -74,7 +92,6 @@ function pfToggle(id) {
             </span>
         </span>
 
-        {{-- Chevron --}}
         <svg class="pf-chevron tw-w-4 tw-h-4 tw-shrink-0 tw-transition-all tw-duration-300 {{ $isOpen ? 'tw-rotate-180' : '' }}"
              style="color: var(--theme-700, #4f8fce);"
              xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
@@ -83,6 +100,10 @@ function pfToggle(id) {
             <polyline points="6 9 12 15 18 9"/>
         </svg>
     </button>
+    @if (!empty($clear))
+        <button type="button" id="{{ $clear }}" class="pf-clear">Clear</button>
+    @endif
+    </div>
 
     {{-- Collapsible body --}}
     <div id="{{ $filterId }}_body" class="pf-body {{ $isOpen ? 'pf-body--open' : '' }}">

@@ -49,12 +49,13 @@
 
     <!-- Main content -->
     <section class="content">
+<style>#product_list_tab .dataTables_scroll{opacity:1 !important;}</style>
         @if (!empty($product_stats))
             @include('product.partials.list_metrics')
         @endif
         <div class="row">
             <div class="col-md-12">
-                @component('components.filters', ['title' => __('report.filters')])
+                @component('components.filters', ['title' => __('report.filters'), 'clear' => 'product_list_filter_clear'])
                     <div class="col-md-3">
                         <div class="form-group">
                             {!! Form::label('type', __('product.product_type') . ':') !!}
@@ -328,10 +329,143 @@
     @endcan
     <script type="text/javascript">
         $(document).ready(function() {
+            var productListFilterKey = 'product_list_filters_v1';
+            var productListFilterPause = false;
+            var productListFilterSelects = [
+                '#product_list_filter_type',
+                '#product_list_filter_category_id',
+                '#product_list_filter_sub_category_id',
+                '#product_list_filter_child_category_id',
+                '#product_list_filter_brand_id',
+                '#product_list_filter_unit_id',
+                '#product_list_filter_tax_id',
+                '#location_id',
+                '#active_state',
+                '#repair_model_id'
+            ];
+
+            function loadProductListFilters() {
+                try {
+                    return JSON.parse(localStorage.getItem(productListFilterKey) || 'null');
+                } catch (e) {
+                    return null;
+                }
+            }
+
+            function saveProductListFilters() {
+                if (productListFilterPause) {
+                    return;
+                }
+                var data = { selects: {}, checks: {}, search: '' };
+                productListFilterSelects.forEach(function(sel) {
+                    var $el = $(sel);
+                    if ($el.length) {
+                        data.selects[sel] = $el.val() || '';
+                    }
+                });
+                data.checks.not_for_selling = $('#not_for_selling').is(':checked');
+                data.checks.woocommerce_enabled = $('#woocommerce_enabled').length && $('#woocommerce_enabled').is(':checked');
+                if (typeof product_table !== 'undefined' && product_table) {
+                    data.search = product_table.search() || '';
+                }
+                try {
+                    localStorage.setItem(productListFilterKey, JSON.stringify(data));
+                } catch (e) {}
+            }
+
+            function applyProductListFilters(data) {
+                if (!data) {
+                    return;
+                }
+                productListFilterPause = true;
+                $.each(data.selects || {}, function(sel, val) {
+                    if (sel === '#product_list_filter_sub_category_id' || sel === '#product_list_filter_child_category_id') {
+                        return;
+                    }
+                    var $el = $(sel);
+                    if ($el.length) {
+                        $el.val(val || '').trigger('change.select2');
+                    }
+                });
+                if ($.fn.iCheck) {
+                    $('#not_for_selling').iCheck(data.checks && data.checks.not_for_selling ? 'check' : 'uncheck');
+                    if ($('#woocommerce_enabled').length) {
+                        $('#woocommerce_enabled').iCheck(data.checks && data.checks.woocommerce_enabled ? 'check' : 'uncheck');
+                    }
+                }
+                productListFilterPause = false;
+            }
+
+            function restoreNestedProductCategories(data) {
+                if (!data || !data.selects) {
+                    return;
+                }
+                var cat = data.selects['#product_list_filter_category_id'] || '';
+                var sub = data.selects['#product_list_filter_sub_category_id'] || '';
+                var child = data.selects['#product_list_filter_child_category_id'] || '';
+                if (!cat || !sub) {
+                    return;
+                }
+                var $sub = $('#product_list_filter_sub_category_id');
+                var $subWrap = $('#product_list_sub_category_wrap');
+                $.ajax({
+                    method: 'POST',
+                    url: '/products/get_sub_categories',
+                    dataType: 'html',
+                    data: { cat_id: cat },
+                    success: function(result) {
+                        var $opts = $('<select>' + (result || '') + '</select>').find('option').filter(function() {
+                            return $(this).val() !== '';
+                        });
+                        if (!$opts.length) {
+                            return;
+                        }
+                        $sub.append($opts);
+                        $subWrap.removeClass('hide');
+                        productListFilterPause = true;
+                        $sub.val(sub).trigger('change.select2');
+                        productListFilterPause = false;
+                        if (!child) {
+                            saveProductListFilters();
+                            product_table.ajax.reload();
+                            return;
+                        }
+                        var $child = $('#product_list_filter_child_category_id');
+                        var $childWrap = $('#product_list_child_category_wrap');
+                        $.ajax({
+                            method: 'POST',
+                            url: '/products/get_sub_categories',
+                            dataType: 'html',
+                            data: { cat_id: sub },
+                            success: function(childResult) {
+                                var $childOpts = $('<select>' + (childResult || '') + '</select>').find('option').filter(function() {
+                                    return $(this).val() !== '';
+                                });
+                                if ($childOpts.length) {
+                                    $child.append($childOpts);
+                                    $childWrap.removeClass('hide');
+                                    productListFilterPause = true;
+                                    $child.val(child).trigger('change.select2');
+                                    productListFilterPause = false;
+                                }
+                                saveProductListFilters();
+                                product_table.ajax.reload();
+                            }
+                        });
+                    }
+                });
+            }
+
+            var savedProductListFilters = loadProductListFilters();
+            applyProductListFilters(savedProductListFilters);
+
             if (typeof __currency_convert_recursively === 'function' && $('#product_list_metrics').length) {
                 __currency_convert_recursively($('#product_list_metrics'));
             }
             product_table = $('#product_table').DataTable({
+                search: {
+                    search: (savedProductListFilters && savedProductListFilters.search) ? savedProductListFilters.search : ''
+                },
                 processing: true,
                 serverSide: true,
                 fixedHeader:false,
@@ -479,6 +613,7 @@
                 },
                 fnDrawCallback: function(oSettings) {
                     __currency_convert_recursively($('#product_table'));
+                    $('#product_table').closest('.dataTables_scroll').addClass('dt-loaded');
                 },
             });
             // Convert loaded product images to base64 so they appear in the PDF.
@@ -712,9 +847,18 @@
                 });
             });
 
+            product_table.on('search.dt', function() {
+                saveProductListFilters();
+            });
+            restoreNestedProductCategories(savedProductListFilters);
+
             $(document).on('change',
                 '#product_list_filter_type, #product_list_filter_category_id, #product_list_filter_sub_category_id, #product_list_filter_child_category_id, #product_list_filter_brand_id, #product_list_filter_unit_id, #product_list_filter_tax_id, #location_id, #active_state, #repair_model_id',
                 function() {
+                    if (productListFilterPause) {
+                        return;
+                    }
+                    saveProductListFilters();
                     if ($("#product_list_tab").hasClass('active')) {
                         product_table.ajax.reload();
                     }
@@ -725,11 +869,42 @@
                 });
 
             $(document).on('ifChanged', '#not_for_selling, #woocommerce_enabled', function() {
+                if (productListFilterPause) {
+                    return;
+                }
+                saveProductListFilters();
                 if ($("#product_list_tab").hasClass('active')) {
                     product_table.ajax.reload();
                 }
 
                 if ($("#product_stock_report").hasClass('active')) {
+                    stock_report_table.ajax.reload();
+                }
+            });
+
+            $('#product_list_filter_clear').on('click', function() {
+                productListFilterPause = true;
+                try {
+                    localStorage.removeItem(productListFilterKey);
+                } catch (e) {}
+                productListFilterSelects.forEach(function(sel) {
+                    var $el = $(sel);
+                    if ($el.length) {
+                        $el.val('').trigger('change.select2');
+                    }
+                });
+                $('#product_list_sub_category_wrap, #product_list_child_category_wrap').addClass('hide');
+                if ($.fn.iCheck) {
+                    $('#not_for_selling').iCheck('uncheck');
+                    if ($('#woocommerce_enabled').length) {
+                        $('#woocommerce_enabled').iCheck('uncheck');
+                    }
+                }
+                productListFilterPause = false;
+                if (typeof product_table !== 'undefined' && product_table) {
+                    product_table.search('').draw();
+                }
+                if ($("#product_stock_report").hasClass('active') && typeof stock_report_table !== 'undefined') {
                     stock_report_table.ajax.reload();
                 }
             });
