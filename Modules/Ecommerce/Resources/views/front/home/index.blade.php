@@ -8,29 +8,9 @@
     $categories = $categories ?? collect();
     $store = $store ?? ($ecom_settings->store_name ?? 'Wholesale Store');
     $loggedIn = auth('customer')->check();
-    $heroSlides = collect($banners ?? [])->filter(fn ($b) => is_string($b->image ?? null) && preg_match('/\.(mp4|webm|ogg)(\?|$)/i', $b->image))->values();
-    if ($heroSlides->isEmpty()) {
-        $heroSlides = collect([
-            (object) ['image' => asset('ecom/hero/vape.mp4'), 'poster' => \Modules\Ecommerce\Support\StaticCatalog::img(17962160), 'title' => 'Vape'],
-            (object) ['image' => asset('ecom/hero/cigar-burn.mp4'), 'poster' => \Modules\Ecommerce\Support\StaticCatalog::img(4110409), 'title' => 'Cigar'],
-            (object) ['image' => asset('ecom/hero/cigar-roll.mp4'), 'poster' => \Modules\Ecommerce\Support\StaticCatalog::img(29474381), 'title' => 'Papers'],
-            (object) ['image' => asset('ecom/hero/hookah.mp4'), 'poster' => \Modules\Ecommerce\Support\StaticCatalog::img(33698249), 'title' => 'Hookah'],
-        ]);
-    }
-    $fallbackBrands = $navBrands->count() ? $navBrands->values() : collect();
-    if ($fallbackBrands->isEmpty()) {
-        $fallbackBrands = collect(['CloudLine Vapor','Nightshade Vapes','Drift Coil Vapes','Harbor Leaf Cigars','Ember & Oak Cigars','Velvet Puff Papers','Iron Flint Torches','Ash & Ember Smoke'])
-            ->map(fn ($n) => (object) ['id' => 0, 'name' => $n]);
-    } else {
-        while ($fallbackBrands->count() < 8) {
-            $fallbackBrands = $fallbackBrands->concat($navBrands->values());
-        }
-        $fallbackBrands = $fallbackBrands->take(8);
-    }
-    $fallbackCats = $categories->count()
-        ? $categories->take(8)
-        : collect(['Disposable Vapes','Vape Devices & Pods','E-Liquids & Nic Salts','Cigars & Cigarillos','Rolling Papers & Wraps','Hookah & Shisha','Lighters & Torches','Smoke Shop Accessories'])
-            ->map(fn ($n) => (object) ['id' => 0, 'name' => $n]);
+    $heroSlides = \Modules\Ecommerce\Support\Storefront::videos();
+    $fallbackBrands = $navBrands->values()->take(8);
+    $fallbackCats = $categories->take(8);
     $coverFile = storage_path('app/ecom_category_covers.json');
     $category_covers = $category_covers ?? (is_file($coverFile) ? (json_decode(file_get_contents($coverFile), true) ?: []) : []);
     $collections = $collections ?? collect();
@@ -88,6 +68,7 @@
         @endif
     </section>
 
+    @if($fallbackBrands->isNotEmpty())
     <section class="wn-brand-row" id="wnBrandRow">
         <button type="button" class="wn-brand-nav" data-brand-prev aria-label="Previous brands">‹</button>
         <div class="flex-1 grid grid-cols-4 md:grid-cols-8 gap-2 min-w-0">
@@ -99,13 +80,15 @@
         </div>
         <button type="button" class="wn-brand-nav" data-brand-next aria-label="Next brands">›</button>
     </section>
+    @endif
 
+    @if($fallbackCats->isNotEmpty())
     <section class="wn-cats">
         @foreach($fallbackCats as $i => $cat)
             @php
-                $cover = !empty($cat->id) && isset($category_covers[$cat->id])
+                $cover = (!empty($cat->id) && isset($category_covers[$cat->id]))
                     ? asset('uploads/img/'.$category_covers[$cat->id])
-                    : (($featured[$i]->image_url ?? null));
+                    : null;
             @endphp
             <a href="{{ !empty($cat->id) ? route('ecommerce.category', $cat->id) : route('ecommerce.shop') }}" class="wn-cat" data-tone="{{ $i % 6 }}">
                 <h3>{{ $cat->name }}</h3>
@@ -116,13 +99,14 @@
             </a>
         @endforeach
     </section>
+    @endif
 
     <section>
         <div class="flex items-end justify-between mb-4">
             <h2 class="gc-section-title uppercase">Featured Products</h2>
             <a href="{{ route('ecommerce.shop') }}" class="text-sm font-semibold text-[#9aa6d1] hover:text-white">View All Products →</a>
         </div>
-        @include('ecommerce::front.partials.product_grid', ['products' => $featured, 'gridClass' => 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3', 'minCards' => 6])
+        @include('ecommerce::front.partials.product_grid', ['products' => $featured, 'gridClass' => 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3', 'minCards' => 0])
     </section>
 
     <section>
@@ -130,7 +114,7 @@
             <h2 class="gc-section-title uppercase">New Arrivals</h2>
             <a href="{{ route('ecommerce.shop', ['sort' => 'newest']) }}" class="text-sm font-semibold text-[#9aa6d1] hover:text-white">See all →</a>
         </div>
-        @include('ecommerce::front.partials.product_grid', ['products' => $new_arrivals, 'gridClass' => 'grid grid-cols-2 md:grid-cols-4 gap-3', 'minCards' => 4])
+        @include('ecommerce::front.partials.product_grid', ['products' => $new_arrivals, 'gridClass' => 'grid grid-cols-2 md:grid-cols-4 gap-3', 'minCards' => 0])
     </section>
 
     <section>
@@ -138,7 +122,7 @@
             <h2 class="gc-section-title uppercase">Best Sellers</h2>
             <a href="{{ route('ecommerce.shop') }}" class="text-sm font-semibold text-[#9aa6d1] hover:text-white">Shop all →</a>
         </div>
-        @include('ecommerce::front.partials.product_grid', ['products' => $best_sellers, 'gridClass' => 'grid grid-cols-2 md:grid-cols-4 gap-3', 'minCards' => 4])
+        @include('ecommerce::front.partials.product_grid', ['products' => $best_sellers, 'gridClass' => 'grid grid-cols-2 md:grid-cols-4 gap-3', 'minCards' => 0])
     </section>
 
     @if($collections->isNotEmpty())

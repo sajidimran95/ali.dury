@@ -22,7 +22,7 @@
         <article class="wn-pc product-card">
             <a href="{{ route('ecommerce.product', $slug) }}" class="wn-pc__img">
                 <img src="{{ $product->image_url }}" alt="{{ $product->name }}" loading="lazy"
-                     onerror="this.onerror=null;this.src='{{ asset('img/default.png') }}';">
+                     onerror="this.onerror=null;this.src='{{ \Modules\Ecommerce\Support\Storefront::placeholder() }}';">
                 @if($product->ecom_is_new_arrival)
                     <span class="wn-pc__new">NEW</span>
                 @elseif($onSale)

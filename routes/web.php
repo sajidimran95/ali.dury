@@ -117,7 +117,7 @@ Route::middleware(['setData'])->group(function () {
         }
 
         return view('welcome');
-    })->name('home.public');
+    })->name('ecommerce.home');
 
     Auth::routes();
 

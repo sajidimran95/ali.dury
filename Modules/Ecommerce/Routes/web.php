@@ -81,10 +81,10 @@ Route::prefix(config('ecommerce.route_prefix', 'shop'))
     ->middleware(['ecommerce.enabled'])
     ->name('ecommerce.')
     ->group(function () {
-        Route::get('/', [HomeController::class, 'index'])->name('home');
+        Route::get('/', [ShopController::class, 'index'])->name('shop');
+        Route::get('/catalog', fn () => redirect()->route('ecommerce.shop', request()->query()));
+        Route::get('/shop', fn () => redirect()->route('ecommerce.shop', request()->query()));
         Route::get('/home', fn () => redirect()->route('ecommerce.home'));
-        Route::get('/catalog', [ShopController::class, 'index'])->name('shop');
-        Route::get('/shop', fn () => redirect()->route('ecommerce.shop'));
 
         Route::get('/page/{slug}', [PageController::class, 'show'])->name('page');
         Route::get('/brands', [ShopController::class, 'brands'])->name('brands');

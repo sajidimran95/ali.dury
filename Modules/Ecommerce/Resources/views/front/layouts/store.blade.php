@@ -19,7 +19,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800;900&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/gc-storefront.css') }}?v={{ config('app.asset_version', '1') }}&gc=19">
+    <link rel="stylesheet" href="{{ asset('css/gc-storefront.css') }}?v={{ config('app.asset_version', '1') }}&gc=22">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {

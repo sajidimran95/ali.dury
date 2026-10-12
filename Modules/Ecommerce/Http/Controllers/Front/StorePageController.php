@@ -29,33 +29,48 @@ class StorePageController extends Controller
 
     public function categories(Request $request, CartService $cartService)
     {
-        $categories = \Modules\Ecommerce\Support\StaticCatalog::categories();
-        $counts = \Modules\Ecommerce\Support\StaticCatalog::all()
+        $business_id = $request->attributes->get('ecommerce_business_id');
+        $categories = Category::where('business_id', $business_id)
+            ->where('category_type', 'product')
+            ->where(function ($q) {
+                $q->whereNull('parent_id')->orWhere('parent_id', 0);
+            })
+            ->with('sub_categories')
+            ->orderBy('name')
+            ->get();
+
+        $counts = Product::storefrontQuery((int) $business_id)
+            ->select('category_id', DB::raw('count(*) as c'))
             ->groupBy('category_id')
-            ->map->count();
+            ->pluck('c', 'category_id');
 
         return view('ecommerce::front.pages.categories', compact('categories', 'counts'));
     }
 
     public function brands(Request $request)
     {
-        $brands = \Modules\Ecommerce\Support\StaticCatalog::brands();
-        $counts = \Modules\Ecommerce\Support\StaticCatalog::all()
+        $business_id = $request->attributes->get('ecommerce_business_id');
+        $brands = Brands::where('business_id', $business_id)->orderBy('name')->get();
+        $counts = Product::storefrontQuery((int) $business_id)
+            ->select('brand_id', DB::raw('count(*) as c'))
             ->groupBy('brand_id')
-            ->map->count();
+            ->pluck('c', 'brand_id');
 
         return view('ecommerce::front.pages.brands', compact('brands', 'counts'));
     }
 
     public function brand($id, Request $request, CartService $cartService)
     {
-        $brand = \Modules\Ecommerce\Support\StaticCatalog::brands()->first(function ($b) use ($id) {
-            return (string) $b->id === (string) $id || strcasecmp($b->name, (string) $id) === 0;
-        });
-        abort_unless($brand, 404);
+        $business_id = $request->attributes->get('ecommerce_business_id');
+        $brand = Brands::where('business_id', $business_id)
+            ->where(function ($q) use ($id) {
+                $q->where('id', $id)->orWhere('name', $id);
+            })
+            ->firstOrFail();
+
         $request->merge(['brand' => $brand->id]);
 
-        return app(ShopController::class)->index($request);
+        return app(ShopController::class)->index($request, $cartService);
     }
 
     public function promotions(Request $request)

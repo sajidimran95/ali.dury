@@ -33,7 +33,7 @@
             </div>
         @else
             <div class="hidden sm:block w-full sm:w-48 h-24 rounded-xl overflow-hidden border border-line bg-mist">
-                <img src="{{ asset('img/default.png') }}" alt="" class="w-full h-full object-cover opacity-70">
+                <img src="{{ \Modules\Ecommerce\Support\Storefront::placeholder() }}" alt="" class="w-full h-full object-cover opacity-70">
             </div>
         @endif
     </div>

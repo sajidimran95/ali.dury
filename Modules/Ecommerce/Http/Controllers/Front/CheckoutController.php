@@ -29,14 +29,27 @@ class CheckoutController extends Controller
                 ->with('error', 'Your wholesale account is pending approval. Checkout unlocks after an admin reviews your licenses.');
         }
 
+        $business_id = request()->attributes->get('ecommerce_business_id');
         $settings = request()->attributes->get('ecommerce_settings');
-        $cart = \Modules\Ecommerce\Support\StaticCart::cart();
+        $cart = $cartService->getOrCreateCart($business_id);
         if ($cart->items->isEmpty()) {
             return redirect()->route('ecommerce.cart')->with('error', __('ecommerce::lang.cart_empty'));
         }
 
+        $sub = $cartService->totals($cart);
         $discount = 0;
-        $totals = \Modules\Ecommerce\Support\StaticCart::totals();
+        if ($cart->coupon_code) {
+            try {
+                $coupon = $coupons->findValid($business_id, $cart->coupon_code, $sub['subtotal']);
+                $discount = $coupons->discountAmount($coupon, $sub['subtotal']);
+            } catch (\Throwable $e) {
+                $cart->coupon_code = null;
+                $cart->save();
+            }
+        }
+        $ship = $shipping->calculate($business_id, max(0, $sub['subtotal'] - $discount));
+        $tax_amt = $tax->calculate($business_id, max(0, $sub['subtotal'] - $discount));
+        $totals = $cartService->totals($cart, $ship, $tax_amt, $discount);
 
         $addresses = [];
         if (auth('customer')->check()) {
@@ -54,12 +67,6 @@ class CheckoutController extends Controller
         if ($customer && ! \Modules\Ecommerce\Support\WholesaleAccount::isApproved($customer)) {
             return redirect()->route('ecommerce.account.licenses')
                 ->with('error', 'Checkout is locked until your wholesale account is approved.');
-        }
-
-        if (\Modules\Ecommerce\Support\StaticCart::items()->isNotEmpty()) {
-            \Modules\Ecommerce\Support\StaticCart::clear();
-
-            return redirect()->route('ecommerce.cart')->with('success', 'Demo catalog order received. Nothing was written to POS.');
         }
 
         $business_id = $request->attributes->get('ecommerce_business_id');

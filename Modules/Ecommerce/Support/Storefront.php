@@ -2,55 +2,91 @@
 
 namespace Modules\Ecommerce\Support;
 
+use Illuminate\Support\Collection;
+
 class Storefront
 {
+    public static function placeholder(): string
+    {
+        return asset('/img/default.png');
+    }
+
     public static function photo(string $id): string
     {
-        if (ctype_digit($id) || is_numeric($id)) {
-            return StaticCatalog::img((int) $id);
-        }
         $rel = 'uploads/img/greencloud/'.$id.'.jpg';
 
-        return file_exists(public_path($rel)) ? asset($rel) : StaticCatalog::img(17962160);
+        return file_exists(public_path($rel)) ? asset($rel) : self::placeholder();
     }
 
     public static function heroPhotos(): array
     {
-        return ['17962160', '4110409', '1637114', '33698249', '29474381', '16997535', '3756766', '7404897'];
+        return [
+            'photo-1558618666-fcd25c85cd64',
+            'photo-1519671482749-fd09be7ccebf',
+            'photo-1511689660979-10d2b1aada49',
+            'photo-1461532257246-777de18cd58b',
+            'photo-1556742049-0cfed4f6a45d',
+        ];
+    }
+
+    public static function videos(): Collection
+    {
+        return collect([
+            (object) [
+                'title' => 'Wholesale Vape Cloud',
+                'image' => asset('ecom/hero/vape.mp4'),
+                'poster' => self::placeholder(),
+            ],
+            (object) [
+                'title' => 'Cigar Lounge Heat',
+                'image' => asset('ecom/hero/cigar-burn.mp4'),
+                'poster' => self::placeholder(),
+            ],
+            (object) [
+                'title' => 'Roll & Wrap',
+                'image' => asset('ecom/hero/cigar-roll.mp4'),
+                'poster' => self::placeholder(),
+            ],
+            (object) [
+                'title' => 'Hookah Night',
+                'image' => asset('ecom/hero/hookah.mp4'),
+                'poster' => self::placeholder(),
+            ],
+        ]);
     }
 
     public static function hub(?string $slug): ?array
     {
         $hubs = [
             'vape-nicotine' => [
-                'kicker' => 'Vape',
+                'kicker' => 'Nicotine',
                 'title' => 'Vape & Nicotine',
-                'lede' => 'Disposables, pods, nic salts, and devices for licensed smoke shops. 21+ wholesale only.',
-                'image' => StaticCatalog::img(17962160),
+                'lede' => 'Disposables, pods, salts, and devices for licensed Wisconsin retailers. 21+ and PACT Act shipping rules apply.',
+                'image' => self::photo('photo-1558618666-fcd25c85cd64'),
             ],
             'devices' => [
                 'kicker' => 'Hardware',
-                'title' => 'Vape Devices & Pods',
-                'lede' => 'Pod kits, box mods, mesh coils, and charging docks — case packed for retailers.',
-                'image' => StaticCatalog::img(11698682),
+                'title' => 'Smoking Devices & Supplies',
+                'lede' => 'Disposable vapes, dry herb vaporizers, dab rigs, and pod systems — in-stock for licensed retailers.',
+                'image' => self::photo('photo-1518770660439-4636190af475'),
             ],
             'accessories' => [
-                'kicker' => 'Smoke shop',
-                'title' => 'Papers, Flame & Trays',
-                'lede' => 'Rolling papers, wraps, cones, grinders, lighters, and trays for the smoke counter.',
-                'image' => StaticCatalog::img(29474381),
+                'kicker' => 'Tools',
+                'title' => 'Smoking Accessories & Tools',
+                'lede' => 'Papers, glass, grinders, lighters, trays, wraps, and dab tools for smoke shops.',
+                'image' => self::photo('photo-1563906267088-b029e7101114'),
             ],
             'lifestyle' => [
-                'kicker' => 'Cigar',
-                'title' => 'Cigar Lounge',
-                'lede' => 'Robustos, Churchills, maduros, cigarillos, and humidors.',
-                'image' => StaticCatalog::img(1637114),
+                'kicker' => 'Specialty',
+                'title' => 'Lifestyle & Specialty',
+                'lede' => 'Hemp wellness, CBD, artistic glass, crystals, and specialty goods.',
+                'image' => self::photo('photo-1518531933037-91b2f5f229cc'),
             ],
             'thc-delta' => [
-                'kicker' => 'Hookah',
-                'title' => 'Hookah & Shisha',
-                'lede' => 'Stems, clay bowls, hoses, and coconut charcoal cubes.',
-                'image' => StaticCatalog::img(33698249),
+                'kicker' => 'Hemp',
+                'title' => 'THC / Delta Products',
+                'lede' => 'Farm Bill hemp SKUs with batch COAs. Restricted states apply — verify before you order.',
+                'image' => self::photo('photo-1511689660979-10d2b1aada49'),
             ],
         ];
 

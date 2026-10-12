@@ -81,7 +81,7 @@ class Product extends Model
             }
         }
 
-        return asset('/img/default.png');
+        return \Modules\Ecommerce\Support\Storefront::placeholder();
     }
 
     /**

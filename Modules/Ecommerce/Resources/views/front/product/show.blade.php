@@ -27,7 +27,7 @@
         <div>
             <div class="wn-panel overflow-hidden aspect-square relative">
                 <img id="mainImage" src="{{ $product->image_url }}" alt="{{ $product->name }}" class="absolute inset-0 w-full h-full object-contain p-6"
-                     onerror="this.onerror=null;this.src='{{ asset('img/default.png') }}';">
+                     onerror="this.onerror=null;this.src='{{ \Modules\Ecommerce\Support\Storefront::placeholder() }}';">
                 @if($onSale)
                     <span class="absolute top-3 left-3 rounded bg-[#f23488] text-white text-[10px] font-bold uppercase px-2.5 py-1">Sale</span>
                 @endif

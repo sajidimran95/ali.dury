@@ -31,7 +31,7 @@
                         <a href="{{ $product ? route('ecommerce.product', $product->ecom_slug ?: $product->id) : '#' }}" class="wn-cart-thumb">
                             @if($product)
                                 <img src="{{ $product->image_url }}" alt=""
-                                     onerror="this.onerror=null;this.src='{{ asset('img/default.png') }}';">
+                                     onerror="this.onerror=null;this.src='{{ \Modules\Ecommerce\Support\Storefront::placeholder() }}';">
                             @endif
                         </a>
                         <div class="flex-1 min-w-0">
