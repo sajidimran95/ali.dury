@@ -7920,3 +7920,73 @@ function saveFormDataToLocalStorage() {
     // console.log("Form data successfully saved to LocalStorage.");
 }
 
+
+/**
+ * Duplicate sale guard.
+ * Every POS save (finalize, express pay, credit sale, draft, quotation, park)
+ * POSTs to /pos or /pos/{id}. While one is in flight, further submits are
+ * dropped (double click, Enter + click, shortcut keys). Each save also carries
+ * a pos_submit_token that is kept until a save succeeds, so a retry after a
+ * network error/timeout is recognised by the server and not saved twice.
+ */
+(function ($) {
+    if (!$ || !$.ajaxPrefilter || window.__posSubmitGuardInstalled) {
+        return;
+    }
+    window.__posSubmitGuardInstalled = true;
+
+    var inFlight = false;
+    var submitToken = null;
+
+    function newSubmitToken() {
+        if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+            return window.crypto.randomUUID();
+        }
+        return Date.now().toString(36) + '-' + Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
+    }
+
+    function isPosSaveRequest(options) {
+        if (String(options.type || options.method || '').toUpperCase() !== 'POST') {
+            return false;
+        }
+        var path = String(options.url || '').split('?')[0].split('#')[0].replace(/^https?:\/\/[^\/]+/i, '');
+        if (!/\/pos(\/\d+)?\/?$/.test(path)) {
+            return false;
+        }
+        var data = typeof options.data === 'string' ? options.data : '';
+        return !/(^|&)_method=delete(&|$)/i.test(data);
+    }
+
+    $.ajaxPrefilter(function (options, originalOptions, jqXHR) {
+        if (!isPosSaveRequest(options)) {
+            return;
+        }
+        if (inFlight) {
+            // Aborting inside a prefilter skips the caller's success/error handlers.
+            jqXHR.abort();
+            if (typeof toastr !== 'undefined') {
+                toastr.info('Sale is already being saved, please wait...');
+            }
+            return;
+        }
+
+        if (!submitToken) {
+            submitToken = newSubmitToken();
+        }
+        var sentToken = submitToken;
+        if (typeof options.data !== 'string') {
+            options.data = options.data ? $.param(options.data) : '';
+        }
+        options.data = options.data.replace(/(^|&)pos_submit_token=[^&]*/g, '');
+        options.data += (options.data ? '&' : '') + 'pos_submit_token=' + encodeURIComponent(sentToken);
+
+        inFlight = true;
+        jqXHR.done(function (result) {
+            if (result && (result.success == 1 || result.success === true) && submitToken === sentToken) {
+                submitToken = null;
+            }
+        }).always(function () {
+            inFlight = false;
+        });
+    });
+})(window.jQuery);

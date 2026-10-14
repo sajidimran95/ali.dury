@@ -57,6 +57,7 @@ use App\Variation;
 use App\Warranty;
 use App\Printer;
 use App\PosQuickLayout;
+use App\Http\Controllers\Concerns\PreventsDuplicatePosSubmit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -69,6 +70,8 @@ use App\Events\SellCreatedOrModified;
 
 class SellPosController extends Controller
 {
+    use PreventsDuplicatePosSubmit;
+
     /**
      * All Utils instance.
      */
@@ -408,6 +411,11 @@ class SellPosController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
+    {
+        return $this->guardDuplicatePosSubmit($request, 'store', fn () => $this->storeSale($request));
+    }
+
+    protected function storeSale(Request $request)
     {
         if (!auth()->user()->can('sell.create') && !auth()->user()->can('direct_sell.access') && !auth()->user()->can('so.create')) {
             abort(403, 'Unauthorized action.');
@@ -1464,6 +1472,11 @@ class SellPosController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $id)
+    {
+        return $this->guardDuplicatePosSubmit($request, 'update:' . $id, fn () => $this->updateSale($request, $id));
+    }
+
+    protected function updateSale(Request $request, $id)
     {
         if (!auth()->user()->can('sell.update') && !auth()->user()->can('direct_sell.access') &&
             !SalesOrderPermission::canUpdateAny(auth()->user()) && !auth()->user()->can('edit_pos_payment')) {
