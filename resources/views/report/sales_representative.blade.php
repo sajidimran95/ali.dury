@@ -12,31 +12,27 @@
 <section class="content">
     <div class="row">
         <div class="col-md-12">
-            @component('components.filters', ['title' => __('report.filters')])
-              {!! Form::open(['url' => action([\App\Http\Controllers\ReportController::class, 'getStockReport']), 'method' => 'get', 'id' => 'sales_representative_filter_form' ]) !!}
-                <div class="col-md-4">
-                    <div class="form-group">
-                        {!! Form::label('sr_id',  __('report.user') . ':') !!}
-                        {!! Form::select('sr_id', $users, null, ['class' => 'form-control select2', 'style' => 'width:100%', 'placeholder' => __('report.all_users')]); !!}
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="form-group">
-                        {!! Form::label('sr_business_id',  __('business.business_location') . ':') !!}
-                        {!! Form::select('sr_business_id', $business_locations, null, ['class' => 'form-control select2', 'style' => 'width:100%']); !!}
-                    </div>
-                </div>
-
-                <div class="col-md-3">
-                    <div class="form-group">
-
-                        {!! Form::label('sr_date_filter', __('report.date_range') . ':') !!}
-                        {!! Form::text('date_range', null, ['placeholder' => __('lang_v1.select_a_date_range'), 'class' => 'form-control', 'id' => 'sr_date_filter', 'readonly']); !!}
-                    </div>
-                </div>
-
-                {!! Form::close() !!}
-            @endcomponent
+            @include('report.partials.catalog_style_filters', [
+                'csfFormId' => 'sales_representative_filter_form',
+                'csfDateId' => 'sr_date_filter',
+                'csfTitle' => __('report.sales_representative'),
+                'csfHasSort' => true,
+                'csfTableSelector' => '#sr_sales_report',
+                'csfColumns' => [__('messages.date'), __('sale.invoice_no'), __('sale.customer_name'), __('sale.location'), __('sale.payment_status'), __('sale.total_amount'), __('sale.total_paid'), __('sale.total_remaining')],
+                'csfFilters' => [
+                    'date' => ['label' => 'Date', 'type' => 'date', 'all' => 'Custom'],
+                    'rep' => [
+                        'label' => 'Sales Rep',
+                        'all' => __('report.all_users'),
+                        'html' => Form::select('sr_id', $users, null, ['class' => 'form-control select2', 'id' => 'sr_id', 'style' => 'width:100%', 'placeholder' => __('report.all_users')]),
+                    ],
+                    'location' => [
+                        'label' => 'Business Location',
+                        'all' => 'All',
+                        'html' => Form::select('sr_business_id', $business_locations, null, ['class' => 'form-control select2', 'id' => 'sr_business_id', 'style' => 'width:100%']),
+                    ],
+                ],
+            ])
         </div>
     </div>
 
@@ -149,4 +145,5 @@
 @section('javascript')
     <script src="{{ asset('js/report.js?v=' . $asset_v) }}"></script>
     <script src="{{ asset('js/payment.js?v=' . $asset_v) }}"></script>
+    <script src="{{ asset('js/catalog_style_filters.js?v=' . $asset_v) }}"></script>
 @endsection

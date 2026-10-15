@@ -496,6 +496,9 @@ $(document).ready(function() {
                         (d.location_id = $('select#sr_business_id').val()),
                         (d.start_date = start),
                         (d.end_date = end);
+                    if ($('#catalog_style_filters .rd-basis:checked').val() === 'cash') {
+                        d.payment_status = 'paid';
+                    }
                 },
             },
             columns: [
@@ -604,6 +607,9 @@ $(document).ready(function() {
                         (d.location_id = $('select#sr_business_id').val()),
                         (d.start_date = start),
                         (d.end_date = end);
+                    if ($('#catalog_style_filters .rd-basis:checked').val() === 'cash') {
+                        d.payment_status = 'paid';
+                    }
                 },
             },
             columns: [

@@ -753,20 +753,22 @@ class AttendanceController extends Controller
         ];
     }
 
+    protected function phpTimeFormat(): string
+    {
+        $setting = session('business.time_format', 24);
+        if ((string) $setting === '12') {
+            return 'h:i A';
+        }
+
+        return 'H:i';
+    }
+
     protected function formatDateTime($datetime): string
     {
         $tz = $this->businessTimezone();
         $dateFormat = session('business.date_format', 'm/d/Y');
-        $timeFormat = session('business.time_format', 'H:i');
-        if ($timeFormat === '12') {
-            $timeFormat = 'h:i A';
-        }
-        // Always include minutes even if business time setting omits them
-        if (strpos($timeFormat, 'i') === false) {
-            $timeFormat .= ':i';
-        }
 
-        return Carbon::parse($datetime)->setTimezone($tz)->format($dateFormat.' '.$timeFormat);
+        return Carbon::parse($datetime)->setTimezone($tz)->format($dateFormat.' '.$this->phpTimeFormat());
     }
 
     /**
@@ -779,25 +781,15 @@ class AttendanceController extends Controller
         }
         $tz = $this->businessTimezone();
         $dateFormat = session('business.date_format', 'm/d/Y');
-        $timeFormat = session('business.time_format', 'H:i');
-        if ($timeFormat === '12') {
-            $timeFormat = 'h:i A';
-        }
-        if (strpos($timeFormat, 'i') === false) {
-            $timeFormat .= ':i';
-        }
 
-        return Carbon::parse($datetime)->setTimezone($tz)->format($dateFormat.' '.$timeFormat);
+        return Carbon::parse($datetime)->setTimezone($tz)->format($dateFormat.' '.$this->phpTimeFormat());
     }
 
     protected function parseBusinessDateTime(string $value): Carbon
     {
         $tz = $this->businessTimezone();
         $dateFormat = session('business.date_format', 'm/d/Y');
-        $timeFormat = session('business.time_format', 'H:i');
-        if ($timeFormat === '12') {
-            $timeFormat = 'h:i A';
-        }
+        $timeFormat = $this->phpTimeFormat();
 
         $formats = [
             $dateFormat.' '.$timeFormat,
@@ -951,15 +943,8 @@ class AttendanceController extends Controller
     protected function formatTimeOnly($datetime): string
     {
         $tz = $this->businessTimezone();
-        $timeFormat = session('business.time_format', 'H:i');
-        if ($timeFormat === '12') {
-            $timeFormat = 'h:i A';
-        }
-        if (strpos($timeFormat, 'i') === false) {
-            $timeFormat .= ':i';
-        }
 
-        return Carbon::parse($datetime)->setTimezone($tz)->format($timeFormat);
+        return Carbon::parse($datetime)->setTimezone($tz)->format($this->phpTimeFormat());
     }
 
     protected function syncBreaksFromRequest(EmployeeAttendance $attendance, $breaks, Carbon $clockIn, ?Carbon $clockOut): void

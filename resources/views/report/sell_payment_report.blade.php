@@ -12,61 +12,37 @@
 <section class="content no-print">
     <div class="row">
         <div class="col-md-12">
-           @component('components.filters', ['title' => __('report.filters')])
-              {!! Form::open(['url' => '#', 'method' => 'get', 'id' => 'sell_payment_report_form' ]) !!}
-                <div class="col-md-3">
-                    <div class="form-group">
-                        {!! Form::label('customer_id', __('contact.customer') . ':') !!}
-                        <div class="input-group">
-                            <span class="input-group-addon">
-                                <i class="fa fa-user"></i>
-                            </span>
-                            {!! Form::select('customer_id', $customers, null, ['class' => 'form-control select2',  'style' => 'width:100%', 'placeholder' => __('messages.all'), 'required']); !!}
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="form-group">
-                        {!! Form::label('location_id', __('purchase.business_location').':') !!}
-                        <div class="input-group">
-                            <span class="input-group-addon">
-                                <i class="fa fa-map-marker"></i>
-                            </span>
-                            {!! Form::select('location_id', $business_locations, null, ['class' => 'form-control select2',  'style' => 'width:100%', 'placeholder' => __('messages.all'), 'required']); !!}
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="form-group">
-                        {!! Form::label('payment_types', __('lang_v1.payment_method').':') !!}
-                        <div class="input-group">
-                            <span class="input-group-addon">
-                                <i class="fas fa-money-bill-alt"></i>
-                            </span>
-                            {!! Form::select('payment_types', $payment_types, null, ['class' => 'form-control select2', 'placeholder' => __('messages.all'), 'required', 'style' => 'width:100%']); !!}
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="form-group">
-                        {!! Form::label('customer_group_filter', __('lang_v1.customer_group').':') !!}
-                        <div class="input-group">
-                            <span class="input-group-addon">
-                                <i class="fa fa-users"></i>
-                            </span>
-                            {!! Form::select('customer_group_filter', $customer_groups, null, ['class' => 'form-control select2', 'style' => 'width:100%']); !!}
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="form-group">
-
-                        {!! Form::label('spr_date_filter', __('report.date_range') . ':') !!}
-                        {!! Form::text('date_range', null, ['placeholder' => __('lang_v1.select_a_date_range'), 'class' => 'form-control', 'id' => 'spr_date_filter', 'readonly']); !!}
-                    </div>
-                </div>
-                {!! Form::close() !!}
-            @endcomponent
+            @include('report.partials.catalog_style_filters', [
+                'csfFormId' => 'sell_payment_report_form',
+                'csfDateId' => 'spr_date_filter',
+                'csfTitle' => __('lang_v1.sell_payment_report'),
+                'csfHasSort' => false,
+                'csfTableSelector' => '#sell_payment_report_table',
+                'csfColumns' => ['', __('purchase.ref_no'), __('lang_v1.paid_on'), __('sale.amount'), __('contact.customer'), __('lang_v1.contact_id'), __('lang_v1.customer_group'), __('lang_v1.payment_method'), __('sale.sale'), __('messages.action')],
+                'csfFilters' => [
+                    'date' => ['label' => 'Date', 'type' => 'date', 'all' => 'Custom'],
+                    'name' => [
+                        'label' => 'Name',
+                        'all' => 'All customers/jobs',
+                        'html' => Form::select('customer_id', $customers, null, ['class' => 'form-control select2', 'id' => 'customer_id', 'style' => 'width:100%', 'placeholder' => 'All customers/jobs']),
+                    ],
+                    'group' => [
+                        'label' => 'Customer Group',
+                        'all' => 'All customer groups',
+                        'html' => Form::select('customer_group_filter', $customer_groups, null, ['class' => 'form-control select2', 'id' => 'customer_group_filter', 'style' => 'width:100%']),
+                    ],
+                    'location' => [
+                        'label' => 'Business Location',
+                        'all' => 'All',
+                        'html' => Form::select('location_id', $business_locations, null, ['class' => 'form-control select2', 'id' => 'location_id', 'style' => 'width:100%', 'placeholder' => __('messages.all')]),
+                    ],
+                    'payment' => [
+                        'label' => 'Payment Method',
+                        'all' => 'All',
+                        'html' => Form::select('payment_types', $payment_types, null, ['class' => 'form-control select2', 'id' => 'payment_types', 'style' => 'width:100%', 'placeholder' => __('messages.all')]),
+                    ],
+                ],
+            ])
         </div>
     </div>
     <div class="row">
@@ -112,4 +88,5 @@
 @section('javascript')
     <script src="{{ asset('js/report.js?v=' . $asset_v) }}"></script>
     <script src="{{ asset('js/payment.js?v=' . $asset_v) }}"></script>
+    <script src="{{ asset('js/catalog_style_filters.js?v=' . $asset_v) }}"></script>
 @endsection

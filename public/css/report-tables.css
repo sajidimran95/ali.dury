@@ -9,7 +9,7 @@
    The nowrap rule has to match that clone or columns are sized for wrapping.
    Long values are capped so the column stays short; the full text is on the
    cell title (set from the layout script) for hover. */
-body.japs-list-tables .content table :is(th, td),
+body.japs-list-tables .content table :is(th, td):not(.fc-axis):not(.fc-widget-content):not(.fc-widget-header):not(.fc-day-header):not(.fc-time),
 body.japs-list-tables table.dataTable :is(th, td) {
     white-space: nowrap !important;
     word-break: normal !important;
@@ -109,20 +109,23 @@ body.japs-list-tables .content :is(#purchase_entry_table, #pos_table, .direct-se
     display: inline !important;
 }
 
-/* FullCalendar draws the attendance report with its own tables. */
-body.japs-list-tables .content .fc table,
-body.japs-list-tables .content .fc table :is(th, td) {
-    table-layout: auto !important;
+/* FullCalendar owns its own table-layout (fixed + JS axis width).
+   Only undo list-table max-content / 11rem so the time gutter is a single column. */
+body.japs-list-tables .content .fc table {
+    table-layout: fixed !important;
     width: 100% !important;
-    max-width: none !important;
     min-width: 0 !important;
-    white-space: normal !important;
+    max-width: none !important;
+}
+
+body.japs-list-tables .content .fc table :is(th, td) {
+    max-width: none !important;
     overflow: visible !important;
     text-overflow: clip !important;
 }
 
-body.japs-list-tables .content .fc table :is(th, td) :where(span, small, a, strong, b, label, p, div) {
-    white-space: inherit !important;
+body.japs-list-tables .content .fc table :is(th, td):not(.fc-axis) {
+    width: auto !important;
 }
 
 body.japs-list-tables .content .fc table br {
@@ -131,4 +134,31 @@ body.japs-list-tables .content .fc table br {
 
 body.japs-list-tables .content .box-body:has(.fc) {
     overflow: visible;
+}
+
+/* Attendance list: same full-width columns as Nashville, not the 11rem cap. */
+body.japs-list-tables .content #attendance_table,
+body.japs-list-tables .content #attendance_table :is(th, td),
+body.japs-list-tables table#attendance_table,
+body.japs-list-tables table#attendance_table :is(th, td) {
+    table-layout: auto !important;
+    width: auto !important;
+    max-width: none !important;
+    min-width: 0 !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+}
+
+body.japs-list-tables .content #attendance_table {
+    width: 100% !important;
+}
+
+body.japs-list-tables .content #attendance_table thead th:first-child,
+body.japs-list-tables .content #attendance_table tbody td:first-child {
+    width: 40px !important;
+    max-width: 48px !important;
+}
+
+body.japs-list-tables .content #attendance_table br {
+    display: inline !important;
 }

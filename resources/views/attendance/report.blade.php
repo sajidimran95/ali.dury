@@ -101,9 +101,9 @@
     </div>
 
     {{-- List --}}
-    <div class="box box-primary" id="att_list_panel" style="display:none;">
-        <div class="box-body">
-            <table class="table table-bordered table-striped ajax_view" id="attendance_table">
+    <div id="att_list_panel" style="display:none;">
+        @component('components.widget', ['class' => 'box-primary'])
+            <table class="table table-bordered table-striped ajax_view" id="attendance_table" style="width:100%;">
                 <thead>
                     <tr>
                         @if($can_view_all)
@@ -121,7 +121,7 @@
                     </tr>
                 </thead>
             </table>
-        </div>
+        @endcomponent
     </div>
 </section>
 
@@ -287,6 +287,51 @@
     .att-break-row .att-break-remove {
         flex: 0 0 auto;
     }
+    .pl-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 3px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 600;
+        line-height: 1.3;
+        white-space: nowrap;
+    }
+    .pl-status-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: currentColor;
+        flex-shrink: 0;
+    }
+    .pl-status--ok {
+        color: #067647;
+        background: #ecfdf3;
+    }
+    .pl-status--low {
+        color: #b54708;
+        background: #fffaeb;
+    }
+    .pl-status--inactive {
+        color: #475569;
+        background: #f1f5f9;
+    }
+    #att_list_panel .dataTables_wrapper,
+    #att_list_panel table.dataTable {
+        width: 100% !important;
+    }
+    #att_list_panel table.dataTable thead th,
+    #att_list_panel table.dataTable tbody td {
+        white-space: nowrap;
+        vertical-align: middle !important;
+    }
+    #att_list_panel table.dataTable thead th:first-child,
+    #att_list_panel table.dataTable tbody td:first-child {
+        width: 40px !important;
+        max-width: 48px !important;
+        text-align: center;
+    }
 </style>
 @endsection
 
@@ -336,6 +381,54 @@
         }
     }
 
+    function initAttendanceTable() {
+        if (attendance_table) {
+            attendance_table.columns.adjust();
+            attendance_table.ajax.reload();
+            return;
+        }
+
+        var columns = [];
+        if (canViewAll) {
+            columns.push({
+                data: 'color_swatch',
+                name: 'color_swatch',
+                orderable: false,
+                searchable: false,
+                width: '40px',
+                className: 'text-center',
+            });
+            columns.push({ data: 'employee', name: 'user.first_name' });
+        }
+        columns.push({ data: 'clock_in_at', name: 'clock_in_at' });
+        columns.push({ data: 'clock_out_at', name: 'clock_out_at' });
+        columns.push({ data: 'break_time', orderable: false, searchable: false });
+        columns.push({ data: 'worked_time', orderable: false, searchable: false });
+        columns.push({ data: 'status', name: 'status' });
+        if (canEdit) {
+            columns.push({ data: 'action', orderable: false, searchable: false });
+        }
+
+        attendance_table = $('#attendance_table').DataTable({
+            processing: true,
+            serverSide: true,
+            fixedHeader: false,
+            aaSorting: [[{{ $attendance_sort_col }}, 'desc']],
+            ajax: {
+                url: reportUrl,
+                data: function (d) {
+                    var r = listRange();
+                    d.start_date = r.start_date || '';
+                    d.end_date = r.end_date || '';
+                    if (selectedUserId()) {
+                        d.user_id = selectedUserId();
+                    }
+                }
+            },
+            columns: columns
+        });
+    }
+
     function setView(mode) {
         currentView = mode;
         if (mode === 'calendar') {
@@ -343,16 +436,13 @@
             $('#att_list_panel').hide();
             $('#att_list_date_wrap').hide();
             reloadCalendar();
-            // Fix FullCalendar width when un-hidden
             setTimeout(function () {
                 try { $('#attendance_calendar').fullCalendar('render'); } catch (e) {}
             }, 50);
         } else {
             $('#att_calendar_panel').hide();
             $('#att_list_panel, #att_list_date_wrap, #att_legend_box').show();
-            if (attendance_table) {
-                attendance_table.ajax.reload();
-            }
+            setTimeout(initAttendanceTable, 50);
         }
     }
 
@@ -547,7 +637,7 @@
 
     $(document).ready(function () {
         // Date range for list (calendar uses its own nav)
-        dateRangeSettings.startDate = moment().startOf('month');
+        dateRangeSettings.startDate = moment().subtract(5, 'months').startOf('month');
         dateRangeSettings.endDate = moment().endOf('month');
         $('#attendance_date_filter').daterangepicker(dateRangeSettings, function (start, end) {
             $('#attendance_date_filter').val(
@@ -556,7 +646,7 @@
             if (attendance_table) attendance_table.ajax.reload();
         });
         $('#attendance_date_filter').val(
-            moment().startOf('month').format(moment_date_format) +
+            moment().subtract(5, 'months').startOf('month').format(moment_date_format) +
             ' ~ ' +
             moment().endOf('month').format(moment_date_format)
         );
@@ -578,39 +668,6 @@
         });
         // hide list date filter by default (calendar)
         $('#att_list_date_wrap').hide();
-
-        // DataTable
-        var columns = [];
-        if (canViewAll) {
-            columns.push({ data: 'color_swatch', name: 'color_swatch', orderable: false, searchable: false, width: '28px' });
-            columns.push({ data: 'employee', name: 'user.first_name' });
-        }
-        columns.push({ data: 'clock_in_at', name: 'clock_in_at' });
-        columns.push({ data: 'clock_out_at', name: 'clock_out_at' });
-        columns.push({ data: 'break_time', orderable: false, searchable: false });
-        columns.push({ data: 'worked_time', orderable: false, searchable: false });
-        columns.push({ data: 'status', name: 'status' });
-        if (canEdit) {
-            columns.push({ data: 'action', orderable: false, searchable: false });
-        }
-
-        attendance_table = $('#attendance_table').DataTable({
-            processing: true,
-            serverSide: true,
-            aaSorting: [[{{ $attendance_sort_col }}, 'desc']],
-            ajax: {
-                url: reportUrl,
-                data: function (d) {
-                    var r = listRange();
-                    d.start_date = r.start_date || '';
-                    d.end_date = r.end_date || '';
-                    if (selectedUserId()) {
-                        d.user_id = selectedUserId();
-                    }
-                }
-            },
-            columns: columns
-        });
 
         // FullCalendar
         if ($.fn.fullCalendar) {
@@ -656,6 +713,12 @@
                         element.css('cursor', 'pointer');
                     }
                 }
+            });
+            setTimeout(function () {
+                try { $('#attendance_calendar').fullCalendar('render'); } catch (e) {}
+            }, 0);
+            $(window).on('resize.attCal', function () {
+                try { $('#attendance_calendar').fullCalendar('render'); } catch (e) {}
             });
         } else {
             $('#att_calendar_panel .box-body').html(
