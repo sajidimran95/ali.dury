@@ -330,6 +330,10 @@ class MsaSetupService
         }
 
         $common['msa_tobacco_category_id'] = $tobaccoCategoryId;
+        $common['msa_tobacco_category_ids'] = array_values(array_unique(array_merge(
+            array_map('intval', (array) ($common['msa_tobacco_category_ids'] ?? [])),
+            [$tobaccoCategoryId]
+        )));
         $common['msa_retail_price_group_id'] = (int) $priceGroups['retail']->id;
         $common['msa_wholesale_price_group_id'] = (int) $priceGroups['wholesale']->id;
         $common['msa_retail_customer_group_id'] = (int) $customerGroups['retailer']->id;

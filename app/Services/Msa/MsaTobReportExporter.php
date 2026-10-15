@@ -127,31 +127,18 @@ class MsaTobReportExporter
         $categoryId = $this->options['category_id'] ?? null;
         $categoryIds = $this->expandCategoryIds($categoryId);
 
-        $variationIds = $this->soldVariationIds();
+        $soldVariationIds = $this->soldVariationIds()->map(fn ($id) => (int) $id)->flip();
 
-        // Load all on-hand qty for this location (including zero/negative — MSA reports floor at 0).
-        $stockRows = VariationLocationDetails::query()
+        // On-hand qty for this location (including zero/negative — MSA reports floor at 0).
+        $this->options['_stock_rows'] = VariationLocationDetails::query()
             ->where('location_id', $this->location->id)
-            ->pluck('qty_available', 'variation_id');
-
-        $this->options['_stock_rows'] = $stockRows->all();
+            ->pluck('qty_available', 'variation_id')
+            ->all();
         $this->ensureWeekEndInventoryMaps();
 
-        $positiveStockIds = $stockRows->filter(fn ($qty) => (float) $qty > 0)->keys();
-
-        $allVariationIds = collect($variationIds)
-            ->merge($positiveStockIds)
-            ->unique()
-            ->values();
-
-        if ($allVariationIds->isEmpty() && empty($categoryIds)) {
-            // Still allow export of empty skeleton with no BIDs when no activity
-            $this->bids = [];
-
-            return;
-        }
-
-        // Include stock-tracked products and any sold tobacco SKUs (even if enable_stock was off in QB).
+        // Every stock-tracked item in the MSA categories is a candidate (plus any SKU sold this week),
+        // judged on its inventory AS OF week end — not today's stock, which made items that sold out
+        // after the week drop off the file and the item count swing week to week.
         $products = Product::query()
             ->where('business_id', $this->business->id)
             ->when(! empty($categoryIds), function ($q) use ($categoryIds) {
@@ -160,19 +147,15 @@ class MsaTobReportExporter
                         ->orWhereIn('sub_category_id', $categoryIds);
                 });
             })
-            ->where(function ($q) use ($allVariationIds) {
+            ->where(function ($q) use ($soldVariationIds) {
                 $q->where('enable_stock', 1);
-                if ($allVariationIds->isNotEmpty()) {
-                    $q->orWhereHas('variations', function ($vq) use ($allVariationIds) {
-                        $vq->whereIn('id', $allVariationIds);
+                if ($soldVariationIds->isNotEmpty()) {
+                    $q->orWhereHas('variations', function ($vq) use ($soldVariationIds) {
+                        $vq->whereIn('id', $soldVariationIds->keys());
                     });
                 }
             })
-            ->with(['variations' => function ($q) use ($allVariationIds) {
-                if ($allVariationIds->isNotEmpty()) {
-                    $q->whereIn('id', $allVariationIds);
-                }
-            }, 'variations.product_variation'])
+            ->with(['variations.product_variation'])
             ->get();
 
         foreach ($products as $product) {
@@ -181,7 +164,9 @@ class MsaTobReportExporter
             }
 
             foreach ($product->variations as $variation) {
-                if ($allVariationIds->isNotEmpty() && ! $allVariationIds->contains($variation->id)) {
+                $variationId = (int) $variation->id;
+                // MSA: an item is only reported with 0 inventory when a sale explains it.
+                if ($this->inventoryAsOfWeekEnd($variationId) <= 0 && ! $soldVariationIds->has($variationId)) {
                     continue;
                 }
 
@@ -251,11 +236,6 @@ class MsaTobReportExporter
                 continue;
             }
 
-            if (! isset($this->sids[$contact->id])) {
-                $this->sids[$contact->id] = $this->mapSid($contact);
-                $this->purs[$contact->id] = [];
-            }
-
             $txnDate = Carbon::parse($transaction->transaction_date)->format('Ymd');
             $isReturn = $transaction->type === 'sell_return';
 
@@ -284,6 +264,16 @@ class MsaTobReportExporter
                 }
 
                 $qty = (float) $line->quantity;
+                if ($qty == 0) {
+                    continue;
+                }
+
+                // SID only for customers with a reported tobacco line (never a store with zero sales).
+                if (! isset($this->sids[$contact->id])) {
+                    $this->sids[$contact->id] = $this->mapSid($contact);
+                    $this->purs[$contact->id] = [];
+                }
+
                 $sku = $this->bids[$variationId]['sku'];
                 $key = $txnDate . '|' . $sku;
 
@@ -311,9 +301,12 @@ class MsaTobReportExporter
             }
         }
 
-        // Flatten PUR keys to list
+        // Flatten PUR keys to list; drop any store left without a PUR row
         foreach ($this->purs as $contactId => $rows) {
             $this->purs[$contactId] = array_values($rows);
+            if (empty($this->purs[$contactId])) {
+                unset($this->purs[$contactId], $this->sids[$contactId]);
+            }
         }
     }
 
@@ -330,8 +323,9 @@ class MsaTobReportExporter
         $soldAfter = (float) ($this->options['_sold_after'][$variationId] ?? 0);
         $returnedAfter = (float) ($this->options['_returned_after'][$variationId] ?? 0);
         $purchasedAfter = (float) ($this->options['_purchased_after'][$variationId] ?? 0);
+        $adjustedAfter = (float) ($this->options['_adjusted_after'][$variationId] ?? 0);
 
-        return max(0.0, $current + $soldAfter - $returnedAfter - $purchasedAfter);
+        return max(0.0, $current + $soldAfter + $adjustedAfter - $returnedAfter - $purchasedAfter);
     }
 
     protected function ensureWeekEndInventoryMaps(): void
@@ -380,6 +374,18 @@ class MsaTobReportExporter
             ->whereDate('t.transaction_date', '>', $this->weekEnd->toDateString())
             ->groupBy('pl.variation_id')
             ->selectRaw('pl.variation_id, SUM(pl.quantity) as qty')
+            ->pluck('qty', 'variation_id')
+            ->all();
+
+        // Stock adjustments (damage / count corrections) after week end removed stock that existed then
+        $this->options['_adjusted_after'] = DB::table('stock_adjustment_lines as sal')
+            ->join('transactions as t', 't.id', '=', 'sal.transaction_id')
+            ->where('t.business_id', $this->business->id)
+            ->where('t.location_id', $this->location->id)
+            ->where('t.type', 'stock_adjustment')
+            ->whereDate('t.transaction_date', '>', $this->weekEnd->toDateString())
+            ->groupBy('sal.variation_id')
+            ->selectRaw('sal.variation_id, SUM(sal.quantity) as qty')
             ->pluck('qty', 'variation_id')
             ->all();
 
@@ -465,15 +471,8 @@ class MsaTobReportExporter
         $promoIndicator = (($bid['promo_indicator'] ?? 'N') === 'Y') ? 'Y' : 'N';
         $promoCode = $promoIndicator === 'Y' ? trim((string) ($bid['promo_code'] ?? '')) : '';
         $promoDesc = $promoIndicator === 'Y' ? trim((string) ($bid['promo_description'] ?? '')) : '';
-        // When promo=Y, both promo fields must be non-blank (MFT Warning 2018)
-        if ($promoIndicator === 'Y') {
-            if ($promoCode === '') {
-                $promoCode = 'PROMO';
-            }
-            if ($promoDesc === '') {
-                $promoDesc = 'PROMOTIONAL ITEM';
-            }
-        }
+        // Never fill promo code / description with placeholder text (PROMO, SEE ITEM DESCRIPTION…):
+        // Altria flags it. Blank is correct when there is no real manufacturer promo code.
 
         $upc = $this->normalizeGtin14((string) ($bid['upc'] ?? ''));
         $sku = $this->normalizeGtin14((string) ($bid['sku'] ?? ''), true);
@@ -920,7 +919,8 @@ class MsaTobReportExporter
 
     /**
      * Promo Y/N from CF3/CF4 or product description (PROMO, nice price, $/, sale, etc.).
-     * MFT 2018: descriptions implying promo require Promo Indicator = Y and promo fields filled.
+     * A price/promo in the description only sets the indicator to Y; promo code and description
+     * come from CF3/CF4 when entered and are otherwise left blank (no placeholders).
      *
      * @return array{promo_indicator:string,promo_code:string,promo_description:string}
      */
@@ -936,17 +936,6 @@ class MsaTobReportExporter
         ) || (bool) preg_match('/\$\s*\d|\d+\s*¢|\b\d+\.\d{2}\b|\b\d+\s*OFF\b/', $hay);
 
         if ($promoCode !== '' || $promoDesc !== '' || $looksPromo) {
-            if ($promoCode === '') {
-                $promoCode = 'PROMO';
-            }
-            if ($promoDesc === '') {
-                if (preg_match('/(.{0,25}(?:PROMO(?:TION)?S?|NICE\s*PRICE|SPECIAL|SALE|DISCOUNT|\$\s*\d).{0,25})/', $hay, $m)) {
-                    $promoDesc = trim(preg_replace('/\s+/', ' ', $m[1]));
-                } else {
-                    $promoDesc = 'SEE ITEM DESCRIPTION';
-                }
-            }
-
             return [
                 'promo_indicator' => 'Y',
                 'promo_code' => strtoupper(substr($this->asciiOnly($promoCode), 0, 10)),
@@ -1043,14 +1032,11 @@ class MsaTobReportExporter
      */
     protected function isExcludedFromMsaReport(Product $product): bool
     {
-        $subName = '';
-        $catName = '';
-        if (! empty($product->sub_category_id)) {
-            $subName = (string) (Category::where('id', $product->sub_category_id)->value('name') ?? '');
+        if (! isset($this->options['_category_names'])) {
+            $this->options['_category_names'] = Category::where('business_id', $this->business->id)->pluck('name', 'id')->all();
         }
-        if (! empty($product->category_id)) {
-            $catName = (string) (Category::where('id', $product->category_id)->value('name') ?? '');
-        }
+        $subName = (string) ($this->options['_category_names'][(int) $product->sub_category_id] ?? '');
+        $catName = (string) ($this->options['_category_names'][(int) $product->category_id] ?? '');
 
         $haystack = strtolower(trim(
             ($product->name ?? '').' '.($product->sku ?? '').' '.$subName.' '.$catName
@@ -1062,10 +1048,15 @@ class MsaTobReportExporter
             return true;
         }
 
-        return (bool) preg_match(
+        if (preg_match(
             '/\b(thc|delta[\s-]?8|delta[\s-]?9|delta[\s-]?10|kratom|kanna|hemp\b(?!\s*wrap)|cbd\s*(gumm|flower|oil|vape)|hhc|thca|thcp|mushroom|psilly)\b/i',
             $haystack
-        );
+        )) {
+            return true;
+        }
+
+        // Hardware with no nicotine (510 batteries, chargers) — "cake batter" flavours are not matched
+        return (bool) preg_match('/\b(batter(y|ies)|chargers?)\b/i', (string) ($product->name ?? ''));
     }
 
     /**
@@ -1099,14 +1090,11 @@ class MsaTobReportExporter
 
     protected function inferItemsPerSellingUnit(Product $product): int
     {
-        $subName = '';
-        $catName = '';
-        if (! empty($product->sub_category_id)) {
-            $subName = (string) (Category::where('id', $product->sub_category_id)->value('name') ?? '');
+        if (! isset($this->options['_category_names'])) {
+            $this->options['_category_names'] = Category::where('business_id', $this->business->id)->pluck('name', 'id')->all();
         }
-        if (! empty($product->category_id)) {
-            $catName = (string) (Category::where('id', $product->category_id)->value('name') ?? '');
-        }
+        $subName = (string) ($this->options['_category_names'][(int) $product->sub_category_id] ?? '');
+        $catName = (string) ($this->options['_category_names'][(int) $product->category_id] ?? '');
 
         $haystack = strtolower(trim(($product->name ?? '').' '.$subName.' '.$catName));
 

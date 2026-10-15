@@ -1974,6 +1974,9 @@ return [
 
     'show_on_pos' => 'Show on POS',
     'show_on_pos_help' => 'If unchecked, this will not appear on the POS screen.',
+    'needed_for_msa_report' => 'Needed for MSA report',
+    'needed_for_msa_report_help' => 'Checked categories are auto-selected in the MSA Tobacco report. You can also change the selection on the report; it is remembered for next time.',
+    'msa_report_label' => 'MSA',
     'visible_on_pos' => 'Visible',
     'hidden_on_pos' => 'Hidden',
 

@@ -4125,7 +4125,7 @@ class ReportController extends Controller
         $business_id = $request->session()->get('user.business_id');
         $business = Business::find($business_id);
         $business_locations = BusinessLocation::forDropdown($business_id, false);
-        $categories = Category::forDropdown($business_id, 'product');
+        $categories = Category::forDropdownWithSub($business_id, 'product');
         $common_settings = $business->common_settings ?? [];
 
         // Default week ending = most recent Saturday
@@ -4134,12 +4134,8 @@ class ReportController extends Controller
             $week_ending = \Carbon::now()->format('m/d/Y');
         }
 
-        $default_category_ids = [];
-        if (! empty($common_settings['msa_tobacco_category_ids']) && is_array($common_settings['msa_tobacco_category_ids'])) {
-            $default_category_ids = array_values(array_filter(array_map('intval', $common_settings['msa_tobacco_category_ids'])));
-        } elseif (! empty($common_settings['msa_tobacco_category_id'])) {
-            $default_category_ids = [(int) $common_settings['msa_tobacco_category_id']];
-        }
+        // Categories marked "Needed for MSA report" (or picked on the last export) are preselected
+        $default_category_ids = Category::msaCategoryIds((int) $business_id);
 
         return view('report.msa_report')->with(compact(
             'business_locations',
@@ -4201,12 +4197,11 @@ class ReportController extends Controller
         $common['msa_contact_phone'] = $request->input('contact_phone');
         $common['msa_contact_email'] = $request->input('contact_email');
         $common['msa_state_tax'] = strtoupper(substr((string) $request->input('state_tax', $location->state), 0, 2));
-        $common['msa_tobacco_category_ids'] = $selectedCategoryIds;
-        if (count($selectedCategoryIds) === 1) {
-            $common['msa_tobacco_category_id'] = $selectedCategoryIds[0];
-        }
         $business->common_settings = $common;
         $business->save();
+        // Remember the picked categories for the next export (also syncs the category "MSA" flag)
+        Category::setMsaCategoryIds((int) $business_id, $selectedCategoryIds);
+        $business->refresh();
 
         $exporter = new \App\Services\Msa\MsaTobReportExporter($business, $location, [
             'week_ending' => $weekEndCarbon->toDateString(),

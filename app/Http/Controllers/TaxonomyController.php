@@ -57,6 +57,7 @@ class TaxonomyController extends Controller
                 ->keyBy('id');
 
             $grouped = $all_categories->groupBy('parent_id');
+            $msa_ids = $category_type === 'product' ? Category::msaCategoryIds((int) $business_id) : [];
 
             $category = collect();
 
@@ -100,15 +101,20 @@ class TaxonomyController extends Controller
                     }
                     return $row->name;
                 })
-                ->addColumn('show_in_pos', function ($row) use ($category_type) {
+                ->addColumn('show_in_pos', function ($row) use ($category_type, $msa_ids) {
                     if ($category_type !== 'product') {
                         return '';
                     }
                     $visible = ! isset($row->show_in_pos) || (int) $row->show_in_pos === 1;
 
-                    return $visible
+                    $html = $visible
                         ? '<span class="label label-success">'.e(__('lang_v1.visible_on_pos')).'</span>'
                         : '<span class="label label-default">'.e(__('lang_v1.hidden_on_pos')).'</span>';
+                    if (in_array((int) $row->id, $msa_ids, true)) {
+                        $html .= ' <span class="label label-warning">'.e(__('lang_v1.msa_report_label')).'</span>';
+                    }
+
+                    return $html;
                 })
                 ->removeColumn('id')
                 ->removeColumn('parent_id')
@@ -249,6 +255,9 @@ class TaxonomyController extends Controller
             }
 
             $category = Category::create($input);
+            if ($category_type === 'product' && $request->exists('needed_for_msa')) {
+                Category::toggleMsaCategory((int) $input['business_id'], (int) $category->id, (int) $request->input('needed_for_msa') === 1);
+            }
             $output = ['success' => true,
                 'data' => $category,
                 'msg' => __('category.added_success'),
@@ -314,8 +323,10 @@ class TaxonomyController extends Controller
                 $selected_parent = $category->parent_id;
             }
 
+            $needed_for_msa = in_array((int) $category->id, Category::msaCategoryIds((int) $business_id), true);
+
             return view('taxonomy.edit')
-                ->with(compact('category', 'parent_categories', 'is_parent', 'selected_parent', 'module_category_data'));
+                ->with(compact('category', 'parent_categories', 'is_parent', 'selected_parent', 'module_category_data', 'needed_for_msa'));
         }
     }
 
@@ -363,6 +374,9 @@ class TaxonomyController extends Controller
                     $category->fill($this->measureUnitInput($request, (int) $business_id));
                 }
                 $category->save();
+                if ($category->category_type === 'product' && $request->exists('needed_for_msa')) {
+                    Category::toggleMsaCategory((int) $business_id, (int) $category->id, (int) $request->input('needed_for_msa') === 1);
+                }
 
                 $output = ['success' => true,
                     'msg' => __('category.updated_success'),
@@ -398,6 +412,9 @@ class TaxonomyController extends Controller
                 }
 
                 $category->delete();
+                if (in_array((int) $category->id, Category::msaCategoryIds((int) $business_id), true)) {
+                    Category::toggleMsaCategory((int) $business_id, (int) $category->id, false);
+                }
 
                 $output = ['success' => true,
                     'msg' => __('category.deleted_success'),

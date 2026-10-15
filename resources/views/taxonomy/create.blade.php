@@ -50,6 +50,16 @@
         </div>
         <p class="help-block">@lang('lang_v1.show_on_pos_help')</p>
       </div>
+      <div class="form-group">
+        <div class="checkbox">
+          <label>
+            <input type="hidden" name="needed_for_msa" value="0">
+            {!! Form::checkbox('needed_for_msa', 1, false); !!}
+            @lang('lang_v1.needed_for_msa_report')
+          </label>
+        </div>
+        <p class="help-block">@lang('lang_v1.needed_for_msa_report_help')</p>
+      </div>
       @include('taxonomy.partials.measure_unit', ['category' => null])
       @endif
       @if($is_quick_sub)

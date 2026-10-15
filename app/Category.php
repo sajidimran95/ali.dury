@@ -127,6 +127,73 @@ class Category extends Model
         return $dropdown;
     }
 
+    /**
+     * Product categories flagged "Needed for MSA report" (stored in business common_settings).
+     *
+     * @return list<int>
+     */
+    public static function msaCategoryIds(int $business_id): array
+    {
+        $settings = Business::where('id', $business_id)->value('common_settings');
+        $settings = is_string($settings) ? (json_decode($settings, true) ?: []) : (array) $settings;
+
+        return array_values(array_unique(array_filter(array_map('intval', (array) ($settings['msa_tobacco_category_ids'] ?? $settings['msa_tobacco_category_id'] ?? [])))));
+    }
+
+    /**
+     * Save the MSA category list; the MSA report preselects these next time.
+     */
+    public static function setMsaCategoryIds(int $business_id, array $category_ids): void
+    {
+        $category_ids = array_values(array_unique(array_filter(array_map('intval', $category_ids))));
+
+        $business = Business::findOrFail($business_id);
+        $common = $business->common_settings ?? [];
+        $common['msa_tobacco_category_ids'] = $category_ids;
+        if (count($category_ids) === 1) {
+            $common['msa_tobacco_category_id'] = $category_ids[0];
+        } else {
+            unset($common['msa_tobacco_category_id']);
+        }
+        $business->common_settings = $common;
+        $business->save();
+    }
+
+    /**
+     * Add or remove one category from the MSA report list.
+     */
+    public static function toggleMsaCategory(int $business_id, int $category_id, bool $needed): void
+    {
+        $ids = self::msaCategoryIds($business_id);
+        $ids = $needed
+            ? array_merge($ids, [$category_id])
+            : array_diff($ids, [$category_id]);
+
+        self::setMsaCategoryIds($business_id, $ids);
+    }
+
+    /**
+     * Parent + sub categories for multi-select pickers ("Parent -> Child").
+     */
+    public static function forDropdownWithSub(int $business_id, string $type = 'product'): array
+    {
+        $all = Category::where('business_id', $business_id)
+            ->where('category_type', $type)
+            ->orderBy('name', 'asc')
+            ->get(['id', 'name', 'parent_id']);
+        $by_parent = $all->groupBy(fn ($c) => (int) $c->parent_id);
+
+        $dropdown = [];
+        foreach ($by_parent[0] ?? [] as $parent) {
+            $dropdown[$parent->id] = $parent->name;
+            foreach ($by_parent[$parent->id] ?? [] as $child) {
+                $dropdown[$child->id] = $parent->name.' -> '.$child->name;
+            }
+        }
+
+        return $dropdown;
+    }
+
     public function sub_categories()
     {
         return $this->hasMany(\App\Category::class, 'parent_id');

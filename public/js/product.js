@@ -1477,3 +1477,12 @@ $(document).on('change', '.variation-file-input', function() {
         $sel.val(String(contact.id)).trigger('change');
     });
 })();
+
+// Barcode scanners send Enter after the code: on product add/edit, a scan into SKU only fills the field (no form submit).
+$(document).on('keydown', 'form#product_add_form input#sku, form#product_add_form input.input_sub_sku, form#product_edit_form input#sku, form#product_edit_form input.input_sub_sku', function (e) {
+    if (e.key === 'Enter' || e.which === 13) {
+        e.preventDefault();
+        $(this).trigger('change');
+        return false;
+    }
+});
