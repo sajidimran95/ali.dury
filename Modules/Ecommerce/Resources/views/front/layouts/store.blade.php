@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <meta name="theme-color" content="#070b16">
+    <meta name="theme-color" content="#ff3d9a">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="{{ $ecom_settings->store_name ?? 'Store' }}">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -19,19 +19,19 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800;900&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/gc-storefront.css') }}?v={{ config('app.asset_version', '1') }}&gc=22">
+    <link rel="stylesheet" href="{{ asset('css/gc-storefront.css') }}?v={{ config('app.asset_version', '1') }}&gc=23">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        brand: '#f23488',
-                        brandDark: '#f00678',
-                        ink: '#eef2ff',
-                        slatebar: '#070b16',
-                        mist: '#10162a',
-                        line: '#2a3358'
+                        brand: '#ff3d9a',
+                        brandDark: '#c026d3',
+                        ink: '#fff7ff',
+                        slatebar: '#1a0b2e',
+                        mist: '#1c1538',
+                        line: '#4a3a7a'
                     },
                     fontFamily: {
                         sans: ['Inter', 'Poppins', 'system-ui', 'sans-serif'],
@@ -42,7 +42,7 @@
         }
     </script>
     <style>
-        body { font-family: Inter, Poppins, system-ui, sans-serif; background: #070b16; color: #eef2ff; }
+        body { font-family: Inter, Poppins, system-ui, sans-serif; background: #1a0b2e; color: #fff7ff; }
         .mega.is-active > .cat-link, .cat-link:hover { color: #fff !important; }
         .btn-brand { background: #f23488; color: #fff; font-weight: 600; border-radius: 8px; padding: .7rem 1.25rem; }
         .btn-brand:hover { background: #ff4b98; }
@@ -121,7 +121,7 @@
             padding: 0 10px;
             border: 0;
             border-radius: 6px;
-            background: #0066f0 !important;
+            background: linear-gradient(90deg, #ff3d9a, #7c3aed 55%, #2563ff) !important;
             color: #fff !important;
             -webkit-text-fill-color: #fff !important;
             text-decoration: none !important;
@@ -131,19 +131,19 @@
             cursor: pointer;
         }
         body.ecom-account-panel .wn-add:hover {
-            background: #1a78ff !important;
+            filter: brightness(1.1);
             color: #fff !important;
         }
         .product-card { transition: box-shadow .2s, transform .2s; }
-        .product-card:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(0,0,0,.08); }
+        .product-card:hover { transform: translateY(-3px); box-shadow: 0 14px 32px rgba(255,61,154,.28); }
 
         /* App-like mobile shell */
         .app-bottom-nav {
             display: flex; flex-direction: column;
             position: fixed; left: 0; right: 0; bottom: 0; z-index: 90;
-            background: rgba(7,11,22,.96);
+            background: linear-gradient(90deg, rgba(36,10,64,.97), rgba(10,40,56,.97));
             backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
-            border-top: 1px solid #2a3358;
+            border-top: 2px solid #ff3d9a;
             padding-bottom: env(safe-area-inset-bottom, 0);
         }
         .app-tab {
@@ -543,7 +543,7 @@
 </div>
 
 {{-- Mobile app header --}}
-<header class="app-mobile-only sticky top-0 z-50 bg-[#070b16]/95 backdrop-blur border-b border-line pt-[env(safe-area-inset-top,0)]">
+<header class="app-mobile-only sticky top-0 z-50 bg-[#1a0b2e]/95 backdrop-blur border-b border-[#ff3d9a]/40 pt-[env(safe-area-inset-top,0)]">
     <div class="px-3 h-14 flex items-center gap-2">
         <a href="{{ route('ecommerce.home') }}" class="shrink-0 flex items-center" aria-label="{{ $store }}">
             @if($storeLogoUrl)
@@ -691,7 +691,7 @@
 
 <main>@yield('content')</main>
 
-<footer class="desktop-footer mt-16 bg-[#050814] text-white">
+<footer class="desktop-footer mt-16 text-white">
     <div class="max-w-[1400px] mx-auto px-4 py-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-10 gc-footer-grid">
         <div>
             <div class="flex items-center gap-2 mb-3">
