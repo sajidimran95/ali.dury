@@ -18,9 +18,9 @@ class HomeController extends Controller
         $business_id = request()->attributes->get('ecommerce_business_id');
         $banners = Storefront::videos();
 
-        $featured = Product::storefrontQuery((int) $business_id)->where('ecom_is_featured', 1)->with(['variations', 'category', 'brand', 'unit'])->limit(8)->get();
+        $featured = Product::storefrontQuery((int) $business_id)->where('ecom_is_featured', 1)->with(['variations', 'category', 'brand', 'unit'])->limit(12)->get();
         if ($featured->isEmpty()) {
-            $featured = Product::storefrontQuery((int) $business_id)->with(['variations', 'category', 'brand', 'unit'])->orderByDesc('id')->limit(8)->get();
+            $featured = Product::storefrontQuery((int) $business_id)->with(['variations', 'category', 'brand', 'unit'])->orderByDesc('id')->limit(12)->get();
         }
 
         $new_arrivals = Product::storefrontQuery((int) $business_id)->where('ecom_is_new_arrival', 1)->with(['variations', 'category', 'brand', 'unit'])->limit(8)->get();

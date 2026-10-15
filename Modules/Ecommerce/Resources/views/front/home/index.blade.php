@@ -104,7 +104,7 @@
     <section>
         <div class="flex items-end justify-between mb-4">
             <h2 class="gc-section-title uppercase">Featured Products</h2>
-            <a href="{{ route('ecommerce.shop') }}" class="text-sm font-semibold text-[#9aa6d1] hover:text-white">View All Products →</a>
+            <a href="{{ route('ecommerce.shop') }}" class="text-sm font-semibold text-[#2ee9ff] hover:text-white">View All Products →</a>
         </div>
         @include('ecommerce::front.partials.product_grid', ['products' => $featured, 'gridClass' => 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3', 'minCards' => 0])
     </section>
@@ -112,7 +112,7 @@
     <section>
         <div class="flex items-end justify-between mb-4">
             <h2 class="gc-section-title uppercase">New Arrivals</h2>
-            <a href="{{ route('ecommerce.shop', ['sort' => 'newest']) }}" class="text-sm font-semibold text-[#9aa6d1] hover:text-white">See all →</a>
+            <a href="{{ route('ecommerce.shop', ['sort' => 'newest']) }}" class="text-sm font-semibold text-[#ff79c1] hover:text-white">See all →</a>
         </div>
         @include('ecommerce::front.partials.product_grid', ['products' => $new_arrivals, 'gridClass' => 'grid grid-cols-2 md:grid-cols-4 gap-3', 'minCards' => 0])
     </section>
@@ -120,7 +120,7 @@
     <section>
         <div class="flex items-end justify-between mb-4">
             <h2 class="gc-section-title uppercase">Best Sellers</h2>
-            <a href="{{ route('ecommerce.shop') }}" class="text-sm font-semibold text-[#9aa6d1] hover:text-white">Shop all →</a>
+            <a href="{{ route('ecommerce.shop') }}" class="text-sm font-semibold text-[#d6ff4d] hover:text-white">Shop all →</a>
         </div>
         @include('ecommerce::front.partials.product_grid', ['products' => $best_sellers, 'gridClass' => 'grid grid-cols-2 md:grid-cols-4 gap-3', 'minCards' => 0])
     </section>
