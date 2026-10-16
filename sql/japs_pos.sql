@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 5.2.3
+-- version 6.0.0-dev+20250422.c097b1deca
 -- https://www.phpmyadmin.net/
 --
--- Host: localhost
--- Generation Time: Oct 16, 2026 at 02:42 PM
--- Server version: 8.4.11-0ubuntu0.26.04.1
--- PHP Version: 8.5.4
+-- Host: localhost:3306
+-- Generation Time: Oct 16, 2026 at 08:44 PM
+-- Server version: 8.4.3
+-- PHP Version: 8.4.5
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -18,7 +18,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `japspos`
+-- Database: `japs_pos`
 --
 
 -- --------------------------------------------------------
@@ -1957,6 +1957,10 @@ CREATE TABLE `driver_delivery_routes` (
   `start_address` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `start_latitude` decimal(10,7) DEFAULT NULL,
   `start_longitude` decimal(10,7) DEFAULT NULL,
+  `driver_latitude` decimal(10,7) DEFAULT NULL,
+  `driver_longitude` decimal(10,7) DEFAULT NULL,
+  `driver_accuracy` int UNSIGNED DEFAULT NULL,
+  `driver_location_at` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -1965,8 +1969,8 @@ CREATE TABLE `driver_delivery_routes` (
 -- Dumping data for table `driver_delivery_routes`
 --
 
-INSERT INTO `driver_delivery_routes` (`id`, `business_id`, `delivery_user_id`, `business_location_id`, `route_date`, `status`, `total_orders`, `total_distance`, `estimated_duration`, `started_at`, `completed_at`, `start_name`, `start_address`, `start_latitude`, `start_longitude`, `created_at`, `updated_at`) VALUES
-(1, 1, 4, NULL, '2026-09-16', 'started', 12, 23954, 2876, '2026-09-16 06:11:49', NULL, 'Japs POS', 'New York, New York, New York, 11011, USA', 43.0690799, -76.1723723, '2026-09-16 05:55:03', '2026-09-16 06:54:19');
+INSERT INTO `driver_delivery_routes` (`id`, `business_id`, `delivery_user_id`, `business_location_id`, `route_date`, `status`, `total_orders`, `total_distance`, `estimated_duration`, `started_at`, `completed_at`, `start_name`, `start_address`, `start_latitude`, `start_longitude`, `driver_latitude`, `driver_longitude`, `driver_accuracy`, `driver_location_at`, `created_at`, `updated_at`) VALUES
+(1, 1, 4, NULL, '2026-09-16', 'started', 12, 23954, 2876, '2026-09-16 06:11:49', NULL, 'Japs POS', 'New York, New York, New York, 11011, USA', 43.0690799, -76.1723723, NULL, NULL, NULL, NULL, '2026-09-16 05:55:03', '2026-09-16 06:54:19');
 
 -- --------------------------------------------------------
 
@@ -3312,7 +3316,9 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (345, '2026_10_06_030000_ensure_preserved_user_credentials', 38),
 (346, '2026_10_06_040000_ensure_preserved_user_roles_and_permissions', 38),
 (347, '2026_10_06_050000_seed_default_portal_credentials', 39),
-(348, '2026_10_10_000000_create_mobile_app_tokens_table', 40);
+(348, '2026_10_10_000000_create_mobile_app_tokens_table', 40),
+(349, '2026_10_14_200000_add_driver_location_to_delivery_routes', 41),
+(350, '2026_10_17_023000_add_qty_shipped_to_transaction_sell_lines', 41);
 
 -- --------------------------------------------------------
 
@@ -3322,15 +3328,15 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 
 CREATE TABLE `mobile_app_tokens` (
   `id` bigint UNSIGNED NOT NULL,
-  `app` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `tokenable_type` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `app` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `tokenable_type` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `tokenable_id` int UNSIGNED NOT NULL,
   `business_id` int UNSIGNED DEFAULT NULL,
-  `name` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `token` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `meta` text COLLATE utf8mb4_unicode_ci,
-  `ip_address` varchar(45) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `user_agent` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `token` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `meta` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `ip_address` varchar(45) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `user_agent` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `last_used_at` timestamp NULL DEFAULT NULL,
   `expires_at` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
@@ -20257,6 +20263,7 @@ CREATE TABLE `transaction_sell_lines` (
   `quantity` decimal(22,4) NOT NULL DEFAULT '0.0000',
   `qty_picked` decimal(22,4) NOT NULL DEFAULT '0.0000',
   `qty_packed` decimal(22,4) NOT NULL DEFAULT '0.0000',
+  `qty_shipped` decimal(22,4) NOT NULL DEFAULT '0.0000',
   `secondary_unit_quantity` decimal(22,4) NOT NULL DEFAULT '0.0000',
   `quantity_returned` decimal(20,4) NOT NULL DEFAULT '0.0000',
   `unit_price_before_discount` decimal(22,4) NOT NULL DEFAULT '0.0000',
@@ -20284,17 +20291,17 @@ CREATE TABLE `transaction_sell_lines` (
 -- Dumping data for table `transaction_sell_lines`
 --
 
-INSERT INTO `transaction_sell_lines` (`id`, `transaction_id`, `product_id`, `variation_id`, `quantity`, `qty_picked`, `qty_packed`, `secondary_unit_quantity`, `quantity_returned`, `unit_price_before_discount`, `unit_price`, `line_discount_type`, `line_discount_amount`, `unit_price_inc_tax`, `item_tax`, `tax_id`, `discount_id`, `lot_no_line_id`, `sell_line_note`, `so_line_id`, `so_quantity_invoiced`, `res_service_staff_id`, `res_line_order_status`, `parent_sell_line_id`, `children_type`, `sub_unit_id`, `created_at`, `updated_at`) VALUES
-(183, 438, 5536, 5536, 1.0000, 0.0000, 0.0000, 0.0000, 0.0000, 11.9900, 11.9900, 'fixed', 0.0000, 11.9900, 0.0000, NULL, NULL, NULL, '', NULL, 1.0000, NULL, NULL, NULL, '', NULL, '2026-09-17 06:11:53', '2026-09-17 06:12:11'),
-(184, 439, 5536, 5536, 1.0000, 0.0000, 0.0000, 0.0000, 0.0000, 11.9900, 11.9900, 'fixed', 0.0000, 11.9900, 0.0000, NULL, NULL, NULL, '', 183, 0.0000, NULL, NULL, NULL, '', NULL, '2026-09-17 06:12:11', '2026-09-17 06:12:11'),
-(185, 440, 5496, 5496, 2.0000, 0.0000, 0.0000, 0.0000, 0.0000, 13.9900, 13.9900, 'fixed', 0.0000, 13.9900, 0.0000, NULL, NULL, NULL, '', NULL, 2.0000, NULL, NULL, NULL, '', NULL, '2026-09-17 08:29:11', '2026-09-17 08:29:45'),
-(186, 440, 5536, 5536, 2.0000, 0.0000, 0.0000, 0.0000, 0.0000, 11.9900, 11.9900, 'fixed', 0.0000, 11.9900, 0.0000, NULL, NULL, NULL, '', NULL, 2.0000, NULL, NULL, NULL, '', NULL, '2026-09-17 08:29:11', '2026-09-17 08:29:45'),
-(187, 441, 5496, 5496, 2.0000, 0.0000, 0.0000, 0.0000, 0.0000, 13.9900, 13.9900, 'fixed', 0.0000, 13.9900, 0.0000, NULL, NULL, NULL, '', 185, 0.0000, NULL, NULL, NULL, '', NULL, '2026-09-17 08:29:45', '2026-09-17 08:29:45'),
-(188, 441, 5536, 5536, 2.0000, 0.0000, 0.0000, 0.0000, 0.0000, 11.9900, 11.9900, 'fixed', 0.0000, 11.9900, 0.0000, NULL, NULL, NULL, '', 186, 0.0000, NULL, NULL, NULL, '', NULL, '2026-09-17 08:29:45', '2026-09-17 08:29:45'),
-(190, 443, 5536, 5536, 2.0000, 0.0000, 0.0000, 0.0000, 0.0000, 11.9900, 11.9900, NULL, 0.0000, 11.9900, 0.0000, NULL, NULL, NULL, '', NULL, 0.0000, NULL, NULL, NULL, '', NULL, '2026-09-18 20:08:51', '2026-09-18 20:08:51'),
-(191, 444, 5536, 5536, 1.0000, 0.0000, 0.0000, 0.0000, 0.0000, 11.9900, 11.9900, 'percentage', 0.0000, 11.9900, 0.0000, NULL, NULL, NULL, '', NULL, 0.0000, NULL, NULL, NULL, '', NULL, '2026-09-24 10:59:30', '2026-09-24 10:59:30'),
-(192, 446, 5539, 5539, 1.0000, 0.0000, 0.0000, 0.0000, 0.0000, 23.9900, 23.9900, 'percentage', 0.0000, 23.9900, 0.0000, NULL, NULL, NULL, '', NULL, 0.0000, NULL, NULL, NULL, '', NULL, '2026-09-29 08:47:41', '2026-09-29 08:47:41'),
-(193, 447, 5496, 5496, 1.0000, 0.0000, 0.0000, 0.0000, 0.0000, 13.9900, 13.9900, 'percentage', 0.0000, 13.9900, 0.0000, NULL, NULL, NULL, '', NULL, 0.0000, NULL, NULL, NULL, '', NULL, '2026-09-29 08:51:50', '2026-09-29 08:51:50');
+INSERT INTO `transaction_sell_lines` (`id`, `transaction_id`, `product_id`, `variation_id`, `quantity`, `qty_picked`, `qty_packed`, `qty_shipped`, `secondary_unit_quantity`, `quantity_returned`, `unit_price_before_discount`, `unit_price`, `line_discount_type`, `line_discount_amount`, `unit_price_inc_tax`, `item_tax`, `tax_id`, `discount_id`, `lot_no_line_id`, `sell_line_note`, `so_line_id`, `so_quantity_invoiced`, `res_service_staff_id`, `res_line_order_status`, `parent_sell_line_id`, `children_type`, `sub_unit_id`, `created_at`, `updated_at`) VALUES
+(183, 438, 5536, 5536, 1.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 11.9900, 11.9900, 'fixed', 0.0000, 11.9900, 0.0000, NULL, NULL, NULL, '', NULL, 1.0000, NULL, NULL, NULL, '', NULL, '2026-09-17 06:11:53', '2026-09-17 06:12:11'),
+(184, 439, 5536, 5536, 1.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 11.9900, 11.9900, 'fixed', 0.0000, 11.9900, 0.0000, NULL, NULL, NULL, '', 183, 0.0000, NULL, NULL, NULL, '', NULL, '2026-09-17 06:12:11', '2026-09-17 06:12:11'),
+(185, 440, 5496, 5496, 2.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 13.9900, 13.9900, 'fixed', 0.0000, 13.9900, 0.0000, NULL, NULL, NULL, '', NULL, 2.0000, NULL, NULL, NULL, '', NULL, '2026-09-17 08:29:11', '2026-09-17 08:29:45'),
+(186, 440, 5536, 5536, 2.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 11.9900, 11.9900, 'fixed', 0.0000, 11.9900, 0.0000, NULL, NULL, NULL, '', NULL, 2.0000, NULL, NULL, NULL, '', NULL, '2026-09-17 08:29:11', '2026-09-17 08:29:45'),
+(187, 441, 5496, 5496, 2.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 13.9900, 13.9900, 'fixed', 0.0000, 13.9900, 0.0000, NULL, NULL, NULL, '', 185, 0.0000, NULL, NULL, NULL, '', NULL, '2026-09-17 08:29:45', '2026-09-17 08:29:45'),
+(188, 441, 5536, 5536, 2.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 11.9900, 11.9900, 'fixed', 0.0000, 11.9900, 0.0000, NULL, NULL, NULL, '', 186, 0.0000, NULL, NULL, NULL, '', NULL, '2026-09-17 08:29:45', '2026-09-17 08:29:45'),
+(190, 443, 5536, 5536, 2.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 11.9900, 11.9900, NULL, 0.0000, 11.9900, 0.0000, NULL, NULL, NULL, '', NULL, 0.0000, NULL, NULL, NULL, '', NULL, '2026-09-18 20:08:51', '2026-09-18 20:08:51'),
+(191, 444, 5536, 5536, 1.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 11.9900, 11.9900, 'percentage', 0.0000, 11.9900, 0.0000, NULL, NULL, NULL, '', NULL, 0.0000, NULL, NULL, NULL, '', NULL, '2026-09-24 10:59:30', '2026-09-24 10:59:30'),
+(192, 446, 5539, 5539, 1.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 23.9900, 23.9900, 'percentage', 0.0000, 23.9900, 0.0000, NULL, NULL, NULL, '', NULL, 0.0000, NULL, NULL, NULL, '', NULL, '2026-09-29 08:47:41', '2026-09-29 08:47:41'),
+(193, 447, 5496, 5496, 1.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 13.9900, 13.9900, 'percentage', 0.0000, 13.9900, 0.0000, NULL, NULL, NULL, '', NULL, 0.0000, NULL, NULL, NULL, '', NULL, '2026-09-29 08:51:50', '2026-09-29 08:51:50');
 
 -- --------------------------------------------------------
 
@@ -27563,7 +27570,7 @@ ALTER TABLE `media`
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=349;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=351;
 
 --
 -- AUTO_INCREMENT for table `mobile_app_tokens`
