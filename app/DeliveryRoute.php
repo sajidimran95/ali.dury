@@ -24,6 +24,9 @@ class DeliveryRoute extends Model
         'completed_at' => 'datetime',
         'start_latitude' => 'float',
         'start_longitude' => 'float',
+        'driver_latitude' => 'float',
+        'driver_longitude' => 'float',
+        'driver_location_at' => 'datetime',
     ];
 
     public function stops()

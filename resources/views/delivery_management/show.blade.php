@@ -109,6 +109,9 @@
     .dlv-route-stops { flex: none; max-width: none; min-height: 18rem; border-right: 0; border-bottom: 1px solid #e2e8f0; }
     .dlv-route-map-wrap { min-height: 22rem; }
 }
+.dlv-driver-pin { display:flex; width:40px; height:40px; align-items:center; justify-content:center; border-radius:999px; background:#2563eb; color:#fff; font-size:20px; border:3px solid #fff; box-shadow:0 0 0 6px rgba(37,99,235,.35), 0 4px 14px rgba(0,0,0,.45); }
+.dlv-driver-pin.is-stale { background:#94a3b8; box-shadow:0 0 0 6px rgba(148,163,184,.35), 0 4px 14px rgba(0,0,0,.35); }
+.dlv-map-legend .lg-driver { background:#2563eb; }
 </style>
 @endsection
 
@@ -148,7 +151,8 @@
             <div><strong>Remaining</strong><span>{{ $remaining }}</span></div>
             <div><strong>Distance</strong><span>{{ $miles }} mi</span></div>
             <div><strong>Est. time</strong><span>{{ $minutes }} min</span></div>
-            <div><strong>Status</strong><span>{{ $route->statusLabel() }}</span></div>
+            <div><strong>Status</strong><span id="dlv-route-status">{{ $route->statusLabel() }}</span></div>
+            <div><strong>Driver location</strong><span id="dlv-driver-seen">{{ $driverLocation['ago'] ? 'Updated '.$driverLocation['ago'] : 'Not shared yet' }}</span></div>
         </div>
 
         <div class="dlv-route-split">
@@ -206,6 +210,7 @@
                     <span><i class="lg-p"></i> Pending</span>
                     <span><i class="lg-d"></i> Delivered</span>
                     <span><i class="lg-f"></i> Failed</span>
+                    <span><i class="lg-driver"></i> Driver</span>
                 </div>
             </div>
         </div>
@@ -273,12 +278,48 @@
       .bindPopup('Stop ' + s.n + ' · Invoice ' + (s.label || '') + (s.name ? '<br>' + s.name : '') + '<br>' + (s.status || 'pending'));
   });
 
+  let driver = @json($driverLocation);
+  let driverMarker = null;
+  const seenEl = document.getElementById('dlv-driver-seen');
+  const statusEl = document.getElementById('dlv-route-status');
+  const driverIcon = (stale) => L.divIcon({
+    className: '',
+    html: '<span class="dlv-driver-pin' + (stale ? ' is-stale' : '') + '">&#128666;</span>',
+    iconSize: [40, 40],
+    iconAnchor: [20, 20],
+    popupAnchor: [0, -20],
+  });
+  const showDriver = () => {
+    if (seenEl) seenEl.textContent = driver.ago ? 'Updated ' + driver.ago : 'Not shared yet';
+    if (statusEl && driver.status_label) statusEl.textContent = driver.status_label;
+    if (!driver.lat || !driver.lng) return;
+    const p = [driver.lat, driver.lng];
+    const label = 'Driver · ' + (driver.ago ? 'updated ' + driver.ago : '') + (driver.accuracy ? '<br>± ' + driver.accuracy + ' m' : '');
+    if (!driverMarker) {
+      driverMarker = L.marker(p, { icon: driverIcon(driver.stale), zIndexOffset: 1000 }).addTo(map).bindPopup(label);
+    } else {
+      driverMarker.setLatLng(p).setIcon(driverIcon(driver.stale)).setPopupContent(label);
+    }
+  };
+
   const fit = () => {
     map.invalidateSize();
-    if (linePts.length) map.fitBounds(linePts, { padding: [36, 36] });
+    const pts = linePts.slice();
+    if (driver.lat && driver.lng) pts.push([driver.lat, driver.lng]);
+    if (pts.length) map.fitBounds(pts, { padding: [36, 36] });
     else map.setView([42.3314, -83.0458], 7);
   };
+  showDriver();
   requestAnimationFrame(function () { fit(); setTimeout(fit, 200); setTimeout(fit, 800); });
+
+  const locationUrl = @json(route('deliveries.routes.driver_location', ['id' => $route->id]));
+  setInterval(function () {
+    if (document.hidden) return;
+    fetch(locationUrl, { headers: { 'Accept': 'application/json' }, credentials: 'same-origin' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (d) { if (d) { driver = d; showDriver(); } })
+      .catch(function () {});
+  }, 20000);
 })();
 </script>
 @endsection

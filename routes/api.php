@@ -120,6 +120,7 @@ Route::prefix('v1')->middleware(['setData', 'mobile.json'])->group(function () {
             Route::get('/dashboard', [DeliveryApiController::class, 'home']);
             Route::get('/route', [DeliveryApiController::class, 'route']);
             Route::post('/route/start', [DeliveryApiController::class, 'start']);
+            Route::post('/location', [DeliveryApiController::class, 'location']);
             Route::get('/assigned', [DeliveryApiController::class, 'assigned']);
             Route::get('/all', [DeliveryApiController::class, 'all']);
             Route::get('/history', [DeliveryApiController::class, 'history']);

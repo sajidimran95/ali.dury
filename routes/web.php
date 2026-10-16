@@ -783,6 +783,7 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::get('deliveries/routes', [DeliveryManagementController::class, 'routes'])->name('deliveries.routes');
     Route::post('deliveries/generate', [DeliveryManagementController::class, 'generate'])->name('deliveries.generate');
     Route::get('deliveries/routes/{id}', [DeliveryManagementController::class, 'show'])->name('deliveries.routes.show')->whereNumber('id');
+    Route::get('deliveries/routes/{id}/driver-location', [DeliveryManagementController::class, 'driverLocation'])->name('deliveries.routes.driver_location')->whereNumber('id');
 
     Route::post('upload-module', [ManageModulesController::class, 'uploadModule']);
     Route::delete('manage-modules/destroy/{module_name}', [ManageModulesController::class, 'destroy']);

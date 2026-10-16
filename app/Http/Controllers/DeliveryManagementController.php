@@ -213,8 +213,37 @@ class DeliveryManagementController extends Controller
             'status' => $s->status,
         ])->values()->all();
 
+        $driverLocation = $this->driverLocationPayload($route);
+
         return view('delivery_management.show', compact(
-            'route', 'stops', 'listFilter', 'delivered', 'remaining', 'miles', 'minutes', 'mapStops'
+            'route', 'stops', 'listFilter', 'delivered', 'remaining', 'miles', 'minutes', 'mapStops', 'driverLocation'
         ));
+    }
+
+    /** Live driver position for the route map (polled by the route detail page). */
+    public function driverLocation($id)
+    {
+        $this->authorizeManage();
+        $route = DeliveryRoute::query()
+            ->where('business_id', (int) session('user.business_id'))
+            ->findOrFail($id);
+
+        return response()->json($this->driverLocationPayload($route));
+    }
+
+    private function driverLocationPayload(DeliveryRoute $route): array
+    {
+        $at = $route->driver_location_at;
+
+        return [
+            'lat' => $route->driver_latitude,
+            'lng' => $route->driver_longitude,
+            'accuracy' => $route->driver_accuracy,
+            'at' => $at?->toIso8601String(),
+            'ago' => $at?->diffForHumans(),
+            'stale' => ! $at || $at->lt(now()->subMinutes(5)),
+            'status' => $route->status,
+            'status_label' => $route->statusLabel(),
+        ];
     }
 }

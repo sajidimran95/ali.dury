@@ -184,6 +184,29 @@ class DeliveryApiController extends Controller
         return $this->ok($this->routeSummary($route->fresh(['stops.order'])), 'Route started.');
     }
 
+    /** Driver GPS ping while today's route is in progress (admin route map shows it live). */
+    public function location(Request $request)
+    {
+        $data = $request->validate([
+            'lat' => 'required|numeric|between:-90,90',
+            'lng' => 'required|numeric|between:-180,180',
+            'accuracy' => 'nullable|numeric|min:0',
+        ]);
+        $route = $this->todayRoute($request);
+        if (! $route || $route->status !== DeliveryRoute::STATUS_STARTED) {
+            return $this->ok(['tracking' => false], 'No route in progress.');
+        }
+
+        $route->forceFill([
+            'driver_latitude' => $data['lat'],
+            'driver_longitude' => $data['lng'],
+            'driver_accuracy' => isset($data['accuracy']) ? (int) round($data['accuracy']) : null,
+            'driver_location_at' => now(),
+        ])->save();
+
+        return $this->ok(['tracking' => true], 'Location updated.');
+    }
+
     public function arrived(Request $request, $stop)
     {
         $row = $this->ownedStop($request, (int) $stop);
