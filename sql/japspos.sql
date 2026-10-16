@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Oct 15, 2026 at 01:02 PM
+-- Generation Time: Oct 16, 2026 at 02:42 PM
 -- Server version: 8.4.11-0ubuntu0.26.04.1
 -- PHP Version: 8.5.4
 
@@ -407,7 +407,10 @@ INSERT INTO `activity_log` (`id`, `log_name`, `description`, `subject_id`, `subj
 (296, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-10-06 05:51:31', '2026-10-06 05:51:31'),
 (297, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-10-13 04:02:22', '2026-10-13 04:02:22'),
 (298, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-10-14 05:43:12', '2026-10-14 05:43:12'),
-(299, 'default', 'edited', 1705, 'App\\Contact', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-10-14 06:36:15', '2026-10-14 06:36:15');
+(299, 'default', 'edited', 1705, 'App\\Contact', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-10-14 06:36:15', '2026-10-14 06:36:15'),
+(300, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-10-15 03:05:39', '2026-10-15 03:05:39'),
+(301, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-10-15 08:02:30', '2026-10-15 08:02:30'),
+(302, 'default', 'login', 1, 'App\\User', NULL, 1, 1, 'App\\User', '[]', NULL, '2026-10-16 03:09:42', '2026-10-16 03:09:42');
 
 -- --------------------------------------------------------
 
@@ -2307,7 +2310,9 @@ INSERT INTO `ecom_carts` (`id`, `business_id`, `contact_id`, `session_id`, `coup
 (239, 1, 1705, 'AhsyBnzWH0RMz0ret5RWA1wJhAYFeVL4GhyGKwnz', NULL, '2026-10-12 07:48:06', '2026-10-14 06:36:24'),
 (240, 1, NULL, 'COiLuBrQMGWLWNdi3aYAIaITdwhsFmoVzfMfd608', NULL, '2026-10-12 07:50:51', '2026-10-12 07:50:51'),
 (241, 1, NULL, '1ux820Py4esHXKFislGBKKVSUZSco5wN8XmlQQRy', NULL, '2026-10-13 04:02:08', '2026-10-13 04:02:08'),
-(243, 1, NULL, 'uWGpXnWbF83YZ2ndPnCNS3wzAdiHmEZgPtFjG5Zw', NULL, '2026-10-14 06:33:23', '2026-10-14 06:33:23');
+(243, 1, NULL, 'uWGpXnWbF83YZ2ndPnCNS3wzAdiHmEZgPtFjG5Zw', NULL, '2026-10-14 06:33:23', '2026-10-14 06:33:23'),
+(244, 1, NULL, 'vs1nlgmnIxYODALwv8l4WGF3Mz8qYkbaTeB1N7ud', NULL, '2026-10-15 03:03:15', '2026-10-15 03:03:15'),
+(245, 1, NULL, 'w8r71twrz8LBODlp4YqjBf78IZfVPcXSDsZAY0TU', NULL, '2026-10-16 03:07:55', '2026-10-16 03:07:55');
 
 -- --------------------------------------------------------
 
@@ -3306,7 +3311,31 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (344, '2026_10_06_020000_create_default_customer_and_preserve_credentials', 38),
 (345, '2026_10_06_030000_ensure_preserved_user_credentials', 38),
 (346, '2026_10_06_040000_ensure_preserved_user_roles_and_permissions', 38),
-(347, '2026_10_06_050000_seed_default_portal_credentials', 39);
+(347, '2026_10_06_050000_seed_default_portal_credentials', 39),
+(348, '2026_10_10_000000_create_mobile_app_tokens_table', 40);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `mobile_app_tokens`
+--
+
+CREATE TABLE `mobile_app_tokens` (
+  `id` bigint UNSIGNED NOT NULL,
+  `app` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `tokenable_type` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `tokenable_id` int UNSIGNED NOT NULL,
+  `business_id` int UNSIGNED DEFAULT NULL,
+  `name` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `token` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `meta` text COLLATE utf8mb4_unicode_ci,
+  `ip_address` varchar(45) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `user_agent` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `last_used_at` timestamp NULL DEFAULT NULL,
+  `expires_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -26740,6 +26769,16 @@ ALTER TABLE `migrations`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `mobile_app_tokens`
+--
+ALTER TABLE `mobile_app_tokens`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `mobile_app_tokens_token_unique` (`token`),
+  ADD KEY `mobile_app_tokens_tokenable_type_tokenable_id_index` (`tokenable_type`,`tokenable_id`),
+  ADD KEY `mobile_app_tokens_app_index` (`app`),
+  ADD KEY `mobile_app_tokens_business_id_index` (`business_id`);
+
+--
 -- Indexes for table `model_has_permissions`
 --
 ALTER TABLE `model_has_permissions`
@@ -27206,7 +27245,7 @@ ALTER TABLE `account_types`
 -- AUTO_INCREMENT for table `activity_log`
 --
 ALTER TABLE `activity_log`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=300;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=303;
 
 --
 -- AUTO_INCREMENT for table `ai_admin_alerts`
@@ -27386,7 +27425,7 @@ ALTER TABLE `ecom_banners`
 -- AUTO_INCREMENT for table `ecom_carts`
 --
 ALTER TABLE `ecom_carts`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=244;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=246;
 
 --
 -- AUTO_INCREMENT for table `ecom_cart_items`
@@ -27524,7 +27563,13 @@ ALTER TABLE `media`
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=348;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=349;
+
+--
+-- AUTO_INCREMENT for table `mobile_app_tokens`
+--
+ALTER TABLE `mobile_app_tokens`
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `notification_templates`
