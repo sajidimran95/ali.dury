@@ -1,4 +1,4 @@
-<!-- Left sidebar — Salezy light -->
+<!-- Left sidebar — dark -->
 <aside class="side-bar tw-relative tw-hidden tw-h-full lg:tw-flex lg:tw-flex-col tw-shrink-0">
 
 <script>document.currentScript.parentElement.classList.toggle('zoho-sidebar-collapsed', localStorage.getItem('upos_sidebar_collapse') === 'true');</script>
@@ -19,7 +19,7 @@
 
     {!! Menu::render('admin-sidebar-menu', 'adminltecustom') !!}
 
-    <p id="sidebar-no-results" class="tw-hidden tw-px-4 tw-py-3 tw-text-xs tw-text-center" style="color:#69738c">
+    <p id="sidebar-no-results" class="tw-hidden tw-px-4 tw-py-3 tw-text-xs tw-text-center" style="color:#bfdbfe">
         No menu items found.
     </p>
 
