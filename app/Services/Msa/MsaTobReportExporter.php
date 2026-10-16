@@ -36,6 +36,9 @@ class MsaTobReportExporter
     /** @var array<int, array> */
     protected array $bids = [];
 
+    /** @var array<string, int> BID SKU => variation_id (MSA rejects duplicate SKUs) */
+    protected array $usedSkus = [];
+
     /** @var array<int, array> keyed by contact_id */
     protected array $sids = [];
 
@@ -156,6 +159,7 @@ class MsaTobReportExporter
                 }
             })
             ->with(['variations.product_variation'])
+            ->orderBy('id')
             ->get();
 
         foreach ($products as $product) {
@@ -163,7 +167,8 @@ class MsaTobReportExporter
                 continue;
             }
 
-            foreach ($product->variations as $variation) {
+            // Stable order so the same variation keeps its SKU week to week when de-duplicating.
+            foreach ($product->variations->sortBy('id') as $variation) {
                 $variationId = (int) $variation->id;
                 // MSA: an item is only reported with 0 inventory when a sale explains it.
                 if ($this->inventoryAsOfWeekEnd($variationId) <= 0 && ! $soldVariationIds->has($variationId)) {
@@ -189,8 +194,9 @@ class MsaTobReportExporter
             return;
         }
 
-        $sku = $this->distributorSku($product, $variation);
-        $upc = $this->upc($product, $variation);
+        $sku = $this->uniqueSku($this->distributorSku($product, $variation), $product, $variation);
+        $this->usedSkus[$sku] = $variationId;
+        $upc =$this->upc($product, $variation);
         $desc = strtoupper($this->productDescription($product, $variation, $sku));
         $itemsPerUnit = $this->itemsPerSellingUnit($product);
         $msaCategory = $this->msaCategoryCode($product);
@@ -915,6 +921,33 @@ class MsaTobReportExporter
         $id = max(1, (int) $variation->id);
 
         return $this->padGtin14((string) $id);
+    }
+
+    /**
+     * MSA Fatal error: every BID needs its own SKU. Variations of one product share product->sku, and
+     * alphanumeric SKUs collapse to the same digits (TOB-001 / VAP-001 → 001). On collision fall back to
+     * the variation's own sub_sku, then to a private GTIN built from product + variation id.
+     */
+    protected function uniqueSku(string $sku, Product $product, $variation): string
+    {
+        if (! isset($this->usedSkus[$sku])) {
+            return $sku;
+        }
+
+        $subDigits = preg_replace('/\D+/', '', (string) ($variation->sub_sku ?? '')) ?? '';
+        if ($subDigits !== '' && ! preg_match('/^0+$/', $subDigits)) {
+            $candidate = $this->padGtin14($subDigits);
+            if (! isset($this->usedSkus[$candidate])) {
+                return $candidate;
+            }
+        }
+
+        $candidate = $this->syntheticGtin14((int) $product->id, (int) $variation->id);
+        while (isset($this->usedSkus[$candidate])) {
+            $candidate = str_pad((string) (((int) $candidate) + 1), 14, '0', STR_PAD_LEFT);
+        }
+
+        return $candidate;
     }
 
     /**
