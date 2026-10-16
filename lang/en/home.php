@@ -84,6 +84,7 @@ return [
     'by_source' => 'By source',
     'source_online_order' => 'Online Order',
     'source_field_order' => 'Field Sales Order',
+    'source_customer_app' => 'Customer App',
     'source_pos_order' => 'POS Order',
     'status_processing' => 'Processing',
     'status_in_progress' => 'In Progress',

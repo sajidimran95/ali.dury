@@ -61,7 +61,7 @@ class TransactionUtil extends Util
         $pipeline_source = ! empty($input['order_source'])
             ? $input['order_source']
             : (! empty($input['source']) ? $input['source'] : ($sale_type === 'sales_order' ? 'web' : null));
-        if (in_array($pipeline_source, ['ecommerce', 'sale_app'], true) && in_array($sale_type, ['sales_order', 'sell'], true)) {
+        if (in_array($pipeline_source, ['ecommerce', 'sale_app', 'customer_app'], true) && in_array($sale_type, ['sales_order', 'sell'], true)) {
             $input['order_source'] = $pipeline_source;
             if (empty($input['shipping_status'])) {
                 $input['shipping_status'] = 'ordered';
@@ -185,6 +185,15 @@ class TransactionUtil extends Util
             'is_kitchen_order' => ! empty($input['is_kitchen_order']) ? 1 : 0,
 
         ]);
+
+        // Sales App / Customer App / Online — same fulfillment meta as ecommerce checkout.
+        try {
+            if (in_array($transaction->order_source ?: $transaction->source, ['ecommerce', 'sale_app', 'customer_app'], true)) {
+                app(\App\Services\FulfillmentService::class)->ensureOrderMeta($transaction);
+            }
+        } catch (\Throwable $e) {
+            \Log::warning('Fulfillment meta create skipped: '.$e->getMessage());
+        }
 
         return $transaction;
     }

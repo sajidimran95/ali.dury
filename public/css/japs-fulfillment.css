@@ -24,7 +24,10 @@ body:has(.ff-page) .zoho-main-column {
 .ff-source-badge { display: inline-flex; padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 800; letter-spacing: .02em; }
 .ff-source-badge.is-online { background: #dcfce7; color: #166534; }
 .ff-source-badge.is-field { background: #dbeafe; color: #1d4ed8; }
+.ff-source-badge.is-customer { background: #fce7f3; color: #9d174d; }
 .ff-source-badge.is-pos { background: #e0e7ff; color: #3730a3; }
+.ff-source-badge.is-ready { background: #ffedd5; color: #c2410c; }
+.ff-source-badge.is-shipped { background: #dcfce7; color: #166534; }
 .ff-card { background: #fff; border-radius: 14px; padding: 16px 18px; box-shadow: 0 1px 2px rgba(15,23,42,.05); margin-bottom: 14px; }
 .ff-card__head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
 .ff-card h3 { margin: 0 0 10px; font-size: 16px; font-weight: 800; }
@@ -44,6 +47,7 @@ body:has(.ff-page) .zoho-main-column {
 .ff-item-cell { display: flex; align-items: center; gap: 10px; }
 .ff-item-cell img { width: 40px; height: 40px; object-fit: cover; border-radius: 8px; background: #f1f5f9; }
 .ff-hint { background: #eff6ff; color: #1d4ed8; padding: 10px 12px; border-radius: 10px; margin-top: 12px; font-size: 13px; }
+.ff-hint--banner { margin: 0 0 14px; font-weight: 600; }
 .ff-check { display: flex; gap: 8px; align-items: center; margin: 8px 0; font-weight: 600; }
 .ff-dims { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 8px; }
 .ff-pill { display: inline-flex; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 800; }

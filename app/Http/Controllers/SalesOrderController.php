@@ -115,7 +115,10 @@ class SalesOrderController extends Controller
         $order = $query->findOrFail($id);
 
         $meta = null;
-        if (class_exists(\Modules\Ecommerce\Entities\EcomOrderMeta::class)) {
+        if (class_exists(\App\Services\FulfillmentService::class)) {
+            $meta = app(\App\Services\FulfillmentService::class)->ensureOrderMeta($order);
+        }
+        if (! $meta && class_exists(\Modules\Ecommerce\Entities\EcomOrderMeta::class)) {
             $meta = \Modules\Ecommerce\Entities\EcomOrderMeta::where('transaction_id', $order->id)->first();
         }
 
@@ -205,7 +208,11 @@ class SalesOrderController extends Controller
             ]);
 
             $transaction_before = $order->replicate();
-            $order->update($input);
+            $order->fill($input);
+            if (class_exists(\App\Services\FulfillmentService::class)) {
+                app(\App\Services\FulfillmentService::class)->syncStageFromShippingStatus($order);
+            }
+            $order->save();
 
             $this->transactionUtil->activityLog($order, 'shipping_edited', $transaction_before, [
                 'update_note' => $request->input('shipping_note', ''),
@@ -226,7 +233,7 @@ class SalesOrderController extends Controller
     }
 
     /**
-     * Update ecommerce fulfillment status when order meta exists.
+     * Update fulfillment status (ecommerce, Sales App, Customer App — same UI).
      */
     public function updateFulfillment(Request $request, $id)
     {
@@ -241,15 +248,24 @@ class SalesOrderController extends Controller
         $business_id = $request->session()->get('user.business_id');
         $order = $this->findSalesOrderOrFail($business_id, $id);
 
-        $meta = \Modules\Ecommerce\Entities\EcomOrderMeta::firstOrCreate(
-            ['transaction_id' => $order->id],
-            [
-                'business_id' => $business_id,
-                'tracking_token' => \Illuminate\Support\Str::random(40),
-                'fulfillment_status' => 'pending',
-                'timeline' => [],
-            ]
-        );
+        $ff = class_exists(\App\Services\FulfillmentService::class)
+            ? app(\App\Services\FulfillmentService::class)
+            : null;
+        $meta = $ff
+            ? $ff->ensureOrderMeta($order)
+            : \Modules\Ecommerce\Entities\EcomOrderMeta::firstOrCreate(
+                ['transaction_id' => $order->id],
+                [
+                    'business_id' => $business_id,
+                    'tracking_token' => \Illuminate\Support\Str::random(40),
+                    'fulfillment_status' => 'pending',
+                    'timeline' => [],
+                ]
+            );
+
+        if (! $meta) {
+            abort(404);
+        }
 
         $status = $request->input('fulfillment_status');
         $allowed = ['pending', 'confirmed', 'processing', 'packed', 'shipped', 'delivered', 'cancelled', 'returned'];
@@ -268,15 +284,20 @@ class SalesOrderController extends Controller
         $meta->timeline = $timeline;
         $meta->save();
 
-        $shipping_map = [
-            'packed' => 'packed',
-            'shipped' => 'shipped',
-            'delivered' => 'delivered',
-            'cancelled' => 'cancelled',
-        ];
-        if (isset($shipping_map[$status])) {
-            $order->shipping_status = $shipping_map[$status];
+        if ($ff) {
+            $ff->applyFulfillmentStatus($order, $status);
             $order->save();
+        } else {
+            $shipping_map = [
+                'packed' => 'packed',
+                'shipped' => 'shipped',
+                'delivered' => 'delivered',
+                'cancelled' => 'cancelled',
+            ];
+            if (isset($shipping_map[$status])) {
+                $order->shipping_status = $shipping_map[$status];
+                $order->save();
+            }
         }
 
         $msg = class_exists(\Modules\Ecommerce\Providers\EcommerceServiceProvider::class)

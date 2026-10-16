@@ -28,6 +28,17 @@
             <span class="ff-source-badge {{ $badge['class'] }}">{{ $badge['label'] }}</span>
         </div>
     </div>
+    @php
+        $ffShipTotal = 0; $ffOrdTotal = 0;
+        foreach ($order->sell_lines as $__l) {
+            $ffOrdTotal += (float) $__l->quantity;
+            $ffShipTotal += (float) ($__l->qty_shipped ?? 0);
+        }
+        $ffRemain = max(0, $ffOrdTotal - $ffShipTotal);
+    @endphp
+    @if ($ffShipTotal > 0 && $ffRemain > 0)
+        <p class="ff-hint ff-hint--banner">{{ __('fulfillment.partial_progress', ['shipped' => $ffShipTotal, 'ordered' => $ffOrdTotal, 'remain' => $ffRemain]) }}</p>
+    @endif
 
     <div class="ff-stepper">
         @foreach ($steps as $key => $step)
@@ -95,11 +106,16 @@
                                 @php
                                     $sku = $line->variations->sub_sku ?? $line->product->sku ?? '';
                                     $ordered = (float) $line->quantity;
+                                    $shipped = (float) ($line->qty_shipped ?? 0);
                                     $already = (float) ($line->qty_picked ?? 0);
                                     $due = max(0, $ordered - $already);
                                 @endphp
                                 <tr data-ordered="{{ $ordered }}" data-already="{{ $already }}" data-due="{{ $due }}">
-                                    <td><input type="checkbox" class="ff-pick-check" data-due="{{ $due }}"></td>
+                                    <td>
+                                        @if ($due > 0)
+                                            <input type="checkbox" class="ff-pick-check" data-due="{{ $due }}">
+                                        @endif
+                                    </td>
                                     <td class="ff-item-cell">
                                         @if (!empty($line->product->image_url))
                                             <img src="{{ $line->product->image_url }}" alt="">
@@ -112,15 +128,24 @@
                                     </td>
                                     <td>{{ $sku }}</td>
                                     <td>{{ $ordered }}</td>
-                                    <td class="ff-already">{{ $already }}</td>
+                                    <td class="ff-already">
+                                        {{ $already }}
+                                        @if ($shipped > 0)
+                                            <br><small class="text-muted">{{ __('fulfillment.qty_shipped') }}: {{ $shipped }}</small>
+                                        @endif
+                                    </td>
                                     <td class="ff-due">{{ $due }}</td>
                                     <td>
-                                        <input type="number" min="0" step="0.01" max="{{ $due }}"
-                                            name="pick_now[{{ $line->id }}]"
-                                            class="form-control ff-qty-picked"
-                                            value="0"
-                                            @if ($due <= 0) readonly @endif>
-                                        <small>/ {{ $due }} {{ __('fulfillment.due_short') }}</small>
+                                        @if ($due > 0)
+                                            <input type="number" min="0" step="0.01" max="{{ $due }}"
+                                                name="pick_now[{{ $line->id }}]"
+                                                class="form-control ff-qty-picked"
+                                                value="0">
+                                            <small>/ {{ $due }} {{ __('fulfillment.due_short') }}</small>
+                                        @else
+                                            <span class="ff-pill is-ok">{{ __('fulfillment.completed') }}</span>
+                                            <input type="hidden" name="pick_now[{{ $line->id }}]" value="0">
+                                        @endif
                                     </td>
                                 </tr>
                             @endforeach
@@ -129,25 +154,35 @@
                     <input type="hidden" name="advance" id="ff_advance" value="0">
                     <button type="submit" class="btn btn-default" onclick="$('#ff_advance').val(0)">{{ __('fulfillment.save_picks') }}</button>
                     <button type="submit" class="btn btn-primary" id="ff_ready_pack" disabled onclick="$('#ff_advance').val(1)">{{ __('fulfillment.mark_ready_packing') }}</button>
-                    <p class="ff-hint">{{ __('fulfillment.pick_hint') }}</p>
+                    <p class="ff-hint">{{ __('fulfillment.partial_wave_help') }}</p>
                 </section>
                 {!! Form::close() !!}
             @elseif ($stage === 'packing')
                 {!! Form::open(['url' => route('fulfillment.pack', $order->id)]) !!}
                 <section class="ff-card">
                     <h3>{{ __('fulfillment.pack_order') }}</h3>
+                    <p class="ff-hint">{{ __('fulfillment.partial_wave_help') }}</p>
                     <table class="ff-items">
                         <thead>
                             <tr>
                                 <th>@lang('sale.product')</th>
                                 <th>SKU</th>
                                 <th>{{ __('fulfillment.qty_ordered') }}</th>
-                                <th>{{ __('fulfillment.qty_picked') }}</th>
+                                <th>{{ __('fulfillment.qty_shipped') }}</th>
+                                <th>{{ __('fulfillment.this_wave') }}</th>
                                 <th>{{ __('sale.status') }}</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach ($order->sell_lines as $line)
+                                @php
+                                    $ordered = (float) $line->quantity;
+                                    $shipped = (float) ($line->qty_shipped ?? 0);
+                                    $wave = max(0, (float) ($line->qty_picked ?? 0) - $shipped);
+                                @endphp
+                                @if ($wave <= 0 && $shipped >= $ordered)
+                                    @continue
+                                @endif
                                 <tr>
                                     <td class="ff-item-cell">
                                         @if (!empty($line->product->image_url))
@@ -156,9 +191,16 @@
                                         {{ $line->product->name ?? '' }}
                                     </td>
                                     <td>{{ $line->variations->sub_sku ?? $line->product->sku ?? '' }}</td>
-                                    <td>{{ (float) $line->quantity }}</td>
-                                    <td>{{ (float) ($line->qty_picked ?? 0) }}</td>
-                                    <td><span class="ff-pill is-ok">{{ __('fulfillment.picked') }}</span></td>
+                                    <td>{{ $ordered }}</td>
+                                    <td>{{ $shipped }}</td>
+                                    <td>{{ $wave }}</td>
+                                    <td>
+                                        @if ($wave > 0)
+                                            <span class="ff-pill is-ok">{{ __('fulfillment.picked') }}</span>
+                                        @else
+                                            <span class="text-muted">—</span>
+                                        @endif
+                                    </td>
                                 </tr>
                             @endforeach
                         </tbody>
@@ -213,9 +255,9 @@
                     <section class="ff-card">
                         <h3>{{ __('fulfillment.package_details') }}</h3>
                         <p class="text-muted" style="font-size:12px;">{{ __('fulfillment.package_read_only') }}</p>
-                        <p><strong>{{ __('fulfillment.package_type') }}:</strong> {{ $package['package_type'] ?: '—' }}</p>
-                        <p><strong>{{ __('fulfillment.dimensions_in') }}:</strong> {{ ($package['length'] ?: '—') }} × {{ ($package['width'] ?: '—') }} × {{ ($package['height'] ?: '—') }}</p>
-                        <p><strong>{{ __('fulfillment.weight_lb') }}:</strong> {{ $package['weight'] ?: '—' }}</p>
+                        <p><strong>{{ __('fulfillment.package_type') }}:</strong> {{ $package['package_type'] ?? '—' }}</p>
+                        <p><strong>{{ __('fulfillment.dimensions_in') }}:</strong> {{ ($package['length'] ?? '—') }} × {{ ($package['width'] ?? '—') }} × {{ ($package['height'] ?? '—') }}</p>
+                        <p><strong>{{ __('fulfillment.weight_lb') }}:</strong> {{ $package['weight'] ?? '—' }}</p>
                         @if ($stage !== 'shipped')
                             <label class="ff-check"><input type="checkbox" name="package_sealed" value="1" @checked(!empty($ship['package_sealed']) || !empty($checklist['package_sealed']))> {{ __('fulfillment.package_sealed') }}</label>
                             <label class="ff-check"><input type="checkbox" name="label_attached" value="1" @checked(!empty($ship['label_attached']))> {{ __('fulfillment.label_attached') }}</label>
@@ -238,22 +280,37 @@
                 </div>
                 <section class="ff-card">
                     <h3>{{ __('fulfillment.items_in_order', ['count' => $order->sell_lines->count()]) }}</h3>
+                    <p class="ff-hint">{{ __('fulfillment.partial_wave_help') }}</p>
                     <table class="ff-items">
                         <thead>
                             <tr>
                                 <th>@lang('sale.product')</th>
                                 <th>SKU</th>
                                 <th>{{ __('fulfillment.qty_ordered') }}</th>
-                                <th>{{ __('fulfillment.qty_packed') }}</th>
+                                <th>{{ __('fulfillment.qty_shipped') }}</th>
+                                <th>{{ __('fulfillment.this_wave') }}</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach ($order->sell_lines as $line)
+                                @php
+                                    $ordered = (float) $line->quantity;
+                                    $shipped = (float) ($line->qty_shipped ?? 0);
+                                    $wave = max(0, (float) ($line->qty_packed ?? $line->qty_picked ?? 0) - $shipped);
+                                @endphp
+                                @continue($wave <= 0 && $shipped <= 0)
                                 <tr>
                                     <td>{{ $line->product->name ?? '' }}</td>
                                     <td>{{ $line->variations->sub_sku ?? '' }}</td>
-                                    <td>{{ (float) $line->quantity }}</td>
-                                    <td>{{ (float) ($line->qty_packed ?? $line->qty_picked ?? 0) }} <span class="ff-pill is-ok">{{ __('fulfillment.packed') }}</span></td>
+                                    <td>{{ $ordered }}</td>
+                                    <td>{{ $shipped }}</td>
+                                    <td>
+                                        @if ($wave > 0)
+                                            {{ $wave }} <span class="ff-pill is-ok">{{ __('fulfillment.packed') }}</span>
+                                        @else
+                                            <span class="text-muted">0</span>
+                                        @endif
+                                    </td>
                                 </tr>
                             @endforeach
                         </tbody>

@@ -518,7 +518,7 @@ class Transaction extends Model
     {
         $key = $this->order_source ?: $this->source;
 
-        return in_array($key, ['ecommerce', 'sale_app'], true) ? $key : (string) ($key ?: 'web');
+        return in_array($key, ['ecommerce', 'sale_app', 'customer_app'], true) ? $key : (string) ($key ?: 'web');
     }
 
     public function fulfillmentSourceBadge(): array
@@ -529,6 +529,9 @@ class Transaction extends Model
         }
         if ($key === 'sale_app') {
             return ['key' => 'sale_app', 'label' => __('lang_v1.menu_field_sales_orders'), 'short' => __('home.source_field_order'), 'class' => 'is-field'];
+        }
+        if ($key === 'customer_app') {
+            return ['key' => 'customer_app', 'label' => __('home.source_customer_app'), 'short' => __('home.source_customer_app'), 'class' => 'is-customer'];
         }
 
         return ['key' => $key, 'label' => __('home.source_pos_order'), 'short' => __('home.source_pos_order'), 'class' => 'is-pos'];

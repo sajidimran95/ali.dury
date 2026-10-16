@@ -15,6 +15,15 @@
         'cancelled' => 'bg-red',
         'returned' => 'bg-maroon',
     ];
+    $pipeline_source = $order->order_source ?: $order->source;
+    $in_fulfillment_pipeline = in_array($pipeline_source, \App\Services\FulfillmentService::PIPELINE_SOURCES, true);
+    $ff_stage = $order->fulfillment_stage ?: ($in_fulfillment_pipeline ? 'picking' : null);
+    $ff_stage_labels = [
+        'picking' => __('fulfillment.picking'),
+        'packing' => __('fulfillment.packing'),
+        'shipment' => __('fulfillment.shipment'),
+        'shipped' => __('fulfillment.shipped'),
+    ];
     $so_status_meta = $sales_order_statuses[$order->status] ?? ['label' => ucfirst($order->status), 'class' => 'bg-gray'];
     $total_paid = 0;
 @endphp
@@ -75,6 +84,16 @@
                             <i class="fa fa-print"></i> @lang('lang_v1.print_invoice')
                         </a>
                     @endcan
+                    @if($in_fulfillment_pipeline && \Illuminate\Support\Facades\Route::has('fulfillment.show'))
+                        <a href="{{ route('fulfillment.show', [$order->id]) }}"
+                           class="tw-dw-btn tw-dw-btn-warning tw-text-white tw-dw-btn-sm">
+                            <i class="fas fa-boxes"></i>
+                            @lang('fulfillment.breadcrumb_fulfillment')
+                            @if($ff_stage)
+                                ({{ $ff_stage_labels[$ff_stage] ?? ucfirst($ff_stage) }})
+                            @endif
+                        </a>
+                    @endif
                 </div>
             </div>
         </div>
@@ -102,6 +121,11 @@
                             <p class="tw-mb-1">
                                 <b>@lang('ecommerce::lang.fulfillment'):</b>
                                 <span class="label {{ $fulfillment_colors[$fulfillment] ?? 'bg-gray' }}">{{ ucfirst($fulfillment) }}</span>
+                            </p>
+                        @elseif($in_fulfillment_pipeline && $ff_stage)
+                            <p class="tw-mb-1">
+                                <b>@lang('fulfillment.breadcrumb_fulfillment'):</b>
+                                <span class="label bg-aqua">{{ $ff_stage_labels[$ff_stage] ?? ucfirst($ff_stage) }}</span>
                             </p>
                         @endif
                         @php
@@ -381,25 +405,53 @@
                 @endcomponent
             @endif
 
-            @if($meta && $can_update_status)
+            {{-- Same fulfillment panel for Online / Sales App / Customer App --}}
+            @if($meta && ($can_update_status || $in_fulfillment_pipeline))
                 @component('components.widget', ['class' => 'box-warning', 'title' => __('ecommerce::lang.fulfillment_status')])
-                    {!! Form::open(['url' => route('sales-order.fulfillment', $order->id), 'method' => 'post']) !!}
-                        <div class="form-group">
-                            <label>@lang('ecommerce::lang.fulfillment_status')</label>
-                            <select name="fulfillment_status" class="form-control">
-                                @foreach(['pending','confirmed','processing','packed','shipped','delivered','cancelled','returned'] as $st)
-                                    <option value="{{ $st }}" @selected(($fulfillment ?? 'pending') === $st)>{{ ucfirst($st) }}</option>
-                                @endforeach
-                            </select>
+                    @if($in_fulfillment_pipeline && $ff_stage)
+                        <p class="tw-mb-2">
+                            <b>@lang('fulfillment.breadcrumb_fulfillment'):</b>
+                            <span class="label bg-aqua">{{ $ff_stage_labels[$ff_stage] ?? ucfirst((string) $ff_stage) }}</span>
+                        </p>
+                    @endif
+                    @if($can_update_status)
+                        {!! Form::open(['url' => route('sales-order.fulfillment', $order->id), 'method' => 'post']) !!}
+                            <div class="form-group">
+                                <label>@lang('ecommerce::lang.fulfillment_status')</label>
+                                <select name="fulfillment_status" class="form-control">
+                                    @foreach(['pending','confirmed','processing','packed','shipped','delivered','cancelled','returned'] as $st)
+                                        <option value="{{ $st }}" @selected(($fulfillment ?? 'pending') === $st)>{{ ucfirst($st) }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>@lang('brand.note')</label>
+                                <input type="text" name="note" class="form-control" placeholder="@lang('lang_v1.optional')">
+                            </div>
+                            <button type="submit" class="tw-dw-btn tw-dw-btn-primary tw-text-white tw-w-full">
+                                <i class="fas fa-save"></i> @lang('messages.update')
+                            </button>
+                        {!! Form::close() !!}
+                    @endif
+                    @if($in_fulfillment_pipeline && \Illuminate\Support\Facades\Route::has('fulfillment.show'))
+                        <a href="{{ route('fulfillment.show', [$order->id]) }}"
+                           class="tw-dw-btn tw-dw-btn-warning tw-text-white tw-w-full tw-mt-2">
+                            <i class="fas fa-boxes"></i>
+                            {{ __('fulfillment.open') }}
+                            @if($ff_stage)
+                                — {{ $ff_stage_labels[$ff_stage] ?? ucfirst((string) $ff_stage) }}
+                            @endif
+                        </a>
+                        <div class="tw-mt-2 tw-flex tw-flex-wrap tw-gap-1">
+                            @foreach(['picking' => 'fulfillment.picking', 'packing' => 'fulfillment.packing', 'shipment' => 'fulfillment.shipment'] as $stageKey => $stageLang)
+                                @if(\Illuminate\Support\Facades\Route::has('fulfillment.'.$stageKey))
+                                    <a href="{{ route('fulfillment.'.$stageKey) }}" class="tw-dw-btn tw-dw-btn-xs tw-dw-btn-outline tw-dw-btn-neutral">
+                                        @lang($stageLang)
+                                    </a>
+                                @endif
+                            @endforeach
                         </div>
-                        <div class="form-group">
-                            <label>@lang('brand.note')</label>
-                            <input type="text" name="note" class="form-control" placeholder="@lang('lang_v1.optional')">
-                        </div>
-                        <button type="submit" class="tw-dw-btn tw-dw-btn-primary tw-text-white tw-w-full">
-                            <i class="fas fa-save"></i> @lang('messages.update')
-                        </button>
-                    {!! Form::close() !!}
+                    @endif
                 @endcomponent
 
                 @component('components.widget', ['class' => 'box-info', 'title' => __('ecommerce::lang.tracking_token')])
@@ -413,13 +465,21 @@
                 @endcomponent
 
                 @component('components.widget', ['class' => 'box-solid', 'title' => __('ecommerce::lang.timeline')])
-                    @if(!empty($meta->timeline))
+                    @php
+                        $ff_timeline = $meta->timeline ?? [];
+                        $wh_timeline = ($order->fulfillment_meta['timeline'] ?? []) ?: [];
+                        $merged_timeline = collect(array_merge($ff_timeline, $wh_timeline))
+                            ->sortByDesc(fn ($s) => $s['at'] ?? '')
+                            ->values()
+                            ->all();
+                    @endphp
+                    @if(!empty($merged_timeline))
                         <ul class="timeline tw-pl-0">
-                            @foreach(array_reverse($meta->timeline) as $step)
+                            @foreach($merged_timeline as $step)
                                 <li class="tw-mb-3 tw-border-l-2 tw-border-gray-200 tw-pl-3">
-                                    <strong>{{ $step['label'] ?? ucfirst($step['status'] ?? '') }}</strong>
+                                    <strong>{{ $step['label'] ?? ucfirst($step['status'] ?? $step['event'] ?? '') }}</strong>
                                     <br>
-                                    <small class="text-muted">{{ $step['at'] ?? '' }}</small>
+                                    <small class="text-muted">{{ $step['at'] ?? '' }}@if(!empty($step['by'])) · {{ $step['by'] }}@endif</small>
                                     @if(!empty($step['note']))
                                         <br><small>{{ $step['note'] }}</small>
                                     @endif

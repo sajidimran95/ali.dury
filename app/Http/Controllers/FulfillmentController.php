@@ -45,6 +45,7 @@ class FulfillmentController extends Controller
         $business_id = (int) $request->session()->get('user.business_id');
         $permitted = auth()->user()->permitted_locations();
         $source = $request->get('source');
+        $shipment_filter = $request->get('shipment_filter');
 
         if ($request->ajax()) {
             $query = $this->fulfillment->forStage(
@@ -52,6 +53,9 @@ class FulfillmentController extends Controller
                 $stage
             );
             $this->fulfillment->applySourceFilter($query, $source);
+            if ($stage === 'shipment') {
+                $this->fulfillment->applyShipmentFilter($query, $shipment_filter);
+            }
             $query->leftJoin('contacts', 'transactions.contact_id', '=', 'contacts.id')
                 ->select('transactions.*', 'contacts.name as customer_name')
                 ->orderByDesc('transactions.transaction_date');
@@ -61,6 +65,16 @@ class FulfillmentController extends Controller
                     $b = $row->fulfillmentSourceBadge();
 
                     return '<span class="ff-source-badge '.$b['class'].'">'.e($b['short']).'</span>';
+                })
+                ->addColumn('stage_badge', function ($row) use ($stage) {
+                    if ($stage !== 'shipment') {
+                        return '';
+                    }
+                    $ff = $row->fulfillment_stage ?: 'shipment';
+                    $label = $ff === 'shipped' ? __('fulfillment.shipped') : __('fulfillment.ready_to_ship');
+                    $class = $ff === 'shipped' ? 'is-shipped' : 'is-ready';
+
+                    return '<span class="ff-source-badge '.$class.'">'.e($label).'</span>';
                 })
                 ->addColumn('customer', function ($row) {
                     return e($row->customer_name ?? '');
@@ -81,11 +95,11 @@ class FulfillmentController extends Controller
 
                     return '<a class="btn btn-sm btn-primary" href="'.e($url).'">'.e(__('fulfillment.open')).'</a>';
                 })
-                ->rawColumns(['source_badge', 'invoice_no', 'final_total', 'action'])
+                ->rawColumns(['source_badge', 'stage_badge', 'invoice_no', 'final_total', 'action'])
                 ->make(true);
         }
 
-        return view('fulfillment.queue', compact('stage', 'source'));
+        return view('fulfillment.queue', compact('stage', 'source', 'shipment_filter'));
     }
 
     public function show($id)
@@ -109,8 +123,21 @@ class FulfillmentController extends Controller
         $meta = $order->fulfillment_meta ?? [];
         $pick = $this->fulfillment->pickedCount($order);
         $checklist = $meta['pack_checklist'] ?? [];
-        $package = $meta['package'] ?? [];
-        $ship = $meta['shipment'] ?? [];
+        $package = array_merge([
+            'package_type' => '',
+            'length' => '',
+            'width' => '',
+            'height' => '',
+            'weight' => '',
+        ], $meta['package'] ?? []);
+        $ship = array_merge([
+            'carrier' => '',
+            'service' => '',
+            'tracking' => '',
+            'package_sealed' => false,
+            'label_attached' => false,
+            'address_verified' => false,
+        ], $meta['shipment'] ?? []);
         $timeline = array_reverse($meta['timeline'] ?? []);
 
         return view('fulfillment.show', compact(
