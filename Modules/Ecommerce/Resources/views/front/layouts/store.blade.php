@@ -42,7 +42,7 @@
             font-weight: 500 !important;
         }
     </style>
-    <link rel="stylesheet" href="{{ asset('css/gs-storefront.css') }}?v={{ config('app.asset_version', '1') }}&gs=26">
+    <link rel="stylesheet" href="{{ asset('css/gs-storefront.css') }}?v={{ config('app.asset_version', '1') }}&gs=27">
     <link rel="stylesheet" href="{{ asset('css/gs-shop.css') }}?v=2">
     <link rel="stylesheet" href="{{ asset('css/gs-cart.css') }}?v=1">
     <link rel="stylesheet" href="{{ asset('css/gs-account.css') }}?v=1">

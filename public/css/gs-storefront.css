@@ -16,6 +16,10 @@ body.gc-store, body.gs-store {
     font-family: Montserrat, Poppins, Roboto, system-ui, sans-serif;
     width: 100%;
 }
+body.gc-store a,
+body.gs-store a {
+    text-decoration: none;
+}
 .gs-wrap {
     width: 100%;
     max-width: none;

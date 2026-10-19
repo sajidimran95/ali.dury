@@ -1,3 +1,4 @@
+body.ecom-auth a { text-decoration: none; }
 .auth-v2 {
     display: flex; height: 100vh; overflow: hidden; background: #fff;
     font-family: Montserrat, sans-serif; color: #1a1a1a;
