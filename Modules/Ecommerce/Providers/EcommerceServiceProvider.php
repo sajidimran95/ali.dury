@@ -42,24 +42,34 @@ class EcommerceServiceProvider extends ServiceProvider
                 $view->with('cart_totals', $cartService->totals($cart));
                 $view->with('cart_product_ids', $cart->items->pluck('product_id')->unique()->values()->all());
 
+                $gsNavOrder = \Modules\Ecommerce\Support\Storefront::gsNavCategoryNames();
                 $nav_categories = \App\Category::where('business_id', $business_id)
                     ->where('category_type', 'product')
                     ->where(function ($q) {
                         $q->whereNull('parent_id')->orWhere('parent_id', 0);
                     })
+                    ->whereIn('name', $gsNavOrder)
                     ->with(['sub_categories' => function ($q) {
                         $q->where(function ($qq) {
                             $qq->where('category_type', 'product')->orWhereNull('category_type');
                         })->orderBy('name');
                     }])
-                    ->orderBy('name')
-                    ->limit(6)
-                    ->get();
+                    ->get()
+                    ->sortBy(function ($cat) use ($gsNavOrder) {
+                        $i = array_search($cat->name, $gsNavOrder, true);
+                        return $i === false ? 99 : $i;
+                    })
+                    ->values();
 
                 $view->with('has_new_arrivals', \App\Product::storefrontQuery((int) $business_id)->where('ecom_is_new_arrival', 1)->exists());
                 $view->with('has_promotions', \App\Product::storefrontQuery((int) $business_id)->where('ecom_is_featured', 1)->exists());
 
-                // Brands + sample product image for mega menu tiles
+                $brandCovers = [];
+                $coversFile = storage_path('app/ecom_brand_covers.json');
+                if (is_file($coversFile)) {
+                    $brandCovers = json_decode((string) file_get_contents($coversFile), true) ?: [];
+                }
+
                 foreach ($nav_categories as $cat) {
                     $subIds = $cat->sub_categories->pluck('id')->all();
                     $catIds = array_merge([$cat->id], $subIds);
@@ -82,31 +92,56 @@ class EcommerceServiceProvider extends ServiceProvider
                         if (! $brand) {
                             continue;
                         }
-                        $img = optional($rows->first(fn ($r) => ! empty($r->image)))->image;
+                        $cover = $brandCovers[$brand->id] ?? $brandCovers[(string) $brand->id] ?? null;
+                        $productImage = optional($rows->first(fn ($r) => ! empty($r->image)))->image;
+                        $image = $cover;
+                        if (! $image && is_string($productImage) && preg_match('#^https?://#i', $productImage)) {
+                            $image = $productImage;
+                        }
                         $megaBrands->push((object) [
                             'id' => $brand->id,
                             'name' => $brand->name,
-                            'image' => $img,
+                            'image' => $image,
                         ]);
                         if ($megaBrands->count() >= 12) {
                             break;
                         }
                     }
+                    $megaBrands = $megaBrands
+                        ->sortByDesc(fn ($b) => empty($b->image) ? 0 : 1)
+                        ->values();
+                    $withImages = $megaBrands->filter(fn ($b) => ! empty($b->image))->take(12)->values();
+                    if ($withImages->count() >= 4) {
+                        $megaBrands = $withImages;
+                    }
 
-                    // Fallback: any brands if category has none yet
                     if ($megaBrands->isEmpty()) {
                         $megaBrands = \App\Brands::where('business_id', $business_id)
                             ->orderBy('name')
                             ->limit(8)
                             ->get()
-                            ->map(fn ($b) => (object) ['id' => $b->id, 'name' => $b->name, 'image' => null]);
+                            ->map(function ($b) use ($brandCovers) {
+                                return (object) [
+                                    'id' => $b->id,
+                                    'name' => $b->name,
+                                    'image' => $brandCovers[$b->id] ?? $brandCovers[(string) $b->id] ?? null,
+                                ];
+                            });
                     }
 
                     $cat->setAttribute('mega_brands', $megaBrands);
                 }
 
                 $view->with('nav_categories', $nav_categories);
-                $view->with('nav_brands', \App\Brands::where('business_id', $business_id)->orderBy('name')->limit(20)->get());
+                $ecomBrandIds = \App\Product::storefrontQuery((int) $business_id)
+                    ->whereNotNull('brand_id')
+                    ->distinct()
+                    ->pluck('brand_id');
+                $view->with('nav_brands', \App\Brands::where('business_id', $business_id)
+                    ->whereIn('id', $ecomBrandIds)
+                    ->orderBy('name')
+                    ->limit(20)
+                    ->get());
             } catch (\Throwable $e) {
                 // keep existing shared defaults
             }

@@ -2,10 +2,64 @@
 
 namespace Modules\Ecommerce\Support;
 
+use App\Category;
 use Illuminate\Support\Collection;
 
 class Storefront
 {
+    public static function gsTopCategoryNames(): array
+    {
+        return [
+            'Candy', 'General Merchandise', 'Health & Beauty', 'King Palm', 'Novelty', 'Ooze',
+            'Papers & Cones', 'Smoking Accessories', 'Snacks & Drinks', 'Tobacco', 'Vape Devices',
+        ];
+    }
+
+    public static function gsNavCategoryNames(): array
+    {
+        return [
+            'Candy', 'Snacks & Drinks', 'Tobacco', 'Papers & Cones',
+            'General Merchandise', 'Health & Beauty', 'Vape Devices',
+            'Smoking Accessories', 'Novelty',
+        ];
+    }
+
+    public static function gsCategoryIds(int $businessId): array
+    {
+        $tops = Category::query()
+            ->where('business_id', $businessId)
+            ->whereIn('name', self::gsTopCategoryNames())
+            ->pluck('id');
+
+        return Category::query()
+            ->where('business_id', $businessId)
+            ->where(function ($q) use ($tops) {
+                $q->whereIn('id', $tops)->orWhereIn('parent_id', $tops);
+            })
+            ->pluck('id')
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    public static function isGsCategory(?Category $category): bool
+    {
+        if (! $category) {
+            return false;
+        }
+        $names = self::gsTopCategoryNames();
+        if (in_array($category->name, $names, true)) {
+            return true;
+        }
+        if ($category->parent_id) {
+            $parentName = Category::query()->where('id', $category->parent_id)->value('name');
+
+            return in_array($parentName, $names, true);
+        }
+
+        return false;
+    }
+
     public static function placeholder(): string
     {
         return asset('/img/default.png');
@@ -31,26 +85,50 @@ class Storefront
 
     public static function videos(): Collection
     {
+        $mediaFile = storage_path('app/ecom_gs_media.json');
+        $media = is_file($mediaFile) ? (json_decode(file_get_contents($mediaFile), true) ?: []) : [];
+        $slides = array_values(array_filter(array_merge(
+            $media['sliders'] ?? [],
+            $media['banners'] ?? [],
+            $media['tetra'] ?? []
+        )));
+        if ($slides) {
+            return collect($slides)->unique()->take(5)->values()->map(function ($url, $i) {
+                $isVideo = (bool) preg_match('/\.(mp4|webm|ogg)(\?|$)/i', (string) $url);
+
+                return (object) [
+                    'title' => 'G&S Wholesale '.($i + 1),
+                    'image' => $url,
+                    'poster' => $url,
+                    'is_video' => $isVideo,
+                ];
+            });
+        }
+
         return collect([
             (object) [
                 'title' => 'Wholesale Vape Cloud',
                 'image' => asset('ecom/hero/vape.mp4'),
                 'poster' => self::placeholder(),
+                'is_video' => true,
             ],
             (object) [
                 'title' => 'Cigar Lounge Heat',
                 'image' => asset('ecom/hero/cigar-burn.mp4'),
                 'poster' => self::placeholder(),
+                'is_video' => true,
             ],
             (object) [
                 'title' => 'Roll & Wrap',
                 'image' => asset('ecom/hero/cigar-roll.mp4'),
                 'poster' => self::placeholder(),
+                'is_video' => true,
             ],
             (object) [
                 'title' => 'Hookah Night',
                 'image' => asset('ecom/hero/hookah.mp4'),
                 'poster' => self::placeholder(),
+                'is_video' => true,
             ],
         ]);
     }

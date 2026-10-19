@@ -2,106 +2,151 @@
 @section('title', 'Shop')
 @section('content')
 @php
-    $covers = [];
-    $coverFile = storage_path('app/ecom_category_covers.json');
-    if (is_file($coverFile)) {
-        $covers = json_decode(file_get_contents($coverFile), true) ?: [];
+    $activeCat = ($categories ?? collect())->firstWhere('id', (int) request('category'));
+    if (! $activeCat) {
+        $activeCat = ($categories ?? collect())->flatMap(fn ($c) => collect([$c])->merge($c->sub_categories ?? []))->firstWhere('id', (int) request('category'));
     }
-    $activeCat = $categories->firstWhere('id', (int) request('category'));
-    $bannerImg = $activeCat && isset($covers[$activeCat->id])
-        ? asset('uploads/img/'.$covers[$activeCat->id])
-        : ($products->first()->image_url ?? null);
-
-    $filterCount = 0;
-    if (request()->filled('category')) $filterCount++;
-    if (request()->filled('brand')) $filterCount++;
-    if (request()->filled('min_price')) $filterCount++;
-    if (request()->filled('max_price')) $filterCount++;
-    if (request()->filled('sort') && request('sort') !== 'newest') $filterCount++;
+    $sort = $sort ?? request('sort', 'name_asc');
+    $count = (int) request('product_count', $products->perPage());
+    $pageTitle = $activeCat->name ?? 'Shop';
+    $viewMode = request('view', 'list') === 'grid' ? 'grid' : 'list';
+    $keep = request()->except(['page']);
+    $ico = 'https://gsdistributor.com/media/icons';
+    $rightChevron = '<svg viewBox="64 64 896 896" width="12" height="12" fill="currentColor" aria-hidden="true"><path d="M765.7 486.8L314.9 134.7A7.97 7.97 0 00302 141v77.3c0 4.9 2.3 9.6 6.1 12.6l360 281.1-360 281.1c-3.9 3-6.1 7.7-6.1 12.6V883c0 6.7 7.7 10.4 12.9 6.3l450.8-352.1a31.96 31.96 0 000-50.4z"></path></svg>';
+    $chipX = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iMTIiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNMTMuMzg3IDEyTDIwLjQyIDMuNjE4QzIwLjUzNiAzLjQ3OSAyMC40MzcgMy4yNjggMjAuMjU1IDMuMjY4SDE4LjExN0MxNy45OTEgMy4yNjggMTcuODcxIDMuMzI0IDE3Ljc4OCAzLjQyTDExLjk4OCAxMC4zMzNMNi4xODkgMy40MkM2LjEwOSAzLjMyNCA1Ljk4OCAzLjI2OCA1Ljg2IDMuMjY4SDMuNzIyQzMuNTQgMy4yNjggMy40NDEgMy40NzkgMy41NTkgMy42MThMMTAuNTkgMTJMMy41NTkgMjAuMzhDMy41MzMgMjAuNDEyIDMuNTE2IDIwLjQ1IDMuNTEgMjAuNDlDMy41MDUgMjAuNTMxIDMuNTExIDIwLjU3MiAzLjUyOCAyMC42MDlDMy41NDUgMjAuNjQ2IDMuNTczIDIwLjY3NyAzLjYwNyAyMC42OTlDMy42NDIgMjAuNzIxIDMuNjgyIDIwLjczMiAzLjcyMiAyMC43MzJINS44NkM1Ljk4NiAyMC43MzIgNi4xMDYgMjAuNjc2IDYuMTg5IDIwLjU3OUwxMS45ODggMTMuNjY2TDE3Ljc4OCAyMC41NzlDMTcuODY4IDIwLjY3NiAxNy45ODggMjAuNzMyIDE4LjExNyAyMC43MzJIMjAuMjU1QzIwLjQzNyAyMC43MzIgMjAuNTM2IDIwLjUyIDIwLjQxOCAyMC4zOEwxMy4zODcgMTJaIiBmaWxsPSJibGFjayIvPjwvc3ZnPg==';
 @endphp
 
-<section class="bg-[#0b1020] border-b border-line">
-    <div class="max-w-[1400px] mx-auto px-4 py-5 md:py-10 flex flex-wrap items-end justify-between gap-4">
-        <div>
-            <p class="text-[11px] uppercase tracking-[0.18em] text-white/40 font-bold mb-1 hidden md:block">Wholesale catalog</p>
-            <h1 class="gc-serif text-3xl md:text-5xl text-white">{{ request()->boolean('featured') ? 'Promotions' : ($activeCat->name ?? 'Shop All Products') }}</h1>
-            <p class="text-sm text-white/50 mt-1 md:mt-2">{{ $products->total() }} products · live POS inventory</p>
-        </div>
-        @if($bannerImg)
-            <div class="hidden sm:block w-full sm:w-48 h-24 rounded-xl overflow-hidden border border-line">
-                <img src="{{ $bannerImg }}" alt="" class="w-full h-full object-cover">
-            </div>
-        @else
-            <div class="hidden sm:block w-full sm:w-48 h-24 rounded-xl overflow-hidden border border-line bg-mist">
-                <img src="{{ \Modules\Ecommerce\Support\Storefront::placeholder() }}" alt="" class="w-full h-full object-cover opacity-70">
-            </div>
+<div class="gs-shop-page" id="gsShopPage">
+    <nav class="shop-breadcrumb">
+        <a href="{{ route('ecommerce.home') }}">Home</a>
+        <span>›</span>
+        <a href="{{ route('ecommerce.shop') }}">Shop</a>
+        @if($activeCat)
+            <span>›</span>
+            <span class="current">{{ $activeCat->name }}</span>
         @endif
-    </div>
-</section>
+    </nav>
 
-{{-- Mobile app-style filter trigger (shop only) --}}
-<div class="lg:hidden sticky top-[calc(3.5rem+env(safe-area-inset-top,0px))] z-40 bg-[#070b16]/95 backdrop-blur border-b border-line">
-    <div class="px-3 py-2.5 flex items-center gap-2">
-        <button type="button" id="openShopFilter" class="flex-1 h-11 inline-flex items-center justify-center gap-2 rounded-xl bg-ink text-white font-bold text-sm active:opacity-90">
-            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M4 6h16M7 12h10M10 18h4"/>
-            </svg>
-            Filter
-            @if($filterCount > 0)
-                <span class="min-w-[20px] h-5 px-1.5 rounded-full bg-brand text-[11px] font-extrabold inline-flex items-center justify-center">{{ $filterCount }}</span>
-            @endif
-        </button>
-        <form method="get" action="{{ url()->current() }}" class="flex-1 min-w-0">
-            @foreach(request()->except(['sort', 'page']) as $key => $value)
-                @if(is_scalar($value) && $value !== '')
-                    <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+    <div class="ant-row-shop">
+        <aside class="sidebar">
+            <div class="scroller-class">
+                <div class="text-wrapper-filter">Filters</div>
+                <img src="{{ $ico }}/black-left-line.png" alt="close" class="responsive-filter" id="gsCollapseFilters">
+            </div>
+
+            <div class="text-wrapper-6">Explore By Selection</div>
+            <div class="explore-filters">
+                <div class="explore-filters-item">
+                    <span>New Arrivals <img class="new-badge" src="https://gsdistributor.com/_next/static/media/new-tag.aa10673b6b53cee1.gif" alt=""></span>
+                    <input type="checkbox" {{ request('new_only') ? 'checked' : '' }}
+                           onchange="location.href='{{ route('ecommerce.shop', array_merge($keep, ['new_only' => request('new_only') ? null : 1, 'page' => null])) }}'">
+                </div>
+                <div class="explore-filters-item">
+                    <span>Featured Products</span>
+                    <input type="checkbox" {{ request('featured') ? 'checked' : '' }}
+                           onchange="location.href='{{ route('ecommerce.shop', array_merge($keep, ['featured' => request('featured') ? null : 1, 'page' => null])) }}'">
+                </div>
+                <div class="explore-filters-item">
+                    <span>Hot Seller Products</span>
+                    <input type="checkbox" {{ request('hot') ? 'checked' : '' }}
+                           onchange="location.href='{{ route('ecommerce.shop', array_merge($keep, ['hot' => request('hot') ? null : 1, 'page' => null])) }}'">
+                </div>
+            </div>
+
+            <div class="frame-13">
+                <div class="text-wrapper-6" style="margin:0">Categories</div>
+                @if($activeCat)
+                    <a class="breadcrum-category" href="{{ route('ecommerce.shop', request()->except(['category', 'page'])) }}">
+                        {{ strtoupper($activeCat->name) }}
+                        <img src="{{ $chipX }}" alt="">
+                    </a>
                 @endif
-            @endforeach
-            <select name="sort" class="w-full h-11 rounded-xl border border-line bg-mist px-3 text-sm font-semibold outline-none" onchange="this.form.submit()">
-                <option value="newest" @selected(($sort ?? request('sort', 'newest')) === 'newest')>Newest</option>
-                <option value="price_asc" @selected(($sort ?? '') === 'price_asc')>Price ↑</option>
-                <option value="price_desc" @selected(($sort ?? '') === 'price_desc')>Price ↓</option>
-            </select>
-        </form>
-    </div>
-</div>
+            </div>
+            <div class="sidebar-search">
+                <input type="text" class="header-searchbar" id="gsCatSearch" placeholder="Search Categories">
+                <div class="search-icon"><img src="{{ $ico }}/Searchwhite.svg" alt="Search" class="sidebar-search-icon"></div>
+            </div>
+            <div class="sidebar-widget-list" id="gsCatList">
+                @foreach($categories as $cat)
+                    <a class="category-name {{ (int) request('category') === (int) $cat->id ? 'active-category' : '' }}"
+                       href="{{ route('ecommerce.shop', array_merge($keep, ['category' => $cat->id, 'page' => null])) }}" data-name="{{ strtolower($cat->name) }}">
+                        <span>{{ in_array($cat->name, ['Tobacco', 'Vape Devices'], true) ? strtoupper($cat->name) : $cat->name }}</span>
+                        {!! $rightChevron !!}
+                    </a>
+                @endforeach
+            </div>
 
-<div class="max-w-[1400px] mx-auto px-3 sm:px-4 py-5 md:py-8">
-    <div class="grid lg:grid-cols-12 gap-6">
-        {{-- Desktop sidebar filters --}}
-        <aside class="hidden lg:block lg:col-span-3">
-            <form method="get" class="rounded-xl bg-[#10162a] border border-line p-5 space-y-4 sticky top-28 text-sm">
-                @include('ecommerce::front.shop.partials.filter_fields', ['sort' => $sort ?? request('sort', 'newest')])
-                <button type="submit" class="w-full btn-brand">Apply filters</button>
-            </form>
+            <div class="text-wrapper-6" style="margin-top:22px">Brands</div>
+            <div class="sidebar-search">
+                <input type="text" class="header-searchbar" id="gsBrandSearch" placeholder="Search Brands">
+                <div class="search-icon"><img src="{{ $ico }}/Searchwhite.svg" alt="Search" class="sidebar-search-icon"></div>
+            </div>
+            <div class="scroll-on-brand" id="gsBrandList">
+                @foreach($brands as $brand)
+                    <label class="gs-shop-brand" data-name="{{ strtolower($brand->name) }}">
+                        <input type="checkbox" {{ (int) request('brand') === (int) $brand->id ? 'checked' : '' }}
+                               onchange="location.href='{{ route('ecommerce.shop', array_merge($keep, ['brand' => (int) request('brand') === (int) $brand->id ? null : $brand->id, 'page' => null])) }}'">
+                        <span>{{ $brand->name }}</span>
+                    </label>
+                @endforeach
+            </div>
         </aside>
 
-        <div class="lg:col-span-9">
-            @include('ecommerce::front.partials.product_grid', ['products' => $products, 'minCards' => 0])
-            <div class="mt-8">
-                {{ $products->links('ecommerce::front.partials.pagination') }}
-            </div>
-        </div>
-    </div>
-</div>
-
-{{-- Mobile filter bottom sheet --}}
-<div id="shopFilterSheet" class="app-sheet app-mobile-only" aria-hidden="true">
-    <div class="app-sheet__backdrop" data-close-shop-filter></div>
-    <div class="app-sheet__panel" role="dialog" aria-label="Filters">
-        <div class="app-sheet__handle"></div>
-        <div class="px-4 pb-4">
-            <div class="flex items-center justify-between mb-3">
-                <h2 class="text-lg font-extrabold">Filters</h2>
-                <button type="button" class="h-9 w-9 rounded-full bg-mist inline-flex items-center justify-center text-lg" data-close-shop-filter aria-label="Close">✕</button>
-            </div>
-            <form method="get" class="space-y-4 text-sm">
-                @include('ecommerce::front.shop.partials.filter_fields', ['sort' => $sort ?? request('sort', 'newest')])
-                <div class="grid grid-cols-2 gap-2 pt-1 sticky bottom-0 bg-[#10162a] pb-[env(safe-area-inset-bottom,0)]">
-                    <a href="{{ route('ecommerce.shop') }}" class="h-12 inline-flex items-center justify-center rounded-xl border border-line font-bold text-sm bg-mist">Clear</a>
-                    <button type="submit" class="h-12 btn-brand rounded-xl">Apply filters</button>
+        <div class="shop-page-margin">
+            <div class="shop-page-head">
+                <div class="shop-page-head-left">
+                    <button type="button" class="filter-display-reponsive" id="gsShowFilters" aria-label="Show filters">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                            <path d="M7.5 4.17a.83.83 0 1 1 0 1.66.83.83 0 0 1 0-1.66Zm3.33.83H16.67M3.33 5h.84M12.5 9.17a.83.83 0 1 1 0 1.66.83.83 0 0 1 0-1.66Zm3.33.83h.84M3.33 10h6.67M7.5 14.17a.83.83 0 1 1 0 1.66.83.83 0 0 1 0-1.66Zm3.33.83h6.67M3.33 15h.84" stroke="#1a1a1a" stroke-width="1.5" stroke-linecap="round"/>
+                        </svg>
+                        Filters
+                    </button>
+                    <h1 class="shop-page-main-cat">{{ $pageTitle }}</h1>
                 </div>
-            </form>
+                <div class="filter-mobile-display-reponsive">
+                    <a class="filter-button {{ $viewMode === 'grid' ? 'is-on' : '' }}" href="{{ route('ecommerce.shop', array_merge($keep, ['view' => 'grid'])) }}">
+                        <img src="{{ $ico }}/mi_filter.svg" alt="grid">
+                    </a>
+                    <a class="filter-button {{ $viewMode === 'list' ? 'is-on' : '' }}" href="{{ route('ecommerce.shop', array_merge($keep, ['view' => 'list'])) }}">
+                        <img src="{{ $ico }}/bi_filter.svg" alt="list">
+                    </a>
+                </div>
+            </div>
+
+            <div class="shop-top-bar">
+                <div>Showing {{ $products->count() }} of {{ $products->total() }} result</div>
+                <form method="get" class="select-shoing-wrap">
+                    @foreach(request()->except(['sort', 'product_count', 'page']) as $key => $value)
+                        @if(is_scalar($value) && $value !== '')
+                            <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+                        @endif
+                    @endforeach
+                    <label>Sort By:
+                        <select name="sort" onchange="this.form.submit()">
+                            <option value="name_asc" @selected($sort === 'name_asc')>Name (A to Z)</option>
+                            <option value="name_desc" @selected($sort === 'name_desc')>Name (Z to A)</option>
+                            <option value="price_desc" @selected($sort === 'price_desc')>Price - High to Low</option>
+                            <option value="price_asc" @selected($sort === 'price_asc')>Price - Low to High</option>
+                        </select>
+                    </label>
+                    <label>Product Count:
+                        <select name="product_count" onchange="this.form.submit()">
+                            @foreach([100, 50, 25, 15] as $n)
+                                <option value="{{ $n }}" @selected($count === $n)>{{ $n }}</option>
+                            @endforeach
+                        </select>
+                    </label>
+                </form>
+            </div>
+
+            @include('ecommerce::front.partials.product_grid', [
+                'products' => $products,
+                'minCards' => 0,
+                'variant' => $viewMode === 'grid' ? 'classic' : 'shop',
+                'gridClass' => $viewMode === 'grid' ? 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4' : 'product-row',
+            ])
+
+            {{ $products->links('ecommerce::front.partials.pagination') }}
         </div>
     </div>
 </div>
@@ -110,25 +155,26 @@
 @push('scripts')
 <script>
 (function () {
-    const sheet = document.getElementById('shopFilterSheet');
-    const openBtn = document.getElementById('openShopFilter');
-    if (!sheet || !openBtn) return;
-
-    const open = () => {
-        sheet.classList.add('is-open');
-        sheet.setAttribute('aria-hidden', 'false');
-        document.body.style.overflow = 'hidden';
+    const page = document.getElementById('gsShopPage');
+    const setCollapsed = (on) => {
+        page?.classList.toggle('is-filters-collapsed', on);
+        try { localStorage.setItem('gs_shop_filters_hidden', on ? '1' : '0'); } catch (e) {}
     };
-    const close = () => {
-        sheet.classList.remove('is-open');
-        sheet.setAttribute('aria-hidden', 'true');
-        document.body.style.overflow = '';
+    if (localStorage.getItem('gs_shop_filters_hidden') === '1') setCollapsed(true);
+    document.getElementById('gsCollapseFilters')?.addEventListener('click', () => setCollapsed(true));
+    document.getElementById('gsShowFilters')?.addEventListener('click', () => setCollapsed(false));
+    const bindSearch = (inputId, itemsSel) => {
+        const input = document.getElementById(inputId);
+        if (!input) return;
+        input.addEventListener('input', () => {
+            const q = input.value.toLowerCase().trim();
+            document.querySelectorAll(itemsSel).forEach((el) => {
+                el.style.display = (!q || (el.dataset.name || '').includes(q)) ? '' : 'none';
+            });
+        });
     };
-
-    openBtn.addEventListener('click', open);
-    sheet.querySelectorAll('[data-close-shop-filter]').forEach((el) => {
-        el.addEventListener('click', close);
-    });
+    bindSearch('gsCatSearch', '#gsCatList .category-name');
+    bindSearch('gsBrandSearch', '#gsBrandList .gs-shop-brand');
 })();
 </script>
 @endpush

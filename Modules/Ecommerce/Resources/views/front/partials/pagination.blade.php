@@ -1,31 +1,28 @@
 @if ($paginator->hasPages())
-    <nav class="flex items-center justify-center gap-2 text-sm" role="navigation">
+    <nav class="gs-shop-pager" role="navigation">
         @if ($paginator->onFirstPage())
-            <span class="px-3 py-1.5 rounded-full text-[#8b95b8] border border-[#252d4d]">Prev</span>
+            <span>‹</span>
         @else
-            <a href="{{ $paginator->previousPageUrl() }}" class="px-3 py-1.5 rounded-full border border-[#252d4d] hover:border-[#f23488]">Prev</a>
+            <a href="{{ $paginator->previousPageUrl() }}">‹</a>
         @endif
-
         @foreach ($elements as $element)
             @if (is_string($element))
-                <span class="px-2 text-[#8b95b8]">{{ $element }}</span>
+                <span>{{ $element }}</span>
             @endif
-
             @if (is_array($element))
                 @foreach ($element as $page => $url)
                     @if ($page == $paginator->currentPage())
-                        <span class="px-3 py-1.5 rounded-lg bg-[#f23488] text-white font-bold">{{ $page }}</span>
+                        <span class="is-current">{{ $page }}</span>
                     @else
-                        <a href="{{ $url }}" class="px-3 py-1.5 rounded-full border border-[#252d4d] hover:border-[#f23488]">{{ $page }}</a>
+                        <a href="{{ $url }}">{{ $page }}</a>
                     @endif
                 @endforeach
             @endif
         @endforeach
-
         @if ($paginator->hasMorePages())
-            <a href="{{ $paginator->nextPageUrl() }}" class="px-3 py-1.5 rounded-full border border-[#252d4d] hover:border-[#f23488]">Next</a>
+            <a href="{{ $paginator->nextPageUrl() }}">›</a>
         @else
-            <span class="px-3 py-1.5 rounded-full text-[#8b95b8] border border-[#252d4d]">Next</span>
+            <span>›</span>
         @endif
     </nav>
 @endif

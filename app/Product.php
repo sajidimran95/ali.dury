@@ -34,12 +34,22 @@ class Product extends Model
 
     public static function storefrontQuery(int $businessId)
     {
-        $base = static::query()->where('business_id', $businessId)->active();
-        if ((clone $base)->forEcommerce()->exists()) {
-            return $base->forEcommerce();
+        $ids = \Modules\Ecommerce\Support\Storefront::gsCategoryIds($businessId);
+        $query = static::query()
+            ->where('business_id', $businessId)
+            ->active()
+            ->forEcommerce()
+            ->where('sku', 'like', 'GS-%');
+
+        if ($ids) {
+            $query->where(function ($q) use ($ids) {
+                $q->whereIn('category_id', $ids)->orWhereIn('sub_category_id', $ids);
+            });
+        } else {
+            $query->whereRaw('1 = 0');
         }
 
-        return $base;
+        return $query;
     }
 
     public function scopeForPos($query)

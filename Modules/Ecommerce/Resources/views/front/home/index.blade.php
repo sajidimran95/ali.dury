@@ -5,135 +5,142 @@
 @section('content')
 @php
     $navBrands = $nav_brands ?? collect();
-    $categories = $categories ?? collect();
-    $store = $store ?? ($ecom_settings->store_name ?? 'Wholesale Store');
-    $loggedIn = auth('customer')->check();
     $heroSlides = \Modules\Ecommerce\Support\Storefront::videos();
-    $fallbackBrands = $navBrands->values()->take(8);
-    $fallbackCats = $categories->take(8);
-    $coverFile = storage_path('app/ecom_category_covers.json');
-    $category_covers = $category_covers ?? (is_file($coverFile) ? (json_decode(file_get_contents($coverFile), true) ?: []) : []);
-    $collections = $collections ?? collect();
-    $new_arrivals = $new_arrivals ?? collect();
-    $best_sellers = $best_sellers ?? collect();
+    $mediaFile = storage_path('app/ecom_gs_media.json');
+    $media = is_file($mediaFile) ? (json_decode(file_get_contents($mediaFile), true) ?: []) : [];
+    $brandCovers = is_file(storage_path('app/ecom_brand_covers.json'))
+        ? (json_decode(file_get_contents(storage_path('app/ecom_brand_covers.json')), true) ?: [])
+        : [];
+    $leftBanner = $media['banners'][0] ?? null;
+    $rightStack = array_values(array_filter([
+        $media['banners'][1] ?? null,
+        $media['banners'][2] ?? null,
+    ]));
+    $tetra = $media['tetra'] ?? [];
+    $row2 = $media['row2'] ?? [];
+    $row3 = $media['row3'] ?? [];
+    $row5 = $media['row5'] ?? [];
+    $rowLast = $media['row_last'] ?? [];
+    $bogoProducts = ($featured ?? collect())->take(15);
 @endphp
 
-<div class="max-w-[1440px] mx-auto px-4 pt-5 pb-10 space-y-8">
-    <section class="wn-hero-banner" id="wnHero">
-        <div class="wn-hero-media" aria-hidden="true">
+<div class="gs-home">
+    <section class="gs-banners" id="wnHero">
+        <a href="{{ route('ecommerce.shop') }}" class="gs-banner-tile hidden md:block">
+            @if($leftBanner)
+                <img src="{{ $leftBanner }}" alt="Featured">
+            @endif
+        </a>
+        <div class="gs-banner-main">
             @foreach($heroSlides as $i => $slide)
-                <video class="{{ $i===0 ? 'is-on' : '' }}" muted loop playsinline webkit-playsinline
-                       preload="{{ $i===0 ? 'auto' : 'metadata' }}"
-                       poster="{{ $slide->poster ?? '' }}"
-                       @if($i===0) autoplay @endif>
-                    <source src="{{ $slide->image }}" type="video/mp4">
-                </video>
+                @if(!empty($slide->is_video) || \Illuminate\Support\Str::endsWith(strtolower((string) $slide->image), ['.mp4', '.webm', '.ogg']))
+                    <video class="wn-hero-slide {{ $i===0 ? 'is-on' : '' }}" muted loop playsinline
+                           poster="{{ $slide->poster ?? '' }}" @if($i===0) autoplay @endif>
+                        <source src="{{ $slide->image }}" type="video/mp4">
+                    </video>
+                @else
+                    <img class="wn-hero-slide {{ $i===0 ? 'is-on' : '' }}" src="{{ $slide->image }}" alt="{{ $slide->title ?? 'Banner' }}">
+                @endif
+            @endforeach
+            @if($heroSlides->count() > 1)
+                <div class="wn-hero-dots" id="wnHeroDots" style="position:absolute;left:16px;bottom:12px;z-index:4;display:flex;gap:6px">
+                    @foreach($heroSlides as $i => $slide)
+                        <button type="button" class="{{ $i===0 ? 'is-on' : '' }}" data-hero-dot="{{ $i }}"
+                                style="width:8px;height:8px;border-radius:99px;background:{{ $i===0 ? '#dd772d' : '#fff' }}"></button>
+                    @endforeach
+                </div>
+            @endif
+        </div>
+        <div class="gs-banner-stack hidden md:grid">
+            @foreach($rightStack as $img)
+                <a href="{{ route('ecommerce.shop') }}" class="gs-banner-tile"><img src="{{ $img }}" alt=""></a>
             @endforeach
         </div>
-        <div class="relative z-[2] px-6 md:px-10 py-10 md:py-14 max-w-xl">
-            <h1>
-                <span class="a">STOCK UP.</span><br>
-                <span class="b">STAND OUT.</span>
-            </h1>
-            <div class="wn-hero-sub">VAPE · CIGAR · SMOKE</div>
-            <div class="wn-trust">
-                <div>
-                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="8" width="12" height="8" rx="1"/><path d="M6 8V6a3 3 0 016 0v2"/></svg>
-                    TOP BRANDS<br>GREAT PRICES
-                </div>
-                <div>
-                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 13h12l2-6H5L3 13z"/><circle cx="7" cy="16" r="1.3"/><circle cx="14" cy="16" r="1.3"/></svg>
-                    FAST SHIPPING<br>RELIABLE SERVICE
-                </div>
-                <div>
-                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 14l4-8h8l-4 8H4z"/><path d="M8 6V4h4"/></svg>
-                    EXCLUSIVE DEALS<br>FOR RETAILERS
-                </div>
-            </div>
-            <div class="flex flex-wrap gap-3 mt-8">
-                <a href="{{ route('ecommerce.shop') }}" class="wn-add px-5" style="height:44px;flex:0 0 auto">Shop catalog</a>
-                <a href="{{ route('ecommerce.quick_order') }}" class="wn-quick">⚡ Quick Order</a>
-            </div>
-        </div>
-        <div class="wn-hot">
-            <strong>HOT<br>DEALS</strong>
-            <span>LIMITED TIME<br>ONLY!</span>
-        </div>
-        @if($heroSlides->count() > 1)
-            <div class="wn-hero-dots" id="wnHeroDots">
-                @foreach($heroSlides as $i => $slide)
-                    <button type="button" class="{{ $i===0 ? 'is-on' : '' }}" data-hero-dot="{{ $i }}" aria-label="{{ $slide->title ?? 'Video' }} {{ $i+1 }}"></button>
-                @endforeach
-            </div>
-        @endif
     </section>
 
-    @if($fallbackBrands->isNotEmpty())
-    <section class="wn-brand-row" id="wnBrandRow">
-        <button type="button" class="wn-brand-nav" data-brand-prev aria-label="Previous brands">‹</button>
-        <div class="flex-1 grid grid-cols-4 md:grid-cols-8 gap-2 min-w-0">
-            @foreach($fallbackBrands as $brand)
-                <a href="{{ !empty($brand->id) ? route('ecommerce.shop', ['brand' => $brand->id]) : route('ecommerce.brands') }}" class="wn-brand-cell">
+    <section class="gs-section">
+        <div class="gs-section-head">
+            <h2 class="gs-bogo" style="padding:0;margin:0;text-align:left;flex:1">BUY 1 GET 1 FREE</h2>
+            <a href="{{ route('ecommerce.promotions') }}" class="gs-view-all">View All</a>
+        </div>
+        @include('ecommerce::front.partials.product_grid', ['products' => $bogoProducts, 'gridClass' => 'gs-card-row', 'minCards' => 0])
+    </section>
+
+    @if($navBrands->isNotEmpty())
+    <section class="gs-brands">
+        @foreach($navBrands as $brand)
+            @php $logo = $brandCovers[$brand->id] ?? $brandCovers[(string) $brand->id] ?? null; @endphp
+            <a href="{{ route('ecommerce.shop', ['brand' => $brand->id]) }}" class="gs-brand-cell">
+                @if($logo)
+                    <img src="{{ $logo }}" alt="{{ $brand->name }}">
+                @else
                     {{ $brand->name }}
-                </a>
-            @endforeach
-        </div>
-        <button type="button" class="wn-brand-nav" data-brand-next aria-label="Next brands">›</button>
-    </section>
-    @endif
-
-    @if($fallbackCats->isNotEmpty())
-    <section class="wn-cats">
-        @foreach($fallbackCats as $i => $cat)
-            @php
-                $cover = (!empty($cat->id) && isset($category_covers[$cat->id]))
-                    ? asset('uploads/img/'.$category_covers[$cat->id])
-                    : null;
-            @endphp
-            <a href="{{ !empty($cat->id) ? route('ecommerce.category', $cat->id) : route('ecommerce.shop') }}" class="wn-cat" data-tone="{{ $i % 6 }}">
-                <h3>{{ $cat->name }}</h3>
-                <p>SHOP NOW →</p>
-                @if($cover)
-                    <img src="{{ $cover }}" alt="">
                 @endif
             </a>
         @endforeach
     </section>
     @endif
 
-    <section>
-        <div class="flex items-end justify-between mb-4">
-            <h2 class="gc-section-title uppercase">Featured Products</h2>
-            <a href="{{ route('ecommerce.shop') }}" class="text-sm font-semibold text-[#2ee9ff] hover:text-white">View All Products →</a>
+    @if(count($tetra) >= 4)
+    <section class="gs-four">
+        @foreach(array_slice($tetra, 0, 4) as $img)
+            <a href="{{ route('ecommerce.shop') }}"><img src="{{ $img }}" alt=""></a>
+        @endforeach
+    </section>
+    @endif
+
+    @if(count($row2))
+    <section class="gs-img-row cols-2">
+        @foreach($row2 as $img)
+            <a href="{{ route('ecommerce.shop') }}"><img src="{{ $img }}" alt=""></a>
+        @endforeach
+    </section>
+    @endif
+
+    <section class="gs-section">
+        <div class="gs-section-head">
+            <h2 class="gs-section-title">New Arrivals</h2>
+            <a href="{{ route('ecommerce.shop', ['sort' => 'newest', 'new_only' => 1]) }}" class="gs-view-all">View All</a>
         </div>
-        @include('ecommerce::front.partials.product_grid', ['products' => $featured, 'gridClass' => 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3', 'minCards' => 0])
+        @include('ecommerce::front.partials.product_grid', ['products' => $new_arrivals, 'gridClass' => 'gs-card-row', 'minCards' => 0])
     </section>
 
-    <section>
-        <div class="flex items-end justify-between mb-4">
-            <h2 class="gc-section-title uppercase">New Arrivals</h2>
-            <a href="{{ route('ecommerce.shop', ['sort' => 'newest']) }}" class="text-sm font-semibold text-[#ff79c1] hover:text-white">See all →</a>
+    @if(count($row3))
+    <section class="gs-img-row cols-3">
+        @foreach($row3 as $img)
+            <a href="{{ route('ecommerce.shop') }}"><img src="{{ $img }}" alt=""></a>
+        @endforeach
+    </section>
+    @endif
+
+    <section class="gs-section">
+        <div class="gs-section-head">
+            <h2 class="gs-section-title">Featured Products</h2>
+            <a href="{{ route('ecommerce.shop') }}" class="gs-view-all">View All</a>
         </div>
-        @include('ecommerce::front.partials.product_grid', ['products' => $new_arrivals, 'gridClass' => 'grid grid-cols-2 md:grid-cols-4 gap-3', 'minCards' => 0])
+        @include('ecommerce::front.partials.product_grid', ['products' => $featured, 'gridClass' => 'gs-card-row', 'minCards' => 0])
     </section>
 
-    <section>
-        <div class="flex items-end justify-between mb-4">
-            <h2 class="gc-section-title uppercase">Best Sellers</h2>
-            <a href="{{ route('ecommerce.shop') }}" class="text-sm font-semibold text-[#d6ff4d] hover:text-white">Shop all →</a>
+    <section class="gs-section">
+        <div class="gs-section-head">
+            <h2 class="gs-section-title">Hot Sellers Products</h2>
+            <a href="{{ route('ecommerce.shop') }}" class="gs-view-all">View All</a>
         </div>
-        @include('ecommerce::front.partials.product_grid', ['products' => $best_sellers, 'gridClass' => 'grid grid-cols-2 md:grid-cols-4 gap-3', 'minCards' => 0])
+        @include('ecommerce::front.partials.product_grid', ['products' => $best_sellers, 'gridClass' => 'gs-card-row', 'minCards' => 0])
     </section>
 
-    @if($collections->isNotEmpty())
-    <section class="grid md:grid-cols-3 gap-3">
-        @foreach($collections as $col)
-            <a href="{{ route('ecommerce.collection', $col->slug) }}" class="wn-panel p-6 block hover:border-[#f23488]">
-                <p class="text-[11px] uppercase tracking-[0.16em] text-[#8b95b8] font-bold mb-1">Collection</p>
-                <h3 class="text-xl font-extrabold">{{ $col->name }}</h3>
-                <p class="text-sm text-[#8b95b8] mt-2">{{ $col->description }}</p>
-                <span class="inline-block mt-4 text-[#f23488] font-bold text-sm">Shop now →</span>
-            </a>
+    @if(count($row5))
+    <section class="gs-img-row cols-5">
+        @foreach($row5 as $img)
+            <a href="{{ route('ecommerce.shop') }}"><img src="{{ $img }}" alt=""></a>
+        @endforeach
+    </section>
+    @endif
+
+    @if(count($rowLast))
+    <section class="gs-img-row cols-last">
+        @foreach($rowLast as $img)
+            <a href="{{ route('ecommerce.shop') }}"><img src="{{ $img }}" alt=""></a>
         @endforeach
     </section>
     @endif
@@ -144,29 +151,24 @@
 <script>
 (function () {
     const root = document.getElementById('wnHero');
-    if (!root) return;
-    const videos = [...root.querySelectorAll('.wn-hero-media video')];
-    const dots = [...root.querySelectorAll('[data-hero-dot]')];
-    if (!videos.length) return;
-    let i = 0;
-    const show = (n) => {
-        videos[i]?.pause();
-        videos[i]?.classList.remove('is-on');
-        dots[i]?.classList.remove('is-on');
-        i = n;
-        videos[i]?.classList.add('is-on');
-        dots[i]?.classList.add('is-on');
-        const v = videos[i];
-        if (v) {
-            v.muted = true;
-            v.play().catch(() => {});
-        }
-    };
-    videos[0].muted = true;
-    videos[0].play().catch(() => {});
-    dots.forEach((d) => d.addEventListener('click', () => show(Number(d.dataset.heroDot))));
-    if (videos.length > 1) {
-        setInterval(() => show((i + 1) % videos.length), 9000);
+    if (root) {
+        const slides = [...root.querySelectorAll('.wn-hero-slide')];
+        const dots = [...root.querySelectorAll('[data-hero-dot]')];
+        let i = 0;
+        const show = (n) => {
+            const cur = slides[i];
+            if (cur && cur.tagName === 'VIDEO') cur.pause();
+            cur?.classList.remove('is-on');
+            if (dots[i]) { dots[i].classList.remove('is-on'); dots[i].style.background = '#fff'; }
+            i = n;
+            slides[i]?.classList.add('is-on');
+            if (dots[i]) { dots[i].classList.add('is-on'); dots[i].style.background = '#dd772d'; }
+            const v = slides[i];
+            if (v && v.tagName === 'VIDEO') { v.muted = true; v.play().catch(() => {}); }
+        };
+        if (slides[0] && slides[0].tagName === 'VIDEO') { slides[0].muted = true; slides[0].play().catch(() => {}); }
+        dots.forEach((d) => d.addEventListener('click', () => show(Number(d.dataset.heroDot))));
+        if (slides.length > 1) setInterval(() => show((i + 1) % slides.length), 5000);
     }
 })();
 </script>

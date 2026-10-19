@@ -1,7 +1,7 @@
 @extends('ecommerce::front.layouts.store')
 @section('title', 'Checkout')
 @section('content')
-<div class="max-w-[1440px] mx-auto px-4 py-10 md:py-12">
+<div class="gs-wrap py-10 md:py-12">
     <p class="text-[11px] uppercase tracking-[0.18em] text-[#8b95b8] font-bold mb-2">Secure checkout</p>
     <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight mb-8">Checkout</h1>
 

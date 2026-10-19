@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Schema;
 use Modules\Ecommerce\Entities\EcomInquiry;
 use Modules\Ecommerce\Entities\EcomSubscriber;
 use Modules\Ecommerce\Services\CartService;
+use Modules\Ecommerce\Support\Storefront;
 
 class StorePageController extends Controller
 {
@@ -35,6 +36,7 @@ class StorePageController extends Controller
             ->where(function ($q) {
                 $q->whereNull('parent_id')->orWhere('parent_id', 0);
             })
+            ->whereIn('name', Storefront::gsTopCategoryNames())
             ->with('sub_categories')
             ->orderBy('name')
             ->get();
@@ -50,13 +52,19 @@ class StorePageController extends Controller
     public function brands(Request $request)
     {
         $business_id = $request->attributes->get('ecommerce_business_id');
-        $brands = Brands::where('business_id', $business_id)->orderBy('name')->get();
         $counts = Product::storefrontQuery((int) $business_id)
             ->select('brand_id', DB::raw('count(*) as c'))
             ->groupBy('brand_id')
             ->pluck('c', 'brand_id');
+        $brands = Brands::where('business_id', $business_id)
+            ->whereIn('id', $counts->keys()->filter()->all() ?: [0])
+            ->orderBy('name')
+            ->get();
+        $brand_covers = is_file(storage_path('app/ecom_brand_covers.json'))
+            ? (json_decode(file_get_contents(storage_path('app/ecom_brand_covers.json')), true) ?: [])
+            : [];
 
-        return view('ecommerce::front.pages.brands', compact('brands', 'counts'));
+        return view('ecommerce::front.pages.brands', compact('brands', 'counts', 'brand_covers'));
     }
 
     public function brand($id, Request $request, CartService $cartService)

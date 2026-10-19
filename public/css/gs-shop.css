@@ -1,0 +1,169 @@
+/* GS /shop clone — layout, filters, list cards */
+.gs-shop-page {
+    width: 100%;
+    padding: 51px 36px 48px 50px;
+    box-sizing: border-box;
+    background: #fff;
+    color: #000;
+    font-size: 14px;
+    font-family: Montserrat, Poppins, sans-serif;
+}
+.gs-shop-page .ant-breadcrumb,
+.gs-shop-page .shop-breadcrumb {
+    display: flex; align-items: center; gap: 8px;
+    margin: 0 0 24px 19px;
+    font-size: 14px; line-height: 21px; color: #000;
+}
+.gs-shop-page .shop-breadcrumb a { color: #000; }
+.gs-shop-page .shop-breadcrumb .current { color: #dd772d; }
+.gs-shop-page .ant-row-shop {
+    display: flex; align-items: flex-start; width: 100%;
+}
+.gs-shop-page .sidebar {
+    width: 378px; flex: 0 0 378px; padding-left: 19px; box-sizing: border-box;
+}
+.gs-shop-page.is-filters-collapsed .sidebar { display: none; }
+.gs-shop-page .shop-page-margin { flex: 1; min-width: 0; }
+.gs-shop-page .shop-page-head-left { display: flex; align-items: center; gap: 16px; min-width: 0; }
+.gs-shop-page .filter-display-reponsive {
+    display: none;
+    align-items: center; justify-content: center; gap: 8px;
+    height: 40px; width: 152px; padding: 0 12px;
+    border: 1px solid #e8e8e8; border-radius: 8px; background: #fff;
+    font-family: Montserrat, sans-serif; font-size: 14px; font-weight: 500; color: #1a1a1a;
+    cursor: pointer;
+}
+.gs-shop-page.is-filters-collapsed .filter-display-reponsive { display: inline-flex; }
+.gs-shop-page.is-filters-collapsed .gutter-row { width: 33.333%; }
+.gs-shop-page .scroller-class {
+    display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;
+}
+.gs-shop-page .text-wrapper-filter {
+    font-size: 24px; font-weight: 400; line-height: 32px; color: #1a1a1a; font-family: Montserrat, sans-serif;
+}
+.gs-shop-page .responsive-filter { cursor: pointer; width: 16px; height: 16px; }
+.gs-shop-page .text-wrapper-6 {
+    font-size: 18px; font-weight: 500; color: #dd772d; margin: 0 0 16px; font-family: Montserrat, sans-serif; line-height: 24px;
+}
+.gs-shop-page .explore-filters-item {
+    display: flex; align-items: center; justify-content: space-between;
+    height: 24px; margin-bottom: 8px; font-size: 14px; font-weight: 500; color: #000;
+}
+.gs-shop-page .explore-filters-item span { display: inline-flex; align-items: center; gap: 4px; }
+.gs-shop-page .new-badge { width: 18px; height: 18px; }
+.gs-shop-page .frame-13 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.gs-shop-page .breadcrum-category {
+    display: inline-flex; align-items: center; gap: 6px;
+    border-radius: 20px; border: 1px solid #fecfcc; background: #ffe7e5;
+    padding: 5px 11px; font-size: 11px; color: #dd772d; max-width: 160px;
+}
+.gs-shop-page .breadcrum-category img { width: 12px; height: 12px; }
+.gs-shop-page .sidebar-search { position: relative; width: 296px; margin-bottom: 8px; }
+.gs-shop-page .header-searchbar {
+    width: 100%; height: 32px; border: 1px solid #000; border-radius: 27px;
+    padding: 0 40px 0 12px; font-size: 14px; outline: none; background: transparent; box-sizing: border-box;
+}
+.gs-shop-page .search-icon {
+    position: absolute; right: 0; top: 0; width: 32px; height: 32px;
+    background: #dd772d; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+}
+.gs-shop-page .sidebar-search-icon { width: 14px; height: 14px; }
+.gs-shop-page .category-name {
+    display: flex; align-items: center; justify-content: space-between;
+    height: 30px; line-height: 30px; padding: 0 8px 0 5px;
+    font-size: 14px; font-weight: 400; color: #000; cursor: pointer;
+}
+.gs-shop-page .category-name.active-category { background: #dd772d; color: #fff; }
+.gs-shop-page .category-name .anticon { font-size: 12px; }
+.gs-shop-page .scroll-on-brand { max-height: 220px; overflow: auto; }
+.gs-shop-page .scroll-on-brand label {
+    display: flex; align-items: center; gap: 8px;
+    line-height: 30px; font-size: 14px; color: #000; cursor: pointer;
+}
+.gs-shop-page .shop-top-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    min-height: 24px; margin: 0 0 10px; font-size: 14px; color: #000;
+}
+.gs-shop-page .shop-page-head {
+    display: flex; align-items: center; justify-content: space-between; min-height: 35px;
+}
+.gs-shop-page .shop-page-main-cat {
+    font-family: Poppins, sans-serif; font-size: 24px; font-weight: 500;
+    color: #dd772d; margin: 0; line-height: 35px;
+}
+.gs-shop-page .filter-mobile-display-reponsive { display: flex; align-items: center; gap: 12px; }
+.gs-shop-page .filter-button {
+    border: 0; background: transparent; padding: 0; cursor: pointer; line-height: 0; opacity: .35;
+}
+.gs-shop-page .filter-button.is-on { opacity: 1; }
+.gs-shop-page .filter-button img { width: 22px; height: 22px; display: block; }
+.gs-shop-page .select-shoing-wrap { display: flex; align-items: center; gap: 24px; }
+.gs-shop-page .select-shoing-wrap select {
+    border: 0; background: transparent; font-size: 14px; color: #000; outline: none; font-weight: 400;
+}
+.gs-shop-page .product-row { display: flex; flex-wrap: wrap; }
+.gs-shop-page .gutter-row { width: 50%; box-sizing: border-box; padding-right: 14.4px; margin-bottom: 14.4px; }
+.gs-shop-page .card-old-inactive {
+    display: flex; height: 281px; padding: 14.4px; box-sizing: border-box;
+    border: 1px solid #ccc; border-radius: 4px; background: #fff; font-family: Montserrat, sans-serif;
+}
+.gs-shop-page .old-img {
+    flex: 0 0 250px; width: 250px; height: 250px;
+    display: flex; align-items: flex-end; justify-content: center;
+    background-repeat: no-repeat; background-size: contain; background-position: center bottom;
+}
+.gs-shop-page .old-img img { max-width: 100%; max-height: 100%; object-fit: contain; object-position: bottom; display: block; }
+.gs-shop-page .card-old-side-inactive { padding: 2px 0 0 12px; width: 100%; overflow: hidden; }
+.gs-shop-page .card-old-brach-name {
+    display: block; font-size: 12px; font-weight: 500; color: #dd772d; line-height: 20px;
+    text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.gs-shop-page .product-name-old-card {
+    display: block; font-size: 14px; font-weight: 600; color: #1a1a1a;
+    line-height: 20px; height: 40px; margin: 3px 0 0; overflow: hidden;
+}
+.gs-shop-page .shop-page-unit {
+    display: flex; gap: 4px; font-size: 12px; font-weight: 500; color: #1a1a1a; margin: 16px 0;
+}
+.gs-shop-page .increment-inactive {
+    display: flex; align-items: center; justify-content: space-between;
+    height: 34px; width: 100%; background: #f7f7f7; border: 1px solid #f2f2f2; border-radius: 32px;
+}
+.gs-shop-page .increment-class { width: 32px; height: 32px; cursor: pointer; }
+.gs-shop-page .increment-inactive button {
+    width: 32px; height: 32px; border: 0; background: transparent; padding: 0; cursor: pointer; line-height: 0;
+}
+.gs-shop-page .new-input-card-inactive {
+    flex: 1; min-width: 0; height: 32px; border: 0; background: #f7f7f7;
+    text-align: center; font-size: 14px; color: #000; outline: none; font-family: Montserrat, sans-serif;
+}
+.gs-shop-page .add-to-cart-button-inactive {
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    width: 100%; height: 36px; margin-top: 8px; padding: 10px 12px; border: 0; cursor: pointer;
+    background: #1a1a1a; color: #fff; font-family: Montserrat, sans-serif;
+    font-size: 13px; font-weight: 500; border-radius: 32px;
+}
+.gs-shop-page .out-of-stock-shop {
+    display: flex; align-items: center; justify-content: center;
+    width: 100%; height: 37px; margin-top: 8px; padding: 8px; border: 0; border-radius: 32px;
+    background: #ffe7e5; color: #fb1100; font-family: Montserrat, sans-serif;
+    font-size: 14px; font-weight: 500; cursor: not-allowed;
+}
+.gs-shop-page .shop-card-sku-row {
+    font-size: 14px; font-weight: 500; color: #000; margin-top: 8px; font-family: Montserrat, Helvetica, sans-serif;
+}
+.gs-shop-page .gs-shop-pager { display: flex; justify-content: center; gap: 8px; margin-top: 24px; font-size: 14px; }
+.gs-shop-page .gs-shop-pager a, .gs-shop-page .gs-shop-pager span {
+    min-width: 32px; height: 32px; padding: 0 10px; display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 4px; color: #000;
+}
+.gs-shop-page .gs-shop-pager .is-current { background: #dd772d; color: #fff; }
+@media (max-width: 900px) {
+    .gs-shop-page { padding: 16px; }
+    .gs-shop-page .ant-row-shop { flex-direction: column; }
+    .gs-shop-page .sidebar { width: 100%; flex-basis: auto; padding-left: 0; }
+    .gs-shop-page .gutter-row { width: 100%; padding-right: 0; }
+    .gs-shop-page .card-old-inactive { height: auto; }
+    .gs-shop-page .old-img { flex-basis: 120px; width: 120px; height: 120px; }
+}

@@ -2,7 +2,7 @@
 @section('title', 'Categories')
 @section('content')
 @php use Modules\Ecommerce\Support\Storefront; @endphp
-<div class="max-w-screen-xl mx-auto px-4 py-10 md:py-14">
+<div class="gs-wrap py-10 md:py-14">
     <p class="text-xs font-bold uppercase tracking-widest mb-1 text-[#8b95b8]">Browse by Type</p>
     <h1 class="text-3xl font-extrabold mb-8">Categories</h1>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

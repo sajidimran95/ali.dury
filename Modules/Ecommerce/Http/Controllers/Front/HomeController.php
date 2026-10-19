@@ -18,15 +18,20 @@ class HomeController extends Controller
         $business_id = request()->attributes->get('ecommerce_business_id');
         $banners = Storefront::videos();
 
-        $featured = Product::storefrontQuery((int) $business_id)->where('ecom_is_featured', 1)->with(['variations', 'category', 'brand', 'unit'])->limit(12)->get();
+        $featured = Product::storefrontQuery((int) $business_id)->where('ecom_is_featured', 1)->with(['variations', 'category', 'brand', 'unit'])->limit(20)->get();
         if ($featured->isEmpty()) {
-            $featured = Product::storefrontQuery((int) $business_id)->with(['variations', 'category', 'brand', 'unit'])->orderByDesc('id')->limit(12)->get();
+            $featured = Product::storefrontQuery((int) $business_id)->with(['variations', 'category', 'brand', 'unit'])->orderByDesc('id')->limit(20)->get();
         }
 
-        $new_arrivals = Product::storefrontQuery((int) $business_id)->where('ecom_is_new_arrival', 1)->with(['variations', 'category', 'brand', 'unit'])->limit(8)->get();
+        $new_arrivals = Product::storefrontQuery((int) $business_id)->where('ecom_is_new_arrival', 1)->with(['variations', 'category', 'brand', 'unit'])->limit(40)->get();
         if ($new_arrivals->isEmpty()) {
-            $new_arrivals = Product::storefrontQuery((int) $business_id)->with(['variations', 'category', 'brand', 'unit'])->orderByDesc('id')->limit(8)->get();
+            $new_arrivals = Product::storefrontQuery((int) $business_id)->with(['variations', 'category', 'brand', 'unit'])->orderByDesc('id')->limit(40)->get();
         }
+        $arrival_tabs = $new_arrivals->groupBy(function ($p) {
+            return optional($p->category)->name ?: 'All';
+        })->map(function ($items, $name) {
+            return ['name' => $name, 'products' => $items->take(10)->values()];
+        })->values()->take(6);
 
         $best_seller_ids = DB::table('transaction_sell_lines as tsl')
             ->join('transactions as t', 't.id', '=', 'tsl.transaction_id')
@@ -53,6 +58,7 @@ class HomeController extends Controller
             ->where(function ($q) {
                 $q->whereNull('parent_id')->orWhere('parent_id', 0);
             })
+            ->whereIn('name', Storefront::gsTopCategoryNames())
             ->orderBy('name')
             ->limit(12)
             ->get();
@@ -76,7 +82,8 @@ class HomeController extends Controller
             'collections',
             'reviews',
             'cart_totals',
-            'category_covers'
+            'category_covers',
+            'arrival_tabs'
         ));
     }
 }
