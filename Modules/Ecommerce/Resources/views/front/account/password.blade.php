@@ -1,24 +1,14 @@
 @extends('ecommerce::front.layouts.store')
-@section('title', 'Password')
+@section('title', 'Change password')
 @section('content')
-<div class="ecom-acc max-w-md mx-auto px-4 py-10">
-    @include('ecommerce::front.account.partials.mobile_topbar', ['title' => 'Password'])
-    <h1 class="text-2xl font-semibold mb-6 ecom-acc-desktop-only">Change password</h1>
-    <div class="ecom-acc-card ecom-acc-form ecom-acc-mobile-only">
-        <form method="post" class="space-y-3">
-            @csrf
-            <input type="password" name="current_password" placeholder="Current password" required class="input-w">
-            <input type="password" name="password" placeholder="New password" required class="input-w">
-            <input type="password" name="password_confirmation" placeholder="Confirm password" required class="input-w">
-            <button type="submit" class="btn-brand">Update</button>
-        </form>
-    </div>
-    <form method="post" class="wn-panel p-6 space-y-3 ecom-acc-desktop-only">
+@component('ecommerce::front.account.partials.shell', ['current' => 'ecommerce.account.password'])
+    <div class="account-info-wrapper"><h4>Change your password</h4></div>
+    <form method="post">
         @csrf
-        <input type="password" name="current_password" placeholder="Current password" required class="wn-field">
-        <input type="password" name="password" placeholder="New password" required class="wn-field">
-        <input type="password" name="password_confirmation" placeholder="Confirm password" required class="wn-field">
-        <button class="btn-brand w-full">Update</button>
+        <div class="billing-info"><label>Current password</label><input type="password" name="current_password" required></div>
+        <div class="billing-info"><label>New password</label><input type="password" name="password" required></div>
+        <div class="billing-info"><label>Confirm password</label><input type="password" name="password_confirmation" required></div>
+        <div class="billing-back-btn"><button class="billing-btn" type="submit">Update</button></div>
     </form>
-</div>
+@endcomponent
 @endsection

@@ -1,16 +1,21 @@
-@extends('ecommerce::front.layouts.store')
-@section('title', 'Forgot password')
+@extends('ecommerce::front.layouts.auth')
+@section('title', 'Forgot Password')
 @section('content')
-<div class="max-w-md mx-auto px-4 py-14">
-    <h1 class="text-3xl font-extrabold mb-2">Forgot password</h1>
-    <p class="text-sm text-[#8b95b8] mb-6">Enter the email on your wholesale account. We’ll create a reset link if it exists.</p>
-    <form method="post" action="{{ route('ecommerce.password.email', absolute: false) }}" class="wn-panel p-6 space-y-3">
+<div class="auth-v2-form">
+    <h1 class="auth-v2-title">Forgot Password?</h1>
+    <div class="auth-v2-switch-link">Remembered it? <a class="auth-v2-link" href="{{ route('ecommerce.login') }}">Login</a></div>
+    <form method="post" action="{{ route('ecommerce.password.email', absolute: false) }}">
         @csrf
-        <input type="email" name="email" required placeholder="Business email" class="wn-field">
-        <button class="btn-brand w-full">Send reset link</button>
+        <div class="auth-v2-field">
+            <label class="login-field-labels">Email Address<span class="asterisk">*</span></label>
+            <input class="auth-v2-input" type="email" name="email" placeholder="Enter Email" required>
+        </div>
+        <div class="auth-v2-btn-row">
+            <button class="auth-v2-btn auth-v2-btn--primary" type="submit">Send reset link</button>
+        </div>
     </form>
     @if(session('reset_debug_url'))
-        <p class="text-sm mt-4 p-3 wn-panel">Reset link (valid 2 hours): <a class="underline font-semibold text-[#f23488]" href="{{ session('reset_debug_url') }}">Continue</a></p>
+        <p class="auth-v2-switch-link" style="margin-top:12px">Reset link: <a class="auth-v2-link" href="{{ session('reset_debug_url') }}">Continue</a></p>
     @endif
 </div>
 @endsection

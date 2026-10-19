@@ -65,6 +65,7 @@
     <link rel="stylesheet" href="{{ asset('css/gs-storefront.css') }}?v={{ config('app.asset_version', '1') }}&gs=26">
     <link rel="stylesheet" href="{{ asset('css/gs-shop.css') }}?v=2">
     <link rel="stylesheet" href="{{ asset('css/gs-cart.css') }}?v=1">
+    <link rel="stylesheet" href="{{ asset('css/gs-account.css') }}?v=1">
     @stack('head')
 </head>
 @php
@@ -135,7 +136,7 @@
 @endphp
 <body class="antialiased app-mobile gc-store gs-store{{ ! empty($isAccountPanel) ? ' ecom-account-panel' : '' }}">
 
-@unless(in_array($routeName, ['ecommerce.shop', 'ecommerce.category', 'ecommerce.cart'], true) || request()->is('*/cart') || request()->is('cart'))
+@unless(in_array($routeName, ['ecommerce.shop', 'ecommerce.category', 'ecommerce.cart'], true) || request()->is('*/cart') || request()->is('cart') || str_starts_with((string) $routeName, 'ecommerce.account'))
 <div class="gs-ticker">WELCOME TO {{ strtoupper($store) }}@if($storePhone !== '') | {{ $storePhone }}@endif</div>
 <div class="gs-warn">WARNING: This product contains nicotine. Nicotine is an addictive chemical.</div>
 @endunless

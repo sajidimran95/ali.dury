@@ -1,46 +1,23 @@
 @extends('ecommerce::front.layouts.store')
 @section('title', 'Orders')
 @section('content')
-<div class="ecom-acc max-w-4xl mx-auto px-4 py-10">
-    @include('ecommerce::front.account.partials.mobile_topbar', ['title' => 'Orders'])
-
-    <h1 class="text-2xl font-semibold mb-6 ecom-acc-desktop-only">Order history</h1>
-
-    <div class="ecom-acc-list ecom-acc-mobile-only">
-        @forelse($orders as $order)
-            @php $meta = $metas[$order->id] ?? null; @endphp
-            <div class="ecom-acc-order">
-                <div class="ecom-acc-order__row">
-                    <span class="font-bold">{{ $order->invoice_no }}</span>
-                    <span class="font-bold tabular-nums">${{ number_format($order->final_total, 2) }}</span>
-                </div>
-                <div class="ecom-acc-order__row text-[12px] text-black/45">
-                    <span>{{ $meta->fulfillment_status ?? 'pending' }}</span>
-                    @if($meta)
-                        <a class="text-brand font-bold" href="{{ route('ecommerce.track', ['token' => $meta->tracking_token]) }}">Track</a>
-                    @endif
-                </div>
+@component('ecommerce::front.account.partials.shell', ['current' => 'ecommerce.account.orders'])
+    <div class="account-info-wrapper"><h4>Order history</h4></div>
+    @forelse($orders as $order)
+        @php $meta = $metas[$order->id] ?? null; @endphp
+        <div class="order-row">
+            <div>
+                <strong>{{ $order->invoice_no }}</strong>
+                <div style="color:#808080;font-size:12px">{{ $meta->fulfillment_status ?? 'pending' }} · {{ \Carbon\Carbon::parse($order->transaction_date)->toFormattedDateString() }}</div>
             </div>
-        @empty
-            <div class="px-4 py-8 text-sm text-center text-black/45">No orders yet.</div>
-        @endforelse
-    </div>
-
-    <div class="space-y-3 ecom-acc-desktop-only">
-        @foreach($orders as $order)
-            @php $meta = $metas[$order->id] ?? null; @endphp
-            <div class="wn-panel p-4 text-sm flex flex-wrap justify-between gap-2">
-                <div>
-                    <div class="font-medium">{{ $order->invoice_no }}</div>
-                    <div class="text-slate-500">{{ $meta->fulfillment_status ?? 'pending' }}</div>
-                </div>
-                <div>${{ number_format($order->final_total, 2) }}</div>
-                @if($meta)
-                    <a class="text-accent" href="{{ route('ecommerce.track', ['token' => $meta->tracking_token]) }}">Track</a>
-                @endif
-            </div>
-        @endforeach
-    </div>
-    <div class="mt-6 px-3 lg:px-0">{{ $orders->links() }}</div>
-</div>
+            <div>${{ number_format($order->final_total, 2) }}</div>
+            @if($meta)
+                <a href="{{ route('ecommerce.track', ['token' => $meta->tracking_token]) }}" style="color:#dd772d">Track</a>
+            @endif
+        </div>
+    @empty
+        <p style="font-size:14px;color:#808080">No orders yet.</p>
+    @endforelse
+    <div style="margin-top:16px">{{ $orders->links() }}</div>
+@endcomponent
 @endsection

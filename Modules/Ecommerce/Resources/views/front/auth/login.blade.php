@@ -1,62 +1,24 @@
 @extends('ecommerce::front.layouts.auth')
-@section('title', 'Wholesale Login')
-
+@section('title', 'Login')
 @section('content')
 @php $store = $ecom_settings->store_name ?? 'Japs Wholesale'; @endphp
-@php
-    $authLogoUrl = null;
-    foreach (array_filter([
-        $ecom_settings->store_logo ?? null,
-        'ecommerce/japs-wholesale-logo.svg',
-    ]) as $rel) {
-        $rel = ltrim(str_replace('\\', '/', (string) $rel), '/');
-        if ($rel !== '' && file_exists(public_path('uploads/'.$rel))) {
-            $authLogoUrl = asset('uploads/'.$rel);
-            break;
-        }
-    }
-@endphp
-<div class="min-h-screen grid lg:grid-cols-[280px_1fr]">
-    <aside class="bg-slatebar text-white p-6 lg:p-8">
-        <a href="{{ url('/') }}" class="inline-flex items-center gap-2 mb-8">
-            @if($authLogoUrl)
-                <img src="{{ $authLogoUrl }}" alt="{{ $store }}" class="h-10 w-auto max-w-[180px] object-contain brightness-0 invert">
-            @else
-                <span class="h-9 w-9 rounded-full bg-brand text-white flex items-center justify-center font-extrabold text-sm">J</span>
-                <span>
-                    <span class="block font-extrabold">{{ $store }}</span>
-                    <span class="block text-[10px] uppercase tracking-wider text-white/50">Wholesale</span>
-                </span>
-            @endif
-        </a>
-        <p class="text-sm text-white/65 leading-relaxed">Sign in to your wholesale account to place orders, track shipments, and reorder by SKU.</p>
-    </aside>
-    <div class="p-5 sm:p-8 lg:p-12 flex items-center">
-        <div class="w-full max-w-md mx-auto">
-            <div class="flex justify-end mb-6 text-sm">
-                New customer?
-                <a href="{{ route('ecommerce.register') }}" class="ml-1 font-bold text-brand">Sign Up</a>
-            </div>
-            <h1 class="text-3xl font-extrabold mb-8">Sign In</h1>
-            <form method="post" action="{{ route('ecommerce.login.post', absolute: false) }}" class="space-y-4">
-                @csrf
-                <div>
-                    <label class="text-sm font-semibold mb-1.5 block">Email or phone</label>
-                    <input name="login" value="{{ old('login') }}" required class="input-w" placeholder="you@business.com">
-                </div>
-                <div>
-                    <label class="text-sm font-semibold mb-1.5 block">Password</label>
-                    <input type="password" name="password" required class="input-w" placeholder="••••••••">
-                </div>
-                <label class="inline-flex items-center gap-2 text-sm text-black/70">
-                    <input type="checkbox" name="remember" value="1" class="rounded"> Remember me
-                </label>
-                <button class="btn-brand w-full">Login</button>
-            </form>
-            <p class="text-center text-sm mt-6 text-black/50">
-                <a href="{{ url('/') }}" class="hover:text-brand">← Back to store</a>
-            </p>
+<div class="auth-v2-form">
+    <h1 class="auth-v2-title">Login to {{ $store }}</h1>
+    <div class="auth-v2-switch-link">Don’t have an account? <a class="auth-v2-link" href="{{ route('ecommerce.register') }}">Sign Up</a></div>
+    <form method="post" action="{{ route('ecommerce.login.post', absolute: false) }}">
+        @csrf
+        <div class="auth-v2-field">
+            <label class="login-field-labels">Email Address<span class="asterisk">*</span></label>
+            <input class="auth-v2-input" name="login" value="{{ old('login') }}" placeholder="Enter Email" required>
         </div>
-    </div>
+        <div class="auth-v2-field">
+            <label class="login-field-labels">Password<span class="asterisk">*</span></label>
+            <input class="auth-v2-input" type="password" name="password" placeholder="Password" required>
+        </div>
+        <div class="auth-v2-forgot"><a href="{{ route('ecommerce.password.request') }}">Forgot Password?</a></div>
+        <div class="auth-v2-btn-row">
+            <button class="auth-v2-btn auth-v2-btn--primary" type="submit">Login</button>
+        </div>
+    </form>
 </div>
 @endsection

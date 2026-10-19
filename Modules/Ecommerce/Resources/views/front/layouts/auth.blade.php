@@ -4,44 +4,46 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Wholesale Account') — {{ $ecom_settings->store_name ?? 'Store' }}</title>
+    <title>@yield('title', 'Account') — {{ $ecom_settings->store_name ?? 'Store' }}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/gs-storefront.css') }}?v={{ config('app.asset_version', '1') }}&gs=2">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: { brand: '#4caf79', ink: '#1a1a1a', slatebar: '#1a3d2b' },
-                    fontFamily: { sans: ['Poppins', 'system-ui', 'sans-serif'] }
-                }
-            }
-        }
-    </script>
-    <style>
-        body { font-family: Poppins, system-ui, sans-serif; background: #f4f4f4; color: #1a1a1a; }
-        .input-w {
-            width: 100%; border: 1px solid #e6ebe8; border-radius: 8px; padding: .75rem .9rem; font-size: .875rem;
-            background: #fff; color: #111; outline: none;
-        }
-        .input-w:focus { border-color: #4caf79; box-shadow: 0 0 0 3px rgba(76,175,121,.18); }
-        .step-dot { width:10px;height:10px;border-radius:999px;background:#ccc; }
-        .step-dot.active { background:#4caf79; }
-        .step-panel { display:none; }
-        .step-panel.active { display:block; }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/gs-auth.css') }}?v=1">
     @stack('head')
 </head>
-<body class="gc-store ecom-auth antialiased bg-[#f4f4f4] text-[#1a1a1a]">
-@if(session('error'))
-    <div class="bg-rose-50 text-rose-800 text-sm text-center py-2">{{ session('error') }}</div>
+<body class="gc-store ecom-auth antialiased">
+@php
+    $store = $ecom_settings->store_name ?? 'Japs Wholesale';
+    $authLogoUrl = null;
+    $gsMediaFile = storage_path('app/ecom_gs_media.json');
+    if (is_file($gsMediaFile)) {
+        $gsMedia = json_decode(file_get_contents($gsMediaFile), true) ?: [];
+        $authLogoUrl = $gsMedia['logo'] ?? null;
+    }
+@endphp
+@if(session('error') || $errors->any())
+    <div class="auth-flash">{{ session('error') ?: $errors->first() }}</div>
 @endif
-@if($errors->any())
-    <div class="bg-rose-50 text-rose-800 text-sm text-center py-2">{{ $errors->first() }}</div>
-@endif
-@yield('content')
+<div class="auth-v2">
+    <div class="auth-v2-left auth-v2-left--center">
+        <a href="{{ route('ecommerce.home') }}" class="auth-v2-logo">
+            @if($authLogoUrl)
+                <img src="{{ $authLogoUrl }}" alt="{{ $store }}">
+            @else
+                <span style="color:#fff;font-size:20px">{{ $store }}</span>
+            @endif
+        </a>
+        @yield('auth_steps')
+        <div class="auth-v2-panel-footer">
+            <a href="{{ route('ecommerce.page', 'about-us') }}" class="auth-v2-panel-link">Terms and Conditions</a>
+            <a href="{{ route('ecommerce.page', 'privacy-policy') }}" class="auth-v2-panel-link">Privacy Policy</a>
+            <a href="{{ route('ecommerce.contact') }}" class="auth-v2-panel-link">Contact Us</a>
+        </div>
+    </div>
+    <div class="auth-v2-content">
+        @yield('content')
+    </div>
+</div>
 @stack('scripts')
 <script>
 document.querySelectorAll('form[method="post"], form[method="POST"]').forEach(function (form) {

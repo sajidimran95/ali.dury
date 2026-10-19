@@ -1,7 +1,5 @@
 @extends('ecommerce::front.layouts.auth')
 @section('title', 'Wholesale Sign Up')
-
-@section('content')
 @php
     $store = $ecom_settings->store_name ?? 'Japs Wholesale';
     $us_states = $us_states ?? [];
@@ -23,56 +21,21 @@
         }
     }
 @endphp
-<div class="min-h-screen grid lg:grid-cols-[280px_1fr]">
-    <aside class="bg-slatebar text-white p-6 lg:p-8 flex flex-col relative overflow-hidden">
-        <div class="absolute inset-0 opacity-10 pointer-events-none" style="background-image:radial-gradient(circle at 20% 20%, #e85d04 0, transparent 40%),radial-gradient(circle at 80% 80%, #e85d04 0, transparent 35%);"></div>
-        <div class="relative">
-            <a href="{{ url('/') }}" class="inline-flex items-center gap-2 mb-10">
-                @if($authLogoUrl)
-                    <img src="{{ $authLogoUrl }}" alt="{{ $store }}" class="h-10 w-auto max-w-[180px] object-contain brightness-0 invert">
-                @else
-                    <span class="h-9 w-9 rounded-full bg-brand text-white flex items-center justify-center font-extrabold text-sm">J</span>
-                    <span>
-                        <span class="block font-extrabold">{{ $store }}</span>
-                        <span class="block text-[10px] uppercase tracking-wider text-white/50">Wholesale Distribution</span>
-                    </span>
-                @endif
-            </a>
-
-            <nav class="space-y-0 text-sm relative" id="stepNav">
-                <div class="absolute left-[15px] top-4 bottom-4 w-px border-l border-dashed border-brand/50"></div>
-                @foreach([
-                    1 => 'Customer Information',
-                    2 => 'Shipping & Billing',
-                    3 => 'Licenses',
-                ] as $num => $label)
-                    <div class="flex items-start gap-3 step-nav-item relative py-4" data-step="{{ $num }}">
-                        <span class="step-badge relative z-10 h-8 w-8 rounded-lg bg-[#333] text-white/50 flex items-center justify-center text-xs font-bold shrink-0 {{ $num === 1 ? 'is-active' : '' }}" data-step-badge="{{ $num }}">
-                            <span class="step-num">{{ $num }}</span>
-                            <svg class="step-check hidden w-4 h-4" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
-                        </span>
-                        <div class="pt-1.5">
-                            <div class="step-label {{ $num === 1 ? 'font-bold text-brand' : 'font-semibold text-white/70' }}">{{ $label }}</div>
-                        </div>
-                    </div>
-                @endforeach
-            </nav>
+@section('auth_steps')
+<nav class="auth-v2-steps" id="stepNav">
+    @foreach([1 => 'Customer Information', 2 => 'Shipping & Billing', 3 => 'Licenses'] as $num => $label)
+        <div class="auth-v2-step-row step-nav-item {{ $num === 1 ? 'auth-v2-step--current' : '' }}" data-step="{{ $num }}">
+            <span class="auth-v2-step-icon step-badge">{{ $num }}</span>
+            <span class="auth-v2-step-title step-label">{{ $label }}</span>
         </div>
-
-        <div class="relative mt-auto pt-10 space-y-2 text-xs">
-            <a href="{{ route('ecommerce.contact') }}" class="block text-brand hover:underline">Terms and Conditions</a>
-            <a href="{{ route('ecommerce.contact') }}" class="block text-brand hover:underline">Privacy Policy</a>
-            <a href="{{ route('ecommerce.contact') }}" class="block text-brand hover:underline">Contact Us</a>
-        </div>
-    </aside>
-
-    <div class="p-5 sm:p-8 lg:p-12 max-w-4xl w-full mx-auto">
-        <div class="flex justify-end mb-6 text-sm">
-            Already have an account?
-            <a href="{{ route('ecommerce.login') }}" class="ml-1 font-bold text-brand">Sign In</a>
-        </div>
-
-        <form method="post" action="{{ route('ecommerce.register.post', absolute: false) }}" id="registerForm" enctype="multipart/form-data">
+        @if($num < 3)<span class="auth-v2-step-tail"></span>@endif
+    @endforeach
+</nav>
+@endsection
+@section('content')
+<div class="auth-v2-form" style="width:min(640px,100%)">
+    <div class="auth-v2-switch-link">Already have an account? <a class="auth-v2-link" href="{{ route('ecommerce.login') }}">Sign In</a></div>
+    <form method="post" action="{{ route('ecommerce.register.post', absolute: false) }}" id="registerForm" enctype="multipart/form-data">
             @csrf
 
             {{-- Step 1 --}}
@@ -231,7 +194,6 @@
                 </div>
             </div>
         </form>
-    </div>
 </div>
 @endsection
 
@@ -259,14 +221,8 @@
             const n = Number(item.dataset.step);
             const badge = item.querySelector('.step-badge');
             const label = item.querySelector('.step-label');
-            badge?.classList.toggle('is-active', n === currentStep);
-            badge?.classList.toggle('is-done', n < currentStep);
-            if (label) {
-                label.classList.toggle('text-brand', n === currentStep);
-                label.classList.toggle('font-bold', n === currentStep);
-                label.classList.toggle('text-white/70', n !== currentStep);
-                label.classList.toggle('font-semibold', n !== currentStep);
-            }
+            item.classList.toggle('auth-v2-step--current', n === currentStep);
+            item.classList.toggle('auth-v2-step--finished', n < currentStep);
         });
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }

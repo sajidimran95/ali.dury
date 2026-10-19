@@ -1,0 +1,41 @@
+.myaccount-area {
+    width: 100%; padding: 48px 70px 64px; box-sizing: border-box;
+    background: #fff; font-family: Montserrat, sans-serif; color: #1a1a1a;
+}
+.myaccount-area .shopping-cart-heading {
+    font-size: 48px; font-weight: 500; line-height: 72px; letter-spacing: -.02em; margin: 0 0 24px;
+}
+.single-my-account { margin-bottom: 20px; border: 1px solid #ebebeb; }
+.single-my-account .panel-title {
+    background: #f9f9f9; border-bottom: 1px solid #ebebeb;
+    font-size: 15px; font-weight: 500; margin: 0; text-transform: uppercase; color: #242424;
+    display: block; padding: 16px 55px 16px 50px; position: relative; text-decoration: none;
+}
+.single-my-account .panel-title:hover { color: #dd772d; }
+.single-my-account .panel-title span { position: absolute; left: 20px; top: 16px; }
+.single-my-account.is-open .panel-title { color: #dd772d; }
+.single-my-account .myaccount-info-wrapper { padding: 30px 20px; background: #fff; }
+.single-my-account .account-info-wrapper { border-bottom: 1px solid #eaeaea; margin-bottom: 28px; padding-bottom: 30px; }
+.single-my-account .account-info-wrapper h4 { font-size: 15px; margin: 0; text-transform: uppercase; }
+.single-my-account .billing-info { margin-bottom: 20px; }
+.single-my-account .billing-info label { color: #000; font-size: 14px; display: block; margin-bottom: 6px; }
+.single-my-account .billing-info input,
+.single-my-account .billing-info select {
+    width: 100%; background: transparent; border: 1px solid #ebebeb; color: #000;
+    height: 40px; padding: 0 15px; box-sizing: border-box; font-family: Montserrat, sans-serif;
+}
+.single-my-account .billing-back-btn { display: flex; justify-content: flex-end; margin-top: 26px; }
+.single-my-account .billing-btn {
+    background: #f2f2f2; border: 0; color: #000; font-size: 14px; font-weight: 500;
+    padding: 10px 20px; cursor: pointer; text-transform: uppercase;
+}
+.single-my-account .billing-btn:hover { background: #dd772d; color: #fff; }
+.single-my-account .entries-info p { color: #000; font-size: 15px; margin: 0; }
+.single-my-account .order-row {
+    display: flex; justify-content: space-between; gap: 12px; padding: 14px 0;
+    border-bottom: 1px solid #ebebeb; font-size: 14px;
+}
+@media (max-width: 900px) {
+    .myaccount-area { padding: 24px 16px; }
+    .myaccount-area .shopping-cart-heading { font-size: 32px; line-height: 40px; }
+}
