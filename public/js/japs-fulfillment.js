@@ -19,27 +19,34 @@ $(function () {
         return isNaN(val) ? 0 : val;
     }
 
-    function lineHasPick($row) {
-        var meta = rowMeta($row);
-        return meta.already > 0 || pickNowVal($row) > 0;
-    }
-
+    /**
+     * Ready for packing when at least one OPEN line is checked with a pick qty.
+     * Unchecked lines = intentional backorder on the same order (not lost).
+     * Fully-picked lines (no checkbox) are ignored.
+     */
     function syncReady() {
-        var $rows = $('#ff_pick_form .ff-items tbody tr');
-        var ok = $rows.length > 0;
-        $rows.each(function () {
+        var hasWave = false;
+        var invalidChecked = false;
+
+        $('#ff_pick_form .ff-items tbody tr').each(function () {
             var $row = $(this);
-            if (!$row.find('.ff-pick-check').is(':checked')) {
-                ok = false;
-                return false;
+            var $check = $row.find('.ff-pick-check');
+            if (!$check.length) {
+                return;
             }
-            // Already saved and/or pick-now > 0 (partial OK)
-            if (!lineHasPick($row)) {
-                ok = false;
-                return false;
+            var meta = rowMeta($row);
+            var now = pickNowVal($row);
+            if (!$check.is(':checked')) {
+                return;
             }
+            if (meta.already <= 0 && now <= 0) {
+                invalidChecked = true;
+                return;
+            }
+            hasWave = true;
         });
-        $('#ff_ready_pack').prop('disabled', !ok);
+
+        $('#ff_ready_pack').prop('disabled', !hasWave || invalidChecked);
     }
 
     function syncSelectAll() {
@@ -57,13 +64,16 @@ $(function () {
         var $row = $(this).closest('tr');
         var meta = rowMeta($row);
         var val = pickNowVal($row);
-        // Clamp to due only — never bump to full ordered qty
         if (val > meta.due) {
             $(this).val(meta.due);
         }
         if (val < 0) {
             $(this).val(0);
         }
+        if (val > 0 && !$row.find('.ff-pick-check').is(':checked')) {
+            $row.find('.ff-pick-check').prop('checked', true);
+        }
+        syncSelectAll();
         syncReady();
     });
 
@@ -71,7 +81,7 @@ $(function () {
         var $row = $(this).closest('tr');
         var meta = rowMeta($row);
         if (this.checked) {
-            // Fill only remaining DUE (e.g. already 1 of 2 → fill 1, not 2)
+            // Fill remaining due only when Pick now is empty — keep typed partial qty.
             if (pickNowVal($row) <= 0 && meta.due > 0) {
                 $row.find('.ff-qty-picked').val(meta.due);
             }
@@ -94,7 +104,7 @@ $(function () {
     // Pre-select rows that already have saved picks (do not change pick-now)
     $('#ff_pick_form .ff-items tbody tr').each(function () {
         var $row = $(this);
-        if (rowMeta($row).already > 0) {
+        if (rowMeta($row).already > 0 && $row.find('.ff-pick-check').length) {
             $row.find('.ff-pick-check').prop('checked', true);
         }
     });

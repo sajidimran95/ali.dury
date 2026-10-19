@@ -273,21 +273,32 @@ class SalesOrderController extends Controller
             abort(422);
         }
 
-        $timeline = $meta->timeline ?? [];
-        $timeline[] = [
-            'status' => $status,
-            'label' => ucfirst($status),
-            'at' => now()->toDateTimeString(),
-            'note' => $request->input('note'),
-        ];
-        $meta->fulfillment_status = $status;
-        $meta->timeline = $timeline;
-        $meta->save();
-
         if ($ff) {
+            // Warehouse logic first so partial ship cannot leave meta stuck on "shipped".
             $ff->applyFulfillmentStatus($order, $status);
             $order->save();
-        } else {
+            $order->refresh();
+            $meta->refresh();
+            // Prefer status written by FulfillmentService (e.g. processing after partial ship).
+            $status = $meta->fulfillment_status ?: $status;
+        }
+
+        $timeline = $meta->timeline ?? [];
+        // Avoid duplicate timeline row when applyFulfillmentStatus already appended one.
+        $last = end($timeline);
+        if (! is_array($last) || ($last['status'] ?? null) !== $status || ($last['note'] ?? null) !== $request->input('note')) {
+            $timeline[] = [
+                'status' => $status,
+                'label' => ucfirst((string) $status),
+                'at' => now()->toDateTimeString(),
+                'note' => $request->input('note'),
+            ];
+            $meta->fulfillment_status = $status;
+            $meta->timeline = $timeline;
+            $meta->save();
+        }
+
+        if (! $ff) {
             $shipping_map = [
                 'packed' => 'packed',
                 'shipped' => 'shipped',

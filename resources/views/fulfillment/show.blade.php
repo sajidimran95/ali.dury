@@ -28,16 +28,14 @@
             <span class="ff-source-badge {{ $badge['class'] }}">{{ $badge['label'] }}</span>
         </div>
     </div>
-    @php
-        $ffShipTotal = 0; $ffOrdTotal = 0;
-        foreach ($order->sell_lines as $__l) {
-            $ffOrdTotal += (float) $__l->quantity;
-            $ffShipTotal += (float) ($__l->qty_shipped ?? 0);
-        }
-        $ffRemain = max(0, $ffOrdTotal - $ffShipTotal);
-    @endphp
-    @if ($ffShipTotal > 0 && $ffRemain > 0)
-        <p class="ff-hint ff-hint--banner">{{ __('fulfillment.partial_progress', ['shipped' => $ffShipTotal, 'ordered' => $ffOrdTotal, 'remain' => $ffRemain]) }}</p>
+    @if (!empty($progress['is_partial']) || (!empty($progress['has_backorder']) && $stage !== 'picking'))
+        <p class="ff-hint ff-hint--banner">
+            @if (!empty($progress['is_partial']))
+                {{ __('fulfillment.partial_progress', ['shipped' => $progress['shipped'], 'ordered' => $progress['ordered'], 'remain' => $progress['remaining']]) }}
+            @elseif (!empty($progress['has_backorder']))
+                {{ __('fulfillment.backorder_banner', ['wave' => $progress['wave'], 'ordered' => $progress['ordered'], 'backorder' => $progress['backorder']]) }}
+            @endif
+        </p>
     @endif
 
     <div class="ff-stepper">
@@ -161,7 +159,11 @@
                 {!! Form::open(['url' => route('fulfillment.pack', $order->id)]) !!}
                 <section class="ff-card">
                     <h3>{{ __('fulfillment.pack_order') }}</h3>
-                    <p class="ff-hint">{{ __('fulfillment.partial_wave_help') }}</p>
+                    @if (!empty($progress['has_backorder']))
+                        <p class="ff-hint ff-hint--banner">{{ __('fulfillment.backorder_banner', ['wave' => $progress['wave'], 'ordered' => $progress['ordered'], 'backorder' => $progress['backorder']]) }}</p>
+                    @else
+                        <p class="ff-hint">{{ __('fulfillment.partial_wave_help') }}</p>
+                    @endif
                     <table class="ff-items">
                         <thead>
                             <tr>
@@ -170,7 +172,7 @@
                                 <th>{{ __('fulfillment.qty_ordered') }}</th>
                                 <th>{{ __('fulfillment.qty_shipped') }}</th>
                                 <th>{{ __('fulfillment.this_wave') }}</th>
-                                <th>{{ __('sale.status') }}</th>
+                                <th>{{ __('fulfillment.qty_backorder') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -179,11 +181,10 @@
                                     $ordered = (float) $line->quantity;
                                     $shipped = (float) ($line->qty_shipped ?? 0);
                                     $wave = max(0, (float) ($line->qty_picked ?? 0) - $shipped);
+                                    $backorder = max(0, $ordered - (float) ($line->qty_picked ?? 0));
                                 @endphp
-                                @if ($wave <= 0 && $shipped >= $ordered)
-                                    @continue
-                                @endif
-                                <tr>
+                                @continue($wave <= 0 && $backorder <= 0 && $shipped <= 0)
+                                <tr class="{{ $backorder > 0 ? 'ff-row--backorder' : '' }}">
                                     <td class="ff-item-cell">
                                         @if (!empty($line->product->image_url))
                                             <img src="{{ $line->product->image_url }}" alt="">
@@ -193,12 +194,18 @@
                                     <td>{{ $line->variations->sub_sku ?? $line->product->sku ?? '' }}</td>
                                     <td>{{ $ordered }}</td>
                                     <td>{{ $shipped }}</td>
-                                    <td>{{ $wave }}</td>
                                     <td>
                                         @if ($wave > 0)
-                                            <span class="ff-pill is-ok">{{ __('fulfillment.picked') }}</span>
+                                            {{ $wave }} <span class="ff-pill is-ok">{{ __('fulfillment.picked') }}</span>
                                         @else
-                                            <span class="text-muted">—</span>
+                                            <span class="text-muted">0</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if ($backorder > 0)
+                                            <strong class="ff-backorder-qty">{{ $backorder }}</strong>
+                                        @else
+                                            <span class="text-muted">0</span>
                                         @endif
                                     </td>
                                 </tr>
@@ -280,7 +287,11 @@
                 </div>
                 <section class="ff-card">
                     <h3>{{ __('fulfillment.items_in_order', ['count' => $order->sell_lines->count()]) }}</h3>
-                    <p class="ff-hint">{{ __('fulfillment.partial_wave_help') }}</p>
+                    @if (!empty($progress['has_backorder']))
+                        <p class="ff-hint ff-hint--banner">{{ __('fulfillment.backorder_banner', ['wave' => $progress['wave'], 'ordered' => $progress['ordered'], 'backorder' => $progress['backorder']]) }}</p>
+                    @else
+                        <p class="ff-hint">{{ __('fulfillment.partial_wave_help') }}</p>
+                    @endif
                     <table class="ff-items">
                         <thead>
                             <tr>
@@ -289,6 +300,7 @@
                                 <th>{{ __('fulfillment.qty_ordered') }}</th>
                                 <th>{{ __('fulfillment.qty_shipped') }}</th>
                                 <th>{{ __('fulfillment.this_wave') }}</th>
+                                <th>{{ __('fulfillment.qty_backorder') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -297,9 +309,10 @@
                                     $ordered = (float) $line->quantity;
                                     $shipped = (float) ($line->qty_shipped ?? 0);
                                     $wave = max(0, (float) ($line->qty_packed ?? $line->qty_picked ?? 0) - $shipped);
+                                    $backorder = max(0, $ordered - (float) ($line->qty_picked ?? 0));
                                 @endphp
-                                @continue($wave <= 0 && $shipped <= 0)
-                                <tr>
+                                @continue($wave <= 0 && $backorder <= 0 && $shipped <= 0)
+                                <tr class="{{ $backorder > 0 ? 'ff-row--backorder' : '' }}">
                                     <td>{{ $line->product->name ?? '' }}</td>
                                     <td>{{ $line->variations->sub_sku ?? '' }}</td>
                                     <td>{{ $ordered }}</td>
@@ -311,6 +324,13 @@
                                             <span class="text-muted">0</span>
                                         @endif
                                     </td>
+                                    <td>
+                                        @if ($backorder > 0)
+                                            <strong class="ff-backorder-qty">{{ $backorder }}</strong>
+                                        @else
+                                            <span class="text-muted">0</span>
+                                        @endif
+                                    </td>
                                 </tr>
                             @endforeach
                         </tbody>
@@ -318,7 +338,13 @@
                 </section>
                 @if ($stage !== 'shipped')
                     <input type="hidden" name="confirm" value="1">
-                    <button type="submit" class="btn btn-primary btn-lg btn-block">{{ __('fulfillment.confirm_shipment') }}</button>
+                    <button type="submit" class="btn btn-primary btn-lg btn-block">
+                        @if (!empty($progress['has_backorder']))
+                            {{ __('fulfillment.confirm_partial_shipment', ['wave' => $progress['wave'], 'backorder' => $progress['backorder']]) }}
+                        @else
+                            {{ __('fulfillment.confirm_shipment') }}
+                        @endif
+                    </button>
                 @endif
                 {!! Form::close() !!}
             @endif
@@ -332,12 +358,25 @@
             @endif
             <section class="ff-card">
                 <p><strong>{{ __('fulfillment.status') }}</strong><br>
-                    @if ($stage === 'picking') {{ __('fulfillment.awaiting_picking') }}
-                    @elseif ($stage === 'packing') {{ __('fulfillment.ready_to_pack') }}
-                    @elseif ($stage === 'shipment') {{ __('fulfillment.packed_ready_ship') }}
-                    @else {{ __('lang_v1.shipped') }}
+                    @if ($stage === 'picking')
+                        {{ !empty($progress['is_partial']) ? __('fulfillment.status_partial_picking') : __('fulfillment.awaiting_picking') }}
+                    @elseif ($stage === 'packing')
+                        {{ !empty($progress['has_backorder']) ? __('fulfillment.status_partial_packing') : __('fulfillment.ready_to_pack') }}
+                    @elseif ($stage === 'shipment')
+                        {{ !empty($progress['has_backorder']) ? __('fulfillment.status_partial_shipment') : __('fulfillment.packed_ready_ship') }}
+                    @else
+                        {{ __('lang_v1.shipped') }}
                     @endif
                 </p>
+                @if (!empty($progress))
+                    <p class="ff-progress-line">
+                        {{ __('fulfillment.qty_shipped') }}: <strong>{{ $progress['shipped'] }}</strong>
+                        / {{ $progress['ordered'] }}
+                        @if ($progress['backorder'] > 0)
+                            · {{ __('fulfillment.qty_backorder') }}: <strong class="ff-backorder-qty">{{ $progress['backorder'] }}</strong>
+                        @endif
+                    </p>
+                @endif
                 <p><strong>{{ __('fulfillment.source') }}</strong><br>
                     <span class="ff-source-badge {{ $badge['class'] }}">{{ $badge['label'] }}</span>
                 </p>
@@ -362,6 +401,22 @@
                     <p>{{ $order->shipping_address ?: $order->shipping_details }}</p>
                 </section>
             @endif
+            @if (!empty($waves))
+                <section class="ff-card">
+                    <h3>{{ __('fulfillment.previous_waves') }}</h3>
+                    <ul class="ff-timeline">
+                        @foreach ($waves as $i => $w)
+                            <li>
+                                <strong>{{ __('fulfillment.wave_n') }} {{ count($waves) - $i }} — {{ $w['qty'] ?? 0 }} {{ __('lang_v1.quantity') }}</strong>
+                                <span>
+                                    {{ !empty($w['at']) ? \Carbon::parse($w['at'])->format('M j, Y g:i A') : '' }}
+                                    @if (!empty($w['tracking'])) · {{ $w['tracking'] }} @endif
+                                </span>
+                            </li>
+                        @endforeach
+                    </ul>
+                </section>
+            @endif
             <section class="ff-card">
                 <h3>{{ __('fulfillment.activity') }}</h3>
                 <ul class="ff-timeline">
@@ -382,6 +437,6 @@
 @endsection
 
 @section('javascript')
-<script src="{{ asset('js/japs-fulfillment.js?v=' . $asset_v . '&pick=7') }}"></script>
+<script src="{{ asset('js/japs-fulfillment.js?v=' . $asset_v . '&pick=8') }}"></script>
 <script>if (typeof __currency_convert_recursively === 'function') { __currency_convert_recursively($('.ff-page')); }</script>
 @endsection

@@ -122,6 +122,7 @@ class FulfillmentController extends Controller
         $badge = $order->fulfillmentSourceBadge();
         $meta = $order->fulfillment_meta ?? [];
         $pick = $this->fulfillment->pickedCount($order);
+        $progress = $this->fulfillment->progressSummary($order);
         $checklist = $meta['pack_checklist'] ?? [];
         $package = array_merge([
             'package_type' => '',
@@ -139,9 +140,10 @@ class FulfillmentController extends Controller
             'address_verified' => false,
         ], $meta['shipment'] ?? []);
         $timeline = array_reverse($meta['timeline'] ?? []);
+        $waves = array_reverse($meta['waves'] ?? []);
 
         return view('fulfillment.show', compact(
-            'order', 'stage', 'badge', 'meta', 'pick', 'checklist', 'package', 'ship', 'timeline'
+            'order', 'stage', 'badge', 'meta', 'pick', 'progress', 'checklist', 'package', 'ship', 'timeline', 'waves'
         ));
     }
 

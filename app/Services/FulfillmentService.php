@@ -333,6 +333,18 @@ class FulfillmentService
         return max(0, (float) $line->quantity - $this->qtyPicked($line));
     }
 
+    /** Qty still open on the order (ordered − shipped). */
+    public function qtyRemaining($line): float
+    {
+        return max(0, (float) $line->quantity - $this->qtyShipped($line));
+    }
+
+    /** Qty not yet picked (stays on this order as backorder until picked). */
+    public function qtyBackorder($line): float
+    {
+        return $this->qtyDue($line);
+    }
+
     /** Qty picked this wave (not yet shipped). */
     public function qtyWave($line): float
     {
@@ -348,6 +360,63 @@ class FulfillmentService
         }
 
         return false;
+    }
+
+    public function progressSummary(Transaction $order): array
+    {
+        $ordered = 0.0;
+        $picked = 0.0;
+        $shipped = 0.0;
+        $wave = 0.0;
+        $backorder = 0.0;
+        foreach ($this->sellLines($order) as $line) {
+            $ordered += (float) $line->quantity;
+            $picked += $this->qtyPicked($line);
+            $shipped += $this->qtyShipped($line);
+            $wave += $this->qtyWave($line);
+            $backorder += $this->qtyBackorder($line);
+        }
+
+        return [
+            'ordered' => $ordered,
+            'picked' => $picked,
+            'shipped' => $shipped,
+            'wave' => $wave,
+            'backorder' => $backorder,
+            'remaining' => max(0, $ordered - $shipped),
+            'is_partial' => $shipped > 0.0001 && ($ordered - $shipped) > 0.0001,
+            'has_backorder' => $backorder > 0.0001,
+        ];
+    }
+
+    /** Persist open (unpicked) qty so packing/shipment always show where the rest went. */
+    public function syncBackorderMeta(Transaction $order): void
+    {
+        $order->loadMissing('sell_lines.product');
+        $lines = [];
+        $total = 0.0;
+        foreach ($this->sellLines($order) as $line) {
+            $qty = $this->qtyBackorder($line);
+            if ($qty <= 0.0001) {
+                continue;
+            }
+            $lines[] = [
+                'sell_line_id' => $line->id,
+                'product' => $line->product->name ?? ('#'.$line->product_id),
+                'qty_ordered' => (float) $line->quantity,
+                'qty_picked' => $this->qtyPicked($line),
+                'qty_shipped' => $this->qtyShipped($line),
+                'qty_backorder' => $qty,
+            ];
+            $total += $qty;
+        }
+        $meta = $order->fulfillment_meta ?? [];
+        if ($total > 0.0001) {
+            $meta['backorder'] = ['qty' => $total, 'lines' => $lines, 'at' => now()->toDateTimeString()];
+        } else {
+            unset($meta['backorder']);
+        }
+        $order->fulfillment_meta = $meta;
     }
 
     public function savePicks(Transaction $order, array $pickNow, bool $advance): void
@@ -396,16 +465,23 @@ class FulfillmentService
         if (! $this->canAdvancePickWave($order)) {
             throw new \RuntimeException(__('fulfillment.pick_wave_items'));
         }
+        $order->loadMissing('sell_lines.product');
         foreach ($this->sellLines($order) as $line) {
             // Pack cumulative picked so far (includes prior shipped + this wave).
             $line->qty_packed = $this->qtyPicked($line);
             $line->save();
         }
+        $this->syncBackorderMeta($order);
+        $progress = $this->progressSummary($order);
         $order->fulfillment_stage = 'packing';
+        // Keep shipping_status as packed only for the active wave — never "shipped" while qty remains.
         $order->shipping_status = 'packed';
-        $this->appendTimeline($order, 'moved_packing', 'Moved from Picking to Packing (this wave)');
+        $note = $progress['has_backorder']
+            ? 'Moved to Packing (this wave). '.$progress['backorder'].' unit(s) remain on this order as backorder.'
+            : 'Moved from Picking to Packing (this wave)';
+        $this->appendTimeline($order, 'moved_packing', $note);
         $order->save();
-        $this->syncMetaStatusFromStage($order, 'packed', 'Moved to Packing');
+        $this->syncMetaStatusFromStage($order, 'packed', $note);
     }
 
     public function savePacking(Transaction $order, array $checklist, array $package, bool $advance): void
@@ -510,14 +586,28 @@ class FulfillmentService
         unset($meta['pack_checklist'], $meta['package'], $meta['shipment']);
         $order->fulfillment_meta = $meta;
 
+        $this->syncBackorderMeta($order);
+
         if ($this->hasRemainingToFulfill($order)) {
-            // Remaining qty goes back to Picking for the next wave.
+            // Remaining qty (unshipped, including unpicked backorder) stays on THIS order → Picking.
+            $remain = $this->progressSummary($order)['remaining'];
             $order->fulfillment_stage = 'picking';
             $order->shipping_status = 'ordered';
-            $this->appendTimeline($order, 'partial_remaining', 'Partial shipment — remaining items returned to Picking');
+            $this->appendTimeline(
+                $order,
+                'partial_remaining',
+                'Partial shipment — '.$remain.' unit(s) still on this order (backorder). Returned to Picking.'
+            );
             $order->save();
-            $this->syncMetaStatusFromStage($order, 'processing', 'Partial shipment — pick remaining items');
+            $this->syncMetaStatusFromStage(
+                $order,
+                'processing',
+                'Partially shipped — '.$remain.' unit(s) still to fulfill on this order'
+            );
         } else {
+            $meta = $order->fulfillment_meta ?? [];
+            unset($meta['backorder']);
+            $order->fulfillment_meta = $meta;
             $order->fulfillment_stage = 'shipped';
             $order->shipping_status = 'shipped';
             $this->appendTimeline($order, 'shipped', 'All items shipped — order complete');
