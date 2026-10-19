@@ -21,6 +21,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Poppins:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/ecom-tw.css') }}?v={{ config('app.asset_version', '1') }}">
     <style>
+        html, body { margin: 0; padding: 0; }
         body { font-family: Montserrat, Poppins, Roboto, system-ui, sans-serif; background: #fff; color: #111; }
         .pc-qty-input::-webkit-outer-spin-button,
         .pc-qty-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
@@ -42,7 +43,7 @@
             font-weight: 500 !important;
         }
     </style>
-    <link rel="stylesheet" href="{{ asset('css/gs-storefront.css') }}?v={{ config('app.asset_version', '1') }}&gs=27">
+    <link rel="stylesheet" href="{{ asset('css/gs-storefront.css') }}?v={{ config('app.asset_version', '1') }}&gs=28">
     <link rel="stylesheet" href="{{ asset('css/gs-shop.css') }}?v=2">
     <link rel="stylesheet" href="{{ asset('css/gs-cart.css') }}?v=1">
     <link rel="stylesheet" href="{{ asset('css/gs-account.css') }}?v=1">
