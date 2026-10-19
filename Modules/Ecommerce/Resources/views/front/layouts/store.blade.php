@@ -19,27 +19,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Poppins:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        brand: '#dd772d',
-                        brandDark: '#c4621f',
-                        ink: '#060606',
-                        slatebar: '#ffffff',
-                        mist: '#f5f5f5',
-                        line: '#e6e6e6'
-                    },
-                    fontFamily: {
-                        sans: ['Montserrat', 'Poppins', 'Roboto', 'system-ui', 'sans-serif'],
-                        serif: ['Roboto', 'Montserrat', 'sans-serif']
-                    }
-                }
-            }
-        }
-    </script>
+    <link rel="stylesheet" href="{{ asset('css/ecom-tw.css') }}?v={{ config('app.asset_version', '1') }}">
     <style>
         body { font-family: Montserrat, Poppins, Roboto, system-ui, sans-serif; background: #fff; color: #111; }
         .pc-qty-input::-webkit-outer-spin-button,

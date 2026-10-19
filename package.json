@@ -2,8 +2,9 @@
   "private": true,
   "scripts": {
     "build:vendor": "node scripts/build-vendor.js",
+    "build:ecom-tw": "tailwindcss -i resources/css/ecom-tw.css -o public/css/ecom-tw.css --minify",
     "dev": "npm run build:vendor",
-    "production": "npm run build:vendor"
+    "production": "npm run build:vendor && npm run build:ecom-tw"
   },
   "dependencies": {
     "@yaireo/tagify": "^4.17.9",
@@ -25,7 +26,8 @@
     "tinymce": "^5.10.9"
   },
   "devDependencies": {
-    "esbuild": "^0.25.0"
+    "esbuild": "^0.25.0",
+    "tailwindcss": "^3.4.19"
   },
   "allowScripts": {
     "esbuild@0.25.12": true
