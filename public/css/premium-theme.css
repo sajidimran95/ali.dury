@@ -14,11 +14,11 @@ body.zoho-theme,
     --p-line-strong: #d6dce7;
     --p-surface: #ffffff;
     --p-canvas: #eef2f7;
-    --p-sidebar: #2563eb;
-    --p-sidebar-elevated: rgba(255, 255, 255, 0.16);
-    --p-sidebar-active: #ffffff;
-    --p-sidebar-text: #f4f8ff;
-    --p-sidebar-muted: #c7ddff;
+    --p-sidebar: #ffffff;
+    --p-sidebar-elevated: #f5f7fb;
+    --p-sidebar-active: #eff6ff;
+    --p-sidebar-text: #475569;
+    --p-sidebar-muted: #94a3b8;
     --p-blue: #3b82f6;
     --p-blue-dark: #2563eb;
     --p-blue-soft: #eff6ff;
@@ -44,7 +44,7 @@ body.zoho-theme,
     --zoho-blue-hover: var(--p-blue-dark);
     --zoho-blue-light: var(--p-blue-soft);
     --zoho-sidebar-bg: var(--p-sidebar);
-    --zoho-sidebar-border: #1d4ed8;
+    --zoho-sidebar-border: #e8ecf1;
     --zoho-content-bg: var(--p-surface);
     --zoho-page-bg: var(--p-canvas);
     --zoho-text: var(--p-ink);
@@ -291,14 +291,13 @@ body.zoho-theme:not(.pos-sale-theme) .zoho-quick-create__link:hover {
 }
 
 /* ??????????????????????????????????????
-   SHELL ? Sidebar (vivid blue)
+   SHELL ? Sidebar (Salezy light)
    ?????????????????????????????????????? */
 body.zoho-theme:not(.pos-sale-theme) .side-bar {
     width: 248px !important;
     min-width: 248px !important;
-    background: linear-gradient(180deg, #3b82f6 0%, #2563eb 48%, #1d4ed8 100%) !important;
-    border-right: 1px solid #1d4ed8 !important;
-    color: var(--p-sidebar-text);
+    background: #fff !important;
+    border-right: 1px solid #e8ecf1 !important;
     box-shadow: none;
     display: flex !important;
     flex-direction: column !important;
@@ -325,7 +324,7 @@ body.zoho-theme:not(.pos-sale-theme) .zoho-sidebar-nav {
 
 body.zoho-theme:not(.pos-sale-theme) #side-bar:hover,
 body.zoho-theme:not(.pos-sale-theme) .zoho-sidebar-nav:hover {
-    scrollbar-color: rgba(255, 255, 255, 0.4) transparent;
+    scrollbar-color: #cbd5e1 transparent;
 }
 
 body.zoho-theme:not(.pos-sale-theme) #side-bar::-webkit-scrollbar,
@@ -341,13 +340,12 @@ body.zoho-theme:not(.pos-sale-theme) .zoho-sidebar-nav::-webkit-scrollbar-thumb 
 
 body.zoho-theme:not(.pos-sale-theme) #side-bar:hover::-webkit-scrollbar-thumb,
 body.zoho-theme:not(.pos-sale-theme) .zoho-sidebar-nav:hover::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.4);
+    background: #cbd5e1;
 }
 
 body.zoho-theme:not(.pos-sale-theme) .zoho-sidebar-search,
 body.zoho-theme:not(.pos-sale-theme) .side-bar > .tw-px-3 {
     flex: 0 0 auto !important;
-    color: var(--p-sidebar-muted);
 }
 
 body.zoho-theme:not(.pos-sale-theme) #sidebar-no-results {
@@ -358,7 +356,7 @@ body.zoho-theme:not(.pos-sale-theme) .zoho-sidebar-brand__icon {
     width: 28px;
     height: 28px;
     border-radius: 8px;
-    background: #ffffff;
+    background: linear-gradient(135deg, #3b82f6, #60a5fa);
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -377,36 +375,34 @@ body.zoho-theme:not(.pos-sale-theme).sidebar-collapse .zoho-sidebar-brand {
     padding-right: 0.75rem;
 }
 
-body.zoho-theme:not(.pos-sale-theme) .zoho-sidebar-search,
 body.zoho-theme:not(.pos-sale-theme) .side-bar > .tw-px-3 {
     padding: 14px 14px 10px !important;
 }
 
-body.zoho-theme:not(.pos-sale-theme) .zoho-sidebar-search > div,
 body.zoho-theme:not(.pos-sale-theme) .side-bar > .tw-px-3 > div {
-    background: var(--p-sidebar-elevated) !important;
-    border: 1px solid rgba(255, 255, 255, 0.28) !important;
+    background: #f5f7fb !important;
+    border: 1px solid #e8ecf1 !important;
     border-radius: 12px !important;
     box-shadow: none;
 }
 
 body.zoho-theme:not(.pos-sale-theme) .side-bar #sidebar-search {
-    color: #ffffff !important;
+    color: var(--p-ink) !important;
 }
 
 body.zoho-theme:not(.pos-sale-theme) .side-bar #sidebar-search::placeholder {
-    color: #bfdbfe !important;
+    color: #94a3b8 !important;
 }
 
 body.zoho-theme:not(.pos-sale-theme) .side-bar .tw-text-gray-400,
 body.zoho-theme:not(.pos-sale-theme) .side-bar .tw-text-gray-600 {
-    color: var(--p-sidebar-muted) !important;
+    color: #94a3b8 !important;
 }
 
 body.zoho-theme:not(.pos-sale-theme) #side-bar .tw-px-3.tw-pt-4,
 body.zoho-theme:not(.pos-sale-theme) #side-bar .tw-px-1.tw-pt-3,
 body.zoho-theme:not(.pos-sale-theme) #side-bar .zoho-sidebar-section {
-    color: #bfdbfe !important;
+    color: #94a3b8 !important;
     font-size: 11px !important;
     font-weight: 700;
     letter-spacing: 0.06em;
@@ -421,7 +417,7 @@ body.zoho-theme:not(.pos-sale-theme) #side-bar > a {
     padding: 9px 12px !important;
     border-radius: 12px !important;
     border-left: 0 !important;
-    color: var(--p-sidebar-text) !important;
+    color: #475569 !important;
     font-size: 13.5px !important;
     font-weight: 500 !important;
     gap: 12px !important;
@@ -433,18 +429,18 @@ body.zoho-theme:not(.pos-sale-theme) #side-bar a.drop_down:hover,
 body.zoho-theme:not(.pos-sale-theme) #side-bar .zoho-sidebar-item > a:hover,
 body.zoho-theme:not(.pos-sale-theme) #side-bar > a:hover,
 body.zoho-theme:not(.pos-sale-theme) #side-bar .theme-sidebar-hover:hover {
-    background: var(--p-sidebar-elevated) !important;
-    color: #f8fafc !important;
+    background: #f5f7fb !important;
+    color: var(--p-ink) !important;
 }
 
 body.zoho-theme:not(.pos-sale-theme) #side-bar .theme-sidebar-active,
 body.zoho-theme:not(.pos-sale-theme) #side-bar a.drop_down.theme-sidebar-active,
 body.zoho-theme:not(.pos-sale-theme) #side-bar .zoho-sidebar-item > a.theme-sidebar-active,
 body.zoho-theme:not(.pos-sale-theme) #side-bar .theme-sidebar-hover.theme-sidebar-active {
-    background: var(--p-sidebar-active) !important;
-    color: #1d4ed8 !important;
+    background: #eff6ff !important;
+    color: #2563eb !important;
     font-weight: 650 !important;
-    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.18);
+    box-shadow: none;
 }
 
 body.zoho-theme:not(.pos-sale-theme) #side-bar .zoho-sidebar-menu-icon {
@@ -455,7 +451,7 @@ body.zoho-theme:not(.pos-sale-theme) #side-bar .zoho-sidebar-menu-icon {
     height: 30px;
     flex: 0 0 30px;
     border-radius: 9px;
-    color: #dbeafe;
+    color: #64748b;
     background: transparent;
     transition: color 0.15s ease, background-color 0.15s ease;
 }
@@ -476,8 +472,8 @@ body.zoho-theme:not(.pos-sale-theme) #side-bar a i {
 
 body.zoho-theme:not(.pos-sale-theme) #side-bar a.drop_down:hover .zoho-sidebar-menu-icon,
 body.zoho-theme:not(.pos-sale-theme) #side-bar .zoho-sidebar-item > a:hover .zoho-sidebar-menu-icon {
-    color: #ffffff;
-    background: rgba(255, 255, 255, 0.16);
+    color: #334155;
+    background: #eef2f7;
 }
 
 body.zoho-theme:not(.pos-sale-theme) #side-bar .theme-sidebar-active .zoho-sidebar-menu-icon {
@@ -486,7 +482,7 @@ body.zoho-theme:not(.pos-sale-theme) #side-bar .theme-sidebar-active .zoho-sideb
 }
 
 body.zoho-theme:not(.pos-sale-theme) #side-bar .sidebar-menu-chevron {
-    color: #bfdbfe !important;
+    color: #94a3b8 !important;
     opacity: 0.9;
 }
 
@@ -498,12 +494,12 @@ body.zoho-theme:not(.pos-sale-theme) #side-bar .chiled {
     margin: 4px 0 10px !important;
     padding: 6px 0 6px 14px !important;
     background: transparent !important;
-    border-left: 1px solid rgba(255, 255, 255, 0.28);
+    border-left: 1px solid #e8ecf1;
     margin-left: 26px !important;
 }
 
 body.zoho-theme:not(.pos-sale-theme) #side-bar .zoho-sidebar-flyout__rail {
-    background: rgba(255, 255, 255, 0.4) !important;
+    background: #e2e8f0 !important;
 }
 
 body.zoho-theme:not(.pos-sale-theme) #side-bar .zoho-sidebar-child-row {
@@ -514,14 +510,14 @@ body.zoho-theme:not(.pos-sale-theme) #side-bar .zoho-sidebar-child-row {
 body.zoho-theme:not(.pos-sale-theme) #side-bar .zoho-sidebar-child-link,
 body.zoho-theme:not(.pos-sale-theme) #side-bar .zoho-sidebar-child-add,
 body.zoho-theme:not(.pos-sale-theme) #side-bar .chiled a:not(.zoho-sidebar-child-link):not(.zoho-sidebar-child-add) {
-    color: #dbeafe !important;
+    color: #64748b !important;
     font-size: 12.75px !important;
 }
 
 body.zoho-theme:not(.pos-sale-theme) #side-bar .zoho-sidebar-child-row:hover,
 body.zoho-theme:not(.pos-sale-theme) #side-bar .zoho-sidebar-child-row:focus-within,
 body.zoho-theme:not(.pos-sale-theme) #side-bar .zoho-sidebar-child-row--active {
-    background: rgba(255, 255, 255, 0.16) !important;
+    background: #f1f5f9 !important;
 }
 
 body.zoho-theme:not(.pos-sale-theme) #side-bar .zoho-sidebar-child-row:hover .zoho-sidebar-child-link,
@@ -531,13 +527,13 @@ body.zoho-theme:not(.pos-sale-theme) #side-bar .zoho-sidebar-child-row:focus-wit
 body.zoho-theme:not(.pos-sale-theme) #side-bar .zoho-sidebar-child-row--active .zoho-sidebar-child-link,
 body.zoho-theme:not(.pos-sale-theme) #side-bar .zoho-sidebar-child-row--active .zoho-sidebar-child-add,
 body.zoho-theme:not(.pos-sale-theme) #side-bar .zoho-sidebar-child-row--active .theme-sidebar-child-active {
-    color: #ffffff !important;
+    color: #2563eb !important;
 }
 
 body.zoho-theme:not(.pos-sale-theme) .zoho-sidebar-footer {
-    border-top: 1px solid rgba(255, 255, 255, 0.22);
+    border-top: 1px solid #e8ecf1;
     padding: 10px 12px 12px;
-    background: transparent;
+    background: #fff;
     margin-top: auto !important;
     flex: 0 0 auto !important;
     position: relative;
@@ -558,7 +554,7 @@ body.zoho-theme:not(.pos-sale-theme) .zoho-sidebar-footer__link {
     min-height: 40px;
     padding: 8px 12px;
     border-radius: 12px;
-    color: var(--p-sidebar-text) !important;
+    color: #475569 !important;
     font-size: 13.5px;
     font-weight: 500;
     text-decoration: none !important;
@@ -569,21 +565,21 @@ body.zoho-theme:not(.pos-sale-theme) .zoho-sidebar-footer__link svg {
     width: 18px;
     height: 18px;
     flex-shrink: 0;
-    color: #dbeafe;
+    color: #64748b;
 }
 
 body.zoho-theme:not(.pos-sale-theme) .zoho-sidebar-footer__link:hover {
-    background: var(--p-sidebar-elevated);
-    color: #ffffff !important;
+    background: #f5f7fb;
+    color: #0f172a !important;
 }
 
 body.zoho-theme:not(.pos-sale-theme) .zoho-sidebar-footer__link--logout:hover {
-    background: rgba(255, 255, 255, 0.2);
-    color: #fecdd3 !important;
+    background: #fff1f2;
+    color: #e11d48 !important;
 }
 
 body.zoho-theme:not(.pos-sale-theme) .zoho-sidebar-footer__link--logout:hover svg {
-    color: #fecdd3;
+    color: #e11d48;
 }
 
 body.zoho-theme:not(.pos-sale-theme) .zoho-sidebar-user {
@@ -591,9 +587,9 @@ body.zoho-theme:not(.pos-sale-theme) .zoho-sidebar-user {
     align-items: center;
     gap: 8px;
     padding: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.28);
+    border: 1px solid #e8ecf1;
     border-radius: 14px;
-    background: rgba(15, 40, 120, 0.18);
+    background: #f8fafc;
 }
 
 body.zoho-theme:not(.pos-sale-theme) .zoho-sidebar-user__profile {
@@ -610,7 +606,7 @@ body.zoho-theme:not(.pos-sale-theme) .zoho-sidebar-user__avatar {
     width: 34px;
     height: 34px;
     border-radius: 999px;
-    background: #ffffff;
+    background: #dbeafe;
     color: #2563eb;
     font-size: 12px;
     font-weight: 700;
@@ -630,7 +626,7 @@ body.zoho-theme:not(.pos-sale-theme) .zoho-sidebar-user__meta {
 body.zoho-theme:not(.pos-sale-theme) .zoho-sidebar-user__name {
     font-size: 13px;
     font-weight: 700;
-    color: #f8fafc;
+    color: #0f172a;
     letter-spacing: -0.01em;
     white-space: nowrap;
     overflow: hidden;
@@ -639,7 +635,7 @@ body.zoho-theme:not(.pos-sale-theme) .zoho-sidebar-user__name {
 
 body.zoho-theme:not(.pos-sale-theme) .zoho-sidebar-user__role {
     font-size: 11px;
-    color: #bfdbfe;
+    color: #94a3b8;
     font-weight: 500;
     white-space: nowrap;
     overflow: hidden;
@@ -651,10 +647,10 @@ body.zoho-theme:not(.pos-sale-theme) .zoho-sidebar-user .zoho-sidebar-footer__to
     height: 34px;
     min-width: 34px;
     padding: 0;
-    border: 1px solid rgba(255, 255, 255, 0.28);
+    border: 1px solid #e2e8f0;
     border-radius: 10px;
-    background: rgba(255, 255, 255, 0.12);
-    color: #dbeafe;
+    background: #fff;
+    color: #64748b;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -662,9 +658,9 @@ body.zoho-theme:not(.pos-sale-theme) .zoho-sidebar-user .zoho-sidebar-footer__to
 }
 
 body.zoho-theme:not(.pos-sale-theme) .zoho-sidebar-user .zoho-sidebar-footer__toggle:hover {
-    background: #ffffff;
+    background: #eff6ff;
     color: #2563eb;
-    border-color: #ffffff;
+    border-color: #bfdbfe;
 }
 
 body.zoho-theme:not(.pos-sale-theme) .side-bar.zoho-sidebar-collapsed .zoho-sidebar-user__meta,
@@ -690,10 +686,10 @@ body.zoho-theme:not(.pos-sale-theme).sidebar-collapse .zoho-sidebar-footer__link
 body.zoho-theme:not(.pos-sale-theme) .zoho-sidebar-footer__toggle {
     width: 100%;
     height: 40px;
-    border: 1px solid rgba(255, 255, 255, 0.28);
+    border: 1px solid #e2e8f0;
     border-radius: 10px;
-    background: rgba(255, 255, 255, 0.12);
-    color: #dbeafe;
+    background: #f8fafc;
+    color: #64748b;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -701,12 +697,12 @@ body.zoho-theme:not(.pos-sale-theme) .zoho-sidebar-footer__toggle {
 }
 
 body.zoho-theme:not(.pos-sale-theme) .zoho-sidebar-footer__toggle:hover {
-    background: #ffffff;
+    background: #eff6ff;
     color: #2563eb;
-    border-color: #ffffff;
+    border-color: #bfdbfe;
 }
 
-/* Sidebar AI promo card */
+/* Light sidebar AI promo card */
 body.zoho-theme:not(.pos-sale-theme) .japs-sidebar-ai-slot .ai-ask-fab,
 body.zoho-theme:not(.pos-sale-theme) .japs-sidebar-ai-slot > div {
     border-radius: 14px !important;
@@ -777,8 +773,8 @@ body.zoho-theme:not(.pos-sale-theme).sidebar-collapse #side-bar .zoho-sidebar-it
 
 body.zoho-theme:not(.pos-sale-theme) .side-bar.zoho-sidebar-collapsed #side-bar > .zoho-sidebar-item.zoho-sidebar-flyout-open > .chiled,
 body.zoho-theme:not(.pos-sale-theme).sidebar-collapse #side-bar > .zoho-sidebar-item.zoho-sidebar-flyout-open > .chiled {
-    background: #1d4ed8 !important;
-    border: 1px solid rgba(255, 255, 255, 0.28) !important;
+    background: #fff !important;
+    border: 1px solid var(--p-line) !important;
     border-radius: 12px !important;
     box-shadow: var(--p-shadow-lg) !important;
     margin-left: 0 !important;
@@ -788,28 +784,28 @@ body.zoho-theme:not(.pos-sale-theme).sidebar-collapse #side-bar > .zoho-sidebar-
 
 body.zoho-theme:not(.pos-sale-theme) .side-bar.zoho-sidebar-collapsed #side-bar .zoho-sidebar-flyout__header,
 body.zoho-theme:not(.pos-sale-theme).sidebar-collapse #side-bar .zoho-sidebar-flyout__header {
-    color: #dbeafe;
-    background: #1e40af;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+    color: var(--p-muted);
+    background: #f8fafc;
+    border-bottom: 1px solid var(--p-line);
 }
 
 body.zoho-theme:not(.pos-sale-theme) .side-bar.zoho-sidebar-collapsed #side-bar .zoho-sidebar-child-link,
 body.zoho-theme:not(.pos-sale-theme).sidebar-collapse #side-bar .zoho-sidebar-child-link {
-    color: #f8fafc !important;
+    color: var(--p-copy) !important;
 }
 
 body.zoho-theme:not(.pos-sale-theme) .side-bar.zoho-sidebar-collapsed #side-bar .zoho-sidebar-child-row:hover,
 body.zoho-theme:not(.pos-sale-theme) .side-bar.zoho-sidebar-collapsed #side-bar .zoho-sidebar-child-row--active,
 body.zoho-theme:not(.pos-sale-theme).sidebar-collapse #side-bar .zoho-sidebar-child-row:hover,
 body.zoho-theme:not(.pos-sale-theme).sidebar-collapse #side-bar .zoho-sidebar-child-row--active {
-    background: rgba(255, 255, 255, 0.16) !important;
+    background: var(--p-blue-soft) !important;
 }
 
 body.zoho-theme:not(.pos-sale-theme) .side-bar.zoho-sidebar-collapsed #side-bar .zoho-sidebar-child-row:hover .zoho-sidebar-child-link,
 body.zoho-theme:not(.pos-sale-theme) .side-bar.zoho-sidebar-collapsed #side-bar .zoho-sidebar-child-row--active .zoho-sidebar-child-link,
 body.zoho-theme:not(.pos-sale-theme).sidebar-collapse #side-bar .zoho-sidebar-child-row:hover .zoho-sidebar-child-link,
 body.zoho-theme:not(.pos-sale-theme).sidebar-collapse #side-bar .zoho-sidebar-child-row--active .zoho-sidebar-child-link {
-    color: #ffffff !important;
+    color: #2563eb !important;
 }
 
 /* Mobile drawer */
