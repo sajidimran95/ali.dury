@@ -1,4 +1,31 @@
 <!-- Left sidebar — Salezy light -->
+<style>
+    body.zoho-theme .side-bar #side-bar {
+        display: block !important;
+        flex: 1 0 auto !important;
+        min-height: 160px !important;
+        max-height: calc(100vh - 150px) !important;
+        height: auto !important;
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
+        visibility: visible !important;
+    }
+    body.zoho-theme .side-bar #side-bar > .zoho-sidebar-item,
+    body.zoho-theme .side-bar #side-bar > .zoho-sidebar-section {
+        display: block !important;
+        visibility: visible !important;
+        height: auto !important;
+        position: relative !important;
+    }
+    body.zoho-theme .side-bar #side-bar > .zoho-sidebar-item > a,
+    body.zoho-theme .side-bar #side-bar > a {
+        display: flex !important;
+        color: #1e293b !important;
+        min-height: 40px !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+</style>
 <aside class="side-bar tw-relative tw-hidden tw-h-full lg:tw-flex lg:tw-flex-col tw-shrink-0">
 
 <script>document.currentScript.parentElement.classList.toggle('zoho-sidebar-collapsed', localStorage.getItem('upos_sidebar_collapse') === 'true');</script>

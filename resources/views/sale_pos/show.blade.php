@@ -71,30 +71,31 @@
         @endif
       </div>
       <div class="@if(!empty($export_custom_fields)) col-sm-3 @else col-sm-4 @endif">
-        @if(!empty($sell->contact->supplier_business_name))
-          {{ $sell->contact->supplier_business_name }}<br>
+        @php $view_contact = $sell->contact; @endphp
+        @if(!empty($view_contact->supplier_business_name))
+          {{ $view_contact->supplier_business_name }}<br>
         @endif
-        <b>{{ __('sale.customer_name') }}:</b> {{ $sell->contact->name }}<br>
+        <b>{{ __('sale.customer_name') }}:</b> {{ $view_contact->name ?? '-' }}<br>
         <b>{{ __('business.address') }}:</b><br>
         @if(!empty($sell->billing_address()))
           {{$sell->billing_address()}}
-        @else
-          {!! $sell->contact->contact_address !!}
-          @if($sell->contact->mobile)
+        @elseif(!empty($view_contact))
+          {!! $view_contact->contact_address !!}
+          @if($view_contact->mobile)
           <br>
-              {{__('contact.mobile')}}: {{ $sell->contact->mobile }}
+              {{__('contact.mobile')}}: {{ $view_contact->mobile }}
           @endif
-          @if($sell->contact->alternate_number)
+          @if($view_contact->alternate_number)
           <br>
-              {{__('contact.alternate_contact_number')}}: {{ $sell->contact->alternate_number }}
+              {{__('contact.alternate_contact_number')}}: {{ $view_contact->alternate_number }}
           @endif
-          @if($sell->contact->landline)
+          @if($view_contact->landline)
             <br>
-              {{__('contact.landline')}}: {{ $sell->contact->landline }}
+              {{__('contact.landline')}}: {{ $view_contact->landline }}
           @endif
-          @if($sell->contact->email)
+          @if($view_contact->email)
             <br>
-              {{__('business.email')}}: {{ $sell->contact->email }}
+              {{__('business.email')}}: {{ $view_contact->email }}
           @endif
         @endif
         

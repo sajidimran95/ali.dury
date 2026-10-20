@@ -11,7 +11,7 @@ class InvoiceLayoutDefaults
     /**
      * Footer printed on receipts / invoices.
      */
-    public const FOOTER_TEXT = 'Thank You For Your Business!';
+    public const FOOTER_TEXT = 'WISCONSIN TOBACCO/VAPOR PRODUCT EXCISE TAX INCLUDED SALE*';
 
     /**
      * Attributes for creating or updating a default InvoiceLayout row.

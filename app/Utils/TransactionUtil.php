@@ -1161,8 +1161,15 @@ class TransactionUtil extends Util
             $output['contact'] .= '<br>'.__('business.email').': '.$location_details->email;
         }
 
-        //Customer show_customer
-        $customer = Contact::find($transaction->contact_id);
+        //Customer show_customer. Old sales can remain after the contact was removed.
+        $customer = ! empty($transaction->contact_id)
+            ? Contact::withTrashed()->find($transaction->contact_id)
+            : null;
+        if (empty($customer)) {
+            $customer = new Contact();
+            $customer->name = '';
+            $customer->contact_id = '';
+        }
 
         $output['contact_id'] = $customer->contact_id;
         $output['contact_name'] = $customer->name;

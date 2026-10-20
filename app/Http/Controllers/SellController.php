@@ -265,10 +265,9 @@ class SellController extends Controller
                                     <ul class="dropdown-menu dropdown-menu-left" role="menu">';
 
                         if (auth()->user()->can('sell.view') || auth()->user()->can('direct_sell.view') || auth()->user()->can('view_own_sell_only') || auth()->user()->can('so.view_all') || auth()->user()->can('so.view_own')) {
+                            $html .= '<li><a href="#" data-href="'.action([\App\Http\Controllers\SellController::class, 'show'], [$row->id]).'" class="btn-modal" data-container=".view_modal"><i class="fas fa-eye" aria-hidden="true"></i> '.__('messages.view').'</a></li>';
                             if ($row->type == 'sales_order') {
-                                $html .= '<li><a href="'.action([\App\Http\Controllers\SalesOrderController::class, 'show'], [$row->id]).'"><i class="fas fa-eye" aria-hidden="true"></i> '.__('messages.view').'</a></li>';
-                            } else {
-                                $html .= '<li><a href="#" data-href="'.action([\App\Http\Controllers\SellController::class, 'show'], [$row->id]).'" class="btn-modal" data-container=".view_modal"><i class="fas fa-eye" aria-hidden="true"></i> '.__('messages.view').'</a></li>';
+                                $html .= '<li><a href="'.action([\App\Http\Controllers\SalesOrderController::class, 'show'], [$row->id]).'"><i class="fas fa-file-alt" aria-hidden="true"></i> '.__('lang_v1.sales_order_details').'</a></li>';
                             }
                         }
                         if (! $only_shipments) {
@@ -446,7 +445,7 @@ class SellController extends Controller
                 ->editColumn('invoice_no', function ($row) use ($is_crm) {
                     $invoice_no = $row->invoice_no;
                     if ($row->type == 'sales_order') {
-                        $invoice_no = '<a href="'.action([\App\Http\Controllers\SalesOrderController::class, 'show'], [$row->id]).'">'.e($row->invoice_no).'</a>';
+                        $invoice_no = '<a href="#" data-href="'.action([\App\Http\Controllers\SellController::class, 'show'], [$row->id]).'" class="btn-modal" data-container=".view_modal">'.e($row->invoice_no).'</a>';
                     }
                     if (! empty($row->woocommerce_order_id)) {
                         $invoice_no .= ' <i class="fab fa-wordpress text-primary no-print" title="'.__('lang_v1.synced_from_woocommerce').'"></i>';
@@ -906,7 +905,7 @@ class SellController extends Controller
 
         $sell = $query->firstOrFail();
 
-        if ($sell->type == 'sales_order') {
+        if ($sell->type == 'sales_order' && ! request()->ajax()) {
             return redirect()->action([\App\Http\Controllers\SalesOrderController::class, 'show'], [$sell->id]);
         }
 

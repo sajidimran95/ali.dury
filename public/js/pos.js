@@ -7446,11 +7446,21 @@ $(document).on('hidden.bs.modal', '#pos_pay_contact_due_modal', function() {
 });
 
 function get_contact_due(id) {
-    if (!id) {
+    var defaultId = String($('#default_customer_id').val() || '').trim();
+    var requestedId = String(id || '').trim();
+    // Default walk-in ("Customer") is prefilled and is not a real selection.
+    var showOnForm = !!requestedId && requestedId !== defaultId;
+
+    if (!requestedId) {
         set_payment_modal_prev_due(0, '');
         $('.contact_due_text').find('span').text('');
         $('.contact_due_text').addClass('hide');
         return;
+    }
+
+    if (!showOnForm) {
+        $('.contact_due_text').find('span').text('');
+        $('.contact_due_text').addClass('hide');
     }
 
     var exclude_id = '';
@@ -7488,10 +7498,15 @@ function get_contact_due(id) {
                 }
             }
 
-            if (amount !== 0 && formatted !== '') {
+            var currentId = String($('select#customer_id').val() || '').trim();
+            if (currentId && currentId !== requestedId) {
+                return;
+            }
+
+            if (showOnForm && amount !== 0 && formatted !== '') {
                 $('.contact_due_text').find('span').text(formatted);
                 $('.contact_due_text').removeClass('hide');
-            } else {
+            } else if (!showOnForm || amount === 0 || formatted === '') {
                 $('.contact_due_text').find('span').text('');
                 $('.contact_due_text').addClass('hide');
             }
@@ -7505,14 +7520,14 @@ function get_contact_due(id) {
                 url: '/get-contact-due/' + id,
                 dataType: 'text',
                 success: function(result) {
-                    if (result != '') {
+                    if (showOnForm && result != '') {
                         $('.contact_due_text').find('span').text(result);
                         $('.contact_due_text').removeClass('hide');
                         set_payment_modal_prev_due(__number_uf(result), result);
                     } else {
                         $('.contact_due_text').find('span').text('');
                         $('.contact_due_text').addClass('hide');
-                        set_payment_modal_prev_due(0, '');
+                        set_payment_modal_prev_due(showOnForm ? 0 : __number_uf(result), showOnForm ? '' : result);
                     }
                 },
             });
