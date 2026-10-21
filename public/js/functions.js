@@ -547,7 +547,7 @@ function __print_receipt_html(section_id) {
     }
 
     var multipageCss =
-        '@page{size:letter portrait;margin:0.4in 0.45in 0.5in 0.45in;}' +
+        '@page{size:letter portrait;margin:0;}' +
         'html,body{margin:0!important;padding:0!important;background:#fff!important;' +
         'height:auto!important;min-height:0!important;max-height:none!important;' +
         'overflow:visible!important;}' +

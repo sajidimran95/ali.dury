@@ -145,6 +145,12 @@ body.zoho-theme:not(.pos-sale-theme) #scrollable-container > section {
     display: flow-root;
 }
 
+/* Print fills #receipt_section under the list. Keep that copy off the page. */
+body.zoho-theme:not(.pos-sale-theme) #scrollable-container > section.print_section,
+body.zoho-theme:not(.pos-sale-theme) #receipt_section {
+    display: none !important;
+}
+
 body.zoho-theme:not(.pos-sale-theme) .japs-page-footer {
     margin-top: auto;
     flex-shrink: 0;

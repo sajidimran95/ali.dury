@@ -148,18 +148,21 @@
 
 	$layoutDesign = $receipt_details->design ?? 'us_letter';
 	$pageSizeCss = 'letter portrait';
-	$pageMin = '10.15in';
+	$pageMin = '11in';
+	$pagePad = '0.4in 0.45in 0.8in';
 	if ($layoutDesign === 'slim') {
 		$pageSizeCss = '80mm auto';
 		$pageMin = 'auto';
+		$pagePad = '2mm';
 	} elseif ($layoutDesign === 'slim2') {
 		$pageSizeCss = '58mm auto';
 		$pageMin = 'auto';
+		$pagePad = '2mm';
 	}
 @endphp
 <style type="text/css">
 	@media print {
-		@page { size: {{ $pageSizeCss }}; margin: 0.4in 0.45in; }
+		@page { size: {{ $pageSizeCss }}; margin: 0; }
 		html, body { margin: 0 !important; padding: 0 !important; background: #fff !important; }
 		#receipt_section, .print_section, .invoice.print_section {
 			height: auto !important; max-height: none !important; overflow: visible !important;
@@ -175,7 +178,7 @@
 		max-width: 8.2in;
 		margin: 0 auto;
 		box-sizing: border-box;
-		padding: 0 0 0.4in;
+		padding: {{ $pagePad }};
 		min-height: {{ $pageMin }};
 		display: flex;
 		flex-direction: column;

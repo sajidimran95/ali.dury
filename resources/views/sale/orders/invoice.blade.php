@@ -83,6 +83,7 @@
         }
 
         @media print {
+            @page { margin: 0; }
             .sale-inv-bar { display: none !important; }
             body { background: #fff; }
             .sale-inv-stage { padding: 0 !important; overflow: visible !important; }
@@ -106,7 +107,7 @@
     <div class="sale-inv-bar">
         <a href="{{ route('sale.orders') }}">← Orders</a>
         <div style="display:flex;gap:8px;">
-            <button type="button" class="primary" onclick="window.print()">Print / PDF</button>
+            <button type="button" class="primary" id="sale-inv-print">Print / PDF</button>
         </div>
     </div>
     <div class="sale-inv-stage">
@@ -161,6 +162,20 @@
                 }
             });
             setTimeout(fitMobileInvoice, 300);
+
+            var printBtn = document.getElementById('sale-inv-print');
+            if (printBtn) {
+                printBtn.addEventListener('click', function () {
+                    var prevTitle = document.title;
+                    document.title = '';
+                    var restore = function () {
+                        document.title = prevTitle;
+                        window.removeEventListener('afterprint', restore);
+                    };
+                    window.addEventListener('afterprint', restore);
+                    window.print();
+                });
+            }
         })();
     </script>
 </body>

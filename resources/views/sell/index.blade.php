@@ -165,10 +165,6 @@
     <div class="modal fade edit_payment_modal" tabindex="-1" role="dialog" aria-labelledby="gridSystemModalLabel">
     </div>
 
-    <!-- This will be printed -->
-    <section class="invoice print_section" id="receipt_section">
-        </section> 
-
 @stop
 
 @section('javascript')
