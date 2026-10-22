@@ -7,7 +7,7 @@
 		<!-- <columns column-count="{{$barcode_details->stickers_in_one_row}}" column-gap="{{$barcode_details->col_distance*1}}"> -->
 	@endif
 		<td align="center" valign="center">
-			<div style="overflow: hidden !important;display: flex; flex-wrap: wrap;align-content: center;width: {{$barcode_details->width * 1}}in; height: {{$barcode_details->height * 1}}in; justify-content: center;">
+			<div class="label-sticker" style="overflow: hidden !important;display: flex; flex-wrap: wrap;align-content: center;width: {{$barcode_details->width * 1}}in; height: {{$barcode_details->height * 1}}in; justify-content: center;">
 				
 
 				<div>
@@ -86,7 +86,7 @@
 						</span>
 					@endif
 					{{-- Barcode --}}
-					<img style="max-width:90% !important;height: {{$barcode_details->height*0.24}}in !important; display: block;" src="data:image/png;base64,{{DNS1D::getBarcodePNG($page_product->sub_sku, $page_product->barcode_type, 3,90, array(0, 0, 0), false)}}">
+					<img class="label-barcode" alt="" src="data:image/png;base64,{{DNS1D::getBarcodePNG($page_product->sub_sku, $page_product->barcode_type, 3,140, array(0, 0, 0), false)}}">
 					
 					<span style="font-size: 10px !important">
 						{{$page_product->sub_sku}}
@@ -107,7 +107,30 @@
 	td{
 		border: 1px dotted lightgray;
 	}
+	.label-barcode {
+		display: block;
+		max-width: 96% !important;
+		width: 96%;
+		height: {{$barcode_details->height * 0.48}}in !important;
+		margin: 2px auto 0;
+	}
+	@media screen {
+		.label-sticker {
+			overflow: visible !important;
+			height: auto !important;
+			min-height: {{$barcode_details->height * 1}}in;
+		}
+	}
 	@media print{
+		.label-sticker {
+			overflow: hidden !important;
+			height: {{$barcode_details->height * 1}}in !important;
+			min-height: 0 !important;
+		}
+		.label-barcode {
+			max-width: 90% !important;
+			height: {{$barcode_details->height*0.24}}in !important;
+		}
 		
 		table{
 			page-break-after: always;
