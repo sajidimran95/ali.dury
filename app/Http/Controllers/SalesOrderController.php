@@ -107,6 +107,8 @@ class SalesOrderController extends Controller
             $query->where('created_by', auth()->id());
         }
 
+        Transaction::applyStaffSalesVisibility($query);
+
         $permitted = auth()->user()->permitted_locations();
         if ($permitted != 'all') {
             $query->whereIn('location_id', $permitted);
@@ -331,6 +333,8 @@ class SalesOrderController extends Controller
             $query->where('created_by', auth()->id());
         }
 
+        Transaction::applyStaffSalesVisibility($query);
+
         $permitted = auth()->user()->permitted_locations();
         if ($permitted != 'all') {
             $query->whereIn('location_id', $permitted);
@@ -349,6 +353,8 @@ class SalesOrderController extends Controller
         if (! auth()->user()->can('so.view_all') && auth()->user()->can('so.view_own')) {
             $base->where('created_by', auth()->id());
         }
+
+        Transaction::applyStaffSalesVisibility($base);
 
         $permitted = auth()->user()->permitted_locations();
         if ($permitted != 'all') {

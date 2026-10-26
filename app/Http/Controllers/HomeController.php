@@ -1649,6 +1649,9 @@ class HomeController extends Controller
             if ($tx && ! in_array($tx->type, ['sell', 'sales_order'], true)) {
                 continue;
             }
+            if ($tx && ! Transaction::staffCanSeeSale($tx)) {
+                continue;
+            }
             $kind = (($props['doc_type'] ?? null) === 'sales_order' || ($tx && $tx->type === 'sales_order'))
                 ? 'SO'
                 : 'Invoice';
@@ -2130,6 +2133,8 @@ class HomeController extends Controller
         if (! empty($created_by)) {
             $query->where($c.'created_by', $created_by);
         }
+
+        Transaction::applyStaffSalesVisibility($query, $c);
 
         return $query;
     }
@@ -2634,6 +2639,8 @@ class HomeController extends Controller
         if (! auth()->user()->can('so.view_all') && auth()->user()->can('so.view_own')) {
             $query->where('transactions.created_by', auth()->user()->id);
         }
+
+        Transaction::applyStaffSalesVisibility($query, 'transactions.');
 
         if ($metric === 'value') {
             $daily = (clone $query)

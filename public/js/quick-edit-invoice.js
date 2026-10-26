@@ -18,9 +18,11 @@
             return;
         }
         var sub = 0;
+        var qtyTotal = 0;
         $('#qe_lines tr').each(function () {
             var $tr = $(this);
             var qty = parseFloat($tr.find('.qe-qty').val()) || 0;
+            qtyTotal += qty;
             var unit = parseFloat($tr.find('.qe-unit').val()) || 0;
             var dtype = $tr.find('.qe-dtype').val();
             var damt = parseFloat($tr.find('.qe-damount').val()) || 0;
@@ -53,6 +55,10 @@
         var extra = parseFloat($form.attr('data-extra')) || 0;
         var grand = sub - discount + tax + shipping + extra;
         var paid = parseFloat($form.attr('data-paid')) || 0;
+        var qtyLabel = Math.abs(qtyTotal - Math.round(qtyTotal)) < 0.0001
+            ? String(Math.round(qtyTotal))
+            : String(Math.round(qtyTotal * 100) / 100);
+        $('#qe_qty_total').text('QTY ' + qtyLabel);
         $('#qe_grand').text(qeMoneyLabel(grand));
         $('#qe_due').text(qeMoneyLabel(Math.max(0, grand - paid)));
     }

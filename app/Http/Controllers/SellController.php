@@ -908,6 +908,8 @@ class SellController extends Controller
             $query->where('transactions.created_by', request()->session()->get('user.id'));
         }
 
+        \App\Transaction::applyStaffSalesVisibility($query, 'transactions.');
+
         $sell = $query->firstOrFail();
 
         if ($sell->type == 'sales_order' && ! request()->ajax()) {
@@ -1959,6 +1961,9 @@ class SellController extends Controller
                 $query->where('transactions.created_by', $created_by);
             }
         }
+
+        // Other users see only their own sales. Admin user 1 sees every sale.
+        \App\Transaction::applyStaffSalesVisibility($query, 'transactions.');
 
         // Ownership / commission permissions
         if (! auth()->user()->can('direct_sell.view')) {

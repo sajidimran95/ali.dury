@@ -37,6 +37,91 @@ class Transaction extends Model
      */
     protected $table = 'transactions';
 
+    /**
+     * User 1 is the admin account and can see every sale.
+     */
+    public static function appSalesAdminUserId(): int
+    {
+        return 1;
+    }
+
+    public static function appSaleSources(): array
+    {
+        return ['sale_app', 'customer_app'];
+    }
+
+    /**
+     * Admin screens only. Sales App and Customer App keep their own filters.
+     */
+    public static function staffSalesVisibilityApplies(): bool
+    {
+        if (! auth()->check()) {
+            return false;
+        }
+
+        $path = trim((string) request()->path(), '/');
+
+        return $path !== 'sale' && ! str_starts_with($path, 'sale/')
+            && $path !== 'customer' && ! str_starts_with($path, 'customer/');
+    }
+
+    /**
+     * Each user sees only sales they created. Admin user 1 sees every sale.
+     */
+    public static function applyStaffSalesVisibility($query, string $prefix = 'transactions.')
+    {
+        if (! self::staffSalesVisibilityApplies() || (int) auth()->id() === self::appSalesAdminUserId()) {
+            return $query;
+        }
+
+        $uid = (int) auth()->id();
+        $sources = self::appSaleSources();
+        $createdBy = $prefix.'created_by';
+        $sourceCol = $prefix.'source';
+        $orderSourceCol = $prefix.'order_source';
+
+        $query->where($createdBy, $uid)
+            ->where(function ($q) use ($sourceCol, $sources) {
+                $q->whereNull($sourceCol)->orWhereNotIn($sourceCol, $sources);
+            })
+            ->where(function ($q) use ($orderSourceCol, $sources) {
+                $q->whereNull($orderSourceCol)->orWhereNotIn($orderSourceCol, $sources);
+            });
+
+        return $query;
+    }
+
+    /**
+     * SQL fragment for SUM(IF ...) report totals. Safe integer id only.
+     */
+    public static function staffSalesVisibilitySql(string $prefix = 'transactions.'): string
+    {
+        if (! self::staffSalesVisibilityApplies() || (int) auth()->id() === self::appSalesAdminUserId()) {
+            return '1=1';
+        }
+
+        $uid = (int) auth()->id();
+        $createdBy = $prefix.'created_by';
+        $sourceCol = $prefix.'source';
+        $orderSourceCol = $prefix.'order_source';
+
+        return "({$createdBy} = {$uid} AND ({$sourceCol} IS NULL OR {$sourceCol} NOT IN ('sale_app','customer_app')) AND ({$orderSourceCol} IS NULL OR {$orderSourceCol} NOT IN ('sale_app','customer_app')))";
+    }
+
+    public static function staffCanSeeSale($transaction): bool
+    {
+        if (! $transaction || ! self::staffSalesVisibilityApplies() || (int) auth()->id() === self::appSalesAdminUserId()) {
+            return true;
+        }
+
+        $uid = (int) auth()->id();
+        $source = $transaction->source ?? null;
+        $orderSource = $transaction->order_source ?? null;
+        $isApp = in_array($source, self::appSaleSources(), true) || in_array($orderSource, self::appSaleSources(), true);
+
+        return (int) $transaction->created_by === $uid && ! $isApp;
+    }
+
     public function purchase_lines()
     {
         return $this->hasMany(\App\PurchaseLine::class);

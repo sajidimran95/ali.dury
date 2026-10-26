@@ -103,6 +103,8 @@ class SellReturnController extends Controller
                 $sells->whereIn('transactions.location_id', $permitted_locations);
             }
 
+            Transaction::applyStaffSalesVisibility($sells, 'T1.');
+
             if (!auth()->user()->can('access_sell_return') && auth()->user()->can('access_own_sell_return')) {
                 $sells->where('transactions.created_by', request()->session()->get('user.id'));
             }

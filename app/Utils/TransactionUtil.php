@@ -2790,6 +2790,8 @@ class TransactionUtil extends Util
             $query->where('transactions.created_by', $created_by);
         }
 
+        Transaction::applyStaffSalesVisibility($query, 'transactions.');
+
         $sell_details = $query->first();
 
         $output['total_sell_inc_tax'] = $sell_details->total_sell;
@@ -3122,6 +3124,8 @@ class TransactionUtil extends Util
         if ($permitted_locations != 'all') {
             $query->whereIn('transactions.location_id', $permitted_locations);
         }
+
+        Transaction::applyStaffSalesVisibility($query, 'transactions.');
 
         $query->select(
             DB::raw("DATE_FORMAT(transactions.transaction_date, '%m-%Y') as yearmonth"),
@@ -4716,11 +4720,13 @@ class TransactionUtil extends Util
             );
         }
 
+        $sellVis = Transaction::staffSalesVisibilitySql('transactions.');
+
         if (in_array('sell_return', $transaction_types)) {
             $query->addSelect(
-                DB::raw("SUM(IF(transactions.type='sell_return', final_total, 0)) as total_sell_return_inc_tax"),
-                DB::raw("SUM(IF(transactions.type='sell_return', total_before_tax, 0)) as total_sell_return_exc_tax"),
-                DB::raw("SUM(IF(transactions.type='sell_return', IF(discount_type = 'percentage', COALESCE(discount_amount, 0)*total_before_tax/100, COALESCE(discount_amount, 0)), 0)) as total_sell_return_discount")
+                DB::raw("SUM(IF(transactions.type='sell_return' AND ({$sellVis}), final_total, 0)) as total_sell_return_inc_tax"),
+                DB::raw("SUM(IF(transactions.type='sell_return' AND ({$sellVis}), total_before_tax, 0)) as total_sell_return_exc_tax"),
+                DB::raw("SUM(IF(transactions.type='sell_return' AND ({$sellVis}), IF(discount_type = 'percentage', COALESCE(discount_amount, 0)*total_before_tax/100, COALESCE(discount_amount, 0)), 0)) as total_sell_return_discount")
             );
         }
 
@@ -4762,9 +4768,9 @@ class TransactionUtil extends Util
 
         if (in_array('sell', $transaction_types)) {
             $query->addSelect(
-                DB::raw("SUM(IF(transactions.type='sell' AND transactions.status='final', IF(discount_type = 'percentage', COALESCE(discount_amount, 0)*total_before_tax/100, COALESCE(discount_amount, 0)), 0)) as total_sell_discount"),
-                DB::raw("SUM(IF(transactions.type='sell' AND transactions.status='final', rp_redeemed_amount, 0)) as total_reward_amount"),
-                DB::raw("SUM(IF(transactions.type='sell' AND transactions.status='final', round_off_amount, 0)) as total_sell_round_off")
+                DB::raw("SUM(IF(transactions.type='sell' AND transactions.status='final' AND ({$sellVis}), IF(discount_type = 'percentage', COALESCE(discount_amount, 0)*total_before_tax/100, COALESCE(discount_amount, 0)), 0)) as total_sell_discount"),
+                DB::raw("SUM(IF(transactions.type='sell' AND transactions.status='final' AND ({$sellVis}), rp_redeemed_amount, 0)) as total_reward_amount"),
+                DB::raw("SUM(IF(transactions.type='sell' AND transactions.status='final' AND ({$sellVis}), round_off_amount, 0)) as total_sell_round_off")
             );
         }
 
@@ -4896,6 +4902,8 @@ class TransactionUtil extends Util
         if (! empty($user_id)) {
             $query->where('sale.created_by', $user_id);
         }
+
+        Transaction::applyStaffSalesVisibility($query, 'sale.');
 
         $gross_profit_obj = $query->first();
 

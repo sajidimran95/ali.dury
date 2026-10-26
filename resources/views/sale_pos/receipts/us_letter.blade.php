@@ -145,6 +145,13 @@
 
 	$lines = $receipt_details->lines ?? [];
 	$totalRaw = $receipt_details->total_unformatted ?? ($receipt_details->total ?? 0);
+	$qtyTotal = 0.0;
+	foreach ($lines as $line) {
+		$qtyTotal += array_key_exists('quantity_uf', $line) ? $num($line['quantity_uf']) : $num($line['quantity'] ?? 0);
+	}
+	$qtyTotalText = abs($qtyTotal - round($qtyTotal)) < 0.0001
+		? (string) (int) round($qtyTotal)
+		: rtrim(rtrim(number_format($qtyTotal, 2, '.', ''), '0'), '.');
 
 	$layoutDesign = $receipt_details->design ?? 'us_letter';
 	$pageSizeCss = 'letter portrait';
@@ -255,6 +262,7 @@
 	.qb-items .desc { text-align: left; }
 	.qb-items tfoot td { vertical-align: middle; height: 28px; }
 	.qb-items .note { text-align: left; font-size: 10px; letter-spacing: 0.1px; }
+	.qb-items .qb-qty-total { text-align: center; font-weight: 700; vertical-align: middle; font-size: 11px; white-space: nowrap; }
 	.qb-items .totlab { text-align: center; font-weight: 700; font-size: 13px; }
 	.qb-items .totamt { text-align: right; font-size: 12px; }
 	.qb-wrap.qe-on .qe-scanbar { margin: 10px 0; }
@@ -479,7 +487,8 @@
 				</tr>
 			@endif
 			<tr class="qb-total">
-				<td class="note" colspan="3">{{ $footer }}</td>
+				<td class="qb-qty-total" @if(!empty($quick_edit)) id="qe_qty_total" @endif>QTY {{ $qtyTotalText }}</td>
+				<td class="note" colspan="2">{{ $footer }}</td>
 				<td class="totlab">Total</td>
 				<td class="totamt" @if(!empty($quick_edit)) id="qe_grand" @endif>${{ $money($totalRaw) }}</td>
 			</tr>

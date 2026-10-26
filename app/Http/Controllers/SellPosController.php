@@ -4080,10 +4080,13 @@ class SellPosController extends Controller
 
     protected function quickEditTransaction($business_id, $id)
     {
-        return Transaction::where('business_id', $business_id)
+        $query = Transaction::where('business_id', $business_id)
             ->whereIn('type', ['sell', 'sales_order'])
-            ->with(['contact', 'sell_lines.product', 'sell_lines.variations'])
-            ->findOrFail($id);
+            ->with(['contact', 'sell_lines.product', 'sell_lines.variations']);
+
+        Transaction::applyStaffSalesVisibility($query, 'transactions.');
+
+        return $query->findOrFail($id);
     }
 
     protected function quickEditBlockReason($transaction): ?string

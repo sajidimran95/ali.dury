@@ -1910,6 +1910,8 @@ class ReportController extends Controller
                 )
                 ->groupBy('transaction_sell_lines.id');
 
+            Transaction::applyStaffSalesVisibility($query, 't.');
+
             if (! empty($variation_id)) {
                 $query->where('transaction_sell_lines.variation_id', $variation_id);
             }
@@ -2081,8 +2083,11 @@ class ReportController extends Controller
                 ->leftjoin('units as u', 'p.unit_id', '=', 'u.id')
                 ->where('t.business_id', $business_id)
                 ->where('t.type', 'sell')
-                ->where('t.status', 'final')
-                ->select(
+                ->where('t.status', 'final');
+
+            Transaction::applyStaffSalesVisibility($query, 't.');
+
+            $query->select(
                     'p.name as product_name',
                     'p.type as product_type',
                     'pv.name as product_variation',
@@ -2538,6 +2543,8 @@ class ReportController extends Controller
                 )
                 ->groupBy('transaction_payments.id');
 
+            Transaction::applyStaffSalesVisibility($query, 't.');
+
             $start_date = $request->get('start_date');
             $end_date = $request->get('end_date');
             if (! empty($start_date) && ! empty($end_date)) {
@@ -2740,6 +2747,8 @@ class ReportController extends Controller
                 ->groupBy('v.id')
                 ->groupBy('formated_date');
 
+            Transaction::applyStaffSalesVisibility($query, 't.');
+
             if (! empty($variation_id)) {
                 $query->where('transaction_sell_lines.variation_id', $variation_id);
             }
@@ -2859,6 +2868,8 @@ class ReportController extends Controller
                     DB::raw('SUM((transaction_sell_lines.quantity - transaction_sell_lines.quantity_returned) * transaction_sell_lines.unit_price_inc_tax) as subtotal'),
                     'transaction_sell_lines.parent_sell_line_id'
                 );
+
+            Transaction::applyStaffSalesVisibility($query, 't.');
 
             if ($group_by == 'category') {
                 $query->groupBy('cat.id');
@@ -3144,6 +3155,8 @@ class ReportController extends Controller
                         ->whereDate('sale.transaction_date', '<=', $end);
         }
 
+        Transaction::applyStaffSalesVisibility($query, 'sale.');
+
         if ($by == 'product') {
             $query->join('variations as V', 'transaction_sell_lines.variation_id', '=', 'V.id')
                 ->leftJoin('product_variations as PV', 'PV.id', '=', 'V.product_variation_id')
@@ -3321,6 +3334,12 @@ class ReportController extends Controller
                 ->leftJoin('contacts as suppliers', 'purchase.contact_id', '=', 'suppliers.id')
                 ->leftJoin('contacts as customers', 'sale.contact_id', '=', 'customers.id')
                 ->where('purchase.business_id', $business_id)
+                ->where(function ($q) {
+                    $q->whereNull('sale.id');
+                    $q->orWhere(function ($inner) {
+                        Transaction::applyStaffSalesVisibility($inner, 'sale.');
+                    });
+                })
                 ->select(
                     'v.sub_sku as sku',
                     'p.type as product_type',
@@ -3873,6 +3892,8 @@ class ReportController extends Controller
                     DB::raw('((transaction_sell_lines.quantity- transaction_sell_lines.quantity_returned) * transaction_sell_lines.unit_price_inc_tax) as line_total'),
                 )
                 ->groupBy('transaction_sell_lines.id');
+
+            Transaction::applyStaffSalesVisibility($query, 't.');
 
             $start_date = $request->get('start_date');
             $end_date = $request->get('end_date');
