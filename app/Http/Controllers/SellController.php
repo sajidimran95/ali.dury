@@ -273,6 +273,7 @@ class SellController extends Controller
                         if (! $only_shipments) {
                             if ($row->type == 'sales_order') {
                                 if (SalesOrderPermission::canUpdate(auth()->user(), $row)) {
+                                    $html .= '<li><a href="'.route('pos.quick-edit', [$row->id]).'"><i class="fas fa-bolt"></i> Quick edit</a></li>';
                                     $html .= '<li><a target="_blank" href="'.action([\App\Http\Controllers\SellController::class, 'edit'], [$row->id]).'"><i class="fas fa-edit"></i> '.__('messages.edit').'</a></li>';
                                 }
                                 if (in_array($row->status, ['ordered', 'partial'], true) && (auth()->user()->can('sell.create') || auth()->user()->can('direct_sell.access'))) {
@@ -287,9 +288,13 @@ class SellController extends Controller
                                 }
                             } elseif ($row->is_direct_sale == 0) {
                                 if (auth()->user()->can('sell.update')) {
+                                    $html .= '<li><a href="'.route('pos.quick-edit', [$row->id]).'"><i class="fas fa-bolt"></i> Quick edit</a></li>';
                                     $html .= '<li><a target="_blank" href="'.route('pos.edit', ['po' => $row->id]).'"><i class="fas fa-edit"></i> '.__('messages.edit').'</a></li>';
                                 }
                             } else {
+                                if (auth()->user()->can('direct_sell.update') || auth()->user()->can('sell.update')) {
+                                    $html .= '<li><a href="'.route('pos.quick-edit', [$row->id]).'"><i class="fas fa-bolt"></i> Quick edit</a></li>';
+                                }
                                 if (auth()->user()->can('direct_sell.update')) {
                                     $html .= '<li><a target="_blank" href="'.action([\App\Http\Controllers\SellController::class, 'edit'], [$row->id]).'"><i class="fas fa-edit"></i> '.__('messages.edit').'</a></li>';
                                 }
@@ -1524,6 +1529,14 @@ class SellController extends Controller
                                         <i class="fas fa-eye" aria-hidden="true"></i>'.__('messages.view').'
                                     </a>
                                     </li>';
+
+                        if (auth()->user()->can('draft.update') || auth()->user()->can('quotation.update') || auth()->user()->can('sell.update')) {
+                            $html .= '<li>
+                                        <a href="'.route('pos.quick-edit', [$row->id]).'">
+                                            <i class="fas fa-bolt"></i> Quick edit
+                                        </a>
+                                    </li>';
+                        }
 
                         if (auth()->user()->can('draft.update') || auth()->user()->can('quotation.update')) {
                             if ($row->is_direct_sale == 1) {

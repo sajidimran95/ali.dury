@@ -2240,6 +2240,9 @@ class TransactionUtil extends Util
                 'line_total_exc_tax' => $this->num_f($line->unit_price * $line->quantity, false, $business_details),
                 'line_total_exc_tax_uf' => $line->unit_price * $line->quantity,
                 'variation_id' => $variation->id,
+                'product_id' => $line->product_id,
+                'sell_line_id' => $line->id,
+                'sku_code' => ! empty($variation->sub_sku) ? $variation->sub_sku : '',
 
                 // add for zatca pdf
                 'line_discount_amount_uf' => $line->line_discount_amount,

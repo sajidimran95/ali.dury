@@ -257,9 +257,37 @@
 	.qb-items .note { text-align: left; font-size: 10px; letter-spacing: 0.1px; }
 	.qb-items .totlab { text-align: center; font-weight: 700; font-size: 13px; }
 	.qb-items .totamt { text-align: right; font-size: 12px; }
+	.qb-wrap.qe-on .qe-scanbar { margin: 10px 0; }
+	.qb-wrap.qe-on .qe-scanbar label { display: block; font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 3px; }
+	.qb-wrap.qe-on #qe_scan,
+	.qb-wrap.qe-on #qe_sale_note { width: 100%; border: 1px solid #000; padding: 6px 8px; font-size: 12px; background: #fff; color: #111; }
+	.qb-wrap.qe-on .qe-scan-msg { min-height: 14px; font-size: 11px; color: #9a3412; margin-top: 3px; }
+	.qb-wrap.qe-on .qe-picks { list-style: none; margin: 4px 0 0; padding: 0; border: 1px solid #000; display: none; max-height: 160px; overflow: auto; background: #fff; }
+	.qb-wrap.qe-on .qe-picks li { padding: 6px 8px; cursor: pointer; border-bottom: 1px solid #ddd; }
+	.qb-wrap.qe-on .qe-picks li:hover { background: #f3f3f3; }
+	.qb-wrap.qe-on .qe-stepper { display: flex; align-items: center; justify-content: center; gap: 2px; }
+	.qb-wrap.qe-on .qe-qty,
+	.qb-wrap.qe-on .qe-unit,
+	.qb-wrap.qe-on .qe-damount,
+	.qb-wrap.qe-on #qe_shipping,
+	.qb-wrap.qe-on #qe_order_discount_amount {
+		width: 64px; height: 22px; border: 1px solid #000; background: #fff; color: #111;
+		text-align: right; font-size: 11px; padding: 0 4px; margin: 0;
+	}
+	.qb-wrap.qe-on .qe-qty { width: 36px; text-align: center; }
+	.qb-wrap.qe-on .qe-stepper button,
+	.qb-wrap.qe-on .qe-remove {
+		width: 18px; height: 18px; padding: 0; border: 1px solid #000; background: #f7f7f7; color: #111; cursor: pointer; line-height: 16px;
+	}
+	.qb-wrap.qe-on .qe-remove { float: right; }
+	.qb-wrap.qe-on .qe-discount { display: flex; gap: 4px; margin-top: 4px; align-items: center; }
+	.qb-wrap.qe-on .qe-dtype,
+	.qb-wrap.qe-on #qe_order_discount_type { height: 22px; border: 1px solid #000; background: #fff; color: #111; font-size: 11px; }
+	.qb-wrap.qe-on .qe-note { margin-top: 10px; }
+	.qb-wrap.qe-on .qe-note label { display: block; font-size: 11px; font-weight: 700; margin-bottom: 3px; }
 </style>
 
-<div class="qb-wrap">
+<div class="qb-wrap @if(!empty($quick_edit)) qe-on @endif">
 	<table class="qb-hdr">
 		<tr>
 			<td class="qb-biz">
@@ -332,24 +360,35 @@
 		</tr>
 	</table>
 
+	@if(!empty($quick_edit))
+		<div class="qe-scanbar">
+			<label for="qe_scan">Scan item</label>
+			<input type="text" id="qe_scan" autocomplete="off" placeholder="Scan barcode or type SKU / name, then Enter">
+			<div id="qe_scan_msg" class="qe-scan-msg"></div>
+			<ul id="qe_scan_picks" class="qe-picks"></ul>
+		</div>
+	@endif
+
 	<div class="qb-items-sheet">
 	<table class="qb-items">
 		<colgroup>
-			<col style="width:11%"><col style="width:18%"><col style="width:41%"><col style="width:15%"><col style="width:15%">
+			<col style="width:{{ !empty($quick_edit) ? '18%' : '11%' }}"><col style="width:{{ !empty($quick_edit) ? '16%' : '18%' }}"><col style="width:{{ !empty($quick_edit) ? '36%' : '41%' }}"><col style="width:15%"><col style="width:15%">
 		</colgroup>
 		<thead>
 			<tr>
-				<th style="width:11%;">Quantity</th>
-				<th style="width:18%;">Item Code</th>
-				<th style="width:41%;">Description</th>
+				<th style="width:{{ !empty($quick_edit) ? '18%' : '11%' }};">Quantity</th>
+				<th style="width:{{ !empty($quick_edit) ? '16%' : '18%' }};">Item Code</th>
+				<th style="width:{{ !empty($quick_edit) ? '36%' : '41%' }};">Description</th>
 				<th style="width:15%;">Price Each</th>
 				<th style="width:15%;">Amount</th>
 			</tr>
 		</thead>
-		<tbody>
+		<tbody @if(!empty($quick_edit)) id="qe_lines" @endif>
 			@foreach($lines as $line)
 				@php
-					$code = $line['sub_sku'] ?? '';
+					$code = !empty($quick_edit)
+						? ($line['sku_code'] ?? ($line['sub_sku'] ?? ''))
+						: ($line['sub_sku'] ?? '');
 					if ($code === '' && !empty($line['cat_code'])) {
 						$code = $line['cat_code'];
 					}
@@ -362,29 +401,131 @@
 					}
 					$priceEach = $line['unit_price_inc_tax_uf'] ?? ($line['unit_price_inc_tax'] ?? ($line['unit_price_before_discount'] ?? 0));
 					$amount = $line['line_total_uf'] ?? ($line['line_total'] ?? 0);
+					$qeIdx = $loop->index;
+					$qeUnitAfter = (float) ($line['unit_price_uf'] ?? 0);
+					$qeTaxRate = $qeUnitAfter > 0 ? ((float) ($line['tax_unformatted'] ?? 0) / $qeUnitAfter) : 0;
+					$qeQty = (float) ($line['quantity_uf'] ?? 0);
+					$qePrice = (float) ($line['unit_price_before_discount_uf'] ?? $qeUnitAfter);
+					$qeDiscType = $line['line_discount_type_uf'] ?? '';
+					$qeDiscAmt = (float) ($line['line_discount_amount_uf'] ?? 0);
 				@endphp
-				<tr>
-					<td class="c">{{ $qtyText($line) }}</td>
-					<td>{{ $code }}</td>
-					<td class="desc">{{ $desc }}</td>
-					<td class="r">{{ $money($priceEach) }}</td>
-					<td class="r">{{ $money($amount) }}</td>
+				<tr @if(!empty($quick_edit)) data-variation-id="{{ $line['variation_id'] ?? '' }}" @endif>
+					<td class="c">
+						@if(!empty($quick_edit))
+							<div class="qe-stepper">
+								<button type="button" class="qe-minus" aria-label="Decrease">−</button>
+								<input type="text" class="qe-qty" name="lines[{{ $qeIdx }}][quantity]" value="{{ rtrim(rtrim(number_format($qeQty, 4, '.', ''), '0'), '.') }}">
+								<button type="button" class="qe-plus" aria-label="Increase">+</button>
+							</div>
+						@else
+							{{ $qtyText($line) }}
+						@endif
+					</td>
+					<td class="qe-sku">{{ $code }}</td>
+					<td class="desc">
+						@if(!empty($quick_edit))
+							<button type="button" class="qe-remove" title="Remove">&times;</button>
+						@endif
+						<span class="prod qe-name">{{ $desc }}</span>
+						@if(!empty($quick_edit))
+							<input type="hidden" name="lines[{{ $qeIdx }}][transaction_sell_lines_id]" value="{{ $line['sell_line_id'] ?? '' }}">
+							<input type="hidden" name="lines[{{ $qeIdx }}][product_id]" value="{{ $line['product_id'] ?? '' }}">
+							<input type="hidden" name="lines[{{ $qeIdx }}][variation_id]" value="{{ $line['variation_id'] ?? '' }}">
+							<input type="hidden" class="qe-tax-rate" name="lines[{{ $qeIdx }}][tax_rate]" value="{{ $qeTaxRate }}">
+							<div class="qe-discount">
+								<select class="qe-dtype" name="lines[{{ $qeIdx }}][line_discount_type]">
+									<option value="" @if($qeDiscType === '' || $qeDiscType === null) selected @endif>No discount</option>
+									<option value="fixed" @if($qeDiscType === 'fixed') selected @endif>Fixed</option>
+									<option value="percentage" @if($qeDiscType === 'percentage') selected @endif>%</option>
+								</select>
+								<input type="text" class="qe-damount" name="lines[{{ $qeIdx }}][line_discount_amount]" value="{{ number_format($qeDiscAmt, 2, '.', '') }}">
+							</div>
+						@endif
+					</td>
+					<td class="r">
+						@if(!empty($quick_edit))
+							<input type="text" class="qe-unit" name="lines[{{ $qeIdx }}][unit_price]" value="{{ number_format($qePrice, 2, '.', '') }}">
+						@else
+							{{ $money($priceEach) }}
+						@endif
+					</td>
+					<td class="r qe-line-total">{{ $money($amount) }}</td>
 				</tr>
 			@endforeach
 		</tbody>
 	</table>
 	<div class="qb-items-fill" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>
-	<table class="qb-items">
+	<table class="qb-items qb-items-totals">
 		<colgroup>
-			<col style="width:11%"><col style="width:18%"><col style="width:41%"><col style="width:15%"><col style="width:15%">
+			<col style="width:{{ !empty($quick_edit) ? '18%' : '11%' }}"><col style="width:{{ !empty($quick_edit) ? '16%' : '18%' }}"><col style="width:{{ !empty($quick_edit) ? '36%' : '41%' }}"><col style="width:15%"><col style="width:15%">
 		</colgroup>
 		<tbody>
+			@if(!empty($quick_edit))
+				<tr>
+					<td class="note" colspan="3"></td>
+					<td class="totlab">Shipping</td>
+					<td class="totamt"><input type="text" id="qe_shipping" name="shipping_charges" value="{{ number_format((float) ($quick_edit['shipping_charges'] ?? 0), 2, '.', '') }}"></td>
+				</tr>
+				<tr>
+					<td class="note" colspan="3"></td>
+					<td class="totlab">Discount</td>
+					<td class="totamt">
+						<select id="qe_order_discount_type" name="discount_type">
+							<option value="fixed" @if(($quick_edit['discount_type'] ?? 'fixed') !== 'percentage') selected @endif>Fixed</option>
+							<option value="percentage" @if(($quick_edit['discount_type'] ?? '') === 'percentage') selected @endif>%</option>
+						</select>
+						<input type="text" id="qe_order_discount_amount" name="discount_amount" value="{{ number_format((float) ($quick_edit['discount_amount'] ?? 0), 2, '.', '') }}">
+					</td>
+				</tr>
+			@endif
 			<tr class="qb-total">
 				<td class="note" colspan="3">{{ $footer }}</td>
 				<td class="totlab">Total</td>
-				<td class="totamt">${{ $money($totalRaw) }}</td>
+				<td class="totamt" @if(!empty($quick_edit)) id="qe_grand" @endif>${{ $money($totalRaw) }}</td>
 			</tr>
+			@if(!empty($quick_edit))
+				<tr>
+					<td class="note" colspan="3"></td>
+					<td class="totlab">Balance due</td>
+					<td class="totamt" id="qe_due">${{ $money($totalRaw) }}</td>
+				</tr>
+			@endif
 		</tbody>
 	</table>
 	</div>
+	@if(!empty($quick_edit))
+		<template id="qe_row_template">
+			<tr data-variation-id="">
+				<td class="c">
+					<div class="qe-stepper">
+						<button type="button" class="qe-minus" aria-label="Decrease">−</button>
+						<input type="text" class="qe-qty" data-name="quantity" value="1">
+						<button type="button" class="qe-plus" aria-label="Increase">+</button>
+					</div>
+				</td>
+				<td class="qe-sku"></td>
+				<td class="desc">
+					<button type="button" class="qe-remove" title="Remove">&times;</button>
+					<span class="prod qe-name"></span>
+					<input type="hidden" data-name="product_id" value="">
+					<input type="hidden" data-name="variation_id" value="">
+					<input type="hidden" class="qe-tax-rate" data-name="tax_rate" value="0">
+					<div class="qe-discount">
+						<select class="qe-dtype" data-name="line_discount_type">
+							<option value="">No discount</option>
+							<option value="fixed">Fixed</option>
+							<option value="percentage">%</option>
+						</select>
+						<input type="text" class="qe-damount" data-name="line_discount_amount" value="0.00">
+					</div>
+				</td>
+				<td class="r"><input type="text" class="qe-unit" data-name="unit_price" value="0.00"></td>
+				<td class="r qe-line-total">0.00</td>
+			</tr>
+		</template>
+		<div class="qe-note">
+			<label for="qe_sale_note">Note</label>
+			<textarea name="sale_note" id="qe_sale_note" rows="3">{{ $quick_edit['sale_note'] ?? '' }}</textarea>
+		</div>
+	@endif
 </div>

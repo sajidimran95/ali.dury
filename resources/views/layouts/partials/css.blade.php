@@ -174,6 +174,6 @@
     {!! $__system_settings['additional_css'] !!}
 @endif
 @if(!empty($list_tables))
-<link rel="stylesheet" href="{{ asset('css/report-tables.css?v='.$asset_v.'&rt=8') }}">
+<link rel="stylesheet" href="{{ asset('css/report-tables.css?v='.$asset_v.'&rt=9') }}">
 @endif
 

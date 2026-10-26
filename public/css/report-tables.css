@@ -9,7 +9,7 @@
    The nowrap rule has to match that clone or columns are sized for wrapping.
    Long values are capped so the column stays short; the full text is on the
    cell title (set from the layout script) for hover. */
-body.japs-list-tables .content table :is(th, td):not(.fc-axis):not(.fc-widget-content):not(.fc-widget-header):not(.fc-day-header):not(.fc-time),
+body.japs-list-tables .content table:not(.qb-hdr):not(.qb-id):not(.qb-meta):not(.qb-items) :is(th, td):not(.fc-axis):not(.fc-widget-content):not(.fc-widget-header):not(.fc-day-header):not(.fc-time),
 body.japs-list-tables table.dataTable :is(th, td) {
     white-space: nowrap !important;
     word-break: normal !important;
@@ -22,7 +22,7 @@ body.japs-list-tables table.dataTable :is(th, td) {
 }
 
 /* Buttons and menus need their full width */
-body.japs-list-tables .content table :is(th, td):has(.btn, .tw-dw-btn, .btn-group, .table-action-btns),
+body.japs-list-tables .content table:not(.qb-hdr):not(.qb-id):not(.qb-meta):not(.qb-items) :is(th, td):has(.btn, .tw-dw-btn, .btn-group, .table-action-btns),
 body.japs-list-tables table.dataTable :is(th, td):has(.btn, .tw-dw-btn, .btn-group, .table-action-btns) {
     width: max-content !important;
     max-width: none !important;
@@ -31,7 +31,7 @@ body.japs-list-tables table.dataTable :is(th, td):has(.btn, .tw-dw-btn, .btn-gro
 }
 
 /* Children that set their own white-space (badges, links, action groups) */
-body.japs-list-tables .content table :is(th, td) :where(span, small, a, strong, b, label, p, div),
+body.japs-list-tables .content table:not(.qb-hdr):not(.qb-id):not(.qb-meta):not(.qb-items) :is(th, td) :where(span, small, a, strong, b, label, p, div),
 body.japs-list-tables table.dataTable :is(th, td) :where(span, small, a, strong, b, label, p, div) {
     white-space: nowrap !important;
     word-break: normal !important;
@@ -41,7 +41,7 @@ body.japs-list-tables table.dataTable :is(th, td) :where(span, small, a, strong,
 /* <br> forces a new line even when white-space is nowrap. Hide the break
    before the small script in the layout replaces it with a space, so the
    text on both sides stays visible on one line. */
-body.japs-list-tables .content table :is(th, td) br,
+body.japs-list-tables .content table:not(.qb-hdr):not(.qb-id):not(.qb-meta):not(.qb-items) :is(th, td) br,
 body.japs-list-tables table.dataTable :is(th, td) br {
     display: none !important;
 }
@@ -57,7 +57,7 @@ body.japs-list-tables .content table .btn-group {
 
 /* Fixed columns so a long value cannot stretch its column. The table
    stays as wide as those short columns and scrolls when there are many. */
-body.japs-list-tables .content table:not(td table):not(th table) {
+body.japs-list-tables .content table:not(.qb-hdr):not(.qb-id):not(.qb-meta):not(.qb-items):not(td table):not(th table) {
     table-layout: fixed !important;
     width: max-content !important;
     min-width: 0 !important;

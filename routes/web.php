@@ -465,6 +465,8 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::get('/sells/quotations', [SellController::class, 'getQuotations']);
     Route::get('/sells/draft-dt', [SellController::class, 'getDraftDatables']);
     Route::resource('sells', SellController::class)->except(['show']);
+    Route::get('/sells/{id}/quick-edit', [SellPosController::class, 'quickEdit'])->name('pos.quick-edit');
+    Route::post('/sells/{id}/quick-edit', [SellPosController::class, 'quickEditSave'])->name('pos.quick-edit.save');
     Route::get('/sells/copy-quotation/{id}', [SellPosController::class, 'copyQuotation']);
 
     Route::post('/import-purchase-products', [PurchaseController::class, 'importPurchaseProducts']);

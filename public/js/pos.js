@@ -727,6 +727,10 @@ $(document).ready(function() {
                 template += personName + '<br>';
             }
             template += LANG.mobile + ': ' + data.mobile;
+            var addressLine = posCustomerAddressText(data);
+            if (addressLine) {
+                template += '<br>' + $('<div>').text(addressLine).html();
+            }
             if (typeof(data.total_rp) != 'undefined') {
                 var rp = data.total_rp ? data.total_rp : 0;
                 template += "<br><i class='fa fa-gift text-success'></i> " + rp;
@@ -813,6 +817,24 @@ $(document).ready(function() {
         });
     }
 
+    function posCustomerAddressText(row) {
+        if (!row) return '';
+        var street = (row.address_line_1 || '').toString().trim();
+        var street2 = (row.address_line_2 || '').toString().trim();
+        var city = (row.city || '').toString().trim();
+        var state = (row.state || '').toString().trim();
+        var zip = (row.zip_code || '').toString().trim();
+        var cityLine = [city, state].filter(Boolean).join(', ');
+        if (zip) {
+            cityLine = cityLine ? (cityLine + ' ' + zip) : zip;
+        }
+        var parts = [street, street2, cityLine].filter(Boolean);
+        if (parts.length) {
+            return parts.join(', ');
+        }
+        return (row.shipping_address || '').toString().replace(/\s+/g, ' ').trim();
+    }
+
     function posCustomerInitials(name) {
         name = (name || '').trim();
         if (!name) return '?';
@@ -880,7 +902,7 @@ $(document).ready(function() {
                 (isCurrent ? '<span class="pos-cust-current">Current</span>' : '') +
                 '</button>';
         }
-        html += '<div class="pos-customer-picker-empty">Type a name or phone to find other customers</div>';
+        html += '<div class="pos-customer-picker-empty">Type a name, phone, address, city, or ZIP</div>';
         $list.html(html);
     }
 
@@ -970,6 +992,7 @@ $(document).ready(function() {
                     }
                     if (row.mobile) subParts.push(row.mobile);
                     var sub = subParts.join(' | ');
+                    var addressLine = posCustomerAddressText(row);
                     var isCurrent = String(row.id) === curId;
                     html +=
                         '<button type="button" class="pos-customer-picker-item' +
@@ -1011,6 +1034,7 @@ $(document).ready(function() {
                         $('<div>').text(displayName).html() +
                         '</div>' +
                         (sub ? '<div class="pos-cust-sub">' + $('<div>').text(sub).html() + '</div>' : '') +
+                        (addressLine ? '<div class="pos-cust-sub">' + $('<div>').text(addressLine).html() + '</div>' : '') +
                         '</div>' +
                         (isCurrent ? '<span class="pos-cust-current">Current</span>' : '') +
                         '</button>';

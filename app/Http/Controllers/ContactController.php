@@ -1222,12 +1222,31 @@ class ContactController extends Controller
             }
 
             if (! empty($term)) {
-                $contacts->where(function ($query) use ($term) {
-                    $query->where('contacts.name', 'like', '%'.$term.'%')
-                            ->orWhere('contacts.first_name', 'like', '%'.$term.'%')
-                            ->orWhere('supplier_business_name', 'like', '%'.$term.'%')
-                            ->orWhere('mobile', 'like', '%'.$term.'%')
-                            ->orWhere('contacts.contact_id', 'like', '%'.$term.'%');
+                $tokens = preg_split('/[^a-z0-9]+/i', $term, -1, PREG_SPLIT_NO_EMPTY);
+                $tokens = array_values(array_filter($tokens, function ($token) use ($tokens) {
+                    return count($tokens) === 1 || strlen($token) > 1;
+                }));
+                if (empty($tokens)) {
+                    $tokens = [trim($term)];
+                }
+
+                $contacts->where(function ($query) use ($tokens) {
+                    foreach ($tokens as $token) {
+                        $like = '%'.$token.'%';
+                        $query->where(function ($match) use ($like) {
+                            $match->where('contacts.name', 'like', $like)
+                                ->orWhere('contacts.first_name', 'like', $like)
+                                ->orWhere('supplier_business_name', 'like', $like)
+                                ->orWhere('mobile', 'like', $like)
+                                ->orWhere('contacts.contact_id', 'like', $like)
+                                ->orWhere('contacts.address_line_1', 'like', $like)
+                                ->orWhere('contacts.address_line_2', 'like', $like)
+                                ->orWhere('contacts.city', 'like', $like)
+                                ->orWhere('contacts.state', 'like', $like)
+                                ->orWhere('contacts.zip_code', 'like', $like)
+                                ->orWhere('contacts.shipping_address', 'like', $like);
+                        });
+                    }
                 });
             }
 

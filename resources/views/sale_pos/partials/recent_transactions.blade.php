@@ -47,6 +47,9 @@
 				<td class="pos-recent-actions-cell">
 					<div class="pos-recent-actions">
 					@if(auth()->user()->can('sell.update') || auth()->user()->can('direct_sell.update'))
+					<a href="{{ route('pos.quick-edit', [$transaction->id]) }}" class="pos-recent-act pos-recent-act--quick" title="Quick edit">
+						<i class="fas fa-bolt" aria-hidden="true"></i>
+					</a>
 					<a href="{{ route('pos.edit', ['po' => $transaction->id]) . $subtype }}" class="pos-recent-act pos-recent-act--edit" title="@lang('messages.edit')">
 	    				<i class="fas fa-pen" aria-hidden="true"></i>
 	    			</a>

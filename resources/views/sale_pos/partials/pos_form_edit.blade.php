@@ -30,7 +30,7 @@
 			</div>
 			<div id="pos_customer_picker" class="pos-customer-picker" aria-hidden="true">
 				<div class="pos-customer-picker-search">
-					<input type="text" id="pos_customer_picker_input" class="pos-customer-picker-input" placeholder="Search customers" autocomplete="off">
+					<input type="text" id="pos_customer_picker_input" class="pos-customer-picker-input" placeholder="Search name, phone, address, city, ZIP" autocomplete="off">
 				</div>
 				<div id="pos_customer_picker_list" class="pos-customer-picker-list"></div>
 				<div class="pos-customer-picker-footer">

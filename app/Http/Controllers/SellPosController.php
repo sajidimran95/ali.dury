@@ -3788,4 +3788,348 @@ class SellPosController extends Controller
 
         }
     }
+
+    /**
+     * Invoice-layout editor opened from order actions and POS recent history.
+     */
+    public function quickEdit($id)
+    {
+        $business_id = request()->session()->get('user.business_id');
+        $transaction = $this->quickEditTransaction($business_id, $id);
+        $blocked = $this->quickEditBlockReason($transaction);
+        if ($blocked !== null) {
+            return view('sale_pos.partials.quick_edit_invoice', [
+                'blocked' => $blocked,
+                'transaction' => $transaction,
+            ]);
+        }
+
+        $order_tax_percent = 0.0;
+        if (! empty($transaction->tax_id)) {
+            $order_tax_percent = (float) (TaxRate::find($transaction->tax_id)->amount ?? 0);
+        }
+
+        $extra = 0.0;
+        foreach (['additional_expense_value_1', 'additional_expense_value_2', 'additional_expense_value_3', 'additional_expense_value_4'] as $col) {
+            $extra += (float) ($transaction->{$col} ?? 0);
+        }
+
+        $business_details = $this->businessUtil->getDetails($business_id);
+        $location = BusinessLocation::findOrFail($transaction->location_id);
+        $invoice_layout = $this->businessUtil->invoiceLayout($business_id, $location->invoice_layout_id);
+        $receipt_details = $this->transactionUtil->getReceiptDetails(
+            $transaction->id,
+            $transaction->location_id,
+            $invoice_layout,
+            $business_details,
+            $location,
+            'browser'
+        );
+
+        $paid = 0.0;
+        if ($transaction->type === 'sell' && $transaction->status === 'final') {
+            $paid = (float) $this->transactionUtil->getTotalPaid($transaction->id);
+        }
+
+        return view('sale_pos.partials.quick_edit_invoice', [
+            'blocked' => null,
+            'transaction' => $transaction,
+            'receipt_details' => $receipt_details,
+            'order_tax_percent' => $order_tax_percent,
+            'extra_charges' => $extra,
+            'paid_amount' => $paid,
+            'quick_edit' => [
+                'discount_type' => $transaction->discount_type ?: 'fixed',
+                'discount_amount' => (float) $transaction->discount_amount,
+                'shipping_charges' => (float) $transaction->shipping_charges,
+                'sale_note' => $transaction->additional_notes,
+            ],
+        ]);
+    }
+
+    public function quickEditSave(Request $request, $id)
+    {
+        $business_id = $request->session()->get('user.business_id');
+        try {
+            $transaction = $this->quickEditTransaction($business_id, $id);
+            $blocked = $this->quickEditBlockReason($transaction);
+            if ($blocked !== null) {
+                return ['success' => 0, 'msg' => $blocked];
+            }
+
+            $posted = $request->input('lines', []);
+            if (! is_array($posted) || count($posted) === 0) {
+                return ['success' => 0, 'msg' => 'Add at least one item.'];
+            }
+
+            $existing = TransactionSellLine::where('transaction_id', $transaction->id)
+                ->with(['product', 'warranties'])
+                ->get()
+                ->keyBy('id');
+
+            $products = [];
+            $kept_parent_ids = [];
+            foreach ($posted as $row) {
+                if (! is_array($row)) {
+                    continue;
+                }
+                $qty = $this->quickEditNumber($row['quantity'] ?? 0);
+                if ($qty <= 0) {
+                    continue;
+                }
+                $line_id = ! empty($row['transaction_sell_lines_id']) ? (int) $row['transaction_sell_lines_id'] : 0;
+                $sell_line = $line_id ? $existing->get($line_id) : null;
+                if ($line_id && (empty($sell_line) || ! empty($sell_line->parent_sell_line_id))) {
+                    return ['success' => 0, 'msg' => __('messages.something_went_wrong')];
+                }
+
+                if ($sell_line) {
+                    $product_id = (int) $sell_line->product_id;
+                    $variation_id = (int) $sell_line->variation_id;
+                    $tax_id = $sell_line->tax_id;
+                    $enable_stock = (int) optional($sell_line->product)->enable_stock;
+                    $note = $sell_line->sell_line_note;
+                    $warranty_id = optional($sell_line->warranties->first())->id;
+                    $secondary = $sell_line->secondary_unit_quantity;
+                } else {
+                    $variation = Variation::with('product')
+                        ->where('id', (int) ($row['variation_id'] ?? 0))
+                        ->whereHas('product', function ($q) use ($business_id) {
+                            $q->where('business_id', $business_id);
+                        })
+                        ->first();
+                    if (empty($variation)) {
+                        return ['success' => 0, 'msg' => 'Product not found.'];
+                    }
+                    $product_id = (int) $variation->product_id;
+                    $variation_id = (int) $variation->id;
+                    $tax_id = null;
+                    $enable_stock = (int) $variation->product->enable_stock;
+                    $note = '';
+                    $warranty_id = null;
+                    $secondary = 0;
+                }
+
+                $before = $this->quickEditNumber($row['unit_price'] ?? 0);
+                $dtype = $row['line_discount_type'] ?? '';
+                if (! in_array($dtype, ['fixed', 'percentage'], true)) {
+                    $dtype = '';
+                }
+                $damount = $this->quickEditNumber($row['line_discount_amount'] ?? 0);
+                $unit = $before;
+                if ($dtype === 'fixed') {
+                    $unit = $before - $damount;
+                } elseif ($dtype === 'percentage') {
+                    $unit = $before * (1 - ($damount / 100));
+                }
+                if ($unit < 0) {
+                    $unit = 0;
+                }
+                $tax_rate = $this->quickEditNumber($row['tax_rate'] ?? 0);
+                $item_tax = $unit * $tax_rate;
+                $unit_inc = $unit + $item_tax;
+
+                $product = [
+                    'product_id' => $product_id,
+                    'variation_id' => $variation_id,
+                    'quantity' => $this->transactionUtil->num_f($qty, false, null, true),
+                    'unit_price' => $this->transactionUtil->num_f($before),
+                    'line_discount_type' => $dtype !== '' ? $dtype : null,
+                    'line_discount_amount' => $this->transactionUtil->num_f($damount),
+                    'item_tax' => $this->transactionUtil->num_f($item_tax),
+                    'tax_id' => $tax_id,
+                    'unit_price_inc_tax' => $this->transactionUtil->num_f($unit_inc),
+                    'enable_stock' => $enable_stock,
+                    'sell_line_note' => $note,
+                    'product_type' => 'single',
+                    'children_type' => null,
+                ];
+                if ($line_id) {
+                    $product['transaction_sell_lines_id'] = $line_id;
+                    $kept_parent_ids[] = $line_id;
+                }
+                if (! empty($warranty_id)) {
+                    $product['warranty_id'] = $warranty_id;
+                }
+                if (! empty($secondary)) {
+                    $product['secondary_unit_quantity'] = $this->transactionUtil->num_f($secondary, false, null, true);
+                }
+                $products[] = $product;
+            }
+
+            if (count($products) === 0) {
+                return ['success' => 0, 'msg' => 'Add at least one item.'];
+            }
+
+            $total_products = $products;
+            foreach ($existing as $child) {
+                if (empty($child->parent_sell_line_id) || ! in_array((int) $child->parent_sell_line_id, $kept_parent_ids, true)) {
+                    continue;
+                }
+                $child_row = [
+                    'transaction_sell_lines_id' => $child->id,
+                    'product_id' => $child->product_id,
+                    'variation_id' => $child->variation_id,
+                    'quantity' => $this->transactionUtil->num_f($child->quantity, false, null, true),
+                    'unit_price' => $this->transactionUtil->num_f($child->unit_price_before_discount),
+                    'line_discount_type' => $child->line_discount_type,
+                    'line_discount_amount' => $this->transactionUtil->num_f($child->line_discount_amount),
+                    'item_tax' => $this->transactionUtil->num_f($child->item_tax),
+                    'tax_id' => $child->tax_id,
+                    'unit_price_inc_tax' => $this->transactionUtil->num_f($child->unit_price_inc_tax),
+                    'enable_stock' => (int) optional($child->product)->enable_stock,
+                    'sell_line_note' => $child->sell_line_note,
+                    'product_type' => 'single',
+                    'children_type' => $child->children_type,
+                ];
+                $wid = optional($child->warranties->first())->id;
+                if (! empty($wid)) {
+                    $child_row['warranty_id'] = $wid;
+                }
+                $products[] = $child_row;
+                if ($child->children_type === 'modifier') {
+                    $total_products[] = $child_row;
+                }
+            }
+
+            $discount_type = $request->input('discount_type', 'fixed');
+            if (! in_array($discount_type, ['fixed', 'percentage'], true)) {
+                $discount_type = 'fixed';
+            }
+            $discount_amount = $this->quickEditNumber($request->input('discount_amount', 0));
+            $shipping = $this->quickEditNumber($request->input('shipping_charges', 0));
+            $discount = [
+                'discount_type' => $discount_type,
+                'discount_amount' => $this->transactionUtil->num_f($discount_amount),
+            ];
+
+            $adjust_stock = $transaction->type === 'sell'
+                && $transaction->status === 'final'
+                && empty($transaction->is_suspend);
+            $line_status = $adjust_stock ? 'final' : 'draft';
+
+            DB::beginTransaction();
+
+            $deleted_lines = $this->transactionUtil->createOrUpdateSellLines(
+                $transaction,
+                $products,
+                $transaction->location_id,
+                true,
+                $line_status
+            );
+
+            $invoice_total = $this->productUtil->calculateInvoiceTotal(
+                $total_products,
+                $transaction->tax_id,
+                $discount,
+                true
+            );
+            if ($invoice_total === false) {
+                throw new \Exception('Invoice total could not be calculated.');
+            }
+
+            $extra = 0.0;
+            foreach (['additional_expense_value_1', 'additional_expense_value_2', 'additional_expense_value_3', 'additional_expense_value_4'] as $col) {
+                $extra += (float) ($transaction->{$col} ?? 0);
+            }
+
+            $transaction->total_before_tax = $invoice_total['total_before_tax'];
+            $transaction->tax_amount = $invoice_total['tax'];
+            $transaction->discount_type = $discount_type;
+            $transaction->discount_amount = $discount_amount;
+            $transaction->shipping_charges = $shipping;
+            $transaction->final_total = $invoice_total['final_total'] + $shipping + $extra;
+            if ($request->has('sale_note')) {
+                $transaction->additional_notes = $request->input('sale_note');
+            }
+            $transaction->save();
+
+            if ($adjust_stock) {
+                $this->productUtil->adjustProductStockForInvoice($line_status, $transaction, [
+                    'products' => $products,
+                    'location_id' => $transaction->location_id,
+                ], true);
+
+                $business_details = $this->businessUtil->getDetails($business_id);
+                $pos_settings = empty($business_details->pos_settings) ? $this->businessUtil->defaultPosSettings() : json_decode($business_details->pos_settings, true);
+                $business = [
+                    'id' => $business_id,
+                    'accounting_method' => $request->session()->get('business.accounting_method'),
+                    'location_id' => $transaction->location_id,
+                    'pos_settings' => $pos_settings,
+                ];
+                $this->transactionUtil->adjustMappingPurchaseSell($line_status, $transaction, $business, $deleted_lines);
+            }
+
+            $payment_status = $this->transactionUtil->updatePaymentStatus($transaction->id, $transaction->final_total);
+            $transaction->payment_status = $payment_status;
+            $transaction->save();
+
+            DB::commit();
+
+            return ['success' => 1, 'msg' => __('lang_v1.updated_success')];
+        } catch (\Exception $e) {
+            if (DB::transactionLevel() > 0) {
+                DB::rollBack();
+            }
+            \Log::emergency('File:'.$e->getFile().'Line:'.$e->getLine().'Message:'.$e->getMessage());
+
+            return ['success' => 0, 'msg' => __('messages.something_went_wrong')];
+        }
+    }
+
+    protected function quickEditTransaction($business_id, $id)
+    {
+        return Transaction::where('business_id', $business_id)
+            ->whereIn('type', ['sell', 'sales_order'])
+            ->with(['contact', 'sell_lines.product', 'sell_lines.variations'])
+            ->findOrFail($id);
+    }
+
+    protected function quickEditBlockReason($transaction): ?string
+    {
+        $user = auth()->user();
+        if ($transaction->type === 'sales_order') {
+            if (! SalesOrderPermission::canUpdate($user, $transaction)) {
+                abort(403, 'Unauthorized action.');
+            }
+        } elseif (! empty($transaction->is_direct_sale)) {
+            if (! $user->can('direct_sell.update') && ! $user->can('sell.update') && ! $user->can('draft.update') && ! $user->can('quotation.update')) {
+                abort(403, 'Unauthorized action.');
+            }
+        } elseif (! $user->can('sell.update') && ! $user->can('direct_sell.update') && ! $user->can('draft.update') && ! $user->can('quotation.update')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        if (! $this->moduleUtil->isSubscribed(request()->session()->get('user.business_id'))) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        if ($this->moduleUtil->isModuleInstalled('ZatcaIntegrationKsa') && ($transaction->zatca_status ?? null) === 'success') {
+            return __('lang_v1.invoice_synced_to_zatca_cannot_be_edited');
+        }
+
+        $edit_days = request()->session()->get('business.transaction_edit_days');
+        if (! $this->transactionUtil->canBeEdited($transaction->id, $edit_days)) {
+            return __('messages.transaction_edit_not_allowed', ['days' => $edit_days]);
+        }
+
+        if ($transaction->type === 'sell' && $this->transactionUtil->isReturnExist($transaction->id)) {
+            return __('lang_v1.return_exist');
+        }
+
+        return null;
+    }
+
+    protected function quickEditNumber($value): float
+    {
+        if ($value === null || $value === '') {
+            return 0.0;
+        }
+        if (is_numeric($value)) {
+            return (float) $value;
+        }
+
+        return (float) $this->transactionUtil->num_uf($value);
+    }
 }
