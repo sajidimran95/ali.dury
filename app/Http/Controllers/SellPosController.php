@@ -217,6 +217,8 @@ class SellPosController extends Controller
             $base->whereIn('location_id', $permitted);
         }
 
+        Transaction::applyStaffSalesVisibility($base);
+
         $total = (int) (clone $base)->count();
         $paid = (int) (clone $base)->where('payment_status', 'paid')->count();
         $due = (int) (clone $base)->where('payment_status', 'due')->count();

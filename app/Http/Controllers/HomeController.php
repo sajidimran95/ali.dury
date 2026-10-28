@@ -1865,6 +1865,7 @@ class HomeController extends Controller
             });
 
         $this->applyLocationScope($query, $permitted_locations, $location_id);
+        Transaction::applyStaffSalesVisibility($query);
 
         if (! empty($start) && ! empty($end)) {
             $query->whereBetween('transactions.transaction_date', [$start.' 00:00:00', $end.' 23:59:59']);
@@ -1887,6 +1888,7 @@ class HomeController extends Controller
             ->where('transactions.transaction_date', '<=', $cutoff);
 
         $this->applyLocationScope($query, $permitted_locations, $location_id);
+        Transaction::applyStaffSalesVisibility($query);
         if (! empty($start) && ! empty($end)) {
             $query->whereBetween('transactions.transaction_date', [$start.' 00:00:00', $end.' 23:59:59']);
         }
@@ -1901,6 +1903,7 @@ class HomeController extends Controller
             ->where('transactions.status', 'final')
             ->whereIn('transactions.payment_status', ['due', 'partial']);
         $this->applyLocationScope($query, $permitted_locations, $location_id);
+        Transaction::applyStaffSalesVisibility($query);
 
         return (int) $query->count();
     }

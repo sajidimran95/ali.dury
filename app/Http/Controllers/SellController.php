@@ -630,6 +630,8 @@ class SellController extends Controller
             $base->whereIn('location_id', $permitted);
         }
 
+        Transaction::applyStaffSalesVisibility($base);
+
         $total = (int) (clone $base)->count();
         $direct = (int) (clone $base)->where('is_direct_sale', 1)->count();
         $pos = (int) (clone $base)->where('is_direct_sale', 0)->whereNull('sub_type')->count();
@@ -676,6 +678,8 @@ class SellController extends Controller
         if ($permitted != 'all') {
             $base->whereIn('location_id', $permitted);
         }
+
+        Transaction::applyStaffSalesVisibility($base);
 
         $total = (int) (clone $base)->count();
         $paid = (int) (clone $base)->where('payment_status', 'paid')->count();
