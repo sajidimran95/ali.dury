@@ -190,6 +190,20 @@
 			page-break-after: auto;
 			break-after: auto;
 		}
+		.qb-sheet:last-child {
+			display: flex;
+			flex-direction: column;
+			padding-bottom: 16px;
+		}
+		.qb-sheet:last-child .qb-items-fill {
+			display: grid !important;
+			flex: 1 1 auto;
+			min-height: 8px;
+		}
+		.qb-sheet:last-child .qb-items-totals {
+			position: static;
+			margin: 0;
+		}
 		.qb-sheet-footer {
 			position: absolute;
 			left: 0;
@@ -203,6 +217,11 @@
 		}
 		@elseif($letterPrint)
 		{{-- mPDF sets the Letter page size. A CSS size here collapses later pages. --}}
+		.qb-items > tbody > tr.qb-grid-fill > td {
+			border-top: 1px solid #000 !important;
+			border-bottom: none !important;
+			padding: 0 !important;
+		}
 		@else
 		@page { size: {{ $pageSizeCss }}; margin: 0; }
 		@endif
@@ -449,7 +468,9 @@
 	@php $qbLetterhead = ob_get_clean(); @endphp
 	@if($forPdf)
 		<htmlpageheader name="qbhead">{!! $qbLetterhead !!}</htmlpageheader>
-		<htmlpagefooter name="qbfoot"><div style="text-align:center;font-family:DejaVu Sans,Arial,sans-serif;font-size:10px;">Page {PAGENO} of {nbpg}</div></htmlpagefooter>
+		<htmlpagefooter name="qbfoot">
+			<div style="text-align:center;font-family:DejaVu Sans,Arial,sans-serif;font-size:10px;">Page {PAGENO} of {nbpg}</div>
+		</htmlpagefooter>
 		<sethtmlpageheader name="qbhead" value="on" show-this-page="1" />
 		<sethtmlpagefooter name="qbfoot" value="on" />
 	@endif
@@ -542,7 +563,19 @@
 			@endforeach
 		</tbody>
 	</table>
+	@if($forPdf)
+	<table style="width:100%; border-collapse:collapse; margin:0; padding:0;">
+		<!--QB_GRID_FILL-->
+		<tr>
+			<td style="width:11%; border:0.6pt solid #000; text-align:center; font-weight:bold; font-size:9pt; padding:3px 4px;">QTY {{ $qtyTotalText }}</td>
+			<td colspan="2" style="width:59%; border:0.6pt solid #000; text-align:left; font-size:7.5pt; padding:3px 4px;">{{ $footer }}</td>
+			<td style="width:15%; border:0.6pt solid #000; text-align:center; font-weight:bold; font-size:10pt; padding:3px 4px;">Total</td>
+			<td style="width:15%; border:0.6pt solid #000; text-align:right; font-size:9pt; padding:3px 4px;">${{ $money($totalRaw) }}</td>
+		</tr>
+	</table>
+	@endif
 	<div class="qb-items-fill" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>
+	@if(! $forPdf)
 	<table class="qb-items qb-items-totals">
 		<colgroup>
 			<col style="width:{{ !empty($quick_edit) ? '18%' : '11%' }}"><col style="width:{{ !empty($quick_edit) ? '16%' : '18%' }}"><col style="width:{{ !empty($quick_edit) ? '36%' : '41%' }}"><col style="width:15%"><col style="width:15%">
@@ -581,6 +614,7 @@
 			@endif
 		</tbody>
 	</table>
+	@endif
 	</div>
 	@if(!empty($quick_edit))
 		<template id="qe_row_template">
@@ -722,10 +756,11 @@
 			var n = pages.length;
 			var html = '';
 			for (var p = 0; p < n; p++) {
+				var fillHtml = '<div class="qb-items-fill" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>';
 				html += '<section class="qb-sheet">' + letterHtml +
 					'<table class="qb-items">' + colHtml + theadHtml +
 					'<tbody>' + pages[p].join('') + '</tbody></table>' +
-					(p === n - 1 ? totalsHtml : '') +
+					(p === n - 1 ? fillHtml + totalsHtml : '') +
 					'<div class="qb-sheet-footer">Page ' + (p + 1) + ' of ' + n + '</div></section>';
 			}
 			root.innerHTML = html;

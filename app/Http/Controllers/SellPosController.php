@@ -2406,7 +2406,7 @@ class SellPosController extends Controller
                     * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
                 </style></head><body>' . $html . '</body></html>';
 
-            $mpdf = new \Mpdf\Mpdf([
+            $mpdfConfig = [
                 'tempDir' => public_path('uploads/temp'),
                 'mode' => 'utf-8',
                 'format' => 'Letter',
@@ -2423,17 +2423,41 @@ class SellPosController extends Controller
                 'autoLangToFont' => true,
                 'autoVietnamese' => true,
                 'autoArabic' => true,
-            ]);
+            ];
+            $prepareMpdf = function (\Mpdf\Mpdf $mpdf) {
+                $mpdf->SetHTMLHeader('');
+                $mpdf->SetHTMLFooter('<div style="text-align:center;font-family:DejaVu Sans,sans-serif;font-size:9pt;color:#000;padding-top:2px;">Page {PAGENO} of {nbpg}</div>');
+                $mpdf->defaultheaderline = 0;
+                $mpdf->defaultfooterline = 0;
+                $mpdf->useSubstitutions = true;
+                $mpdf->showWatermarkText = false;
+            };
 
+            $marker = '<!--QB_GRID_FILL-->';
+            if (str_contains($body, $marker)) {
+                $probe = new \Mpdf\Mpdf($mpdfConfig);
+                $prepareMpdf($probe);
+                $probe->WriteHTML(str_replace($marker, '', $body));
+                $gap = $probe->h - $probe->bMargin - $probe->y;
+                unset($probe);
+                $fill = '';
+                if ($gap > 4) {
+                    $height = round($gap - 0.4, 2);
+                    $widths = ['11%', '18%', '41%', '15%', '15%'];
+                    $cells = '';
+                    foreach ($widths as $width) {
+                        $cells .= '<td style="width:'.$width.';padding:0;border-left:0.6pt solid #000;border-right:0.6pt solid #000;border-top:none;border-bottom:none;color:#fff;font-size:'.$height.'mm;line-height:1;">.</td>';
+                    }
+                    $fill = '<tr>'.$cells.'</tr>';
+                }
+                $body = str_replace($marker, $fill, $body);
+            }
+
+            $mpdf = new \Mpdf\Mpdf($mpdfConfig);
+            $prepareMpdf($mpdf);
             $mpdf->SetTitle('INVOICE-' . $invoiceNo);
             $mpdf->SetAuthor('');
             $mpdf->SetCreator('');
-            $mpdf->SetHTMLHeader('');
-            $mpdf->SetHTMLFooter('<div style="text-align:center;font-family:DejaVu Sans,sans-serif;font-size:9pt;color:#000;padding-top:2px;">Page {PAGENO} of {nbpg}</div>');
-            $mpdf->defaultheaderline = 0;
-            $mpdf->defaultfooterline = 0;
-            $mpdf->useSubstitutions = true;
-            $mpdf->showWatermarkText = false;
             $mpdf->WriteHTML($body);
 
             $pdfBinary = $mpdf->Output('', 'S');
