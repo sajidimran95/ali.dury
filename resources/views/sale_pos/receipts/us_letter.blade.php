@@ -1,5 +1,6 @@
 {{-- QuickBooks-style wholesale invoice --}}
 @php
+	$forPdf = ! empty($for_pdf ?? null);
 	$fmtHtml = function ($text) {
 		if ($text === null || $text === '') {
 			return [];
@@ -157,22 +158,77 @@
 	$pageSizeCss = 'letter portrait';
 	$pageMin = '11in';
 	$pagePad = '0.4in 0.45in 0.8in';
+	$letterPrint = true;
 	if ($layoutDesign === 'slim') {
 		$pageSizeCss = '80mm auto';
 		$pageMin = 'auto';
 		$pagePad = '2mm';
+		$letterPrint = false;
 	} elseif ($layoutDesign === 'slim2') {
 		$pageSizeCss = '58mm auto';
 		$pageMin = 'auto';
 		$pagePad = '2mm';
+		$letterPrint = false;
 	}
 @endphp
 <style type="text/css">
 	@media print {
+		@if($letterPrint && ! $forPdf)
+		@page {
+			size: {{ $pageSizeCss }};
+			margin: 0.32in 0.4in 0.42in 0.4in;
+		}
+		.qb-sheet {
+			position: relative;
+			width: 100%;
+			height: 9.9in;
+			box-sizing: border-box;
+			page-break-after: always;
+			break-after: page;
+		}
+		.qb-sheet:last-child {
+			page-break-after: auto;
+			break-after: auto;
+		}
+		.qb-sheet-footer {
+			position: absolute;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			text-align: center;
+			font-family: Arial, Helvetica, sans-serif;
+			font-size: 10px;
+			line-height: 1.2;
+			color: #000;
+		}
+		@elseif($letterPrint)
+		{{-- mPDF sets the Letter page size. A CSS size here collapses later pages. --}}
+		@else
 		@page { size: {{ $pageSizeCss }}; margin: 0; }
+		@endif
 		html, body { margin: 0 !important; padding: 0 !important; background: #fff !important; }
 		#receipt_section, .print_section, .invoice.print_section {
 			height: auto !important; max-height: none !important; overflow: visible !important;
+		}
+		.qb-wrap {
+			display: block !important;
+			min-height: 0 !important;
+			height: auto !important;
+			max-width: none !important;
+			padding: 0 !important;
+		}
+		.qb-items-sheet { display: block !important; min-height: 0 !important; }
+		.qb-items-fill { display: none !important; }
+		.qb-items { page-break-inside: auto !important; break-inside: auto !important; }
+		.qb-items-totals { page-break-before: avoid; break-before: avoid; }
+		.qb-items thead { display: table-header-group !important; }
+		.qb-items > thead > tr.qb-letterhead { page-break-inside: avoid; break-inside: avoid; }
+		.qb-items > thead > tr.qb-letterhead > td {
+			border: none !important;
+			padding: 0 0 8px !important;
+			text-align: left !important;
+			font-weight: 400 !important;
+			background: #fff !important;
 		}
 	}
 	.qb-wrap {
@@ -186,9 +242,8 @@
 		margin: 0 auto;
 		box-sizing: border-box;
 		padding: {{ $pagePad }};
-		min-height: {{ $pageMin }};
-		display: flex;
-		flex-direction: column;
+		min-height: 0;
+		display: block;
 	}
 	.qb-wrap table { width: 100%; border-collapse: collapse; }
 	.qb-hdr td { vertical-align: top; padding: 0; }
@@ -210,9 +265,10 @@
 		background: #fff;
 	}
 	.qb-id th { font-weight: 700; }
-	.qb-parties { display: flex; gap: 22px; margin-top: 18px; }
+	.qb-wrap table.qb-parties { width: 100%; margin-top: 18px; border-collapse: separate; border-spacing: 0; }
 	.qb-box { border: 1px solid #000; background: #fff; }
-	.qb-parties .qb-box { flex: 1; min-height: 132px; }
+	.qb-parties td.qb-box { width: 49%; vertical-align: top; }
+	.qb-parties td.qb-parties-gap { width: 22px; border: none; padding: 0; background: transparent; }
 	.qb-box .lbl {
 		border-bottom: 1px solid #000;
 		padding: 3px 6px;
@@ -230,9 +286,7 @@
 	}
 	.qb-meta th { font-weight: 700; }
 	.qb-items-sheet {
-		flex: 1 1 auto;
-		display: flex;
-		flex-direction: column;
+		display: block;
 		min-height: 0;
 	}
 	.qb-items { margin-top: 0; table-layout: fixed; }
@@ -246,7 +300,8 @@
 	}
 	.qb-items-fill span { border-right: 1px solid #000; }
 	.qb-items-fill span:last-child { border-right: none; }
-	.qb-items th, .qb-items td {
+	.qb-items > thead > tr > th,
+	.qb-items > tbody > tr > td {
 		border: 1px solid #000;
 		padding: 3px 6px;
 		font-size: 11px;
@@ -254,9 +309,21 @@
 		vertical-align: top;
 		background: #fff;
 	}
-	.qb-items thead th { font-weight: 700; text-align: center; }
-	.qb-items tbody td { border-top: 0; border-bottom: 0; }
-	.qb-items tr.qb-total td { border-top: 1px solid #000; border-bottom: 1px solid #000; }
+	.qb-items > thead > tr > th { font-weight: 700; text-align: center; }
+	.qb-items > thead { display: table-header-group; }
+	.qb-letterhead-block { padding-bottom: 8px; }
+	.qb-items > thead > tr.qb-letterhead > td {
+		border: none;
+		padding: 0 0 8px;
+		text-align: left;
+		font-weight: 400;
+		background: #fff;
+	}
+	.qb-items > tbody > tr > td { border-top: 0; border-bottom: 0; }
+	.qb-sheet:not(:last-child) .qb-items:not(.qb-items-totals) > tbody > tr:last-child > td {
+		border-bottom: 1px solid #000;
+	}
+	.qb-items > tbody > tr.qb-total > td { border-top: 1px solid #000; border-bottom: 1px solid #000; }
 	.qb-items .c { text-align: center; }
 	.qb-items .r { text-align: right; white-space: nowrap; }
 	.qb-items .desc { text-align: left; }
@@ -295,89 +362,102 @@
 	.qb-wrap.qe-on .qe-note label { display: block; font-size: 11px; font-weight: 700; margin-bottom: 3px; }
 </style>
 
-<div class="qb-wrap @if(!empty($quick_edit)) qe-on @endif">
-	<table class="qb-hdr">
-		<tr>
-			<td class="qb-biz">
-				@if($bizName !== '')
-					<div class="nm">{{ $bizName }}</div>
-				@endif
-				@if($street !== '')
-					<div>{{ $street }}</div>
-				@endif
-				@if($cityStateZip !== '')
-					<div>{{ $cityStateZip }}</div>
-				@endif
-				@if($phone !== '')
-					<div>{{ $phone }}</div>
-				@endif
-			</td>
-			<td class="qb-inv">
-				<div class="title">{{ !empty($receipt_details->invoice_heading) ? strip_tags($receipt_details->invoice_heading) : 'Invoice' }}</div>
-				<table class="qb-id">
-					<tr>
-						<th>Date</th>
-						<th>Invoice #</th>
-					</tr>
-					<tr>
-						<td>{{ $invoiceDate }}</td>
-						<td>{{ $receipt_details->invoice_no ?? '' }}</td>
-					</tr>
-				</table>
-			</td>
-		</tr>
-	</table>
+@php ob_start(); @endphp
+					<table class="qb-hdr">
+						<tr>
+							<td class="qb-biz">
+								@if($bizName !== '')
+									<div class="nm">{{ $bizName }}</div>
+								@endif
+								@if($street !== '')
+									<div>{{ $street }}</div>
+								@endif
+								@if($cityStateZip !== '')
+									<div>{{ $cityStateZip }}</div>
+								@endif
+								@if($phone !== '')
+									<div>{{ $phone }}</div>
+								@endif
+							</td>
+							<td class="qb-inv">
+								<div class="title">{{ !empty($receipt_details->invoice_heading) ? strip_tags($receipt_details->invoice_heading) : 'Invoice' }}</div>
+								<table class="qb-id">
+									<tr>
+										<th>Date</th>
+										<th>Invoice #</th>
+									</tr>
+									<tr>
+										<td>{{ $invoiceDate }}</td>
+										<td>{{ $receipt_details->invoice_no ?? '' }}</td>
+									</tr>
+								</table>
+							</td>
+						</tr>
+					</table>
 
-	<div class="qb-parties">
-		<div class="qb-box">
-			<div class="lbl">Bill To</div>
-			<div class="body">
-				@foreach($billLines as $line)
-					<div>{{ $line }}</div>
-				@endforeach
-			</div>
-		</div>
-		<div class="qb-box">
-			<div class="lbl">Ship To</div>
-			<div class="body">
-				@foreach($shipLines as $line)
-					<div>{{ $line }}</div>
-				@endforeach
-			</div>
-		</div>
-	</div>
+					<table class="qb-parties">
+						<tr>
+							<td class="qb-box">
+								<div class="lbl">Bill To</div>
+								<div class="body">
+									@foreach($billLines as $line)
+										<div>{{ $line }}</div>
+									@endforeach
+								</div>
+							</td>
+							<td class="qb-parties-gap"></td>
+							<td class="qb-box">
+								<div class="lbl">Ship To</div>
+								<div class="body">
+									@foreach($shipLines as $line)
+										<div>{{ $line }}</div>
+									@endforeach
+								</div>
+							</td>
+						</tr>
+					</table>
 
-	<table class="qb-meta">
-		<tr>
-			<th style="width:16%;">P.O. Number</th>
-			<th style="width:14%;">Terms</th>
-			<th style="width:12%;">Rep</th>
-			<th style="width:14%;">Ship</th>
-			<th style="width:12%;">Via</th>
-			<th style="width:14%;">F.O.B.</th>
-			<th style="width:18%;">Project</th>
-		</tr>
-		<tr>
-			<td>{{ $po }}</td>
-			<td>{{ $terms }}</td>
-			<td>{{ $rep }}</td>
-			<td>{{ $shipDate }}</td>
-			<td>{{ $via }}</td>
-			<td></td>
-			<td></td>
-		</tr>
-	</table>
+					<table class="qb-meta">
+						<tr>
+							<th style="width:16%;">P.O. Number</th>
+							<th style="width:14%;">Terms</th>
+							<th style="width:12%;">Rep</th>
+							<th style="width:14%;">Ship</th>
+							<th style="width:12%;">Via</th>
+							<th style="width:14%;">F.O.B.</th>
+							<th style="width:18%;">Project</th>
+						</tr>
+						<tr>
+							<td>{{ $po }}</td>
+							<td>{{ $terms }}</td>
+							<td>{{ $rep }}</td>
+							<td>{{ $shipDate }}</td>
+							<td>{{ $via }}</td>
+							<td></td>
+							<td></td>
+						</tr>
+					</table>
 
-	@if(!empty($quick_edit))
-		<div class="qe-scanbar">
-			<label for="qe_scan">Scan item</label>
-			<input type="text" id="qe_scan" autocomplete="off" placeholder="Scan barcode or type SKU / name, then Enter">
-			<div id="qe_scan_msg" class="qe-scan-msg"></div>
-			<ul id="qe_scan_picks" class="qe-picks"></ul>
-		</div>
+					@if(!empty($quick_edit))
+						<div class="qe-scanbar">
+							<label for="qe_scan">Scan item</label>
+							<input type="text" id="qe_scan" autocomplete="off" placeholder="Scan barcode or type SKU / name, then Enter">
+							<div id="qe_scan_msg" class="qe-scan-msg"></div>
+							<ul id="qe_scan_picks" class="qe-picks"></ul>
+						</div>
+					@endif
+	@php $qbLetterhead = ob_get_clean(); @endphp
+	@if($forPdf)
+		<htmlpageheader name="qbhead">{!! $qbLetterhead !!}</htmlpageheader>
+		<htmlpagefooter name="qbfoot"><div style="text-align:center;font-family:DejaVu Sans,Arial,sans-serif;font-size:10px;">Page {PAGENO} of {nbpg}</div></htmlpagefooter>
+		<sethtmlpageheader name="qbhead" value="on" show-this-page="1" />
+		<sethtmlpagefooter name="qbfoot" value="on" />
 	@endif
-
-	<div class="qb-items-sheet">
+<div class="qb-wrap @if(!empty($quick_edit)) qe-on @endif" @if(! $forPdf) style="min-height: {{ $pageMin }}; display: flex; flex-direction: column;" @endif>
+	@if(! $forPdf)
+		<div class="qb-letterhead qb-letterhead-block">{!! $qbLetterhead !!}</div>
+	@endif
+	<div class="qb-items-sheet" @if(! $forPdf) style="flex: 1 1 auto; display: flex; flex-direction: column; min-height: 0;" @endif>
 	<table class="qb-items">
 		<colgroup>
 			<col style="width:{{ !empty($quick_edit) ? '18%' : '11%' }}"><col style="width:{{ !empty($quick_edit) ? '16%' : '18%' }}"><col style="width:{{ !empty($quick_edit) ? '36%' : '41%' }}"><col style="width:15%"><col style="width:15%">
@@ -538,3 +618,137 @@
 		</div>
 	@endif
 </div>
+@if(! $forPdf && $letterPrint)
+<script>
+(function () {
+	var PAGE_H = 9.9 * 96;
+	var FOOTER_H = 36;
+	var SLACK = 28;
+
+	function hidden(el) {
+		var node = el;
+		while (node && node !== document.documentElement) {
+			var st = window.getComputedStyle(node);
+			if (st.display === 'none' || st.visibility === 'hidden') {
+				return true;
+			}
+			node = node.parentElement;
+		}
+		return false;
+	}
+
+	function rowHeight(tr) {
+		return Math.max(18, Math.ceil(tr.getBoundingClientRect().height || tr.offsetHeight || 0));
+	}
+
+	window.__qbRestoreInvoice = function () {
+		var roots = document.querySelectorAll('.qb-wrap[data-qb-paged="1"]');
+		Array.prototype.forEach.call(roots, function (root) {
+			if (typeof root._qbSavedHtml === 'string') {
+				root.innerHTML = root._qbSavedHtml;
+			}
+			if (root._qbSavedStyle) {
+				root.setAttribute('style', root._qbSavedStyle);
+			} else {
+				root.removeAttribute('style');
+			}
+			root.removeAttribute('data-qb-paged');
+		});
+	};
+
+	window.__qbPaginateInvoice = function () {
+		var roots = document.querySelectorAll('.qb-wrap');
+		Array.prototype.forEach.call(roots, function (root) {
+			if (!root || root.getAttribute('data-qb-paged') === '1' || root.classList.contains('qe-on') || hidden(root)) {
+				return;
+			}
+			var letter = root.querySelector('.qb-letterhead-block');
+			var table = root.querySelector('table.qb-items:not(.qb-items-totals)');
+			if (!letter || !table) {
+				return;
+			}
+			var totals = root.querySelector('table.qb-items-totals');
+			var thead = table.querySelector('thead');
+			var colgroup = table.querySelector('colgroup');
+			var rows = Array.prototype.slice.call(table.querySelectorAll('tbody > tr'));
+
+			var sandbox = document.createElement('div');
+			sandbox.style.cssText = 'position:fixed;left:0;top:0;width:7.7in;visibility:hidden;pointer-events:none;z-index:-1;';
+			var clone = root.cloneNode(true);
+			clone.style.minHeight = '0';
+			clone.style.height = 'auto';
+			clone.style.display = 'block';
+			clone.style.padding = '0';
+			clone.style.maxWidth = 'none';
+			clone.style.width = '7.7in';
+			sandbox.appendChild(clone);
+			document.body.appendChild(sandbox);
+
+			var cLetter = clone.querySelector('.qb-letterhead-block');
+			var cTable = clone.querySelector('table.qb-items:not(.qb-items-totals)');
+			var cThead = cTable ? cTable.querySelector('thead') : null;
+			var cRows = cTable ? Array.prototype.slice.call(cTable.querySelectorAll('tbody > tr')) : [];
+			var cTotals = clone.querySelector('table.qb-items-totals');
+			var headerH = cLetter ? Math.ceil(cLetter.getBoundingClientRect().height) : 0;
+			var theadH = cThead ? Math.ceil(cThead.getBoundingClientRect().height) : 0;
+			var totalsH = cTotals ? Math.ceil(cTotals.getBoundingClientRect().height) : 0;
+			var heights = cRows.map(rowHeight);
+			document.body.removeChild(sandbox);
+
+			var budget = PAGE_H - FOOTER_H - headerH - theadH - SLACK;
+			if (budget < 60) {
+				budget = 60;
+			}
+
+			var pages = [[]];
+			var used = 0;
+			for (var i = 0; i < rows.length; i++) {
+				var h = heights[i] || 22;
+				var need = h + (i === rows.length - 1 ? totalsH : 0);
+				if (pages[pages.length - 1].length && used + need > budget) {
+					pages.push([]);
+					used = 0;
+				}
+				pages[pages.length - 1].push(rows[i].outerHTML);
+				used += h;
+			}
+
+			var savedHtml = root.innerHTML;
+			var savedStyle = root.getAttribute('style');
+			var letterHtml = letter.outerHTML;
+			var theadHtml = thead ? thead.outerHTML : '';
+			var colHtml = colgroup ? colgroup.outerHTML : '';
+			var totalsHtml = totals ? totals.outerHTML : '';
+			var n = pages.length;
+			var html = '';
+			for (var p = 0; p < n; p++) {
+				html += '<section class="qb-sheet">' + letterHtml +
+					'<table class="qb-items">' + colHtml + theadHtml +
+					'<tbody>' + pages[p].join('') + '</tbody></table>' +
+					(p === n - 1 ? totalsHtml : '') +
+					'<div class="qb-sheet-footer">Page ' + (p + 1) + ' of ' + n + '</div></section>';
+			}
+			root.innerHTML = html;
+			root._qbSavedHtml = savedHtml;
+			root._qbSavedStyle = savedStyle;
+			root.setAttribute('data-qb-paged', '1');
+			root.setAttribute('style', 'min-height:0;display:block;height:auto;max-width:none;padding:0;');
+		});
+	};
+
+	if (!window.__qbInvoicePrintBound) {
+		window.__qbInvoicePrintBound = true;
+		window.addEventListener('beforeprint', function () {
+			if (window.__qbPaginateInvoice) {
+				window.__qbPaginateInvoice();
+			}
+		});
+		window.addEventListener('afterprint', function () {
+			if (window.__qbRestoreInvoice) {
+				window.__qbRestoreInvoice();
+			}
+		});
+	}
+})();
+</script>
+@endif

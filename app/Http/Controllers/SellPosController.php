@@ -907,7 +907,8 @@ class SellPosController extends Controller
         $from_pos_screen = true,
         $invoice_layout_id = null,
         $is_delivery_note = false,
-        $printer_id_override = null
+        $printer_id_override = null,
+        $for_pdf = false
     ) {
         $output = ['is_enabled' => false,
             'print_type' => 'browser',
@@ -967,7 +968,7 @@ class SellPosController extends Controller
         } else {
             $layout = !empty($receipt_details->design) ? 'sale_pos.receipts.' . $receipt_details->design : 'sale_pos.receipts.classic';
 
-            $output['html_content'] = view($layout, compact('receipt_details'))->render();
+            $output['html_content'] = view($layout, compact('receipt_details', 'for_pdf'))->render();
             // PDF print path hides browser date/URL chrome (not available for HTML print)
             $output['print_pdf_url'] = action([\App\Http\Controllers\SellPosController::class, 'printInvoicePdf'], [$transaction_id]);
         }
@@ -2383,7 +2384,9 @@ class SellPosController extends Controller
                 false,
                 false,
                 $invoice_layout_id,
-                false
+                false,
+                null,
+                true
             );
 
             if (empty($receipt['html_content'])) {
@@ -2397,7 +2400,6 @@ class SellPosController extends Controller
             $body =
                 '<!DOCTYPE html><html><head><meta charset="utf-8">' .
                 '<style>
-                    @page { margin: 10mm 12mm 12mm 12mm; }
                     body { margin: 0; padding: 0; background: #fff; font-family: DejaVu Sans, Arial, sans-serif; }
                     * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
                 </style></head><body>' . $html . '</body></html>';
@@ -2407,12 +2409,14 @@ class SellPosController extends Controller
                 'mode' => 'utf-8',
                 'format' => 'Letter',
                 'orientation' => 'P',
-                'margin_left' => 10,
-                'margin_right' => 10,
-                'margin_top' => 10,
+                'margin_left' => 12,
+                'margin_right' => 12,
+                'margin_top' => 8,
                 'margin_bottom' => 12,
-                'margin_header' => 0,
-                'margin_footer' => 0,
+                'margin_header' => 4,
+                'margin_footer' => 4,
+                'setAutoTopMargin' => 'stretch',
+                'setAutoBottomMargin' => 'stretch',
                 'autoScriptToLang' => true,
                 'autoLangToFont' => true,
                 'autoVietnamese' => true,
@@ -2422,9 +2426,8 @@ class SellPosController extends Controller
             $mpdf->SetTitle('INVOICE-' . $invoiceNo);
             $mpdf->SetAuthor('');
             $mpdf->SetCreator('');
-            // Explicitly no mPDF headers/footers (prevents page URL / date from the PDF engine)
             $mpdf->SetHTMLHeader('');
-            $mpdf->SetHTMLFooter('');
+            $mpdf->SetHTMLFooter('<div style="text-align:center;font-family:DejaVu Sans,sans-serif;font-size:9pt;color:#000;padding-top:2px;">Page {PAGENO} of {nbpg}</div>');
             $mpdf->defaultheaderline = 0;
             $mpdf->defaultfooterline = 0;
             $mpdf->useSubstitutions = true;

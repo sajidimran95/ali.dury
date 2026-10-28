@@ -83,7 +83,6 @@
         }
 
         @media print {
-            @page { margin: 0; }
             .sale-inv-bar { display: none !important; }
             body { background: #fff; }
             .sale-inv-stage { padding: 0 !important; overflow: visible !important; }
@@ -173,6 +172,9 @@
                         window.removeEventListener('afterprint', restore);
                     };
                     window.addEventListener('afterprint', restore);
+                    if (window.__qbPaginateInvoice) {
+                        window.__qbPaginateInvoice();
+                    }
                     window.print();
                 });
             }

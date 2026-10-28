@@ -2529,28 +2529,92 @@ function show_product_type_form() {
     });
 }
 
+// Repeated clicks on one row used to fire a new Sell Details request each time.
+// The later click lands on the backdrop that just appeared and closes the popup,
+// so 3–4 clicks look slow and the details never stay open.
+// Close button clears the guard first (capture runs before Bootstrap hides).
+document.addEventListener('click', function (e) {
+    var target = e.target;
+    if (!target || !target.closest) {
+        return;
+    }
+    var dismiss = target.closest('.view_modal [data-dismiss="modal"]');
+    if (!dismiss) {
+        return;
+    }
+    $(dismiss).closest('.view_modal').removeData('rowGuardUntil');
+}, true);
+$(document).on('hide.bs.modal', '.view_modal', function (e) {
+    var until = $(this).data('rowGuardUntil') || 0;
+    if (until && Date.now() < until) {
+        e.preventDefault();
+    }
+});
+$(document).on('shown.bs.modal', '.view_modal', function () {
+    $(this).data('loading', false);
+});
+$(document).on('hidden.bs.modal', '.view_modal', function () {
+    $(this).data('loading', false);
+    $(this).removeData('rowGuardUntil');
+});
+
 $(document).on('click', 'table.ajax_view tbody tr', function(e) {
     if (
-        !$(e.target).is('td.selectable_td input[type=checkbox]') &&
-        !$(e.target).is('td.selectable_td') &&
-        !$(e.target).is('td.clickable_td') &&
-        !$(e.target).is('a') &&
-        !$(e.target).is('button') &&
-        !$(e.target).hasClass('label') &&
-        !$(e.target).is('li') &&
-        $(this).data('href') &&
-        !$(e.target).is('i')
+        $(e.target).is('td.selectable_td input[type=checkbox]') ||
+        $(e.target).is('td.selectable_td') ||
+        $(e.target).is('td.clickable_td') ||
+        $(e.target).is('a') ||
+        $(e.target).is('button') ||
+        $(e.target).hasClass('label') ||
+        $(e.target).is('li') ||
+        $(e.target).is('i')
     ) {
-        $.ajax({
-            url: $(this).data('href'),
-            dataType: 'html',
-            success: function(result) {
-                $('.view_modal')
-                    .html(result)
-                    .modal('show');
-            },
-        });
+        return;
     }
+
+    var href = $(this).data('href');
+    if (!href) {
+        return;
+    }
+
+    var $container = $('.view_modal').first();
+    if (!$container.length) {
+        return;
+    }
+
+    if ($container.data('loading') || $container.hasClass('in') || $container.hasClass('show')) {
+        e.preventDefault();
+        e.stopPropagation();
+        return;
+    }
+
+    e.preventDefault();
+    e.stopPropagation();
+    $container.data('loading', true);
+    $container.data('rowGuardUntil', Date.now() + 800);
+
+    if (!$container.parent().is('body')) {
+        $container.appendTo('body');
+    }
+
+    $.ajax({
+        url: href,
+        dataType: 'html',
+        success: function(result) {
+            if (!$container.data('loading')) {
+                return;
+            }
+            $container.html(result);
+            $container.data('rowGuardUntil', Date.now() + 800);
+            setTimeout(function () {
+                $container.modal('show');
+            }, 0);
+        },
+        error: function () {
+            $container.data('loading', false);
+            $container.removeData('rowGuardUntil');
+        },
+    });
 });
 $(document).on('click', 'td.clickable_td', function(e) {
     e.preventDefault();

@@ -537,6 +537,9 @@ function __print_receipt_html(section_id) {
     );
 
     var content = section.innerHTML;
+    var invoicePageCss = (content.indexOf('qb-letterhead') !== -1)
+        ? '@page{size:letter portrait;margin:0.32in 0.4in 0.42in 0.4in;}'
+        : '@page{size:letter portrait;margin:0;}';
     var base = '';
     try {
         base = document.getElementsByTagName('base')[0]
@@ -547,7 +550,7 @@ function __print_receipt_html(section_id) {
     }
 
     var multipageCss =
-        '@page{size:letter portrait;margin:0;}' +
+        invoicePageCss +
         'html,body{margin:0!important;padding:0!important;background:#fff!important;' +
         'height:auto!important;min-height:0!important;max-height:none!important;' +
         'overflow:visible!important;}' +
@@ -563,6 +566,21 @@ function __print_receipt_html(section_id) {
         'max-width:none!important;padding:0!important;margin:0!important;}' +
         '.usl-items{page-break-inside:auto!important;break-inside:auto!important;width:100%;}' +
         '.usl-items thead{display:table-header-group!important;}' +
+        '.qb-wrap{display:block!important;height:auto!important;min-height:0!important;' +
+        'max-height:none!important;overflow:visible!important;width:100%!important;' +
+        'max-width:none!important;padding:0!important;margin:0!important;}' +
+        '.qb-items-sheet{display:block!important;min-height:0!important;height:auto!important;}' +
+        '.qb-items-fill{display:none!important;}' +
+        '.qb-items{page-break-inside:auto!important;break-inside:auto!important;width:100%;}' +
+        '.qb-items thead{display:table-header-group!important;}' +
+        '.qb-items tbody{display:table-row-group!important;}' +
+        '.qb-items tbody tr{page-break-inside:avoid!important;break-inside:avoid!important;}' +
+        '.qb-letterhead{page-break-inside:avoid!important;break-inside:avoid!important;}' +
+        '.qb-sheet{position:relative;width:100%;height:9.9in;box-sizing:border-box;' +
+        'page-break-after:always;break-after:page;}' +
+        '.qb-sheet:last-child{page-break-after:auto;break-after:auto;}' +
+        '.qb-sheet-footer{position:absolute;left:0;right:0;bottom:0;text-align:center;' +
+        'font-family:Arial,Helvetica,sans-serif;font-size:10px;line-height:1.2;color:#000;}' +
         '.usl-items tbody{display:table-row-group!important;}' +
         '.usl-items tbody tr{page-break-inside:avoid!important;break-inside:avoid!important;}' +
         '.usl-endblock{page-break-inside:auto!important;break-inside:auto!important;}' +
@@ -607,6 +625,11 @@ function __print_receipt_html(section_id) {
         expandFrame();
         setTimeout(function () {
             expandFrame();
+            try {
+                if (iframe.contentWindow && iframe.contentWindow.__qbPaginateInvoice) {
+                    iframe.contentWindow.__qbPaginateInvoice();
+                }
+            } catch (ePag) {}
             try {
                 iframe.contentWindow.focus();
                 iframe.contentWindow.print();

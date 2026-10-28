@@ -136,10 +136,10 @@
 </script>
 
 <script src="{{ asset('js/zoho-sidebar.js?v=' . $asset_v . '&modal=1') }}"></script>
-<script src="{{ asset('js/functions.js?v=' . $asset_v . '&fn=17') }}"></script>
+<script src="{{ asset('js/functions.js?v=' . $asset_v . '&fn=18') }}"></script>
 <script src="{{ asset('js/quick-edit-invoice.js?v=' . $asset_v . '&qe=3') }}"></script>
 <script src="{{ asset('js/common.js?v=' . $asset_v . '&modal=11') }}"></script>
-<script src="{{ asset('js/app.js?v=' . $asset_v . '&modal=19') }}"></script>
+<script src="{{ asset('js/app.js?v=' . $asset_v . '&modal=20') }}"></script>
 <script src="{{ asset('js/documents_and_note.js?v=' . $asset_v) }}"></script>
 
 <!-- TODO -->

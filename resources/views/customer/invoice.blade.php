@@ -103,7 +103,7 @@
     <div class="ca-inv-bar">
         <a href="{{ route('customer.documents') }}">← Documents</a>
         <div style="display:flex;gap:8px;">
-            <button type="button" class="primary" onclick="window.print()">Print / PDF</button>
+            <button type="button" class="primary" onclick="if (window.__qbPaginateInvoice) { window.__qbPaginateInvoice(); } window.print();">Print / PDF</button>
         </div>
     </div>
     <div class="ca-inv-stage">
