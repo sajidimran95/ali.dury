@@ -1610,6 +1610,48 @@ class Util
 
         date_default_timezone_set($business->time_zone);
 
+        try {
+            $this->storeActivity($on, $action, $properties, $business_id);
+        } catch (\Illuminate\Database\QueryException $e) {
+            if (! $this->isBrokenActivityLogPrimaryKey($e)) {
+                throw $e;
+            }
+
+            $this->repairActivityLogPrimaryKey();
+            $this->storeActivity($on, $action, $properties, $business_id);
+        }
+    }
+
+    /**
+     * The live activity_log.id column can lose AUTO_INCREMENT after a dump import.
+     * MySQL then inserts id 0, and the next log hits a duplicate primary key.
+     */
+    public function repairActivityLogPrimaryKey(): void
+    {
+        if (! DB::getSchemaBuilder()->hasTable('activity_log')) {
+            return;
+        }
+
+        $column = DB::selectOne("SHOW COLUMNS FROM `activity_log` WHERE Field = 'id'");
+        if (! $column || str_contains(strtolower((string) ($column->Extra ?? '')), 'auto_increment')) {
+            return;
+        }
+
+        if (DB::table('activity_log')->where('id', 0)->exists()) {
+            $next = (int) DB::table('activity_log')->where('id', '>', 0)->max('id');
+            DB::table('activity_log')->where('id', 0)->update(['id' => $next + 1]);
+        }
+
+        $type = strtolower((string) ($column->Type ?? ''));
+        if (! preg_match('/^(tinyint|smallint|mediumint|int|bigint)(\(\d+\))? unsigned$/', $type)) {
+            $type = 'int unsigned';
+        }
+
+        DB::statement('ALTER TABLE `activity_log` MODIFY `id` '.$type.' NOT NULL AUTO_INCREMENT');
+    }
+
+    protected function storeActivity($on, $action, $properties, $business_id)
+    {
         $activity = activity()
             ->performedOn($on)
             ->withProperties($properties)
@@ -1617,6 +1659,14 @@ class Util
 
         $activity->business_id = $business_id;
         $activity->save();
+    }
+
+    protected function isBrokenActivityLogPrimaryKey(\Throwable $e): bool
+    {
+        $message = $e->getMessage();
+
+        return str_contains($message, 'activity_log')
+            && str_contains($message, "Duplicate entry '0'");
     }
 
     public function getBackupCleanCronJobCommand()
