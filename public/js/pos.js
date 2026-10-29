@@ -635,6 +635,65 @@ function pos_serialize_sell_form($form) {
     return data;
 }
 
+/**
+ * Advance helpers MUST be global — payment-card click handlers are outside document.ready.
+ */
+function pos_customer_advance_balance() {
+    if (!$('#advance_balance').length) {
+        return 0;
+    }
+    var raw = $('#advance_balance').val();
+    var balance = 0;
+    if (typeof __read_number === 'function') {
+        balance = __read_number($('#advance_balance'));
+    }
+    if (isNaN(balance) || balance === null || balance === '') {
+        balance = parseFloat(String(raw || '').replace(/[^0-9.\-]/g, '')) || 0;
+    }
+    return parseFloat(balance) || 0;
+}
+
+function pos_advance_unavailable_msg() {
+    var $el = $('#advance_balance');
+    var msg = $el.attr('data-error-msg') || $el.data('error-msg');
+    if (msg) {
+        return msg;
+    }
+    if (typeof LANG !== 'undefined' && LANG.required_advance_balance_not_available) {
+        return LANG.required_advance_balance_not_available;
+    }
+    return 'Required advance balance not available';
+}
+
+function pos_alert_advance_unavailable() {
+    // Native alert — always visible above Pay modal (toastr sits behind it)
+    window.alert(pos_advance_unavailable_msg());
+}
+
+function pos_toggle_advance_payment_method($scope) {
+    var $root = $scope && $scope.length ? $scope : $('#modal_payment');
+    if (!$root.length) {
+        $root = $(document);
+    }
+
+    $root.find('select.payment_types_dropdown option[value="advance"]').each(function () {
+        $(this).prop('disabled', false).removeClass('hide').show();
+    });
+    $root.find('.pos-pay-method-card[data-method="advance"]').each(function () {
+        $(this)
+            .removeClass('hide is-disabled')
+            .prop('disabled', false)
+            .removeAttr('disabled')
+            .show()
+            .css('pointer-events', 'auto');
+    });
+}
+
+window.pos_customer_advance_balance = pos_customer_advance_balance;
+window.pos_advance_unavailable_msg = pos_advance_unavailable_msg;
+window.pos_alert_advance_unavailable = pos_alert_advance_unavailable;
+window.pos_toggle_advance_payment_method = pos_toggle_advance_payment_method;
+
 $(document).ready(function() {
     pos_sync_empty_state();
     customer_set = false;
@@ -2453,78 +2512,8 @@ function pos_sync_pay_method_cards($scope) {
             .addClass('is-active')
             .attr('aria-pressed', 'true');
     });
-    if (typeof pos_toggle_advance_payment_method === 'function') {
-        pos_toggle_advance_payment_method($root);
-    }
-}
-
-/**
- * Customer prepaid advance balance (payment modal).
- */
-function pos_customer_advance_balance() {
-    if (!$('#advance_balance').length) {
-        return 0;
-    }
-    var balance = 0;
-    if (typeof __read_number === 'function') {
-        balance = __read_number($('#advance_balance'));
-    }
-    if (isNaN(balance) || balance === null || balance === '') {
-        balance = parseFloat($('#advance_balance').val()) || 0;
-    }
-    return parseFloat(balance) || 0;
-}
-
-function pos_advance_unavailable_msg() {
-    var msg = $('#advance_balance').data('error-msg');
-    if (msg) {
-        return msg;
-    }
-    if (typeof LANG !== 'undefined' && LANG.required_advance_balance_not_available) {
-        return LANG.required_advance_balance_not_available;
-    }
-    return 'Required advance balance not available';
-}
-
-function pos_alert_advance_unavailable() {
-    var msg = pos_advance_unavailable_msg();
-    if (typeof toastr !== 'undefined') {
-        toastr.warning(msg);
-    } else {
-        alert(msg);
-    }
-}
-
-/**
- * Always show Advance (japspos). If balance is 0 and Advance was selected, fall back to cash.
- */
-function pos_toggle_advance_payment_method($scope) {
-    var has_advance = pos_customer_advance_balance() > 0.00001;
-    var $root = $scope && $scope.length ? $scope : $('#modal_payment');
-    if (!$root.length) {
-        $root = $(document);
-    }
-
-    // Always keep Advance visible/enabled — alert on select when balance is 0
-    $root.find('select.payment_types_dropdown option[value="advance"]').each(function () {
-        $(this).prop('disabled', false).removeClass('hide').show();
-    });
-    $root.find('.pos-pay-method-card[data-method="advance"]').each(function () {
-        $(this).removeClass('hide is-disabled').prop('disabled', false).show();
-    });
-
-    if (!has_advance) {
-        $root.find('#payment_rows_div select.payment_types_dropdown').each(function () {
-            var $select = $(this);
-            if ($select.val() === 'advance') {
-                var fallback = $select.find('option[value="cash"]').length
-                    ? 'cash'
-                    : $select.find('option:not([value="advance"])').first().val();
-                if (fallback) {
-                    $select.val(fallback).trigger('change');
-                }
-            }
-        });
+    if (typeof window.pos_toggle_advance_payment_method === 'function') {
+        window.pos_toggle_advance_payment_method($root);
     }
 }
 
@@ -6841,18 +6830,17 @@ $(document).on('click', '.service_modal_btn', function(e) {
     }
 });
 
-$(document).on('click', '.pos-pay-method-card:not(:disabled)', function (e) {
+// Use namespaced handler; do not skip :disabled (Advance was wrongly left disabled)
+$(document).off('click.posPayMethod', '.pos-pay-method-card').on('click.posPayMethod', '.pos-pay-method-card', function (e) {
     e.preventDefault();
+    e.stopPropagation();
     var $btn = $(this);
-    var method = $btn.data('method');
+    $btn.prop('disabled', false).removeAttr('disabled').removeClass('is-disabled');
+    var method = String($btn.attr('data-method') || $btn.data('method') || '').trim();
     if (!method) {
-        return;
+        return false;
     }
-    // Same as japspos: Advance always clickable; warn when balance is 0 (max-value also blocks finalize)
-    if (method === 'advance' && !(pos_customer_advance_balance() > 0.00001)) {
-        pos_alert_advance_unavailable();
-    }
-    // Scope to the method-card grid first (more reliable than .payment_row alone)
+
     var $grid = $btn.closest('.pos-pay-method-cards');
     var $row = $btn.closest('.payment_row');
     if (!$row.length) {
@@ -6860,8 +6848,15 @@ $(document).on('click', '.pos-pay-method-card:not(:disabled)', function (e) {
     }
     var $select = $row.find('select.payment_types_dropdown').first();
     if (!$select.length) {
-        $select = $btn.closest('.form-group').find('select.payment_types_dropdown, .payment_types_dropdown').first();
+        $select = $btn.closest('.form-group').find('select.payment_types_dropdown').first();
     }
+
+    // Alert when no advance balance (native alert above modal)
+    if (method === 'advance' && !(pos_customer_advance_balance() > 0.00001)) {
+        window.__pos_advance_alerted = true;
+        pos_alert_advance_unavailable();
+    }
+
     if ($grid.length) {
         $grid.find('.pos-pay-method-card').removeClass('is-active').attr('aria-pressed', 'false');
     } else if ($row.length) {
@@ -6869,22 +6864,36 @@ $(document).on('click', '.pos-pay-method-card:not(:disabled)', function (e) {
     }
     $btn.addClass('is-active').attr('aria-pressed', 'true');
 
-    // Existing credit sale flag (same as express Credit button)
     if (method === 'credit_sale') {
         window.__pos_credit_sale = true;
         if ($('#is_credit_sale').length) {
             $('#is_credit_sale').val(1);
         }
-        return;
+        window.__pos_advance_alerted = false;
+        return false;
     }
 
     window.__pos_credit_sale = false;
     if ($('#is_credit_sale').length) {
         $('#is_credit_sale').val(0);
     }
+
     if ($select.length) {
-        $select.val(method).trigger('change');
+        // Ensure Advance option exists and is enabled before selecting
+        if (method === 'advance' && !$select.find('option[value="advance"]').length) {
+            $select.append($('<option>', { value: 'advance', text: 'Advance' }));
+        }
+        $select.find('option[value="' + method + '"]').prop('disabled', false);
+        $select.val(method);
+        try {
+            $select.trigger('change');
+        } catch (err) {}
     }
+    // Clear after sync change handlers finish (avoids double alert)
+    setTimeout(function () {
+        window.__pos_advance_alerted = false;
+    }, 0);
+    return false;
 });
 
 $(document).on('change', '.payment_types_dropdown', function(e) {
@@ -6893,8 +6902,12 @@ $(document).on('change', '.payment_types_dropdown', function(e) {
                 .find(':selected')
                 .data('default_payment_accounts') : $('#location_id').data('default_payment_accounts');
     var payment_type = $(this).val();
-    // Same as japspos: keep Advance selected; max-value rule below blocks finalize when balance is 0
-    if (payment_type === 'advance' && !(pos_customer_advance_balance() > 0.00001)) {
+    // Keep Advance selected; alert only if not already shown from card click
+    if (
+        payment_type === 'advance' &&
+        !(pos_customer_advance_balance() > 0.00001) &&
+        !window.__pos_advance_alerted
+    ) {
         pos_alert_advance_unavailable();
     }
     var payment_row = $(this).closest('.payment_row');
