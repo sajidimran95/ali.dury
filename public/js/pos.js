@@ -1122,6 +1122,9 @@ $(document).ready(function() {
             $('#advance_balance_text').text(__currency_trans_from_en(balance), true);
             $('#advance_balance').val(balance);
         }
+        if (typeof pos_toggle_advance_payment_method === 'function') {
+            pos_toggle_advance_payment_method();
+        }
         if ($('.contact_due_text').length && typeof get_contact_due === 'function') {
             get_contact_due(id);
         }
@@ -1244,6 +1247,9 @@ $(document).ready(function() {
         update_shipping_address(data);
         $('#advance_balance_text').text(__currency_trans_from_en(data.balance), true);
         $('#advance_balance').val(data.balance);
+        if (typeof pos_toggle_advance_payment_method === 'function') {
+            pos_toggle_advance_payment_method();
+        }
 
         if (data.price_calculation_type == 'selling_price_group') {
             $('#price_group').val(data.selling_price_group_id);
@@ -2447,6 +2453,79 @@ function pos_sync_pay_method_cards($scope) {
             .addClass('is-active')
             .attr('aria-pressed', 'true');
     });
+    if (typeof pos_toggle_advance_payment_method === 'function') {
+        pos_toggle_advance_payment_method($root);
+    }
+}
+
+/**
+ * Customer prepaid advance balance (payment modal).
+ */
+function pos_customer_advance_balance() {
+    if (!$('#advance_balance').length) {
+        return 0;
+    }
+    var balance = 0;
+    if (typeof __read_number === 'function') {
+        balance = __read_number($('#advance_balance'));
+    }
+    if (isNaN(balance) || balance === null || balance === '') {
+        balance = parseFloat($('#advance_balance').val()) || 0;
+    }
+    return parseFloat(balance) || 0;
+}
+
+function pos_advance_unavailable_msg() {
+    var msg = $('#advance_balance').data('error-msg');
+    if (msg) {
+        return msg;
+    }
+    if (typeof LANG !== 'undefined' && LANG.required_advance_balance_not_available) {
+        return LANG.required_advance_balance_not_available;
+    }
+    return 'Required advance balance not available';
+}
+
+function pos_alert_advance_unavailable() {
+    var msg = pos_advance_unavailable_msg();
+    if (typeof toastr !== 'undefined') {
+        toastr.warning(msg);
+    } else {
+        alert(msg);
+    }
+}
+
+/**
+ * Always show Advance (japspos). If balance is 0 and Advance was selected, fall back to cash.
+ */
+function pos_toggle_advance_payment_method($scope) {
+    var has_advance = pos_customer_advance_balance() > 0.00001;
+    var $root = $scope && $scope.length ? $scope : $('#modal_payment');
+    if (!$root.length) {
+        $root = $(document);
+    }
+
+    // Always keep Advance visible/enabled — alert on select when balance is 0
+    $root.find('select.payment_types_dropdown option[value="advance"]').each(function () {
+        $(this).prop('disabled', false).removeClass('hide').show();
+    });
+    $root.find('.pos-pay-method-card[data-method="advance"]').each(function () {
+        $(this).removeClass('hide is-disabled').prop('disabled', false).show();
+    });
+
+    if (!has_advance) {
+        $root.find('#payment_rows_div select.payment_types_dropdown').each(function () {
+            var $select = $(this);
+            if ($select.val() === 'advance') {
+                var fallback = $select.find('option[value="cash"]').length
+                    ? 'cash'
+                    : $select.find('option:not([value="advance"])').first().val();
+                if (fallback) {
+                    $select.val(fallback).trigger('change');
+                }
+            }
+        });
+    }
 }
 
 /**
@@ -2775,9 +2854,26 @@ function pos_refresh_payment_modal() {
 
         var pay_method = $(this).data('pay_method');
 
-        //If pay method is credit sale submit form
+        //If pay method is credit sale submit form (due sale — no cash payment lines)
         if (pay_method == 'credit_sale') {
+            if (!$('#is_credit_sale').length && pos_form_obj && pos_form_obj.length) {
+                pos_form_obj.append('<input type="hidden" name="is_credit_sale" value="0" id="is_credit_sale">');
+            }
             $('#is_credit_sale').val(1);
+            // Clear modal payment amounts so a full cash row cannot mark the sale paid
+            $('#payment_rows_div').find('input.payment-amount').each(function () {
+                var $amt = $(this);
+                $amt.prop('readonly', false).removeAttr('readonly');
+                if (typeof __write_number === 'function') {
+                    __write_number($amt, 0);
+                } else {
+                    $amt.val(0);
+                }
+                $amt.removeAttr('data-pos-amt-locked');
+            });
+            if (typeof calculate_balance_due === 'function') {
+                calculate_balance_due();
+            }
             if (typeof pos_prepare_form_for_submit === 'function') {
                 pos_prepare_form_for_submit();
             }
@@ -3188,6 +3284,14 @@ function pos_refresh_payment_modal() {
                     if (payData) {
                         data += '&' + payData;
                     }
+                }
+                // Credit sale must stay due (never cash) and still print invoice
+                var isCreditSale = $('input#is_credit_sale').val() == '1';
+                data = data.replace(/(^|&)is_credit_sale=[^&]*/g, '');
+                if (isCreditSale) {
+                    data += '&is_credit_sale=1';
+                } else {
+                    data += '&is_credit_sale=0';
                 }
                 // Suspend modal may live outside the form (appended to body) — append flags manually
                 var isSuspend = $('input#is_suspend').val() == '1';
@@ -5943,6 +6047,9 @@ function set_default_customer() {
     }
     $('#advance_balance_text').text(__currency_trans_from_en(default_customer_balance), true);
     $('#advance_balance').val(default_customer_balance);
+    if (typeof pos_toggle_advance_payment_method === 'function') {
+        pos_toggle_advance_payment_method();
+    }
     $('#shipping_address_modal').val(default_customer_address);
     if (default_customer_address) {
         $('#shipping_address').val(default_customer_address);
@@ -6725,6 +6832,11 @@ $(document).on('click', '.pos-pay-method-card:not(:disabled)', function (e) {
     if (!method) {
         return;
     }
+    if (method === 'advance' && !(pos_customer_advance_balance() > 0.00001)) {
+        e.stopImmediatePropagation();
+        pos_alert_advance_unavailable();
+        return false;
+    }
     // Scope to the method-card grid first (more reliable than .payment_row alone)
     var $grid = $btn.closest('.pos-pay-method-cards');
     var $row = $btn.closest('.payment_row');
@@ -6764,6 +6876,17 @@ $(document).on('change', '.payment_types_dropdown', function(e) {
                 .find(':selected')
                 .data('default_payment_accounts') : $('#location_id').data('default_payment_accounts');
     var payment_type = $(this).val();
+    if (payment_type === 'advance' && !(pos_customer_advance_balance() > 0.00001)) {
+        var $sel = $(this);
+        var fallback = $sel.find('option[value="cash"]').length
+            ? 'cash'
+            : $sel.find('option:not([value="advance"])').first().val();
+        if (fallback) {
+            $sel.val(fallback);
+            payment_type = fallback;
+        }
+        pos_alert_advance_unavailable();
+    }
     var payment_row = $(this).closest('.payment_row');
     // Sync card UI selection (Pay modal card-wise methods)
     var $cardsRoot = payment_row.length

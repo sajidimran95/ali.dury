@@ -146,6 +146,17 @@
 
 	$lines = $receipt_details->lines ?? [];
 	$totalRaw = $receipt_details->total_unformatted ?? ($receipt_details->total ?? 0);
+	$paidRaw = $receipt_details->total_paid ?? 0;
+	if (! is_numeric($paidRaw)) {
+		$paidRaw = $num($paidRaw);
+	}
+	$dueRaw = $receipt_details->total_due ?? null;
+	if ($dueRaw === null || $dueRaw === '') {
+		$dueRaw = $num($totalRaw) - $num($paidRaw);
+	} elseif (! is_numeric($dueRaw)) {
+		$dueRaw = $num($dueRaw);
+	}
+	$showDue = $num($dueRaw) > 0.009;
 	$qtyTotal = 0.0;
 	foreach ($lines as $line) {
 		$qtyTotal += array_key_exists('quantity_uf', $line) ? $num($line['quantity_uf']) : $num($line['quantity'] ?? 0);
@@ -343,6 +354,10 @@
 		border-bottom: 1px solid #000;
 	}
 	.qb-items > tbody > tr.qb-total > td { border-top: 1px solid #000; border-bottom: 1px solid #000; }
+	.qb-items.qb-items-totals > tbody > tr:last-child > td {
+		border-top: 1px solid #000 !important;
+		border-bottom: 1px solid #000 !important;
+	}
 	.qb-items .c { text-align: center; }
 	.qb-items .r { text-align: right; white-space: nowrap; }
 	.qb-items .desc { text-align: left; }
@@ -566,12 +581,21 @@
 	@if($forPdf)
 	<table style="width:100%; border-collapse:collapse; margin:0; padding:0;">
 		<!--QB_GRID_FILL-->
+		@php $qbBottom = $showDue ? '0.6pt solid #000' : '1.2pt solid #000'; @endphp
 		<tr>
-			<td style="width:11%; border:0.6pt solid #000; text-align:center; font-weight:bold; font-size:9pt; padding:3px 4px;">QTY {{ $qtyTotalText }}</td>
-			<td colspan="2" style="width:59%; border:0.6pt solid #000; text-align:left; font-size:7.5pt; padding:3px 4px;">{{ $footer }}</td>
-			<td style="width:15%; border:0.6pt solid #000; text-align:center; font-weight:bold; font-size:10pt; padding:3px 4px;">Total</td>
-			<td style="width:15%; border:0.6pt solid #000; text-align:right; font-size:9pt; padding:3px 4px;">${{ $money($totalRaw) }}</td>
+			<td style="width:11%; border-left:0.6pt solid #000; border-right:0.6pt solid #000; border-top:0.6pt solid #000; border-bottom:{{ $qbBottom }}; text-align:center; font-weight:bold; font-size:9pt; padding:3px 4px;">QTY {{ $qtyTotalText }}</td>
+			<td colspan="2" style="width:59%; border-left:0.6pt solid #000; border-right:0.6pt solid #000; border-top:0.6pt solid #000; border-bottom:{{ $qbBottom }}; text-align:left; font-size:7.5pt; padding:3px 4px;">{{ $footer }}</td>
+			<td style="width:15%; border-left:0.6pt solid #000; border-right:0.6pt solid #000; border-top:0.6pt solid #000; border-bottom:{{ $qbBottom }}; text-align:center; font-weight:bold; font-size:10pt; padding:3px 4px;">Total</td>
+			<td style="width:15%; border-left:0.6pt solid #000; border-right:0.6pt solid #000; border-top:0.6pt solid #000; border-bottom:{{ $qbBottom }}; text-align:right; font-size:9pt; padding:3px 4px;">${{ $money($totalRaw) }}</td>
 		</tr>
+		@if($showDue)
+		<tr>
+			<td style="width:11%; border-left:0.6pt solid #000; border-right:0.6pt solid #000; border-top:0.6pt solid #000; border-bottom:1.2pt solid #000; padding:3px 4px;">&nbsp;</td>
+			<td colspan="2" style="width:59%; border-left:0.6pt solid #000; border-right:0.6pt solid #000; border-top:0.6pt solid #000; border-bottom:1.2pt solid #000; padding:3px 4px;">&nbsp;</td>
+			<td style="width:15%; border-left:0.6pt solid #000; border-right:0.6pt solid #000; border-top:0.6pt solid #000; border-bottom:1.2pt solid #000; text-align:center; font-weight:bold; font-size:9pt; padding:3px 4px;">Balance Due</td>
+			<td style="width:15%; border-left:0.6pt solid #000; border-right:0.6pt solid #000; border-top:0.6pt solid #000; border-bottom:1.2pt solid #000; text-align:right; font-size:9pt; padding:3px 4px;">${{ $money($dueRaw) }}</td>
+		</tr>
+		@endif
 	</table>
 	@endif
 	<div class="qb-items-fill" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>
@@ -605,11 +629,11 @@
 				<td class="totlab">Total</td>
 				<td class="totamt" @if(!empty($quick_edit)) id="qe_grand" @endif>${{ $money($totalRaw) }}</td>
 			</tr>
-			@if(!empty($quick_edit))
-				<tr>
+			@if($showDue || !empty($quick_edit))
+				<tr class="qb-balance-due">
 					<td class="note" colspan="3"></td>
-					<td class="totlab">Balance due</td>
-					<td class="totamt" id="qe_due">${{ $money($totalRaw) }}</td>
+					<td class="totlab">Balance Due</td>
+					<td class="totamt" @if(!empty($quick_edit)) id="qe_due" @endif>${{ $money($showDue ? $dueRaw : $totalRaw) }}</td>
 				</tr>
 			@endif
 		</tbody>

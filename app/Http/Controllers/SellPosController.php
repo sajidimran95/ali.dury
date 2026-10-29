@@ -629,8 +629,11 @@ class SellPosController extends Controller
 
                 $is_credit_sale = isset($input['is_credit_sale']) && $input['is_credit_sale'] == 1 ? true : false;
 
+                // Credit sale = due invoice; never create cash/card payment lines for it
                 if (!$transaction->is_suspend && !empty($input['payment']) && !$is_credit_sale) {
                     $this->transactionUtil->createOrUpdatePaymentLines($transaction, $input['payment']);
+                } elseif ($is_credit_sale) {
+                    $input['payment'] = [];
                 }
 
                 //Check for final and do some processing.
@@ -694,6 +697,11 @@ class SellPosController extends Controller
 
                     //Update payment status
                     $payment_status = $this->transactionUtil->updatePaymentStatus($transaction->id, $transaction->final_total);
+                    if ($is_credit_sale) {
+                        $payment_status = 'due';
+                        $transaction->payment_status = 'due';
+                        $transaction->save();
+                    }
 
                     $transaction->payment_status = $payment_status;
 
@@ -770,6 +778,11 @@ class SellPosController extends Controller
                     } elseif ($input['status'] == 'final') {
                         $print_invoice = true;
                     }
+                }
+
+                // Credit / due sale still shows the invoice (same as cash sale)
+                if ($is_credit_sale && $input['status'] == 'final' && ! $is_direct_sale) {
+                    $print_invoice = true;
                 }
 
                 if ($transaction->is_suspend == 1 && empty($pos_settings['print_on_suspend'])) {
@@ -1807,6 +1820,11 @@ class SellPosController extends Controller
 
                     //Update payment status
                     $payment_status = $this->transactionUtil->updatePaymentStatus($transaction->id, $transaction->final_total);
+                    if ($is_credit_sale) {
+                        $payment_status = 'due';
+                        $transaction->payment_status = 'due';
+                        $transaction->save();
+                    }
                     $transaction->payment_status = $payment_status;
 
                     //Update product stock
