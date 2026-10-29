@@ -627,13 +627,14 @@ class SellPosController extends Controller
 
                 $input['payment'][] = $change_return;
 
-                $is_credit_sale = isset($input['is_credit_sale']) && $input['is_credit_sale'] == 1 ? true : false;
+                $is_credit_sale = $this->requestIsCreditSale($request, $input);
 
                 // Credit sale = due invoice; never create cash/card payment lines for it
-                if (!$transaction->is_suspend && !empty($input['payment']) && !$is_credit_sale) {
-                    $this->transactionUtil->createOrUpdatePaymentLines($transaction, $input['payment']);
-                } elseif ($is_credit_sale) {
+                if ($is_credit_sale) {
                     $input['payment'] = [];
+                    $input['is_credit_sale'] = 1;
+                } elseif (!$transaction->is_suspend && !empty($input['payment'])) {
+                    $this->transactionUtil->createOrUpdatePaymentLines($transaction, $input['payment']);
                 }
 
                 //Check for final and do some processing.
@@ -698,9 +699,7 @@ class SellPosController extends Controller
                     //Update payment status
                     $payment_status = $this->transactionUtil->updatePaymentStatus($transaction->id, $transaction->final_total);
                     if ($is_credit_sale) {
-                        $payment_status = 'due';
-                        $transaction->payment_status = 'due';
-                        $transaction->save();
+                        $payment_status = $this->forceCreditSaleDue($transaction);
                     }
 
                     $transaction->payment_status = $payment_status;
@@ -870,6 +869,28 @@ class SellPosController extends Controller
                     ->with('status', $output);
             }
         }
+    }
+
+    /**
+     * Credit Sale from POS (modal / express) — treat as due invoice.
+     */
+    private function requestIsCreditSale(Request $request, array $input): bool
+    {
+        $raw = $input['is_credit_sale'] ?? $request->input('is_credit_sale');
+
+        return $raw === 1 || $raw === '1' || $raw === true || $raw === 'true';
+    }
+
+    /**
+     * Strip any payment lines and force payment_status = due for credit sales.
+     */
+    private function forceCreditSaleDue(Transaction $transaction): string
+    {
+        TransactionPayment::where('transaction_id', $transaction->id)->delete();
+        $transaction->payment_status = 'due';
+        $transaction->save();
+
+        return 'due';
     }
 
     /**
@@ -1782,7 +1803,7 @@ class SellPosController extends Controller
                 $deleted_lines = $this->transactionUtil->createOrUpdateSellLines($transaction, $input['products'], $input['location_id'], true, $status_before);
 
                 //Update update lines
-                $is_credit_sale = isset($input['is_credit_sale']) && $input['is_credit_sale'] == 1 ? true : false;
+                $is_credit_sale = $this->requestIsCreditSale($request, $input);
 
                 $new_sales_order_ids = $transaction->sales_order_ids ?? [];
                 $sales_order_ids = array_unique(array_merge($sales_order_ids, $new_sales_order_ids));
@@ -1791,7 +1812,10 @@ class SellPosController extends Controller
                     $this->transactionUtil->updateSalesOrderStatus($sales_order_ids);
                 }
 
-                if (!$transaction->is_suspend && !$is_credit_sale) {
+                if ($is_credit_sale) {
+                    $input['payment'] = [];
+                    $input['is_credit_sale'] = 1;
+                } elseif (!$transaction->is_suspend) {
                     //Add change return
                     $change_return['amount'] = $input['change_return'] ?? 0;
                     $change_return['is_return'] = 1;
@@ -1821,9 +1845,7 @@ class SellPosController extends Controller
                     //Update payment status
                     $payment_status = $this->transactionUtil->updatePaymentStatus($transaction->id, $transaction->final_total);
                     if ($is_credit_sale) {
-                        $payment_status = 'due';
-                        $transaction->payment_status = 'due';
-                        $transaction->save();
+                        $payment_status = $this->forceCreditSaleDue($transaction);
                     }
                     $transaction->payment_status = $payment_status;
 

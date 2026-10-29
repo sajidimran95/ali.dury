@@ -74,9 +74,20 @@
                     @endif
                 @endif
 
-                {{-- Always present so modal Credit Sale can mark the invoice as due --}}
-                <input type="hidden" name="is_credit_sale" value="0" id="is_credit_sale">
                 @if (empty($pos_settings['disable_express_checkout']))
+                @if (!Gate::check('disable_credit_sale') || auth()->user()->can('superadmin') || auth()->user()->can('admin'))
+                    @if (empty($pos_settings['disable_credit_sale_button']))
+                        <input type="hidden" name="is_credit_sale" value="0" id="is_credit_sale">
+                        <button type="button"
+                            id="pos-credit-sale-btn"
+                            class="tw-font-bold tw-text-gray-700 tw-cursor-pointer tw-text-xs md:tw-text-sm tw-flex tw-flex-col tw-items-center tw-justify-center tw-gap-1 tw-whitespace-nowrap no-print pos-express-finalize @if ($is_mobile) col-xs-6 @endif"
+                            data-pay_method="credit_sale" title="@lang('lang_v1.tooltip_credit_sale')"
+                            @if (!empty($only_payment)) disabled @endif>
+                            <i class="fas fa-check tw-text-[#5E5CA8]" aria-hidden="true"></i>
+                            @lang('lang_v1.credit_sale')
+                        </button>
+                    @endif
+                @endif
                 @if (!Gate::check('disable_card') || auth()->user()->can('superadmin') || auth()->user()->can('admin'))
                     <button type="button"
                         class="tw-font-bold tw-text-gray-700 tw-cursor-pointer tw-text-xs md:tw-text-sm tw-flex tw-flex-col tw-items-center tw-justify-center tw-gap-1 tw-whitespace-nowrap  no-print @if (!empty($pos_settings['disable_suspend']))  @endif pos-express-finalize @if (!array_key_exists('card', $payment_types)) hide @endif @if ($is_mobile) col-xs-6 @endif"
@@ -84,6 +95,9 @@
                         <i class="fas fa-credit-card tw-text-[#D61B60]" aria-hidden="true"></i> @lang('lang_v1.express_checkout_card')
                     </button>
                 @endif
+                @else
+                    {{-- Credit sale flag still needed for Pay modal when express buttons hidden (same as japspos) --}}
+                    <input type="hidden" name="is_credit_sale" value="0" id="is_credit_sale">
                 @endif
 
                 {{-- Desktop-only primary CTAs (mobile has these in its own top row) --}}

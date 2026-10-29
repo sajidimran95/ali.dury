@@ -2856,6 +2856,7 @@ function pos_refresh_payment_modal() {
 
         //If pay method is credit sale submit form (due sale — no cash payment lines)
         if (pay_method == 'credit_sale') {
+            window.__pos_credit_sale = true;
             if (!$('#is_credit_sale').length && pos_form_obj && pos_form_obj.length) {
                 pos_form_obj.append('<input type="hidden" name="is_credit_sale" value="0" id="is_credit_sale">');
             }
@@ -2880,6 +2881,7 @@ function pos_refresh_payment_modal() {
             pos_form_obj.submit();
             return true;
         } else {
+            window.__pos_credit_sale = false;
             if ($('#is_credit_sale').length) {
                 $('#is_credit_sale').val(0);
             }
@@ -3285,11 +3287,25 @@ function pos_refresh_payment_modal() {
                         data += '&' + payData;
                     }
                 }
-                // Credit sale must stay due (never cash) and still print invoice
-                var isCreditSale = $('input#is_credit_sale').val() == '1';
+                // Credit sale must stay due (never cash) and still print invoice.
+                // Use window flag + hidden input — flag survives modal/form serialize quirks on live server.
+                var isCreditSale =
+                    window.__pos_credit_sale === true ||
+                    $('input#is_credit_sale').val() == '1';
+                window.__pos_credit_sale = false;
                 data = data.replace(/(^|&)is_credit_sale=[^&]*/g, '');
                 if (isCreditSale) {
+                    // Zero payment amounts in payload so sale cannot become paid if flag is missed server-side
+                    data = data.replace(
+                        /(^|&)(payment(?:\[\d+\]\[amount\]|%5B\d+%5D%5Bamount%5D))=[^&]*/gi,
+                        function (m, sep, key) {
+                            return sep + key + '=0';
+                        }
+                    );
                     data += '&is_credit_sale=1';
+                    if ($('#is_credit_sale').length) {
+                        $('#is_credit_sale').val(1);
+                    }
                 } else {
                     data += '&is_credit_sale=0';
                 }
@@ -6832,10 +6848,9 @@ $(document).on('click', '.pos-pay-method-card:not(:disabled)', function (e) {
     if (!method) {
         return;
     }
+    // Same as japspos: Advance always clickable; warn when balance is 0 (max-value also blocks finalize)
     if (method === 'advance' && !(pos_customer_advance_balance() > 0.00001)) {
-        e.stopImmediatePropagation();
         pos_alert_advance_unavailable();
-        return false;
     }
     // Scope to the method-card grid first (more reliable than .payment_row alone)
     var $grid = $btn.closest('.pos-pay-method-cards');
@@ -6856,12 +6871,14 @@ $(document).on('click', '.pos-pay-method-card:not(:disabled)', function (e) {
 
     // Existing credit sale flag (same as express Credit button)
     if (method === 'credit_sale') {
+        window.__pos_credit_sale = true;
         if ($('#is_credit_sale').length) {
             $('#is_credit_sale').val(1);
         }
         return;
     }
 
+    window.__pos_credit_sale = false;
     if ($('#is_credit_sale').length) {
         $('#is_credit_sale').val(0);
     }
@@ -6876,15 +6893,8 @@ $(document).on('change', '.payment_types_dropdown', function(e) {
                 .find(':selected')
                 .data('default_payment_accounts') : $('#location_id').data('default_payment_accounts');
     var payment_type = $(this).val();
+    // Same as japspos: keep Advance selected; max-value rule below blocks finalize when balance is 0
     if (payment_type === 'advance' && !(pos_customer_advance_balance() > 0.00001)) {
-        var $sel = $(this);
-        var fallback = $sel.find('option[value="cash"]').length
-            ? 'cash'
-            : $sel.find('option:not([value="advance"])').first().val();
-        if (fallback) {
-            $sel.val(fallback);
-            payment_type = fallback;
-        }
         pos_alert_advance_unavailable();
     }
     var payment_row = $(this).closest('.payment_row');

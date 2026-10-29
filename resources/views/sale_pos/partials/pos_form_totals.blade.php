@@ -138,7 +138,7 @@
 	</div>
 
 	@php
-		// Disable Express Checkout hides Card / Credit / Multiple — Pay CTA stays
+		// Same as japspos: Disable Express Checkout hides Card / Credit / Multiple — Pay CTA stays
 		$express_enabled = ($pos_settings['disable_express_checkout'] ?? 0) == 0;
 		$show_cash_pay = (!Gate::check('disable_express_checkout') || auth()->user()->can('superadmin') || auth()->user()->can('admin'))
 			&& $express_enabled
@@ -146,14 +146,16 @@
 		$show_card_pay = $express_enabled
 			&& (!Gate::check('disable_card') || auth()->user()->can('superadmin') || auth()->user()->can('admin'))
 			&& array_key_exists('card', $payment_types ?? []);
-		// Credit Sale is only in the payment modal (creates a due sale)
+		$show_credit_pay = $express_enabled
+			&& (!Gate::check('disable_credit_sale') || auth()->user()->can('superadmin') || auth()->user()->can('admin'))
+			&& empty($pos_settings['disable_credit_sale_button']);
 		// Named "Multiple" button only (not the main Pay CTA)
 		$show_multi_pay = $express_enabled
 			&& (!Gate::check('disable_pay_checkout') || auth()->user()->can('superadmin') || auth()->user()->can('admin'))
 			&& ($pos_settings['disable_pay_checkout'] ?? 0) == 0;
 	@endphp
 
-	@if ($show_card_pay || $show_multi_pay)
+	@if ($show_card_pay || $show_credit_pay || $show_multi_pay)
 		<div class="pos-pay-methods no-print">
 			@if ($show_card_pay)
 				<button type="button"
@@ -162,6 +164,17 @@
 					title="@lang('lang_v1.tooltip_express_checkout_card')">
 					<i class="fas fa-credit-card" aria-hidden="true"></i>
 					<span>Card</span>
+				</button>
+			@endif
+			@if ($show_credit_pay)
+				{{-- Same as japspos — due sale via is_credit_sale --}}
+				<button type="button"
+					class="pos-pay-method-btn pos-express-finalize"
+					data-pay_method="credit_sale"
+					title="@lang('lang_v1.tooltip_credit_sale')"
+					@if (!empty($only_payment)) disabled @endif>
+					<i class="fas fa-check" aria-hidden="true"></i>
+					<span>@lang('lang_v1.credit_sale')</span>
 				</button>
 			@endif
 			@if ($show_multi_pay)
