@@ -30,6 +30,9 @@
                 - {{ $sell_line->variations->name ?? ''}},
                 @endif
                 {{ $sell_line->variations->sub_sku ?? ''}}
+                @if(method_exists($sell_line->product, 'trashed') && $sell_line->product->trashed())
+                    <span class="label bg-red no-print" title="@lang('lang_v1.recycle_bin')">@lang('lang_v1.deleted_product')</span>
+                @endif
                 @php
                 $brand = $sell_line->product->brand;
                 @endphp

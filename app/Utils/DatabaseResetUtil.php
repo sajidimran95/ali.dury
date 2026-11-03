@@ -566,6 +566,7 @@ class DatabaseResetUtil
             'cash_register_transactions',
             'account_transactions',
             'transactions',
+            'deleted_sales',
             'cash_registers',
             'variation_location_details',
             'variation_group_prices',

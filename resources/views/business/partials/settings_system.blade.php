@@ -100,6 +100,68 @@
     </div>
     @endif
 
+    <div class="row" style="margin-top: 20px;" id="recycle_bin_section">
+        <div class="col-sm-12">
+            <div class="box box-warning">
+                <div class="box-header with-border">
+                    <h3 class="box-title"><i class="fa fa-recycle"></i> @lang('lang_v1.recycle_bin')</h3>
+                </div>
+                <div class="box-body">
+                    <p class="text-muted">@lang('lang_v1.recycle_bin_help')</p>
+                    <ul class="nav nav-tabs">
+                        <li class="active"><a href="#recycle_tab_products" data-toggle="tab" data-recycle-type="products">@lang('lang_v1.deleted_products') <span class="badge" id="recycle_count_products">0</span></a></li>
+                        <li><a href="#recycle_tab_sales" data-toggle="tab" data-recycle-type="sales">@lang('lang_v1.deleted_sales') <span class="badge" id="recycle_count_sales">0</span></a></li>
+                    </ul>
+                    <div class="tab-content" style="padding-top: 12px;">
+                        <div class="tab-pane active" id="recycle_tab_products">
+                            <div class="text-right" style="margin-bottom: 8px;">
+                                <button type="button" class="btn btn-sm btn-danger recycle-empty" data-type="products"><i class="fa fa-trash"></i> @lang('lang_v1.empty_deleted_products')</button>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-striped" id="recycle_products_table" style="width:100%;">
+                                    <thead>
+                                        <tr>
+                                            <th>@lang('sale.product')</th>
+                                            <th>@lang('product.sku')</th>
+                                            <th>@lang('lang_v1.used_in_invoices')</th>
+                                            <th>@lang('lang_v1.deleted_on')</th>
+                                            <th>@lang('lang_v1.deleted_by')</th>
+                                            <th>@lang('messages.action')</th>
+                                        </tr>
+                                    </thead>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="tab-pane" id="recycle_tab_sales">
+                            <div class="text-right" style="margin-bottom: 8px;">
+                                <button type="button" class="btn btn-sm btn-danger recycle-empty" data-type="sales"><i class="fa fa-trash"></i> @lang('lang_v1.empty_deleted_sales')</button>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-striped" id="recycle_sales_table" style="width:100%;">
+                                    <thead>
+                                        <tr>
+                                            <th>@lang('sale.invoice_no')</th>
+                                            <th>@lang('lang_v1.type')</th>
+                                            <th>@lang('contact.customer')</th>
+                                            <th>@lang('sale.total_amount')</th>
+                                            <th>@lang('messages.date')</th>
+                                            <th>@lang('lang_v1.deleted_on')</th>
+                                            <th>@lang('lang_v1.deleted_by')</th>
+                                            <th>@lang('messages.action')</th>
+                                        </tr>
+                                    </thead>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <button type="button" class="btn btn-danger recycle-empty" data-type="all"><i class="fa fa-recycle"></i> @lang('lang_v1.empty_recycle_bin')</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="row" style="margin-top: 20px;">
         <div class="col-sm-12">
             <div class="box box-danger">

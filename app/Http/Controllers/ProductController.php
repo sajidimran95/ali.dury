@@ -1085,67 +1085,13 @@ class ProductController extends Controller
             try {
                 $business_id = request()->session()->get('user.business_id');
 
-                $can_be_deleted = true;
-                $error_msg = '';
-
-                //Check if any purchase or transfer exists
-                $count = PurchaseLine::join(
-                    'transactions as T',
-                    'purchase_lines.transaction_id',
-                    '=',
-                    'T.id'
-                )
-                                    ->whereIn('T.type', ['purchase'])
-                                    ->where('T.business_id', $business_id)
-                                    ->where('purchase_lines.product_id', $id)
-                                    ->count();
-                if ($count > 0) {
-                    $can_be_deleted = false;
-                    $error_msg = __('lang_v1.purchase_already_exist');
-                } else {
-                    //Check if any opening stock sold
-                    $count = PurchaseLine::join(
-                        'transactions as T',
-                        'purchase_lines.transaction_id',
-                        '=',
-                        'T.id'
-                     )
-                                    ->where('T.type', 'opening_stock')
-                                    ->where('T.business_id', $business_id)
-                                    ->where('purchase_lines.product_id', $id)
-                                    ->where('purchase_lines.quantity_sold', '>', 0)
-                                    ->count();
-                    if ($count > 0) {
-                        $can_be_deleted = false;
-                        $error_msg = __('lang_v1.opening_stock_sold');
-                    } else {
-                        //Check if any stock is adjusted
-                        $count = PurchaseLine::join(
-                            'transactions as T',
-                            'purchase_lines.transaction_id',
-                            '=',
-                            'T.id'
-                        )
-                                    ->where('T.business_id', $business_id)
-                                    ->where('purchase_lines.product_id', $id)
-                                    ->where('purchase_lines.quantity_adjusted', '>', 0)
-                                    ->count();
-                        if ($count > 0) {
-                            $can_be_deleted = false;
-                            $error_msg = __('lang_v1.stock_adjusted');
-                        }
-                    }
-                }
-
                 $product = Product::where('id', $id)
                                 ->where('business_id', $business_id)
                                 ->with('variations')
                                 ->first();
 
-                // Sale lines are removed by DB cascade when a product is deleted, so never delete sold products
-                if ($can_be_deleted && TransactionSellLine::where('product_id', $id)->exists()) {
-                    $can_be_deleted = false;
-                    $error_msg = __('lang_v1.product_has_sales_cannot_delete');
+                if (empty($product)) {
+                    return ['success' => false, 'msg' => __('lang_v1.recycle_item_not_found')];
                 }
 
                 //Check if product is added as an ingredient of any recipe
@@ -1155,34 +1101,19 @@ class ProductController extends Controller
                     $exists_as_ingredient = \Modules\Manufacturing\Entities\MfgRecipeIngredient::whereIn('variation_id', $variation_ids)
                         ->exists();
                     if ($exists_as_ingredient) {
-                        $can_be_deleted = false;
-                        $error_msg = __('manufacturing::lang.added_as_ingredient');
+                        return ['success' => false, 'msg' => __('manufacturing::lang.added_as_ingredient')];
                     }
                 }
-            
-                if ($can_be_deleted) {
-                    if (! empty($product)) {
-                        DB::beginTransaction();
-                        //Delete variation location details
-                        VariationLocationDetails::where('product_id', $id)
-                                                ->delete();
-                        //Detach product locations pivot
-                        $product->product_locations()->detach();
-                        //Delete rack details
-                        \App\ProductRack::where('product_id', $id)->delete();
-                        $product->delete();
-                        event(new ProductsCreatedOrModified($product, 'deleted'));
-                        DB::commit();
-                    }
 
-                    $output = ['success' => true,
-                        'msg' => __('lang_v1.product_delete_success'),
-                    ];
-                } else {
-                    $output = ['success' => false,
-                        'msg' => $error_msg,
-                    ];
-                }
+                // Soft delete: product moves to the Recycle Bin (Settings > System).
+                // Invoices, purchases and reports keep showing it; stock rows are kept for restore.
+                DB::beginTransaction();
+                (new \App\Utils\RecycleBinUtil())->softDeleteProduct($product, auth()->id());
+                DB::commit();
+
+                $output = ['success' => true,
+                    'msg' => __('lang_v1.product_moved_to_recycle_bin'),
+                ];
             } catch (\Exception $e) {
                 DB::rollBack();
                 \Log::emergency('File:'.$e->getFile().'Line:'.$e->getLine().'Message:'.$e->getMessage());
@@ -2072,6 +2003,7 @@ class ProductController extends Controller
 
                 DB::beginTransaction();
 
+                $recycleBin = new \App\Utils\RecycleBinUtil();
                 foreach ($products as $product) {
                     $can_be_deleted = true;
                     //Check if product is added as an ingredient of any recipe
@@ -2083,21 +2015,9 @@ class ProductController extends Controller
                         $can_be_deleted = ! $exists_as_ingredient;
                     }
 
-                    if ($can_be_deleted && TransactionSellLine::where('product_id', $product->id)->exists()) {
-                        $can_be_deleted = false;
-                    }
-
-                    //Delete if no purchase found
-                    if (empty($product->purchase_lines->toArray()) && $can_be_deleted) {
-                        //Delete variation location details
-                        VariationLocationDetails::where('product_id', $product->id)
-                                                    ->delete();
-                        //Detach product locations pivot
-                        $product->product_locations()->detach();
-                        //Delete rack details
-                        \App\ProductRack::where('product_id', $product->id)->delete();
-                        $product->delete();
-                        event(new ProductsCreatedOrModified($product, 'Deleted'));
+                    if ($can_be_deleted) {
+                        // Soft delete -> Recycle Bin
+                        $recycleBin->softDeleteProduct($product, auth()->id());
                     } else {
                         $purchase_exist = true;
                     }

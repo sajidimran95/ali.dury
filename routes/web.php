@@ -383,6 +383,16 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::post('/business/update', [BusinessController::class, 'postBusinessSettings'])->name('business.postBusinessSettings');
     Route::post('/business/clear-cache', [BusinessController::class, 'clearApplicationCache'])->name('business.clearCache');
     Route::post('/business/reset-database', [BusinessController::class, 'resetDatabaseToFreshPos'])->name('business.resetDatabase');
+
+    // Recycle bin (Settings > System): deleted products & sales
+    Route::get('/recycle-bin/counts', [\App\Http\Controllers\RecycleBinController::class, 'counts'])->name('recycle-bin.counts');
+    Route::get('/recycle-bin/products', [\App\Http\Controllers\RecycleBinController::class, 'products'])->name('recycle-bin.products');
+    Route::get('/recycle-bin/sales', [\App\Http\Controllers\RecycleBinController::class, 'sales'])->name('recycle-bin.sales');
+    Route::post('/recycle-bin/products/{id}/restore', [\App\Http\Controllers\RecycleBinController::class, 'restoreProduct'])->whereNumber('id');
+    Route::delete('/recycle-bin/products/{id}', [\App\Http\Controllers\RecycleBinController::class, 'forceDeleteProduct'])->whereNumber('id');
+    Route::post('/recycle-bin/sales/{id}/restore', [\App\Http\Controllers\RecycleBinController::class, 'restoreSale'])->whereNumber('id');
+    Route::delete('/recycle-bin/sales/{id}', [\App\Http\Controllers\RecycleBinController::class, 'forceDeleteSale'])->whereNumber('id');
+    Route::post('/recycle-bin/empty', [\App\Http\Controllers\RecycleBinController::class, 'emptyBin'])->name('recycle-bin.empty');
     Route::get('/user/profile', [UserController::class, 'getProfile'])->name('user.getProfile');
     Route::post('/user/update', [UserController::class, 'updateProfile'])->name('user.updateProfile');
     Route::post('/user/update-password', [UserController::class, 'updatePassword'])->name('user.updatePassword');

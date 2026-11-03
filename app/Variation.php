@@ -32,7 +32,7 @@ class Variation extends Model
 
     public function product()
     {
-        return $this->belongsTo(\App\Product::class, 'product_id');
+        return $this->belongsTo(\App\Product::class, 'product_id')->withTrashed();
     }
 
     /**

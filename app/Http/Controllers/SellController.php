@@ -1160,7 +1160,7 @@ class SellController extends Controller
                         $sell_details[$key]->modifiers_ids = $modifiers_ids;
 
                         //add product modifier sets for edit
-                        $this_product = Product::find($sell_details[$key]->product_id);
+                        $this_product = Product::withTrashed()->find($sell_details[$key]->product_id);
                         if (count($this_product->modifier_sets) > 0) {
                             $sell_details[$key]->product_ms = $this_product->modifier_sets;
                         }

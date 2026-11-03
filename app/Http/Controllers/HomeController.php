@@ -1993,6 +1993,7 @@ class HomeController extends Controller
         $query = VariationLocationDetails::join('products as p', 'variation_location_details.product_id', '=', 'p.id')
             ->join('variations as v', 'variation_location_details.variation_id', '=', 'v.id')
             ->where('p.business_id', $business_id)
+            ->whereNull('p.deleted_at')
             ->where('p.enable_stock', 1)
             ->where('p.is_inactive', 0)
             ->whereNull('v.deleted_at')

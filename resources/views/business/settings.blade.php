@@ -373,6 +373,140 @@
             });
         }
 
+        // ---------------- Recycle Bin ----------------
+        var recycleTables = {};
+        var recycleUrls = {
+            products: '{{ url('recycle-bin/products') }}',
+            sales: '{{ url('recycle-bin/sales') }}',
+        };
+
+        function refreshRecycleCounts() {
+            $.get('{{ route('recycle-bin.counts') }}', function(res) {
+                $('#recycle_count_products').text(res.products);
+                $('#recycle_count_sales').text(res.sales);
+            });
+        }
+
+        function initRecycleTable(type) {
+            if (recycleTables[type]) {
+                recycleTables[type].columns.adjust();
+                return;
+            }
+            var columns = type === 'products'
+                ? [
+                    { data: 'name', name: 'products.name' },
+                    { data: 'sku', name: 'products.sku' },
+                    { data: 'sales_count', name: 'sales_count', searchable: false },
+                    { data: 'deleted_at', name: 'products.deleted_at', searchable: false },
+                    { data: 'deleted_by_name', name: 'deleted_by_name', orderable: false },
+                    { data: 'action', name: 'action', orderable: false, searchable: false },
+                ]
+                : [
+                    { data: 'invoice_no', name: 'deleted_sales.invoice_no' },
+                    { data: 'type', name: 'deleted_sales.type', searchable: false },
+                    { data: 'customer', name: 'customer', orderable: false },
+                    { data: 'final_total', name: 'deleted_sales.final_total', searchable: false },
+                    { data: 'transaction_date', name: 'deleted_sales.transaction_date', searchable: false },
+                    { data: 'created_at', name: 'deleted_sales.created_at', searchable: false },
+                    { data: 'deleted_by_name', name: 'deleted_by_name', orderable: false },
+                    { data: 'action', name: 'action', orderable: false, searchable: false },
+                ];
+            recycleTables[type] = $('#recycle_' + type + '_table').DataTable({
+                processing: true,
+                serverSide: true,
+                ajax: recycleUrls[type],
+                order: [[type === 'products' ? 3 : 5, 'desc']],
+                columns: columns,
+                fnDrawCallback: function() {
+                    __currency_convert_recursively($('#recycle_' + type + '_table'));
+                },
+            });
+        }
+
+        function reloadRecycle() {
+            $.each(recycleTables, function(k, t) { t.ajax.reload(null, false); });
+            refreshRecycleCounts();
+        }
+
+        function recycleAction(options) {
+            swal({
+                title: LANG.sure,
+                text: options.text,
+                icon: 'warning',
+                buttons: true,
+                dangerMode: options.danger,
+            }).then(function(confirmed) {
+                if (!confirmed) {
+                    return;
+                }
+                $.ajax({
+                    method: options.method,
+                    url: options.url,
+                    dataType: 'json',
+                    data: $.extend({ _token: '{{ csrf_token() }}' }, options.data || {}),
+                    success: function(result) {
+                        if (result.success) {
+                            toastr.success(result.msg);
+                        } else {
+                            toastr.error(result.msg);
+                        }
+                        reloadRecycle();
+                    },
+                    error: function() {
+                        toastr.error('@lang('messages.something_went_wrong')');
+                    },
+                });
+            });
+        }
+
+        if ($('#recycle_bin_section').length) {
+            refreshRecycleCounts();
+            // Tables are created lazily when the System tab / sub-tab becomes visible
+            $('.pos-tab-menu .list-group-item').on('click', function() {
+                setTimeout(function() {
+                    if ($('#recycle_bin_section').is(':visible')) {
+                        initRecycleTable($('#recycle_bin_section .nav-tabs li.active a').data('recycle-type'));
+                    }
+                }, 50);
+            });
+            $('#recycle_bin_section a[data-toggle="tab"]').on('shown.bs.tab', function(e) {
+                initRecycleTable($(e.target).data('recycle-type'));
+            });
+            if ($('#recycle_bin_section').is(':visible')) {
+                initRecycleTable('products');
+            }
+
+            $(document).on('click', '#recycle_bin_section .recycle-restore', function() {
+                var type = $(this).data('type'), id = $(this).data('id');
+                recycleAction({
+                    text: '@lang('lang_v1.recycle_confirm_restore')',
+                    danger: false,
+                    method: 'POST',
+                    url: '{{ url('recycle-bin') }}/' + type + '/' + id + '/restore',
+                });
+            });
+
+            $(document).on('click', '#recycle_bin_section .recycle-force-delete', function() {
+                var type = $(this).data('type'), id = $(this).data('id');
+                recycleAction({
+                    text: '@lang('lang_v1.recycle_confirm_force_delete')',
+                    danger: true,
+                    method: 'DELETE',
+                    url: '{{ url('recycle-bin') }}/' + type + '/' + id,
+                });
+            });
+
+            $(document).on('click', '#recycle_bin_section .recycle-empty', function() {
+                recycleAction({
+                    text: '@lang('lang_v1.recycle_confirm_empty')',
+                    danger: true,
+                    method: 'POST',
+                    url: '{{ route('recycle-bin.empty') }}',
+                    data: { type: $(this).data('type') },
+                });
+            });
+        }
+
         $('#btn_reset_database_fresh_pos').click(function() {
             var phrase = $('#fresh_pos_reset_phrase').val();
             if (phrase !== 'RESET') {

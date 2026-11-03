@@ -644,7 +644,7 @@ class SellPosController extends Controller
                         //set service staff timer
                         foreach ($input['products'] as $product_line) {
                             if (!empty($product_line['res_service_staff_id'])) {
-                                $product = Product::find($product_line['product_id']);
+                                $product = Product::withTrashed()->find($product_line['product_id']);
 
                                 if (!empty($product->preparation_time_in_minutes)) {
                                     $service_staff = User::find($product_line['res_service_staff_id']);
@@ -1349,7 +1349,7 @@ class SellPosController extends Controller
                         $sell_details[$key]->modifiers_ids = $modifiers_ids;
 
                         //add product modifier sets for edit
-                        $this_product = Product::find($sell_details[$key]->product_id);
+                        $this_product = Product::withTrashed()->find($sell_details[$key]->product_id);
                         if (count($this_product->modifier_sets) > 0) {
                             $sell_details[$key]->product_ms = $this_product->modifier_sets;
                         }
@@ -1755,7 +1755,7 @@ class SellPosController extends Controller
                 if (!$is_direct_sale && $transaction->status == 'final') {
                     foreach ($input['products'] as $product_line) {
                         if (!empty($product_line['res_service_staff_id'])) {
-                            $product = Product::find($product_line['product_id']);
+                            $product = Product::withTrashed()->find($product_line['product_id']);
 
                             if (!empty($product->preparation_time_in_minutes)) {
                                 //if quantity not increase skip line

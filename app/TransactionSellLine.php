@@ -20,12 +20,12 @@ class TransactionSellLine extends Model
 
     public function product()
     {
-        return $this->belongsTo(\App\Product::class, 'product_id');
+        return $this->belongsTo(\App\Product::class, 'product_id')->withTrashed();
     }
 
     public function variations()
     {
-        return $this->belongsTo(\App\Variation::class, 'variation_id');
+        return $this->belongsTo(\App\Variation::class, 'variation_id')->withTrashed();
     }
 
     public function modifiers()

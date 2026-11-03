@@ -362,7 +362,7 @@ class ProductUtil extends Util
             $qty_difference = $new_quantity - $old_quantity;
         }
 
-        $product = Product::find($product_id);
+        $product = Product::withTrashed()->find($product_id);
 
         //Check if stock is enabled or not.
         if ($product->enable_stock == 1 && $qty_difference != 0) {
@@ -407,7 +407,7 @@ class ProductUtil extends Util
     {
         $qty_difference = $new_quantity - $old_quantity;
 
-        $product = Product::find($product_id);
+        $product = Product::withTrashed()->find($product_id);
 
         //Check if stock is enabled or not.
         if ($product->enable_stock == 1) {

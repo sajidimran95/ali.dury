@@ -757,7 +757,7 @@ class TransactionUtil extends Util
     private function adjustQuantity($location_id, $product_id, $variation_id, $increment_qty)
     {
         if ($increment_qty != 0) {
-            $enable_stock = Product::find($product_id)->enable_stock;
+            $enable_stock = Product::withTrashed()->find($product_id)->enable_stock;
 
             if ($enable_stock == 1) {
                 //Adjust Quantity in variations location table
@@ -3452,7 +3452,7 @@ class TransactionUtil extends Util
         $qty_selling = null;
         foreach ($transaction_lines as $line) {
             //Check if stock is not enabled then no need to assign purchase & sell
-            $product = Product::find($line->product_id);
+            $product = Product::withTrashed()->find($line->product_id);
             if (empty($product) || $product->enable_stock != 1) {
                 continue;
             }
@@ -5098,6 +5098,9 @@ class TransactionUtil extends Util
             $log_type = $transaction->type == 'sales_order' ? 'so_deleted' : 'sell_deleted';
             $this->activityLog($transaction, $log_type, null, $log_properities);
 
+            //Keep a full snapshot in the recycle bin so the sale can be restored
+            (new RecycleBinUtil())->archiveSale($transaction);
+
             //If status is draft direct delete transaction
             if ($transaction->status == 'draft') {
                 foreach ($transaction->sell_lines as $sell_line) {
@@ -5107,6 +5110,14 @@ class TransactionUtil extends Util
                 if (! empty($sales_order_ids)) {
                     $this->updateSalesOrderStatus($sales_order_ids);
                 }
+
+                //Do not rely on DB cascades (some installs have no foreign keys)
+                $draft_line_ids = $transaction->sell_lines->pluck('id')->toArray();
+                if (! empty($draft_line_ids)) {
+                    DB::table('sell_line_warranties')->whereIn('sell_line_id', $draft_line_ids)->delete();
+                    TransactionSellLine::whereIn('id', $draft_line_ids)->delete();
+                }
+                TransactionPayment::where('transaction_id', $transaction->id)->delete();
 
                 $transaction->delete();
             } else {
@@ -5138,6 +5149,9 @@ class TransactionUtil extends Util
                 //Delete Cash register transactions
                 $transaction->cash_register_payments()->delete();
 
+                //Do not rely on DB cascades (some installs have no foreign keys)
+                TransactionPayment::where('transaction_id', $transaction->id)->delete();
+
                 $transaction->delete();
 
                 foreach ($transaction_payments as $payment) {
@@ -5148,7 +5162,7 @@ class TransactionUtil extends Util
 
         $output = [
             'success' => true,
-            'msg' => __('lang_v1.sale_delete_success'),
+            'msg' => __('lang_v1.sale_moved_to_recycle_bin'),
         ];
 
         return $output;
