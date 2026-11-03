@@ -139,6 +139,10 @@
 	}
 	$via = trim(strip_tags((string) ($receipt_details->shipping_method ?? '')));
 
+	// japspos2 only: hide Bill To / Ship To on printed invoices. Other users keep them.
+	$hideBillShip = auth()->check()
+		&& strcasecmp((string) (auth()->user()->username ?? ''), 'japspos2') === 0;
+
 	$footer = trim(strip_tags((string) ($receipt_details->footer_text ?? '')));
 	if ($footer === '') {
 		$footer = 'WISCONSIN TOBACCO/VAPOR PRODUCT EXCISE TAX INCLUDED SALE*';
@@ -429,6 +433,7 @@
 						</tr>
 					</table>
 
+					@if(empty($hideBillShip))
 					<table class="qb-parties">
 						<tr>
 							<td class="qb-box">
@@ -450,6 +455,7 @@
 							</td>
 						</tr>
 					</table>
+					@endif
 
 					<table class="qb-meta">
 						<tr>
