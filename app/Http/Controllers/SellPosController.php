@@ -616,6 +616,7 @@ class SellPosController extends Controller
                 $input['document'] = $this->transactionUtil->uploadFile($request, 'sell_document', 'documents');
 
                 $transaction = $this->transactionUtil->createSellTransaction($business_id, $input, $invoice_total, $user_id);
+                $this->saveManualBillName($request, $transaction);
 
                 //Upload Shipping documents
                 Media::uploadMedia($business_id, $transaction, $request, 'shipping_documents', false, 'shipping_document');
@@ -891,6 +892,24 @@ class SellPosController extends Controller
         $transaction->save();
 
         return 'due';
+    }
+
+    /**
+     * japspos2 only: save the manual "Bill To" name typed at POS.
+     * Other users are never touched.
+     */
+    private function saveManualBillName(Request $request, $transaction)
+    {
+        if (empty($transaction) || ! auth()->check()
+            || strcasecmp((string) (auth()->user()->username ?? ''), 'japspos2') !== 0
+            || ! $request->has('invoice_bill_name')
+            || ! \Illuminate\Support\Facades\Schema::hasColumn('transactions', 'invoice_bill_name')) {
+            return;
+        }
+
+        $name = trim(strip_tags((string) $request->input('invoice_bill_name')));
+        $transaction->invoice_bill_name = $name !== '' ? mb_substr($name, 0, 191) : null;
+        $transaction->save();
     }
 
     /**
@@ -1750,6 +1769,7 @@ class SellPosController extends Controller
                 DB::beginTransaction();
 
                 $transaction = $this->transactionUtil->updateSellTransaction($id, $business_id, $input, $invoice_total, $user_id);
+                $this->saveManualBillName($request, $transaction);
 
                 //update service staff timer
                 if (!$is_direct_sale && $transaction->status == 'final') {

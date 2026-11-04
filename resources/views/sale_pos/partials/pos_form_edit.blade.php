@@ -41,6 +41,12 @@
 				</div>
 			</div>
 			<small class="text-danger @if(empty($customer_due)) hide @endif contact_due_text"><strong>@lang('account.customer_due'):</strong> <span>{{$customer_due ?? ''}}</span></small>
+			@if(auth()->check() && strcasecmp((string) (auth()->user()->username ?? ''), 'japspos2') === 0)
+			{{-- japspos2 only: manual name printed as Bill To on the invoice (customer details are not printed) --}}
+			<div class="pos-manual-bill-name" style="margin-top:6px;">
+				<input type="text" name="invoice_bill_name" id="invoice_bill_name" class="form-control" maxlength="191" autocomplete="off" placeholder="Bill To name (prints on invoice)" value="{{ $transaction->invoice_bill_name ?? '' }}">
+			</div>
+			@endif
 		</div>
 	</div>
 	@if(!empty($pos_settings['hide_product_suggestion']))

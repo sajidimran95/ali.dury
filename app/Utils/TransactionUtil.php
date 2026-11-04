@@ -2119,6 +2119,9 @@ class TransactionUtil extends Util
         $output['design'] = $il->design;
         $output['table_tax_headings'] = ! empty($il->table_tax_headings) ? array_filter(json_decode($il->table_tax_headings), 'strlen') : null;
 
+        // Manual Bill To name (japspos2 POS). Only the receipt view decides who sees it.
+        $output['invoice_bill_name'] = trim((string) ($transaction->invoice_bill_name ?? ''));
+
         return (object) $output;
     }
 

@@ -169,6 +169,8 @@
 	// japspos2 only: hide Bill To / Ship To on printed invoices. Other users keep them.
 	$hideBillShip = auth()->check()
 		&& strcasecmp((string) (auth()->user()->username ?? ''), 'japspos2') === 0;
+	// japspos2 only: manual name typed at POS is printed as Bill To (no address / phone).
+	$manualBillName = $hideBillShip ? trim(strip_tags((string) ($receipt_details->invoice_bill_name ?? ''))) : '';
 
 	$footer = trim(strip_tags((string) ($receipt_details->footer_text ?? '')));
 	if ($footer === '') {
@@ -480,6 +482,19 @@
 									@endforeach
 								</div>
 							</td>
+						</tr>
+					</table>
+					@elseif($manualBillName !== '')
+					<table class="qb-parties">
+						<tr>
+							<td class="qb-box">
+								<div class="lbl">Bill To</div>
+								<div class="body">
+									<div>{{ $manualBillName }}</div>
+								</div>
+							</td>
+							<td class="qb-parties-gap"></td>
+							<td></td>
 						</tr>
 					</table>
 					@endif
