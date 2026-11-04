@@ -100,36 +100,63 @@
 		$shipDate = $invoiceDate;
 	}
 
-	$partyLines = function ($name, $extra) use ($fmtHtml) {
+	// QB Bill To / Ship To: 1) person name  2) business name  3) street address
+	$qbPartyLines = function ($person, $business, $addressHtml) use ($fmtHtml) {
 		$lines = [];
-		$name = trim((string) $name);
-		if ($name !== '') {
-			$lines[] = $name;
-		}
-		foreach ($fmtHtml($extra) as $line) {
-			if (strcasecmp($line, $name) === 0 || stripos($line, 'mobile') !== false) {
+		$seen = [];
+		$add = function ($line) use (&$lines, &$seen) {
+			$line = trim((string) $line);
+			if ($line === '') {
+				return;
+			}
+			$key = strtolower($line);
+			if (isset($seen[$key])) {
+				return;
+			}
+			$seen[$key] = true;
+			$lines[] = $line;
+		};
+
+		$add($person);
+		$add($business);
+		foreach ($fmtHtml($addressHtml) as $line) {
+			if (stripos($line, 'mobile') !== false) {
 				continue;
 			}
-			$lines[] = $line;
+			$add($line);
 		}
 
 		return $lines;
 	};
 
-	$billName = trim(strip_tags((string) ($receipt_details->customer_name ?? '')));
-	if ($billName === '') {
-		$billName = trim(strip_tags((string) ($receipt_details->contact_name ?? '')));
+	$billPerson = trim(strip_tags((string) ($receipt_details->customer_person_name ?? '')));
+	if ($billPerson === '') {
+		$billPerson = trim(strip_tags((string) ($receipt_details->customer_name ?? '')));
 	}
-	$billLines = $partyLines($billName, $receipt_details->customer_info_address ?? ($receipt_details->customer_info ?? ''));
+	if ($billPerson === '') {
+		$billPerson = trim(strip_tags((string) ($receipt_details->contact_name ?? '')));
+	}
+	$billBusiness = trim(strip_tags((string) ($receipt_details->customer_business_name ?? '')));
+	$billAddress = $receipt_details->customer_info_address ?? '';
+	$billLines = $qbPartyLines($billPerson, $billBusiness, $billAddress);
 	if ($billLines === []) {
-		$billLines = $partyLines($receipt_details->delivered_to ?? '', $receipt_details->shipping_address ?? '');
+		$billLines = $qbPartyLines(
+			trim(strip_tags((string) ($receipt_details->delivered_to ?? ''))),
+			'',
+			$receipt_details->shipping_address ?? ''
+		);
 	}
-	$shipSource = $receipt_details->shipping_address ?? '';
-	if ($shipSource === '') {
-		$shipSource = $receipt_details->customer_info_address ?? ($receipt_details->customer_info ?? '');
+
+	$shipPerson = trim(strip_tags((string) ($receipt_details->delivered_to ?? '')));
+	if ($shipPerson === '') {
+		$shipPerson = $billPerson;
 	}
-	$shipName = $receipt_details->delivered_to ?? ($receipt_details->customer_name ?? '');
-	$shipLines = $partyLines($shipName, $shipSource);
+	$shipBusiness = $billBusiness;
+	$shipAddress = $receipt_details->shipping_address ?? '';
+	if (trim(strip_tags((string) $shipAddress)) === '') {
+		$shipAddress = $billAddress;
+	}
+	$shipLines = $qbPartyLines($shipPerson, $shipBusiness, $shipAddress);
 
 	$po = trim(strip_tags((string) ($receipt_details->sell_custom_field_1_value ?? '')));
 	$terms = trim(strip_tags((string) ($receipt_details->pay_term ?? '')));

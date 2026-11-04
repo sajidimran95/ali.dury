@@ -17,10 +17,10 @@
 		</tr>
 		<tr>
 			<td>
-				<p><strong>{{$contact->name}}</strong><br> {!! $contact->contact_address !!} @if(!empty($contact->email)) <br>@lang('business.email'): {{$contact->email}} @endif
-					<br>@lang('contact.mobile'): {{$contact->mobile}}
-					@if(!empty($contact->tax_number)) <br>@lang('contact.tax_no'): {{$contact->tax_number}} @endif
-				</p>
+				@include('contact.partials.qb_contact_lines', ['contact' => $contact, 'show_email' => true, 'show_mobile' => true])
+				@if(!empty($contact->tax_number))
+					<div>{{ $contact->tax_number }}</div>
+				@endif
 			</td>
 		</tr>
 	</table>	

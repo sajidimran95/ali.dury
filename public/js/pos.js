@@ -778,17 +778,29 @@ $(document).ready(function() {
             if (!data.id && !data.text) return data.text;
             var template = '';
             var businessName = (data.supplier_business_name || '').toString().trim();
-            var personName = (data.contact_person || data.first_name || '').toString().trim();
-            // Prefer company/business name first; fall back to person name
-            var primary = businessName || personName || (data.text || '');
-            template += primary + '<br>';
-            if (personName && businessName && businessName !== personName) {
-                template += personName + '<br>';
+            var personName = (data.contact_person || '').toString().trim();
+            if (!personName) {
+                personName = [data.first_name, data.middle_name, data.last_name]
+                    .map(function (p) { return (p || '').toString().trim(); })
+                    .filter(Boolean)
+                    .join(' ');
             }
-            template += LANG.mobile + ': ' + data.mobile;
+            var code = (data.contact_id || '').toString().trim();
+            var line1 = personName || businessName || (data.text || '');
+            if (code && line1 && line1.indexOf(code) === -1) {
+                line1 = line1 + ' - ' + code;
+            }
+            template += $('<div>').text(line1).html() + '<br>';
+            if (businessName && businessName.toLowerCase() !== (personName || '').toLowerCase()) {
+                template += $('<div>').text(businessName).html() + '<br>';
+            }
             var addressLine = posCustomerAddressText(data);
             if (addressLine) {
-                template += '<br>' + $('<div>').text(addressLine).html();
+                template += $('<div>').text(addressLine).html();
+            }
+            var mobile = (data.mobile || '').toString().trim();
+            if (mobile && mobile.toUpperCase() !== 'N/A') {
+                template += '<br>' + $('<div>').text(mobile).html();
             }
             if (typeof(data.total_rp) != 'undefined') {
                 var rp = data.total_rp ? data.total_rp : 0;
@@ -1027,31 +1039,38 @@ $(document).ready(function() {
                     if (defId && String(row.id) === defId) {
                         return;
                     }
-                    // Prefer company/business name; fall back to contact/person name
+                    // Order: 1) person name + customer id  2) business  3) address  4) mobile (if any)
                     var businessName = (row.supplier_business_name || '').toString().trim();
-                    var personName = (row.contact_person || row.first_name || '').toString().trim();
-                    var displayName = businessName || personName || (row.name || '').toString().trim();
-                    if (!displayName) {
-                        displayName = (row.text || '').toString().replace(/\s*\([^)]*\)\s*$/, '').trim();
+                    var personName = (row.contact_person || '').toString().trim();
+                    if (!personName) {
+                        personName = [row.first_name, row.middle_name, row.last_name]
+                            .map(function (p) { return (p || '').toString().trim(); })
+                            .filter(Boolean)
+                            .join(' ');
                     }
-                    if (!displayName) {
-                        displayName = (row.contact_id || ('Customer #' + row.id)).toString();
-                    }
-                    var selectionText = displayName;
-                    var initials = posCustomerInitials(displayName);
-                    var color = posCustomerAvatarColor(displayName);
                     var code = (row.contact_id || '').toString().trim();
-                    var subParts = [];
-                    // Secondary: show the other name + code when available
-                    if (personName && businessName && personName !== businessName) {
-                        var secondaryName = displayName === businessName ? personName : businessName;
-                        subParts.push(code ? (secondaryName + ' - ' + code) : secondaryName);
-                    } else if (code) {
-                        subParts.push(code);
+                    var line1 = personName || businessName || (row.name || '').toString().trim();
+                    if (!line1) {
+                        line1 = (row.text || '').toString().replace(/\s*\([^)]*\)\s*$/, '').trim();
                     }
-                    if (row.mobile) subParts.push(row.mobile);
-                    var sub = subParts.join(' | ');
+                    if (!line1) {
+                        line1 = code || ('Customer #' + row.id);
+                    }
+                    if (code && line1.indexOf(code) === -1) {
+                        line1 = line1 + ' - ' + code;
+                    }
+                    var line2 = '';
+                    if (businessName && businessName.toLowerCase() !== (personName || '').toLowerCase()) {
+                        line2 = businessName;
+                    }
                     var addressLine = posCustomerAddressText(row);
+                    var mobile = (row.mobile || '').toString().trim();
+                    if (!mobile || mobile.toUpperCase() === 'N/A') {
+                        mobile = '';
+                    }
+                    var selectionText = personName || businessName || line1;
+                    var initials = posCustomerInitials(personName || businessName || line1);
+                    var color = posCustomerAvatarColor(personName || businessName || line1);
                     var isCurrent = String(row.id) === curId;
                     html +=
                         '<button type="button" class="pos-customer-picker-item' +
@@ -1063,7 +1082,7 @@ $(document).ready(function() {
                         $('<div>').text(selectionText).html() +
                         '" ' +
                         'data-name="' +
-                        $('<div>').text(displayName).html() +
+                        $('<div>').text(selectionText).html() +
                         '" ' +
                         'data-pay_term_number="' +
                         (row.pay_term_number || '') +
@@ -1081,7 +1100,7 @@ $(document).ready(function() {
                         (row.selling_price_group_id || '') +
                         '" ' +
                         'data-address="' +
-                        $('<div>').text([row.shipping_address, row.address_line_1, row.address_line_2, row.city, row.state, row.zip_code, row.country].filter(Boolean).join(', ')).html() +
+                        $('<div>').text(addressLine).html() +
                         '">' +
                         '<div class="pos-cust-avatar" style="background:' +
                         color +
@@ -1090,10 +1109,11 @@ $(document).ready(function() {
                         '</div>' +
                         '<div class="pos-cust-meta">' +
                         '<div class="pos-cust-name">' +
-                        $('<div>').text(displayName).html() +
+                        $('<div>').text(line1).html() +
                         '</div>' +
-                        (sub ? '<div class="pos-cust-sub">' + $('<div>').text(sub).html() + '</div>' : '') +
+                        (line2 ? '<div class="pos-cust-sub">' + $('<div>').text(line2).html() + '</div>' : '') +
                         (addressLine ? '<div class="pos-cust-sub">' + $('<div>').text(addressLine).html() + '</div>' : '') +
+                        (mobile ? '<div class="pos-cust-sub">' + $('<div>').text(mobile).html() + '</div>' : '') +
                         '</div>' +
                         (isCurrent ? '<span class="pos-cust-current">Current</span>' : '') +
                         '</button>';

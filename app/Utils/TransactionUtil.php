@@ -1179,7 +1179,20 @@ class TransactionUtil extends Util
         $output['customer_custom_fields'] = '';
         if ($il->show_customer == 1) {
             $output['customer_label'] = ! empty($il->customer_label) ? $il->customer_label : '';
-            $output['customer_name'] = ! empty($customer->name) ? $customer->name : $customer->supplier_business_name;
+
+            // QB-style: person (first/middle/last), then business, then street address
+            $person_name = trim((string) ($customer->full_name ?? ''));
+            $business_name = trim((string) ($customer->supplier_business_name ?? ''));
+            $legacy_name = trim((string) ($customer->name ?? ''));
+            if ($person_name === '' && $legacy_name !== '' && strcasecmp($legacy_name, $business_name) !== 0) {
+                $person_name = $legacy_name;
+            }
+
+            $output['customer_person_name'] = $person_name;
+            $output['customer_business_name'] = $business_name;
+            $output['customer_name'] = $person_name !== ''
+                ? $person_name
+                : ($business_name !== '' ? $business_name : $legacy_name);
             $output['customer_mobile'] = $customer->mobile;
 
             if ($receipt_printer_type != 'printer') {
@@ -1231,42 +1244,31 @@ class TransactionUtil extends Util
                 $output['customer_custom_fields'] .= implode('<br>', $temp);
             }
 
-            //To be used in pdfs
+            // Street address only (no repeated name/business/mobile) for Bill To / Ship To
             $customer_address = [];
-            if (! empty($customer->supplier_business_name)) {
-                $customer_address[] = $customer->supplier_business_name;
-            }
             if (! empty($customer->address_line_1)) {
-                $customer_address[] = '<br>'.$customer->address_line_1;
+                $customer_address[] = $customer->address_line_1;
             }
             if (! empty($customer->address_line_2)) {
-                $customer_address[] = '<br>'.$customer->address_line_2;
+                $customer_address[] = $customer->address_line_2;
             }
-            if (! empty($customer->city)) {
-                $customer_address[] = '<br>'.$customer->city;
+            $city = trim((string) ($customer->city ?? ''));
+            $state = trim((string) ($customer->state ?? ''));
+            $zip = trim((string) ($customer->zip_code ?? ''));
+            $city_line = $city;
+            if ($state !== '') {
+                $city_line .= ($city_line !== '' ? ', ' : '').$state;
             }
-            if (! empty($customer->state)) {
-                $customer_address[] = $customer->state;
+            if ($zip !== '') {
+                $city_line .= ($city_line !== '' ? ' ' : '').$zip;
             }
-            if (! empty($customer->country)) {
-                $customer_address[] = $customer->country;
-            }
-            if (! empty($customer->zip_code)) {
-                $customer_address[] = '<br>'.$customer->zip_code;
-            }
-            if (! empty(trim($customer->name))) {
-                $customer_address[] = '<br>'.$customer->name;
-            }
-            if (! empty($customer->mobile)) {
-                $customer_address[] = '<br>'.$customer->mobile;
-            }
-            if (! empty($customer->landline)) {
-                $customer_address[] = $customer->landline;
+            if ($city_line !== '') {
+                $customer_address[] = $city_line;
             }
 
             $output['customer_info_address'] = '';
             if (! empty($customer_address)) {
-                $output['customer_info_address'] = implode(', ', $customer_address);
+                $output['customer_info_address'] = implode('<br>', $customer_address);
             }
         }
 

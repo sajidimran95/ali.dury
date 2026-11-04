@@ -1222,31 +1222,53 @@ class ContactController extends Controller
             }
 
             if (! empty($term)) {
+                $term = trim($term);
                 $tokens = preg_split('/[^a-z0-9]+/i', $term, -1, PREG_SPLIT_NO_EMPTY);
                 $tokens = array_values(array_filter($tokens, function ($token) use ($tokens) {
                     return count($tokens) === 1 || strlen($token) > 1;
                 }));
                 if (empty($tokens)) {
-                    $tokens = [trim($term)];
+                    $tokens = [$term];
                 }
+                $digits = preg_replace('/\D+/', '', $term);
 
-                $contacts->where(function ($query) use ($tokens) {
-                    foreach ($tokens as $token) {
-                        $like = '%'.$token.'%';
-                        $query->where(function ($match) use ($like) {
-                            $match->where('contacts.name', 'like', $like)
-                                ->orWhere('contacts.first_name', 'like', $like)
-                                ->orWhere('supplier_business_name', 'like', $like)
-                                ->orWhere('mobile', 'like', $like)
-                                ->orWhere('contacts.contact_id', 'like', $like)
-                                ->orWhere('contacts.address_line_1', 'like', $like)
-                                ->orWhere('contacts.address_line_2', 'like', $like)
-                                ->orWhere('contacts.city', 'like', $like)
-                                ->orWhere('contacts.state', 'like', $like)
-                                ->orWhere('contacts.zip_code', 'like', $like)
-                                ->orWhere('contacts.shipping_address', 'like', $like);
-                        });
-                    }
+                $contacts->where(function ($query) use ($tokens, $term, $digits) {
+                    // Customer number (CO0002) + phone — match full typed term
+                    $query->where(function ($idPhone) use ($term, $digits) {
+                        $likeTerm = '%'.$term.'%';
+                        $idPhone->where('contacts.contact_id', 'like', $likeTerm)
+                            ->orWhere('contacts.mobile', 'like', $likeTerm)
+                            ->orWhere('contacts.alternate_number', 'like', $likeTerm)
+                            ->orWhere('contacts.landline', 'like', $likeTerm);
+                        if ($digits !== '' && strlen($digits) >= 3) {
+                            $idPhone->orWhereRaw(
+                                "REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(IFNULL(contacts.mobile,''), '-', ''), ' ', ''), '(', ''), ')', ''), '+', '') LIKE ?",
+                                ['%'.$digits.'%']
+                            )->orWhere('contacts.contact_id', 'like', '%'.$digits.'%');
+                        }
+                    });
+
+                    // Name / business / address token search
+                    $query->orWhere(function ($nameQ) use ($tokens) {
+                        foreach ($tokens as $token) {
+                            $like = '%'.$token.'%';
+                            $nameQ->where(function ($match) use ($like) {
+                                $match->where('contacts.name', 'like', $like)
+                                    ->orWhere('contacts.first_name', 'like', $like)
+                                    ->orWhere('contacts.middle_name', 'like', $like)
+                                    ->orWhere('contacts.last_name', 'like', $like)
+                                    ->orWhere('supplier_business_name', 'like', $like)
+                                    ->orWhere('contacts.mobile', 'like', $like)
+                                    ->orWhere('contacts.contact_id', 'like', $like)
+                                    ->orWhere('contacts.address_line_1', 'like', $like)
+                                    ->orWhere('contacts.address_line_2', 'like', $like)
+                                    ->orWhere('contacts.city', 'like', $like)
+                                    ->orWhere('contacts.state', 'like', $like)
+                                    ->orWhere('contacts.zip_code', 'like', $like)
+                                    ->orWhere('contacts.shipping_address', 'like', $like);
+                            });
+                        }
+                    });
                 });
             }
 
@@ -1269,7 +1291,15 @@ class ContactController extends Controller
                 ) AS name"),
                 'contacts.contact_id',
                 'contacts.first_name',
-                'contacts.name as contact_person',
+                'contacts.middle_name',
+                'contacts.last_name',
+                // Person name (first middle last) — not contacts.name (often same as business)
+                DB::raw("TRIM(CONCAT_WS(' ',
+                    NULLIF(TRIM(contacts.prefix), ''),
+                    NULLIF(TRIM(contacts.first_name), ''),
+                    NULLIF(TRIM(contacts.middle_name), ''),
+                    NULLIF(TRIM(contacts.last_name), '')
+                )) as contact_person"),
                 'mobile',
                 'address_line_1',
                 'address_line_2',
@@ -2124,12 +2154,15 @@ class ContactController extends Controller
         $business_id = $request->session()->get('user.business_id');
 
         $mobile_number = trim((string) $request->input('mobile_number'));
-        if ($mobile_number === '') {
+        // Empty / placeholder values are not real numbers — never block edit/create
+        if ($mobile_number === '' || strcasecmp($mobile_number, 'N/A') === 0 || $mobile_number === '-' || $mobile_number === '0') {
             return ['is_mobile_exists' => false, 'msg' => ''];
         }
 
         $query = Contact::where('business_id', $business_id)
-                        ->where('mobile', 'like', "%{$mobile_number}");
+                        ->where('mobile', $mobile_number)
+                        ->where('mobile', '!=', '')
+                        ->whereRaw("UPPER(TRIM(mobile)) != 'N/A'");
 
         if (! empty($request->input('contact_id'))) {
             $query->where('id', '!=', $request->input('contact_id'));
