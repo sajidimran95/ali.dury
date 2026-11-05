@@ -2666,27 +2666,40 @@ class ProductUtil extends Util
      */
     public function applyCustomerGroupSellPrices($product, $cg, $variation_id, $price_group = null)
     {
-        $is_percentage_group = ! empty($cg) && is_object($cg) && ($cg->price_calculation_type ?? '') === 'percentage';
-        $percent = (! $is_percentage_group || $cg->amount === null || $cg->amount === '') ? 0 : $cg->amount;
-        $product->default_sell_price = $product->default_sell_price + ($percent * $product->default_sell_price / 100);
-        $product->sell_price_inc_tax = $product->sell_price_inc_tax + ($percent * $product->sell_price_inc_tax / 100);
+        // POS "Default Selling Price" is value 0. Treat 0 / '' / null as catalog default —
+        // do NOT keep forcing the tagged customer group's selling price group.
+        $explicit_default = ($price_group === null || $price_group === '' || $price_group === '0' || $price_group === 0);
+        $price_group_id = $explicit_default ? null : (int) $price_group;
 
-        $used_group_override = false;
-        if (! empty($cg) && ! empty($cg->selling_price_group_id)) {
-            $variation_group_prices = $this->getVariationGroupPrice($variation_id, $cg->selling_price_group_id, $product->tax_id);
+        $is_percentage_group = ! empty($cg) && is_object($cg) && ($cg->price_calculation_type ?? '') === 'percentage';
+        $percent = (! $is_percentage_group || $cg->amount === null || $cg->amount === '') ? 0 : (float) $cg->amount;
+
+        // 1) Selected selling price group from the POS dropdown wins (incl. customer auto-select).
+        if (! empty($price_group_id)) {
+            $variation_group_prices = $this->getVariationGroupPrice($variation_id, $price_group_id, $product->tax_id);
             if (! empty($variation_group_prices['price_inc_tax'])) {
                 $product->sell_price_inc_tax = $variation_group_prices['price_inc_tax'];
                 $product->default_sell_price = $variation_group_prices['price_exc_tax'];
-                $used_group_override = true;
+
+                return $product;
             }
         }
 
-        if (! $used_group_override && ! $is_percentage_group && ! empty($price_group)) {
-            $variation_group_prices = $this->getVariationGroupPrice($variation_id, $price_group, $product->tax_id);
-            if (! empty($variation_group_prices['price_inc_tax'])) {
-                $product->sell_price_inc_tax = $variation_group_prices['price_inc_tax'];
-                $product->default_sell_price = $variation_group_prices['price_exc_tax'];
+        // 2) Default Selling Price: keep catalog prices. Still allow % customer groups
+        // (they have no SPG row to select). Never re-apply selling_price_group from CG here.
+        if ($explicit_default) {
+            if ($is_percentage_group && $percent != 0.0) {
+                $product->default_sell_price = $product->default_sell_price + ($percent * $product->default_sell_price / 100);
+                $product->sell_price_inc_tax = $product->sell_price_inc_tax + ($percent * $product->sell_price_inc_tax / 100);
             }
+
+            return $product;
+        }
+
+        // 3) Explicit SPG had no price for this SKU — optional % fallback.
+        if ($is_percentage_group && $percent != 0.0) {
+            $product->default_sell_price = $product->default_sell_price + ($percent * $product->default_sell_price / 100);
+            $product->sell_price_inc_tax = $product->sell_price_inc_tax + ($percent * $product->sell_price_inc_tax / 100);
         }
 
         return $product;
