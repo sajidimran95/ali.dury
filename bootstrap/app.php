@@ -4,6 +4,7 @@ use App\Http\Middleware\AdminSidebarMenu;
 use App\Http\Middleware\Authenticate;
 use App\Http\Middleware\CheckUserLogin;
 use App\Http\Middleware\EcomApi;
+use App\Http\Middleware\VerifyCrossStoreSyncToken;
 use App\Http\Middleware\EnsureCustomerAppAccess;
 use App\Http\Middleware\EnsureSaleRepAccess;
 use App\Http\Middleware\IsInstalled;
@@ -127,6 +128,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'delivery.guard' => \App\Http\Middleware\UseDeliveryGuard::class,
             'mobile.auth' => \App\Http\Middleware\MobileApiAuth::class,
             'mobile.json' => \App\Http\Middleware\ForceJsonResponse::class,
+            'cross.store' => VerifyCrossStoreSyncToken::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

@@ -432,6 +432,8 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::resource('variation-templates', VariationTemplateController::class);
 
     Route::get('/products/download-excel', [ProductController::class, 'downloadExcel']);
+    Route::post('/products/cross-store-reconcile-stock', [ProductController::class, 'crossStoreReconcileStock']);
+    Route::get('/products/cross-store-stock-status', [ProductController::class, 'crossStoreStockStatus']);
 
     Route::get('/products/stock-history/{id}', [ProductController::class, 'productStockHistory']);
     Route::get('/products/inventory-timeline/{id}', [ProductController::class, 'inventoryTimeline']);

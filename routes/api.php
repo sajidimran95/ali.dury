@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\CrossStoreSyncController;
 use App\Http\Controllers\Api\Mobile\CustomerApiController;
 use App\Http\Controllers\Api\Mobile\DeliveryApiController;
 use App\Http\Controllers\Api\Mobile\MobileAuthController;
@@ -19,6 +20,20 @@ use Illuminate\Http\Request;
 
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
+});
+
+/*
+|--------------------------------------------------------------------------
+| Cross-store sync (Dury Wholesale ↔ ali.dury)
+|--------------------------------------------------------------------------
+| Auth header: X-Cross-Store-Token
+*/
+Route::prefix('cross-store')->middleware('cross.store')->group(function () {
+    Route::post('/product', [CrossStoreSyncController::class, 'product']);
+    Route::post('/stock', [CrossStoreSyncController::class, 'stock']);
+    Route::get('/stock-map', [CrossStoreSyncController::class, 'stockMap']);
+    Route::post('/stock-absolute', [CrossStoreSyncController::class, 'stockAbsolute']);
+    Route::post('/stock-absolute-batch', [CrossStoreSyncController::class, 'stockAbsoluteBatch']);
 });
 
 /*

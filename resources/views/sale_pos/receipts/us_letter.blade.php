@@ -173,9 +173,6 @@
 	$manualBillName = $hideBillShip ? trim(strip_tags((string) ($receipt_details->invoice_bill_name ?? ''))) : '';
 
 	$footer = trim(strip_tags((string) ($receipt_details->footer_text ?? '')));
-	if ($footer === '') {
-		$footer = 'WISCONSIN TOBACCO/VAPOR PRODUCT EXCISE TAX INCLUDED SALE*';
-	}
 
 	$lines = $receipt_details->lines ?? [];
 	$totalRaw = $receipt_details->total_unformatted ?? ($receipt_details->total ?? 0);

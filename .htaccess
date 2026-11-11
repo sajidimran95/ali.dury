@@ -1,5 +1,6 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
+    # If document root is project folder (not /public), route everything into public/
     RewriteRule ^(.*)$ public/$1 [L]
 </IfModule>

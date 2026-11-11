@@ -98,6 +98,8 @@
                 </button>
             @endcan
 
+            @include('layouts.partials.cross_store_stock_status')
+
             <div class="tw-relative tw-inline-flex tw-items-center">
                 @include('layouts.partials.header-notifications')
             </div>

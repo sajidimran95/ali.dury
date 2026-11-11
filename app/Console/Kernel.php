@@ -18,6 +18,11 @@ class Kernel extends ConsoleKernel
         $env = config('app.env');
         $email = config('mail.username');
 
+        // Match any leftover stock mismatches every minute (real-time sync still handles live changes)
+        if (config('cross_store_sync.enabled') && config('cross_store_sync.reconcile_enabled', true)) {
+            $schedule->command('cross-store:reconcile-stock')->everyMinute()->withoutOverlapping();
+        }
+
         if ($env === 'live') {
             //Scheduling backup, specify the time when the backup will get cleaned & time when it will run.
             

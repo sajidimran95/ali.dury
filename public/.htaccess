@@ -4,6 +4,7 @@
     </IfModule>
 
     RewriteEngine On
+    RewriteBase /
 
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
@@ -14,10 +15,21 @@
     RewriteCond %{REQUEST_URI} (.+)/$
     RewriteRule ^ %1 [L,R=301]
 
-    # Send Requests To Front Controller...
+    # Front controller
+    RewriteRule ^index\.php$ - [L]
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
 
     RewriteRule ^uploads/.*\.(htaccess|htpasswd|ini|phps|fla|psd|log|sh|zip|exe|pl|jsp|asp|htm|sh|cgi|py|php)$ - [NC,F]
+</IfModule>
+
+# LiteSpeed / some hosts ignore nested IfModule — keep a plain fallback
+<IfModule LiteSpeed>
+    RewriteEngine On
+    RewriteBase /
+    RewriteRule ^index\.php$ - [L]
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule . index.php [L]
 </IfModule>

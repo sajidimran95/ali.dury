@@ -682,6 +682,13 @@ class ProductController extends Controller
             }
 
             DB::commit();
+
+            try {
+                app(\App\Services\CrossStoreSyncService::class)->pushProductCreated((int) $product->id);
+            } catch (\Throwable $e) {
+                \Log::warning('Cross-store product push failed: '.$e->getMessage());
+            }
+
             $output = ['success' => 1,
                 'msg' => __('product.product_added_success'),
             ];
@@ -1878,6 +1885,12 @@ class ProductController extends Controller
 
             DB::commit();
 
+            try {
+                app(\App\Services\CrossStoreSyncService::class)->pushProductCreated((int) $product->id);
+            } catch (\Throwable $e) {
+                \Log::warning('Cross-store product push failed: '.$e->getMessage());
+            }
+
             $output = ['success' => 1,
                 'msg' => __('product.product_added_success'),
                 'product' => $product,
@@ -3047,16 +3060,23 @@ class ProductController extends Controller
         $business_id = request()->session()->get('user.business_id');
 
         if (request()->ajax()) {
+            $location_id = request()->input('location_id');
+            if (empty($location_id)) {
+                $location_id = (int) config('cross_store_sync.location_id', 1);
+            }
 
             //for ajax call $id is variation id else it is product id
-            $stock_details = $this->productUtil->getVariationStockDetails($business_id, $id, request()->input('location_id'));
-            $stock_history = $this->productUtil->getVariationStockHistory($business_id, $id, request()->input('location_id'));
+            $stock_details = $this->productUtil->getVariationStockDetails($business_id, $id, $location_id);
+            $stock_history = $this->productUtil->getVariationStockHistory($business_id, $id, $location_id);
+            $stock_history = $this->mergeCrossStoreStockHistory($stock_history, (int) $id);
 
             //if mismach found update stock in variation location details
-            if (isset($stock_history[0]) && (float) $stock_details['current_stock'] != (float) $stock_history[0]['stock']) {
+            // Skip auto-fix when cross-store sync rows exist — running totals ignore peer stock.
+            $has_cross_store = collect($stock_history)->contains(fn ($row) => ($row['type'] ?? '') === 'cross_store_sync');
+            if (! $has_cross_store && isset($stock_history[0]) && (float) $stock_details['current_stock'] != (float) $stock_history[0]['stock'] && ($stock_history[0]['type'] ?? '') !== 'cross_store_sync') {
                 VariationLocationDetails::where('variation_id',
                                             $id)
-                                    ->where('location_id', request()->input('location_id'))
+                                    ->where('location_id', $location_id)
                                     ->update(['qty_available' => $stock_history[0]['stock']]);
                 $stock_details['current_stock'] = $stock_history[0]['stock'];
             }
@@ -3071,9 +3091,31 @@ class ProductController extends Controller
 
         //Get all business locations
         $business_locations = BusinessLocation::forDropdown($business_id);
+        $default_location_id = request()->input('location_id') ?: array_key_first($business_locations->toArray());
 
         return view('product.stock_history')
-                ->with(compact('product', 'business_locations'));
+                ->with(compact('product', 'business_locations', 'default_location_id'));
+    }
+
+    /**
+     * Append cross-store stock sync rows (which site changed stock).
+     */
+    protected function mergeCrossStoreStockHistory(array $stock_history, int $variationId): array
+    {
+        try {
+            $syncRows = app(\App\Services\CrossStoreSyncService::class)->historyRowsForVariation($variationId);
+            if (empty($syncRows)) {
+                return $stock_history;
+            }
+            $merged = array_merge($stock_history, $syncRows);
+            usort($merged, function ($a, $b) {
+                return strcmp((string) ($b['date'] ?? ''), (string) ($a['date'] ?? ''));
+            });
+
+            return $merged;
+        } catch (\Throwable $e) {
+            return $stock_history;
+        }
     }
 
     /**
@@ -3094,6 +3136,7 @@ class ProductController extends Controller
             //for ajax call $id is variation id else it is product id
             $stock_details = $this->productUtil->getVariationStockDetails($business_id, $id, request()->input('location_id'));
             $stock_history = $this->productUtil->getVariationStockHistory($business_id, $id, request()->input('location_id'));
+            $stock_history = $this->mergeCrossStoreStockHistory($stock_history, (int) $id);
 
             return view('product.inventory_timeline_details')
                 ->with(compact('stock_details', 'stock_history'));
@@ -3162,6 +3205,47 @@ class ProductController extends Controller
         $filename = 'products-export-'.\Carbon::now()->format('Y-m-d').'.xlsx';
 
         return Excel::download(new ProductsExport, $filename);
+    }
+
+    /**
+     * Manually match stock mismatches with the peer store.
+     */
+    public function crossStoreReconcileStock()
+    {
+        if (! auth()->user()->can('product.update') && ! $this->productUtil->is_admin(auth()->user())) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        try {
+            $result = app(\App\Services\CrossStoreSyncService::class)->reconcileStock();
+
+            return [
+                'success' => (bool) ($result['success'] ?? false),
+                'msg' => ($result['message'] ?? 'Done').' (fixed: '.((int) ($result['fixed'] ?? 0)).')',
+            ];
+        } catch (\Throwable $e) {
+            \Log::warning('Manual cross-store reconcile failed: '.$e->getMessage());
+
+            return [
+                'success' => false,
+                'msg' => __('messages.something_went_wrong'),
+            ];
+        }
+    }
+
+    /**
+     * Navbar stock match status vs peer store.
+     */
+    public function crossStoreStockStatus()
+    {
+        if (! auth()->check()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $fresh = request()->boolean('fresh');
+        $status = app(\App\Services\CrossStoreSyncService::class)->stockMatchStatus($fresh);
+
+        return response()->json($status);
     }
 
     /**

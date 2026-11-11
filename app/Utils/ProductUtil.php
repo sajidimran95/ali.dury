@@ -388,6 +388,8 @@ class ProductUtil extends Util
 
             $variation_location_d->qty_available += $qty_difference;
             $variation_location_d->save();
+
+            $this->pushCrossStoreStockDelta($product_id, $variation_id, $qty_difference);
         }
 
         return true;
@@ -430,9 +432,23 @@ class ProductUtil extends Util
             }
 
             $details->decrement('qty_available', $qty_difference);
+            $this->pushCrossStoreStockDelta($product_id, $variation_id, -$qty_difference);
         }
 
         return true;
+    }
+
+    /**
+     * Push stock delta to the peer store (no-op when sync disabled / receiving).
+     */
+    protected function pushCrossStoreStockDelta($product_id, $variation_id, $qty_delta): void
+    {
+        try {
+            app(\App\Services\CrossStoreSyncService::class)
+                ->pushStockDelta((int) $product_id, (int) $variation_id, (float) $qty_delta);
+        } catch (\Throwable $e) {
+            \Log::warning('Cross-store stock push failed: '.$e->getMessage());
+        }
     }
 
     /**

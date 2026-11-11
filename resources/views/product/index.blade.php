@@ -16,6 +16,14 @@
                 <small class="tw-text-sm md:tw-text-base tw-text-gray-700 tw-font-semibold">@lang('lang_v1.manage_products')</small>
             </h1>
             <div class="product-list-header__actions">
+                @if (!empty($is_admin) && config('cross_store_sync.enabled'))
+                    <button type="button" id="cross_store_reconcile_stock_btn"
+                        class="product-list-header__btn product-list-header__btn--secondary"
+                        data-url="{{ action([\App\Http\Controllers\ProductController::class, 'crossStoreReconcileStock']) }}">
+                        <i class="fa fa-refresh" aria-hidden="true"></i>
+                        Match stock with peer
+                    </button>
+                @endif
                 @if (!empty($is_admin))
                     <a class="product-list-header__btn product-list-header__btn--secondary"
                         href="{{ action([\App\Http\Controllers\ProductController::class, 'downloadExcel']) }}">
@@ -1228,6 +1236,34 @@
                         toastr.error(result.msg);
                     }
                 },
+            });
+        });
+
+        $(document).on('click', '#cross_store_reconcile_stock_btn', function() {
+            var btn = $(this);
+            var url = btn.data('url');
+            btn.prop('disabled', true);
+            $.ajax({
+                method: 'POST',
+                url: url,
+                dataType: 'json',
+                data: { _token: '{{ csrf_token() }}' },
+                success: function(result) {
+                    if (result.success) {
+                        toastr.success(result.msg);
+                        if (typeof product_table !== 'undefined') {
+                            product_table.ajax.reload();
+                        }
+                    } else {
+                        toastr.error(result.msg || 'Stock match failed');
+                    }
+                },
+                error: function() {
+                    toastr.error('Stock match failed');
+                },
+                complete: function() {
+                    btn.prop('disabled', false);
+                }
             });
         });
     </script>
