@@ -5354,6 +5354,7 @@ class TransactionUtil extends Util
                     'contacts.mobile',
                     'contacts.contact_id',
                     'contacts.supplier_business_name',
+                    'transactions.invoice_bill_name',
                     'transactions.status',
                     'transactions.payment_status',
                     'transactions.created_by',

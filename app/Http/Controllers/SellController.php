@@ -498,12 +498,26 @@ class SellController extends Controller
 
                     return $status;
                 })
-                ->addColumn('conatct_name', '@if(!empty($supplier_business_name)) {{$supplier_business_name}}, <br> @endif {{$name}}')
+                ->addColumn('conatct_name', function ($row) {
+                    $billName = trim((string) ($row->invoice_bill_name ?? ''));
+                    if ($billName !== '') {
+                        return e($billName);
+                    }
+
+                    $html = '';
+                    if (! empty($row->supplier_business_name)) {
+                        $html .= e($row->supplier_business_name).', <br> ';
+                    }
+                    $html .= e($row->name ?? '');
+
+                    return $html;
+                })
                 ->editColumn('total_items', '{{@format_quantity($total_items)}}')
                 ->filterColumn('conatct_name', function ($query, $keyword) {
                     $query->where(function ($q) use ($keyword) {
                         $q->where('contacts.name', 'like', "%{$keyword}%")
-                        ->orWhere('contacts.supplier_business_name', 'like', "%{$keyword}%");
+                        ->orWhere('contacts.supplier_business_name', 'like', "%{$keyword}%")
+                        ->orWhere('transactions.invoice_bill_name', 'like', "%{$keyword}%");
                     });
                 })
                 ->addColumn('payment_methods', function ($row) use ($payment_types) {
@@ -1461,6 +1475,7 @@ class SellController extends Controller
                     'contacts.name',
                     'contacts.mobile',
                     'contacts.supplier_business_name',
+                    'transactions.invoice_bill_name',
                     'bl.name as business_location',
                     'is_direct_sale',
                     'sub_status',
@@ -1631,11 +1646,25 @@ class SellController extends Controller
                 ->editColumn('transaction_date', '{{@format_date($transaction_date)}}')
                 ->editColumn('total_items', '{{@format_quantity($total_items)}}')
                 ->editColumn('total_quantity', '{{@format_quantity($total_quantity)}}')
-                ->addColumn('conatct_name', '@if(!empty($supplier_business_name)) {{$supplier_business_name}}, <br>@endif {{$name}}')
+                ->addColumn('conatct_name', function ($row) {
+                    $billName = trim((string) ($row->invoice_bill_name ?? ''));
+                    if ($billName !== '') {
+                        return e($billName);
+                    }
+
+                    $html = '';
+                    if (! empty($row->supplier_business_name)) {
+                        $html .= e($row->supplier_business_name).', <br>';
+                    }
+                    $html .= e($row->name ?? '');
+
+                    return $html;
+                })
                 ->filterColumn('conatct_name', function ($query, $keyword) {
                     $query->where(function ($q) use ($keyword) {
                         $q->where('contacts.name', 'like', "%{$keyword}%")
-                        ->orWhere('contacts.supplier_business_name', 'like', "%{$keyword}%");
+                        ->orWhere('contacts.supplier_business_name', 'like', "%{$keyword}%")
+                        ->orWhere('transactions.invoice_bill_name', 'like', "%{$keyword}%");
                     });
                 })
                 ->filterColumn('added_by', function ($query, $keyword) {
