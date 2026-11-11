@@ -115,6 +115,7 @@ class ProductController extends Controller
             $products = $query->select(
                 'products.id',
                 'products.name as product',
+                'products.product_description',
                 'products.type',
                 'c1.name as category',
                 'c2.name as sub_category',
@@ -284,10 +285,20 @@ class ProductController extends Controller
                     }
                 )
                 ->editColumn('product', function ($row) use ($is_woocommerce) {
-                    $product = $row->is_inactive == 1 ? e($row->product).' <span class="label bg-gray">'.__('lang_v1.inactive').'</span>' : e($row->product);
+                    $fullName = trim((string) ($row->product ?? ''));
+                    $description = trim(html_entity_decode(strip_tags((string) ($row->product_description ?? '')), ENT_QUOTES, 'UTF-8'));
+                    $tooltipParts = array_filter([$fullName, $description !== '' ? $description : null]);
+                    $tooltip = e(implode("\n", $tooltipParts));
 
-                    $product = $row->not_for_selling == 1 ? $product.' <span class="label bg-gray">'.__('lang_v1.not_for_selling').
-                        '</span>' : $product;
+                    $nameHtml = '<span class="product-list-name" title="'.$tooltip.'">'.e($fullName).'</span>';
+
+                    $product = $row->is_inactive == 1
+                        ? $nameHtml.' <span class="label bg-gray">'.__('lang_v1.inactive').'</span>'
+                        : $nameHtml;
+
+                    $product = $row->not_for_selling == 1
+                        ? $product.' <span class="label bg-gray">'.__('lang_v1.not_for_selling').'</span>'
+                        : $product;
 
                     if ($is_woocommerce && ! $row->woocommerce_disable_sync) {
                         $product = $product.'<br><i class="fab fa-wordpress"></i>';

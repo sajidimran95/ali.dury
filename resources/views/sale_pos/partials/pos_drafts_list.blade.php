@@ -17,15 +17,17 @@
                 </div>
                 <div class="pos-draft-card__meta">
                     @php
-                        $c = $transaction->contact;
-                        $customerLabel = '';
-                        if (!empty($c)) {
-                            $customerLabel = trim((string) ($c->supplier_business_name ?? ''));
-                            if ($customerLabel === '') {
-                                $customerLabel = trim((string) ($c->name ?? ''));
-                            }
-                            if ($customerLabel === '') {
-                                $customerLabel = trim((string) ($c->contact_id ?? ''));
+                        $customerLabel = trim((string) ($transaction->invoice_bill_name ?? ''));
+                        if ($customerLabel === '') {
+                            $c = $transaction->contact;
+                            if (!empty($c)) {
+                                $customerLabel = trim((string) ($c->supplier_business_name ?? ''));
+                                if ($customerLabel === '') {
+                                    $customerLabel = trim((string) ($c->name ?? ''));
+                                }
+                                if ($customerLabel === '') {
+                                    $customerLabel = trim((string) ($c->contact_id ?? ''));
+                                }
                             }
                         }
                         if ($customerLabel === '') {

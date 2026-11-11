@@ -11,16 +11,18 @@
 	<table class="table">
 		@foreach ($transactions as $transaction)
 			@php
-				// Prefer business name when personal name is empty (many B2B customers store only supplier_business_name)
-				$c = $transaction->contact;
-				$customerLabel = '';
-				if (!empty($c)) {
-					$customerLabel = trim((string) ($c->supplier_business_name ?? ''));
-					if ($customerLabel === '') {
-						$customerLabel = trim((string) ($c->name ?? ''));
-					}
-					if ($customerLabel === '') {
-						$customerLabel = trim((string) ($c->contact_id ?? ''));
+				// Prefer Bill To name (prints on invoice), then business/contact name
+				$customerLabel = trim((string) ($transaction->invoice_bill_name ?? ''));
+				if ($customerLabel === '') {
+					$c = $transaction->contact;
+					if (!empty($c)) {
+						$customerLabel = trim((string) ($c->supplier_business_name ?? ''));
+						if ($customerLabel === '') {
+							$customerLabel = trim((string) ($c->name ?? ''));
+						}
+						if ($customerLabel === '') {
+							$customerLabel = trim((string) ($c->contact_id ?? ''));
+						}
 					}
 				}
 				if ($customerLabel === '') {

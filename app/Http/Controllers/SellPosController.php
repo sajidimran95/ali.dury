@@ -2347,6 +2347,7 @@ class SellPosController extends Controller
                 'id',
                 'contact_id',
                 'invoice_no',
+                'invoice_bill_name',
                 'transaction_date',
                 'final_total',
                 'res_table_id',

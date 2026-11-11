@@ -1412,6 +1412,8 @@ $(document).ready(function() {
                     // Keep minLength low so exact SKU still auto-adds via autocomplete
                     // (same path Search uses when a single match is found)
                     $inp.autocomplete('option', 'minLength', 2);
+                    // Search: wait for typing to pause. Scan: keep short for barcodes.
+                    $inp.autocomplete('option', 'delay', mode === 'search' ? 500 : 180);
                     if (mode === 'scan') {
                         $inp.autocomplete('close');
                     }
@@ -1759,8 +1761,8 @@ $(document).ready(function() {
         //Add Product
         $('#search_product')
             .autocomplete({
-                // Short delay: scanners finish in <50ms; long delays invite double-scan concat
-                delay: 180,
+                // Search waits 500ms after typing; Scan stays short for barcode guns
+                delay: posGetSearchMode() === 'search' ? 500 : 180,
                 source: function(request, response) {
                     if (posScan.busy) {
                         response([]);

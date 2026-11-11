@@ -1225,6 +1225,16 @@ body.zoho-theme #product_table > tbody > tr > td {
     vertical-align: middle !important;
 }
 
+#product_table .product-list-name {
+    cursor: help;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 220px;
+    vertical-align: middle;
+}
+
 #product_table > thead > tr > th,
 body.zoho-theme #product_table > thead > tr > th {
     padding: 8px 10px !important;
