@@ -60,7 +60,13 @@
 	};
 
 	$money = function ($value) use ($num) {
-		return number_format($num($value), 2);
+		$n = $num($value);
+		// Whole dollars print without cents (36 not 36.00)
+		if (abs($n - round($n)) < 0.0001) {
+			return number_format((int) round($n), 0);
+		}
+
+		return number_format($n, 2);
 	};
 
 	$bizName = trim((string) ($receipt_details->business_name ?? ''));

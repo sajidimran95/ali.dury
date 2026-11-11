@@ -1192,10 +1192,9 @@ return [
     'contains_media' => 'This note contains media',
     'private_note' => 'This is private note',
     'amount_rounding_method' => 'Amount rounding method',
-    'round_to_nearest_whole_number' => 'Round to nearest whole number',
+    'round_to_nearest_whole_number' => 'Round up to whole number',
     'round_to_nearest_decimal' => 'Round to nearest decimal (multiple of :multiple)',
-    'amount_rounding_method_help' => 'Example: <br><b>Round to nearest 
-    whole number:</b> 2.23 => 2, 2.50 => 3, 2.73 => 3 <br><b>Round to nearest 
+    'amount_rounding_method_help' => 'Example: <br><b>Round up to whole number:</b> 35.20 => 36, 2.01 => 3, 2.00 => 2 <br><b>Round to nearest 
     decimal (multiple of 0.05):</b> 2.11 => 2.10, 2.12 => 2.10, 2.13 => 2.15',
     'round_off' => 'Round Off',
     'round_off_label' => 'Round off label',

@@ -683,8 +683,16 @@ function __round(number, multiple = 0){
 
     rounded_number = number;
     if(multiple > 0) {
-        x = new Decimal(number)
-        rounded_number = x.toNearest(multiple);
+        // Whole number: always round UP (35.20 → 36). Decimals: nearest multiple.
+        if (Number(multiple) === 1) {
+            var n = parseFloat(number) || 0;
+            rounded_number = (Math.abs(n - Math.round(n)) < 0.0000001)
+                ? Math.round(n)
+                : Math.ceil(n - 0.0000001);
+        } else {
+            x = new Decimal(number)
+            rounded_number = x.toNearest(multiple);
+        }
     }
 
     var output = {
