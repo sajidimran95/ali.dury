@@ -1301,6 +1301,7 @@ class SellPosController extends Controller
                 'transaction_sell_lines.id',
                 'transaction_sell_lines.quantity as quantity_ordered',
                 'transaction_sell_lines.sell_line_note as sell_line_note',
+                'transaction_sell_lines.item_name as item_name',
                 'transaction_sell_lines.parent_sell_line_id',
                 'transaction_sell_lines.lot_no_line_id',
                 'transaction_sell_lines.line_discount_type',
@@ -3979,6 +3980,7 @@ class SellPosController extends Controller
                     $tax_id = $sell_line->tax_id;
                     $enable_stock = (int) optional($sell_line->product)->enable_stock;
                     $note = $sell_line->sell_line_note;
+                    $item_name = $sell_line->item_name;
                     $warranty_id = optional($sell_line->warranties->first())->id;
                     $secondary = $sell_line->secondary_unit_quantity;
                 } else {
@@ -3996,6 +3998,7 @@ class SellPosController extends Controller
                     $tax_id = null;
                     $enable_stock = (int) $variation->product->enable_stock;
                     $note = '';
+                    $item_name = null;
                     $warranty_id = null;
                     $secondary = 0;
                 }
@@ -4031,6 +4034,7 @@ class SellPosController extends Controller
                     'unit_price_inc_tax' => $this->transactionUtil->num_f($unit_inc),
                     'enable_stock' => $enable_stock,
                     'sell_line_note' => $note,
+                    'item_name' => $item_name,
                     'product_type' => 'single',
                     'children_type' => null,
                 ];

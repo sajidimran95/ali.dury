@@ -73,6 +73,24 @@
 				</div>
 			@endif
 
+			@php
+				$pos_item_name_value = trim((string) ($product->item_name ?? ''));
+				if ($pos_item_name_value === '') {
+					$pos_item_name_value = (string) ($product->product_name ?? '');
+				}
+			@endphp
+			<div class="pos-line-details-field pos-line-details-note">
+				<label for="pos_line_item_name_field_{{$row_count}}">Item name (this order only)</label>
+				<input type="text"
+					id="pos_line_item_name_field_{{$row_count}}"
+					class="form-control pos-line-item-name"
+					value="{{ $pos_item_name_value }}"
+					maxlength="191"
+					autocomplete="off"
+					placeholder="Change name for this invoice only">
+				<p class="help-block" style="margin:4px 0 0;"><small>Does not change the product catalog name.</small></p>
+			</div>
+
 			<div class="pos-line-details-field pos-line-details-note">
 				<label for="pos_line_note_field_{{$row_count}}">Note</label>
 				<textarea id="pos_line_note_field_{{$row_count}}"

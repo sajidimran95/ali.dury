@@ -34,10 +34,14 @@
 			value="{{$so_line->id}}">
 		@endif
 		@php
-			$product_name = e($product->product_name);
+			$catalog_name = (string) ($product->product_name ?? '');
+			$item_name_override = trim((string) ($product->item_name ?? ''));
+			$product_name = e($item_name_override !== '' ? $item_name_override : $catalog_name);
 			$product_sku_brand = $product->sub_sku;
 			if(!empty($product->brand)){ $product_sku_brand .= ' · ' . e($product->brand); }
 		@endphp
+		<input type="hidden" class="pos_catalog_name" value="{{ e($catalog_name) }}">
+		<input type="hidden" class="pos_item_name" name="products[{{$row_count}}][item_name]" value="{{ e($item_name_override) }}">
 
 		<div class="pos-line-name-wrap">
 			@if(empty($is_direct_sell))

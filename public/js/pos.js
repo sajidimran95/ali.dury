@@ -325,6 +325,14 @@ function pos_sync_row_edit_modal_from_cart($modal, $tr) {
         $modal.find('textarea[name*="sell_line_note"]').val(note);
     }
 
+    var $itemName = $modal.find('input.pos-line-item-name');
+    if ($itemName.length) {
+        var override = String($tr.find('input.pos_item_name').val() || '').trim();
+        var catalog = String($tr.find('input.pos_catalog_name').val() || '').trim();
+        var shown = String($tr.find('.pos-line-name').first().text() || '').trim();
+        $itemName.val(override || shown || catalog);
+    }
+
     var qty = __read_number($tr.find('input.pos_quantity'));
     if (!isNaN(qty)) {
         __write_number($modal.find('input.pos-line-edit-qty'), qty);
@@ -598,6 +606,19 @@ function pos_apply_row_edit_modal($modal, $tr, markManual) {
         if ($rowQty.length && !isNaN(panelQty)) {
             __write_number($rowQty, panelQty);
             $rowQty.trigger('change');
+        }
+    }
+
+    var $itemName = $modal.find('input.pos-line-item-name');
+    if ($itemName.length) {
+        var typed = String($itemName.val() || '').trim();
+        var catalog = String($tr.find('input.pos_catalog_name').val() || '').trim();
+        // Store override only when different from catalog; empty → catalog name
+        var override = (typed && typed !== catalog) ? typed : '';
+        $tr.find('input.pos_item_name').val(override);
+        var display = override || catalog || typed;
+        if (display) {
+            $tr.find('.pos-line-name').text(display);
         }
     }
 

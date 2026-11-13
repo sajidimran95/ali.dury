@@ -450,6 +450,7 @@ class TransactionUtil extends Util
                     'tax_id' => $product['tax_id'] ?? null,
                     'unit_price_inc_tax' => $uf_unit_price_inc_tax / $multiplier,
                     'sell_line_note' => ! empty($product['sell_line_note']) ? $product['sell_line_note'] : '',
+                    'item_name' => ! empty($product['item_name']) ? trim((string) $product['item_name']) : null,
                     'sub_unit_id' => ! empty($product['sub_unit_id']) ? $product['sub_unit_id'] : null,
                     'discount_id' => ! empty($product['discount_id']) ? $product['discount_id'] : null,
                     'res_service_staff_id' => ! empty($product['res_service_staff_id']) ? $product['res_service_staff_id'] : null,
@@ -677,6 +678,7 @@ class TransactionUtil extends Util
             'tax_id' => $product['tax_id'] ?? null,
             'unit_price_inc_tax' => $uf_data ? $this->num_uf($unit_price_inc_tax_raw) / $multiplier : $unit_price_inc_tax_raw / $multiplier,
             'sell_line_note' => ! empty($product['sell_line_note']) ? $product['sell_line_note'] : '',
+            'item_name' => ! empty($product['item_name']) ? trim((string) $product['item_name']) : null,
             'sub_unit_id' => ! empty($product['sub_unit_id']) ? $product['sub_unit_id'] : null,
             'res_service_staff_id' => ! empty($product['res_service_staff_id']) ? $product['res_service_staff_id'] : null,
             'secondary_unit_quantity' => ! empty($product['secondary_unit_quantity']) ? $this->num_uf($product['secondary_unit_quantity']) : 0,
@@ -2209,9 +2211,10 @@ class TransactionUtil extends Util
             $base_unit_price = $line->unit_price_inc_tax / $base_unit_multiplier;
 
             $show_product_description = $il->common_settings['show_product_description'] ?? null;
+            $overrideName = trim((string) ($line->item_name ?? ''));
             $line_array = [
-                //Field for 1st column
-                'name' => $product->name,
+                //Field for 1st column (order-only name override does not change catalog)
+                'name' => $overrideName !== '' ? $overrideName : $product->name,
                 'product_description' => ! empty($show_product_description) ? $product->product_description : null,
                 'variation' => (empty($variation->name) || $variation->name == 'DUMMY') ? '' : $variation->name,
                 'product_variation' => (empty($product_variation->name) || $product_variation->name == 'DUMMY') ? '' : $product_variation->name,
