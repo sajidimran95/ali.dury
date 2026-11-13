@@ -50,6 +50,10 @@
     @component('components.widget', ['class' => 'box-success', 'title' => __('lang_v1.update_prices')])
         <div class="row">
             <div class="col-md-12">
+                <div class="alert alert-info" style="margin-bottom:12px; padding:10px 14px;">
+                    <i class="fa fa-check-square-o"></i>
+                    <strong><span class="bulk-selected-count">0</span></strong> @lang('lang_v1.products_selected')
+                </div>
                 <p class="help-block">@lang('lang_v1.bulk_pricing_help')</p>
                 <p class="text-info"><i class="fa fa-info-circle"></i> @lang('lang_v1.bulk_pricing_tax_note')</p>
             </div>
@@ -60,6 +64,7 @@
                 <div class="form-group">
                     {!! Form::label('update_type', __('lang_v1.update_type') . ':*') !!}
                     <select class="form-control" id="update_type" required>
+                        <option value="set">@lang('lang_v1.set_same_price')</option>
                         <option value="percentage">@lang('lang_v1.percentage')</option>
                         <option value="flat">@lang('lang_v1.flat_amount')</option>
                     </select>
@@ -69,9 +74,9 @@
             <div class="col-md-4">
                 <div class="form-group">
                     {!! Form::label('update_value', __('lang_v1.value') . ':*') !!}
-                    <input type="number" step="0.01" class="form-control" id="update_value" placeholder="e.g., 10 or -5" required>
+                    <input type="number" step="0.01" min="0" class="form-control" id="update_value" placeholder="e.g., 20" required>
                     <span class="help-block">
-                        <small id="update_value_help">@lang('lang_v1.bulk_price_value_help')</small>
+                        <small id="update_value_help">@lang('lang_v1.set_price_help_text')</small>
                     </span>
                 </div>
             </div>
@@ -97,6 +102,14 @@
     @endcomponent
 
     @component('components.widget', ['class' => 'box-primary', 'title' => __('lang_v1.select_products')])
+        <div class="row" style="margin-bottom:8px;">
+            <div class="col-md-12">
+                <p class="text-info" style="margin:0;">
+                    <i class="fa fa-check-square-o"></i>
+                    <strong><span class="bulk-selected-count">0</span></strong> @lang('lang_v1.products_selected')
+                </p>
+            </div>
+        </div>
         <div class="row">
             <div class="col-md-12">
                 <div class="table-responsive">
@@ -116,15 +129,6 @@
                 </div>
             </div>
         </div>
-
-        <div class="row">
-            <div class="col-md-12 text-center">
-                <p class="text-info">
-                    <i class="fa fa-info-circle"></i> 
-                    <span id="selected_count">0</span> @lang('lang_v1.products_selected')
-                </p>
-            </div>
-        </div>
     @endcomponent
 
     <div class="row">
@@ -140,6 +144,35 @@
 @section('javascript')
 <script>
     $(document).ready(function() {
+        // Keep selections across search / page / filter reloads
+        var selectedIds = {};
+
+        function selectedList() {
+            return Object.keys(selectedIds);
+        }
+
+        function updateSelectedCount() {
+            $('.bulk-selected-count').text(selectedList().length);
+        }
+
+        function restoreSelectedCheckboxes() {
+            $('.row-select-bulk-price').each(function() {
+                var id = String($(this).val());
+                $(this).prop('checked', !!selectedIds[id]);
+            });
+            var $visible = $('.row-select-bulk-price');
+            var allChecked = $visible.length > 0 && $visible.filter(':checked').length === $visible.length;
+            $('#select_all_products').prop('checked', allChecked);
+            updateSelectedCount();
+        }
+
+        function clearSelected() {
+            selectedIds = {};
+            $('.row-select-bulk-price').prop('checked', false);
+            $('#select_all_products').prop('checked', false);
+            updateSelectedCount();
+        }
+
         var bulk_pricing_table = $('#bulk_pricing_table').DataTable({
             processing: true,
             serverSide: true,
@@ -153,18 +186,21 @@
             },
             columns: [
                 { data: 'checkbox', orderable: false, searchable: false },
-                { data: 'product_name' },
-                { data: 'sub_sku' },
-                { data: 'brand' },
-                { data: 'category' },
-                { data: 'default_sell_price' },
-                { data: 'sell_price_inc_tax' }
+                { data: 'product_name', name: 'products.name' },
+                { data: 'sub_sku', name: 'v.sub_sku' },
+                { data: 'brand', name: 'brands.name' },
+                { data: 'category', name: 'c1.name' },
+                { data: 'default_sell_price', name: 'v.default_sell_price', searchable: false },
+                { data: 'sell_price_inc_tax', name: 'v.sell_price_inc_tax', searchable: false }
             ],
             columnDefs: [{
                 targets: 0,
                 orderable: false,
                 searchable: false
-            }]
+            }],
+            drawCallback: function() {
+                restoreSelectedCheckboxes();
+            }
         });
 
         $('#filter_products').click(function() {
@@ -172,31 +208,52 @@
         });
 
         $('#select_all_products').on('change', function() {
-            $('.row-select-bulk-price').prop('checked', $(this).is(':checked'));
+            var checked = $(this).is(':checked');
+            $('.row-select-bulk-price').each(function() {
+                var id = String($(this).val());
+                $(this).prop('checked', checked);
+                if (checked) {
+                    selectedIds[id] = true;
+                } else {
+                    delete selectedIds[id];
+                }
+            });
             updateSelectedCount();
         });
 
         $(document).on('change', '.row-select-bulk-price', function() {
+            var id = String($(this).val());
+            if ($(this).is(':checked')) {
+                selectedIds[id] = true;
+            } else {
+                delete selectedIds[id];
+                $('#select_all_products').prop('checked', false);
+            }
             updateSelectedCount();
         });
 
-        function updateSelectedCount() {
-            var count = $('.row-select-bulk-price:checked').length;
-            $('#selected_count').text(count);
-        }
-
         $('#update_type').on('change', function() {
-            var help = $(this).val() === 'percentage' 
-                ? '@lang('lang_v1.percentage_help_text')' 
-                : '@lang('lang_v1.flat_amount_help_text')';
+            var type = $(this).val();
+            var help = '@lang('lang_v1.set_price_help_text')';
+            var placeholder = 'e.g., 20';
+            if (type === 'percentage') {
+                help = '@lang('lang_v1.percentage_help_text')';
+                placeholder = 'e.g., 10 or -5';
+            } else if (type === 'flat') {
+                help = '@lang('lang_v1.flat_amount_help_text')';
+                placeholder = 'e.g., 5 or -2';
+            }
             $('#update_value_help').text(help);
-        });
+            $('#update_value').attr('placeholder', placeholder);
+            if (type === 'set') {
+                $('#update_value').attr('min', '0');
+            } else {
+                $('#update_value').removeAttr('min');
+            }
+        }).trigger('change');
 
         $('#apply_bulk_update').click(function() {
-            var selected = [];
-            $('.row-select-bulk-price:checked').each(function() {
-                selected.push($(this).val());
-            });
+            var selected = selectedList();
 
             if (selected.length === 0) {
                 swal('@lang('lang_v1.please_select_products')');
@@ -237,12 +294,10 @@
                         success: function(result) {
                             if (result.success) {
                                 swal('Success', result.msg, 'success');
+                                clearSelected();
                                 bulk_pricing_table.ajax.reload();
                                 $('#update_value').val('');
                                 $('#notes').val('');
-                                $('.row-select-bulk-price').prop('checked', false);
-                                $('#select_all_products').prop('checked', false);
-                                updateSelectedCount();
                             } else {
                                 swal('Error', result.msg, 'error');
                             }

@@ -77,15 +77,41 @@ class BulkPricingController extends Controller
                 return '<input type="checkbox" class="row-select-bulk-price" value="'.$row->variation_id.'" data-product-id="'.$row->product_id.'">';
             })
             ->editColumn('product_name', function ($row) {
-                $name = $row->product_name;
+                $name = e($row->product_name);
                 if ($row->type === 'variable' && $row->variation_name !== 'DUMMY') {
-                    $name .= ' - <strong>'.$row->variation_name.'</strong>';
+                    $name .= ' - <strong>'.e($row->variation_name).'</strong>';
                 }
 
                 return $name;
             })
             ->editColumn('default_sell_price', '@format_currency($default_sell_price)')
             ->editColumn('sell_price_inc_tax', '@format_currency($sell_price_inc_tax)')
+            ->filterColumn('products.name', function ($query, $keyword) {
+                $query->where(function ($q) use ($keyword) {
+                    $q->where('products.name', 'like', "%{$keyword}%")
+                        ->orWhere('v.name', 'like', "%{$keyword}%")
+                        ->orWhere('v.sub_sku', 'like', "%{$keyword}%")
+                        ->orWhere('products.sku', 'like', "%{$keyword}%");
+                });
+            })
+            ->filterColumn('v.sub_sku', function ($query, $keyword) {
+                $query->where(function ($q) use ($keyword) {
+                    $q->where('v.sub_sku', 'like', "%{$keyword}%")
+                        ->orWhere('products.sku', 'like', "%{$keyword}%");
+                });
+            })
+            ->filterColumn('brands.name', function ($query, $keyword) {
+                $query->where('brands.name', 'like', "%{$keyword}%");
+            })
+            ->filterColumn('c1.name', function ($query, $keyword) {
+                $query->where('c1.name', 'like', "%{$keyword}%");
+            })
+            ->orderColumn('products.name', 'products.name $1')
+            ->orderColumn('v.sub_sku', 'v.sub_sku $1')
+            ->orderColumn('brands.name', 'brands.name $1')
+            ->orderColumn('c1.name', 'c1.name $1')
+            ->orderColumn('v.default_sell_price', 'v.default_sell_price $1')
+            ->orderColumn('v.sell_price_inc_tax', 'v.sell_price_inc_tax $1')
             ->rawColumns(['checkbox', 'product_name'])
             ->make(true);
     }
@@ -97,7 +123,7 @@ class BulkPricingController extends Controller
         }
 
         $request->validate([
-            'update_type' => 'required|in:percentage,flat',
+            'update_type' => 'required|in:percentage,flat,set',
             'update_value' => 'required|numeric',
             'price_field' => 'required|in:default_sell_price,sell_price_inc_tax',
             'variation_ids' => 'required|array|min:1',
@@ -114,10 +140,17 @@ class BulkPricingController extends Controller
             $update_value = (float) $request->update_value;
             $price_field = $request->price_field;
 
+            if ($update_type === 'set' && $update_value < 0) {
+                return response()->json([
+                    'success' => false,
+                    'msg' => __('lang_v1.please_enter_valid_value'),
+                ]);
+            }
+
             $updated_count = 0;
 
             foreach ($variation_ids as $variation_id) {
-                $variation = Variation::find($variation_id);
+                $variation = Variation::with('product')->find($variation_id);
                 if (! $variation) {
                     continue;
                 }
@@ -126,6 +159,9 @@ class BulkPricingController extends Controller
 
                 if ($update_type === 'percentage') {
                     $new_price = $old_price * (1 + ($update_value / 100));
+                } elseif ($update_type === 'set') {
+                    // Set every selected item to the same absolute price
+                    $new_price = $update_value;
                 } else {
                     $new_price = $old_price + $update_value;
                 }
@@ -134,7 +170,28 @@ class BulkPricingController extends Controller
                     $new_price = 0;
                 }
 
-                $variation->{$price_field} = round($new_price, 4);
+                $new_price = round($new_price, 4);
+                $variation->{$price_field} = $new_price;
+
+                // Keep exc/inc tax in sync when setting one absolute price
+                if ($update_type === 'set') {
+                    $tax_percent = 0.0;
+                    $product = $variation->product;
+                    if (! empty($product) && ! empty($product->tax)) {
+                        $tax = \App\TaxRate::find($product->tax);
+                        $tax_percent = (float) ($tax->amount ?? 0);
+                    }
+
+                    if ($price_field === 'default_sell_price') {
+                        $variation->default_sell_price = $new_price;
+                        $variation->sell_price_inc_tax = round($new_price * (1 + ($tax_percent / 100)), 4);
+                    } else {
+                        $variation->sell_price_inc_tax = $new_price;
+                        $variation->default_sell_price = $tax_percent > 0
+                            ? round($new_price / (1 + ($tax_percent / 100)), 4)
+                            : $new_price;
+                    }
+                }
                 
                 // Recalculate profit margin
                 if ($variation->default_purchase_price > 0) {
@@ -198,11 +255,18 @@ class BulkPricingController extends Controller
                     return optional($row->user)->first_name.' '.optional($row->user)->last_name;
                 })
                 ->editColumn('update_type', function ($row) {
+                    if ($row->update_type === 'set') {
+                        return __('lang_v1.set_same_price');
+                    }
+
                     return ucfirst($row->update_type);
                 })
                 ->editColumn('update_value', function ($row) {
                     if ($row->update_type === 'percentage') {
                         return '<strong>'.($row->update_value > 0 ? '+' : '').$row->update_value.'%</strong>';
+                    }
+                    if ($row->update_type === 'set') {
+                        return '<strong>'.session('currency.symbol', '$').number_format((float) $row->update_value, 2).'</strong>';
                     }
 
                     return '<strong>'.($row->update_value > 0 ? '+' : '').session('currency.symbol', '$').number_format($row->update_value, 2).'</strong>';
