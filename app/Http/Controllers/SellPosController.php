@@ -1666,11 +1666,22 @@ class SellPosController extends Controller
                     }
                 }
 
-                $this->applyPosTransactionDateTime(
-                    $input,
-                    $request->input('transaction_date'),
-                    $is_direct_sale
-                );
+                // Editing an already-final sale must keep the original sale time.
+                // Otherwise it jumps to the top of the day's invoices / reports / recent list.
+                $keep_original_sale_time = ($status_before === 'final'
+                    && empty($transaction_before->is_suspend)
+                    && ($input['status'] ?? '') === 'final'
+                    && empty($input['is_suspend']));
+
+                if ($keep_original_sale_time) {
+                    $input['transaction_date'] = $transaction_before->transaction_date;
+                } else {
+                    $this->applyPosTransactionDateTime(
+                        $input,
+                        $request->input('transaction_date'),
+                        $is_direct_sale
+                    );
+                }
 
                 if ($status_before == 'draft' && !empty($request->input('invoice_scheme_id'))) {
                     $input['invoice_scheme_id'] = $request->input('invoice_scheme_id');
@@ -2357,6 +2368,7 @@ class SellPosController extends Controller
                 'status',
             ])
             ->with(['contact', 'table'])
+            ->orderByDesc('transaction_date')
             ->orderByDesc('id')
             ->limit($limit)
             ->get();
