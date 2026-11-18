@@ -580,6 +580,8 @@ return [
     'flat_amount' => 'Flat Amount',
     'set_same_price' => 'Set Same Price',
     'set_price_help_text' => 'e.g., 20 — all selected products will be set to this price',
+    'group_bulk_pricing_help' => 'Tick products below, then set the same group price for all, or change by % / flat amount (like Bulk Pricing).',
+    'group_bulk_prices_updated' => ':count group product price(s) updated.',
     'value' => 'Value',
     'apply_update' => 'Apply Update',
     'bulk_price_value_help' => 'Use positive (+10) to increase or negative (-5) to decrease',

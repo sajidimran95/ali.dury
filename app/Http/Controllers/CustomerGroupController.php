@@ -684,6 +684,123 @@ class CustomerGroupController extends Controller
     }
 
     /**
+     * Bulk set / % / flat update for selected group product prices (same as Dury Wholesale).
+     */
+    public function bulkUpdatePrices(Request $request, $id)
+    {
+        if (! auth()->user()->can('customer.update')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $request->validate([
+            'update_type' => 'required|in:percentage,flat,set',
+            'update_value' => 'required|numeric',
+            'variation_ids' => 'required|array|min:1',
+        ]);
+
+        $business_id = (int) $request->session()->get('user.business_id');
+        $customer_group = CustomerGroup::where('business_id', $business_id)->findOrFail($id);
+        $price_group = $this->customerGroupService->ensurePriceGroup($customer_group);
+
+        $update_type = (string) $request->input('update_type');
+        $update_value = (float) $request->input('update_value');
+
+        if ($update_type === 'set' && $update_value < 0) {
+            return response()->json([
+                'success' => false,
+                'msg' => __('lang_v1.please_enter_valid_value'),
+            ]);
+        }
+
+        $variation_ids = [];
+        foreach ((array) $request->input('variation_ids', []) as $v) {
+            $vid = (int) $v;
+            if ($vid > 0) {
+                $variation_ids[$vid] = $vid;
+            }
+        }
+        $variation_ids = array_values($variation_ids);
+        if (empty($variation_ids)) {
+            return response()->json([
+                'success' => false,
+                'msg' => __('lang_v1.please_select_products'),
+            ]);
+        }
+
+        $variations = Variation::query()
+            ->join('products as p', 'variations.product_id', '=', 'p.id')
+            ->where('p.business_id', $business_id)
+            ->whereIn('variations.id', $variation_ids)
+            ->whereNull('variations.deleted_at')
+            ->select('variations.id', 'variations.sell_price_inc_tax', 'variations.default_sell_price')
+            ->get()
+            ->keyBy('id');
+
+        $existing = VariationGroupPrice::query()
+            ->where('price_group_id', $price_group->id)
+            ->whereIn('variation_id', $variation_ids)
+            ->get()
+            ->keyBy('variation_id');
+
+        $saved = 0;
+
+        DB::beginTransaction();
+        try {
+            foreach ($variation_ids as $variation_id) {
+                $variation = $variations->get($variation_id);
+                if (! $variation) {
+                    continue;
+                }
+
+                $current = $existing->get($variation_id);
+                $base = $current
+                    ? (float) $current->price_inc_tax
+                    : (float) ($variation->sell_price_inc_tax ?? $variation->default_sell_price ?? 0);
+
+                if ($update_type === 'percentage') {
+                    $new_price = $base * (1 + ($update_value / 100));
+                } elseif ($update_type === 'set') {
+                    $new_price = $update_value;
+                } else {
+                    $new_price = $base + $update_value;
+                }
+
+                if ($new_price < 0) {
+                    $new_price = 0;
+                }
+                $new_price = round($new_price, 4);
+
+                VariationGroupPrice::updateOrCreate(
+                    [
+                        'variation_id' => $variation_id,
+                        'price_group_id' => $price_group->id,
+                    ],
+                    [
+                        'price_inc_tax' => $new_price,
+                        'price_type' => 'fixed',
+                    ]
+                );
+                $saved++;
+            }
+            DB::commit();
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            \Log::emergency('File:'.$e->getFile().'Line:'.$e->getLine().'Message:'.$e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'msg' => __('messages.something_went_wrong'),
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'msg' => __('lang_v1.group_bulk_prices_updated', ['count' => $saved]),
+            'priced_count' => (int) VariationGroupPrice::where('price_group_id', $price_group->id)->count(),
+        ]);
+    }
+
+    /**
      * Apply group % by scope: all_inventory | category | product.
      */
     public function applyScope(Request $request, $id)

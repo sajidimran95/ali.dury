@@ -673,6 +673,7 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::post('customer-group/{id}/products/override', [CustomerGroupController::class, 'addProductOverride']);
     Route::post('customer-group/{id}/products/apply-all', [CustomerGroupController::class, 'applyAllProducts']);
     Route::post('customer-group/{id}/products/apply-scope', [CustomerGroupController::class, 'applyScope']);
+    Route::post('customer-group/{id}/products/bulk-update', [CustomerGroupController::class, 'bulkUpdatePrices']);
     Route::resource('customer-group', CustomerGroupController::class);
 
     //Import opening stock

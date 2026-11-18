@@ -453,11 +453,9 @@
 								<div class="title">{{ !empty($receipt_details->invoice_heading) ? strip_tags($receipt_details->invoice_heading) : 'Invoice' }}</div>
 								<table class="qb-id">
 									<tr>
-										<th>Date</th>
 										<th>Invoice #</th>
 									</tr>
 									<tr>
-										<td>{{ $invoiceDate }}</td>
 										<td>{{ $receipt_details->invoice_no ?? '' }}</td>
 									</tr>
 								</table>
@@ -516,7 +514,7 @@
 							<td>{{ $po }}</td>
 							<td>{{ $terms }}</td>
 							<td>{{ $rep }}</td>
-							<td>{{ $shipDate }}</td>
+							<td></td>
 							<td>{{ $via }}</td>
 							<td></td>
 							<td></td>

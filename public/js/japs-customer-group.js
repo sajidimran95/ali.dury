@@ -53,10 +53,11 @@ $(document).ready(function () {
     }
 
     function syncPickColumn(scope) {
-        var show = scope === 'product';
-        $('.cg-pick-col').toggle(show);
+        // Always show pick column so bulk set/%/flat works on any selected rows
+        // (product-scope % apply also uses the same checkboxes).
+        $('.cg-pick-col').show();
         if (productsTable) {
-            productsTable.column(0).visible(show);
+            productsTable.column(0).visible(true);
         }
     }
 
@@ -122,7 +123,7 @@ $(document).ready(function () {
                 }
             },
             columns: [
-                { data: 'select_col', name: 'select_col', orderable: false, searchable: false, className: 'text-center cg-pick-col', visible: currentScope() === 'product' },
+                { data: 'select_col', name: 'select_col', orderable: false, searchable: false, className: 'text-center cg-pick-col', visible: true },
                 { data: 'product', name: 'p.name' },
                 { data: 'sub_sku', name: 'variations.sub_sku' },
                 { data: 'default_price', name: 'variations.sell_price_inc_tax' },
@@ -152,11 +153,22 @@ $(document).ready(function () {
         }
     });
 
+    function selectedIdsList() {
+        return Object.keys(selectedProductIds)
+            .map(function (id) { return parseInt(id, 10); })
+            .filter(function (id) { return id > 0; });
+    }
+
+    function syncBulkSelectedCount() {
+        $('#cg_bulk_selected_count').text(selectedIdsList().length);
+    }
+
     function syncSelectAllBox() {
         var $checks = $('#cg_products_table .cg-product-check');
         var total = $checks.length;
         var checked = $checks.filter(':checked').length;
         $('#cg_select_all_products').prop('checked', total > 0 && checked === total);
+        syncBulkSelectedCount();
     }
 
     $(document).on('change', '#cg_select_all_products', function () {
@@ -170,6 +182,7 @@ $(document).ready(function () {
                 delete selectedProductIds[id];
             }
         });
+        syncBulkSelectedCount();
     });
 
     $(document).on('change', '.cg-product-check', function () {
@@ -180,6 +193,74 @@ $(document).ready(function () {
             delete selectedProductIds[id];
         }
         syncSelectAllBox();
+    });
+
+    function syncBulkValueHelp() {
+        var type = $('#cg_bulk_update_type').val();
+        var text = cfg.setPriceHelp;
+        if (type === 'percentage') {
+            text = cfg.percentHelp;
+        } else if (type === 'flat') {
+            text = cfg.flatHelp;
+        }
+        $('#cg_bulk_value_help').text(text || '');
+    }
+
+    $(document).on('change', '#cg_bulk_update_type', syncBulkValueHelp);
+    syncBulkValueHelp();
+
+    $(document).on('click', '#cg_bulk_apply', function (e) {
+        e.preventDefault();
+        if (!cfg.bulkUpdateUrl) {
+            return;
+        }
+        var ids = selectedIdsList();
+        if (!ids.length) {
+            toastr.error(cfg.pleaseSelectProducts || cfg.selectProducts);
+            return;
+        }
+        var updateType = $('#cg_bulk_update_type').val();
+        var updateValue = parseFloat($('#cg_bulk_update_value').val());
+        if (isNaN(updateValue) || (updateType === 'set' && updateValue < 0)) {
+            toastr.error(cfg.pleaseEnterValue);
+            return;
+        }
+        var $btn = $(this);
+        $btn.prop('disabled', true);
+        $.ajax({
+            method: 'POST',
+            url: cfg.bulkUpdateUrl,
+            dataType: 'json',
+            data: {
+                _token: csrfToken(),
+                update_type: updateType,
+                update_value: updateValue,
+                variation_ids: ids
+            },
+            success: function (result) {
+                if (result.success) {
+                    toastr.success(result.msg);
+                    changed = {};
+                    selectedProductIds = {};
+                    syncBulkSelectedCount();
+                    $('#cg_select_all_products').prop('checked', false);
+                    if (typeof result.priced_count !== 'undefined') {
+                        $('#cg_products_count').text(result.priced_count);
+                    }
+                    if (productsTable) {
+                        productsTable.ajax.reload(null, false);
+                    }
+                } else {
+                    toastr.error(result.msg || 'Update failed');
+                }
+            },
+            error: function (xhr) {
+                toastr.error((xhr.responseJSON && xhr.responseJSON.msg) || 'Update failed');
+            },
+            complete: function () {
+                $btn.prop('disabled', false);
+            }
+        });
     });
     function loadSubCategories(categoryId) {
         var $wrap = $('#cg_sub_category_wrap');

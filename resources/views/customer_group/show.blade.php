@@ -2,7 +2,7 @@
 @section('title', $customer_group->name)
 
 @section('css')
-    <link rel="stylesheet" href="{{ asset('css/japs-customer-group.css?v=' . ($asset_v ?? '') . '&cg=10') }}">
+    <link rel="stylesheet" href="{{ asset('css/japs-customer-group.css?v=' . ($asset_v ?? '') . '&cg=12') }}">
 @endsection
 
 @section('content')
@@ -121,6 +121,38 @@
                     <button type="button" class="tw-dw-btn tw-dw-btn-primary tw-text-white" id="cg_save_prices">@lang('lang_v1.save_group_prices')</button>
                 @endcan
             </div>
+
+            @can('customer.update')
+                <div class="cg-bulk-bar" id="cg_bulk_bar">
+                    <div class="cg-bulk-count">
+                        <i class="fa fa-check-square-o"></i>
+                        <strong><span id="cg_bulk_selected_count">0</span></strong>
+                        @lang('lang_v1.products_selected')
+                    </div>
+                    <p class="cg-bulk-help">@lang('lang_v1.group_bulk_pricing_help')</p>
+                    <div class="cg-bulk-controls">
+                        <div class="form-group">
+                            <label for="cg_bulk_update_type">@lang('lang_v1.update_type')</label>
+                            <select class="form-control" id="cg_bulk_update_type">
+                                <option value="set">@lang('lang_v1.set_same_price')</option>
+                                <option value="percentage">@lang('lang_v1.percentage')</option>
+                                <option value="flat">@lang('lang_v1.flat_amount')</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="cg_bulk_update_value">@lang('lang_v1.value')</label>
+                            <input type="number" step="0.01" class="form-control" id="cg_bulk_update_value" placeholder="e.g. 20">
+                            <span class="help-block"><small id="cg_bulk_value_help">@lang('lang_v1.set_price_help_text')</small></span>
+                        </div>
+                        <div class="form-group cg-bulk-apply-wrap">
+                            <label>&nbsp;</label>
+                            <button type="button" class="tw-dw-btn tw-dw-btn-success tw-text-white btn-block" id="cg_bulk_apply">
+                                <i class="fa fa-check"></i> @lang('lang_v1.apply_update')
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            @endcan
             <table class="table table-bordered" id="cg_products_table" style="width:100%">
                 <thead>
                     <tr>
@@ -146,6 +178,7 @@ window.cgGroup = {
     productsUrl: @json(url('customer-group/'.$customer_group->id.'/products')),
     applyAllUrl: @json(url('customer-group/'.$customer_group->id.'/products/apply-all')),
     applyScopeUrl: @json(url('customer-group/'.$customer_group->id.'/products/apply-scope')),
+    bulkUpdateUrl: @json(url('customer-group/'.$customer_group->id.'/products/bulk-update')),
     discountUrl: @json(url('customer-group/'.$customer_group->id.'/discount')),
     productSearchUrl: @json(url('customer-group/'.$customer_group->id.'/products/search')),
     productOverrideUrl: @json(url('customer-group/'.$customer_group->id.'/products/override')),
@@ -156,6 +189,11 @@ window.cgGroup = {
     selectCustomers: @json(__('lang_v1.select_customers_to_tag')),
     selectCategory: @json(__('lang_v1.select_category_to_apply')),
     selectProducts: @json(__('lang_v1.select_products_to_apply')),
+    pleaseSelectProducts: @json(__('lang_v1.please_select_products')),
+    pleaseEnterValue: @json(__('lang_v1.please_enter_valid_value')),
+    setPriceHelp: @json(__('lang_v1.set_price_help_text')),
+    percentHelp: @json(__('lang_v1.percentage_help_text')),
+    flatHelp: @json(__('lang_v1.flat_amount_help_text')),
     initialScope: @json('all_inventory'),
     scopeAll: @json(__('lang_v1.scope_all_inventory')),
     scopeCategory: @json(__('lang_v1.scope_category')),
@@ -165,5 +203,5 @@ window.cgGroup = {
     btnProducts: @json(__('lang_v1.apply_to_products'))
 };
 </script>
-<script src="{{ asset('js/japs-customer-group.js?v=' . ($asset_v ?? '') . '&cg=17') }}"></script>
+<script src="{{ asset('js/japs-customer-group.js?v=' . ($asset_v ?? '') . '&cg=18') }}"></script>
 @endsection
